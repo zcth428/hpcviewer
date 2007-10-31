@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         id="edu.rice.cs.hpc"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="edu.rice.cs.hpc.HPCVision">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="edu.rice.cs.hpc.Perspective"
+            icon="icons/hpc-16x16.png"
+            id="edu.rice.cs.hpc.perspective"
+            name="Perspective">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            class="edu.rice.cs.hpc.viewer.scope.ScopeView"
+            icon="icons/hpc-16x16.png"
+            id="edu.rice.cs.hpc.scope.ScopeView"
+            name="ScopeView">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="edu.rice.cs.hpc.actionSet"
+            label="Experiment"
+            visible="true">
+            <menu
+               id="experimentMenu"
+               label="&amp;Experiment">
+            	<separator
+                  name="experimentGroup">
+            	</separator>
+         	</menu>
+            
+         <action
+               class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
+               icon="icons/hpc-16x16.png"
+               id="edu.rice.cs.hpc.actions.LoadExperiment"
+               label="&amp;Load experiment ..."
+               menubarPath="experimentMenu/experimentGroup"
+               toolbarPath="experimentGroup"
+               tooltip="Load an XML experiment file ...">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         id="edu.rice.cs.hpc"
+         name="HPC Vision"
+         point="org.eclipse.core.runtime.products">
+         <product name="HPCVision" application="edu.rice.cs.hpc" description="Viewer for HPCToolkit data collection"> 
+		<property name="windowImage" value="icons/hpc-16x16.png"/> 
+		<property name="aboutImage" value="icons/hpc-32x32.png"/> 
+		<property name="aboutText" value="(C) Copyright 2007, Rice University"/> 
+		<property name="appName" value="HPCVison"/> 
+	</product> 
+   </extension>
+</plugin>

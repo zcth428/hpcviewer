@@ -54,15 +54,4 @@
          </action>
       </actionSet>
    </extension>
-   <extension
-         id="edu.rice.cs.hpc"
-         name="HPC Vision"
-         point="org.eclipse.core.runtime.products">
-         <product name="HPCVision" application="edu.rice.cs.hpc" description="Viewer for HPCToolkit data collection"> 
-		<property name="windowImage" value="icons/hpc-16x16.png"/> 
-		<property name="aboutImage" value="icons/hpc-32x32.png"/> 
-		<property name="aboutText" value="(C) Copyright 2007, Rice University"/> 
-		<property name="appName" value="HPCVison"/> 
-	</product> 
-   </extension>
 </plugin>

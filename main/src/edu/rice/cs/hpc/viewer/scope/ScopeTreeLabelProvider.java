@@ -11,7 +11,7 @@ import edu.rice.cs.hpc.data.experiment.pnode.*;;
 
 public class ScopeTreeLabelProvider implements ITableLabelProvider {
 	private Metric[] metrics;
-	private PNode[] pnodes;
+//	private PNode[] pnodes;
 	// Laks: create image descriptor for the tree
 	final private org.eclipse.jface.resource.ImageDescriptor imgCALL_FROM = ImageDescriptor.createFromFile(
 			this.getClass(),
@@ -29,7 +29,7 @@ public class ScopeTreeLabelProvider implements ITableLabelProvider {
 	}
 	
 	public void setPNodes(PNode[] newPNodes) {
-		pnodes = newPNodes;
+//		pnodes = newPNodes;
 	}
 	
 	public Image getColumnImage(Object element, int col) {
@@ -64,22 +64,12 @@ public class ScopeTreeLabelProvider implements ITableLabelProvider {
 				MetricValue mv;
 				// laks
 				mv = node.getScope().getMetricValue(metric);
-				
-				//DEBUG System.err.println("pnode index: "+pnodes[0].getIndex());
-				/*
-				if (pnodes.length <= 1) {
-					mv = node.getScope().getMetricValue(metric, pnodes[0]);
-				} else { // multiple nodes
-					//TODO average these somehow
-					mv = node.getScope().getMetricValue(metric, pnodes[0]);
-				}
-				*/
 				text = metric.getDisplayFormat().format(mv);
 				if (text.compareTo("-1.00e00       ") == 0) text = "0.0%";
 				}
 			}
 		}
-
+		//System.err.println(col + ":"+node.getScope().getName());
 		return text;
 	}
 	

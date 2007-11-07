@@ -36,63 +36,9 @@ public class ScopeView extends ViewPart {
     private java.util.HashMap<String, IFile> mapFilePage = 
     	new java.util.HashMap<String, IFile>();
 
-    /* Listener for selection changes from other views
-     * new scope:	nav to scope
-     * new metric:	sort by metric / show metric column (shouldn't happen)
-     * new nodes:	update data for selected node(s)
-     */
-    /*
-    ISelectionListener otherListener = new ISelectionListener() {
-    	public void selectionChanged(IWorkbenchPart srcpart, ISelection sel) {
-    		if (srcpart == ScopeView.this)
-    			return;
-    		// other view selection changed; update setInput
-    		if (sel instanceof IStructuredSelection) {
-    			IStructuredSelection ss = (IStructuredSelection) sel;
-    			if (ss == null || ss.size() < 1)
-    				//TODO do nothing? select all? default?
-    				return;
-
-    			Object o = ss.getFirstElement();
-    			if (o instanceof PNode) {
-    				// set new pnodes
-    				Object[] oss = ss.toArray();
-    				myPNodes = new PNode[oss.length];
-    				for(int i=0; i<oss.length; i++)
-    					myPNodes[i] = (PNode) oss[i];
-    				// TODO only update relevant things
-    				updateDisplay();
-    			} else if (o instanceof Metric) {
-    				// shouldn't happen.
-    			} // else ignore
-    		}
-    		if (sel instanceof Scope.Node) {
-        		// TODO new focus scope
-        		// change comes from appsig or source
-    			System.err.println("ScopeView heard: "+((Scope.Node)sel).getScope().getName());
-    			treeViewer.reveal(sel);
-    			treeViewer.setSelection(sel, true); //FIXME: doesn't actually select this node
-        	}
-         }
-	};
-	*/
-	/* Listener for selection changes in THIS view
-	 * new scope:	open/close scope; nav to scope; show source
-	 * new metric:	update sorting
-	 * new nodes:	not possible from here
+	/**
+	 * Action for double click in the view: show the file source code if possible
 	 */
-	/*ISelectionChangedListener thisListener = new ISelectionChangedListener() {
-        public void selectionChanged(SelectionChangedEvent event) {
-        	//TODO anything for local selection changes?
-//        	if (!(event.getSelection() instanceof StructuredSelection))
-//        		return;
-//        	StructuredSelection sel = (StructuredSelection) event.getSelection();
-//        	Scope.Node selNode = (Scope.Node) sel.getFirstElement();
-//        	SourceFile src = selNode.getScope().getSourceFile();
-        	//int startline = selNode.getScope().getFirstLineNumber();
-        }		
-	};*/
-	
 	IDoubleClickListener dblListener = new IDoubleClickListener() {
 		public void doubleClick(DoubleClickEvent event) {
 			if (!(event.getSelection() instanceof StructuredSelection))
@@ -104,7 +50,6 @@ public class ScopeView extends ViewPart {
 				|| !node.getScope().getSourceFile().isAvailable())
 				return;
 			// get the complete file name
-			//String filename = node.getScope().getSourceFile().getName();
 			FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
 			String sLongName= newFile.getCompleteFilename();
 			System.out.println("Loading source file "+ ":"+ sLongName + "("+newFile.getName()+")");
@@ -168,23 +113,6 @@ public class ScopeView extends ViewPart {
 			if (sortMetric < 0)
 				col = -1 * sortMetric;
 			mv1 = s1.getScope().getMetricValue(0);
-			/*
-			if (myPNodes.length == 1) {
-				mv1 = s1.getScope().getMetricValue(
-						myExperiment.getMetric(col-1), myPNodes[0]);
-				mv2 = s2.getScope().getMetricValue(
-						myExperiment.getMetric(col-1), myPNodes[0]);
-			} else { //TODO multiple, average
-				mv1 = s1.getScope().getMetricValue(
-						myExperiment.getMetric(col-1), myPNodes[0]);
-				mv2 = s2.getScope().getMetricValue(
-						myExperiment.getMetric(col-1), myPNodes[0]);
-			}
-			if (sortMetric < 0)
-				return mv1.compareTo(mv2);
-			else
-				return mv2.compareTo(mv1);
-				*/
 			return col;
 		}   
 	};
@@ -202,10 +130,7 @@ public class ScopeView extends ViewPart {
      */
     public void setInput(Experiment ex, RootScope scope) {
     	myExperiment = ex;
-    	if (ex != null) {
-    		myRootScope = scope;
-    		//TODO myFocusScope = ex.getRootScope();
-    	}
+    	myRootScope = scope;
     	sortMetric = 1;
     	updateDisplay();
     	
@@ -220,6 +145,7 @@ public class ScopeView extends ViewPart {
     	if (ex != null) {
     		//myPNodes = ex.getPNodes();
     		myRootScope = ex.getRootScope();
+    		System.err.println("Experiment is not null");
     		//TODO myFocusScope = ex.getRootScope();
     	}
     	sortMetric = 1;
@@ -232,44 +158,47 @@ public class ScopeView extends ViewPart {
     }
 
 	public void createPartControl(Composite parent) {
-        treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION);
+		// ----- coolbar
+		Composite top=new Composite(parent,SWT.NONE);
+		org.eclipse.swt.layout.RowLayout layout=new org.eclipse.swt.layout.RowLayout();
+		layout.type = SWT.VERTICAL;
+		top.setLayout(layout);
+		CoolBar coolbar = new CoolBar(parent, SWT.NONE);
+		CoolItem item = new CoolItem(coolbar, SWT.NONE);
+		Button button = new Button(coolbar, SWT.PUSH);
+		button.setText("Cool One");
+		item.setControl(button);
+		//Compute the size by first computing the control's default size
+		org.eclipse.swt.graphics.Point pt = button.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		//Now we take into account the size of the cool item
+		pt = item.computeSize(pt.x, pt.y);
+		//Now we set the size
+		item.setSize(pt);
+		// -----
+		
+        treeViewer = new TreeViewer(top, SWT.SINGLE|SWT.FULL_SELECTION);
+        //treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION);
         treeViewer.setContentProvider(new ScopeTreeContentProvider());
         treeViewer.setLabelProvider(new ScopeTreeLabelProvider());
-        treeViewer.setSorter(new MetricSorter());
+//        treeViewer.setSorter(new MetricSorter());
 //        treeViewer.setSorter(metricVS);
         
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
-/*
-        TreeViewerColumn colViewer = new TreeViewerColumn(treeViewer, SWT.LEFT);
-        colViewer.getColumn().setText("Scope");
-        colViewer.getColumn().setWidth(200); 
- */       
+
         TreeColumn tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, 0);
         tmp.setText("Scope");
         tmp.setWidth(200); //TODO dynamic size
-        
-        //treeViewer.setUseHashlookup(true); faster lookup, more mem
-        //treeViewer.getControl().setLayoutData(layoutData);
-        //treeViewer.expandToLevel(1); //TODO expand how much?
+ 
         treeViewer.setInput(null);
         
 		//TODO selections
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
-		
-		// listen for other selection changes in this page 
-/*		this.getSite().getWorkbenchWindow().getSelectionService()
-			.addPostSelectionListener(otherListener);
-*/
-		// listen for selection changes in this view(er)
-		//treeViewer.addSelectionChangedListener(thisListener);
-		
+				
         //TODO treeViewer.addDoubleClickListener(null); maybe zoom?
 		treeViewer.addDoubleClickListener(dblListener);
 
-//		this.getSite().getPage().addSelectionListener(otherListener);
-		
 		makeActions();
 	}
 	
@@ -355,6 +284,8 @@ public class ScopeView extends ViewPart {
         	}
         }
         // dirty solution to update titles
+        new ColumnViewerSorter(this.treeViewer, this.treeViewer.getTree().getColumn(0), myExperiment.getMetric(0),0);
+
         {
             // Update metric title labels
             String[] titles = new String[myExperiment.getMetricCount()+1];
@@ -366,7 +297,7 @@ public class ScopeView extends ViewPart {
         		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);
         		tmp.setText(titles[i+1]);
         		tmp.setWidth(120); //TODO dynamic size
-        		new ColumnViewerSorter(this.treeViewer, tmp);
+        		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1);
         		
         	}
             treeViewer.setColumnProperties(titles);
@@ -385,19 +316,11 @@ public class ScopeView extends ViewPart {
         
         // Update root scope
         treeViewer.setInput(myRootScope.getTreeNode());
-        
+        this.getSite().getShell().setText("HPCViewer:"+myExperiment.getName());
         treeViewer.refresh();
 	}
 
     //------------------ sorting stuff
-    
-    private class MetricSorter extends ViewerSorter {
-    	int iDir = 0;
-    	/*public int category(Object element) {
-    		this.iDir = (1-iDir);
-    		return this.iDir;
-    	}*/
-    }
     
 	private static class ColumnViewerSorter extends ViewerComparator {
 		public static final int ASC = 1;
@@ -406,10 +329,14 @@ public class ScopeView extends ViewPart {
 		private int direction = 0;
 		private TreeColumn column;
 		private ColumnViewer viewer;
+		private int iColNumber;
+		private Metric metric;
 		
-		public ColumnViewerSorter(ColumnViewer viewer, TreeColumn column) {
+		public ColumnViewerSorter(ColumnViewer viewer, TreeColumn column, Metric newMetric, int colNum) {
 			this.column = column;
+			this.iColNumber = colNum;
 			this.viewer = viewer;
+			this.metric = newMetric;
 			this.column.addSelectionListener(new SelectionAdapter() {
 
 				public void widgetSelected(SelectionEvent e) {
@@ -462,8 +389,24 @@ public class ScopeView extends ViewPart {
 		
 		// laks: lazy comparison
 		protected int doCompare(Viewer viewer, Object e1, Object e2) {
-			return 1;
-//			return (e1.toString().compareTo(e2.toString()));
+			if(e1 instanceof Scope.Node && e2 instanceof Scope.Node) {
+				Scope.Node node1 = (Scope.Node) e1;
+				Scope.Node node2 = (Scope.Node) e2;
+				
+				if(this.iColNumber==0) {
+					String text1 = node1.getScope().getShortName();
+					String text2 = node2.getScope().getShortName();
+					return text1.compareTo(text2);
+				} else {
+					// get the metric
+					MetricValue mv1 = node1.getScope().getMetricValue(metric);
+					MetricValue mv2 = node2.getScope().getMetricValue(metric);
+					
+					if (mv1.getValue()>mv2.getValue()) return 1;
+					if (mv1.getValue()<mv2.getValue()) return -1;
+				}
+			}
+			return 0;
 		}
 	}
 

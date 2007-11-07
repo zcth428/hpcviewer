@@ -23,6 +23,7 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="true"
+            category="HPCViewer"
             class="edu.rice.cs.hpc.viewer.scope.ScopeView"
             icon="icons/hpc-16x16.png"
             id="edu.rice.cs.hpc.scope.ScopeView"

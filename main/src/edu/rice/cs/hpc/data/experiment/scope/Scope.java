@@ -69,7 +69,9 @@ protected String id;
 /** special marker used for halting during debugging. */
 protected boolean stop;
 
-
+// --------------------------
+// Laks 11.07.07: we need a pointer to the Metric of this scope
+protected Metric metricScope;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -568,6 +570,14 @@ public MetricValue getMetricValue(Metric metric)
 	return value;
 }
 
+/**
+ * version without argument by using the metric associated with the scope
+ * @return
+ */
+public MetricValue getMetricValue() {
+	return this.getMetricValue(this.metricScope);
+}
+
 /***
   overload the method to take-in the index ---FMZ
 ***/
@@ -687,6 +697,21 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
+/**
+ * procedure to initiate a new metric to be associated with this scope
+ * @param newMetric
+ */
+public void setMetric(Metric newMetric) {
+	this.metricScope = newMetric;
+}
+
+/**
+ * Retrieve the current associated metric
+ * @return
+ */
+public Metric getMetric() {
+	return this.metricScope;
+}
 //////////////////////////////////////////////////////////////////////////
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////

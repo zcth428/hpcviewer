@@ -32,9 +32,6 @@ public class ScopeView extends ViewPart {
     private int 		sortMetric;
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;
-    //TODO private Scope		myFocusScope;
-    private java.util.HashMap<String, IFile> mapFilePage = 
-    	new java.util.HashMap<String, IFile>();
 
 	/**
 	 * Action for double click in the view: show the file source code if possible
@@ -82,6 +79,7 @@ public class ScopeView extends ViewPart {
 	    	try {
 	    		System.out.println("openEditorOnFileStore:"+objFile.toString());
 	    		org.eclipse.ui.ide.IDE.openEditorOnFileStore(wbPage, objFile);
+	    		this.setEditorMarker(wbPage, iLineNumber);
 	    	} catch (PartInitException e) {
 	    		e.printStackTrace();
 	    		MessageDialog.openError(this.getSite().getShell(), "Error opening the file", e.getMessage());
@@ -90,33 +88,30 @@ public class ScopeView extends ViewPart {
 		}
 	}
 
-	private void setEditorMarker() {
-	       /*IFile file;
+	/**
+	 * Set the marker into the active editor
+	 * @param wbPage
+	 * @param iLineNumber
+	 */
+	private void setEditorMarker(org.eclipse.ui.IWorkbenchPage wbPage, int iLineNumber) {
+	       //IFile file;
 	       try{
-			   IMarker marker = file.createMarker("HPCViewer");
+	    	   IResource resource = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot();
+	    	   IMarker marker=resource.createMarker("HPCViewer"); 
 			   marker.setAttribute(IMarker.LINE_NUMBER, iLineNumber+1);
 			   marker.setAttribute(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_INFO));
 			   org.eclipse.ui.ide.IDE.gotoMarker(wbPage.getActiveEditor(), marker);
 	    	   
 	       } catch (org.eclipse.core.runtime.CoreException e) {
 	    	   e.printStackTrace();
-	       }*/
+	       }
 
 	}
-	ViewerSorter metricVS = new ViewerSorter() {
-		public int compare(Viewer viewer, Object e1, Object e2) {
-			Scope.Node s1 = (Scope.Node)e1;
-			Scope.Node s2 = (Scope.Node)e2;
-			MetricValue mv1, mv2;
-			
-			int col = sortMetric;
-			if (sortMetric < 0)
-				col = -1 * sortMetric;
-			mv1 = s1.getScope().getMetricValue(0);
-			return col;
-		}   
-	};
 	
+	/**
+	 * Modify the title of the view
+	 * @param sName
+	 */
 	public void setViewTitle(String sName) {
 		super.setPartName(sName);
 	}

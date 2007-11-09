@@ -55,7 +55,7 @@
          </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               icon="icons/Flatten.gif"
+               icon="icons/CallStackButton.gif"
                id="edu.rice.cs.hpc.actions.MergeExperiment"
                label="&amp;Merge experiments"
                menubarPath="experimentMenu/experimentGroup"
@@ -76,7 +76,7 @@
          </property>
          <property
                name="aboutImage"
-               value="icons/hpc-32x32.gif">
+               value="icons/hpcviewer128.gif">
          </property>
          <property
                name="aboutText"
@@ -84,7 +84,7 @@
          </property>
          <property
                name="windowImages"
-               value="icons/hpc-16x16.gif,icons/hpc-32x32.gif">
+               value="icons/hpc-16x16.gif,icons/hpc-32x32.gif,icons/hpcviewer64.gif,icons/hpcviewer128.gif">
          </property>
       </product>
    </extension>

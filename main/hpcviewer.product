@@ -4,7 +4,7 @@
 <product name="HPCViewer" id="edu.rice.cs.hpc.hpcviewer" application="edu.rice.cs.hpc" useFeatures="false">
 
    <aboutInfo>
-      <image path="/edu.rice.cs.hpc/icons/hpc-32x32.gif"/>
+      <image path="/edu.rice.cs.hpc/icons/hpcviewer128.gif"/>
       <text>
          HPCToolkit: HPCViewer
 (C) Copyright 2007, Rice University
@@ -17,8 +17,7 @@
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="/edu.rice.cs.hpc/icons/hpc-16x16.gif" i32="/edu.rice.cs.hpc/icons/hpc-32x32.gif"/>
-
+   <windowImages i16="/edu.rice.cs.hpc/icons/hpc-16x16.gif" i32="/edu.rice.cs.hpc/icons/hpc-32x32.gif" i64="/edu.rice.cs.hpc/icons/hpcviewer64.gif" i128="/edu.rice.cs.hpc/icons/hpcviewer128.gif"/>
 
    <launcher>
       <solaris/>

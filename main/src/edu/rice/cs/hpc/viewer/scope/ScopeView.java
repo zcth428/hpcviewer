@@ -157,9 +157,10 @@ public class ScopeView extends ViewPart {
             return treeViewer;
     }
 
-	public void createPartControl(Composite parent) {
-		// ----- coolbar
-		Composite top=new Composite(parent,SWT.NONE);
+
+    private void createCoolBar() {
+    	/*
+    	 * 		Composite top=new Composite(parent,SWT.NONE);
 		org.eclipse.swt.layout.RowLayout layout=new org.eclipse.swt.layout.RowLayout();
 		layout.type = SWT.VERTICAL;
 		top.setLayout(layout);
@@ -174,10 +175,16 @@ public class ScopeView extends ViewPart {
 		pt = item.computeSize(pt.x, pt.y);
 		//Now we set the size
 		item.setSize(pt);
+
+    	 * 
+    	 */
+    }
+    public void createPartControl(Composite parent) {
+		// ----- coolbar
 		// -----
 		
-        treeViewer = new TreeViewer(top, SWT.SINGLE|SWT.FULL_SELECTION);
-        //treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION);
+        //treeViewer = new TreeViewer(top, SWT.SINGLE|SWT.FULL_SELECTION);
+        treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION);
         treeViewer.setContentProvider(new ScopeTreeContentProvider());
         treeViewer.setLabelProvider(new ScopeTreeLabelProvider());
 //        treeViewer.setSorter(new MetricSorter());

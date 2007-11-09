@@ -40,11 +40,22 @@ public class ExperimentView {
 	}
 	
 	/**
+	 * A wrapper of loadExperiment() by adding some processing and generate the views
+	 * @param sFilename
+	 */
+	public void loadExperimentAndProcess(String sFilename) {
+		Experiment experiment = this.loadExperiment(sFilename);
+		if(experiment != null) {
+	        experiment.postprocess();
+	        this.generateView(experiment);
+		}
+	}
+	/**
 	 * Load an XML experiment file based on the filename (uncheck for its inexistence)
 	 * This method will display errors whenever encountered
 	 * @param sFilename: the xml experiment file
 	 */
-	public void loadExperiment(String sFilename) {
+	public Experiment loadExperiment(String sFilename) {
 	       Experiment experiment;
 	       org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
            
@@ -53,8 +64,6 @@ public class ExperimentView {
            {
            experiment = new Experiment(new java.io.File(sFilename));
            experiment.open();
-           experiment.postprocess();
-           this.generateView(experiment);
            
       } catch(java.io.FileNotFoundException fnf)
       {
@@ -81,7 +90,7 @@ public class ExperimentView {
            MessageDialog.openError(objShell, "File is invalid", "File has null pointer:"+sFilename + ":"+npe.getMessage());
            experiment = null;
       }
-
+      return experiment;
 	}
 	
 	/**
@@ -95,7 +104,7 @@ public class ExperimentView {
 	 * Generate multiple views for an experiment depending on the number of root scopes
 	 * @param experiment Experiment data
 	 */
-	private void generateView(Experiment experiment) {
+	public void generateView(Experiment experiment) {
 		// optimistic approach: hide all the visible views first
 		this.removeViews();
 		// next, we retrieve all children of the scope and display them in separate views

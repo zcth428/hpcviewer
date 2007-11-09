@@ -81,7 +81,7 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	    edu.rice.cs.hpc.analysis.ExperimentView data = new edu.rice.cs.hpc.analysis.ExperimentView(objPage);
 	    if(data != null) {
 	    	// data looks OK
-	    	data.loadExperiment(sFilename);
+	    	data.loadExperimentAndProcess(sFilename);
 	    	
 	     } else
 	    	 return; //TODO we need to throw an exception instead

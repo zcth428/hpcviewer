@@ -53,6 +53,15 @@
                toolbarPath="experimentGroup"
                tooltip="Load an XML experiment file ...">
          </action>
+         <action
+               class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
+               icon="icons/Flatten.gif"
+               id="edu.rice.cs.hpc.actions.MergeExperiment"
+               label="&amp;Merge experiments"
+               menubarPath="experimentMenu/experimentGroup"
+               toolbarPath="experimentGroup"
+               tooltip="Merge 2 experiment files">
+         </action>
       </actionSet>
    </extension>
 </plugin>

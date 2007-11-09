@@ -64,4 +64,28 @@
          </action>
       </actionSet>
    </extension>
+   <extension
+         id="hpcviewer"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="edu.rice.cs.hpc"
+            name="HPCViewer">
+         <property
+               name="appName"
+               value="HPCViewer">
+         </property>
+         <property
+               name="aboutImage"
+               value="icons/hpc-32x32.gif">
+         </property>
+         <property
+               name="aboutText"
+               value="HPCToolkit: HPCViewer&#x0A;(C) Copyright 2007, Rice University">
+         </property>
+         <property
+               name="windowImages"
+               value="icons/hpc-16x16.gif,icons/hpc-32x32.gif">
+         </property>
+      </product>
+   </extension>
 </plugin>

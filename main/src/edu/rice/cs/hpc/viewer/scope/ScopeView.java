@@ -31,7 +31,6 @@ public class ScopeView extends ViewPart {
     private final String ICONPATH="../../../../../../../icons/";
     private TreeViewer 	treeViewer;
     private Experiment 	myExperiment;
-    private int 		sortMetric;
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;
 
@@ -128,7 +127,6 @@ public class ScopeView extends ViewPart {
     public void setInput(Experiment ex, RootScope scope) {
     	myExperiment = ex;
     	myRootScope = scope;
-    	sortMetric = 1;
     	updateDisplay();
     	
     }
@@ -145,7 +143,6 @@ public class ScopeView extends ViewPart {
     		System.err.println("Experiment is not null");
     		//TODO myFocusScope = ex.getRootScope();
     	}
-    	sortMetric = 1;
     	updateDisplay();
     }
 

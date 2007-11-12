@@ -10,6 +10,7 @@ import org.eclipse.jface.resource.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.core.filesystem.EFS;
 
@@ -22,6 +23,7 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 import org.eclipse.core.resources.*;
 //laks
 import edu.rice.cs.hpc.data.experiment.pnode.*;
+import org.eclipse.jface.resource.ImageDescriptor;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -153,37 +155,86 @@ public class ScopeView extends ViewPart {
     }
 
 
-    private void createCoolBar() {
-    	/*
-    	 * 		Composite top=new Composite(parent,SWT.NONE);
-		org.eclipse.swt.layout.RowLayout layout=new org.eclipse.swt.layout.RowLayout();
-		layout.type = SWT.VERTICAL;
-		top.setLayout(layout);
-		CoolBar coolbar = new CoolBar(parent, SWT.NONE);
-		CoolItem item = new CoolItem(coolbar, SWT.NONE);
-		Button button = new Button(coolbar, SWT.PUSH);
-		button.setText("Cool One");
-		item.setControl(button);
-		//Compute the size by first computing the control's default size
-		org.eclipse.swt.graphics.Point pt = button.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		//Now we take into account the size of the cool item
-		pt = item.computeSize(pt.x, pt.y);
-		//Now we set the size
-		item.setSize(pt);
-
-    	 * 
-    	 */
+    /**
+     * Create a toolbar region on the top of the view. This toolbar will be used to host some buttons
+     * to make actions on the treeview.
+     * @param aParent
+     * @return Composite of the view. The tree should be based on this composite.
+     */
+    private Composite createCoolBar(Composite aParent) {
+    	// make the parent with grid layout
+    	org.eclipse.swt.layout.GridLayout grid = new org.eclipse.swt.layout.GridLayout(1,false);
+    	aParent.setLayout(grid);
+    	// prepare the toolbar
+    	org.eclipse.swt.widgets.ToolBar toolbar = new org.eclipse.swt.widgets.ToolBar(aParent, SWT.FLAT);
+    	
+    	// ------------- prepare the items
+    	// flatten
+    	org.eclipse.swt.widgets.ToolItem tiFlatten = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	tiFlatten.setToolTipText("Flatten the node");
+    	ImageDescriptor imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
+    	tiFlatten.setImage(imgDesc.createImage());
+    	
+    	// unflatten
+    	org.eclipse.swt.widgets.ToolItem tiUnFlatten = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	tiUnFlatten.setToolTipText("Unflatten the node");
+    	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
+    	tiUnFlatten.setImage(imgDesc.createImage());
+    	
+    	// zoom in
+    	org.eclipse.swt.widgets.ToolItem tiZoomin = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	tiZoomin.setToolTipText("Zoom-in");
+    	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom in large.gif");
+    	tiZoomin.setImage(imgDesc.createImage());
+    	tiZoomin.addSelectionListener(new SelectionAdapter() {
+      	  	public void widgetSelected(SelectionEvent e) {
+				ISelection sel = treeViewer.getSelection();
+				if (!(sel instanceof StructuredSelection))
+					return;
+				Object o = ((StructuredSelection)sel).getFirstElement();
+				if (!(o instanceof Scope.Node))
+					return;
+				treeViewer.setInput(o);
+				treeViewer.refresh();
+      	  	}
+      	});
+    	
+    	// zoom out
+    	org.eclipse.swt.widgets.ToolItem tiZoomout = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	tiZoomout.setToolTipText("Zoom-out");
+    	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
+    	tiZoomout.setImage(imgDesc.createImage());
+    	tiZoomout.addSelectionListener(new SelectionAdapter() {
+    	  public void widgetSelected(SelectionEvent e) {
+    		Object o = treeViewer.getInput();
+			if (!(o instanceof Scope.Node))
+				return;
+			Scope.Node child = (Scope.Node) o;
+			Scope.Node parent = (Scope.Node)child.getParent();
+			if (parent == null)
+				return;
+			treeViewer.setInput( parent );
+			treeViewer.refresh();
+    	  }
+    	});
+    	
+	    return aParent;
     }
-    public void createPartControl(Composite parent) {
+    public void createPartControl(Composite aParent) {
 		// ----- coolbar
+    	Composite parent = this.createCoolBar(aParent);
+
+    	/*
+        org.eclipse.ui.dialogs.PatternFilter filter = new org.eclipse.ui.dialogs.PatternFilter();
+        org.eclipse.ui.dialogs.FilteredTree filterTree = new org.eclipse.ui.dialogs.FilteredTree(parent,SWT.MULTI
+                | SWT.H_SCROLL | SWT.V_SCROLL, filter);
+        treeViewer = filterTree.getViewer();
+       */
+        //    	Composite parent = this.createCoolBar(aParent);
 		// -----
-		
-        //treeViewer = new TreeViewer(top, SWT.SINGLE|SWT.FULL_SELECTION);
-        treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION);
+        treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION | SWT.BORDER);
         treeViewer.setContentProvider(new ScopeTreeContentProvider());
         treeViewer.setLabelProvider(new ScopeTreeLabelProvider());
-//        treeViewer.setSorter(new MetricSorter());
-//        treeViewer.setSorter(metricVS);
         
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
@@ -191,17 +242,20 @@ public class ScopeView extends ViewPart {
         TreeColumn tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, 0);
         tmp.setText("Scope");
         tmp.setWidth(200); //TODO dynamic size
- 
+
+        //-----------------
+        // Laks 11.11.07: need this to expand the tree for all view
+        org.eclipse.swt.layout.GridData data = new org.eclipse.swt.layout.GridData(GridData.FILL_BOTH);
+        treeViewer.getTree().setLayoutData(data);
+        //-----------------
+
         treeViewer.setInput(null);
         
-		//TODO selections
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
 				
-        //TODO treeViewer.addDoubleClickListener(null); maybe zoom?
 		treeViewer.addDoubleClickListener(dblListener);
-
-		makeActions();
+		//makeActions();
 	}
 	
 	

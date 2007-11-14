@@ -2,28 +2,24 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.resources.*;
+import org.eclipse.jface.resource.ImageDescriptor;
+//import org.eclipse.swt.widgets.CoolBar;
+//import org.eclipse.swt.widgets.CoolItem;
 
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.metric.*;
-//import edu.rice.cs.HPCVision.data.PNode.*;
-//import edu.rice.cs.HPCVision.toolkits.HPCViewer.HPCViewerToolkit;
-import org.eclipse.core.resources.*;
-//laks
 import edu.rice.cs.hpc.data.experiment.pnode.*;
-import org.eclipse.jface.resource.ImageDescriptor;
+import edu.rice.cs.hpc.viewer.scope.ScopeTreeFilter;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -33,6 +29,8 @@ public class ScopeView extends ViewPart {
     private Experiment 	myExperiment;
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;
+    
+    private ScopeTreeFilter treeFilter;
 
 	/**
 	 * Action for double click in the view: show the file source code if possible
@@ -126,9 +124,9 @@ public class ScopeView extends ViewPart {
      */
     public void setInput(Experiment ex, RootScope scope) {
     	myExperiment = ex;
-    	myRootScope = scope;
+    	myRootScope = scope; //.getParentScope(); // try to get the aggregate value
     	updateDisplay();
-    	
+    	this.treeFilter = new ScopeTreeFilter(ex);
     }
     
     /**
@@ -162,24 +160,42 @@ public class ScopeView extends ViewPart {
     	// make the parent with grid layout
     	org.eclipse.swt.layout.GridLayout grid = new org.eclipse.swt.layout.GridLayout(1,false);
     	aParent.setLayout(grid);
+    	CoolBar coolBar = new CoolBar(aParent, SWT.FLAT);
+        org.eclipse.swt.layout.GridData data = new org.eclipse.swt.layout.GridData(GridData.FILL_HORIZONTAL);
+    	coolBar.setLayoutData(data);
     	// prepare the toolbar
-    	org.eclipse.swt.widgets.ToolBar toolbar = new org.eclipse.swt.widgets.ToolBar(aParent, SWT.FLAT);
+    	org.eclipse.swt.widgets.ToolBar toolbar = new ToolBar(coolBar, SWT.FLAT);
     	
     	// ------------- prepare the items
     	// flatten
-    	org.eclipse.swt.widgets.ToolItem tiFlatten = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	org.eclipse.swt.widgets.ToolItem tiFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiFlatten.setToolTipText("Flatten the node");
     	ImageDescriptor imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
     	tiFlatten.setImage(imgDesc.createImage());
+    	tiFlatten.addSelectionListener(new SelectionAdapter() {
+      	  	public void widgetSelected(SelectionEvent e) {
+				ISelection sel = treeViewer.getSelection();
+				if (!(sel instanceof StructuredSelection))
+					return;
+				Object o = ((StructuredSelection)sel).getFirstElement();
+				if (!(o instanceof Scope.Node))
+					return;
+				Scope.Node node = (Scope.Node) o;
+				treeFilter.flattenView(node, 1);
+				//node.setFlattenCount(1);
+				treeViewer.setInput(node);
+				treeViewer.refresh();
+      	  	}
+      	});
     	
     	// unflatten
-    	org.eclipse.swt.widgets.ToolItem tiUnFlatten = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	org.eclipse.swt.widgets.ToolItem tiUnFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiUnFlatten.setToolTipText("Unflatten the node");
     	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
     	tiUnFlatten.setImage(imgDesc.createImage());
     	
     	// zoom in
-    	org.eclipse.swt.widgets.ToolItem tiZoomin = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	org.eclipse.swt.widgets.ToolItem tiZoomin = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomin.setToolTipText("Zoom-in");
     	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom in large.gif");
     	tiZoomin.setImage(imgDesc.createImage());
@@ -197,7 +213,7 @@ public class ScopeView extends ViewPart {
       	});
     	
     	// zoom out
-    	org.eclipse.swt.widgets.ToolItem tiZoomout = new org.eclipse.swt.widgets.ToolItem(toolbar, SWT.PUSH);
+    	org.eclipse.swt.widgets.ToolItem tiZoomout = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomout.setToolTipText("Zoom-out");
     	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
     	tiZoomout.setImage(imgDesc.createImage());
@@ -215,19 +231,28 @@ public class ScopeView extends ViewPart {
     	  }
     	});
     	
+    	// set the coolitem
+    	this.createCoolItem(coolBar, toolbar);
+    	
 	    return aParent;
     }
+    
+    private void createCoolItem(CoolBar coolBar, ToolBar toolBar) {
+    	CoolItem coolItem = new CoolItem(coolBar, SWT.NULL);
+    	coolItem.setControl(toolBar);
+    	org.eclipse.swt.graphics.Point size =
+    		toolBar.computeSize( SWT.DEFAULT,
+    	                           SWT.DEFAULT);
+    	org.eclipse.swt.graphics.Point coolSize = coolItem.computeSize (size.x, size.y);
+    	coolItem.setSize(coolSize);    	
+    }
+    /**
+     * Create the content of the view
+     */
     public void createPartControl(Composite aParent) {
 		// ----- coolbar
     	Composite parent = this.createCoolBar(aParent);
 
-    	/*
-        org.eclipse.ui.dialogs.PatternFilter filter = new org.eclipse.ui.dialogs.PatternFilter();
-        org.eclipse.ui.dialogs.FilteredTree filterTree = new org.eclipse.ui.dialogs.FilteredTree(parent,SWT.MULTI
-                | SWT.H_SCROLL | SWT.V_SCROLL, filter);
-        treeViewer = filterTree.getViewer();
-       */
-        //    	Composite parent = this.createCoolBar(aParent);
 		// -----
         treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION | SWT.BORDER);
         treeViewer.setContentProvider(new ScopeTreeContentProvider());
@@ -256,75 +281,9 @@ public class ScopeView extends ViewPart {
 	}
 	
 	
-	private void makeActions() {
-		// Flatten
-		Action aFlatten = new Action() {
-			public void run() {	}
-		};
-		aFlatten.setText("Flatten");
-		aFlatten.setToolTipText("Flatten");
-		aFlatten.setImageDescriptor(ImageDescriptor.createFromFile(
-				this.getClass(),
-				this.ICONPATH+"Flatten.gif"));
-
-		// Unflatten
-		Action aUnflatten = new Action() {
-			public void run() {}
-		};
-		aUnflatten.setText("Unflatten");
-		aUnflatten.setToolTipText("Unflatten");
-		aUnflatten.setImageDescriptor(ImageDescriptor.createFromFile(
-				this.getClass(),
-				this.ICONPATH+"Unflatten.gif"));
-
-		// Zoom In
-		Action aZoomIn = new Action() {
-			public void run() {
-				ISelection sel = treeViewer.getSelection();
-				if (!(sel instanceof StructuredSelection))
-					return;
-				Object o = ((StructuredSelection)sel).getFirstElement();
-				if (!(o instanceof Scope.Node))
-					return;
-				treeViewer.setInput(o);
-				treeViewer.refresh();
-			}
-		};
-		aZoomIn.setText("Zoom In");
-		aZoomIn.setToolTipText("Zoom In");
-		aZoomIn.setImageDescriptor(ImageDescriptor.createFromFile(
-				this.getClass(),
-				this.ICONPATH+"Zoom in large.gif"));
-				
-		// Zoom Out
-		Action aZoomOut = new Action() {
-			public void run() {
-				Object o = treeViewer.getInput();
-				if (!(o instanceof Scope.Node))
-					return;
-				Scope.Node child = (Scope.Node) o;
-				Scope.Node parent = (Scope.Node)child.getParent();
-				//Scope.Node parent = ((Scope.Node)o).getParent();
-				if (parent == null)
-					return;
-				treeViewer.setInput( parent );
-				treeViewer.refresh();
-			}
-		};
-		aZoomOut.setText("Zoom Out");
-		aZoomOut.setToolTipText("Zoom Out");
-		aZoomOut.setImageDescriptor(ImageDescriptor.createFromFile(
-				this.getClass(),
-				this.ICONPATH+"Zoom out large.gif"));
-
-		IActionBars bars = getViewSite().getActionBars();
-		IToolBarManager manager = bars.getToolBarManager();
-		manager.add(aFlatten);
-		manager.add(aUnflatten);
-		manager.add(aZoomIn);
-		manager.add(aZoomOut);
-	}
-	
+	/**
+	 * Update the content of the tree view
+	 */
 	private void updateDisplay() {
         if (myExperiment == null)
         	return;

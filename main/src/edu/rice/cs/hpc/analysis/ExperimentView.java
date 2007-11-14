@@ -109,8 +109,9 @@ public class ExperimentView {
 		this.removeViews();
 		// next, we retrieve all children of the scope and display them in separate views
 		ArrayList rootChildren = experiment.getRootScopeChildren();
-		this.listOfViews = new ScopeView[rootChildren.size()];
-		for(int k=0;rootChildren.size()>k;k++)
+		int nbChildren = rootChildren.size();
+		this.listOfViews = new ScopeView[nbChildren];
+		for(int k=0;nbChildren>k;k++)
 		{
 			RootScope child = (RootScope) rootChildren.get(k);
 			try {
@@ -122,7 +123,10 @@ public class ExperimentView {
 				else
 					// first view: usually already created by default by the perspective
 					objView = (ScopeView) this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
-				objView.setInput(experiment, child);		// update the data content
+				if(nbChildren>1)
+					objView.setInput(experiment, child);		// update the data content
+				else
+					objView.setInput(experiment, (RootScope)experiment.getRootScope());
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
 				this.listOfViews[k] = objView;
 			} catch (org.eclipse.ui.PartInitException e) {

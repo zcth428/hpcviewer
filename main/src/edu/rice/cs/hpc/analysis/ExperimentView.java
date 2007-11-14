@@ -108,7 +108,7 @@ public class ExperimentView {
 		// optimistic approach: hide all the visible views first
 		this.removeViews();
 		// next, we retrieve all children of the scope and display them in separate views
-		ArrayList rootChildren = experiment.getRootScopeChildren();
+		ArrayList<RootScope> rootChildren = (ArrayList<RootScope>)experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.size();
 		this.listOfViews = new ScopeView[nbChildren];
 		for(int k=0;nbChildren>k;k++)
@@ -123,9 +123,14 @@ public class ExperimentView {
 				else
 					// first view: usually already created by default by the perspective
 					objView = (ScopeView) this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
-				if(nbChildren>1)
-					objView.setInput(experiment, child);		// update the data content
-				else
+				// ATTENTION: for unknown reason, calltree will not display the aggregate values when using the child
+				// therefore, we need to create a dummy root then attach it to the children
+				// TODO: This should be fix in the Scope class in the future
+				if(nbChildren>1) {
+					RootScope newRoot = (RootScope)child.getParentScope().duplicate();
+					newRoot.addSubscope(child);
+					objView.setInput(experiment, newRoot);		// update the data content
+				} else
 					objView.setInput(experiment, (RootScope)experiment.getRootScope());
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
 				this.listOfViews[k] = objView;

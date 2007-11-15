@@ -15,7 +15,6 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     	Scope.Node parent = ((Scope.Node) parentElement);
     	int iChildren = parent.getChildCount();
     	Scope.Node []children = new Scope.Node[iChildren];
-    	System.out.println(this.getClass() + "/"+iChildren+":"+parent.getScope().getShortName());
     	for(int i=0;i<iChildren;i++) {
     		children[i] = (Scope.Node)parent.getChildAt(i);
     	}

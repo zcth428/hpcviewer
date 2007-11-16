@@ -303,12 +303,14 @@ public class ScopeView extends ViewPart {
             String[] titles = new String[myExperiment.getMetricCount()+1];
             titles[0] = "Scope";
             TreeColumn tmp;
+            edu.rice.cs.hpc.viewer.Icons icon = new edu.rice.cs.hpc.viewer.Icons();
         	for (int i=0; i<myExperiment.getMetricCount(); i++)
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();
         		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);
         		tmp.setText(titles[i+1]);
         		tmp.setWidth(120); //TODO dynamic size
+        		tmp.setImage(icon.imgCallTo);
         		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1);
         		
         	}

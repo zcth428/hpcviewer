@@ -54,6 +54,20 @@ public class Icons {
 		imgHPCbig = this.imdHPCbig.createImage();
 	}
 	
+	public void disposeIcon() {
+		try {
+			imgCallFrom.dispose();
+			imgCallTo.dispose();
+			imgZoomIn.dispose();
+			imgZoomOut.dispose();
+			imgFlatten.dispose();
+			imgUnFlatten.dispose();
+			imgHPC.dispose();
+			imgHPCbig.dispose();
+		} catch (java.lang.Exception e) {
+			e.printStackTrace();
+		}
+	}
 	static public Icons getInstance() {
 		if (Icons.__singleton == null) {
 			Icons.__singleton = new Icons();
@@ -64,7 +78,7 @@ public class Icons {
 	
 	static public void dispose() {
 		if (Icons.__singleton != null) {
-			
+			Icons.__singleton.disposeIcon();
 		}
 		
 	}

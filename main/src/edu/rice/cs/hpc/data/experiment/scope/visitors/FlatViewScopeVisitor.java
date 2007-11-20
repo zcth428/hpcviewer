@@ -188,11 +188,11 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		int indent = 0;
 		while ((unique instanceof ProcedureScope) && (((ProcedureScope) unique).isAlien())) {
 		    Scope parent = unique.getParentScope();
-		    System.err.println("code = " + code);
+		    //System.err.println("code = " + code);
 		    code ^= parent.hashCode();
 		    int i = 0;
-		    for (i = 0; i < indent; i++) System.err.print(" "); 
-		    System.err.println("adjusting hash code by " + parent.hashCode());
+		    //for (i = 0; i < indent; i++) System.err.print(" "); 
+		    //System.err.println("adjusting hash code by " + parent.hashCode());
 		    indent++;
 		    unique = parent;
 		}

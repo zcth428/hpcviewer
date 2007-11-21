@@ -181,10 +181,14 @@ public class ScopeView extends ViewPart {
 				if (!(o instanceof Scope.Node))
 					return;
 				Scope.Node node = (Scope.Node) o;
-				treeFilter.flattenView(node, 1);
+				Scope.Node nodeFlatten = node.tryFlatten();
+				treeViewer.setInput(nodeFlatten);
+				//Scope scope = (Scope)node.getUserObject();
+				/*treeFilter.flattenView(node, 1);
 				//node.setFlattenCount(1);
 				treeViewer.setInput(node);
 				treeViewer.refresh();
+				*/
       	  	}
       	});
     	
@@ -193,6 +197,30 @@ public class ScopeView extends ViewPart {
     	tiUnFlatten.setToolTipText("Unflatten the node");
     	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
     	tiUnFlatten.setImage(imgDesc.createImage());
+    	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
+      	  	public void widgetSelected(SelectionEvent e) {
+				ISelection sel = treeViewer.getSelection();
+				if (!(sel instanceof StructuredSelection))
+					return;
+				Object o = ((StructuredSelection)sel).getFirstElement();
+				if (!(o instanceof Scope.Node))
+					return;
+				Scope.Node node = (Scope.Node) o;
+				Scope.Node nodeUnFlatten = node.tryUnFlatten();
+				treeViewer.setInput(nodeUnFlatten);
+				/*ISelection sel = treeViewer.getSelection();
+				if (!(sel instanceof StructuredSelection))
+					return;
+				Object o = ((StructuredSelection)sel).getFirstElement();
+				if (!(o instanceof Scope.Node))
+					return;
+				Scope.Node node = (Scope.Node) o;
+				treeFilter.unflattenView(node, 1);
+				treeViewer.setInput(node);
+				treeViewer.refresh();
+				*/
+      	  	}    		
+    	});
     	
     	// zoom in
     	org.eclipse.swt.widgets.ToolItem tiZoomin = new ToolItem(toolbar, SWT.PUSH);
@@ -416,8 +444,8 @@ public class ScopeView extends ViewPart {
 					MetricValue mv1 = node1.getScope().getMetricValue(metric);
 					MetricValue mv2 = node2.getScope().getMetricValue(metric);
 					
-					if (mv1.getValue()>mv2.getValue()) return 1;
-					if (mv1.getValue()<mv2.getValue()) return -1;
+					if (mv1.getValue()>mv2.getValue()) return -1;
+					if (mv1.getValue()<mv2.getValue()) return 1;
 				}
 			}
 			return 0;

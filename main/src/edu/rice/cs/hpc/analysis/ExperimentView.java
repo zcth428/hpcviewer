@@ -35,8 +35,6 @@ public class ExperimentView {
 	 */
 	public ExperimentView(){
 		objPage = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		//objView = (edu.rice.cs.hpc.viewer.scope.ScopeView)org.eclipse.ui.PlatformUI.getWorkbench().
-		//	getActiveWorkbenchWindow().getActivePage().findView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
 	}
 	
 	/**

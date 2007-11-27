@@ -244,6 +244,8 @@ public class ScopeView extends ViewPart {
     	org.eclipse.swt.widgets.ToolItem tiZoomout = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomout.setToolTipText("Zoom-out");
     	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
+    	// debugging purpose for RCP: check if this is done correctly
+    	System.err.println(this.getClass()+" image:"+imgDesc);
     	tiZoomout.setImage(imgDesc.createImage());
     	tiZoomout.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
@@ -265,6 +267,11 @@ public class ScopeView extends ViewPart {
 	    return aParent;
     }
     
+    /**
+     * Creating an item for the existing coolbar
+     * @param coolBar
+     * @param toolBar
+     */
     private void createCoolItem(CoolBar coolBar, ToolBar toolBar) {
     	CoolItem coolItem = new CoolItem(coolBar, SWT.NULL);
     	coolItem.setControl(toolBar);
@@ -338,7 +345,8 @@ public class ScopeView extends ViewPart {
         		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);
         		tmp.setText(titles[i+1]);
         		tmp.setWidth(120); //TODO dynamic size
-        		tmp.setImage(icon.imgCallTo);
+        		//tmp.setImage(icon.imgCallTo);
+        		//tmp.pack();
         		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1);
         		
         	}

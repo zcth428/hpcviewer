@@ -24,13 +24,10 @@ import edu.rice.cs.hpc.viewer.scope.ScopeTreeFilter;
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
 
-    private final String ICONPATH="../../../../../../../icons/";
     private TreeViewer 	treeViewer;
     private Experiment 	myExperiment;
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;
-    
-    private ScopeTreeFilter treeFilter;
 
 	/**
 	 * Action for double click in the view: show the file source code if possible
@@ -126,7 +123,6 @@ public class ScopeView extends ViewPart {
     	myExperiment = ex;
     	myRootScope = scope; //.getParentScope(); // try to get the aggregate value
     	updateDisplay();
-    	this.treeFilter = new ScopeTreeFilter(ex);
     }
     
     /**
@@ -165,13 +161,13 @@ public class ScopeView extends ViewPart {
     	coolBar.setLayoutData(data);
     	// prepare the toolbar
     	org.eclipse.swt.widgets.ToolBar toolbar = new ToolBar(coolBar, SWT.FLAT);
+    	edu.rice.cs.hpc.viewer.Icons iconsCollection = edu.rice.cs.hpc.viewer.Icons.getInstance();
     	
     	// ------------- prepare the items
     	// flatten
     	org.eclipse.swt.widgets.ToolItem tiFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiFlatten.setToolTipText("Flatten the node");
-    	ImageDescriptor imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
-    	tiFlatten.setImage(imgDesc.createImage());
+    	tiFlatten.setImage(iconsCollection.imgFlatten);
     	tiFlatten.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
 				ISelection sel = treeViewer.getSelection();
@@ -195,8 +191,7 @@ public class ScopeView extends ViewPart {
     	// unflatten
     	org.eclipse.swt.widgets.ToolItem tiUnFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiUnFlatten.setToolTipText("Unflatten the node");
-    	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
-    	tiUnFlatten.setImage(imgDesc.createImage());
+    	tiUnFlatten.setImage(iconsCollection.imgUnFlatten);
     	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
       	  	public void widgetSelected(SelectionEvent e) {
 				ISelection sel = treeViewer.getSelection();
@@ -225,8 +220,7 @@ public class ScopeView extends ViewPart {
     	// zoom in
     	org.eclipse.swt.widgets.ToolItem tiZoomin = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomin.setToolTipText("Zoom-in");
-    	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom in large.gif");
-    	tiZoomin.setImage(imgDesc.createImage());
+    	tiZoomin.setImage(iconsCollection.imgZoomIn);
     	tiZoomin.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
 				ISelection sel = treeViewer.getSelection();
@@ -243,10 +237,7 @@ public class ScopeView extends ViewPart {
     	// zoom out
     	org.eclipse.swt.widgets.ToolItem tiZoomout = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomout.setToolTipText("Zoom-out");
-    	imgDesc = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
-    	// debugging purpose for RCP: check if this is done correctly
-    	System.err.println(this.getClass()+" image:"+imgDesc);
-    	tiZoomout.setImage(imgDesc.createImage());
+    	tiZoomout.setImage(iconsCollection.imgZoomOut);
     	tiZoomout.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
     		Object o = treeViewer.getInput();

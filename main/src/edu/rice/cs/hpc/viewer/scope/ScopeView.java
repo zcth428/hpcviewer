@@ -10,7 +10,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.core.resources.*;
-import org.eclipse.jface.resource.ImageDescriptor;
 //import org.eclipse.swt.widgets.CoolBar;
 //import org.eclipse.swt.widgets.CoolItem;
 
@@ -19,7 +18,6 @@ import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.pnode.*;
-import edu.rice.cs.hpc.viewer.scope.ScopeTreeFilter;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -161,7 +159,7 @@ public class ScopeView extends ViewPart {
     	coolBar.setLayoutData(data);
     	// prepare the toolbar
     	org.eclipse.swt.widgets.ToolBar toolbar = new ToolBar(coolBar, SWT.FLAT);
-    	edu.rice.cs.hpc.viewer.Icons iconsCollection = edu.rice.cs.hpc.viewer.Icons.getInstance();
+    	edu.rice.cs.hpc.viewer.resources.Icons iconsCollection = edu.rice.cs.hpc.viewer.resources.Icons.getInstance();
     	
     	// ------------- prepare the items
     	// flatten
@@ -329,7 +327,7 @@ public class ScopeView extends ViewPart {
             String[] titles = new String[myExperiment.getMetricCount()+1];
             titles[0] = "Scope";
             TreeColumn tmp;
-            edu.rice.cs.hpc.viewer.Icons icon = new edu.rice.cs.hpc.viewer.Icons();
+            edu.rice.cs.hpc.viewer.resources.Icons icon = new edu.rice.cs.hpc.viewer.resources.Icons();
         	for (int i=0; i<myExperiment.getMetricCount(); i++)
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();

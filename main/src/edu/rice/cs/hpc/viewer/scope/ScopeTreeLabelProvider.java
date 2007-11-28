@@ -1,35 +1,23 @@
 package edu.rice.cs.hpc.viewer.scope;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.*;
 
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
-import edu.rice.cs.hpc.data.experiment.pnode.*;;
+import edu.rice.cs.hpc.data.experiment.pnode.*;
+import edu.rice.cs.hpc.viewer.resources.Icons;
 
 public class ScopeTreeLabelProvider implements ITableLabelProvider {
 	private Metric[] metrics;
-//	private PNode[] pnodes;
-	// Laks: create image descriptor for the tree
-	final private org.eclipse.jface.resource.ImageDescriptor imgCALL_FROM = ImageDescriptor.createFromFile(
-			this.getClass(),
-			"../../../../../../../icons/"+"CallFrom.gif");
-	final private org.eclipse.jface.resource.ImageDescriptor imgCALL_TO = ImageDescriptor.createFromFile(
-			this.getClass(),
-			"../../../../../../../icons/"+"CallTo.gif");
-	// Laks: create the cache image.
-	// TODO: Need to dispose images once unused !
-	private Image imgCallFrom = this.imgCALL_FROM.createImage();
-	private Image imgCallTo = this.imgCALL_TO.createImage();
+	final private Icons iconCollection = Icons.getInstance();
 	
 	public void setMetrics(Metric[] newMetrics) {
 		metrics = newMetrics;
 	}
 	
 	public void setPNodes(PNode[] newPNodes) {
-//		pnodes = newPNodes;
 	}
 	
 	public Image getColumnImage(Object element, int col) {
@@ -40,9 +28,9 @@ public class ScopeTreeLabelProvider implements ITableLabelProvider {
 				Scope scope = node.getScope();
 				if (scope instanceof edu.rice.cs.hpc.data.experiment.scope.CallSiteScope) {
 					// call site
-					return this.imgCALL_TO.createImage();
+					return this.iconCollection.imgCallTo;
 				} else if (scope instanceof edu.rice.cs.hpc.data.experiment.scope.ProcedureScope) {
-					return this.imgCallFrom;
+					return this.iconCollection.imgCallFrom;
 				}
 			}
 		}
@@ -87,11 +75,4 @@ public class ScopeTreeLabelProvider implements ITableLabelProvider {
 		// Do nothing
 	}
 	
-	// Since we use image class, we need to dispose the resource once we don't need it
-	// For unknown reason Java 1.5 or SWT does not free the resource (why ????)
-	protected void finalize() throws Throwable{
-		if (this.imgCallFrom != null)this.imgCallFrom.dispose();
-		if (this.imgCallTo != null)this.imgCallTo.dispose();
-		super.finalize();
-	}
 }

@@ -333,9 +333,9 @@ public class ScopeView extends ViewPart {
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();
         		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);
         		tmp.setText(titles[i+1]);
-        		tmp.setWidth(120); //TODO dynamic size
+        		//tmp.setWidth(120); //TODO dynamic size
         		//tmp.setImage(icon.imgCallTo);
-        		//tmp.pack();
+        		tmp.pack();
         		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1);
         		
         	}

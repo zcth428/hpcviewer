@@ -55,7 +55,7 @@
          </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               icon="icons/CallStackButton.gif"
+               icon="icons/hpc-merged-16x16.png"
                id="edu.rice.cs.hpc.actions.MergeExperiment"
                label="&amp;Merge experiments"
                menubarPath="experimentMenu/experimentGroup"

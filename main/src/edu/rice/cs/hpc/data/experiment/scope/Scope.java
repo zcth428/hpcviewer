@@ -73,7 +73,6 @@ protected boolean stop;
 // Laks 11.07.07: we need a pointer to the Metric of this scope
 protected Metric metricScope;
 
-
 //////////////////////////////////////////////////////////////////////////
 //	PUBLIC CONSTANTS						//
 //////////////////////////////////////////////////////////////////////////
@@ -752,6 +751,9 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	// @SuppressWarnings("serial")
 	public static class Node extends DefaultMutableTreeNode
 	{
+		protected Scope.Node nodeFlatten;   // Laks: pointer to node for flatten
+		protected Scope.Node nodeUnflatten; // Laks: pointer to node for unflatten
+		protected int iLevel;				// Laks: can be obtained too by a parent class method
 
 		/** Used by <code>ScopeTreeFilter</code>.
 			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
@@ -827,5 +829,7 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 			this.userObject = o;
 		}
 				
+		
 	};
+	
 }

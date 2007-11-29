@@ -10,6 +10,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.core.resources.*;
+
 //import org.eclipse.swt.widgets.CoolBar;
 //import org.eclipse.swt.widgets.CoolItem;
 
@@ -278,7 +279,8 @@ public class ScopeView extends ViewPart {
     	Composite parent = this.createCoolBar(aParent);
 
 		// -----
-        treeViewer = new TreeViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION | SWT.BORDER);
+    	treeViewer = new TreeViewer(parent);
+        //treeViewer = new CommonViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION | SWT.BORDER);
         treeViewer.setContentProvider(new ScopeTreeContentProvider());
         treeViewer.setLabelProvider(new ScopeTreeLabelProvider());
         
@@ -301,6 +303,20 @@ public class ScopeView extends ViewPart {
 		this.getSite().setSelectionProvider(treeViewer);
 				
 		treeViewer.addDoubleClickListener(dblListener);
+		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
+			public void selectionChanged(SelectionChangedEvent event)
+		      {
+		        IStructuredSelection selection =
+		          (IStructuredSelection) event.getSelection();
+
+		        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
+		        int nbChildren = nodeSelected.getChildCount();
+		        System.err.println(this.getClass()+"->"+nodeSelected.getLevel()+" has "+nbChildren);
+		        /*for(int i=0;i<nbChildren;i++) {
+			        System.err.println("  " + ((Scope.Node)nodeSelected.getChildAt(i)).getScope().getShortName());		        	
+		        }*/
+		      }
+		});
 		//makeActions();
 	}
 	
@@ -333,7 +349,7 @@ public class ScopeView extends ViewPart {
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();
         		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);
         		tmp.setText(titles[i+1]);
-        		//tmp.setWidth(120); //TODO dynamic size
+        		tmp.setWidth(120); //TODO dynamic size
         		//tmp.setImage(icon.imgCallTo);
         		tmp.pack();
         		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1);

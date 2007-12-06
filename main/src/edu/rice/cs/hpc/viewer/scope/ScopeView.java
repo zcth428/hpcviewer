@@ -27,7 +27,7 @@ public class ScopeView extends ViewPart {
     private Experiment 	myExperiment;
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;
-
+    private ColumnViewerSorter sorterTreeColummn;
 	/**
 	 * Action for double click in the view: show the file source code if possible
 	 */
@@ -72,8 +72,8 @@ public class ScopeView extends ViewPart {
 	    		 return; // do we need this ?
 	    	}
 	    	try {
-	    		System.out.println("openEditorOnFileStore:"+objFile.toString());
-	    		org.eclipse.ui.ide.IDE.openEditorOnFileStore(wbPage, objFile);
+	    		IEditorPart objEditor = org.eclipse.ui.ide.IDE.openEditorOnFileStore(wbPage, objFile);
+	    		System.out.println(" ScopeView: " + objEditor.getClass());
 	    		this.setEditorMarker(wbPage, iLineNumber);
 	    	} catch (PartInitException e) {
 	    		e.printStackTrace();
@@ -176,14 +176,10 @@ public class ScopeView extends ViewPart {
 				if (!(o instanceof Scope.Node))
 					return;
 				Scope.Node node = (Scope.Node) o;
-				Scope.Node nodeFlatten = node.tryFlatten();
-				treeViewer.setInput(nodeFlatten);
-				//Scope scope = (Scope)node.getUserObject();
-				/*treeFilter.flattenView(node, 1);
-				//node.setFlattenCount(1);
-				treeViewer.setInput(node);
+				
+				//Scope.Node nodeFlatten = node.tryFlatten();
+				treeViewer.setInput(node.nodeFlatten);
 				treeViewer.refresh();
-				*/
       	  	}
       	});
     	
@@ -200,19 +196,10 @@ public class ScopeView extends ViewPart {
 				if (!(o instanceof Scope.Node))
 					return;
 				Scope.Node node = (Scope.Node) o;
-				Scope.Node nodeUnFlatten = node.tryUnFlatten();
-				treeViewer.setInput(nodeUnFlatten);
-				/*ISelection sel = treeViewer.getSelection();
-				if (!(sel instanceof StructuredSelection))
-					return;
-				Object o = ((StructuredSelection)sel).getFirstElement();
-				if (!(o instanceof Scope.Node))
-					return;
-				Scope.Node node = (Scope.Node) o;
-				treeFilter.unflattenView(node, 1);
-				treeViewer.setInput(node);
+				//Scope.Node nodeUnFlatten = node.tryUnFlatten();
+				treeViewer.setInput((Scope.Node)node.nodeUnflatten);
+				//treeViewer.setInput((Scope.Node)node.getParent());
 				treeViewer.refresh();
-				*/
       	  	}    		
     	});
     	
@@ -290,7 +277,8 @@ public class ScopeView extends ViewPart {
         TreeColumn tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, 0);
         tmp.setText("Scope");
         tmp.setWidth(200); //TODO dynamic size
-
+        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, tmp, null,0); 
+        
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view
         org.eclipse.swt.layout.GridData data = new org.eclipse.swt.layout.GridData(GridData.FILL_BOTH);
@@ -310,11 +298,10 @@ public class ScopeView extends ViewPart {
 		          (IStructuredSelection) event.getSelection();
 
 		        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
-		        int nbChildren = nodeSelected.getChildCount();
-		        System.err.println(this.getClass()+"->"+nodeSelected.getLevel()+" has "+nbChildren);
-		        /*for(int i=0;i<nbChildren;i++) {
-			        System.err.println("  " + ((Scope.Node)nodeSelected.getChildAt(i)).getScope().getShortName());		        	
-		        }*/
+		        if(nodeSelected != null) {
+			        int nbChildren = nodeSelected.getChildCount();
+			        System.err.println(this.getClass()+"->"+nodeSelected.getLevel()+" has "+nbChildren);
+		        }
 		      }
 		});
 		//makeActions();
@@ -335,24 +322,22 @@ public class ScopeView extends ViewPart {
         		this.treeViewer.getTree().getColumn(1).dispose();
         	}
         }
+        this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
         // dirty solution to update titles
-        new ColumnViewerSorter(this.treeViewer, this.treeViewer.getTree().getColumn(0), myExperiment.getMetric(0),0);
-
         {
             // Update metric title labels
             String[] titles = new String[myExperiment.getMetricCount()+1];
-            titles[0] = "Scope";
+            titles[0] = "Scope";	// unused element. Already defined
             TreeColumn tmp;
-            edu.rice.cs.hpc.viewer.resources.Icons icon = new edu.rice.cs.hpc.viewer.resources.Icons();
+            // add table column for each metric
         	for (int i=0; i<myExperiment.getMetricCount(); i++)
         	{
-        		titles[i+1] = myExperiment.getMetric(i).getDisplayName();
-        		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);
-        		tmp.setText(titles[i+1]);
+        		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
+        		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);	// add column
+        		tmp.setText(titles[i+1]);	// set the title
         		tmp.setWidth(120); //TODO dynamic size
-        		//tmp.setImage(icon.imgCallTo);
-        		tmp.pack();
-        		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1);
+        		tmp.pack();			// resize as much as possible
+        		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1); // sorting mechanism
         		
         	}
             treeViewer.setColumnProperties(titles);
@@ -366,13 +351,16 @@ public class ScopeView extends ViewPart {
         ((ScopeTreeLabelProvider)treeViewer.getLabelProvider()).
         		setPNodes(myPNodes);
 
-        // TODO Update scope focus
-        //treeViewer.getTree().showItem(myFocusScope.getTreeNode());
-        
         // Update root scope
         treeViewer.setInput(myRootScope.getTreeNode());
-        this.getSite().getShell().setText("HPCViewer:"+myExperiment.getName());
+        // update the window title
+        this.getSite().getShell().setText("HPCViewer: "+myExperiment.getName());
+        // refresh the content
         treeViewer.refresh();
+        
+        // generate flattening structure 
+        //((RootScope)this.myRootScope).generateFlatteningStructure();
+        ((RootScope)this.myRootScope).printFlattenNode();
 	}
 
     //------------------ sorting stuff
@@ -387,6 +375,20 @@ public class ScopeView extends ViewPart {
 		private int iColNumber;
 		private Metric metric;
 		
+		/**
+		 * Update the metric for this column
+		 * @param newMetric
+		 */
+		public void setMetric(Metric newMetric) {
+			this.metric = newMetric;
+		}
+		/**
+		 * Class to sort a column
+		 * @param viewer: the table tree
+		 * @param column: the column
+		 * @param newMetric: the metric
+		 * @param colNum: the position
+		 */
 		public ColumnViewerSorter(ColumnViewer viewer, TreeColumn column, Metric newMetric, int colNum) {
 			this.column = column;
 			this.iColNumber = colNum;
@@ -414,6 +416,11 @@ public class ScopeView extends ViewPart {
 			});
 		}
 		
+		/**
+		 * Sort the column according to the direction
+		 * @param sorter
+		 * @param direction
+		 */
 		public void setSorter(ColumnViewerSorter sorter, int direction) {
 			if( direction == NONE ) {
 				column.getParent().setSortColumn(null);
@@ -438,16 +445,26 @@ public class ScopeView extends ViewPart {
 			}
 		}
 
+		/**
+		 * general comparison for sorting
+		 */
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			return direction * doCompare(viewer, e1, e2);
 		}
 		
 		// laks: lazy comparison
+		/**
+		 * This method is to compare one object to another
+		 * Please implement this method in the child class if necessary
+		 */
 		protected int doCompare(Viewer viewer, Object e1, Object e2) {
 			if(e1 instanceof Scope.Node && e2 instanceof Scope.Node) {
 				Scope.Node node1 = (Scope.Node) e1;
 				Scope.Node node2 = (Scope.Node) e2;
-				
+
+				// dirty solution: if the column position is 0 then we sort
+				// according to its element name
+				// otherwise, sort according to the metric
 				if(this.iColNumber==0) {
 					String text1 = node1.getScope().getShortName();
 					String text2 = node2.getScope().getShortName();

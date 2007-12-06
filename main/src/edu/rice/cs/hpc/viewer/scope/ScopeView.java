@@ -10,6 +10,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.core.resources.*;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.Separator;
 
 //import org.eclipse.swt.widgets.CoolBar;
 //import org.eclipse.swt.widgets.CoolItem;
@@ -23,15 +28,20 @@ import edu.rice.cs.hpc.data.experiment.pnode.*;
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
 
-    private TreeViewer 	treeViewer;
-    private Experiment 	myExperiment;
+    private TreeViewer 	treeViewer;		  	// tree for the caller and callees
+    private TreeColumn []tcMetricColumns; 	// metric columns
+    private Experiment 	myExperiment;		// experiment data	
     private PNode[] 	myPNodes;
-    private Scope 		myRootScope;
+    private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;
-	/**
+	
+    //======================================================
+    // ................ ACTIONS ............................
+    //======================================================
+    /**
 	 * Action for double click in the view: show the file source code if possible
 	 */
-	IDoubleClickListener dblListener = new IDoubleClickListener() {
+	private IDoubleClickListener dblListener = new IDoubleClickListener() {
 		public void doubleClick(DoubleClickEvent event) {
 			if (!(event.getSelection() instanceof StructuredSelection))
 				return;
@@ -50,7 +60,7 @@ public class ScopeView extends ViewPart {
 			openFileEditor( sLongName, newFile.getName(), iLine );
 		}
 	};
-	
+
 	/**
 	 * Open Eclipse IDE editor for a given filename. 
 	 * Beware: for Eclipse 3.2, we need to create a "hidden" project of the file
@@ -104,47 +114,82 @@ public class ScopeView extends ViewPart {
 	}
 	
 	/**
-	 * Modify the title of the view
-	 * @param sName
+	 * Go deeper one level
 	 */
-	public void setViewTitle(String sName) {
-		super.setPartName(sName);
+	private void flattenNode() {
+		ISelection sel = treeViewer.getSelection();
+		if (!(sel instanceof StructuredSelection))
+			return;
+		Object o = ((StructuredSelection)sel).getFirstElement();
+		if (!(o instanceof Scope.Node))
+			return;
+		Scope.Node node = (Scope.Node) o;
+		
+		//Scope.Node nodeFlatten = node.tryFlatten();
+		treeViewer.setInput(node.nodeFlatten);
+		treeViewer.refresh();		
 	}
-    public void setFocus() {
-            treeViewer.getTree().setFocus();
-    }
-    
-    // laks: we need experiment and rootscope
-    /**
-     * Update the data input for Scope View, depending also on the scope
-     */
-    public void setInput(Experiment ex, RootScope scope) {
-    	myExperiment = ex;
-    	myRootScope = scope; //.getParentScope(); // try to get the aggregate value
-    	updateDisplay();
-    }
-    
-    /**
-     * Update the data view based on the XML experiment data
-     * @param ex
-     */
-    public void setInput(Experiment ex) {
-    	myExperiment = ex;
-    	if (ex != null) {
-    		//myPNodes = ex.getPNodes();
-    		myRootScope = ex.getRootScope();
-    		System.err.println("Experiment is not null");
-    		//TODO myFocusScope = ex.getRootScope();
-    	}
-    	updateDisplay();
-    }
+	
+	/**
+	 * go back one level
+	 */
+	private void unflattenNode() {
+		ISelection sel = treeViewer.getSelection();
+		if (!(sel instanceof StructuredSelection))
+			return;
+		Object o = ((StructuredSelection)sel).getFirstElement();
+		if (!(o instanceof Scope.Node))
+			return;
+		Scope.Node node = (Scope.Node) o;
+		//Scope.Node nodeUnFlatten = node.tryUnFlatten();
+		treeViewer.setInput((Scope.Node)node.nodeUnflatten);
+		//treeViewer.setInput((Scope.Node)node.getParent());
+		treeViewer.refresh();
+	}
+	
+	/**
+	 * Zoom-in the children
+	 */
+	private void zoomIn() {
+		ISelection sel = treeViewer.getSelection();
+		if (!(sel instanceof StructuredSelection))
+			return;
+		Object o = ((StructuredSelection)sel).getFirstElement();
+		if (!(o instanceof Scope.Node))
+			return;
+		treeViewer.setInput(o);
+		treeViewer.refresh();
+	}
+	
+	/**
+	 * Zoom-out the node
+	 */
+	private void zoomOut() {
+		Object o = treeViewer.getInput();
+		if (!(o instanceof Scope.Node))
+			return;
+		Scope.Node child = (Scope.Node) o;
+		Scope.Node parent = (Scope.Node)child.getParent();
+		if (parent == null)
+			return;
+		treeViewer.setInput( parent );
+		treeViewer.refresh();
+	}
+	
+	/**
+	 * Resize the columns automatically
+	 * ATT: Please call this method once the data has been populated
+	 */
+	private void resizeTableColumns() {
+        // resize the column according to the data size
+        for (int i=0; i<myExperiment.getMetricCount(); i++) {
+        	tcMetricColumns[i].pack();
+        }
+	}
 
-    public TreeViewer getTreeViewer()
-    {
-            return treeViewer;
-    }
-
-
+	//======================================================
+    // ................ GUI ............................
+    //======================================================
     /**
      * Create a toolbar region on the top of the view. This toolbar will be used to host some buttons
      * to make actions on the treeview.
@@ -169,17 +214,7 @@ public class ScopeView extends ViewPart {
     	tiFlatten.setImage(iconsCollection.imgFlatten);
     	tiFlatten.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
-				ISelection sel = treeViewer.getSelection();
-				if (!(sel instanceof StructuredSelection))
-					return;
-				Object o = ((StructuredSelection)sel).getFirstElement();
-				if (!(o instanceof Scope.Node))
-					return;
-				Scope.Node node = (Scope.Node) o;
-				
-				//Scope.Node nodeFlatten = node.tryFlatten();
-				treeViewer.setInput(node.nodeFlatten);
-				treeViewer.refresh();
+      	  		flattenNode();
       	  	}
       	});
     	
@@ -189,17 +224,7 @@ public class ScopeView extends ViewPart {
     	tiUnFlatten.setImage(iconsCollection.imgUnFlatten);
     	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
       	  	public void widgetSelected(SelectionEvent e) {
-				ISelection sel = treeViewer.getSelection();
-				if (!(sel instanceof StructuredSelection))
-					return;
-				Object o = ((StructuredSelection)sel).getFirstElement();
-				if (!(o instanceof Scope.Node))
-					return;
-				Scope.Node node = (Scope.Node) o;
-				//Scope.Node nodeUnFlatten = node.tryUnFlatten();
-				treeViewer.setInput((Scope.Node)node.nodeUnflatten);
-				//treeViewer.setInput((Scope.Node)node.getParent());
-				treeViewer.refresh();
+      	  	unflattenNode();
       	  	}    		
     	});
     	
@@ -209,14 +234,7 @@ public class ScopeView extends ViewPart {
     	tiZoomin.setImage(iconsCollection.imgZoomIn);
     	tiZoomin.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
-				ISelection sel = treeViewer.getSelection();
-				if (!(sel instanceof StructuredSelection))
-					return;
-				Object o = ((StructuredSelection)sel).getFirstElement();
-				if (!(o instanceof Scope.Node))
-					return;
-				treeViewer.setInput(o);
-				treeViewer.refresh();
+      	  	zoomIn();
       	  	}
       	});
     	
@@ -226,24 +244,27 @@ public class ScopeView extends ViewPart {
     	tiZoomout.setImage(iconsCollection.imgZoomOut);
     	tiZoomout.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
-    		Object o = treeViewer.getInput();
-			if (!(o instanceof Scope.Node))
-				return;
-			Scope.Node child = (Scope.Node) o;
-			Scope.Node parent = (Scope.Node)child.getParent();
-			if (parent == null)
-				return;
-			treeViewer.setInput( parent );
-			treeViewer.refresh();
+    		  zoomOut();
     	  }
     	});
     	
+    	org.eclipse.swt.widgets.ToolItem tiResize = new ToolItem(toolbar, SWT.PUSH);
+    	tiResize.setToolTipText("Resize columns width");
+    	tiResize.setImage(iconsCollection.imgResize);
+    	tiResize.addSelectionListener(new SelectionAdapter() {
+      	  public void widgetSelected(SelectionEvent e) {
+          	resizeTableColumns();
+      	  }
+      	});
     	// set the coolitem
     	this.createCoolItem(coolBar, toolbar);
     	
 	    return aParent;
     }
     
+    //======================================================
+    // ................ CREATION ............................
+    //======================================================
     /**
      * Creating an item for the existing coolbar
      * @param coolBar
@@ -257,6 +278,68 @@ public class ScopeView extends ViewPart {
     	                           SWT.DEFAULT);
     	org.eclipse.swt.graphics.Point coolSize = coolItem.computeSize (size.x, size.y);
     	coolItem.setSize(coolSize);    	
+    }
+    
+    /**
+     * Creating context menu manager
+     */
+    private void createContextMenu() {
+        // Create menu manager.
+    	MenuManager menuMgr = new MenuManager();
+        menuMgr.setRemoveAllWhenShown(true);
+        menuMgr.addMenuListener(new IMenuListener() {
+                public void menuAboutToShow(IMenuManager mgr) {
+                    if(isItemSelected())
+                    	fillContextMenu(mgr);
+                }
+        });
+        
+        // Create menu.
+        Menu menu = menuMgr.createContextMenu(this.treeViewer.getControl());
+        this.treeViewer.getControl().setMenu(menu);
+        
+        // Register menu for extension.
+        getSite().registerContextMenu(menuMgr, this.treeViewer);
+    }
+
+    /**
+     * Helper method to know if an item has been selected
+     * @return true if an item is selected, false otherwise
+     */
+    private boolean isItemSelected() {
+    	return (this.treeViewer.getTree().getSelectionCount() > 0);
+    }
+    /**
+     * Creating the context submenu for the view
+     * TODO Created only the line selected
+     * @param mgr
+     */
+    private void fillContextMenu(IMenuManager mgr) {
+        mgr.add(new org.eclipse.jface.action.Action("Flatten"){
+        	public void run() {
+        		flattenNode();
+        	}
+        });
+        mgr.add(new org.eclipse.jface.action.Action("Unflatten"){
+        	public void run() {
+        		unflattenNode();
+        	}
+        });
+        mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        mgr.add(new org.eclipse.jface.action.Action("Zoom-in"){
+        	public void run() {
+        		zoomIn();
+        	}
+        });
+        mgr.add(new org.eclipse.jface.action.Action("Zoom-out"){
+        	public void run() {
+        		zoomOut();
+        	}
+        });
+
+        //mgr.add(deleteItemAction);
+        mgr.add(new Separator());
+        //mgr.add(selectAllAction);
     }
     /**
      * Create the content of the view
@@ -284,6 +367,7 @@ public class ScopeView extends ViewPart {
         org.eclipse.swt.layout.GridData data = new org.eclipse.swt.layout.GridData(GridData.FILL_BOTH);
         treeViewer.getTree().setLayoutData(data);
         //-----------------
+        this.createContextMenu();
 
         treeViewer.setInput(null);
         
@@ -307,7 +391,34 @@ public class ScopeView extends ViewPart {
 		//makeActions();
 	}
 	
-	
+    //======================================================
+    // ................ UPDATE ............................
+    //======================================================
+    // laks: we need experiment and rootscope
+    /**
+     * Update the data input for Scope View, depending also on the scope
+     */
+    public void setInput(Experiment ex, RootScope scope) {
+    	myExperiment = ex;
+    	myRootScope = scope; //.getParentScope(); // try to get the aggregate value
+    	updateDisplay();
+    }
+    
+    /**
+     * Update the data view based on the XML experiment data
+     * @param ex
+     */
+    public void setInput(Experiment ex) {
+    	myExperiment = ex;
+    	if (ex != null) {
+    		//myPNodes = ex.getPNodes();
+    		myRootScope = ex.getRootScope();
+    		System.err.println("Experiment is not null");
+    		//TODO myFocusScope = ex.getRootScope();
+    	}
+    	updateDisplay();
+    }
+
 	/**
 	 * Update the content of the tree view
 	 */
@@ -324,20 +435,20 @@ public class ScopeView extends ViewPart {
         }
         this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
         // dirty solution to update titles
+        this.tcMetricColumns = new TreeColumn[myExperiment.getMetricCount()];
         {
             // Update metric title labels
             String[] titles = new String[myExperiment.getMetricCount()+1];
             titles[0] = "Scope";	// unused element. Already defined
-            TreeColumn tmp;
             // add table column for each metric
         	for (int i=0; i<myExperiment.getMetricCount(); i++)
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
-        		tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);	// add column
-        		tmp.setText(titles[i+1]);	// set the title
-        		tmp.setWidth(120); //TODO dynamic size
-        		tmp.pack();			// resize as much as possible
-        		new ColumnViewerSorter(this.treeViewer, tmp, myExperiment.getMetric(i),i+1); // sorting mechanism
+        		tcMetricColumns[i] = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);	// add column
+        		tcMetricColumns[i].setText(titles[i+1]);	// set the title
+        		tcMetricColumns[i].setWidth(120); //TODO dynamic size
+        		//tmp.pack();			// resize as much as possible
+        		new ColumnViewerSorter(this.treeViewer, tcMetricColumns[i], myExperiment.getMetric(i),i+1); // sorting mechanism
         		
         	}
             treeViewer.setColumnProperties(titles);
@@ -353,18 +464,22 @@ public class ScopeView extends ViewPart {
 
         // Update root scope
         treeViewer.setInput(myRootScope.getTreeNode());
+
         // update the window title
         this.getSite().getShell().setText("HPCViewer: "+myExperiment.getName());
+    	resizeTableColumns();
         // refresh the content
         treeViewer.refresh();
         
         // generate flattening structure 
         //((RootScope)this.myRootScope).generateFlatteningStructure();
-        ((RootScope)this.myRootScope).printFlattenNode();
+        //((RootScope)this.myRootScope).printFlattenNode();
 	}
 
-    //------------------ sorting stuff
-    
+    //======================================================
+    // ................ SORTING ............................
+    //======================================================
+
 	private static class ColumnViewerSorter extends ViewerComparator {
 		public static final int ASC = 1;
 		public static final int NONE = 0;
@@ -482,5 +597,19 @@ public class ScopeView extends ViewPart {
 		}
 	}
 
+    //======================================================
+    // ................ MISC ............................
+    //======================================================
+	/**
+	 * Modify the title of the view
+	 * @param sName
+	 */
+	public void setViewTitle(String sName) {
+		super.setPartName(sName);
+	}
+    public void setFocus() {
+            treeViewer.getTree().setFocus();
+    }
+    
 
 }

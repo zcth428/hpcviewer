@@ -15,6 +15,8 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.Action;
+import org.eclipse.ui.views.contentoutline.*;
 
 //import org.eclipse.swt.widgets.CoolBar;
 //import org.eclipse.swt.widgets.CoolItem;
@@ -38,6 +40,14 @@ public class ScopeView extends ViewPart {
     //======================================================
     // ................ ACTIONS ............................
     //======================================================
+    private String getFilename(Scope.Node node) {
+    	return node.getScope().getSourceFile().getName();
+    }
+    
+    private boolean isSourceCodeAvailable(Scope.Node node) {
+		return (node.getScope().getSourceFile() != SourceFile.NONE
+				|| node.getScope().getSourceFile().isAvailable());
+    }
     /**
 	 * Action for double click in the view: show the file source code if possible
 	 */
@@ -51,16 +61,29 @@ public class ScopeView extends ViewPart {
 			if (node.getScope().getSourceFile() == SourceFile.NONE
 				|| !node.getScope().getSourceFile().isAvailable())
 				return;
-			// get the complete file name
-			FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
-			String sLongName= newFile.getCompleteFilename();
-			System.out.println("Loading source file "+ ":"+ sLongName + "("+newFile.getName()+")");
-			// laks: try to show the editor
-			int iLine = node.getScope().getFirstLineNumber();
-			openFileEditor( sLongName, newFile.getName(), iLine );
+			displayFileEditor(node);
 		}
 	};
 
+	/**
+	 * Open and Display editor
+	 * @param node
+	 */
+	private void displayFileEditor(Scope.Node node) {
+		// get the complete file name
+		FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
+		if(newFile!=null) {
+			if(newFile.isAvailable()) {
+				String sLongName;
+				sLongName = newFile.getCompleteFilename();
+				int iLine = node.getScope().getFirstLineNumber();
+				openFileEditor( sLongName, newFile.getName(), iLine );
+			} else
+				System.out.println("Source file not available"+ ":"+ "("+newFile.getName()+")");
+			// laks: try to show the editor
+		} else
+			System.err.println("ScopeView-displayFileEditor:"+node.getScope().getShortName());
+	}
 	/**
 	 * Open Eclipse IDE editor for a given filename. 
 	 * Beware: for Eclipse 3.2, we need to create a "hidden" project of the file
@@ -83,7 +106,17 @@ public class ScopeView extends ViewPart {
 	    	}
 	    	try {
 	    		IEditorPart objEditor = org.eclipse.ui.ide.IDE.openEditorOnFileStore(wbPage, objFile);
-	    		System.out.println(" ScopeView: " + objEditor.getClass());
+	    		/*IContentOutlinePage outlinePage = (IContentOutlinePage) objEditor.getAdapter(IContentOutlinePage.class);
+	    		 if (outlinePage != null) {
+	    		    // editor wishes to contribute outlinePage to content outline view
+	    			 
+	 	    		IViewPart objOutlineView = wbPage.showView("org.eclipse.ui.views.ContentOutline");
+	 	    		wbPage.showView(this.ID);
+	 	    		this.setFocus();	 	    		
+	 	    		this.treeViewer.getTree().setFocus();
+	    		 }
+		    	System.out.println(" ScopeView: " + objEditor.getClass() + " outline: "+ outlinePage.getClass());
+		    	*/
 	    		this.setEditorMarker(wbPage, iLineNumber);
 	    	} catch (PartInitException e) {
 	    		e.printStackTrace();
@@ -309,37 +342,59 @@ public class ScopeView extends ViewPart {
     private boolean isItemSelected() {
     	return (this.treeViewer.getTree().getSelectionCount() > 0);
     }
+    
+    private Scope.Node getSelectedItem() {
+        TreeItem[] selection = this.treeViewer.getTree().getSelection();
+        return (Scope.Node)selection[0].getData();
+    }
     /**
      * Creating the context submenu for the view
      * TODO Created only the line selected
      * @param mgr
      */
     private void fillContextMenu(IMenuManager mgr) {
-        mgr.add(new org.eclipse.jface.action.Action("Flatten"){
+        mgr.add(new Action("Flatten"){
         	public void run() {
-        		flattenNode();
+        		zoomIn();
+        		//flattenNode();
         	}
         });
-        mgr.add(new org.eclipse.jface.action.Action("Unflatten"){
+        mgr.add(new Action("Unflatten"){
         	public void run() {
-        		unflattenNode();
+        		zoomOut();
+        		//unflattenNode();
         	}
         });
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        mgr.add(new org.eclipse.jface.action.Action("Zoom-in"){
+        mgr.add(new Action("Zoom-in"){
         	public void run() {
         		zoomIn();
         	}
         });
-        mgr.add(new org.eclipse.jface.action.Action("Zoom-out"){
+        mgr.add(new Action("Zoom-out"){
         	public void run() {
         		zoomOut();
         	}
         });
 
-        //mgr.add(deleteItemAction);
         mgr.add(new Separator());
-        //mgr.add(selectAllAction);
+        Scope.Node node = this.getSelectedItem();
+        if (this.isSourceCodeAvailable(node)) {
+        	System.out.println("Selected node:"+node.getScope().getShortName());
+            mgr.add(new ScopeViewTreeAction(this.getFilename(node), node){
+            	public void run() {
+            		displayFileEditor(this.nodeSelected);
+            	}
+            });
+        }
+    }
+    
+    private class ScopeViewTreeAction extends Action {
+    	protected Scope.Node nodeSelected;
+    	public ScopeViewTreeAction(String sTitle, Scope.Node nodeCurrent) {
+    		super(sTitle);
+    		this.nodeSelected = nodeCurrent;
+    	}
     }
     /**
      * Create the content of the view
@@ -383,8 +438,8 @@ public class ScopeView extends ViewPart {
 
 		        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
 		        if(nodeSelected != null) {
-			        int nbChildren = nodeSelected.getChildCount();
-			        System.err.println(this.getClass()+"->"+nodeSelected.getLevel()+" has "+nbChildren);
+			        //int nbChildren = nodeSelected.getChildCount();
+			        //System.err.println(this.getClass()+"->"+nodeSelected.getLevel()+" has "+nbChildren);
 		        }
 		      }
 		});

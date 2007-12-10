@@ -42,9 +42,6 @@ protected String programName;
 protected String rootScopeName;
 protected RootScopeType rootScopeType;
 
-
-
-
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
@@ -63,6 +60,7 @@ public RootScope(Experiment experiment, String prog, String name, RootScopeType 
 	this.rootScopeName = name;
 	this.id = "RootScope";
 	this.rootScopeType = rst;
+	
 }
 
 
@@ -109,12 +107,67 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 
+//////////////////////-----------------------------------------
+//Support for flattening the kids
+//////////////////////-----------------------------------------
+
+	private java.util.Hashtable<Integer, ArrayOfNodes> tableNodes;
+	
+	/**
+	 * Method to retrieve the list of nodes 
+	 * @return
+	 */
+	public java.util.Hashtable<Integer, ArrayOfNodes> getTableOfNodes() {
+		return this.tableNodes;
+	}
+	/**
+	 * method to generate the list of nodes
+	 * This method should be called when an experiment has been loaded
+	 */
+	public void createFlattenNode() {
+		this.tableNodes =  new java.util.Hashtable<Integer, ArrayOfNodes>();
+		this.createFlattenNode(this.treeNode, 0, " ");
+	}
+	
+	/**
+	 * recursive private method to walk through the tree to get the list of nodes
+	 * @param node
+	 * @param iLevel
+	 * @param str
+	 */
+	private void createFlattenNode(Scope.Node node, int iLevel, String str) {
+		if(node != null) {
+			Integer objLevel = Integer.valueOf(iLevel);
+			ArrayOfNodes listOfNodes ;
+			if(this.tableNodes.containsKey(objLevel)) {
+				listOfNodes = this.tableNodes.get(objLevel);
+			} else 
+				listOfNodes = new ArrayOfNodes(iLevel);
+			//System.err.println(str+"FTNS "+ iLevel + " " + node.getScope().getShortName()+" :" +node.getChildCount());
+			for(int i=0;i<node.getChildCount();i++) {
+				Scope.Node nodeKid = (Scope.Node)node.getChildAt(i);
+				this.createFlattenNode(nodeKid, iLevel + 1, str + " ");
+			}
+			node.iLevel = iLevel;
+			listOfNodes.add(node);
+			this.tableNodes.put(objLevel, listOfNodes);
+		}
+	}
+	
+	/**
+	 * Debugger for printing the list of nodes
+	 */
+	public void printFlattenNodes(){
+		if(this.tableNodes != null) {
+			for(int i=0;i<this.tableNodes.size();i++) {
+				ArrayOfNodes listOfNodes = this.tableNodes.get(Integer.valueOf(i));
+				for(int j=0;j<listOfNodes.size();j++) {
+					Scope.Node node = listOfNodes.get(j);
+					System.out.println("nodes:"+node.getScope().getShortName()+" -> " + node.getChildCount());
+				}
+			}
+		}
+	}
+
 }
-
-
-
-
-
-
-
 

@@ -157,9 +157,14 @@ public class ScopeView extends ViewPart {
 		if (!(o instanceof Scope.Node))
 			return;
 		Scope.Node node = (Scope.Node) o;
-		
-		//Scope.Node nodeFlatten = node.tryFlatten();
-		treeViewer.setInput(node.nodeFlatten);
+		Integer objLevel = Integer.valueOf(node.iLevel+1);
+		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
+		if(nodeArray != null) {
+			this.treeViewer.setInput(nodeArray);
+		} else {
+			//Scope.Node nodeFlatten = node.tryFlatten();
+			treeViewer.setInput(node);
+		}
 		treeViewer.refresh();		
 	}
 	
@@ -174,8 +179,14 @@ public class ScopeView extends ViewPart {
 		if (!(o instanceof Scope.Node))
 			return;
 		Scope.Node node = (Scope.Node) o;
-		//Scope.Node nodeUnFlatten = node.tryUnFlatten();
-		treeViewer.setInput((Scope.Node)node.nodeUnflatten);
+		Integer objLevel = Integer.valueOf(node.iLevel-1);
+		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
+		if(nodeArray != null) {
+			this.treeViewer.setInput(nodeArray);
+		} else {
+			//Scope.Node nodeFlatten = node.tryFlatten();
+			treeViewer.setInput(node);
+		}
 		//treeViewer.setInput((Scope.Node)node.getParent());
 		treeViewer.refresh();
 	}
@@ -355,8 +366,8 @@ public class ScopeView extends ViewPart {
     private void fillContextMenu(IMenuManager mgr) {
         mgr.add(new Action("Flatten"){
         	public void run() {
-        		zoomIn();
-        		//flattenNode();
+        		//zoomIn();
+        		flattenNode();
         	}
         });
         mgr.add(new Action("Unflatten"){
@@ -528,7 +539,8 @@ public class ScopeView extends ViewPart {
         
         // generate flattening structure 
         //((RootScope)this.myRootScope).generateFlatteningStructure();
-        //((RootScope)this.myRootScope).printFlattenNode();
+        ((RootScope)this.myRootScope).createFlattenNode();
+        //((RootScope)this.myRootScope).printFlattenNodes();
 	}
 
     //======================================================

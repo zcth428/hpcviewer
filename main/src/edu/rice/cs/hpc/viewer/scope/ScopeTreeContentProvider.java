@@ -6,19 +6,38 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 
 public class ScopeTreeContentProvider implements ITreeContentProvider {
     protected TreeViewer viewer;
+    final int MODE_FLAT=1;
+    final int MODE_NORMAL = 0;
+    private int iMode=0;
+    
+    public void setModeFlat() {
+    	this.iMode = this.MODE_FLAT;
+    }
 
     public Object[] getElements(Object inputElement) {
             return getChildren(inputElement);
     }
 
+    /**
+     * find the list of children
+     */
     public Object[] getChildren(Object parentElement) {
-    	Scope.Node parent = ((Scope.Node) parentElement);
-    	int iChildren = parent.getChildCount();
-    	Scope.Node []children = new Scope.Node[iChildren];
-    	for(int i=0;i<iChildren;i++) {
-    		children[i] = (Scope.Node)parent.getChildAt(i);
+    	if(parentElement instanceof Scope.Node) {
+    		// normal mode
+        	Scope.Node parent = ((Scope.Node) parentElement);
+        	int iChildren = parent.getChildCount();
+        	Scope.Node []children = new Scope.Node[iChildren];
+        	for(int i=0;i<iChildren;i++) {
+        		children[i] = (Scope.Node)parent.getChildAt(i);
+        	}
+        	return children;
+    	} else if(parentElement instanceof ArrayOfNodes) {
+    		// flat-tree node
+    		ArrayOfNodes listNodes = (ArrayOfNodes) parentElement;
+    		//System.err.println(this.getClass()+":"+listNodes.size()+" elements");
+    		return listNodes.toArray();
     	}
-    	return children;
+    		return null;
     	//return ((Scope.Node) parentElement).getChildren();
     }
 

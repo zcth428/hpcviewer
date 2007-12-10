@@ -751,8 +751,6 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	// @SuppressWarnings("serial")
 	public static class Node extends DefaultMutableTreeNode
 	{
-		public Scope.Node nodeFlatten;   // Laks: pointer to node for flatten
-		public Scope.Node nodeUnflatten; // Laks: pointer to node for unflatten
 		public int iLevel;				// Laks: can be obtained too by a parent class method
 
 		/** Used by <code>ScopeTreeFilter</code>.

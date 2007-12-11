@@ -199,8 +199,10 @@ public class ScopeView extends ViewPart {
 		if (!(sel instanceof StructuredSelection))
 			return;
 		Object o = ((StructuredSelection)sel).getFirstElement();
-		if (!(o instanceof Scope.Node))
+		if (!(o instanceof Scope.Node)) {
+			System.err.println("ScopeView - zoomin:"+o.getClass());
 			return;
+		}
 		treeViewer.setInput(o);
 		treeViewer.refresh();
 	}
@@ -210,9 +212,17 @@ public class ScopeView extends ViewPart {
 	 */
 	private void zoomOut() {
 		Object o = treeViewer.getInput();
-		if (!(o instanceof Scope.Node))
-			return;
-		Scope.Node child = (Scope.Node) o;
+		Scope.Node child;
+		if (!(o instanceof Scope.Node)) {
+			if(o instanceof ArrayOfNodes) {
+				TreeItem []tiObjects = this.treeViewer.getTree().getItems();
+				child = (Scope.Node)tiObjects[0].getData();
+			} else {
+				System.err.println("ScopeView - zoomout:"+o.getClass());
+				return;
+			}
+		} else
+			child = (Scope.Node) o;
 		Scope.Node parent = (Scope.Node)child.getParent();
 		if (parent == null)
 			return;

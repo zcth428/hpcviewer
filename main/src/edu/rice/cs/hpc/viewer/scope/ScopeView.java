@@ -16,7 +16,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
-import org.eclipse.ui.views.contentoutline.*;
+//import org.eclipse.ui.views.contentoutline.*;
 
 //import org.eclipse.swt.widgets.CoolBar;
 //import org.eclipse.swt.widgets.CoolItem;
@@ -244,6 +244,11 @@ public class ScopeView extends ViewPart {
 	//======================================================
     // ................ GUI ............................
     //======================================================
+	private ToolItem tiFlatten;
+	private ToolItem tiUnFlatten ;
+	private ToolItem tiZoomin;
+	private ToolItem tiZoomout ;
+	private ToolItem tiResize ;
     /**
      * Create a toolbar region on the top of the view. This toolbar will be used to host some buttons
      * to make actions on the treeview.
@@ -263,7 +268,7 @@ public class ScopeView extends ViewPart {
     	
     	// ------------- prepare the items
     	// flatten
-    	org.eclipse.swt.widgets.ToolItem tiFlatten = new ToolItem(toolbar, SWT.PUSH);
+    	tiFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiFlatten.setToolTipText("Flatten the node");
     	tiFlatten.setImage(iconsCollection.imgFlatten);
     	tiFlatten.addSelectionListener(new SelectionAdapter() {
@@ -273,7 +278,7 @@ public class ScopeView extends ViewPart {
       	});
     	
     	// unflatten
-    	org.eclipse.swt.widgets.ToolItem tiUnFlatten = new ToolItem(toolbar, SWT.PUSH);
+    	tiUnFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiUnFlatten.setToolTipText("Unflatten the node");
     	tiUnFlatten.setImage(iconsCollection.imgUnFlatten);
     	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
@@ -283,7 +288,7 @@ public class ScopeView extends ViewPart {
     	});
     	
     	// zoom in
-    	org.eclipse.swt.widgets.ToolItem tiZoomin = new ToolItem(toolbar, SWT.PUSH);
+    	tiZoomin = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomin.setToolTipText("Zoom-in");
     	tiZoomin.setImage(iconsCollection.imgZoomIn);
     	tiZoomin.addSelectionListener(new SelectionAdapter() {
@@ -293,7 +298,7 @@ public class ScopeView extends ViewPart {
       	});
     	
     	// zoom out
-    	org.eclipse.swt.widgets.ToolItem tiZoomout = new ToolItem(toolbar, SWT.PUSH);
+    	tiZoomout = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomout.setToolTipText("Zoom-out");
     	tiZoomout.setImage(iconsCollection.imgZoomOut);
     	tiZoomout.addSelectionListener(new SelectionAdapter() {
@@ -302,7 +307,7 @@ public class ScopeView extends ViewPart {
     	  }
     	});
     	
-    	org.eclipse.swt.widgets.ToolItem tiResize = new ToolItem(toolbar, SWT.PUSH);
+    	tiResize = new ToolItem(toolbar, SWT.PUSH);
     	tiResize.setToolTipText("Resize columns width");
     	tiResize.setImage(iconsCollection.imgResize);
     	tiResize.addSelectionListener(new SelectionAdapter() {
@@ -364,6 +369,10 @@ public class ScopeView extends ViewPart {
     	return (this.treeViewer.getTree().getSelectionCount() > 0);
     }
     
+    /**
+     * Helper method to retrieve the selected item
+     * @return
+     */
     private Scope.Node getSelectedItem() {
         TreeItem[] selection = this.treeViewer.getTree().getSelection();
         return (Scope.Node)selection[0].getData();

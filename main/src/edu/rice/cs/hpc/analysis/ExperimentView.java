@@ -4,10 +4,9 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 
-import edu.rice.cs.hpc.data.experiment.*; //Experiment.Experiment;
-//import edu.rice.cs.data.Experiment.InvalExperimentException;
-
+import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
+import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 
 /**
@@ -17,16 +16,23 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
  *
  */
 public class ExperimentView {
+	private ExperimentData dataExperiment;
 	//ScopeView objView;
 	private org.eclipse.ui.IWorkbenchPage objPage;		// workbench current page
 	private ScopeView []listOfViews; // list of views used
 	
+	private void init() {
+		if(this.dataExperiment == null) {
+			this.dataExperiment = ExperimentData.getInstance();
+		}
+	}
 	/**
 	 * Constructor for Data experiment. Needed to link with the view
 	 * @param objTarget: the scope view to link with
 	 */
 	public ExperimentView(org.eclipse.ui.IWorkbenchPage objTarget) {
 		this.objPage = objTarget;
+		this.init();
 	}
 	
 	/**
@@ -35,6 +41,7 @@ public class ExperimentView {
 	 */
 	public ExperimentView(){
 		objPage = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		this.init();
 	}
 	
 	/**
@@ -46,6 +53,8 @@ public class ExperimentView {
 		if(experiment != null) {
 	        experiment.postprocess();
 	        this.generateView(experiment);
+	        this.dataExperiment.setExperiment(experiment);
+	        this.dataExperiment.setFilename(sFilename);
 		}
 	}
 	/**

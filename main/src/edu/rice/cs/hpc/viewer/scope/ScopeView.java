@@ -1,31 +1,32 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+// User interface
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.dialogs.MessageDialog;
+
+// SWT
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.core.resources.*;
+
+// Jface
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
-//import org.eclipse.ui.views.contentoutline.*;
 
-//import org.eclipse.swt.widgets.CoolBar;
-//import org.eclipse.swt.widgets.CoolItem;
-
+// HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.pnode.*;
+import edu.rice.cs.hpc.viewer.resources.*;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -33,21 +34,47 @@ public class ScopeView extends ViewPart {
     private TreeViewer 	treeViewer;		  	// tree for the caller and callees
     private TreeColumn []tcMetricColumns; 	// metric columns
     private Experiment 	myExperiment;		// experiment data	
+    //private ExperimentData myGlobalData;
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;
+    private EditorManager editorSourceCode;
 	
     //======================================================
-    // ................ ACTIONS ............................
+    // ................ HELPER ............................
     //======================================================
+    /**
+     * Retrieve the short file name of the node (based on the information from the scope)
+     */
     private String getFilename(Scope.Node node) {
     	return node.getScope().getSourceFile().getName();
     }
     
+    /**
+     * See whether the node has the information of the file name of the code
+     *
+     * @param node
+     * @return true if the information exist, false otherwise
+     */
     private boolean isSourceCodeAvailable(Scope.Node node) {
 		return (node.getScope().getSourceFile() != SourceFile.NONE
 				|| node.getScope().getSourceFile().isAvailable());
     }
+    
+    /**
+     * Display the source code of the node in the editor area
+     * @param node the current OR selected node
+     */
+    private void displayFileEditor(Scope.Node node) {
+    	if(editorSourceCode == null) {
+    		this.editorSourceCode = new EditorManager(this.getSite());
+    	}
+    	this.editorSourceCode.displayFileEditor(node);
+    }
+
+    //======================================================
+    // ................ ACTIONS ............................
+    //======================================================
     /**
 	 * Action for double click in the view: show the file source code if possible
 	 */
@@ -65,86 +92,6 @@ public class ScopeView extends ViewPart {
 		}
 	};
 
-	/**
-	 * Open and Display editor
-	 * @param node
-	 */
-	private void displayFileEditor(Scope.Node node) {
-		// get the complete file name
-		FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
-		if(newFile!=null) {
-			if(newFile.isAvailable()) {
-				String sLongName;
-				sLongName = newFile.getCompleteFilename();
-				int iLine = node.getScope().getFirstLineNumber();
-				openFileEditor( sLongName, newFile.getName(), iLine );
-			} else
-				System.out.println("Source file not available"+ ":"+ "("+newFile.getName()+")");
-			// laks: try to show the editor
-		} else
-			System.err.println("ScopeView-displayFileEditor:"+node.getScope().getShortName());
-	}
-	/**
-	 * Open Eclipse IDE editor for a given filename. 
-	 * Beware: for Eclipse 3.2, we need to create a "hidden" project of the file
-	 * 			this project should be cleaned in the future !
-	 * @param sFilename the complete path of the file to display in IDE
-	 */
-	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber) {
-		// get the complete path of the file
-		org.eclipse.core.filesystem.IFileStore objFile = 
-			org.eclipse.core.filesystem.EFS.getLocalFileSystem().getStore(new 
-					org.eclipse.core.runtime.Path(sLongFilename).removeLastSegments(1));
-		// get the active page for the editor
-		org.eclipse.ui.IWorkbenchPage wbPage = this.getSite().getWorkbenchWindow().getActivePage();
-		if(wbPage != null ){
-			objFile=objFile.getChild(sFilename);
-	    	if(!objFile.fetchInfo().exists()) {
-	    		 MessageDialog.openInformation(this.getSite().getShell(), "File not found", 
-	    		 	sFilename+": File cannot be opened in " + objFile.getName());
-	    		 return; // do we need this ?
-	    	}
-	    	try {
-	    		IEditorPart objEditor = org.eclipse.ui.ide.IDE.openEditorOnFileStore(wbPage, objFile);
-	    		/*IContentOutlinePage outlinePage = (IContentOutlinePage) objEditor.getAdapter(IContentOutlinePage.class);
-	    		 if (outlinePage != null) {
-	    		    // editor wishes to contribute outlinePage to content outline view
-	    			 
-	 	    		IViewPart objOutlineView = wbPage.showView("org.eclipse.ui.views.ContentOutline");
-	 	    		wbPage.showView(this.ID);
-	 	    		this.setFocus();	 	    		
-	 	    		this.treeViewer.getTree().setFocus();
-	    		 }
-		    	System.out.println(" ScopeView: " + objEditor.getClass() + " outline: "+ outlinePage.getClass());
-		    	*/
-	    		this.setEditorMarker(wbPage, iLineNumber);
-	    	} catch (PartInitException e) {
-	    		e.printStackTrace();
-	    		MessageDialog.openError(this.getSite().getShell(), "Error opening the file", e.getMessage());
-	       /* some code */
-	     }
-		}
-	}
-
-	/**
-	 * Set the marker into the active editor
-	 * @param wbPage
-	 * @param iLineNumber
-	 */
-	private void setEditorMarker(org.eclipse.ui.IWorkbenchPage wbPage, int iLineNumber) {
-	       //IFile file;
-	       try{
-	    	   IResource resource = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot();
-	    	   IMarker marker=resource.createMarker("HPCViewer"); 
-			   marker.setAttribute(IMarker.LINE_NUMBER, iLineNumber+1);
-			   marker.setAttribute(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_INFO));
-			   org.eclipse.ui.ide.IDE.gotoMarker(wbPage.getActiveEditor(), marker);
-	    	   
-	       } catch (org.eclipse.core.runtime.CoreException e) {
-	    	   e.printStackTrace();
-	       }
-
-	}
 	
 	/**
 	 * Go deeper one level
@@ -217,6 +164,8 @@ public class ScopeView extends ViewPart {
 			if(o instanceof ArrayOfNodes) {
 				TreeItem []tiObjects = this.treeViewer.getTree().getItems();
 				child = (Scope.Node)tiObjects[0].getData();
+				// tricky solution when zoom-out the flattened node
+				child = (Scope.Node)child.getParent();
 			} else {
 				System.err.println("ScopeView - zoomout:"+o.getClass());
 				return;
@@ -242,7 +191,7 @@ public class ScopeView extends ViewPart {
 	}
 
 	//======================================================
-    // ................ GUI ............................
+    // ................ GUI and LAYOUT ....................
     //======================================================
 	private ToolItem tiFlatten;
 	private ToolItem tiUnFlatten ;
@@ -257,14 +206,14 @@ public class ScopeView extends ViewPart {
      */
     private Composite createCoolBar(Composite aParent) {
     	// make the parent with grid layout
-    	org.eclipse.swt.layout.GridLayout grid = new org.eclipse.swt.layout.GridLayout(1,false);
+    	GridLayout grid = new GridLayout(1,false);
     	aParent.setLayout(grid);
     	CoolBar coolBar = new CoolBar(aParent, SWT.FLAT);
-        org.eclipse.swt.layout.GridData data = new org.eclipse.swt.layout.GridData(GridData.FILL_HORIZONTAL);
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
     	coolBar.setLayoutData(data);
     	// prepare the toolbar
-    	org.eclipse.swt.widgets.ToolBar toolbar = new ToolBar(coolBar, SWT.FLAT);
-    	edu.rice.cs.hpc.viewer.resources.Icons iconsCollection = edu.rice.cs.hpc.viewer.resources.Icons.getInstance();
+    	ToolBar toolbar = new ToolBar(coolBar, SWT.FLAT);
+    	Icons iconsCollection = Icons.getInstance();
     	
     	// ------------- prepare the items
     	// flatten
@@ -449,7 +398,7 @@ public class ScopeView extends ViewPart {
         
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view
-        org.eclipse.swt.layout.GridData data = new org.eclipse.swt.layout.GridData(GridData.FILL_BOTH);
+        GridData data = new GridData(GridData.FILL_BOTH);
         treeViewer.getTree().setLayoutData(data);
         //-----------------
         this.createContextMenu();
@@ -502,6 +451,8 @@ public class ScopeView extends ViewPart {
     		//TODO myFocusScope = ex.getRootScope();
     	}
     	updateDisplay();
+    	//this.myGlobalData = ExperimentData.getInstance();
+    	//this.myGlobalData.setExperiment(this.myExperiment);
     }
 
 	/**
@@ -557,131 +508,9 @@ public class ScopeView extends ViewPart {
         treeViewer.refresh();
         
         // generate flattening structure 
-        //((RootScope)this.myRootScope).generateFlatteningStructure();
         ((RootScope)this.myRootScope).createFlattenNode();
-        //((RootScope)this.myRootScope).printFlattenNodes();
 	}
 
-    //======================================================
-    // ................ SORTING ............................
-    //======================================================
-
-	private static class ColumnViewerSorter extends ViewerComparator {
-		public static final int ASC = 1;
-		public static final int NONE = 0;
-		public static final int DESC = -1;
-		private int direction = 0;
-		private TreeColumn column;
-		private ColumnViewer viewer;
-		private int iColNumber;
-		private Metric metric;
-		
-		/**
-		 * Update the metric for this column
-		 * @param newMetric
-		 */
-		public void setMetric(Metric newMetric) {
-			this.metric = newMetric;
-		}
-		/**
-		 * Class to sort a column
-		 * @param viewer: the table tree
-		 * @param column: the column
-		 * @param newMetric: the metric
-		 * @param colNum: the position
-		 */
-		public ColumnViewerSorter(ColumnViewer viewer, TreeColumn column, Metric newMetric, int colNum) {
-			this.column = column;
-			this.iColNumber = colNum;
-			this.viewer = viewer;
-			this.metric = newMetric;
-			this.column.addSelectionListener(new SelectionAdapter() {
-
-				public void widgetSelected(SelectionEvent e) {
-					if( ColumnViewerSorter.this.viewer.getComparator() != null ) {
-						if( ColumnViewerSorter.this.viewer.getComparator() == ColumnViewerSorter.this ) {
-							int tdirection = ColumnViewerSorter.this.direction;
-							
-							if( tdirection == ASC ) {
-								setSorter(ColumnViewerSorter.this, DESC);
-							} else if( tdirection == DESC ) {
-								setSorter(ColumnViewerSorter.this, NONE);
-							}
-						} else {
-							setSorter(ColumnViewerSorter.this, ASC);
-						}
-					} else {
-						setSorter(ColumnViewerSorter.this, ASC);
-					}
-				}
-			});
-		}
-		
-		/**
-		 * Sort the column according to the direction
-		 * @param sorter
-		 * @param direction
-		 */
-		public void setSorter(ColumnViewerSorter sorter, int direction) {
-			if( direction == NONE ) {
-				column.getParent().setSortColumn(null);
-				column.getParent().setSortDirection(SWT.NONE);
-				viewer.setComparator(null);
-			} else {
-				column.getParent().setSortColumn(column);
-				sorter.direction = direction;
-				
-				if( direction == ASC ) {
-					column.getParent().setSortDirection(SWT.DOWN);
-				} else {
-					column.getParent().setSortDirection(SWT.UP);
-				}
-				
-				if( viewer.getComparator() == sorter ) {
-					viewer.refresh();
-				} else {
-					viewer.setComparator(sorter);
-				}
-				
-			}
-		}
-
-		/**
-		 * general comparison for sorting
-		 */
-		public int compare(Viewer viewer, Object e1, Object e2) {
-			return direction * doCompare(viewer, e1, e2);
-		}
-		
-		// laks: lazy comparison
-		/**
-		 * This method is to compare one object to another
-		 * Please implement this method in the child class if necessary
-		 */
-		protected int doCompare(Viewer viewer, Object e1, Object e2) {
-			if(e1 instanceof Scope.Node && e2 instanceof Scope.Node) {
-				Scope.Node node1 = (Scope.Node) e1;
-				Scope.Node node2 = (Scope.Node) e2;
-
-				// dirty solution: if the column position is 0 then we sort
-				// according to its element name
-				// otherwise, sort according to the metric
-				if(this.iColNumber==0) {
-					String text1 = node1.getScope().getShortName();
-					String text2 = node2.getScope().getShortName();
-					return text1.compareTo(text2);
-				} else {
-					// get the metric
-					MetricValue mv1 = node1.getScope().getMetricValue(metric);
-					MetricValue mv2 = node2.getScope().getMetricValue(metric);
-					
-					if (mv1.getValue()>mv2.getValue()) return -1;
-					if (mv1.getValue()<mv2.getValue()) return 1;
-				}
-			}
-			return 0;
-		}
-	}
 
     //======================================================
     // ................ MISC ............................

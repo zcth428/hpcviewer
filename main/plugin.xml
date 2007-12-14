@@ -62,6 +62,15 @@
                toolbarPath="experimentGroup"
                tooltip="Merge 2 experiment files">
          </action>
+         <action
+               class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
+               icon="icons/info.gif"
+               id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
+               label="&amp;Display experiment"
+               menubarPath="experimentMenu/experimentGroup"
+               toolbarPath="experimentGroup"
+               tooltip="Display the XML content of the experiment">
+         </action>
       </actionSet>
    </extension>
    <extension

@@ -12,7 +12,6 @@ import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import org.eclipse.ui.IWorkbenchWindow;
 
 public class EditorManager {
-	private IWorkbenchSite siteCurrent;
     private IWorkbenchWindow windowCurrent;
 
     /**
@@ -24,7 +23,6 @@ public class EditorManager {
     }
     
 	public EditorManager(IWorkbenchSite site) {
-		this.siteCurrent = site;
 		this.windowCurrent = site.getWorkbenchWindow();
 	}
 	/**

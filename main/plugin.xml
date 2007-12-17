@@ -64,7 +64,7 @@
          </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               icon="icons/info.gif"
+               icon="icons/xml.png"
                id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
                label="&amp;Display experiment"
                menubarPath="experimentMenu/experimentGroup"

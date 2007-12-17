@@ -14,6 +14,8 @@ import org.eclipse.swt.widgets.*;
 
 // Jface
 import org.eclipse.jface.viewers.*;
+//import org.eclipse.core.runtime.Platform;
+//import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -34,7 +36,6 @@ public class ScopeView extends ViewPart {
     private TreeViewer 	treeViewer;		  	// tree for the caller and callees
     private TreeColumn []tcMetricColumns; 	// metric columns
     private Experiment 	myExperiment;		// experiment data	
-    //private ExperimentData myGlobalData;
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;

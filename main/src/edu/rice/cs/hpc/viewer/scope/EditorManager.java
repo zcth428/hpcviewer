@@ -47,8 +47,19 @@ public class EditorManager {
 			System.err.println("ScopeView-displayFileEditor:"+node.getScope().getShortName());
 	}
 	
+	/**
+	 * Open a new editor (if necessary) into Eclipse
+	 * The filename should be a complete absolute path to the local file
+	 * @param sFilename
+	 */
 	public void openFileEditor(String sFilename) {
-		this.openFileEditor(sFilename, sFilename, 1);
+		java.io.File objInfo = new java.io.File(sFilename);
+		if(objInfo.exists())
+			this.openFileEditor(sFilename, objInfo.getName(), 1);
+		else
+			org.eclipse.jface.dialogs.MessageDialog.openError(this.windowCurrent.getShell(), 
+					"Error Opening File",
+					"File:" +sFilename + "("+objInfo.getName()+") does not exist");
 	}
 	
 	/**

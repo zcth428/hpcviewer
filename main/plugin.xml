@@ -43,16 +43,6 @@
                   name="experimentGroup">
             	</separator>
          	</menu>
-            
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
-               icon="icons/hpc-16x16.png"
-               id="edu.rice.cs.hpc.actions.LoadExperiment"
-               label="&amp;Load experiment ..."
-               menubarPath="experimentMenu/experimentGroup"
-               toolbarPath="experimentGroup"
-               tooltip="Load an XML experiment file ...">
-         </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
                icon="icons/hpc-merged-16x16.png"
@@ -70,6 +60,16 @@
                menubarPath="experimentMenu/experimentGroup"
                toolbarPath="experimentGroup"
                tooltip="Display the XML content of the experiment">
+         </action>
+            
+         <action
+               class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
+               icon="icons/hpc-16x16.png"
+               id="edu.rice.cs.hpc.actions.LoadExperiment"
+               label="&amp;Load experiment ..."
+               menubarPath="experimentMenu/experimentGroup"
+               toolbarPath="experimentGroup"
+               tooltip="Load an XML experiment file ...">
          </action>
       </actionSet>
    </extension>

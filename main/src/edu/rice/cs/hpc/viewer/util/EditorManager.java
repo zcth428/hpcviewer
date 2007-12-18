@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;

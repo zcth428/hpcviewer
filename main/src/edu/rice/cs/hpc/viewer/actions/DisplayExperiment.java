@@ -5,7 +5,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-import edu.rice.cs.hpc.viewer.scope.EditorManager;
+import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.resources.ExperimentData;
 
 public class DisplayExperiment implements IWorkbenchWindowActionDelegate {

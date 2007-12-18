@@ -130,7 +130,7 @@ public class ExperimentView {
 				else
 					// first view: usually already created by default by the perspective
 					objView = (ScopeView) this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
-				// ATTENTION: for unknown reason, calltree will not display the aggregate values when using the child
+				// ATTENTION: for unknown reason, call-tree will not display the aggregate values when using the child
 				// therefore, we need to create a dummy root then attach it to the children
 				// TODO: This should be fix in the Scope class in the future
 				if(nbChildren>1) {
@@ -140,6 +140,8 @@ public class ExperimentView {
 				} else
 					objView.setInput(experiment, (RootScope)experiment.getRootScope());
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
+				// enable the view's actions
+				objView.enableActions();
 				this.listOfViews[k] = objView;
 			} catch (org.eclipse.ui.PartInitException e) {
 				e.printStackTrace();

@@ -29,6 +29,7 @@ import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.pnode.*;
 import edu.rice.cs.hpc.viewer.resources.*;
+import edu.rice.cs.hpc.viewer.util.EditorManager;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -194,11 +195,40 @@ public class ScopeView extends ViewPart {
 	//======================================================
     // ................ GUI and LAYOUT ....................
     //======================================================
+	
+	//------------------------------------DATA
+
 	private ToolItem tiFlatten;
 	private ToolItem tiUnFlatten ;
 	private ToolItem tiZoomin;
 	private ToolItem tiZoomout ;
 	private ToolItem tiResize ;
+	
+	private Action acFlatten = new Action("Flatten"){
+    	public void run() {
+    		//zoomIn();
+    		flattenNode();
+    	}
+    };
+	/**
+	 * Reset the button and actions into disabled state
+	 */
+	public void resetActions() {
+		this.tiFlatten.setEnabled(false);
+		this.tiUnFlatten.setEnabled(false);
+		this.tiZoomin.setEnabled(false);
+		this.tiZoomout.setEnabled(false);
+	}
+	
+	/**
+	 * Enable the actions for this view
+	 */
+	public void enableActions() {
+		this.tiFlatten.setEnabled(true);
+		this.tiUnFlatten.setEnabled(true);
+		this.tiZoomin.setEnabled(true);
+		this.tiZoomout.setEnabled(true);
+	}
     /**
      * Create a toolbar region on the top of the view. This toolbar will be used to host some buttons
      * to make actions on the treeview.
@@ -267,7 +297,7 @@ public class ScopeView extends ViewPart {
       	});
     	// set the coolitem
     	this.createCoolItem(coolBar, toolbar);
-    	
+    	this.resetActions();
 	    return aParent;
     }
     
@@ -311,11 +341,26 @@ public class ScopeView extends ViewPart {
         getSite().registerContextMenu(menuMgr, this.treeViewer);
     }
 
+    private boolean isZoomInShouldbeEnabled(Scope.Node node) {
+    	return (node.getChildCount()>0);
+    }
+    
+    private boolean isZoomOutShouldbeEnabled(Scope.Node node) {
+    	return (node.iLevel>1);
+    }
+    
+    private boolean isFlattenShouldbeEnabled(Scope.Node node) {
+    	return (!node.isLeaf());
+    }
+    
+    private boolean isUnflattenShouldbeEnabled(Scope.Node node) {
+    	return (node.iLevel>1);
+    }
     /**
      * Helper method to know if an item has been selected
      * @return true if an item is selected, false otherwise
      */
-    private boolean isItemSelected() {
+    public boolean isItemSelected() {
     	return (this.treeViewer.getTree().getSelectionCount() > 0);
     }
     
@@ -333,16 +378,12 @@ public class ScopeView extends ViewPart {
      * @param mgr
      */
     private void fillContextMenu(IMenuManager mgr) {
-        mgr.add(new Action("Flatten"){
-        	public void run() {
-        		//zoomIn();
-        		flattenNode();
-        	}
-        });
+    	//acFlatten.setEnabled(this.isFlattenShouldbeEnabled());
+        mgr.add(acFlatten);
         mgr.add(new Action("Unflatten"){
         	public void run() {
-        		zoomOut();
-        		//unflattenNode();
+        		//zoomOut();
+        		unflattenNode();
         	}
         });
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -418,8 +459,13 @@ public class ScopeView extends ViewPart {
 
 		        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
 		        if(nodeSelected != null) {
-			        //int nbChildren = nodeSelected.getChildCount();
-			        //System.err.println(this.getClass()+"->"+nodeSelected.getLevel()+" has "+nbChildren);
+		        	/*System.out.println("ScopeView: select "+nodeSelected.getScope().getName()+
+		        			" level:"+nodeSelected.iLevel + " children:"+nodeSelected.getChildCount());
+		        	*/
+		        	tiZoomout.setEnabled(isZoomOutShouldbeEnabled(nodeSelected));
+		        	tiZoomin.setEnabled(isZoomInShouldbeEnabled(nodeSelected));
+		        	tiFlatten.setEnabled(isFlattenShouldbeEnabled(nodeSelected));
+		        	tiUnFlatten.setEnabled(isUnflattenShouldbeEnabled(nodeSelected));
 		        }
 		      }
 		});

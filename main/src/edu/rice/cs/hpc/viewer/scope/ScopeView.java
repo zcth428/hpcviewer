@@ -210,6 +210,25 @@ public class ScopeView extends ViewPart {
     		flattenNode();
     	}
     };
+    
+    private Action acUnflatten = new Action("Unflatten"){
+    	public void run() {
+    		//zoomOut();
+    		unflattenNode();
+    	}
+    };
+    
+    private Action acZoomin = new Action("Zoom-in"){
+    	public void run() {
+    		zoomIn();
+    	}
+    };
+    
+    private Action acZoomout = new Action("Zoom-out"){
+    	public void run() {
+    		zoomOut();
+    	}
+    };
 	/**
 	 * Reset the button and actions into disabled state
 	 */
@@ -379,30 +398,19 @@ public class ScopeView extends ViewPart {
      */
     private void fillContextMenu(IMenuManager mgr) {
     	//acFlatten.setEnabled(this.isFlattenShouldbeEnabled());
+    	Scope.Node node = this.getSelectedItem();
         mgr.add(acFlatten);
-        mgr.add(new Action("Unflatten"){
-        	public void run() {
-        		//zoomOut();
-        		unflattenNode();
-        	}
-        });
-        mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        mgr.add(new Action("Zoom-in"){
-        	public void run() {
-        		zoomIn();
-        	}
-        });
-        mgr.add(new Action("Zoom-out"){
-        	public void run() {
-        		zoomOut();
-        	}
-        });
-
+        acFlatten.setEnabled(this.isFlattenShouldbeEnabled(node));
+        mgr.add(acUnflatten);
+        acUnflatten.setEnabled(this.isUnflattenShouldbeEnabled(node));
+        mgr.add(acZoomin);
+        acZoomin.setEnabled(this.isZoomInShouldbeEnabled(node));
+        mgr.add(acZoomout);
+        acZoomout.setEnabled(this.isZoomOutShouldbeEnabled(node));
         mgr.add(new Separator());
-        Scope.Node node = this.getSelectedItem();
+        mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         if (this.isSourceCodeAvailable(node)) {
-        	System.out.println("Selected node:"+node.getScope().getShortName());
-            mgr.add(new ScopeViewTreeAction(this.getFilename(node), node){
+            mgr.add(new ScopeViewTreeAction("Show "+this.getFilename(node), node){
             	public void run() {
             		displayFileEditor(this.nodeSelected);
             	}
@@ -410,11 +418,19 @@ public class ScopeView extends ViewPart {
         }
     }
     
+    /**
+     * Actions/menus for Scope view tree.
+     * @author laksono
+     *
+     */
     private class ScopeViewTreeAction extends Action {
     	protected Scope.Node nodeSelected;
     	public ScopeViewTreeAction(String sTitle, Scope.Node nodeCurrent) {
     		super(sTitle);
     		this.nodeSelected = nodeCurrent;
+    	}
+    	public void setScopeNode(Scope.Node node) {
+    		this.nodeSelected = node;
     	}
     }
     /**

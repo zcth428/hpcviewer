@@ -99,13 +99,26 @@ public class ScopeView extends ViewPart {
 	 * Go deeper one level
 	 */
 	private void flattenNode() {
+		Object objRoot = this.treeViewer.getTree().getItem(0);
+		Scope.Node objNode;
+		if (objRoot instanceof Scope.Node) {
+			objNode = (Scope.Node) objRoot;
+			System.out.println("ScopeView-Flatten node:"+objNode.getScope().getShortName());
+		} else if(objRoot instanceof ArrayOfNodes) {
+			ArrayOfNodes objArrays = (ArrayOfNodes) objRoot;
+			objNode = objArrays.get(0);
+			System.out.println("ScopeView-Flatten arr: "+objArrays.get(0).getScope().getName());
+		} else
+			return;
+		/*	
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof StructuredSelection))
 			return;
 		Object o = ((StructuredSelection)sel).getFirstElement();
 		if (!(o instanceof Scope.Node))
 			return;
-		Scope.Node node = (Scope.Node) o;
+	*/
+		Scope.Node node = (Scope.Node) objNode;
 		Integer objLevel = Integer.valueOf(node.iLevel+1);
 		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
 		if(nodeArray != null) {
@@ -399,10 +412,10 @@ public class ScopeView extends ViewPart {
     private void fillContextMenu(IMenuManager mgr) {
     	//acFlatten.setEnabled(this.isFlattenShouldbeEnabled());
     	Scope.Node node = this.getSelectedItem();
-        mgr.add(acFlatten);
-        acFlatten.setEnabled(this.isFlattenShouldbeEnabled(node));
-        mgr.add(acUnflatten);
-        acUnflatten.setEnabled(this.isUnflattenShouldbeEnabled(node));
+//        mgr.add(acFlatten);
+//        acFlatten.setEnabled(this.isFlattenShouldbeEnabled(node));
+//        mgr.add(acUnflatten);
+//        acUnflatten.setEnabled(this.isUnflattenShouldbeEnabled(node));
         mgr.add(acZoomin);
         acZoomin.setEnabled(this.isZoomInShouldbeEnabled(node));
         mgr.add(acZoomout);

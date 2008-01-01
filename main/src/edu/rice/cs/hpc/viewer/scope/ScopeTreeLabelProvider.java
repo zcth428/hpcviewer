@@ -55,7 +55,7 @@ public class ScopeTreeLabelProvider implements ITableLabelProvider {
 				if(mv.getPercentValue() == 0.0) text = "";
 				else{
 					text = metric.getDisplayFormat().format(mv);
-					if (text.compareTo("-1.00e00       ") == 0) text = "0.0%";
+					//if (text.compareTo("-1.00e00       ") == 0) text = "0.0%";
 				}
 				}
 			}

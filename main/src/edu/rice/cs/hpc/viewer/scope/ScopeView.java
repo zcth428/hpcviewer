@@ -288,7 +288,7 @@ public class ScopeView extends ViewPart {
     	// ------------- prepare the items
     	// flatten
     	tiFlatten = new ToolItem(toolbar, SWT.PUSH);
-    	tiFlatten.setToolTipText("Flatten the node");
+    	tiFlatten.setToolTipText("Flatten nodes one level");
     	tiFlatten.setImage(iconsCollection.imgFlatten);
     	tiFlatten.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
@@ -298,7 +298,7 @@ public class ScopeView extends ViewPart {
     	
     	// unflatten
     	tiUnFlatten = new ToolItem(toolbar, SWT.PUSH);
-    	tiUnFlatten.setToolTipText("Unflatten the node");
+    	tiUnFlatten.setToolTipText("Unflatten nodes one level");
     	tiUnFlatten.setImage(iconsCollection.imgUnFlatten);
     	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
       	  	public void widgetSelected(SelectionEvent e) {
@@ -308,7 +308,7 @@ public class ScopeView extends ViewPart {
     	
     	// zoom in
     	tiZoomin = new ToolItem(toolbar, SWT.PUSH);
-    	tiZoomin.setToolTipText("Zoom-in");
+    	tiZoomin.setToolTipText("Zoom-in the selected node");
     	tiZoomin.setImage(iconsCollection.imgZoomIn);
     	tiZoomin.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
@@ -318,7 +318,7 @@ public class ScopeView extends ViewPart {
     	
     	// zoom out
     	tiZoomout = new ToolItem(toolbar, SWT.PUSH);
-    	tiZoomout.setToolTipText("Zoom-out");
+    	tiZoomout.setToolTipText("Zoom-out the selected node");
     	tiZoomout.setImage(iconsCollection.imgZoomOut);
     	tiZoomout.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
@@ -417,18 +417,17 @@ public class ScopeView extends ViewPart {
      * @param mgr
      */
     private void fillContextMenu(IMenuManager mgr) {
-    	//acFlatten.setEnabled(this.isFlattenShouldbeEnabled());
     	Scope.Node node = this.getSelectedItem();
-//        mgr.add(acFlatten);
-//        acFlatten.setEnabled(this.isFlattenShouldbeEnabled(node));
-//        mgr.add(acUnflatten);
-//        acUnflatten.setEnabled(this.isUnflattenShouldbeEnabled(node));
+    	// ---- zoomin
         mgr.add(acZoomin);
         acZoomin.setEnabled(this.shouldZoomInBeEnabled(node));
+        // ---- zoomout
         mgr.add(acZoomout);
         acZoomout.setEnabled(this.shouldZoomOutBeEnabled(node));
+        // additional feature
         mgr.add(new Separator());
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        // show the editor source code
         if (this.isSourceCodeAvailable(node)) {
             mgr.add(new ScopeViewTreeAction("Show "+this.getFilename(node), node){
             	public void run() {
@@ -498,10 +497,17 @@ public class ScopeView extends ViewPart {
 		        	/*System.out.println("ScopeView: select "+nodeSelected.getScope().getName()+
 		        			" level:"+nodeSelected.iLevel + " children:"+nodeSelected.getChildCount());
 		        	*/
+		        	// update the state of the toolbar items
 		        	tiZoomout.setEnabled(shouldZoomOutBeEnabled(nodeSelected));
 		        	tiZoomin.setEnabled(shouldZoomInBeEnabled(nodeSelected));
 		        	tiFlatten.setEnabled(shouldFlattenBeEnabled(nodeSelected));
 		        	tiUnFlatten.setEnabled(shouldUnflattenBeEnabled(nodeSelected));
+		        	
+					if (nodeSelected.getScope().getSourceFile() == SourceFile.NONE
+							|| !nodeSelected.getScope().getSourceFile().isAvailable())
+							return;
+					displayFileEditor(nodeSelected);
+
 		        }
 		      }
 		});

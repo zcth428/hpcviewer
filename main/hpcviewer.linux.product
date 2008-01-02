@@ -6,7 +6,12 @@
    <aboutInfo>
       <image path="/edu.rice.cs.hpc/icons/hpcviewer128.gif"/>
       <text>
-         HPCToolkit: HPCViewer
+         HPCViewer is a user interface for analyzing a database of 
+performance metrics in conjunction with source code. 
+
+HPCViewer is part of Rice University&apos;s HPCToolkit project, 
+and supported by the Center for Scalable Application Development Software (CScAD).
+
 (C) Copyright 2007, Rice University
       </text>
    </aboutInfo>
@@ -25,6 +30,7 @@
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

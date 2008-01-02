@@ -99,48 +99,55 @@ public class ScopeView extends ViewPart {
 	 * Go deeper one level
 	 */
 	private void flattenNode() {
-		Object objRoot = this.treeViewer.getTree().getItem(0);
-		Scope.Node objNode;
+		Object objRoot = this.treeViewer.getTree().getItem(0).getData();
+		Scope.Node objNode = (Scope.Node) objRoot;
 		if (objRoot instanceof Scope.Node) {
+			// original scope node
 			objNode = (Scope.Node) objRoot;
-			System.out.println("ScopeView-Flatten node:"+objNode.getScope().getShortName());
 		} else if(objRoot instanceof ArrayOfNodes) {
+			// this item has been flatten. we will flatten again based on the first item
 			ArrayOfNodes objArrays = (ArrayOfNodes) objRoot;
 			objNode = objArrays.get(0);
-			System.out.println("ScopeView-Flatten arr: "+objArrays.get(0).getScope().getName());
-		} else
+		} else {
+			// unknown class. this is almost impossible unless the code is really messy or we have bugs
+			System.err.println("ScopeView-Flatten err unknown object:"+objRoot.getClass());
 			return;
-		/*	
-		ISelection sel = treeViewer.getSelection();
-		if (!(sel instanceof StructuredSelection))
-			return;
-		Object o = ((StructuredSelection)sel).getFirstElement();
-		if (!(o instanceof Scope.Node))
-			return;
-	*/
+		}
+		// get the reference node
 		Scope.Node node = (Scope.Node) objNode;
 		Integer objLevel = Integer.valueOf(node.iLevel+1);
+		// get the next level
 		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
 		if(nodeArray != null) {
 			this.treeViewer.setInput(nodeArray);
+			treeViewer.refresh();		
 		} else {
-			//Scope.Node nodeFlatten = node.tryFlatten();
-			treeViewer.setInput(node);
+			// there is something wrong. we return to the original node
+			//treeViewer.setInput(node);
+			System.err.println("ScopeView-flatten: error cannot flatten further");
 		}
-		treeViewer.refresh();		
 	}
 	
 	/**
 	 * go back one level
 	 */
 	private void unflattenNode() {
-		ISelection sel = treeViewer.getSelection();
-		if (!(sel instanceof StructuredSelection))
+		Object objRoot = this.treeViewer.getTree().getItem(0).getData();
+		Scope.Node objNode = (Scope.Node) objRoot;
+		if (objRoot instanceof Scope.Node) {
+			// original scope node
+			objNode = (Scope.Node) objRoot;
+		} else if(objRoot instanceof ArrayOfNodes) {
+			// this item has been flatten. we will flatten again based on the first item
+			ArrayOfNodes objArrays = (ArrayOfNodes) objRoot;
+			objNode = objArrays.get(0);
+		} else {
+			// unknown class. this is almost impossible unless the code is really messy or we have bugs
+			System.err.println("ScopeView-Flatten err unknown object:"+objRoot.getClass());
 			return;
-		Object o = ((StructuredSelection)sel).getFirstElement();
-		if (!(o instanceof Scope.Node))
-			return;
-		Scope.Node node = (Scope.Node) o;
+		}
+		// get the reference node
+		Scope.Node node = (Scope.Node) objNode;
 		Integer objLevel = Integer.valueOf(node.iLevel-1);
 		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
 		if(nodeArray != null) {
@@ -217,7 +224,7 @@ public class ScopeView extends ViewPart {
 	private ToolItem tiZoomout ;
 	private ToolItem tiResize ;
 	
-	private Action acFlatten = new Action("Flatten"){
+/*	private Action acFlatten = new Action("Flatten"){
     	public void run() {
     		//zoomIn();
     		flattenNode();
@@ -229,7 +236,7 @@ public class ScopeView extends ViewPart {
     		//zoomOut();
     		unflattenNode();
     	}
-    };
+    };*/
     
     private Action acZoomin = new Action("Zoom-in"){
     	public void run() {
@@ -373,19 +380,19 @@ public class ScopeView extends ViewPart {
         getSite().registerContextMenu(menuMgr, this.treeViewer);
     }
 
-    private boolean isZoomInShouldbeEnabled(Scope.Node node) {
+    private boolean shouldZoomInBeEnabled(Scope.Node node) {
     	return (node.getChildCount()>0);
     }
     
-    private boolean isZoomOutShouldbeEnabled(Scope.Node node) {
+    private boolean shouldZoomOutBeEnabled(Scope.Node node) {
     	return (node.iLevel>1);
     }
     
-    private boolean isFlattenShouldbeEnabled(Scope.Node node) {
+    private boolean shouldFlattenBeEnabled(Scope.Node node) {
     	return (!node.isLeaf());
     }
     
-    private boolean isUnflattenShouldbeEnabled(Scope.Node node) {
+    private boolean shouldUnflattenBeEnabled(Scope.Node node) {
     	return (node.iLevel>1);
     }
     /**
@@ -417,9 +424,9 @@ public class ScopeView extends ViewPart {
 //        mgr.add(acUnflatten);
 //        acUnflatten.setEnabled(this.isUnflattenShouldbeEnabled(node));
         mgr.add(acZoomin);
-        acZoomin.setEnabled(this.isZoomInShouldbeEnabled(node));
+        acZoomin.setEnabled(this.shouldZoomInBeEnabled(node));
         mgr.add(acZoomout);
-        acZoomout.setEnabled(this.isZoomOutShouldbeEnabled(node));
+        acZoomout.setEnabled(this.shouldZoomOutBeEnabled(node));
         mgr.add(new Separator());
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         if (this.isSourceCodeAvailable(node)) {
@@ -491,10 +498,10 @@ public class ScopeView extends ViewPart {
 		        	/*System.out.println("ScopeView: select "+nodeSelected.getScope().getName()+
 		        			" level:"+nodeSelected.iLevel + " children:"+nodeSelected.getChildCount());
 		        	*/
-		        	tiZoomout.setEnabled(isZoomOutShouldbeEnabled(nodeSelected));
-		        	tiZoomin.setEnabled(isZoomInShouldbeEnabled(nodeSelected));
-		        	tiFlatten.setEnabled(isFlattenShouldbeEnabled(nodeSelected));
-		        	tiUnFlatten.setEnabled(isUnflattenShouldbeEnabled(nodeSelected));
+		        	tiZoomout.setEnabled(shouldZoomOutBeEnabled(nodeSelected));
+		        	tiZoomin.setEnabled(shouldZoomInBeEnabled(nodeSelected));
+		        	tiFlatten.setEnabled(shouldFlattenBeEnabled(nodeSelected));
+		        	tiUnFlatten.setEnabled(shouldUnflattenBeEnabled(nodeSelected));
 		        }
 		      }
 		});

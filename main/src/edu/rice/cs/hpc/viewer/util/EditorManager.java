@@ -77,8 +77,10 @@ public class EditorManager {
 			//objFile=objFile.getChild(objFile.fetchInfo().getName());
 			objFile=objFile.getChild(sFilename);
 	    	if(!objFile.fetchInfo().exists()) {
-	    		 MessageDialog.openInformation(this.windowCurrent.getShell(), "File not found", 
+	    		System.err.println(sFilename+": File not found.");
+	    		 /*MessageDialog.openInformation(this.windowCurrent.getShell(), "File not found", 
 	    		 	sFilename+": File cannot be opened or does not exist in " + objFile.getName());
+	    		 */
 	    		 return; // do we need this ?
 	    	}
 	    	try {

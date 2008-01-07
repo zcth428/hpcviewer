@@ -27,6 +27,10 @@ public class DisplayExperiment implements IWorkbenchWindowActionDelegate {
 		if(this.globalData.getExperiment() != null) {
 			EditorManager editor = new EditorManager(this.windowCurrent);
 			editor.openFileEditor(this.globalData.getFilename());
+		} else {
+			org.eclipse.jface.dialogs.MessageDialog.openError(this.windowCurrent.getShell(), 
+					"Error: Need to open an experiment database", 
+					"In order to display the XML file of the experiment, you need to load first the experiment database !");
 		}
 		
 	}

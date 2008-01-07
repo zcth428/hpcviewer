@@ -46,7 +46,7 @@
          <action
                class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
                icon="icons/hpc-merged-16x16.png"
-               id="edu.rice.cs.hpc.actions.MergeExperiment"
+               id="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
                label="&amp;Merge experiments"
                menubarPath="experimentMenu/experimentGroup"
                toolbarPath="experimentGroup"
@@ -65,7 +65,7 @@
          <action
                class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
                icon="icons/hpc-16x16.png"
-               id="edu.rice.cs.hpc.actions.LoadExperiment"
+               id="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
                label="&amp;Load experiment ..."
                menubarPath="experimentMenu/experimentGroup"
                toolbarPath="experimentGroup"

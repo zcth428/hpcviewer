@@ -96,8 +96,10 @@ public class EditorManager {
 		    	*/
 	    		this.setEditorMarker(wbPage, iLineNumber);
 	    	} catch (PartInitException e) {
-	    		e.printStackTrace();
-	    		MessageDialog.openError(this.windowCurrent.getShell(), "Error opening the file", e.getMessage());
+	    		System.err.println("Error opening the file !");
+	    		System.err.println(e.getMessage());
+	    		//e.printStackTrace("Error opening");
+	    		//MessageDialog.openError(this.windowCurrent.getShell(), "Error opening the file", e.getMessage());
 	       /* some code */
 	     }
 		}

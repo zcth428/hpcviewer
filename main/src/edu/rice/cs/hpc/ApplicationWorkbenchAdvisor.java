@@ -14,6 +14,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		super.initialize(configurer);
 		// enable the workbench state save mechanism
 		configurer.setSaveAndRestore(true);
+		// others
+		/*java.util.Map<String, String> env = System.getenv();
+		int iSize=env.size();
+		String []strenv = (String [])env.keySet().toArray();
+		String []strVal = (String []) env.values().toArray();
+		for(int i=0;i<iSize;i++) {
+			System.out.println("Activator: "+strenv[i] + "->"+strVal[i]);			
+		}*/
 	}
 	
 	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(

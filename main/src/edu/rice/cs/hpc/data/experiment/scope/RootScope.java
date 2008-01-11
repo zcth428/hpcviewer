@@ -130,6 +130,13 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	}
 	
 	/**
+	 * variable to store the leaves in a given level
+	 * The list of the leaves is in form of ArrayOfNodes objects, which is an 
+	 *  array list of nodes
+	 */
+	private java.util.Hashtable<Integer, ArrayOfNodes> tblLeaves = new java.util.Hashtable<Integer, ArrayOfNodes>();
+	//ArrayOfNodes listOfLeaves[] = new ArrayOfNodes[1000]; // maximum 1000 levels
+	/**
 	 * recursive private method to walk through the tree to get the list of nodes
 	 * @param node
 	 * @param iLevel
@@ -144,9 +151,20 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 			} else 
 				listOfNodes = new ArrayOfNodes(iLevel);
 			//System.err.println(str+"FTNS "+ iLevel + " " + node.getScope().getShortName()+" :" +node.getChildCount());
-			for(int i=0;i<node.getChildCount();i++) {
-				Scope.Node nodeKid = (Scope.Node)node.getChildAt(i);
-				this.createFlattenNode(nodeKid, iLevel + 1, str + " ");
+			int nbChildren = node.getChildCount();
+			if(nbChildren>0){
+				for(int i=0;i<nbChildren;i++) {
+					Scope.Node nodeKid = (Scope.Node)node.getChildAt(i);
+					this.createFlattenNode(nodeKid, iLevel + 1, str + " ");
+				}
+			} else {
+				ArrayOfNodes listOfLeaves = tblLeaves.get(objLevel);
+				// this node is the leaf
+				if(listOfLeaves == null) {
+					listOfLeaves = new ArrayOfNodes(iLevel);
+				}
+				listOfLeaves.add(node);	// add this node to the list of leaves
+				this.tblLeaves.put(objLevel, listOfLeaves); // put it "back"
 			}
 			node.iLevel = iLevel;
 			listOfNodes.add(node);
@@ -159,12 +177,26 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	 */
 	public void printFlattenNodes(){
 		if(this.tableNodes != null) {
+			String str= " ";
 			for(int i=0;i<this.tableNodes.size();i++) {
-				ArrayOfNodes listOfNodes = this.tableNodes.get(Integer.valueOf(i));
-				for(int j=0;j<listOfNodes.size();j++) {
-					Scope.Node node = listOfNodes.get(j);
-					System.out.println("nodes:"+node.getScope().getShortName()+" -> " + node.getChildCount());
+				// print the leaves:
+				ArrayOfNodes listOfLeaves = this.tblLeaves.get(Integer.valueOf(i));
+				if(listOfLeaves != null) {
+					System.out.println(str+"*** leaves:"+listOfLeaves.size());
+					/*for(int j=0;j<listOfLeaves.size();j++) {
+						Scope.Node node = listOfLeaves.get(j);
+						System.out.println("***-l:"+node.getScope().getShortName()+" -> " + node.getChildCount());
+					} */
 				}
+			
+				ArrayOfNodes listOfNodes = this.tableNodes.get(Integer.valueOf(i));
+				if(listOfNodes != null) {
+					for(int j=0;j<listOfNodes.size();j++) {
+						Scope.Node node = listOfNodes.get(j);
+						System.out.println(str+"nodes:"+node.getScope().getShortName()+" -> " + node.getChildCount());
+					}
+				}
+				str += "  ";
 			}
 		}
 	}

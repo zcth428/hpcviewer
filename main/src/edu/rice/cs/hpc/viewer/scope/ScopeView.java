@@ -494,9 +494,6 @@ public class ScopeView extends ViewPart {
 
 		        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
 		        if(nodeSelected != null) {
-		        	/*System.out.println("ScopeView: select "+nodeSelected.getScope().getName()+
-		        			" level:"+nodeSelected.iLevel + " children:"+nodeSelected.getChildCount());
-		        	*/
 		        	// update the state of the toolbar items
 		        	tiZoomout.setEnabled(shouldZoomOutBeEnabled(nodeSelected));
 		        	tiZoomin.setEnabled(shouldZoomInBeEnabled(nodeSelected));
@@ -598,6 +595,7 @@ public class ScopeView extends ViewPart {
         
         // generate flattening structure 
         ((RootScope)this.myRootScope).createFlattenNode();
+        ((RootScope)this.myRootScope).printFlattenNodes();
 	}
 
 

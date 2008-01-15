@@ -326,6 +326,8 @@ public class ScopeView extends ViewPart {
     	  }
     	});
     	
+    	new ToolItem(toolbar, SWT.SEPARATOR);
+    	
     	tiResize = new ToolItem(toolbar, SWT.PUSH);
     	tiResize.setToolTipText("Resize columns width");
     	tiResize.setImage(iconsCollection.imgResize);
@@ -334,10 +336,24 @@ public class ScopeView extends ViewPart {
           	resizeTableColumns();
       	  }
       	});
+    	ToolItem tiMenu = new ToolItem(toolbar, SWT.MENU);
+    	tiMenu.setImage(iconsCollection.imgColumns);
+    	tiMenu.setToolTipText("Hide/show columns");
+    	tiMenu.addSelectionListener(new SelectionAdapter() {
+        	  public void widgetSelected(SelectionEvent e) {
+        		  showColumnsProperties();
+        	  }
+        	});
+    	
     	// set the coolitem
     	this.createCoolItem(coolBar, toolbar);
     	this.resetActions();
-	    return aParent;
+
+    	return aParent;
+    }
+    
+    private void showColumnsProperties() {
+    	
     }
     
     //======================================================
@@ -569,6 +585,7 @@ public class ScopeView extends ViewPart {
         		tcMetricColumns[i] = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);	// add column
         		tcMetricColumns[i].setText(titles[i+1]);	// set the title
         		tcMetricColumns[i].setWidth(120); //TODO dynamic size
+        		this.tcMetricColumns[i].setMoveable(true);
         		//tmp.pack();			// resize as much as possible
         		new ColumnViewerSorter(this.treeViewer, tcMetricColumns[i], myExperiment.getMetric(i),i+1); // sorting mechanism
         		

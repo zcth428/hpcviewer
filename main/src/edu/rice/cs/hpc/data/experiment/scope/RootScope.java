@@ -191,10 +191,10 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 			
 				ArrayOfNodes listOfNodes = this.tableNodes.get(Integer.valueOf(i));
 				if(listOfNodes != null) {
-					for(int j=0;j<listOfNodes.size();j++) {
+					/*for(int j=0;j<listOfNodes.size();j++) {
 						Scope.Node node = listOfNodes.get(j);
-						System.out.println(str+"nodes:"+node.getScope().getShortName()+" -> " + node.getChildCount());
-					}
+					} */
+					System.out.println(str+"nodes:"+listOfNodes.size());
 				}
 				str += "  ";
 			}

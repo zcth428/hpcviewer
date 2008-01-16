@@ -14,8 +14,6 @@ import org.eclipse.swt.widgets.*;
 
 // Jface
 import org.eclipse.jface.viewers.*;
-//import org.eclipse.core.runtime.Platform;
-//import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -31,17 +29,20 @@ import edu.rice.cs.hpc.data.experiment.pnode.*;
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 
+import org.eclipse.jface.viewers.TreeViewerColumn;
+
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
 
     private TreeViewer 	treeViewer;		  	// tree for the caller and callees
-    private TreeColumn []tcMetricColumns; 	// metric columns
+    //private TreeColumn []tcMetricColumns; 	// metric columns
     private Experiment 	myExperiment;		// experiment data	
     private PNode[] 	myPNodes;
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;
     private EditorManager editorSourceCode;
 	
+    private TreeViewerColumn []colMetrics;
     //======================================================
     // ................ HELPER ............................
     //======================================================
@@ -208,7 +209,7 @@ public class ScopeView extends ViewPart {
 	private void resizeTableColumns() {
         // resize the column according to the data size
         for (int i=0; i<myExperiment.getMetricCount(); i++) {
-        	tcMetricColumns[i].pack();
+        	//tcMetricColumns[i].pack();
         }
 	}
 
@@ -479,15 +480,22 @@ public class ScopeView extends ViewPart {
     	treeViewer = new TreeViewer(parent);
         //treeViewer = new CommonViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION | SWT.BORDER);
         treeViewer.setContentProvider(new ScopeTreeContentProvider());
-        treeViewer.setLabelProvider(new ScopeTreeLabelProvider());
+        //treeViewer.setLabelProvider(new ScopeTreeLabelProvider());
         
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
 
-        TreeColumn tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, 0);
-        tmp.setText("Scope");
-        tmp.setWidth(200); //TODO dynamic size
-        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, tmp, null,0); 
+        //-----------------
+        //TreeColumn tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, 0);
+        //tmp.get.setText("Scope");
+        //tmp.setWidth(200); //TODO dynamic size
+        //sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, tmp, null,0); 
+        //-----------------
+        TreeViewerColumn tmp = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
+        tmp.getColumn().setText("Scope");
+        tmp.getColumn().setWidth(200); //TODO dynamic size
+        tmp.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
+        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, tmp.getColumn(), null,0); 
         
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view
@@ -573,6 +581,66 @@ public class ScopeView extends ViewPart {
         }
         this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
         // dirty solution to update titles
+        this.colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
+        {
+            // Update metric title labels
+            String[] titles = new String[myExperiment.getMetricCount()+1];
+            titles[0] = "Scope";	// unused element. Already defined
+            // add table column for each metric
+        	for (int i=0; i<myExperiment.getMetricCount(); i++)
+        	{
+        		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
+        		colMetrics[i] = new TreeViewerColumn(treeViewer,SWT.LEFT);	// add column
+        		colMetrics[i].getColumn().setText(titles[i+1]);	// set the title
+        		colMetrics[i].getColumn().setWidth(120); //TODO dynamic size
+        		// laks: addendum for column
+        		this.colMetrics[i].setLabelProvider(new MetricLabelProvider(myExperiment.getMetric(i)));
+        		this.colMetrics[i].getColumn().setMoveable(true);
+        		//tmp.pack();			// resize as much as possible
+        		new ColumnViewerSorter(this.treeViewer, colMetrics[i].getColumn(), myExperiment.getMetric(i),i+1); // sorting mechanism
+        		
+        	}
+            treeViewer.setColumnProperties(titles);
+        }
+        
+        // Update metric value table
+/*        ((ScopeTreeLabelProvider)treeViewer.getLabelProvider()).
+        		setMetrics(myExperiment.getMetrics());
+        
+        // Update active pnodes
+        ((ScopeTreeLabelProvider)treeViewer.getLabelProvider()).
+        		setPNodes(myPNodes);
+*/
+        // Update root scope
+        treeViewer.setInput(myRootScope.getTreeNode());
+
+        // update the window title
+        this.getSite().getShell().setText("HPCViewer: "+myExperiment.getName());
+    	resizeTableColumns();
+        // refresh the content
+        //treeViewer.refresh();
+        
+        // generate flattening structure 
+        ((RootScope)this.myRootScope).createFlattenNode();
+        ((RootScope)this.myRootScope).printFlattenNodes();
+	}
+
+	/**
+	 * Update the content of the tree view
+	 */
+/*	private void updateDisplay2() {
+        if (myExperiment == null)
+        	return;
+        int iColCount = this.treeViewer.getTree().getColumnCount();
+        if(iColCount>1) {
+        	// remove the columns blindly
+        	// TODO we need to have a more elegant solution here
+        	for(int i=1;i<iColCount;i++) {
+        		this.treeViewer.getTree().getColumn(1).dispose();
+        	}
+        }
+        this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
+        // dirty solution to update titles
         this.tcMetricColumns = new TreeColumn[myExperiment.getMetricCount()];
         {
             // Update metric title labels
@@ -614,7 +682,7 @@ public class ScopeView extends ViewPart {
         ((RootScope)this.myRootScope).createFlattenNode();
         ((RootScope)this.myRootScope).printFlattenNodes();
 	}
-
+*/
 
     //======================================================
     // ................ MISC ............................

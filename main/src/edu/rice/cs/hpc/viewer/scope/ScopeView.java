@@ -206,9 +206,12 @@ public class ScopeView extends ViewPart {
 	 */
 	private void resizeTableColumns() {
         // resize the column according to the data size
-        for (int i=0; i<myExperiment.getMetricCount(); i++) {
-        	this.colMetrics[i].getColumn().pack();
-        	//tcMetricColumns[i].pack();
+		int nbCols = this.colMetrics.length;
+        for (int i=0; i<nbCols; i++) {
+        	TreeColumn column = this.colMetrics[i].getColumn();
+        	// do NOT resize if the column is hidden
+        	if(column.getWidth()>1)
+        		column.pack();
         }
 	}
 

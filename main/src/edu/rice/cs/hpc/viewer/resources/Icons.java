@@ -23,6 +23,8 @@ public class Icons {
 	public Image imgHPCbig;
 	public Image imgResize;
 	public Image imgColumns;
+	public Image imgFalse;
+	public Image imgTrue;
 	
 	//-------------------------- image descriptor
 	public ImageDescriptor imdCallFrom;
@@ -35,6 +37,8 @@ public class Icons {
 	public ImageDescriptor imdHPCbig;
 	public ImageDescriptor imdResize;
 	public ImageDescriptor imdColumns;
+	public ImageDescriptor imdFalse;
+	public ImageDescriptor imdTrue;
 
 	static private Icons __singleton=null;
 	
@@ -49,6 +53,8 @@ public class Icons {
 		imdHPCbig = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"hpc-160x160.png");
 		imdResize = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"ResizeColumns.gif");
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
+		this.imdTrue = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"True.png");
+		this.imdFalse =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"False.png");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();
@@ -60,6 +66,8 @@ public class Icons {
 		imgHPCbig = this.imdHPCbig.createImage();
 		imgResize = this.imdResize.createImage();
 		imgColumns = this.imdColumns.createImage();
+		this.imgTrue = this.imdTrue.createImage();
+		this.imgFalse = this.imdFalse.createImage();
 	}
 	
 	public void disposeIcon() {
@@ -74,6 +82,8 @@ public class Icons {
 			imgHPCbig.dispose();
 			imgResize.dispose();
 			this.imgColumns.dispose();
+			this.imgTrue.dispose();
+			this.imgFalse.dispose();
 		} catch (java.lang.Exception e) {
 			e.printStackTrace();
 		}

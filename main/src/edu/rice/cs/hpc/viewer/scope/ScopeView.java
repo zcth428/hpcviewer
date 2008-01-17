@@ -20,16 +20,15 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 
 // HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.pnode.*;
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
-
-import org.eclipse.jface.viewers.TreeViewerColumn;
+import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -37,7 +36,6 @@ public class ScopeView extends ViewPart {
     private TreeViewer 	treeViewer;		  	// tree for the caller and callees
     //private TreeColumn []tcMetricColumns; 	// metric columns
     private Experiment 	myExperiment;		// experiment data	
-    private PNode[] 	myPNodes;
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;
     private EditorManager editorSourceCode;
@@ -209,6 +207,7 @@ public class ScopeView extends ViewPart {
 	private void resizeTableColumns() {
         // resize the column according to the data size
         for (int i=0; i<myExperiment.getMetricCount(); i++) {
+        	this.colMetrics[i].getColumn().pack();
         	//tcMetricColumns[i].pack();
         }
 	}
@@ -224,6 +223,7 @@ public class ScopeView extends ViewPart {
 	private ToolItem tiZoomin;
 	private ToolItem tiZoomout ;
 	private ToolItem tiResize ;
+	private ToolItem tiMenu ;
 	
 /*	private Action acFlatten = new Action("Flatten"){
     	public void run() {
@@ -258,6 +258,8 @@ public class ScopeView extends ViewPart {
 		this.tiUnFlatten.setEnabled(false);
 		this.tiZoomin.setEnabled(false);
 		this.tiZoomout.setEnabled(false);
+		this.tiResize.setEnabled(false);
+		this.tiMenu.setEnabled(false);
 	}
 	
 	/**
@@ -268,6 +270,8 @@ public class ScopeView extends ViewPart {
 		this.tiUnFlatten.setEnabled(true);
 		this.tiZoomin.setEnabled(true);
 		this.tiZoomout.setEnabled(true);
+		this.tiResize.setEnabled(true);
+		this.tiMenu.setEnabled(true);
 	}
     /**
      * Create a toolbar region on the top of the view. This toolbar will be used to host some buttons
@@ -337,7 +341,8 @@ public class ScopeView extends ViewPart {
           	resizeTableColumns();
       	  }
       	});
-    	ToolItem tiMenu = new ToolItem(toolbar, SWT.MENU);
+    	
+    	this.tiMenu = new ToolItem(toolbar, SWT.MENU);
     	tiMenu.setImage(iconsCollection.imgColumns);
     	tiMenu.setToolTipText("Hide/show columns");
     	tiMenu.addSelectionListener(new SelectionAdapter() {
@@ -353,8 +358,32 @@ public class ScopeView extends ViewPart {
     	return aParent;
     }
     
+    /**
+     * Show column properties (hidden, visible ...)
+     */
     private void showColumnsProperties() {
-    	
+    	ColumnProperties objProp = new ColumnProperties(this.getSite().getShell(), this.colMetrics);
+    	objProp.open();
+    		if(objProp.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.OK_ID) {
+        		boolean result[] = objProp.getResult();
+            	for(int i=0;i<result.length;i++) {
+            		if(!result[i]) {
+            			int iWidth = this.colMetrics[i].getColumn().getWidth();
+            			if(iWidth > 0) {
+                			Integer objWidth = Integer.valueOf(iWidth); 
+                			this.colMetrics[i].getColumn().setData(objWidth);
+                			this.colMetrics[i].getColumn().setWidth(0);
+            			}
+            		} else {
+            			Object o = this.colMetrics[i].getColumn().getData();
+            			int iWidth = 120;
+            			if((o != null) && (o instanceof Integer) ) {
+            				iWidth = ((Integer)o).intValue();
+                			this.colMetrics[i].getColumn().setWidth(iWidth);
+            			}
+            		}
+            	}
+    		}
     }
     
     //======================================================
@@ -478,18 +507,11 @@ public class ScopeView extends ViewPart {
 
 		// -----
     	treeViewer = new TreeViewer(parent);
-        //treeViewer = new CommonViewer(parent, SWT.SINGLE|SWT.FULL_SELECTION | SWT.BORDER);
         treeViewer.setContentProvider(new ScopeTreeContentProvider());
-        //treeViewer.setLabelProvider(new ScopeTreeLabelProvider());
         
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
 
-        //-----------------
-        //TreeColumn tmp = new TreeColumn(treeViewer.getTree(),SWT.LEFT, 0);
-        //tmp.get.setText("Scope");
-        //tmp.setWidth(200); //TODO dynamic size
-        //sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, tmp, null,0); 
         //-----------------
         TreeViewerColumn tmp = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
         tmp.getColumn().setText("Scope");
@@ -555,14 +577,9 @@ public class ScopeView extends ViewPart {
     public void setInput(Experiment ex) {
     	myExperiment = ex;
     	if (ex != null) {
-    		//myPNodes = ex.getPNodes();
     		myRootScope = ex.getRootScope();
-    		System.err.println("Experiment is not null");
-    		//TODO myFocusScope = ex.getRootScope();
     	}
     	updateDisplay();
-    	//this.myGlobalData = ExperimentData.getInstance();
-    	//this.myGlobalData.setExperiment(this.myExperiment);
     }
 
 	/**
@@ -603,86 +620,17 @@ public class ScopeView extends ViewPart {
             treeViewer.setColumnProperties(titles);
         }
         
-        // Update metric value table
-/*        ((ScopeTreeLabelProvider)treeViewer.getLabelProvider()).
-        		setMetrics(myExperiment.getMetrics());
-        
-        // Update active pnodes
-        ((ScopeTreeLabelProvider)treeViewer.getLabelProvider()).
-        		setPNodes(myPNodes);
-*/
         // Update root scope
         treeViewer.setInput(myRootScope.getTreeNode());
 
         // update the window title
         this.getSite().getShell().setText("HPCViewer: "+myExperiment.getName());
     	resizeTableColumns();
-        // refresh the content
-        //treeViewer.refresh();
         
         // generate flattening structure 
         ((RootScope)this.myRootScope).createFlattenNode();
         ((RootScope)this.myRootScope).printFlattenNodes();
 	}
-
-	/**
-	 * Update the content of the tree view
-	 */
-/*	private void updateDisplay2() {
-        if (myExperiment == null)
-        	return;
-        int iColCount = this.treeViewer.getTree().getColumnCount();
-        if(iColCount>1) {
-        	// remove the columns blindly
-        	// TODO we need to have a more elegant solution here
-        	for(int i=1;i<iColCount;i++) {
-        		this.treeViewer.getTree().getColumn(1).dispose();
-        	}
-        }
-        this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
-        // dirty solution to update titles
-        this.tcMetricColumns = new TreeColumn[myExperiment.getMetricCount()];
-        {
-            // Update metric title labels
-            String[] titles = new String[myExperiment.getMetricCount()+1];
-            titles[0] = "Scope";	// unused element. Already defined
-            // add table column for each metric
-        	for (int i=0; i<myExperiment.getMetricCount(); i++)
-        	{
-        		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
-        		tcMetricColumns[i] = new TreeColumn(treeViewer.getTree(),SWT.LEFT, i+1);	// add column
-        		tcMetricColumns[i].setText(titles[i+1]);	// set the title
-        		tcMetricColumns[i].setWidth(120); //TODO dynamic size
-        		this.tcMetricColumns[i].setMoveable(true);
-        		//tmp.pack();			// resize as much as possible
-        		new ColumnViewerSorter(this.treeViewer, tcMetricColumns[i], myExperiment.getMetric(i),i+1); // sorting mechanism
-        		
-        	}
-            treeViewer.setColumnProperties(titles);
-        }
-        
-        // Update metric value table
-        ((ScopeTreeLabelProvider)treeViewer.getLabelProvider()).
-        		setMetrics(myExperiment.getMetrics());
-        
-        // Update active pnodes
-        ((ScopeTreeLabelProvider)treeViewer.getLabelProvider()).
-        		setPNodes(myPNodes);
-
-        // Update root scope
-        treeViewer.setInput(myRootScope.getTreeNode());
-
-        // update the window title
-        this.getSite().getShell().setText("HPCViewer: "+myExperiment.getName());
-    	resizeTableColumns();
-        // refresh the content
-        treeViewer.refresh();
-        
-        // generate flattening structure 
-        ((RootScope)this.myRootScope).createFlattenNode();
-        ((RootScope)this.myRootScope).printFlattenNodes();
-	}
-*/
 
     //======================================================
     // ................ MISC ............................

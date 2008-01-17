@@ -182,7 +182,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 				// print the leaves:
 				ArrayOfNodes listOfLeaves = this.tblLeaves.get(Integer.valueOf(i));
 				if(listOfLeaves != null) {
-					System.out.println(str+"*** leaves:"+listOfLeaves.size());
+					//System.out.println(str+"*** leaves:"+listOfLeaves.size());
 					/*for(int j=0;j<listOfLeaves.size();j++) {
 						Scope.Node node = listOfLeaves.get(j);
 						System.out.println("***-l:"+node.getScope().getShortName()+" -> " + node.getChildCount());
@@ -194,7 +194,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 					/*for(int j=0;j<listOfNodes.size();j++) {
 						Scope.Node node = listOfNodes.get(j);
 					} */
-					System.out.println(str+"nodes:"+listOfNodes.size());
+					//System.out.println(str+"nodes:"+listOfNodes.size());
 				}
 				str += "  ";
 			}

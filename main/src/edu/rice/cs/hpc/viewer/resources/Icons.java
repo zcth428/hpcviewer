@@ -51,7 +51,7 @@ public class Icons {
 		imdUnFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
 		imdHPC = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"hpc-16x16.png");
 		imdHPCbig = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"hpc-160x160.png");
-		imdResize = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"ResizeColumns.gif");
+		imdResize = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"resizeColumns.gif");
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
 		this.imdTrue = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"True.png");
 		this.imdFalse =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"False.png");

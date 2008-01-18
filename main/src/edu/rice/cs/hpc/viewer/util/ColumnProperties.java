@@ -116,7 +116,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	    setTitle("Column Properties");
 
 	    // Set the message
-	    setMessage("Columns' properties", IMessageProvider.INFORMATION);
+	    setMessage("Please check columns to be shown and uncheck columns to be hidden", IMessageProvider.INFORMATION);
 
 	    return contents;
 	  }

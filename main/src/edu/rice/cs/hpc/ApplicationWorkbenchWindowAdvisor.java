@@ -1,17 +1,22 @@
 package edu.rice.cs.hpc;
 
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-
 import org.eclipse.ui.IWorkbench;
 
-public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
+import edu.rice.cs.hpc.viewer.resources.ExperimentData;
 
-	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
+public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
+	private ExperimentData dataEx ;
+	
+	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []args) {
 		super(configurer);
+		if(args != null) {
+			dataEx = ExperimentData.getInstance();
+			dataEx.setArguments(args);
+		}
 	}
 
 	public ActionBarAdvisor createActionBarAdvisor(
@@ -39,7 +44,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
-		statusline.setMessage(null, "Load an experiment file to start.");
+		if(this.dataEx != null) {
+			// possibly we have express the experiment file in the command line
+		    edu.rice.cs.hpc.analysis.ExperimentView data = new edu.rice.cs.hpc.analysis.ExperimentView(this.getWindowConfigurer().getWindow().getActivePage());
+		    if(data != null) {
+		    	// data looks OK
+		    	String sFilename = this.dataEx.getArguments()[0];
+		    	data.loadExperimentAndProcess(sFilename);
+		     }
+		} else
+			statusline.setMessage(null, "Load an experiment file to start.");
 	}
 
 }

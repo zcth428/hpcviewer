@@ -152,10 +152,8 @@ public class ScopeView extends ViewPart {
 		if(nodeArray != null) {
 			this.treeViewer.setInput(nodeArray);
 		} else {
-			//Scope.Node nodeFlatten = node.tryFlatten();
 			treeViewer.setInput(node);
 		}
-		//treeViewer.setInput((Scope.Node)node.getParent());
 		treeViewer.refresh();
 	}
 	

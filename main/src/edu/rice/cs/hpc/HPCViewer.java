@@ -9,15 +9,27 @@ import org.eclipse.ui.PlatformUI;
 /**
  * This class controls all aspects of the application's execution
  */
-public class HPCVision implements IApplication {
+public class HPCViewer implements IApplication {
 
+	private String[] checkArguments(IApplicationContext context) {
+		String[] args = (String[])context.getArguments().get("application.args");
+		if(args != null) {
+			System.out.print("Arguments: ");
+			for(int i=0;i<args.length;i++) {
+				System.out.print(" "+args[i]);
+			}
+			System.out.println();
+		}
+		return args;
+	}
 	/* (non-Javadoc)
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) {
 		Display display = PlatformUI.createDisplay();
-		try {
-			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
+		String []args = this.checkArguments(context);
+		try {		
+			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor(args));
 			if (returnCode == PlatformUI.RETURN_RESTART) {
 				return IApplication.EXIT_RESTART;
 			}

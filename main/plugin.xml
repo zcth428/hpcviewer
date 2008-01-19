@@ -6,7 +6,7 @@
          point="org.eclipse.core.runtime.applications">
       <application>
          <run
-               class="edu.rice.cs.hpc.HPCVision">
+               class="edu.rice.cs.hpc.HPCViewer">
          </run>
       </application>
    </extension>

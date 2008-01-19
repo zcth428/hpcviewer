@@ -8,29 +8,30 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 	private static final String PERSPECTIVE_ID = "edu.rice.cs.hpc.perspective";
+	private String[] args;
 
 	// laks: we need to save and restore the configuration
 	public void initialize(IWorkbenchConfigurer configurer) {
 		super.initialize(configurer);
 		// enable the workbench state save mechanism
 		configurer.setSaveAndRestore(true);
-		// others
-		/*java.util.Map<String, String> env = System.getenv();
-		int iSize=env.size();
-		String []strenv = (String [])env.keySet().toArray();
-		String []strVal = (String []) env.values().toArray();
-		for(int i=0;i<iSize;i++) {
-			System.out.println("Activator: "+strenv[i] + "->"+strVal[i]);			
-		}*/
 	}
 	
 	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(
 			IWorkbenchWindowConfigurer configurer) {
-		return new ApplicationWorkbenchWindowAdvisor(configurer);
+		return new ApplicationWorkbenchWindowAdvisor(configurer, this.args);
 	}
 
 	public String getInitialWindowPerspectiveId() {
 		return PERSPECTIVE_ID;
 	}
 
+	public ApplicationWorkbenchAdvisor() {
+		super();
+	}
+	
+	public ApplicationWorkbenchAdvisor(String []arguments) {
+		super();
+		this.args = arguments;
+	}
 }

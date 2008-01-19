@@ -13,7 +13,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []args) {
 		super(configurer);
-		if(args != null) {
+		if(args != null && args.length > 0) {
 			dataEx = ExperimentData.getInstance();
 			dataEx.setArguments(args);
 		}

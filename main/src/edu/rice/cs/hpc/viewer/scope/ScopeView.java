@@ -611,6 +611,7 @@ public class ScopeView extends ViewPart {
         		colMetrics[i] = new TreeViewerColumn(treeViewer,SWT.LEFT);	// add column
         		colMetrics[i].getColumn().setText(titles[i+1]);	// set the title
         		colMetrics[i].getColumn().setWidth(120); //TODO dynamic size
+        		colMetrics[i].getColumn().setAlignment(SWT.RIGHT);
         		// laks: addendum for column
         		this.colMetrics[i].setLabelProvider(new MetricLabelProvider(myExperiment.getMetric(i)));
         		this.colMetrics[i].getColumn().setMoveable(true);

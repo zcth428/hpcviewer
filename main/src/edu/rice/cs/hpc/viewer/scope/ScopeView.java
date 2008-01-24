@@ -472,15 +472,17 @@ public class ScopeView extends ViewPart {
         mgr.add(acZoomout);
         acZoomout.setEnabled(this.shouldZoomOutBeEnabled(node));
         // additional feature
-        mgr.add(new Separator());
-        mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        // show the editor source code
-        if (this.isSourceCodeAvailable(node)) {
-            mgr.add(new ScopeViewTreeAction("Show "+this.getFilename(node), node){
-            	public void run() {
-            		displayFileEditor(this.nodeSelected);
-            	}
-            });
+        if(node.hasSourceCodeFile) {
+            mgr.add(new Separator());
+            mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            // show the editor source code
+            if (this.isSourceCodeAvailable(node)) {
+                mgr.add(new ScopeViewTreeAction("Show "+this.getFilename(node), node){
+                	public void run() {
+                		displayFileEditor(this.nodeSelected);
+                	}
+                });
+            }
         }
     }
     

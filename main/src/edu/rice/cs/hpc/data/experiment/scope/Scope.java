@@ -767,6 +767,13 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 		 */
 		protected Scope userObject;
 		
+		/**
+		 * This public variable indicates if the node contains information about the source code file.
+		 * If the boolean is true, then the filename can be retrieved from its scope
+		 * @author laksono
+		 */
+		public boolean hasSourceCodeFile;
+		
 		/** Constructs a new scope node. */
 		public Node()
 		{
@@ -775,8 +782,13 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 			// fields used by ScopeView
 			this.flattenCount = 0;
 			this.flattenThis  = false;
+			this.hasSourceCodeFile = false;
 		};
 		
+		/**
+		 * Copy the scope into this node
+		 * @param child
+		 */
 		public Node(Object child)
 		{
 			//super(child);
@@ -823,11 +835,14 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 			return this.flattenThis;
 		};
 		
+		/**
+		 * Update the scope of the node
+		 * @param o
+		 */
 		public void setUserObject(Scope o) {
 			this.userObject = o;
 		}
 				
-		
 	};
 	
 }

@@ -65,8 +65,14 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 			SourceFile newFile = ((SourceFile)scope.getSourceFile());
 			if((newFile != null && (newFile != SourceFile.NONE)
 				|| (newFile.isAvailable()))  ){
-				if(newFile instanceof FileSystemSourceFile)
-					return this.windowCurrent.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
+				if(newFile instanceof FileSystemSourceFile) {
+					FileSystemSourceFile srcFile = (FileSystemSourceFile) newFile;
+					if(srcFile !=null && srcFile.isAvailable()) {
+						node.hasSourceCodeFile = true; //update the indicator flag in the node
+						// put the color blue
+						return this.windowCurrent.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
+					}
+				}
 			}
 		}
 		return null;

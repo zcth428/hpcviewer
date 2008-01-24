@@ -359,9 +359,11 @@ protected File makeSearchFile(File search)
  */
 public String getCompleteFilename() {
 	if(this.contentsAvailable) {
-		return this.resolvedPath.getAbsolutePath();
+		if(this.resolvedPath != null)
+			return this.resolvedPath.getAbsolutePath();
 	} else
 		return this.getFilename().getAbsolutePath();
+	return null;
 }
 
 

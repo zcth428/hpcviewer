@@ -15,8 +15,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IEditorRegistry;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
@@ -56,6 +54,7 @@ public class EditorManager {
 		this.windowCurrent = site.getWorkbenchWindow();
     	//this.setDefaultEditor();
 	}
+	
 	/**
 	 * Open and Display editor
 	 * @param node

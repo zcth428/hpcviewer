@@ -472,17 +472,29 @@ public class ScopeView extends ViewPart {
         mgr.add(acZoomout);
         acZoomout.setEnabled(this.shouldZoomOutBeEnabled(node));
         // additional feature
+        mgr.add(new Separator());
+        mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        Scope scope = node.getScope();
         if(node.hasSourceCodeFile) {
-            mgr.add(new Separator());
-            mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             // show the editor source code
-            if (this.isSourceCodeAvailable(node)) {
-                mgr.add(new ScopeViewTreeAction("Show "+this.getFilename(node), node){
+            //if (this.isSourceCodeAvailable(node)) {
+            String sMenuTitle = "Show "+this.getFilename(node) + ":" + scope.getFirstLineNumber();
+            mgr.add(new ScopeViewTreeAction(sMenuTitle, node){
                 	public void run() {
                 		displayFileEditor(this.nodeSelected);
                 	}
-                });
-            }
+            });
+            //}
+        }
+        if(scope instanceof CallSiteScope) {
+        	CallSiteScope callSiteScope = (CallSiteScope) scope;
+        	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
+        	String sMenuTitle = "Callsite "+this.getFilename(lineScope.getTreeNode()) + ":" + lineScope.getFirstLineNumber();
+            mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
+            	public void run() {
+            		displayFileEditor(this.nodeSelected);
+            	}
+            });
         }
     }
     
@@ -535,6 +547,7 @@ public class ScopeView extends ViewPart {
 		this.getSite().setSelectionProvider(treeViewer);
 				
 		treeViewer.addDoubleClickListener(dblListener);
+		//treeViewer.addTreeListener(null,null);
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
 			public void selectionChanged(SelectionChangedEvent event)
 		      {

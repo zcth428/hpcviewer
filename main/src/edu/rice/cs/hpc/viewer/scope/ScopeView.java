@@ -29,6 +29,7 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.ColumnProperties;
+import org.eclipse.swt.graphics.Font;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -39,6 +40,7 @@ public class ScopeView extends ViewPart {
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;
     private EditorManager editorSourceCode;
+    private Font fontColumn;
 	
     private TreeViewerColumn []colMetrics;
     //======================================================
@@ -542,10 +544,10 @@ public class ScopeView extends ViewPart {
         this.createContextMenu();
 
         treeViewer.setInput(null);
-        
+
+        //------------------------ LISTENER
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
-				
 		treeViewer.addDoubleClickListener(dblListener);
 		//treeViewer.addTreeListener(null,null);
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
@@ -570,7 +572,9 @@ public class ScopeView extends ViewPart {
 		        }
 		      }
 		});
-		//makeActions();
+		Display display = Display.getCurrent();
+		int iHeight = display.getSystemFont().getFontData()[0].getHeight();
+		this.fontColumn = new Font(display, "Courier New", iHeight, SWT.NONE);
 	}
 	
     //======================================================
@@ -627,8 +631,11 @@ public class ScopeView extends ViewPart {
         		colMetrics[i].getColumn().setText(titles[i+1]);	// set the title
         		colMetrics[i].getColumn().setWidth(120); //TODO dynamic size
         		colMetrics[i].getColumn().setAlignment(SWT.RIGHT);
+        		
         		// laks: addendum for column
-        		this.colMetrics[i].setLabelProvider(new MetricLabelProvider(myExperiment.getMetric(i)));
+        		
+        		this.colMetrics[i].setLabelProvider(new MetricLabelProvider( 
+        				myExperiment.getMetric(i), this.fontColumn));
         		this.colMetrics[i].getColumn().setMoveable(true);
         		//tmp.pack();			// resize as much as possible
         		new ColumnViewerSorter(this.treeViewer, colMetrics[i].getColumn(), myExperiment.getMetric(i),i+1); // sorting mechanism

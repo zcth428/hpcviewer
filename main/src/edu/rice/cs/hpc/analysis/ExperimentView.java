@@ -141,7 +141,7 @@ public class ExperimentView {
 					objView.setInput(experiment, (RootScope)experiment.getRootScope());
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
 				// enable the view's actions
-				objView.enableActions();
+				//objView.enableActions();
 				this.listOfViews[k] = objView;
 			} catch (org.eclipse.ui.PartInitException e) {
 				e.printStackTrace();

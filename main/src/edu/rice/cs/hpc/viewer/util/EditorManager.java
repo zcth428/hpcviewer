@@ -175,10 +175,10 @@ public class EditorManager {
 
         IEditorInput input = getEditorInput(fileStore);
         String editorId = getEditorId(fileStore);
-        //System.out.println("original editorID:"+ editorId);
+        //System.out.println("Editor Manager original editorID:"+ editorId);
         if(editorId.compareTo(org.eclipse.ui.IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID) == 0) {
-        	editorId = "org.eclipse.cdt.ui.editor.CEditor";
-        	//editorId = "org.eclipse.ui.editors.text.TextEditor";
+        	//editorId = "org.eclipse.cdt.ui.editor.CEditor";
+        	editorId = "org.eclipse.ui.DefaultTextEditor";
         	//System.out.println("Disabling external editor, replace to internal editor:"+editorId);
         }
         // open the editor on the file

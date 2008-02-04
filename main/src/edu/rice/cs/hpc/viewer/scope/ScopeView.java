@@ -35,34 +35,19 @@ public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
 
     private TreeViewer 	treeViewer;		  	// tree for the caller and callees
-    //private TreeColumn []tcMetricColumns; 	// metric columns
+    private TreeViewerColumn colTree;		// column for the calls tree
+    private TreeViewerColumn []colMetrics;	// metric columns
     private Experiment 	myExperiment;		// experiment data	
     private Scope 		myRootScope;		// the root scope of this view
+    private Scope		currentRootScope; 	// current root scope (changed dynamically)
     private ColumnViewerSorter sorterTreeColummn;
     private EditorManager editorSourceCode;
     private Font fontColumn;
 	
-    private TreeViewerColumn []colMetrics;
     //======================================================
     // ................ HELPER ............................
     //======================================================
-    /**
-     * Retrieve the short file name of the node (based on the information from the scope)
-     */
-    private String getFilename(Scope.Node node) {
-    	return node.getScope().getSourceFile().getName();
-    }
     
-    /**
-     * See whether the node has the information of the file name of the code
-     *
-     * @param node
-     * @return true if the information exist, false otherwise
-     */
-    private boolean isSourceCodeAvailable(Scope.Node node) {
-		return (node.getScope().getSourceFile() != SourceFile.NONE
-				|| node.getScope().getSourceFile().isAvailable());
-    }
     
     /**
      * Display the source code of the node in the editor area
@@ -81,6 +66,7 @@ public class ScopeView extends ViewPart {
     /**
 	 * Action for double click in the view: show the file source code if possible
 	 */
+    /*
 	private IDoubleClickListener dblListener = new IDoubleClickListener() {
 		public void doubleClick(DoubleClickEvent event) {
 			if (!(event.getSelection() instanceof StructuredSelection))
@@ -94,7 +80,7 @@ public class ScopeView extends ViewPart {
 			displayFileEditor(node);
 		}
 	};
-
+*/
 	
 	/**
 	 * Go deeper one level
@@ -124,7 +110,6 @@ public class ScopeView extends ViewPart {
 			treeViewer.refresh();		
 		} else {
 			// there is something wrong. we return to the original node
-			//treeViewer.setInput(node);
 			System.err.println("ScopeView-flatten: error cannot flatten further");
 		}
 	}
@@ -149,6 +134,7 @@ public class ScopeView extends ViewPart {
 		}
 		// get the reference node
 		Scope.Node node = (Scope.Node) objNode;
+		if(node.iLevel<2) return;
 		Integer objLevel = Integer.valueOf(node.iLevel-1);
 		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
 		if(nodeArray != null) {
@@ -220,28 +206,14 @@ public class ScopeView extends ViewPart {
     //======================================================
 	
 	//------------------------------------DATA
-
+    // variable declaration uniquely for GUI tooltips
 	private ToolItem tiFlatten;
 	private ToolItem tiUnFlatten ;
 	private ToolItem tiZoomin;
 	private ToolItem tiZoomout ;
 	private ToolItem tiResize ;
-	private ToolItem tiMenu ;
-	
-/*	private Action acFlatten = new Action("Flatten"){
-    	public void run() {
-    		//zoomIn();
-    		flattenNode();
-    	}
-    };
-    
-    private Action acUnflatten = new Action("Unflatten"){
-    	public void run() {
-    		//zoomOut();
-    		unflattenNode();
-    	}
-    };*/
-    
+	private ToolItem tiColumns ;
+	    
     private Action acZoomin = new Action("Zoom-in"){
     	public void run() {
     		zoomIn();
@@ -262,19 +234,15 @@ public class ScopeView extends ViewPart {
 		this.tiZoomin.setEnabled(false);
 		this.tiZoomout.setEnabled(false);
 		this.tiResize.setEnabled(false);
-		this.tiMenu.setEnabled(false);
+		this.tiColumns.setEnabled(false);
 	}
 	
 	/**
-	 * Enable the actions for this view
+	 * Enable the some actions (resize and column properties) actions for this view
 	 */
 	public void enableActions() {
-		this.tiFlatten.setEnabled(true);
-		this.tiUnFlatten.setEnabled(true);
-		this.tiZoomin.setEnabled(true);
-		this.tiZoomout.setEnabled(true);
 		this.tiResize.setEnabled(true);
-		this.tiMenu.setEnabled(true);
+		this.tiColumns.setEnabled(true);
 	}
     /**
      * Create a toolbar region on the top of the view. This toolbar will be used to host some buttons
@@ -345,10 +313,10 @@ public class ScopeView extends ViewPart {
       	  }
       	});
     	
-    	this.tiMenu = new ToolItem(toolbar, SWT.MENU);
-    	tiMenu.setImage(iconsCollection.imgColumns);
-    	tiMenu.setToolTipText("Hide/show columns");
-    	tiMenu.addSelectionListener(new SelectionAdapter() {
+    	this.tiColumns = new ToolItem(toolbar, SWT.MENU);
+    	tiColumns.setImage(iconsCollection.imgColumns);
+    	tiColumns.setToolTipText("Hide/show columns");
+    	tiColumns.addSelectionListener(new SelectionAdapter() {
         	  public void widgetSelected(SelectionEvent e) {
         		  showColumnsProperties();
         	  }
@@ -441,7 +409,13 @@ public class ScopeView extends ViewPart {
     	return (!node.isLeaf());
     }
     
+    /**
+     * Verify if unflatten can be done
+     * @param node root node
+     * @return
+     */
     private boolean shouldUnflattenBeEnabled(Scope.Node node) {
+    	//System.out.println("ScopeView: unflatten:" + node.getScope().getShortName() + " is: " + (node.iLevel>1));
     	return (node.iLevel>1);
     }
     /**
@@ -480,7 +454,7 @@ public class ScopeView extends ViewPart {
         if(node.hasSourceCodeFile) {
             // show the editor source code
             //if (this.isSourceCodeAvailable(node)) {
-            String sMenuTitle = "Show "+this.getFilename(node) + ":" + scope.getFirstLineNumber();
+            String sMenuTitle = "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
             mgr.add(new ScopeViewTreeAction(sMenuTitle, node){
                 	public void run() {
                 		displayFileEditor(this.nodeSelected);
@@ -491,7 +465,7 @@ public class ScopeView extends ViewPart {
         if(scope instanceof CallSiteScope) {
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
-        	String sMenuTitle = "Callsite "+this.getFilename(lineScope.getTreeNode()) + ":" + lineScope.getFirstLineNumber();
+        	String sMenuTitle = "Callsite "+lineScope.getToolTip();
             mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
             	public void run() {
             		displayFileEditor(this.nodeSelected);
@@ -530,11 +504,11 @@ public class ScopeView extends ViewPart {
         treeViewer.getTree().setLinesVisible(true);
 
         //-----------------
-        TreeViewerColumn tmp = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
-        tmp.getColumn().setText("Scope");
-        tmp.getColumn().setWidth(200); //TODO dynamic size
-        tmp.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
-        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, tmp.getColumn(), null,0); 
+        this.colTree = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
+        this.colTree.getColumn().setText("Scope");
+        this.colTree.getColumn().setWidth(200); //TODO dynamic size
+        this.colTree.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
+        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, this.colTree.getColumn(), null,0); 
         
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view
@@ -548,7 +522,7 @@ public class ScopeView extends ViewPart {
         //------------------------ LISTENER
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
-		treeViewer.addDoubleClickListener(dblListener);
+		//treeViewer.addDoubleClickListener(dblListener);
 		//treeViewer.addTreeListener(null,null);
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
 			public void selectionChanged(SelectionChangedEvent event)
@@ -559,15 +533,10 @@ public class ScopeView extends ViewPart {
 		        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
 		        if(nodeSelected != null) {
 		        	// update the state of the toolbar items
-		        	tiZoomout.setEnabled(shouldZoomOutBeEnabled(nodeSelected));
-		        	tiZoomin.setEnabled(shouldZoomInBeEnabled(nodeSelected));
-		        	tiFlatten.setEnabled(shouldFlattenBeEnabled(nodeSelected));
-		        	tiUnFlatten.setEnabled(shouldUnflattenBeEnabled(nodeSelected));
-		        	
-					if (nodeSelected.getScope().getSourceFile() == SourceFile.NONE
-							|| !nodeSelected.getScope().getSourceFile().isAvailable())
-							return;
-					displayFileEditor(nodeSelected);
+		        	CheckZoomButtons(nodeSelected);
+		        	CheckFlattenButtons();
+					if(nodeSelected.hasSourceCodeFile)
+						displayFileEditor(nodeSelected);
 
 		        }
 		      }
@@ -577,6 +546,31 @@ public class ScopeView extends ViewPart {
 		this.fontColumn = new Font(display, "Courier New", iHeight, SWT.NONE);
 	}
 	
+    /**
+     * Check zoom buttons (zoom out and zoom in)
+     * @param node: the current selected node
+     */
+    private void CheckZoomButtons(Scope.Node node) {
+    	tiZoomout.setEnabled(shouldZoomOutBeEnabled(node));
+    	tiZoomin.setEnabled(shouldZoomInBeEnabled(node));
+    }
+    /**
+     * Check if flatten/unflatten buttons need to be disable or not.
+     */
+    private void CheckFlattenButtons() {
+    	TreeItem rootItem = treeViewer.getTree().getItem(0);
+    	// now we prepare for the flatten
+    	Scope.Node nodeRoot = null;
+    	Object o = rootItem.getData(); 
+    	if(o instanceof Scope.Node) {
+    		nodeRoot = (Scope.Node) rootItem.getData();
+    	} else if(o instanceof ArrayOfNodes) {
+    		ArrayOfNodes objArray = (ArrayOfNodes) rootItem.getData();
+    		nodeRoot = (Scope.Node) objArray.get(0);
+    	}
+    	tiFlatten.setEnabled(shouldFlattenBeEnabled(nodeRoot));
+    	tiUnFlatten.setEnabled(shouldUnflattenBeEnabled(nodeRoot));
+    }
     //======================================================
     // ................ UPDATE ............................
     //======================================================
@@ -654,6 +648,9 @@ public class ScopeView extends ViewPart {
         // generate flattening structure 
         ((RootScope)this.myRootScope).createFlattenNode();
         ((RootScope)this.myRootScope).printFlattenNodes();
+        
+        this.CheckFlattenButtons();
+        this.CheckZoomButtons(myRootScope.getTreeNode());
 	}
 
     //======================================================

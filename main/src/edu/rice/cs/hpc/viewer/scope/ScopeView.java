@@ -648,7 +648,8 @@ public class ScopeView extends ViewPart {
         // generate flattening structure 
         ((RootScope)this.myRootScope).createFlattenNode();
         ((RootScope)this.myRootScope).printFlattenNodes();
-        
+    
+        this.enableActions();
         this.CheckFlattenButtons();
         this.CheckZoomButtons(myRootScope.getTreeNode());
 	}

@@ -24,17 +24,12 @@ and supported by the Center for Scalable Application Development Software (CScAD
 
    <windowImages i16="icons/hpc-16x16.gif" i32="icons/hpc-32x32.gif" i48="icons/hpcviewer64.gif" i64="icons/hpcviewer128.gif"/>
 
-
    <plugins>
       <plugin id="com.ibm.icu"/>
-      <plugin id="com.ibm.icu36.data.update" fragment="true"/>
+      <plugin id="com.ibm.icu36.data.update"/>
       <plugin id="edu.rice.cs.hpc"/>
       <plugin id="org.apache.xerces"/>
       <plugin id="org.apache.xml.resolver"/>
-      <plugin id="org.eclipse.cdt.core"/>
-      <plugin id="org.eclipse.cdt.core.macosx" fragment="true"/>
-      <plugin id="org.eclipse.cdt.refactoring"/>
-      <plugin id="org.eclipse.cdt.ui"/>
       <plugin id="org.eclipse.compare"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>

@@ -49,8 +49,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    edu.rice.cs.hpc.analysis.ExperimentView data = new edu.rice.cs.hpc.analysis.ExperimentView(this.getWindowConfigurer().getWindow().getActivePage());
 		    if(data != null) {
 		    	// data looks OK
-		    	String sFilename = this.dataEx.getArguments()[0];
-		    	data.loadExperimentAndProcess(sFilename);
+		    	String []sArgs = this.dataEx.getArguments();
+		    	String sFilename = null;
+		    	for(int i=0;i<sArgs.length;i++) {
+		    		if(sArgs[i].charAt(0) != '-') {
+		    			sFilename = sArgs[i];
+		    			break;
+		    		}
+		    	}
+		    	if(sFilename != null)
+		    		data.loadExperimentAndProcess(sFilename);
 		     }
 		} else
 			statusline.setMessage(null, "Load an experiment file to start.");

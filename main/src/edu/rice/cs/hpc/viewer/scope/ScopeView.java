@@ -431,6 +431,7 @@ public class ScopeView extends ViewPart {
         mgr.add(new Separator());
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         Scope scope = node.getScope();
+        // show the source code
         if(node.hasSourceCodeFile) {
             // show the editor source code
         	String sMenuTitle ;
@@ -444,15 +445,19 @@ public class ScopeView extends ViewPart {
                 	}
             });
         }
+        // show the call site in case this one exists
         if(scope instanceof CallSiteScope) {
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
-        	String sMenuTitle = "Callsite "+lineScope.getToolTip();
-            mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
-            	public void run() {
-            		displayFileEditor(this.nodeSelected);
-            	}
-            });
+        	// do not show up in the menu context if the callsite does not exist
+        	if(lineScope.getTreeNode().hasSourceCodeFile) {
+            	String sMenuTitle = "Callsite "+lineScope.getToolTip();
+                mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
+                	public void run() {
+                		displayFileEditor(this.nodeSelected);
+                	}
+                });
+        	}
         }
     }
     

@@ -24,7 +24,6 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 
 // HPC
 import edu.rice.cs.hpc.data.experiment.*;
-import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
@@ -39,7 +38,6 @@ public class ScopeView extends ViewPart {
     private TreeViewerColumn []colMetrics;	// metric columns
     private Experiment 	myExperiment;		// experiment data	
     private Scope 		myRootScope;		// the root scope of this view
-    private Scope		currentRootScope; 	// current root scope (changed dynamically)
     private ColumnViewerSorter sorterTreeColummn;
     private EditorManager editorSourceCode;
     private Font fontColumn;
@@ -63,24 +61,6 @@ public class ScopeView extends ViewPart {
     //======================================================
     // ................ ACTIONS ............................
     //======================================================
-    /**
-	 * Action for double click in the view: show the file source code if possible
-	 */
-    /*
-	private IDoubleClickListener dblListener = new IDoubleClickListener() {
-		public void doubleClick(DoubleClickEvent event) {
-			if (!(event.getSelection() instanceof StructuredSelection))
-				return;
-			StructuredSelection sel = (StructuredSelection) event.getSelection();
-			Scope.Node node = (Scope.Node) sel.getFirstElement();
-			// check if the source code is available
-			if (node.getScope().getSourceFile() == SourceFile.NONE
-				|| !node.getScope().getSourceFile().isAvailable())
-				return;
-			displayFileEditor(node);
-		}
-	};
-*/
 	
 	/**
 	 * Go deeper one level
@@ -453,14 +433,16 @@ public class ScopeView extends ViewPart {
         Scope scope = node.getScope();
         if(node.hasSourceCodeFile) {
             // show the editor source code
-            //if (this.isSourceCodeAvailable(node)) {
-            String sMenuTitle = "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
+        	String sMenuTitle ;
+        	if(scope instanceof FileScope) {
+        		sMenuTitle = "Show " + scope.getSourceFile().getName();
+        	} else
+        		sMenuTitle= "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
             mgr.add(new ScopeViewTreeAction(sMenuTitle, node){
                 	public void run() {
                 		displayFileEditor(this.nodeSelected);
                 	}
             });
-            //}
         }
         if(scope instanceof CallSiteScope) {
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
@@ -522,8 +504,6 @@ public class ScopeView extends ViewPart {
         //------------------------ LISTENER
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
-		//treeViewer.addDoubleClickListener(dblListener);
-		//treeViewer.addTreeListener(null,null);
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
 			public void selectionChanged(SelectionChangedEvent event)
 		      {
@@ -626,8 +606,7 @@ public class ScopeView extends ViewPart {
         		colMetrics[i].getColumn().setWidth(120); //TODO dynamic size
         		colMetrics[i].getColumn().setAlignment(SWT.RIGHT);
         		
-        		// laks: addendum for column
-        		
+        		// laks: addendum for column        		
         		this.colMetrics[i].setLabelProvider(new MetricLabelProvider( 
         				myExperiment.getMetric(i), this.fontColumn));
         		this.colMetrics[i].getColumn().setMoveable(true);

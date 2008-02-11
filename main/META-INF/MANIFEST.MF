@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: HPC-Vision
+Bundle-Name: HPCViewer
 Bundle-SymbolicName: edu.rice.cs.hpc;singleton:=true
 Bundle-Version: 1.0.1
 Bundle-Activator: edu.rice.cs.hpc.Activator

@@ -8,8 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 //import org.eclipse.ui.IWorkbenchPage;
 //import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.IViewPart;
-import org.eclipse.jface.dialogs.MessageDialog;
-
+import edu.rice.cs.hpc.viewer.util.*;
 //import edu.rice.cs.HPCVision.data.Experiment.*;
 /**
  * Our sample action implements workbench action delegate.
@@ -20,11 +19,12 @@ import org.eclipse.jface.dialogs.MessageDialog;
  * @see IWorkbenchWindowActionDelegate
  */
 public class LoadExperiment implements IWorkbenchWindowActionDelegate {
-	private IWorkbenchWindow window;
+	private ExperimentFile expFile;
 	/**
 	 * The constructor.
 	 */
 	public LoadExperiment() {
+		super();
 	}
 
 	/**
@@ -35,17 +35,7 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 */
 	public void run(IAction action) {
     	// open a file dialog
-    	org.eclipse.swt.widgets.FileDialog fileDialog=new org.eclipse.swt.widgets.FileDialog(
-    			window.getShell(),
-    			org.eclipse.swt.SWT.OPEN);
-    	fileDialog.setText("Load an XML experiment file");
-    	String sFile = fileDialog.open();
-    	// load the experiment file
-    	if(sFile != null) {
-    		System.out.println("Opening "+ sFile + " .... ");
-    		this.setExperiment(sFile);
- //   		loadData(sFile);
-    	}
+		expFile.openFileExperiment();
 	}
 
 	/**
@@ -72,34 +62,7 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
 	public void init(IWorkbenchWindow window) {
-		this.window = window;
+		expFile = new ExperimentFile(window);
 	}
 	
-	public void setExperiment(String sFilename) {
-		org.eclipse.ui.IWorkbenchPage objPage= this.window.getActivePage();
-		// read the XML experiment file
-	    edu.rice.cs.hpc.analysis.ExperimentView data = new edu.rice.cs.hpc.analysis.ExperimentView(objPage);
-	    if(data != null) {
-	    	// data looks OK
-	    	data.loadExperimentAndProcess(sFilename);
-	    	
-	     } else
-	    	 return; //TODO we need to throw an exception instead
-
-		edu.rice.cs.hpc.viewer.scope.ScopeView objView=(edu.rice.cs.hpc.viewer.scope.ScopeView) 
-			objPage.findView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
-		if(objView == null) {
-   	     //the view is not hidden, instead it has not
-   	     //been opened yet
-			try {
-				objView=(edu.rice.cs.hpc.viewer.scope.ScopeView) objPage.showView(
-						edu.rice.cs.hpc.viewer.scope.ScopeView.ID, "Scope", org.eclipse.ui.IWorkbenchPage.VIEW_CREATE);
-			} catch(org.eclipse.ui.PartInitException e) {
-				MessageDialog.openError(window.getShell(), 
-						"Error opening view", "Unabale to open the scope view. Please activate the scope view manually.");
-				return;
-			}
-		}
-		//objView.loadExperiment(sFilename);
-	}
 } 

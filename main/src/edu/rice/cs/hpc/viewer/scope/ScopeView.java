@@ -450,14 +450,14 @@ public class ScopeView extends ViewPart {
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
         	// do not show up in the menu context if the callsite does not exist
-        	if(lineScope.getTreeNode().hasSourceCodeFile) {
+//        	if(lineScope.getTreeNode().hasSourceCodeFile) {
             	String sMenuTitle = "Callsite "+lineScope.getToolTip();
                 mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
                 	public void run() {
                 		displayFileEditor(this.nodeSelected);
                 	}
                 });
-        	}
+ //       	}
         }
     }
     

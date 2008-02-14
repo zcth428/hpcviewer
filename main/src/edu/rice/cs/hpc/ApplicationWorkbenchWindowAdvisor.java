@@ -7,6 +7,8 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.IWorkbench;
 
 import edu.rice.cs.hpc.viewer.resources.ExperimentData;
+import edu.rice.cs.hpc.analysis.ExperimentView;
+import edu.rice.cs.hpc.viewer.util.*;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private ExperimentData dataEx ;
@@ -32,8 +34,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		configurer.setTitle("HPCViewer");
 		
 	}
-	public void postWindowOpen() {
 
+	/**
+	 * Action when the window is already opened
+	 */
+	public void postWindowOpen() {
+		// set the perspective (to setup the view as well)
 		IWorkbench workbench = org.eclipse.ui.PlatformUI.getWorkbench();
 		try {
 		   workbench.showPerspective("edu.rice.cs.hpc.perspective", 
@@ -42,11 +48,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} catch (org.eclipse.ui.WorkbenchException e) {
 			e.printStackTrace();
 		}
+		// set the status bar
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
+		// -------------------
+		// see if the argument provides the database to load
 		if(this.dataEx != null) {
 			// possibly we have express the experiment file in the command line
-		    edu.rice.cs.hpc.analysis.ExperimentView data = new edu.rice.cs.hpc.analysis.ExperimentView(this.getWindowConfigurer().getWindow().getActivePage());
+			ExperimentView data = new ExperimentView(this.getWindowConfigurer().getWindow().getActivePage());
 		    if(data != null) {
 		    	// data looks OK
 		    	String []sArgs = this.dataEx.getArguments();
@@ -60,8 +69,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    	if(sFilename != null)
 		    		data.loadExperimentAndProcess(sFilename);
 		     }
-		} else
+		} else {
+			// there is no information about the database
 			statusline.setMessage(null, "Load an experiment file to start.");
+			// we need load the file ASAP
+			ExperimentFile expFile = new ExperimentFile(this.getWindowConfigurer().getWindow());
+			if(expFile != null) {
+				expFile.openFileExperiment();
+			}
+		}
 	}
 
 }

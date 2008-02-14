@@ -18,6 +18,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
@@ -46,6 +48,8 @@ public class EditorManager {
      * @param window
      */
     public EditorManager(IWorkbenchWindow window) {
+    	String sLine = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER;
+    	EditorsUI.getPreferenceStore().setValue(sLine, true);
     	this.windowCurrent = window;
     	//this.setDefaultEditor();
     }
@@ -108,32 +112,14 @@ public class EditorManager {
 			objFile=objFile.getChild(sFilename);
 	    	if(!objFile.fetchInfo().exists()) {
 	    		System.err.println(sFilename+": File not found.");
-	    		 /*MessageDialog.openInformation(this.windowCurrent.getShell(), "File not found", 
-	    		 	sFilename+": File cannot be opened or does not exist in " + objFile.getName());
-	    		 */
 	    		 return; // do we need this ?
 	    	}
 	    	try {
 	    		IEditorPart objEditor = openEditorOnFileStore(wbPage, objFile); 
-	    			//org.eclipse.ui.ide.IDE.openEditorOnFileStore(wbPage, objFile);
-	    		/*IContentOutlinePage outlinePage = (IContentOutlinePage) objEditor.getAdapter(IContentOutlinePage.class);
-	    		 if (outlinePage != null) {
-	    		    // editor wishes to contribute outlinePage to content outline view
-	    			 
-	 	    		IViewPart objOutlineView = wbPage.showView("org.eclipse.ui.views.ContentOutline");
-	 	    		wbPage.showView(this.ID);
-	 	    		this.setFocus();	 	    		
-	 	    		this.treeViewer.getTree().setFocus();
-	    		 }
-		    	System.out.println(" ScopeView: " + objEditor.getClass() + " outline: "+ outlinePage.getClass());
-		    	*/
 	    		this.setEditorMarker(wbPage, iLineNumber);
 	    	} catch (PartInitException e) {
 	    		System.err.println("Error opening the file !");
 	    		System.err.println(e.getMessage());
-	    		//e.printStackTrace("Error opening");
-	    		//MessageDialog.openError(this.windowCurrent.getShell(), "Error opening the file", e.getMessage());
-	       /* some code */
 	     }
 		}
 	}
@@ -147,9 +133,10 @@ public class EditorManager {
 	       //IFile file;
 	       try{
 	    	   IResource resource = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot();
-	    	   IMarker marker=resource.createMarker("HPCViewer"); 
+	    	   IMarker marker=resource.createMarker(IMarker.MARKER); 
 			   marker.setAttribute(IMarker.LINE_NUMBER, iLineNumber+1);
-			   marker.setAttribute(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_INFO));
+			   marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+			   marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
 			   org.eclipse.ui.ide.IDE.gotoMarker(wbPage.getActiveEditor(), marker);
 	    	   
 	       } catch (org.eclipse.core.runtime.CoreException e) {
@@ -178,7 +165,7 @@ public class EditorManager {
         //System.out.println("Editor Manager original editorID:"+ editorId);
         if(editorId.compareTo(org.eclipse.ui.IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID) == 0) {
         	//editorId = "org.eclipse.cdt.ui.editor.CEditor";
-        	editorId = "org.eclipse.ui.DefaultTextEditor";
+        	editorId = EditorsUI.DEFAULT_TEXT_EDITOR_ID;
         	//System.out.println("Disabling external editor, replace to internal editor:"+editorId);
         }
         // open the editor on the file

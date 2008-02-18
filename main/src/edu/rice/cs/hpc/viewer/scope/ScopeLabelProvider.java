@@ -48,7 +48,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 		String text = "-";
 		if (element instanceof Scope.Node){
 			Scope.Node node = (Scope.Node) element;
-			text = node.getScope().getShortName();			
+			text = node.getScope().getName();			
 		} else
 			text = element.getClass().toString();
 		return text;

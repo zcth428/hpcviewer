@@ -87,7 +87,8 @@ public class ScopeView extends ViewPart {
 		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
 		if(nodeArray != null) {
 			this.treeViewer.setInput(nodeArray);
-			treeViewer.refresh();		
+			this.CheckFlattenButtons();
+			//treeViewer.refresh();		
 		} else {
 			// there is something wrong. we return to the original node
 			System.err.println("ScopeView-flatten: error cannot flatten further");
@@ -119,10 +120,11 @@ public class ScopeView extends ViewPart {
 		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
 		if(nodeArray != null) {
 			this.treeViewer.setInput(nodeArray);
+			this.CheckFlattenButtons();
 		} else {
-			treeViewer.setInput(node);
+			//treeViewer.setInput(node);
 		}
-		treeViewer.refresh();
+		//treeViewer.refresh();
 	}
 	
 	/**
@@ -138,7 +140,7 @@ public class ScopeView extends ViewPart {
 			return;
 		}
 		treeViewer.setInput(o);
-		treeViewer.refresh();
+		//treeViewer.refresh();
 	}
 	
 	/**
@@ -163,7 +165,7 @@ public class ScopeView extends ViewPart {
 		if (parent == null)
 			return;
 		treeViewer.setInput( parent );
-		treeViewer.refresh();
+		//treeViewer.refresh();
 	}
 	
 	/**
@@ -635,7 +637,8 @@ public class ScopeView extends ViewPart {
     
         this.enableActions();
         this.CheckFlattenButtons();
-        this.CheckZoomButtons(myRootScope.getTreeNode());
+        // no node is selected, so all zoom buttons are disabled
+        //this.CheckZoomButtons(myRootScope.getTreeNode());
 	}
 
     //======================================================

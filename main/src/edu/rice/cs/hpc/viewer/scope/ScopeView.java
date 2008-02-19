@@ -486,27 +486,25 @@ public class ScopeView extends ViewPart {
     	Composite parent = this.createCoolBar(aParent);
 
 		// -----
-    	treeViewer = new TreeViewer(parent);
-        treeViewer.setContentProvider(new ScopeTreeContentProvider());
-        
+    	treeViewer = new TreeViewer(parent,SWT.BORDER|SWT.FULL_SELECTION);
+    	// set the attributes
+    	treeViewer.setContentProvider(new ScopeTreeContentProvider());
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
 
-        //-----------------
+        //----------------- create the column tree
         this.colTree = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
         this.colTree.getColumn().setText("Scope");
         this.colTree.getColumn().setWidth(200); //TODO dynamic size
         this.colTree.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
         sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, this.colTree.getColumn(), null,0); 
-        
+
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view
         GridData data = new GridData(GridData.FILL_BOTH);
         treeViewer.getTree().setLayoutData(data);
         //-----------------
         this.createContextMenu();
-
-        treeViewer.setInput(null);
 
         //------------------------ LISTENER
 		// allow other views to listen for selections in this view (site)
@@ -528,6 +526,8 @@ public class ScopeView extends ViewPart {
 		        }
 		      }
 		});
+		
+		// prepare the font for metric columns: it is supposed to be fixed font
 		Display display = Display.getCurrent();
 		int iHeight = display.getSystemFont().getFontData()[0].getHeight();
 		this.fontColumn = new Font(display, "Courier New", iHeight, SWT.NONE);

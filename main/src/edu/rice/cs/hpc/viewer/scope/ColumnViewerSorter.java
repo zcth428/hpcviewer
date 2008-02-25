@@ -64,7 +64,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 				}
 			}
 		});
-		if (colNum == 1) setSorter(this, ASC); // johnmc
+		//if (colNum == 1) setSorter(this, ASC); // johnmc
 	}
 	
 	/**
@@ -91,7 +91,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 				viewer.refresh();
 			} else {
 				viewer.setComparator(sorter);
-				viewer.refresh(); // johnmc
+				//viewer.refresh(); // johnmc
 			}
 			
 		}

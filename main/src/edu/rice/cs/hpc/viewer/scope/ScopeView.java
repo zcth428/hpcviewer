@@ -38,9 +38,9 @@ public class ScopeView extends ViewPart {
     private TreeViewerColumn []colMetrics;	// metric columns
     private Experiment 	myExperiment;		// experiment data	
     private Scope 		myRootScope;		// the root scope of this view
-    private ColumnViewerSorter sorterTreeColummn;
-    private EditorManager editorSourceCode;
-    private Font fontColumn;
+    private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
+    private EditorManager editorSourceCode;	// manager to display the source code
+    private Font fontColumn;				// fixed font for metrics column 
 	
     //======================================================
     // ................ HELPER ............................
@@ -88,7 +88,6 @@ public class ScopeView extends ViewPart {
 		if(nodeArray != null) {
 			this.treeViewer.setInput(nodeArray);
 			this.CheckFlattenButtons();
-			//treeViewer.refresh();		
 		} else {
 			// there is something wrong. we return to the original node
 			System.err.println("ScopeView-flatten: error cannot flatten further");
@@ -121,10 +120,7 @@ public class ScopeView extends ViewPart {
 		if(nodeArray != null) {
 			this.treeViewer.setInput(nodeArray);
 			this.CheckFlattenButtons();
-		} else {
-			//treeViewer.setInput(node);
 		}
-		//treeViewer.refresh();
 	}
 	
 	/**
@@ -165,7 +161,6 @@ public class ScopeView extends ViewPart {
 		if (parent == null)
 			return;
 		treeViewer.setInput( parent );
-		//treeViewer.refresh();
 	}
 	
 	/**
@@ -618,7 +613,11 @@ public class ScopeView extends ViewPart {
         				myExperiment.getMetric(i), this.fontColumn));
         		this.colMetrics[i].getColumn().setMoveable(true);
         		//tmp.pack();			// resize as much as possible
-        		new ColumnViewerSorter(this.treeViewer, colMetrics[i].getColumn(), myExperiment.getMetric(i),i+1); // sorting mechanism
+        		ColumnViewerSorter colSorter = new ColumnViewerSorter(this.treeViewer, 
+        				colMetrics[i].getColumn(), myExperiment.getMetric(i),i+1); // sorting mechanism
+        		if(i==0)
+        			colSorter.setSorter(colSorter, ColumnViewerSorter.ASC); // laks: by default, the first
+        						// column will be sorted here, instead of initializing inside the sort class.
         		
         	}
             treeViewer.setColumnProperties(titles);

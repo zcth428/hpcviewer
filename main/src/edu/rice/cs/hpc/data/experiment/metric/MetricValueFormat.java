@@ -454,15 +454,16 @@ public String format(MetricValue value)
 		if( value.isPercentAvailable() )
 		{
 			double number = value.getPercentValue();
-			String string = this.formatDouble(number, this.percentFormatter, this.percentStyle);
-			formatted.append(string);
+			if (number == 1.0) {    // johnmc
+				formatted.append("100 %");
+			} else {
+				String string = this.formatDouble(number, this.percentFormatter, this.percentStyle);
+				formatted.append(string);
+			}
 		}
 		else
 			formatted.append(Util.spaces(this.percentStyle.fieldWidth));
 	}
-	
-	// append a trailing space for visual appeal
-	formatted.append(" ");
 	
 	return formatted.toString();
 }

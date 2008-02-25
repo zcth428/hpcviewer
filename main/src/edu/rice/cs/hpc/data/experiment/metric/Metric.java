@@ -92,7 +92,7 @@ public Metric(Experiment experiment,
 	this.experiment  = experiment;
 	this.shortName   = shortName;
 	this.nativeName  = nativeName;
-	this.displayName = displayName;
+	this.displayName = displayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle
 	this.displayed   = displayed;
 	this.percent     = percent;
     this.sampleperiod  = sampleperiod;

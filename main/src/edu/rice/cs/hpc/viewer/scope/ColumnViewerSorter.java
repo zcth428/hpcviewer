@@ -54,7 +54,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 						if( tdirection == ASC ) {
 							setSorter(ColumnViewerSorter.this, DESC);
 						} else if( tdirection == DESC ) {
-							setSorter(ColumnViewerSorter.this, NONE);
+							setSorter(ColumnViewerSorter.this, ASC);
 						}
 					} else {
 						setSorter(ColumnViewerSorter.this, ASC);
@@ -64,6 +64,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 				}
 			}
 		});
+		if (colNum == 1) setSorter(this, ASC); // johnmc
 	}
 	
 	/**
@@ -90,6 +91,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 				viewer.refresh();
 			} else {
 				viewer.setComparator(sorter);
+				viewer.refresh(); // johnmc
 			}
 			
 		}

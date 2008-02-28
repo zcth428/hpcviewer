@@ -103,7 +103,18 @@ public class ColumnViewerSorter extends ViewerComparator {
 	public int compare(Viewer viewer, Object e1, Object e2) {
 		return direction * doCompare(viewer, e1, e2);
 	}
-	
+
+	/**
+	 * Compare the name of the node 1 and node 2.
+	 * @param node1
+	 * @param node2
+	 * @return
+	 */
+	private int doCompare(Scope.Node node1, Scope.Node node2) {
+		String text1 = node1.getScope().getName();
+		String text2 = node2.getScope().getName();
+		return text1.compareTo(text2);
+	}
 	// laks: lazy comparison
 	/**
 	 * This method is to compare one object to another
@@ -118,9 +129,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 			// according to its element name
 			// otherwise, sort according to the metric
 			if(this.iColNumber==0) {
-				String text1 = node1.getScope().getShortName();
-				String text2 = node2.getScope().getShortName();
-				return text1.compareTo(text2);
+				return this.doCompare(node1, node2);
 			} else {
 				// get the metric
 				MetricValue mv1 = node1.getScope().getMetricValue(metric);
@@ -128,6 +137,8 @@ public class ColumnViewerSorter extends ViewerComparator {
 				
 				if (mv1.getValue()>mv2.getValue()) return -1;
 				if (mv1.getValue()<mv2.getValue()) return 1;
+				// if the two values are equal, look at the text of the tree node
+				return this.doCompare(node1, node2);
 			}
 		}
 		return 0;

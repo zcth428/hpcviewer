@@ -606,6 +606,21 @@ public void setMetricValue(int index, MetricValue value)
 	this.metrics[index] = value;
 }
 
+//---------------- Laks: add new method to find the text 
+/**
+ * Retrieve the text value of the metric
+ * @PARAM: the metric
+ */
+public String getMetricTextValue(Metric metric) {
+	MetricValue mv = this.getMetricValue(metric);
+	String sText;
+	if(mv.getPercentValue() == 0.0) sText = "";
+	else{
+			sText = metric.getDisplayFormat().format(mv);
+	}
+	return sText;
+}
+
 public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter, int nMetrics) {
 	for (int i = 0; i< nMetrics; i++) {
 		this.accumulateMetric(source, i, i, filter);

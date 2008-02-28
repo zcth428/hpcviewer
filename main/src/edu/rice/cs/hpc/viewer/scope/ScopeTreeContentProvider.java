@@ -3,17 +3,32 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.jface.viewers.*;
 
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.data.experiment.Experiment;
 
 public class ScopeTreeContentProvider implements ITreeContentProvider {
     protected TreeViewer viewer;
     final int MODE_FLAT=1;
     final int MODE_NORMAL = 0;
     private int iMode=0;
+    private Experiment experiment = null;
     
+    /**
+     * set the mode to flatten/unflatten
+     */
     public void setModeFlat() {
     	this.iMode = this.MODE_FLAT;
     }
 
+    /**
+     * set the experiment file
+     * @param exp
+     */
+    public void setExperiment(Experiment exp) {
+    	this.experiment = exp;
+    }
+    /**
+     * get the number of elements (called by jface)
+     */
     public Object[] getElements(Object inputElement) {
             return getChildren(inputElement);
     }
@@ -34,11 +49,15 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     	} else if(parentElement instanceof ArrayOfNodes) {
     		// flat-tree node
     		ArrayOfNodes listNodes = (ArrayOfNodes) parentElement;
-    		//System.err.println(this.getClass()+":"+listNodes.size()+" elements");
+    		/* System.err.println("TreeContentProvider:"+ listNodes.size());
+    		
+    		if(this.experiment != null)
+    			listNodes.add(0, this.experiment.getRootScope().getTreeNode());
+    			
+    			*/
     		return listNodes.toArray();
     	}
-    		return null;
-    	//return ((Scope.Node) parentElement).getChildren();
+    	return null;
     }
 
     public Object getParent(Object element) {
@@ -60,16 +79,8 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     *   does not have an input
     */
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            if (viewer instanceof TreeViewer)
-            	this.viewer = (TreeViewer)viewer;
-            /*
-            if(oldInput != null) {
-                    removeListenerFrom((Scope.Node)oldInput);
-            }
-            if(newInput != null) {
-                    addListenerTo((Scope.Node)newInput);
-            }
-            */
+    	if (viewer instanceof TreeViewer)
+            this.viewer = (TreeViewer)viewer;
     }
  
     public void dispose() {}

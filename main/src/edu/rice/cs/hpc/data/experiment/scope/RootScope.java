@@ -41,7 +41,7 @@ public class RootScope extends Scope
 protected String programName;
 protected String rootScopeName;
 protected RootScopeType rootScopeType;
-
+public int MAX_LEVELS=0;
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
@@ -146,11 +146,13 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 		if(node != null) {
 			Integer objLevel = Integer.valueOf(iLevel);
 			ArrayOfNodes listOfNodes ;
+			// verify if the list of nodes of this level already exists
 			if(this.tableNodes.containsKey(objLevel)) {
 				listOfNodes = this.tableNodes.get(objLevel);
 			} else 
 				listOfNodes = new ArrayOfNodes(iLevel);
-			//System.err.println(str+"FTNS "+ iLevel + " " + node.getScope().getShortName()+" :" +node.getChildCount());
+
+			// browse all the node's children
 			int nbChildren = node.getChildCount();
 			if(nbChildren>0){
 				for(int i=0;i<nbChildren;i++) {
@@ -167,6 +169,10 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 				this.tblLeaves.put(objLevel, listOfLeaves); // put it "back"
 			}
 			node.iLevel = iLevel;
+			// find the maximum level
+			if(this.MAX_LEVELS<iLevel) {
+				this.MAX_LEVELS = iLevel;
+			}
 			listOfNodes.add(node);
 			this.tableNodes.put(objLevel, listOfNodes);
 		}

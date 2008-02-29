@@ -26,7 +26,7 @@ and supported by the Center for Scalable Application Development Software (CScAD
 
    <plugins>
       <plugin id="com.ibm.icu"/>
-      <plugin id="com.ibm.icu36.data.update"/>
+      <plugin id="com.ibm.icu36.data.update" fragment="true"/>
       <plugin id="edu.rice.cs.hpc"/>
       <plugin id="org.apache.xerces"/>
       <plugin id="org.apache.xml.resolver"/>
@@ -43,6 +43,7 @@ and supported by the Center for Scalable Application Development Software (CScAD
       <plugin id="org.eclipse.core.resources"/>
       <plugin id="org.eclipse.core.resources.compatibility" fragment="true"/>
       <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.core.runtime.compatibility.auth"/>
       <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
       <plugin id="org.eclipse.core.variables"/>
       <plugin id="org.eclipse.equinox.app"/>

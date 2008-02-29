@@ -162,12 +162,14 @@ public class EditorManager {
 
         IEditorInput input = getEditorInput(fileStore);
         String editorId = getEditorId(fileStore);
-        //System.out.println("Editor Manager original editorID:"+ editorId);
+        // forbid eclipse to use an external editor
+        // for unknown reason, sometimes eclipse linux version call this external editor
         if(editorId.compareTo(org.eclipse.ui.IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID) == 0) {
+        	// use CDT if installed
         	//editorId = "org.eclipse.cdt.ui.editor.CEditor";
         	editorId = EditorsUI.DEFAULT_TEXT_EDITOR_ID;
-        	//System.out.println("Disabling external editor, replace to internal editor:"+editorId);
         }
+        editorId = edu.rice.cs.hpc.viewer.util.SourceCodeEditor.ID;
         // open the editor on the file
         return page.openEditor(input, editorId);
     }

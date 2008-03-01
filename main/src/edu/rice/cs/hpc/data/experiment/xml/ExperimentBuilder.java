@@ -2,7 +2,7 @@
 ////
 //ExperimentBuilder.java						//
 ////
-//experiment.xml.ExperimentBuilder -- XML builder for HPCViewer	//
+//experiment.xml.ExperimentBuilder -- XML builder for hpcviewer	//
 //Last edited: January 16, 2002 at 11:27 am			//
 ////
 //(c) Copyright 2002 Rice University. All rights reserved.	//
@@ -249,7 +249,7 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Takes notice of content characters within an element.
 	 *
-	 *	None of the elements in an HPCViewer experiment XML file have content
+	 *	None of the elements in an hpcviewer experiment XML file have content
 	 *	characters, so this method should never be called.
 	 *
 	 ************************************************************************/

@@ -37,7 +37,7 @@ import org.xml.sax.helpers.*;
  *	Semantic checking and building are performed by a separate object of
  *	class <code>Builder</code>, which procedurally encodes knowledge of the
  *	document type being parsed, the document's semantic constraints, and
- *	the representation to be built for a document. HPCViewer uses a subclass
+ *	the representation to be built for a document. hpcviewer uses a subclass
  *	of <code>Builder</code> to encode the experiment file format.
  *	<p>
  *	Note that we and SAX both define a class named <code>Parser</code>.

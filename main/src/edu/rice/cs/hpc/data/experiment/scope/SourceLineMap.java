@@ -40,7 +40,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
  *	<p>
  *	For convenience, the scope set corresponding to a line is returned as a
  *	<code>ScopeList</code> object. There is no class implementing "scope set"
- *	in the HPCViewer system.
+ *	in the hpcviewer system.
  *
  */
 

@@ -2,7 +2,7 @@
 //																		//
 //	Icons.java															//
 //																		//
-//	util.Icons -- icons appearing in the HPCViewer user interface		//
+//	util.Icons -- icons appearing in the hpcviewer user interface		//
 //	Last edited: January 14, 2002 at 6:18 pm							//
 //																		//
 //	(c) Copyright 2002 Rice University. All rights reserved.			//
@@ -29,7 +29,7 @@ import java.lang.Integer;
 
 /**
  *
- * The icons used in HPCViewer's user interface.
+ * The icons used in hpcviewer's user interface.
  *
  */
  

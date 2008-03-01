@@ -23,7 +23,7 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="true"
-            category="HPCViewer"
+            category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.ScopeView"
             icon="icons/hpc-16x16.png"
             id="edu.rice.cs.hpc.scope.ScopeView"
@@ -78,10 +78,10 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="edu.rice.cs.hpc"
-            name="HPCViewer">
+            name="hpcviewer">
          <property
                name="appName"
-               value="HPCViewer">
+               value="hpcviewer">
          </property>
          <property
                name="aboutImage"
@@ -89,7 +89,7 @@
          </property>
          <property
                name="aboutText"
-               value="HPCViewer is a user interface for analyzing a database of &#x0A;performance metrics in conjunction with source code. &#x0A;&#x0A;HPCViewer is part of Rice University&apos;s HPCToolkit project, &#x0A;and supported by the Center for Scalable Application Development Software (CScAD).&#x0A;&#x0A;(C) Copyright 2007, Rice University">
+               value="hpcviewer is a user interface for analyzing a database of performance metrics&#x0A;in conjunction with an application's source code. &#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project. &#x0A;&#x0A;Development of hpcviewer was supported by the Department of Energy's Office&#x0A;of Science as part of the Center for Scalable Application Development Software.&#x0A;&#x0A;(C) Copyright 2007, Rice University">
          </property>
          <property
                name="windowImages"

@@ -65,18 +65,14 @@ public class EditorManager {
 	 */
 	public void displayFileEditor(Scope.Node node) {
 		// get the complete file name
-		FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
-		if(newFile!=null) {
-			if(newFile.isAvailable()) {
-				String sLongName;
-				sLongName = newFile.getCompleteFilename();
-				int iLine = node.getScope().getFirstLineNumber();
-				openFileEditor( sLongName, newFile.getName(), iLine );
-			} else
-				System.out.println("Source file not available"+ ":"+ "("+newFile.getName()+")");
-			// laks: try to show the editor
+		if(IOUtilities.isFileReadable(node.getScope())) {
+			String sLongName;
+			FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
+			sLongName = newFile.getCompleteFilename();
+			int iLine = node.getScope().getFirstLineNumber();
+			openFileEditor( sLongName, newFile.getName(), iLine );
 		} else
-			System.err.println("ScopeView-displayFileEditor:"+node.getScope().getShortName());
+			System.out.println("Source file not available"+ ":"+ "("+node.getScope().getName()+")");
 	}
 	
 	/**

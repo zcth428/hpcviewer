@@ -24,6 +24,7 @@ import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import org.eclipse.swt.graphics.Font;
+import edu.rice.cs.hpc.viewer.util.IOUtilities;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -37,7 +38,7 @@ public class ScopeView extends ViewPart {
     private EditorManager editorSourceCode;	// manager to display the source code
     private Font fontColumn;				// fixed font for metrics column 
     private ScopeTreeContentProvider treeContentProvider;
-	private ScopeViewActions objViewActions;
+	private ScopeViewActions objViewActions;	// actions for this scope view
     
     //======================================================
     // ................ HELPER ............................
@@ -129,14 +130,17 @@ public class ScopeView extends ViewPart {
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
         	// do not show up in the menu context if the callsite does not exist
+        	if(IOUtilities.isFileReadable(lineScope)) {
             	String sMenuTitle = "Callsite "+lineScope.getToolTip();
                 mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
                 	public void run() {
                 		displayFileEditor(this.nodeSelected);
                 	}
                 });
+        	}
         }
     }
+    
     /**
      * Creating context menu manager
      */

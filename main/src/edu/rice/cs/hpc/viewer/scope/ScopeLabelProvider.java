@@ -6,6 +6,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.SWT;
 
+import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
+import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
@@ -33,10 +35,13 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 			Scope scope = node.getScope();
 			if (scope instanceof edu.rice.cs.hpc.data.experiment.scope.CallSiteScope) {
 				// call site
-				return this.iconCollection.imgCallTo;
-			} else if (scope instanceof edu.rice.cs.hpc.data.experiment.scope.ProcedureScope) {
-				return this.iconCollection.imgCallFrom;
-			}
+				CallSiteScope cs = (CallSiteScope) scope;
+				if (cs.getType() == CallSiteScopeType.CALL_TO_PROCEDURE) {
+					return this.iconCollection.imgCallTo;
+				} else {
+					return this.iconCollection.imgCallFrom;
+				}
+			} 
 		}
 		return null;
 	}

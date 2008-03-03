@@ -318,7 +318,7 @@ public class ScopeView extends ViewPart {
         treeViewer.setInput(myRootScope.getTreeNode().getChildAt(0));
 
         // update the window title
-        this.getSite().getShell().setText("HPCViewer: "+myExperiment.getName());
+        this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
         
         // generate flattening structure 
         ((RootScope)this.myRootScope).createFlattenNode();

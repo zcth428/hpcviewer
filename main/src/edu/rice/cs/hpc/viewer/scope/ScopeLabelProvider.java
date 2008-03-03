@@ -36,7 +36,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 			if (((CallSiteScope) scope).getType() == CallSiteScopeType.CALL_TO_PROCEDURE) {
 				return ScopeLabelProvider.iconCollection.imgCallTo;
 			} else {
-				return ScopeLabelProvider.iconCollection.imgCallTo;
+				return ScopeLabelProvider.iconCollection.imgCallFrom;
 			}
 		} else if (scope instanceof RootScope) {
 			RootScope rs = (RootScope) scope;

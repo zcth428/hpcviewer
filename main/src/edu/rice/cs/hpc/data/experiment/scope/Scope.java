@@ -66,6 +66,9 @@ protected MetricValue[] metrics;
 /** The the type of scope this is. */
 protected String id;
 
+/** source citation */
+protected String srcCitation;
+
 /** special marker used for halting during debugging. */
 protected boolean stop;
 
@@ -107,6 +110,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last)
 	this.treeNode = new Scope.Node();
 	this.treeNode.setUserObject(this);
 	this.stop = false;
+	this.srcCitation = null;
 }
 
 
@@ -229,20 +233,25 @@ public String toString()
 	
 protected String getSourceCitation()
 {
-	String cite;
+	if (this.srcCitation == null)  {
 
-	// we must display one-based line numbers
-	int first1 = 1 + this.firstLineNumber;
-	int last1 = 1 + this.lastLineNumber;
+		String cite;
 
-	if(this.firstLineNumber == Scope.NO_LINE_NUMBER)
-		cite = this.sourceFile.getName();
-	else if(this.firstLineNumber == this.lastLineNumber)
-		cite = this.sourceFile.getName() + ": " + first1;
-	else
-		cite = this.sourceFile.getName() + ": " + first1 + "-" + last1;
+		// we must display one-based line numbers
+		int first1 = 1 + this.firstLineNumber;
+		int last1 = 1 + this.lastLineNumber;
 
-	return cite;
+		if(this.firstLineNumber == Scope.NO_LINE_NUMBER)
+			cite = this.sourceFile.getName();
+		else if(this.firstLineNumber == this.lastLineNumber)
+			cite = this.sourceFile.getName() + ": " + first1;
+		else
+			cite = this.sourceFile.getName() + ": " + first1 + "-" + last1;
+		
+		srcCitation = cite.intern();
+	}
+
+	return srcCitation;
 }
 
 

@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.1"?>
 
-<product name="HPCViewer" id="edu.rice.cs.hpc.hpcviewer" application="edu.rice.cs.hpc" useFeatures="false">
+<product name="hpcviewer" id="edu.rice.cs.hpc.hpcviewer" application="edu.rice.cs.hpc" useFeatures="false">
 
    <aboutInfo>
       <image path="/edu.rice.cs.hpc/icons/hpcviewer128.gif"/>
       <text>
-         HPCViewer is a user interface for analyzing a database of 
-performance metrics in conjunction with source code. 
+hpcviewer is a user interface for analyzing a database of 
+performance metrics in conjunction with an application&apos;s source code. 
 
-HPCViewer is part of Rice University&apos;s HPCToolkit project, 
-and supported by the Center for Scalable Application Development Software (CScAD).
+hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of 
+HPCToolkit is principally funded by the Department of Energy&apos;s Office of 
+Science as part of the SciDAC Center for Scalable Application Development 
+Software and the Performance Engineering Research Institute.
 
 (C) Copyright 2007, Rice University
       </text>

@@ -364,10 +364,12 @@ public void postprocess() {
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
 
+
 		// Callers View
 		Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
 		copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
-//		callingContextViewRootScope.copyMetrics(callersViewRootScope);
+
+		//		callingContextViewRootScope.copyMetrics(callersViewRootScope);
 
 		// Flat View
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
@@ -376,7 +378,9 @@ public void postprocess() {
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
 
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
+
 		addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
+
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);

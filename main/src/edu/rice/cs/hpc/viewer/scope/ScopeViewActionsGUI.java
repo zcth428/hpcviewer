@@ -269,7 +269,7 @@ public class ScopeViewActionsGUI {
     }
 
     /**
-     * Check if the button Zoom-in should be availabe given node as 
+     * Check if the button Zoom-in should be available given node as 
      * the main node to zoom
      * @param node
      * @return

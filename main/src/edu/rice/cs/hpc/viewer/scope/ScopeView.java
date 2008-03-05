@@ -189,7 +189,7 @@ public class ScopeView extends ViewPart {
 		// prepare the font for metric columns: it is supposed to be fixed font
 		Display display = Display.getCurrent();
 		int iHeight = display.getSystemFont().getFontData()[0].getHeight();
-		this.fontColumn = new Font(display, "Courier New", iHeight, SWT.BOLD); // johnmc - was SWT.NONE
+		this.fontColumn = new Font(display, "Courier", iHeight, SWT.NONE); // johnmc - was SWT.NONE
 
 		
 		// Create the actions (flatten, unflatten,...) and the tollbar on top of the table

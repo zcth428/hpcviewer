@@ -80,4 +80,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 	}
 
+	public boolean preWindowShellClose() {
+		this.getWindowConfigurer().getWindow().getActivePage().closeAllEditors(false);
+		return super.preWindowShellClose();
+	}
 }

@@ -28,8 +28,8 @@ public class ScopeViewActions {
      * @param tree
      * @param font
      */
-    public ScopeViewActions(IViewSite viewSite, Composite parent, Font font) {
-    	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, font, this);
+    public ScopeViewActions(IViewSite viewSite, Composite parent) {
+    	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, this);
     }
 
     
@@ -46,11 +46,9 @@ public class ScopeViewActions {
 			return;
 		Object o = ((StructuredSelection)sel).getFirstElement();
 		if (!(o instanceof Scope.Node)) {
-			System.err.println("ScopeView - zoomin:"+o.getClass());
 			return;
 		}
 		Scope.Node current = (Scope.Node) o;
-		Scope.Node parent = (Scope.Node) current.getParent();
 		treeViewer.setInput(current);
 		this.objActionsGUI.insertParentNode(current);
 		this.objActionsGUI.updateFlattenView(current.iLevel);

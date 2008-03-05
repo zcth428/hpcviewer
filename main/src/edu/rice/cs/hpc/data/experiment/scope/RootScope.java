@@ -135,7 +135,6 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	 *  array list of nodes
 	 */
 	private java.util.Hashtable<Integer, ArrayOfNodes> tblLeaves = new java.util.Hashtable<Integer, ArrayOfNodes>();
-	//ArrayOfNodes listOfLeaves[] = new ArrayOfNodes[1000]; // maximum 1000 levels
 	/**
 	 * recursive private method to walk through the tree to get the list of nodes
 	 * @param node

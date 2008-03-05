@@ -12,6 +12,7 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.viewer.resources.Icons;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 
 public class ScopeLabelProvider extends ColumnLabelProvider {
 	static protected Icons iconCollection = Icons.getInstance();
@@ -26,40 +27,6 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	}
 
 	/**
-	 * Return an image depending on the scope of the node.
-	 * The criteria is based on ScopeTreeCellRenderer.getScopeNavButton()
-	 * @param scope
-	 * @return
-	 */
-	static public Image getScopeNavButton(Scope scope) {
-		if (scope instanceof CallSiteScope) {
-			if (((CallSiteScope) scope).getType() == CallSiteScopeType.CALL_TO_PROCEDURE) {
-				return ScopeLabelProvider.iconCollection.imgCallTo;
-			} else {
-				return ScopeLabelProvider.iconCollection.imgCallFrom;
-			}
-		} else if (scope instanceof RootScope) {
-			RootScope rs = (RootScope) scope;
-			if (rs.getType() == RootScopeType.CallTree)	{ 
-				return null;
-			}
-		} else if (scope instanceof ProcedureScope) {
-			if (scope.getParentScope() instanceof RootScope) {
-				return null;
-			} 
-		} else if (scope instanceof LineScope) {
-			if (scope.getParentScope() instanceof CallSiteScope) {
-				return null;
-			}
-		}
-		else if (scope instanceof LoopScope) {
-			if (scope.getParentScope() instanceof CallSiteScope) {
-				return null;
-			}
-		}
-		return null;
-	}
-	/**
 	 * Return the image of the column. By default no image
 	 */
 	public Image getImage(Object element) {
@@ -67,7 +34,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 			Scope.Node node;
 			node = (Scope.Node) element;
 			Scope scope = node.getScope();
-			return ScopeLabelProvider.getScopeNavButton(scope);
+			return Utilities.getScopeNavButton(scope);
 		}
 		return null;
 	}

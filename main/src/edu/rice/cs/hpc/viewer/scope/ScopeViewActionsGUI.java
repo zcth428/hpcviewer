@@ -28,6 +28,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 /**
  * @author laksono
  *
@@ -38,7 +39,6 @@ public class ScopeViewActionsGUI {
 	// ------ DATA ----------------------------------------
     //======================================================
     private TreeViewer 	treeViewer;		  	// tree for the caller and callees
-    private Font fontColumn;				// fixed font for metrics column
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;
@@ -50,7 +50,6 @@ public class ScopeViewActionsGUI {
     private Scope 		myRootScope;		// the root scope of this view
 
     // variable declaration uniquely for coolbar
-	final private Icons iconCollection = Icons.getInstance();
 	private ToolItem tiFlatten;		//flatten button
 	private ToolItem tiUnFlatten ;	// unflatten button
 	private ToolItem tiZoomin;		// zoom-in button
@@ -68,9 +67,8 @@ public class ScopeViewActionsGUI {
      * @param objActions
      */
 	public ScopeViewActionsGUI(IViewSite viewSite, Composite parent, 
-			Font fontMetricColumn, ScopeViewActions objActions) {
+			ScopeViewActions objActions) {
 
-		this.fontColumn = fontMetricColumn;
 		this.objViewActions = objActions;
 		this.shell = viewSite.getShell();
 		this.statusLine = viewSite.getActionBars().getStatusLineManager();
@@ -134,25 +132,14 @@ public class ScopeViewActionsGUI {
         	sText[i+1] = scope.getMetricTextValue(metric);
     	}
     	// draw the root node item
-    	TreeItem item = new TreeItem(this.treeViewer.getTree(), SWT.BOLD, 0);
-		if (scope instanceof edu.rice.cs.hpc.data.experiment.scope.CallSiteScope) {
-			// call site
-			item.setImage( this.iconCollection.imgCallTo ); 
-		} else if (scope instanceof edu.rice.cs.hpc.data.experiment.scope.ProcedureScope) {
-			item.setImage(this.iconCollection.imgCallFrom);
-		} else {
-		}
-    	item.setText(sText);
-    	// make them bold .... why ?? on windows it looks ok :-(
-    	for (int i=1; i< nbColumns; i++) {
-    		item.setFont(i,this.fontColumn);
-    	}
+    	Utilities.insertTopRow(treeViewer, Utilities.getScopeNavButton(scope), sText);
     }
 	/**
 	 * Add the aggregate metrics item on the top of the tree
 	 */
     private void displayRootExperiment() {
-    	Scope.Node node = (Scope.Node)this.myRootScope.getTreeNode().getChildAt(0);
+    	//Scope.Node node = (Scope.Node)this.myRootScope.getTreeNode().getChildAt(0);
+    	Scope.Node  node = (Scope.Node) this.myRootScope.getTreeNode();
     	this.insertParentNode(node);
     }
 	

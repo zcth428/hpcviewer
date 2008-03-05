@@ -61,11 +61,17 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     }
 
     public Object getParent(Object element) {
+    	if(element instanceof Scope.Node)
             return ((Scope.Node) element).getParent();
+    	else
+    		return null;
     }
 
     public boolean hasChildren(Object element) {
+    	if(element instanceof Scope.Node)
             return !((Scope.Node) element).isLeaf();
+    	else
+    		return false;
     }
 
     /**

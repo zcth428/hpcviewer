@@ -24,7 +24,7 @@ import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import org.eclipse.swt.graphics.Font;
-import edu.rice.cs.hpc.viewer.util.IOUtilities;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
@@ -36,7 +36,6 @@ public class ScopeView extends ViewPart {
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
-    private Font fontColumn;				// fixed font for metrics column 
     private ScopeTreeContentProvider treeContentProvider;
 	private ScopeViewActions objViewActions;	// actions for this scope view
     
@@ -130,7 +129,7 @@ public class ScopeView extends ViewPart {
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
         	// do not show up in the menu context if the callsite does not exist
-        	if(IOUtilities.isFileReadable(lineScope)) {
+        	if(Utilities.isFileReadable(lineScope)) {
             	String sMenuTitle = "Callsite "+lineScope.getToolTip();
                 mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
                 	public void run() {
@@ -188,13 +187,11 @@ public class ScopeView extends ViewPart {
     public void createPartControl(Composite aParent) {
 		// prepare the font for metric columns: it is supposed to be fixed font
 		Display display = Display.getCurrent();
-		int iHeight = display.getSystemFont().getFontData()[0].getHeight();
-		this.fontColumn = new Font(display, "Courier", iHeight, SWT.NONE); // johnmc - was SWT.NONE
-
+		Utilities.setFontMetric(display);
 		
 		// Create the actions (flatten, unflatten,...) and the tollbar on top of the table
         this.objViewActions = new ScopeViewActions(this.getViewSite(),
-        		aParent, this.fontColumn); //actions of the tree
+        		aParent); //actions of the tree
         
 		// -----
     	treeViewer = new TreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION);
@@ -231,13 +228,16 @@ public class ScopeView extends ViewPart {
 		        IStructuredSelection selection =
 		          (IStructuredSelection) event.getSelection();
 
-		        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
-		        if(nodeSelected != null) {
-		        	// update the state of the toolbar items
-		        	objViewActions.checkButtons(nodeSelected);
-					if(nodeSelected.hasSourceCodeFile)
-						displayFileEditor(nodeSelected);
-
+		        if(selection.getFirstElement() instanceof Scope.Node) {
+			        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
+			        if(nodeSelected != null) {
+			        	// update the state of the toolbar items
+			        	objViewActions.checkButtons(nodeSelected);
+						if(nodeSelected.hasSourceCodeFile)
+							displayFileEditor(nodeSelected);
+			        }
+		        } else {
+		        	// selection on wrong node
 		        }
 		      }
 		});
@@ -304,7 +304,7 @@ public class ScopeView extends ViewPart {
         		
         		// laks: addendum for column        		
         		this.colMetrics[i].setLabelProvider(new MetricLabelProvider( 
-        				myExperiment.getMetric(i), this.fontColumn));
+        				myExperiment.getMetric(i), Utilities.fontMetric));
         		this.colMetrics[i].getColumn().setMoveable(true);
         		//tmp.pack();			// resize as much as possible
         		ColumnViewerSorter colSorter = new ColumnViewerSorter(this.treeViewer, 
@@ -318,15 +318,16 @@ public class ScopeView extends ViewPart {
         }
         
         // Update root scope
-        //treeViewer.setInput(myRootScope.getTreeNode());
-        treeViewer.setInput(myRootScope.getTreeNode().getChildAt(0));
+        treeViewer.setInput(myRootScope.getTreeNode());
+        //treeViewer.setInput(myRootScope.getTreeNode().getChildAt(0));
 
         // update the window title
         this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
         
         // generate flattening structure 
-        ((RootScope)this.myRootScope).createFlattenNode();
-        ((RootScope)this.myRootScope).printFlattenNodes();
+        if(((RootScope)this.myRootScope).getType() == RootScopeType.Flat) {
+            ((RootScope)this.myRootScope).createFlattenNode();
+        }
         // update the root scope of the actions !
         this.objViewActions.updateContent(this.myExperiment, this.myRootScope, this.colMetrics);
    	}

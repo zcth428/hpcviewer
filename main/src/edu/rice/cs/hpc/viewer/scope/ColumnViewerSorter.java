@@ -1,29 +1,33 @@
 package edu.rice.cs.hpc.viewer.scope;
 
-import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.graphics.Image;
 
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-
+import edu.rice.cs.hpc.viewer.util.Utilities;
 //======================================================
 // ................ SORTING ............................
 //======================================================
 public class ColumnViewerSorter extends ViewerComparator {
+	// direction
 	public static final int ASC = 1;
-	public static final int NONE = 0;
+	public static final int NONE = 0;	// unused: for init only
 	public static final int DESC = -1;
 	private int direction = 0;
-	private TreeColumn column;
-	private ColumnViewer viewer;
-	private int iColNumber;
-	private Metric metric;
+	// data
+	private TreeColumn column;		// column
+	private TreeViewer viewer;	// viewer
+	private int iColNumber;			// column position
+	private Metric metric;			// data for metric table
 	
 	/**
 	 * Update the metric for this column
@@ -39,14 +43,31 @@ public class ColumnViewerSorter extends ViewerComparator {
 	 * @param newMetric: the metric
 	 * @param colNum: the position
 	 */
-	public ColumnViewerSorter(ColumnViewer viewer, TreeColumn column, Metric newMetric, int colNum) {
+	public ColumnViewerSorter(TreeViewer viewer, TreeColumn column, Metric newMetric, int colNum) {
 		this.column = column;
 		this.iColNumber = colNum;
 		this.viewer = viewer;
 		this.metric = newMetric;
+		// catch event when the user sort the column on the column header
 		this.column.addSelectionListener(new SelectionAdapter() {
-
 			public void widgetSelected(SelectionEvent e) {
+				// before sorting, we need to check if the first row is an element header 
+				// something like "aggregate metrics" or zoom-in item
+				TreeItem item = ColumnViewerSorter.this.viewer.getTree().getItem(0);
+				String []sText= null; // have to do this to avoid error in compilation;
+				Image imgItem = item.getImage(0);
+				if(item.getData() instanceof Scope.Node) {
+					// the table has been zoomed-out
+				} else {
+					// the table is in original form or flattened or zoom-in
+					Object o = item.getData();
+					if(o != null) {
+						Object []arrObj = (Object []) o;
+						if(arrObj[0] instanceof String) {
+							sText = (String[]) item.getData(); 
+						}
+					}
+				}
 				if( ColumnViewerSorter.this.viewer.getComparator() != null ) {
 					if( ColumnViewerSorter.this.viewer.getComparator() == ColumnViewerSorter.this ) {
 						int tdirection = ColumnViewerSorter.this.direction;
@@ -62,8 +83,15 @@ public class ColumnViewerSorter extends ViewerComparator {
 				} else {
 					setSorter(ColumnViewerSorter.this, ASC);
 				}
+				// post-sorting 
+				if(sText != null) {
+					Utilities.insertTopRow(ColumnViewerSorter.this.viewer, imgItem, sText);
+				}
 			}
-		});
+
+		}
+		);
+
 		//if (colNum == 1) setSorter(this, ASC); // johnmc
 	}
 	
@@ -144,4 +172,47 @@ public class ColumnViewerSorter extends ViewerComparator {
 		return 0;
 	}
 
+	public void sort(Viewer viewer,
+            Object[] elements) {
+		super.sort(viewer, elements);
+	}
+	
+	public class ScopeSelectionAdapter extends SelectionAdapter {
+		TreeViewer treeViewer;
+		public ScopeSelectionAdapter(TreeViewer viewer) {
+			super();
+			this.treeViewer = viewer;
+		}
+
+		public void widgetSelected(SelectionEvent e) {
+			// before sorting, we need to check if the first row is an element header 
+			// something like "aggregate metrics" or zoom-in item
+			TreeItem item = this.treeViewer.getTree().getItem(0);
+			if(item.getData() instanceof Scope.Node) {
+				// the table has been zoomed-out
+				System.out.println("CVS: zoom-out");
+			} else {
+				// the table is in original form or flattened or zoom-in
+				System.out.println("CVS: original");
+			}
+			if( ColumnViewerSorter.this.viewer.getComparator() != null ) {
+				if( ColumnViewerSorter.this.viewer.getComparator() == ColumnViewerSorter.this ) {
+					int tdirection = ColumnViewerSorter.this.direction;
+					
+					if( tdirection == ASC ) {
+						setSorter(ColumnViewerSorter.this, DESC);
+					} else if( tdirection == DESC ) {
+						setSorter(ColumnViewerSorter.this, ASC);
+					}
+				} else {
+					setSorter(ColumnViewerSorter.this, ASC);
+				}
+			} else {
+				setSorter(ColumnViewerSorter.this, ASC);
+			}
+			// post-sorting 
+			this.treeViewer.getTree().setTopItem(item);
+		}
+
+	}
 }

@@ -134,11 +134,14 @@ public class ExperimentView {
 				// therefore, we need to create a dummy root then attach it to the children
 				// TODO: This should be fix in the Scope class in the future
 				if(nbChildren>1) {
-					RootScope newRoot = (RootScope)child.getParentScope().duplicate();
+					/*RootScope newRoot = (RootScope)child.getParentScope().duplicate();
 					newRoot.addSubscope(child);
 					objView.setInput(experiment, newRoot);		// update the data content
+					*/
+					objView.setInput(experiment, child);
 				} else
-					objView.setInput(experiment, (RootScope)experiment.getRootScope());
+					objView.setInput(experiment, child);
+					//objView.setInput(experiment, (RootScope)experiment.getRootScope());
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
 				// enable the view's actions
 				//objView.enableActions();

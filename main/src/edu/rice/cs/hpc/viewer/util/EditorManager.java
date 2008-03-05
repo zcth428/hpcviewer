@@ -65,7 +65,7 @@ public class EditorManager {
 	 */
 	public void displayFileEditor(Scope.Node node) {
 		// get the complete file name
-		if(IOUtilities.isFileReadable(node.getScope())) {
+		if(Utilities.isFileReadable(node.getScope())) {
 			String sLongName;
 			FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
 			sLongName = newFile.getCompleteFilename();

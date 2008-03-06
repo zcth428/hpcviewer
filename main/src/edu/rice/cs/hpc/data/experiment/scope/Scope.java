@@ -630,6 +630,16 @@ public String getMetricTextValue(Metric metric) {
 	return sText;
 }
 
+/**
+ * Get the percentage of this scope
+ * @param metric
+ * @return
+ */
+public double getMetricPercentValue(Metric metric) {
+	MetricValue mv = this.getMetricValue(metric);
+	return mv.getPercentValue();
+}
+
 public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter, int nMetrics) {
 	for (int i = 0; i< nMetrics; i++) {
 		this.accumulateMetric(source, i, i, filter);

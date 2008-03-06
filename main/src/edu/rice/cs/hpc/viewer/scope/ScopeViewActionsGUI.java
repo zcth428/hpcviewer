@@ -8,7 +8,6 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -17,7 +16,6 @@ import org.eclipse.swt.widgets.CoolItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IViewSite;
@@ -56,7 +54,7 @@ public class ScopeViewActionsGUI {
 	private ToolItem tiZoomout ;	// zoom-out button
 	private ToolItem tiResize ;		// resize column button
 	private ToolItem tiColumns ;	// show/hide button
-//	private Label tiLevel; 		// flat-level information
+	private ToolItem tiHotCallpath;
 	    
 
     /**
@@ -172,6 +170,7 @@ public class ScopeViewActionsGUI {
 		this.tiZoomout.setEnabled(false);
 		this.tiResize.setEnabled(false);
 		this.tiColumns.setEnabled(false);
+		this.tiHotCallpath.setEnabled(false);
 	}
 	
 	/**
@@ -232,7 +231,9 @@ public class ScopeViewActionsGUI {
      */
     public void checkZoomButtons(Scope.Node node) {
     	tiZoomout.setEnabled(shouldZoomOutBeEnabled(node));
-    	tiZoomin.setEnabled(shouldZoomInBeEnabled(node));
+    	boolean b = shouldZoomInBeEnabled(node);
+    	tiZoomin.setEnabled(b);
+    	this.tiHotCallpath.setEnabled(b);
     }
     /**
      * Check if flatten/unflatten buttons need to be disable or not.
@@ -353,6 +354,17 @@ public class ScopeViewActionsGUI {
     	tiZoomout.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
     		  objViewActions.zoomOut();
+    	  }
+    	});
+    	
+    	new ToolItem(toolbar, SWT.SEPARATOR);
+    	// hot call path
+    	this.tiHotCallpath= new ToolItem(toolbar, SWT.PUSH);
+    	tiHotCallpath.setToolTipText("Show the hot call path of the selected node");
+    	tiHotCallpath.setImage(iconsCollection.imgFlame);
+    	tiHotCallpath.addSelectionListener(new SelectionAdapter() {
+    	  public void widgetSelected(SelectionEvent e) {
+    		  objViewActions.showHotCallpath();
     	  }
     	});
     	

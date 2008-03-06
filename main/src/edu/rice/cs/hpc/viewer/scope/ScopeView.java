@@ -29,7 +29,7 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
 
-    private TreeViewer 	treeViewer;		  	// tree for the caller and callees
+    private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private TreeViewerColumn colTree;		// column for the calls tree
     private TreeViewerColumn []colMetrics;	// metric columns
     private Experiment 	myExperiment;		// experiment data	
@@ -194,12 +194,13 @@ public class ScopeView extends ViewPart {
         		aParent); //actions of the tree
         
 		// -----
-    	treeViewer = new TreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION);
+    	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION);
     	// set the attributes
     	this.treeContentProvider = new ScopeTreeContentProvider(); 
     	treeViewer.setContentProvider(this.treeContentProvider);
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
+        //treeViewer.setAutoExpandLevel(2);
 
         // tell the action class that we have built the tree
         this.objViewActions.setTreeViewer(treeViewer);
@@ -301,7 +302,9 @@ public class ScopeView extends ViewPart {
         		colMetrics[i].getColumn().setText(titles[i+1]);	// set the title
         		colMetrics[i].getColumn().setWidth(120); //TODO dynamic size
         		colMetrics[i].getColumn().setAlignment(SWT.RIGHT);
-        		
+        		// associate the data of this column to the metric since we
+        		// allowed columns to move (col position is not enough !)
+        		colMetrics[i].getColumn().setData(this.myExperiment.getMetric(i));
         		// laks: addendum for column        		
         		this.colMetrics[i].setLabelProvider(new MetricLabelProvider( 
         				myExperiment.getMetric(i), Utilities.fontMetric));

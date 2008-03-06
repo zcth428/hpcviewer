@@ -25,6 +25,7 @@ public class Icons {
 	public Image imgColumns;
 	public Image imgFalse;
 	public Image imgTrue;
+	public Image imgFlame;
 	
 	//-------------------------- image descriptor
 	public ImageDescriptor imdCallFrom;
@@ -39,6 +40,7 @@ public class Icons {
 	public ImageDescriptor imdColumns;
 	public ImageDescriptor imdFalse;
 	public ImageDescriptor imdTrue;
+	public ImageDescriptor imdFlame;
 
 	static private Icons __singleton=null;
 	
@@ -55,6 +57,7 @@ public class Icons {
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
 		this.imdTrue = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"True.png");
 		this.imdFalse =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"False.png");
+		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flame.png");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();
@@ -68,6 +71,7 @@ public class Icons {
 		imgColumns = this.imdColumns.createImage();
 		this.imgTrue = this.imdTrue.createImage();
 		this.imgFalse = this.imdFalse.createImage();
+		this.imgFlame = this.imdFlame.createImage();
 	}
 	
 	public void disposeIcon() {
@@ -84,6 +88,7 @@ public class Icons {
 			this.imgColumns.dispose();
 			this.imgTrue.dispose();
 			this.imgFalse.dispose();
+			this.imgFlame.dispose();
 		} catch (java.lang.Exception e) {
 			e.printStackTrace();
 		}

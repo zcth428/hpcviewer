@@ -1,25 +1,26 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
+import org.eclipse.swt.widgets.TreeColumn;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.experiment.metric.Metric;
 
 public class ScopeViewActions {
+    //-------------- DATA
 	private ScopeViewActionsGUI objActionsGUI;
-
-    private TreeViewer 	treeViewer;		  	// tree for the caller and callees
+    private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private Scope 		myRootScope;		// the root scope of this view
-    //-------------- FLAT DATA
     
     /**
      * Constructor: create actions and the GUI (which is a coolbar)
@@ -32,19 +33,96 @@ public class ScopeViewActions {
     	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, this);
     }
 
-    
+    /**
+     * The tree has been updated or has new content. This object needs to refresh
+     * the data and variable initialization too.
+     * @param exp
+     * @param scope
+     * @param columns
+     */
 	public void updateContent(Experiment exp, Scope scope, TreeViewerColumn []columns) {
     	this.myRootScope = scope;
     	this.objActionsGUI.updateContent(exp, scope, columns);
     }
+	
+	/**
+	 * find the hot call path
+	 * @param rootPath
+	 * @param item
+	 * @param scope
+	 * @param metric
+	 * @param iLevel
+	 * @return
+	 */
+	private TreePath getHotCallpath(TreePath rootPath, TreeItem item, Scope scope, Metric metric, int iLevel) {
+		if(scope == null || metric == null || item == null)
+			return null;
+		// expand the immediate child
+		this.treeViewer.expandToLevel(this.treeViewer.getTreePath(item), 1);
+		int iCounts = item.getItemCount();
+		// depth first search
+		for(int i=0;i<iCounts;i++) {
+			TreeItem child = item.getItem(i);
+			Object o = child.getData();
+			if(o instanceof Scope.Node) {
+				Scope.Node nodeChild = (Scope.Node) o;
+				Scope scopeChild = nodeChild.getScope();
+				double dParent = scope.getMetricPercentValue(metric);
+				double dChild = scopeChild.getMetricPercentValue(metric);
+
+				if(dChild<0.6*dParent) {
+					// we found the hot call path
+					return this.treeViewer.getTreePath(child); 
+				} else {
+					// let see the next kid
+					return this.getHotCallpath(rootPath, child, scopeChild, metric, iLevel+ 1);
+				}
+			}
+		}
+		// if we reach at this statement, then there is no hot call path !
+		return null;
+	}
+	/**
+	 * show the hot call path from the selected node in the tree
+	 */
+	public void showHotCallpath() {
+		// find the selected node
+		ISelection sel = treeViewer.getSelection();
+		if (!(sel instanceof TreeSelection))
+			return;
+		TreeSelection objSel = (TreeSelection) sel;
+		// get the node
+		Object o = objSel.getFirstElement();
+		if (!(o instanceof Scope.Node)) {
+			return;
+		}
+		Scope.Node current = (Scope.Node) o;
+		// get the item
+		TreeItem item = this.treeViewer.getTree().getSelection()[0];
+		// get the path
+		TreePath []arrPath = objSel.getPaths();
+		// get the selected metric
+		TreeColumn colSelected = this.treeViewer.getTree().getSortColumn();
+		// get the metric data
+		Object data = colSelected.getData();
+		if(data instanceof Metric && item != null) {
+			Metric metric = (Metric) data;
+			// find the hot call path
+			int iLevel = 0;
+			TreePath pathHot = this.getHotCallpath(arrPath[0], item, current.getScope(), metric, iLevel);
+			if(pathHot != null) {
+				this.treeViewer.setSelection(new TreeSelection(pathHot));
+			}
+		}
+	}
 	/**
 	 * Zoom-in the children
 	 */
 	public void zoomIn() {
 		ISelection sel = treeViewer.getSelection();
-		if (!(sel instanceof StructuredSelection))
+		if (!(sel instanceof TreeSelection))
 			return;
-		Object o = ((StructuredSelection)sel).getFirstElement();
+		Object o = ((TreeSelection)sel).getFirstElement();
 		if (!(o instanceof Scope.Node)) {
 			return;
 		}
@@ -130,7 +208,7 @@ public class ScopeViewActions {
     	this.objActionsGUI.checkZoomButtons(node);
     }
 
-    public void setTreeViewer(TreeViewer tree) {
+    public void setTreeViewer(ScopeTreeViewer tree) {
     	this.treeViewer = tree;
     	this.objActionsGUI.setTreeViewer(tree);
     }

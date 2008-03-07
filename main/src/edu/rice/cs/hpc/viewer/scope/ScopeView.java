@@ -23,7 +23,6 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
-import org.eclipse.swt.graphics.Font;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
 public class ScopeView extends ViewPart {

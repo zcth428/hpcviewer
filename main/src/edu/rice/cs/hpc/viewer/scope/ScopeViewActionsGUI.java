@@ -256,13 +256,16 @@ public class ScopeViewActionsGUI {
     	return (this.iFlatLevel>2);
     }
 
+    //======================================================
+    // ................ STATIC ............................
+    //======================================================
     /**
      * Check if the button Zoom-in should be available given node as 
      * the main node to zoom
      * @param node
      * @return
      */
-    public boolean shouldZoomInBeEnabled(Scope.Node node) {
+    static public boolean shouldZoomInBeEnabled(Scope.Node node) {
     	return (node.getChildCount()>0);
     }
     
@@ -271,10 +274,10 @@ public class ScopeViewActionsGUI {
      * @param node
      * @return
      */
-    public boolean shouldZoomOutBeEnabled(Scope.Node node) {
+    static public boolean shouldZoomOutBeEnabled(Scope.Node node) {
     	if(node.getParent() != null) {
     		Scope.Node parent = (Scope.Node) node.getParent(); 
-    		return !(parent.getScope() instanceof RootScope);
+    		return !(parent.getScope() instanceof RootScope );
     	}
     	return (false);
     }

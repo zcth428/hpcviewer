@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
@@ -17,6 +16,8 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 
 public class ScopeViewActions {
+	// public preference
+	static public double fTHRESHOLD = 0.6; 
     //-------------- DATA
 	private ScopeViewActionsGUI objActionsGUI;
     private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
@@ -70,7 +71,7 @@ public class ScopeViewActions {
 				double dParent = scope.getMetricPercentValue(metric);
 				double dChild = scopeChild.getMetricPercentValue(metric);
 
-				if(dChild<0.6*dParent) {
+				if(dChild<(ScopeViewActions.fTHRESHOLD*dParent)) {
 					// we found the hot call path
 					return this.treeViewer.getTreePath(child); 
 				} else {
@@ -129,7 +130,8 @@ public class ScopeViewActions {
 		Scope.Node current = (Scope.Node) o;
 		treeViewer.setInput(current);
 		this.objActionsGUI.insertParentNode(current);
-		this.objActionsGUI.updateFlattenView(current.iLevel);
+		//this.objActionsGUI.updateFlattenView(current.iLevel);
+		this.objActionsGUI.checkZoomButtons(current);
 	}
 	
 	/**
@@ -154,13 +156,22 @@ public class ScopeViewActions {
 		Scope.Node parent = (Scope.Node)child.getParent();
 		if (parent == null)
 			return;
+		if(parent.getParent() == null) {
+			// in this case, the parent is the aggregate metrics
+			// we will not show the node, but instead we will insert manually
+			treeViewer.setInput( child );			
+	    	Scope.Node  node = (Scope.Node) this.myRootScope.getTreeNode();
+	    	this.objActionsGUI.insertParentNode(node);
+		} else {
+			treeViewer.setInput( parent );
+		}
+		//this.objActionsGUI.updateFlattenView(parent.iLevel);
+		this.objActionsGUI.checkZoomButtons(parent);
 		// do not zoom out to the root
 		/*
 		if(parent.getScope() instanceof RootScope)
 			return;
 		*/
-		treeViewer.setInput( parent );
-		this.objActionsGUI.updateFlattenView(parent.iLevel);
 	}
 
 	/**
@@ -196,11 +207,11 @@ public class ScopeViewActions {
 	}
 	
     public boolean shouldZoomInBeEnabled(Scope.Node node) {
-    	return (this.objActionsGUI.shouldZoomInBeEnabled(node));
+    	return (ScopeViewActionsGUI.shouldZoomInBeEnabled(node));
     }
     
     public boolean shouldZoomOutBeEnabled(Scope.Node node) {
-    	return (this.objActionsGUI.shouldZoomOutBeEnabled(node));
+    	return (ScopeViewActionsGUI.shouldZoomOutBeEnabled(node));
     }
     
     public void checkButtons(Scope.Node node) {

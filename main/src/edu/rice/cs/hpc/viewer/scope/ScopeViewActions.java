@@ -84,7 +84,7 @@ public class ScopeViewActions {
 		return null;
 	}
 	/**
-	 * show the hot call path from the selected node in the tree
+	 * show the hot path below the selected node in the tree
 	 */
 	public void showHotCallpath() {
 		// find the selected node

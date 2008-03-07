@@ -363,7 +363,7 @@ public class ScopeViewActionsGUI {
     	new ToolItem(toolbar, SWT.SEPARATOR);
     	// hot call path
     	this.tiHotCallpath= new ToolItem(toolbar, SWT.PUSH);
-    	tiHotCallpath.setToolTipText("Show the hot call path of the selected node");
+    	tiHotCallpath.setToolTipText("Expand the hot path below the selected node");
     	tiHotCallpath.setImage(iconsCollection.imgFlame);
     	tiHotCallpath.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {

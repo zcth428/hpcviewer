@@ -57,7 +57,7 @@ public class Icons {
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
 		this.imdTrue = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"True.png");
 		this.imdFalse =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"False.png");
-		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flame.png");
+		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"flameIcon.gif");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();

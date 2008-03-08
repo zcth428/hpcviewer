@@ -4,9 +4,9 @@
 <product name="hpcviewer" id="edu.rice.cs.hpc.hpcviewer" application="edu.rice.cs.hpc" useFeatures="false">
 
    <aboutInfo>
-      <image path="icons/hpcviewer128.gif"/>
+      <image path="icons/hpcviewerEclipse128.gif"/>
       <text>
-hpcviewer is a user interface for analyzing a database of   
+         hpcviewer is a user interface for analyzing a database of   
 performance metrics in conjunction with an application&apos;s source code.
 
 hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of 
@@ -21,10 +21,24 @@ Software and the Performance Engineering Research Institute.
    <configIni use="default"/>
 
    <launcherArgs>
+      <vmArgs>-Xmx400m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/hpc-16x16.gif" i32="icons/hpc-32x32.gif" i48="icons/hpcviewer64.gif" i64="icons/hpcviewer128.gif"/>
+   <windowImages i16="icons/hpcviewerEclipse16.gif" i32="icons/hpcviewerEclipse32.gif" i48="icons/hpcviewerEclipse48.gif" i64="icons/hpcviewerEclipse64.gif" i128="icons/hpcviewerEclipse128.gif"/>
+
+   <splash
+      location="edu.rice.cs.hpc" />
+   <launcher>
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+
+   <vm>
+   </vm>
 
    <plugins>
       <plugin id="com.ibm.icu"/>
@@ -39,7 +53,7 @@ Software and the Performance Engineering Research Institute.
       <plugin id="org.eclipse.core.expressions"/>
       <plugin id="org.eclipse.core.filebuffers"/>
       <plugin id="org.eclipse.core.filesystem"/>
-      <plugin id="org.eclipse.core.filesystem.macosx"/>
+      <plugin id="org.eclipse.core.filesystem.macosx" fragment="true"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.net"/>
       <plugin id="org.eclipse.core.resources"/>
@@ -61,12 +75,12 @@ Software and the Performance Engineering Research Institute.
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.search"/>
       <plugin id="org.eclipse.swt"/>
-      <plugin id="org.eclipse.swt.carbon.macosx"/>
+      <plugin id="org.eclipse.swt.carbon.macosx" fragment="true"/>
       <plugin id="org.eclipse.team.core"/>
       <plugin id="org.eclipse.team.ui"/>
       <plugin id="org.eclipse.text"/>
       <plugin id="org.eclipse.ui"/>
-      <plugin id="org.eclipse.ui.carbon"/>
+      <plugin id="org.eclipse.ui.carbon" fragment="true"/>
       <plugin id="org.eclipse.ui.console"/>
       <plugin id="org.eclipse.ui.editors"/>
       <plugin id="org.eclipse.ui.forms"/>

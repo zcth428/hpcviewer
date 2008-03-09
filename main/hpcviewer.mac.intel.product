@@ -29,7 +29,8 @@ Software and the Performance Engineering Research Institute.
 
    <splash
       location="edu.rice.cs.hpc" />
-   <launcher>
+   <launcher name="hpcviewer">
+      <macosx icon="/edu.rice.cs.hpc-03-06/hpcviewer.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp/>

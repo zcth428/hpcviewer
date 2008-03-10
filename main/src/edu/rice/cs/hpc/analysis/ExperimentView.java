@@ -114,6 +114,8 @@ public class ExperimentView {
 	public void generateView(Experiment experiment) {
 		// optimistic approach: hide all the visible views first
 		this.removeViews();
+		// remove the old-irrelevant editors
+		this.closeAllEditors();
 		// next, we retrieve all children of the scope and display them in separate views
 		ArrayList<RootScope> rootChildren = (ArrayList<RootScope>)experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.size();
@@ -154,5 +156,12 @@ public class ExperimentView {
 		
 		for(int i=0;i<nbViews;i++)
 			this.objPage.hideView(views[i]);
+	}
+	
+	/**
+	 * Close all editors in the current active page
+	 */
+	private void closeAllEditors() {
+		this.objPage.closeAllEditors(false);
 	}
 }

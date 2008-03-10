@@ -123,7 +123,7 @@ public class ScopeViewActions {
 			if(objHot != null) {
 				// we find the hot path !!
 				this.treeViewer.setSelection(new TreeSelection(objHot.path));
-				objHot.item.setBackground(0, new Color(null,255,106,106));
+				//objHot.item.setBackground(0, new Color(null,255,106,106));
 			} else {
 				// we cannot find it
 			}

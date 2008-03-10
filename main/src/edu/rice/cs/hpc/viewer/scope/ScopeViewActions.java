@@ -8,6 +8,8 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
@@ -48,18 +50,20 @@ public class ScopeViewActions {
 	
 	/**
 	 * find the hot call path
-	 * @param rootPath
+	 * @param pathItem
 	 * @param item
 	 * @param scope
 	 * @param metric
 	 * @param iLevel
 	 * @return
 	 */
-	private TreePath getHotCallpath(TreePath rootPath, TreeItem item, Scope scope, Metric metric, int iLevel) {
+	private HotCallPath getHotCallPath(TreePath pathItem, TreeItem item, Scope scope, Metric metric, int iLevel) {
 		if(scope == null || metric == null || item == null)
 			return null;
-		// expand the immediate child
-		this.treeViewer.expandToLevel(this.treeViewer.getTreePath(item), 1);
+		// expand the immediate child if necessary
+		if(!item.getExpanded()) {
+			this.treeViewer.expandToLevel(pathItem, 1);
+		}
 		int iCounts = item.getItemCount();
 		// depth first search
 		for(int i=0;i<iCounts;i++) {
@@ -72,11 +76,16 @@ public class ScopeViewActions {
 				double dChild = scopeChild.getMetricPercentValue(metric);
 
 				if(dChild<(ScopeViewActions.fTHRESHOLD*dParent)) {
+					HotCallPath objCallPath = new HotCallPath();
 					// we found the hot call path
-					return this.treeViewer.getTreePath(child); 
+					objCallPath.path = this.treeViewer.getTreePath(child);
+					objCallPath.item = child;
+					objCallPath.node = nodeChild;
+					return objCallPath;
 				} else {
 					// let see the next kid
-					return this.getHotCallpath(rootPath, child, scopeChild, metric, iLevel+ 1);
+					return this.getHotCallPath(this.treeViewer.getTreePath(child), 
+							child, scopeChild, metric, iLevel+ 1);
 				}
 			}
 		}
@@ -86,7 +95,7 @@ public class ScopeViewActions {
 	/**
 	 * show the hot path below the selected node in the tree
 	 */
-	public void showHotCallpath() {
+	public void showHotCallPath() {
 		// find the selected node
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
@@ -110,9 +119,13 @@ public class ScopeViewActions {
 			Metric metric = (Metric) data;
 			// find the hot call path
 			int iLevel = 0;
-			TreePath pathHot = this.getHotCallpath(arrPath[0], item, current.getScope(), metric, iLevel);
-			if(pathHot != null) {
-				this.treeViewer.setSelection(new TreeSelection(pathHot));
+			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
+			if(objHot != null) {
+				// we find the hot path !!
+				this.treeViewer.setSelection(new TreeSelection(objHot.path));
+				objHot.item.setBackground(0, new Color(null,255,106,106));
+			} else {
+				// we cannot find it
 			}
 		}
 	}
@@ -206,21 +219,45 @@ public class ScopeViewActions {
 		}
 	}
 	
+	/**
+	 * Check if zoom-in button should be enabled
+	 * @param node
+	 * @return
+	 */
     public boolean shouldZoomInBeEnabled(Scope.Node node) {
     	return (ScopeViewActionsGUI.shouldZoomInBeEnabled(node));
     }
     
+    /**
+     * Check if zoom-out button should be enabled
+     * @param node
+     * @return
+     */
     public boolean shouldZoomOutBeEnabled(Scope.Node node) {
     	return (ScopeViewActionsGUI.shouldZoomOutBeEnabled(node));
     }
     
+    /**
+     * Check if the buttons in the toolbar should be enable/disable
+     * @param node
+     */
     public void checkButtons(Scope.Node node) {
     	this.objActionsGUI.checkFlattenButtons();
     	this.objActionsGUI.checkZoomButtons(node);
     }
 
+    /**
+     * Update the content of tree viewer
+     * @param tree
+     */
     public void setTreeViewer(ScopeTreeViewer tree) {
     	this.treeViewer = tree;
     	this.objActionsGUI.setTreeViewer(tree);
+    }
+    
+    class HotCallPath {
+    	public TreePath path;
+    	public TreeItem item;
+    	public Scope.Node node;
     }
 }

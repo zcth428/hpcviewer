@@ -54,7 +54,7 @@ public class ScopeViewActionsGUI {
 	private ToolItem tiZoomout ;	// zoom-out button
 	private ToolItem tiResize ;		// resize column button
 	private ToolItem tiColumns ;	// show/hide button
-	private ToolItem tiHotCallpath;
+	private ToolItem tiHotCallPath;
 	    
 
     /**
@@ -170,7 +170,7 @@ public class ScopeViewActionsGUI {
 		this.tiZoomout.setEnabled(false);
 		this.tiResize.setEnabled(false);
 		this.tiColumns.setEnabled(false);
-		this.tiHotCallpath.setEnabled(false);
+		this.tiHotCallPath.setEnabled(false);
 	}
 	
 	/**
@@ -233,7 +233,7 @@ public class ScopeViewActionsGUI {
     	tiZoomout.setEnabled(shouldZoomOutBeEnabled(node));
     	boolean b = shouldZoomInBeEnabled(node);
     	tiZoomin.setEnabled(b);
-    	this.tiHotCallpath.setEnabled(b);
+    	this.tiHotCallPath.setEnabled(b);
     }
     /**
      * Check if flatten/unflatten buttons need to be disable or not.
@@ -362,12 +362,12 @@ public class ScopeViewActionsGUI {
     	
     	new ToolItem(toolbar, SWT.SEPARATOR);
     	// hot call path
-    	this.tiHotCallpath= new ToolItem(toolbar, SWT.PUSH);
-    	tiHotCallpath.setToolTipText("Expand the hot path below the selected node");
-    	tiHotCallpath.setImage(iconsCollection.imgFlame);
-    	tiHotCallpath.addSelectionListener(new SelectionAdapter() {
+    	this.tiHotCallPath= new ToolItem(toolbar, SWT.PUSH);
+    	tiHotCallPath.setToolTipText("Expand the hot path below the selected node");
+    	tiHotCallPath.setImage(iconsCollection.imgFlame);
+    	tiHotCallPath.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
-    		  objViewActions.showHotCallpath();
+    		  objViewActions.showHotCallPath();
     	  }
     	});
     	

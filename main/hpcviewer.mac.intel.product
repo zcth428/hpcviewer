@@ -4,7 +4,7 @@
 <product name="hpcviewer" id="edu.rice.cs.hpc.hpcviewer" application="edu.rice.cs.hpc" useFeatures="false">
 
    <aboutInfo>
-      <image path="icons/hpcviewerEclipse128.gif"/>
+      <image path="icons/hpcviewerEclipseShadow128.png"/>
       <text>
          hpcviewer is a user interface for analyzing a database of   
 performance metrics in conjunction with an application&apos;s source code.
@@ -25,7 +25,7 @@ Software and the Performance Engineering Research Institute.
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/hpcviewerEclipse16.gif" i32="icons/hpcviewerEclipse32.gif" i48="icons/hpcviewerEclipse48.gif" i64="icons/hpcviewerEclipse64.gif" i128="icons/hpcviewerEclipse128.gif"/>
+   <windowImages i16="icons/hpcviewerEclipseShadow16.png" i32="icons/hpcviewerEclipseShadow32.png" i48="icons/hpcviewerEclipseShadow48.png" i64="icons/hpcviewerEclipseShadow64.png" i128="icons/hpcviewerEclipseShadow128.png"/>
 
    <splash
       location="edu.rice.cs.hpc" />

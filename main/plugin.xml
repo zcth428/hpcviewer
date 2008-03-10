@@ -86,7 +86,7 @@
          </property>
          <property
                name="aboutImage"
-               value="icons/hpcviewerEclipse128.gif">
+               value="icons/hpcviewerEclipseShadow128.png">
          </property>
          <property
                name="aboutText"
@@ -94,7 +94,7 @@
          </property>
          <property
                name="windowImages"
-               value="icons/hpcviewerEclipse16.gif,icons/hpcviewerEclipse32.gif,icons/hpcviewerEclipse48.gif,icons/hpcviewerEclipse64.gif,icons/hpcviewerEclipse128.gif">
+               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
          </property>
       </product>
    </extension>

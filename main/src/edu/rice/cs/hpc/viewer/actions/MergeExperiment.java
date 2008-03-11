@@ -26,20 +26,20 @@ public class MergeExperiment  implements IWorkbenchWindowActionDelegate {
 	public void run(IAction action) {
 		// TODO Auto-generated method stub
 		//MergeWizard objWizard = new MergeWizard();
-		System.out.println(this.getClass()+": run action");
+		//System.out.println(this.getClass()+": run action");
 		//WizardDialog dialog = new WizardDialog(this.wParent.getShell(), new MergeWizard());
 		//dialog.open();
 		MergeExperimentDialog dialog = new MergeExperimentDialog(this.wParent.getShell());
 		dialog.open();
 		if(dialog.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.OK_ID) {
-			System.out.println(this.getClass()+": run done");
+			//System.out.println(this.getClass()+": run done");
 			Merging objMerging = new Merging(this.wParent.getShell(), this.wParent);
 			String sFile1 = dialog.getFirstFilename();
 			String sFile2 = dialog.getSecondFilename();
 			objMerging.Merge(sFile1, sFile2);
-			System.out.println(this.getClass()+": run finish");
+			//System.out.println(this.getClass()+": run finish");
 		} else 
-			System.out.println(this.getClass()+": run cancel");
+			System.out.println("Merging databases has been canceled");
 
 	}
 

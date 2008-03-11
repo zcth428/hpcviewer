@@ -39,6 +39,12 @@ public class Utilities {
 		Utilities.fontMetric = new Font(display, "Courier", iHeight, SWT.NONE); // johnmc - was SWT.NONE
 	}
 	
+	/**
+	 * Insert an item on the top on the tree/table with additional image if not null
+	 * @param treeViewer : the tree viewer
+	 * @param imgScope : the icon for the tree node
+	 * @param sText : the label of the items (started from  col 0..n-1)
+	 */
 	static public void insertTopRow(TreeViewer treeViewer, Image imgScope, String []sText) {
 		if(sText == null)
 			return;

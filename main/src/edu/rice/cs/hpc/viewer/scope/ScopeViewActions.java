@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreePath;
@@ -11,11 +12,13 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
+import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
 public class ScopeViewActions {
 	// public preference
@@ -24,6 +27,7 @@ public class ScopeViewActions {
 	private ScopeViewActionsGUI objActionsGUI;
     private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private Scope 		myRootScope;		// the root scope of this view
+    private IViewSite objSite;
     
     /**
      * Constructor: create actions and the GUI (which is a coolbar)
@@ -34,6 +38,10 @@ public class ScopeViewActions {
      */
     public ScopeViewActions(IViewSite viewSite, Composite parent) {
     	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, this);
+    	IPreferenceStore objPref = Activator.getDefault().getPreferenceStore();
+    	ScopeViewActions.fTHRESHOLD= objPref.getDouble(PreferenceConstants.P_THRESHOLD);
+    	this.objSite = viewSite;
+    	//System.out.println("SVA:"+ScopeViewActions.fTHRESHOLD);
     }
 
     /**
@@ -113,19 +121,27 @@ public class ScopeViewActions {
 		TreePath []arrPath = objSel.getPaths();
 		// get the selected metric
 		TreeColumn colSelected = this.treeViewer.getTree().getSortColumn();
+		if((colSelected == null) || colSelected.getWidth() == 0) {
+			// the column is hidden or there is no column sorted
+			org.eclipse.jface.dialogs.ErrorDialog.openError(this.objSite.getShell(), 
+					"Unknown sorted column", "Please select a column to sort before using this feature.", null);
+		}
 		// get the metric data
 		Object data = colSelected.getData();
 		if(data instanceof Metric && item != null) {
 			Metric metric = (Metric) data;
 			// find the hot call path
 			int iLevel = 0;
+			System.out.print("Looking for hot path with threshold of " + ScopeViewActions.fTHRESHOLD + " ... ");
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
 			if(objHot != null) {
 				// we find the hot path !!
 				this.treeViewer.setSelection(new TreeSelection(objHot.path));
+				System.out.println(" found: "+ objHot.node.getScope().getName());
 				//objHot.item.setBackground(0, new Color(null,255,106,106));
 			} else {
 				// we cannot find it
+				System.out.println(" cannot be found.\nPlease adjust the threshold int the preference dialog box.");
 			}
 		}
 	}

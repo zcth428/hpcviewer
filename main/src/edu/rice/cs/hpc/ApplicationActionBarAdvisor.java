@@ -20,7 +20,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	// them
 	// in the fill methods. This ensures that the actions aren't recreated
 	// when fillActionBars is called with FILL_PROXY.
-	private IWorkbenchAction exitAction;
+	//private IWorkbenchAction exitAction;
 	private IWorkbenchAction aboutAction; // about dialog box
 	private IWorkbenchAction showHelpAction; // help dialog box
 	private IWorkbenchAction showViewMenu;
@@ -38,9 +38,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// file.
 		// Registering also provides automatic disposal of the actions when
 		// the window is closed.
-
+/*
 		exitAction = ActionFactory.QUIT.create(window);
 		register(exitAction);
+		*/
 		aboutAction = ActionFactory.ABOUT.create(window); // about action
 		aboutAction.setDescription("hpcviewer is an Eclipse-based user interface for interactive exploration of performance data. ");
 	    register(aboutAction);
@@ -59,16 +60,18 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		/*MenuManager fileMenu = new MenuManager("&File",
 				IWorkbenchActionConstants.M_FILE);
 		menuBar.add(fileMenu);*/
-		MenuManager fileMenu = new MenuManager("&File");
+/*		MenuManager fileMenu = new MenuManager("&File","file");
 		menuBar.add(fileMenu);
+		//fileMenu.add(new edu.rice.cs.hpc.viewer.actions.LoadExperiment());
 		fileMenu.add(exitAction);
-
+*/
+		/*
 		MenuManager windowMenu = new MenuManager("Window");
 		menuBar.add(windowMenu);
 		windowMenu.add(this.showEditorMenu);
 		windowMenu.add(this.showViewMenu);
 		windowMenu.add(this.showPreference);
-		
+		*/
 		MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
 		// Add a group marker indicating where action set menus will appear.
 		   menuBar.add(new org.eclipse.jface.action.GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));

@@ -35,21 +35,27 @@
          point="org.eclipse.ui.actionSets">
       <actionSet
             id="edu.rice.cs.hpc.actionSet"
-            label="Experiment"
+            label="Database"
             visible="true">
             <menu
-               id="experimentMenu"
-               label="&amp;Experiment">
+               id="FileMenu"
+               label="&amp;File">
             	<separator
-                  name="experimentGroup">
+                  name="databaseGroup">
             	</separator>
+             <separator
+                   name="PreferenceGroup">
+             </separator>
+             <separator
+                   name="ExitGroup">
+             </separator>
          	</menu>
          <action
                class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
                icon="icons/hpc-merged-16x16.png"
                id="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               label="&amp;Merge experiments"
-               menubarPath="experimentMenu/experimentGroup"
+               label="&amp;Merge database ..."
+               menubarPath="FileMenu/databaseGroup"
                toolbarPath="experimentGroup"
                tooltip="Merge 2 experiment files">
          </action>
@@ -57,8 +63,8 @@
                class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
                icon="icons/xml.png"
                id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               label="&amp;Display experiment"
-               menubarPath="experimentMenu/experimentGroup"
+               label="&amp;Display database XML file"
+               menubarPath="FileMenu/databaseGroup"
                toolbarPath="experimentGroup"
                tooltip="Display the XML content of the experiment">
          </action>
@@ -67,10 +73,22 @@
                class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
                icon="icons/hpc-16x16.png"
                id="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
-               label="&amp;Load experiment ..."
-               menubarPath="experimentMenu/experimentGroup"
+               label="&amp;Open database ..."
+               menubarPath="FileMenu/databaseGroup"
                toolbarPath="experimentGroup"
                tooltip="Load an XML experiment file ...">
+         </action>
+         <action
+               class="edu.rice.cs.hpc.viewer.actions.Preferences"
+               id="edu.rice.cs.hpc.viewer.actions.preferences"
+               label="Preferences ..."
+               menubarPath="FileMenu/PreferenceGroup">
+         </action>
+         <action
+               class="edu.rice.cs.hpc.viewer.actions.Quit"
+               id="edu.rice.cs.hpc.viewer.actions.Quit"
+               label="&amp;Exit"
+               menubarPath="FileMenu/ExitGroup">
          </action>
       </actionSet>
    </extension>
@@ -119,5 +137,19 @@
             class="edu.rice.cs.hpc.splashHandlers.ExtensibleSplashHandler"
             id="edu.rice.cs.hpc.splashHandlers.extensible">
       </splashHandler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="edu.rice.cs.hpc.viewer.util.PreferencePage"
+            id="edu.rice.cs.hpc.viewer.util.PreferencePage"
+            name="hpcviewer Preferences">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="edu.rice.cs.hpc.viewer.util.PreferenceInitializer">
+      </initializer>
    </extension>
 </plugin>

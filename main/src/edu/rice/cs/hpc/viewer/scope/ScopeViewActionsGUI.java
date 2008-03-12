@@ -145,7 +145,7 @@ public class ScopeViewActionsGUI {
 	 * Resize the columns automatically
 	 * ATT: Please call this method once the data has been populated
 	 */
-	private void resizeTableColumns() {
+	public void resizeTableColumns() {
         // resize the column according to the data size
 		int nbCols = this.colMetrics.length;
         for (int i=0; i<nbCols; i++) {

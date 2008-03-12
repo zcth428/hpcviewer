@@ -9,8 +9,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -29,6 +27,7 @@ public class ScopeViewActions {
     private Scope 		myRootScope;		// the root scope of this view
     private IViewSite objSite;
     
+    private java.util.Stack<Scope.Node> stackZooms = new java.util.Stack<Scope.Node>();
     /**
      * Constructor: create actions and the GUI (which is a coolbar)
      * @param shell
@@ -41,7 +40,6 @@ public class ScopeViewActions {
     	IPreferenceStore objPref = Activator.getDefault().getPreferenceStore();
     	ScopeViewActions.fTHRESHOLD= objPref.getDouble(PreferenceConstants.P_THRESHOLD);
     	this.objSite = viewSite;
-    	//System.out.println("SVA:"+ScopeViewActions.fTHRESHOLD);
     }
 
     /**
@@ -100,6 +98,10 @@ public class ScopeViewActions {
 		// if we reach at this statement, then there is no hot call path !
 		return null;
 	}
+	
+	//====================================================================================
+	// ----------------------------- ACTIONS ---------------------------------------------
+	//====================================================================================
 	/**
 	 * show the hot path below the selected node in the tree
 	 */
@@ -235,6 +237,9 @@ public class ScopeViewActions {
 		}
 	}
 	
+	public void resizeColumns() {
+		this.objActionsGUI.resizeTableColumns();
+	}
 	/**
 	 * Check if zoom-in button should be enabled
 	 * @param node

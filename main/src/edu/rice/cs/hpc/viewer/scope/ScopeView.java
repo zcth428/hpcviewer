@@ -109,33 +109,39 @@ public class ScopeView extends ViewPart {
         mgr.add(new Separator());
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         Scope scope = node.getScope();
-        // show the source code
-        if(node.hasSourceCodeFile) {
-            // show the editor source code
+        
+        // ---------- show the source code
+        
+        // show the editor source code
         	String sMenuTitle ;
         	if(scope instanceof FileScope) {
         		sMenuTitle = "Show " + scope.getSourceFile().getName();
         	} else
         		sMenuTitle= "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
-            mgr.add(new ScopeViewTreeAction(sMenuTitle, node){
-                	public void run() {
-                		displayFileEditor(this.nodeSelected);
-                	}
-            });
-        }
+        	ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, node){
+            	public void run() {
+            		displayFileEditor(this.nodeSelected);
+            	}
+        	};
+        	acShowCode.setEnabled(node.hasSourceCodeFile);
+            mgr.add(acShowCode);
+
+        
         // show the call site in case this one exists
         if(scope instanceof CallSiteScope) {
+        	// get the call site scope
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
-        	// do not show up in the menu context if the callsite does not exist
-        	if(Utilities.isFileReadable(lineScope)) {
-            	String sMenuTitle = "Callsite "+lineScope.getToolTip();
-                mgr.add(new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
+        	// setup the menu
+            	sMenuTitle = "Callsite "+lineScope.getToolTip();
+            	ScopeViewTreeAction acShowCallsite = new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
                 	public void run() {
                 		displayFileEditor(this.nodeSelected);
                 	}
-                });
-        	}
+                }; 
+            	// do not show up in the menu context if the callsite does not exist
+                acShowCallsite.setEnabled(Utilities.isFileReadable(lineScope));
+                mgr.add(acShowCallsite);
         }
     }
     
@@ -308,7 +314,7 @@ public class ScopeView extends ViewPart {
         		this.colMetrics[i].setLabelProvider(new MetricLabelProvider( 
         				myExperiment.getMetric(i), Utilities.fontMetric));
         		this.colMetrics[i].getColumn().setMoveable(true);
-        		//tmp.pack();			// resize as much as possible
+        		//this.colMetrics[i].getColumn().pack();			// resize as much as possible
         		ColumnViewerSorter colSorter = new ColumnViewerSorter(this.treeViewer, 
         				colMetrics[i].getColumn(), myExperiment.getMetric(i),i+1); // sorting mechanism
         		if(i==0)
@@ -321,7 +327,6 @@ public class ScopeView extends ViewPart {
         
         // Update root scope
         treeViewer.setInput(myRootScope.getTreeNode());
-        //treeViewer.setInput(myRootScope.getTreeNode().getChildAt(0));
 
         // update the window title
         this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
@@ -332,6 +337,7 @@ public class ScopeView extends ViewPart {
         }
         // update the root scope of the actions !
         this.objViewActions.updateContent(this.myExperiment, this.myRootScope, this.colMetrics);
+        this.objViewActions.resizeColumns();	// resize the column to fit all metrics
    	}
 
     //======================================================

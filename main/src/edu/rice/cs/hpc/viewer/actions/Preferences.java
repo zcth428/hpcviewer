@@ -49,10 +49,11 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 	 */
 	public void run(IAction action) {
 		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-		String str = objPref.getString(PreferenceConstants.P_FONT_VIEW);
-		String str2 = objPref.getDefaultString(PreferenceConstants.P_FONT_VIEW);
-		if(str.compareTo(str2) == 0) {
+		String str = objPref.getDefaultString(PreferenceConstants.P_FONT_VIEW);
+		if(str.length() == 0) {
 			objPref.setValue(PreferenceConstants.P_FONT_VIEW, Utilities.fontMetric.toString());
+			// for unknown reason, the above approach does not work, we need to use the default one
+			objPref.setDefault(PreferenceConstants.P_FONT_VIEW, Utilities.fontMetric.toString());
 		}
 		//Show the preference for hpcviewer
 		PreferenceDialog objDialog = PreferencesUtil.createPreferenceDialogOn(this.objWindow.getShell(), 
@@ -66,6 +67,7 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 				ScopeViewActions.fTHRESHOLD = fThreshold;
 				// get the font for metrics columns
 				FontData objFont = PreferenceConverter.getFontData(objPref, PreferenceConstants.P_FONT_VIEW);
+				//System.out.println("Preference-update:"+objFont.toString());
 				Utilities.fontMetric = new Font(null, objFont);
 			}
 		}

@@ -6,6 +6,7 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -14,12 +15,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 
 import java.util.ArrayList;
+
 
 public class ColumnProperties extends TitleAreaDialog {
 	private CheckboxTableViewer objCheckBoxTable ;
@@ -130,11 +135,38 @@ public class ColumnProperties extends TitleAreaDialog {
 	  protected Control createDialogArea(Composite aParent) {
 	    Composite composite = new Composite(aParent, SWT.BORDER);//(Composite) super.createDialogArea(aParent);
 
-	    org.eclipse.swt.layout.GridLayout grid = new org.eclipse.swt.layout.GridLayout();
-	    grid.numColumns=2;
+	    GridLayout grid = new GridLayout();
+	    grid.numColumns=1;
 	    composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 	    composite.setLayout(grid);
-
+	    
+	    // prepare the buttons: check and uncheck
+	    GridLayout gridButtons = new GridLayout();
+	    gridButtons.numColumns=2;
+	    Composite groupButtons = new Composite(composite, SWT.BORDER);
+	    groupButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+	    groupButtons.setLayout(gridButtons);
+	    
+	    // check button
+	    Button btnCheckAll = new Button(groupButtons, SWT.NONE);
+	    btnCheckAll.setText("Check all");
+	    btnCheckAll.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+	    btnCheckAll.addSelectionListener(new SelectionAdapter() {
+	    	public void widgetSelected(SelectionEvent e) {
+	    		objCheckBoxTable.setAllChecked(true);
+	    	}
+	    });
+	    // uncheck button
+	    Button btnUnCheckAll = new Button(groupButtons, SWT.NONE);
+	    btnUnCheckAll.setText("Uncheck all");
+	    btnUnCheckAll.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+	    btnUnCheckAll.addSelectionListener(new SelectionAdapter() {
+	    	public void widgetSelected(SelectionEvent e) {
+	    		objCheckBoxTable.setAllChecked(false);
+	    	}
+	    });
+	    
+	    // list of columns (we use table for practical purpose)
 	    Table table = new Table(composite, SWT.CHECK | SWT.BORDER);
 	    table.setLayoutData(new GridData(GridData.FILL_BOTH));
 	    this.objCheckBoxTable = new CheckboxTableViewer(table) ;

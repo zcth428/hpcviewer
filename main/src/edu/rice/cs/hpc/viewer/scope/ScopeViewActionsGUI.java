@@ -87,7 +87,7 @@ public class ScopeViewActionsGUI {
 		this.myExperiment = exp;
 		this.myRootScope = scope;
 		this.colMetrics = columns;
-		this.setLevelText(scope.getTreeNode().iLevel+2);	// @TODO: initialized with root level
+		this.setLevelText(scope.getTreeNode().iLevel+1);	// @TODO: initialized with root level
 		
 		// actions needed when a new experiment is loaded
 		this.resizeTableColumns();	// we assume the data has been populated
@@ -253,7 +253,7 @@ public class ScopeViewActionsGUI {
      * @return
      */
     private boolean shouldUnflattenBeEnabled() {
-    	return (this.iFlatLevel>2);
+    	return (this.iFlatLevel>1);
     }
 
     //======================================================

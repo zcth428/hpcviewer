@@ -90,7 +90,16 @@ public class ScopeView extends ViewPart {
      */
     private Scope.Node getSelectedItem() {
         TreeItem[] selection = this.treeViewer.getTree().getSelection();
-        return (Scope.Node)selection[0].getData();
+        if(selection != null) {
+        	Object o = selection[0].getData();
+        	/**
+        	 * Fix bug which appears when the user wants to see the context menu of
+        	 * the top row of the table (the aggregate metrics)
+        	 */
+        	if(o instanceof Scope.Node)
+        		return (Scope.Node)o;
+        }
+        return null;
     }
     /**
      * Creating the context submenu for the view
@@ -99,6 +108,11 @@ public class ScopeView extends ViewPart {
      */
     private void fillContextMenu(IMenuManager mgr) {
     	Scope.Node node = this.getSelectedItem();
+    	/**
+    	 * Fix bug which appears when the user wants to see the context menu of
+    	 * the top row of the table (the aggregate metrics)
+    	 */
+    	if(node == null) return;
     	// ---- zoomin
         mgr.add(acZoomin);
         acZoomin.setEnabled(this.objViewActions.shouldZoomInBeEnabled(node));
@@ -107,7 +121,8 @@ public class ScopeView extends ViewPart {
         acZoomout.setEnabled(this.objViewActions.shouldZoomOutBeEnabled(node));
         // additional feature
         mgr.add(new Separator());
-        mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        // Laks: we don't need additional marker
+        //mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         Scope scope = node.getScope();
         
         // ---------- show the source code
@@ -337,6 +352,8 @@ public class ScopeView extends ViewPart {
         }
         // update the root scope of the actions !
         this.objViewActions.updateContent(this.myExperiment, this.myRootScope, this.colMetrics);
+        // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
+        // so we need to do it here, manually ... sigh
         this.objViewActions.resizeColumns();	// resize the column to fit all metrics
    	}
 

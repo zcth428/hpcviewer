@@ -226,14 +226,17 @@ public class ScopeViewActions {
 	 * go back one level
 	 */
 	public void unflattenNode() {
-		if(this.objActionsGUI.iFlatLevel <3) return;
+		if(this.objActionsGUI.iFlatLevel <2) return;
 		
 		int iNewFlatLevel = this.objActionsGUI.iFlatLevel - 1;
 		Integer objLevel = Integer.valueOf(iNewFlatLevel);
-		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
-		if(nodeArray != null) {
-			this.treeViewer.setInput(nodeArray);
-			this.objActionsGUI.updateFlattenView(iNewFlatLevel, true);
+		java.util.Hashtable<Integer, ArrayOfNodes> tableOfNodes = ((RootScope)this.myRootScope).getTableOfNodes();
+		if(tableOfNodes != null) {
+			ArrayOfNodes nodeArray = tableOfNodes.get(objLevel);
+			if(nodeArray != null) {
+				this.treeViewer.setInput(nodeArray);
+				this.objActionsGUI.updateFlattenView(iNewFlatLevel, true);
+			}
 		}
 	}
 	

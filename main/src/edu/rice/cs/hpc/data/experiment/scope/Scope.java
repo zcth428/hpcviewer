@@ -799,7 +799,7 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 		/**
 		 * Laks: need to simulate java swing DefaultMutableTreeNode
 		 */
-		protected Scope userObject;
+		//protected Scope userObject;
 		
 		/**
 		 * This public variable indicates if the node contains information about the source code file.

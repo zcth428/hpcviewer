@@ -230,7 +230,7 @@ public class ScopeViewActionsGUI {
      * @param node: the current selected node
      */
     public void checkZoomButtons(Scope.Node node) {
-    	tiZoomout.setEnabled(shouldZoomOutBeEnabled(node));
+    	tiZoomout.setEnabled(this.shouldZoomOutBeEnabled());
     	boolean b = shouldZoomInBeEnabled(node);
     	tiZoomin.setEnabled(b);
     	this.tiHotCallPath.setEnabled(b);
@@ -266,7 +266,10 @@ public class ScopeViewActionsGUI {
      * @return
      */
     static public boolean shouldZoomInBeEnabled(Scope.Node node) {
-    	return (node.getChildCount()>0);
+    	if(node != null)
+    		return (node.getChildCount()>0);
+    	else
+    		return false;
     }
     
     /**
@@ -282,6 +285,10 @@ public class ScopeViewActionsGUI {
     	return (false);
     }
 
+    public boolean shouldZoomOutBeEnabled() {
+    	return this.objViewActions.shouldZoomOutBeEnabled();
+    	
+    }
     //======================================================
     // ................ CREATION ............................
     //======================================================

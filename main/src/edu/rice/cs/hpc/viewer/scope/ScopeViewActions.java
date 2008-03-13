@@ -26,8 +26,9 @@ public class ScopeViewActions {
     private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private Scope 		myRootScope;		// the root scope of this view
     private IViewSite objSite;
-    
-    private java.util.Stack<Scope.Node> stackZooms = new java.util.Stack<Scope.Node>();
+
+    // stack to store the position of the zoom
+    private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
     /**
      * Constructor: create actions and the GUI (which is a coolbar)
      * @param shell
@@ -98,7 +99,29 @@ public class ScopeViewActions {
 		// if we reach at this statement, then there is no hot call path !
 		return null;
 	}
-	
+
+	/**
+	 * Get the current input node
+	 * @return
+	 */
+	private Scope.Node getInputNode() {
+		Object o = treeViewer.getInput();
+		Scope.Node child;
+		if (!(o instanceof Scope.Node)) {
+			if(o instanceof ArrayOfNodes) {
+				TreeItem []tiObjects = this.treeViewer.getTree().getItems();
+				child = (Scope.Node)tiObjects[0].getData(); //the 0th item can be the aggregate metric
+				// tricky solution when zoom-out the flattened node
+				if(child != null)
+					child = (Scope.Node)child.getParent();
+			} else {
+				// there is something wrong here ...
+				throw(new java.lang.RuntimeException("ScopeViewAction: unknown input or the input is null" + o));
+			}
+		} else 
+			child = (Scope.Node) o;
+		return child;
+	}
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
@@ -158,10 +181,17 @@ public class ScopeViewActions {
 		if (!(o instanceof Scope.Node)) {
 			return;
 		}
+		// save the current view
+		Scope.Node objInputNode = this.getInputNode();
+		this.stackRootTree.push(objInputNode); // save the node for future zoom-out
+
+		// set the new view based on the selected node
 		Scope.Node current = (Scope.Node) o;
 		treeViewer.setInput(current);
+		// we need to insert the selected node on the top of the table
+		// FIXME: this approach is not elegant, but we don't have any choice
+		// 			at the moment
 		this.objActionsGUI.insertParentNode(current);
-		//this.objActionsGUI.updateFlattenView(current.iLevel);
 		this.objActionsGUI.checkZoomButtons(current);
 	}
 	
@@ -169,35 +199,32 @@ public class ScopeViewActions {
 	 * Zoom-out the node
 	 */
 	public void zoomOut() {
-		Object o = treeViewer.getInput();
 		Scope.Node child;
-		if (!(o instanceof Scope.Node)) {
-			if(o instanceof ArrayOfNodes) {
-				TreeItem []tiObjects = this.treeViewer.getTree().getItems();
-				child = (Scope.Node)tiObjects[1].getData(); //the 0th item is the aggregate metric
-				// tricky solution when zoom-out the flattened node
-				if(child != null)
-					child = (Scope.Node)child.getParent();
-			} else {
-				System.err.println("ScopeView - zoomout:"+o.getClass());
-				return;
-			}
-		} else
-			child = (Scope.Node) o;
-		Scope.Node parent = (Scope.Node)child.getParent();
+		if(this.stackRootTree.size()>0) {
+			// the tree has been zoomed
+			child = this.stackRootTree.pop();
+		} else {
+			// case where the tree hasn't been zoomed
+			// FIXME: there must be a bug if the code comes to here !
+			child = (Scope.Node)treeViewer.getInput();
+			throw( new java.lang.RuntimeException("ScopeViewActions - illegal zoomout"+child));
+		}
+		Scope.Node parent = child; //(Scope.Node)child.getParent();
 		if (parent == null)
 			return;
-		if(parent.getParent() == null) {
+		Object userObject = parent.getUserObject();
+		if( (parent.getParent() == null) || 
+				((userObject != null) && (userObject instanceof RootScope))  ){
 			// in this case, the parent is the aggregate metrics
 			// we will not show the node, but instead we will insert manually
-			treeViewer.setInput( child );			
+			treeViewer.setInput( parent );			
 	    	Scope.Node  node = (Scope.Node) this.myRootScope.getTreeNode();
 	    	this.objActionsGUI.insertParentNode(node);
 		} else {
 			treeViewer.setInput( parent );
 		}
 		//this.objActionsGUI.updateFlattenView(parent.iLevel);
-		this.objActionsGUI.checkZoomButtons(parent);
+		this.objActionsGUI.checkZoomButtons(null); // no node has been selected ?
 		// do not zoom out to the root
 		/*
 		if(parent.getScope() instanceof RootScope)
@@ -253,12 +280,21 @@ public class ScopeViewActions {
     }
     
     /**
+     * In case there is no selected node, we determine the zoom-out button
+     * can be enabled only and only if we have at least one item in the stack
+     * @return
+     */
+    public boolean shouldZoomOutBeEnabled() {
+    	return this.stackRootTree.size()>0;
+    }
+    /**
      * Check if zoom-out button should be enabled
      * @param node
      * @return
      */
     public boolean shouldZoomOutBeEnabled(Scope.Node node) {
-    	return (ScopeViewActionsGUI.shouldZoomOutBeEnabled(node));
+    	//return (ScopeViewActionsGUI.shouldZoomOutBeEnabled(node));
+    	return this.shouldZoomOutBeEnabled(); //return only if the stack is not empty
     }
     
     /**
@@ -279,9 +315,20 @@ public class ScopeViewActions {
     	this.objActionsGUI.setTreeViewer(tree);
     }
     
+    //===========================================================================
+    //------------------- ADDITIONAL CLASSES ------------------------------------
+    //===========================================================================
+    /**
+     * Class to store the information on the tree item path
+     * @author laksono
+     *
+     */
     class HotCallPath {
+    	// the path of the item
     	public TreePath path;
+    	// the item
     	public TreeItem item;
+    	// the node associated
     	public Scope.Node node;
     }
 }

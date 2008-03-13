@@ -27,14 +27,15 @@ public class ScopeViewActions {
     private Scope 		myRootScope;		// the root scope of this view
     private IViewSite objSite;
 
-    // stack to store the position of the zoom
+    // stack to store the position of the zoom, tree state, ...
     private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
+	private java.util.Stack<Object[]> stackTreeStates = new java.util.Stack<Object[]>();
+	
+	
     /**
      * Constructor: create actions and the GUI (which is a coolbar)
-     * @param shell
-     * @param parent
-     * @param tree
-     * @param font
+     * @param viewSite the site of the view (used for retrieving shell, display, ...)
+     * @param parent composite
      */
     public ScopeViewActions(IViewSite viewSite, Composite parent) {
     	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, this);
@@ -110,7 +111,15 @@ public class ScopeViewActions {
 		if (!(o instanceof Scope.Node)) {
 			if(o instanceof ArrayOfNodes) {
 				TreeItem []tiObjects = this.treeViewer.getTree().getItems();
-				child = (Scope.Node)tiObjects[0].getData(); //the 0th item can be the aggregate metric
+				o = tiObjects[0];
+				if(o instanceof Scope.Node)
+					child = (Scope.Node)tiObjects[0].getData(); //the 0th item can be the aggregate metric
+				else if(tiObjects.length>1)
+					// in case of the top row is not a node, the second one MUST BE a node
+					child = (Scope.Node)tiObjects[1].getData();
+				else
+					// Otherwise there is something wrong with the data and the tree
+					throw (new java.lang.RuntimeException("ScopeViewActions: tree contains unknown objects"));
 				// tricky solution when zoom-out the flattened node
 				if(child != null)
 					child = (Scope.Node)child.getParent();
@@ -122,6 +131,8 @@ public class ScopeViewActions {
 			child = (Scope.Node) o;
 		return child;
 	}
+	
+	
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
@@ -181,9 +192,13 @@ public class ScopeViewActions {
 		if (!(o instanceof Scope.Node)) {
 			return;
 		}
-		// save the current view
+		
+		// ---------------------- save the current view
 		Scope.Node objInputNode = this.getInputNode();
 		this.stackRootTree.push(objInputNode); // save the node for future zoom-out
+		Object treeStates[] = this.treeViewer.getExpandedElements();
+		this.stackTreeStates.push(treeStates);
+		// ---------------------- 
 
 		// set the new view based on the selected node
 		Scope.Node current = (Scope.Node) o;
@@ -225,11 +240,11 @@ public class ScopeViewActions {
 		}
 		//this.objActionsGUI.updateFlattenView(parent.iLevel);
 		this.objActionsGUI.checkZoomButtons(null); // no node has been selected ?
-		// do not zoom out to the root
-		/*
-		if(parent.getScope() instanceof RootScope)
-			return;
-		*/
+		// return the previous expanded tree items
+		if(this.stackTreeStates.size()>0) {
+			Object o[] = this.stackTreeStates.pop();
+			this.treeViewer.setExpandedElements(o);
+		}
 	}
 
 	/**

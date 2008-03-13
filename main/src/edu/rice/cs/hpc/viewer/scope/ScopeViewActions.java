@@ -287,15 +287,6 @@ public class ScopeViewActions {
     public boolean shouldZoomOutBeEnabled() {
     	return this.stackRootTree.size()>0;
     }
-    /**
-     * Check if zoom-out button should be enabled
-     * @param node
-     * @return
-     */
-    public boolean shouldZoomOutBeEnabled(Scope.Node node) {
-    	//return (ScopeViewActionsGUI.shouldZoomOutBeEnabled(node));
-    	return this.shouldZoomOutBeEnabled(); //return only if the stack is not empty
-    }
     
     /**
      * Check if the buttons in the toolbar should be enable/disable

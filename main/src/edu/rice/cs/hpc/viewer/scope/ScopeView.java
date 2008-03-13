@@ -118,7 +118,7 @@ public class ScopeView extends ViewPart {
         acZoomin.setEnabled(this.objViewActions.shouldZoomInBeEnabled(node));
         // ---- zoomout
         mgr.add(acZoomout);
-        acZoomout.setEnabled(this.objViewActions.shouldZoomOutBeEnabled(node));
+        acZoomout.setEnabled(this.objViewActions.shouldZoomOutBeEnabled());
         // additional feature
         mgr.add(new Separator());
         // Laks: we don't need additional marker

@@ -257,7 +257,7 @@ public class ScopeViewActionsGUI {
     }
 
     //======================================================
-    // ................ STATIC ............................
+    // ................ ZOOM ............................
     //======================================================
     /**
      * Check if the button Zoom-in should be available given node as 
@@ -274,17 +274,8 @@ public class ScopeViewActionsGUI {
     
     /**
      * Check if the button zoom-out should be enable 
-     * @param node
      * @return
      */
-    static public boolean shouldZoomOutBeEnabled(Scope.Node node) {
-    	if(node.getParent() != null) {
-    		Scope.Node parent = (Scope.Node) node.getParent(); 
-    		return !(parent.getScope() instanceof RootScope );
-    	}
-    	return (false);
-    }
-
     public boolean shouldZoomOutBeEnabled() {
     	return this.objViewActions.shouldZoomOutBeEnabled();
     	

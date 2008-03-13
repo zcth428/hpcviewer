@@ -131,8 +131,6 @@ public class EditorManager {
 	    	   IResource resource = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot();
 	    	   IMarker marker=resource.createMarker(IMarker.MARKER); 
 			   marker.setAttribute(IMarker.LINE_NUMBER, iLineNumber+1);
-			   marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-			   marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
 			   org.eclipse.ui.ide.IDE.gotoMarker(wbPage.getActiveEditor(), marker);
 	    	   
 	       } catch (org.eclipse.core.runtime.CoreException e) {

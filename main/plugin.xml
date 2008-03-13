@@ -97,22 +97,22 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="edu.rice.cs.hpc"
-            name="hpcviewer">
+            name="HPCViewer">
          <property
                name="appName"
-               value="hpcviewer">
+               value="HPCViewer">
          </property>
          <property
                name="aboutImage"
-               value="icons/hpcviewerEclipseShadow128.png">
+               value="icons/hpcviewerEclipse128.gif">
          </property>
          <property
                name="aboutText"
-               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2007, Rice University">
+               value="hpcviewer is a user interface for analyzing a database of&#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of&#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of&#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2007, Rice University">
          </property>
          <property
                name="windowImages"
-               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
+               value="icons/hpcviewerEclipse16.gif,icons/hpcviewerEclipse32.gif,icons/hpcviewerEclipse48.gif,icons/hpcviewerEclipse64.gif,icons/hpcviewerEclipse128.gif">
          </property>
       </product>
    </extension>
@@ -122,7 +122,7 @@
           class="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
           default="true"
           extensions="*"
-          icon="icons/hpc-16x16.gif"
+          icon="icons/hpcviewerEclipseShadow16.png"
           id="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
           name="Source Code Editor">
    		</editor>

@@ -52,7 +52,9 @@ public class ScopeViewActions {
     public ScopeViewActions(IViewSite viewSite, Composite parent) {
     	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, this);
     	IPreferenceStore objPref = Activator.getDefault().getPreferenceStore();
-    	ScopeViewActions.fTHRESHOLD= objPref.getDouble(PreferenceConstants.P_THRESHOLD);
+    	double fDefaultThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
+    	if(fDefaultThreshold > 0.0)
+    		ScopeViewActions.fTHRESHOLD= fDefaultThreshold; 
     	this.objSite = viewSite;
     }
 

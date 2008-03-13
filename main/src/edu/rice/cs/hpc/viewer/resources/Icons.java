@@ -19,12 +19,8 @@ public class Icons {
 	public Image imgZoomOut;
 	public Image imgFlatten;
 	public Image imgUnFlatten;
-	public Image imgHPC;
-	public Image imgHPCbig;
 	public Image imgResize;
 	public Image imgColumns;
-	public Image imgFalse;
-	public Image imgTrue;
 	public Image imgFlame;
 	
 	//-------------------------- image descriptor
@@ -34,12 +30,8 @@ public class Icons {
 	public ImageDescriptor imdZoomOut;
 	public ImageDescriptor imdFlatten;
 	public ImageDescriptor imdUnFlatten;
-	public ImageDescriptor imdHPC;
-	public ImageDescriptor imdHPCbig;
 	public ImageDescriptor imdResize;
 	public ImageDescriptor imdColumns;
-	public ImageDescriptor imdFalse;
-	public ImageDescriptor imdTrue;
 	public ImageDescriptor imdFlame;
 
 	static private Icons __singleton=null;
@@ -51,12 +43,8 @@ public class Icons {
 		imdZoomOut = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
 		imdFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
 		imdUnFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
-		imdHPC = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"hpc-16x16.png");
-		imdHPCbig = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"hpc-160x160.png");
 		imdResize = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"resizeColumns.gif");
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
-		this.imdTrue = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"True.png");
-		this.imdFalse =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"False.png");
 		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"flameIcon.gif");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
@@ -65,12 +53,8 @@ public class Icons {
 		imgZoomOut = this.imdZoomOut.createImage();
 		imgFlatten = this.imdFlatten.createImage();
 		imgUnFlatten = this.imdUnFlatten.createImage();
-		imgHPC = this.imdHPC.createImage();
-		imgHPCbig = this.imdHPCbig.createImage();
 		imgResize = this.imdResize.createImage();
 		imgColumns = this.imdColumns.createImage();
-		this.imgTrue = this.imdTrue.createImage();
-		this.imgFalse = this.imdFalse.createImage();
 		this.imgFlame = this.imdFlame.createImage();
 	}
 	
@@ -82,12 +66,8 @@ public class Icons {
 			imgZoomOut.dispose();
 			imgFlatten.dispose();
 			imgUnFlatten.dispose();
-			imgHPC.dispose();
-			imgHPCbig.dispose();
 			imgResize.dispose();
 			this.imgColumns.dispose();
-			this.imgTrue.dispose();
-			this.imgFalse.dispose();
 			this.imgFlame.dispose();
 		} catch (java.lang.Exception e) {
 			e.printStackTrace();

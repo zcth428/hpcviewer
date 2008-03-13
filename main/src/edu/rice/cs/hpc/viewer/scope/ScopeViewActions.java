@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.core.runtime.IStatus;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -18,14 +19,25 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
+/**
+ * Class to manage the actions of the tree view such as zooms, flattening,
+ * resize the columns, etc. This class will add additional toolbar on the top
+ * of the tree. Therefore, it is necessary to instantiate this class before
+ * the creation of the tree, then call the method updateContent() to associate
+ * the action with the tree (once the tree is created). 
+ * This looks somewhat stupid, but this is the fastest thing in my mind :-(
+ * 
+ * @author laksono
+ *
+ */
 public class ScopeViewActions {
 	// public preference
 	static public double fTHRESHOLD = 0.6; 
     //-------------- DATA
-	private ScopeViewActionsGUI objActionsGUI;
-    private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
+	private ScopeViewActionsGUI objActionsGUI;	// associated GUI (toolbar)
+    private ScopeTreeViewer 	treeViewer;		  	// tree 
     private Scope 		myRootScope;		// the root scope of this view
-    private IViewSite objSite;
+    private IViewSite objSite;				// associated view
 
     // stack to store the position of the zoom, tree state, ...
     private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
@@ -159,8 +171,8 @@ public class ScopeViewActions {
 		TreeColumn colSelected = this.treeViewer.getTree().getSortColumn();
 		if((colSelected == null) || colSelected.getWidth() == 0) {
 			// the column is hidden or there is no column sorted
-			org.eclipse.jface.dialogs.ErrorDialog.openError(this.objSite.getShell(), 
-					"Unknown sorted column", "Please select a column to sort before using this feature.", null);
+			org.eclipse.jface.dialogs.MessageDialog.openError(this.objSite.getShell(), 
+					"Unknown sorted column", "Please select a column to sort before using this feature.");
 		}
 		// get the metric data
 		Object data = colSelected.getData();
@@ -282,6 +294,9 @@ public class ScopeViewActions {
 		}
 	}
 	
+	/**
+	 * Resize the columns
+	 */
 	public void resizeColumns() {
 		this.objActionsGUI.resizeTableColumns();
 	}

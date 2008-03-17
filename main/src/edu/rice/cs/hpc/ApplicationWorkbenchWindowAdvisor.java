@@ -12,7 +12,14 @@ import edu.rice.cs.hpc.viewer.util.*;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private ExperimentData dataEx ;
-	
+
+	/**
+	 * Creates a new workbench window advisor for configuring a workbench window via the given workbench window configurer
+	 * Retrieve the RCP's arguments and verify if it contains database to open
+	 * 
+	 * @param configurer
+	 * @param args
+	 */
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []args) {
 		super(configurer);
 		if(args != null && args.length > 0) {
@@ -21,17 +28,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 	}
 
+	/**
+	 * Creates a new action bar advisor to configure the action bars of the window via 
+	 * the given action bar configurer. The default implementation returns a new instance of ActionBarAdvisor
+	 */
 	public ActionBarAdvisor createActionBarAdvisor(
 			IActionBarConfigurer configurer) {
 		return new ApplicationActionBarAdvisor(configurer);
 	}
 
+	/**
+	 * Performs arbitrary actions before the window is opened.
+	 */
 	public void preWindowOpen() {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
-		//configurer.setInitialSize(new Point(800, 600));
-		configurer.setShowCoolBar(true);
-		configurer.setShowStatusLine(true);
-		configurer.setTitle("hpcviewer");
+		configurer.setShowCoolBar(false);	// remove toolbar/coolbar
+		configurer.setShowStatusLine(true);	// show status bar
+		configurer.setTitle("hpcviewer");	// default title (to be updated)
 		
 	}
 
@@ -80,6 +93,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 	}
 
+	/**
+	 * Performs arbitrary actions as the window's shell is being closed directly, and possibly veto the close.
+	 */
 	public boolean preWindowShellClose() {
 		this.getWindowConfigurer().getWindow().getActivePage().closeAllEditors(false);
 		return super.preWindowShellClose();

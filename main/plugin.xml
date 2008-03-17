@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension-point id="splashExtension" name="Splash Extensions" schema="schema/splashExtension.exsd"/>
    <extension
          id="edu.rice.cs.hpc"
          point="org.eclipse.core.runtime.applications">
@@ -38,6 +37,13 @@
             label="Database"
             visible="true">
             <menu
+               id="DebugMenu"
+               label="&amp;Debug">
+            	<separator
+                  name="debugGroup">
+            	</separator>
+         	</menu>
+            <menu
                id="FileMenu"
                label="&amp;File">
             	<separator
@@ -52,36 +58,27 @@
          	</menu>
          <action
                class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               icon="icons/hpc-merged-16x16.png"
                id="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               label="&amp;Merge database ..."
+               label="&amp;Augment experiment view..."
                menubarPath="FileMenu/databaseGroup"
-               toolbarPath="experimentGroup"
-               tooltip="Merge 2 experiment files">
+               tooltip="Add an experiment&apos;s data to the open view">
          </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               icon="icons/xml.png"
                id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               label="&amp;Display database XML file"
-               menubarPath="FileMenu/databaseGroup"
-               toolbarPath="experimentGroup"
-               tooltip="Display the XML content of the experiment">
+               label="&amp;Display an experiment&apos;s raw XML"
+               menubarPath="DebugMenu/debuggingGroup">
          </action>
-            
          <action
                class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
-               icon="icons/hpc-16x16.png"
                id="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
-               label="&amp;Open database ..."
-               menubarPath="FileMenu/databaseGroup"
-               toolbarPath="experimentGroup"
-               tooltip="Load an XML experiment file ...">
+               label="&amp;Open experiment..."
+               menubarPath="FileMenu/databaseGroup">
          </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.Preferences"
                id="edu.rice.cs.hpc.viewer.actions.preferences"
-               label="Preferences ..."
+               label="Preferences..."
                menubarPath="FileMenu/PreferenceGroup">
          </action>
          <action
@@ -97,22 +94,22 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="edu.rice.cs.hpc"
-            name="HPCViewer">
+            name="hpcviewer">
          <property
                name="appName"
-               value="HPCViewer">
+               value="hpcviewer">
          </property>
          <property
                name="aboutImage"
-               value="icons/hpcviewerEclipse128.gif">
+               value="icons/hpcviewerEclipseShadow128.png">
          </property>
          <property
                name="aboutText"
-               value="hpcviewer is a user interface for analyzing a database of&#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of&#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of&#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2007, Rice University">
+               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2007, Rice University">
          </property>
          <property
                name="windowImages"
-               value="icons/hpcviewerEclipse16.gif,icons/hpcviewerEclipse32.gif,icons/hpcviewerEclipse48.gif,icons/hpcviewerEclipse64.gif,icons/hpcviewerEclipse128.gif">
+               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
          </property>
       </product>
    </extension>
@@ -122,21 +119,10 @@
           class="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
           default="true"
           extensions="*"
-          icon="icons/hpcviewerEclipseShadow16.png"
+          icon="icons/hpc-16x16.png"
           id="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
           name="Source Code Editor">
    		</editor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.splashHandlers">
-      <splashHandler
-            class="edu.rice.cs.hpc.splashHandlers.BrowserSplashHandler"
-            id="edu.rice.cs.hpc.splashHandlers.browser">
-      </splashHandler>
-      <splashHandler
-            class="edu.rice.cs.hpc.splashHandlers.ExtensibleSplashHandler"
-            id="edu.rice.cs.hpc.splashHandlers.extensible">
-      </splashHandler>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

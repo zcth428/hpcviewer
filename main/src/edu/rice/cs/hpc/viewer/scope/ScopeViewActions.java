@@ -97,15 +97,15 @@ public class ScopeViewActions {
 				double dParent = scope.getMetricPercentValue(metric);
 				double dChild = scopeChild.getMetricPercentValue(metric);
 
-				if(dChild<(ScopeViewActions.fTHRESHOLD*dParent)) {
+				if(dChild < (ScopeViewActions.fTHRESHOLD * dParent)) {
 					HotCallPath objCallPath = new HotCallPath();
 					// we found the hot call path
-					objCallPath.path = this.treeViewer.getTreePath(child);
-					objCallPath.item = child;
-					objCallPath.node = nodeChild;
+					objCallPath.path = pathItem; // this.treeViewer.getTreePath(child);
+					objCallPath.item = item; // child;
+					objCallPath.node = (Scope.Node) item.getData(); // nodeChild;
 					return objCallPath;
 				} else {
-					// let see the next kid
+					// let move deeper down the tree
 					return this.getHotCallPath(this.treeViewer.getTreePath(child), 
 							child, scopeChild, metric, iLevel+ 1);
 				}
@@ -182,16 +182,16 @@ public class ScopeViewActions {
 			Metric metric = (Metric) data;
 			// find the hot call path
 			int iLevel = 0;
-			System.out.print("Looking for hot path with threshold of " + ScopeViewActions.fTHRESHOLD + " ... ");
+			// System.out.print("Looking for the hot path with threshold of " + ScopeViewActions.fTHRESHOLD + " ... ");
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
 			if(objHot != null) {
-				// we find the hot path !!
+				// we found the hot path
 				this.treeViewer.setSelection(new TreeSelection(objHot.path));
-				System.out.println(" found: "+ objHot.node.getScope().getName());
+				// System.out.println(" found: "+ objHot.node.getScope().getName());
 				//objHot.item.setBackground(0, new Color(null,255,106,106));
 			} else {
 				// we cannot find it
-				System.out.println(" cannot be found.\nPlease adjust the threshold int the preference dialog box.");
+				// System.out.println(" cannot be found.\nPlease adjust the threshold in the preference dialog box.");
 			}
 		}
 	}

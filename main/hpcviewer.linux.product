@@ -4,15 +4,13 @@
 <product name="hpcviewer" id="edu.rice.cs.hpc.hpcviewer" application="edu.rice.cs.hpc" useFeatures="false">
 
    <aboutInfo>
-      <image path="icons/hpcviewerEclipse128.gif"/>
+      <image path="/edu.rice.cs.hpc/icons/hpcviewer128.gif"/>
       <text>
-         hpcviewer is a user interface for analyzing a database of 
-performance metrics in conjunction with an application&apos;s source code. 
+         HPCViewer is a user interface for analyzing a database of 
+performance metrics in conjunction with source code. 
 
-hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of 
-HPCToolkit is principally funded by the Department of Energy&apos;s Office of 
-Science as part of the SciDAC Center for Scalable Application Development 
-Software and the Performance Engineering Research Institute.
+HPCViewer is part of Rice University&apos;s HPCToolkit project, 
+and supported by the Center for Scalable Application Development Software (CScAD).
 
 (C) Copyright 2007, Rice University
       </text>
@@ -21,10 +19,11 @@ Software and the Performance Engineering Research Institute.
    <configIni use="default"/>
 
    <launcherArgs>
+      <vmArgs>-Xmx400m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/hpcviewerEclipse16.gif" i32="icons/hpcviewerEclipse32.gif" i48="icons/hpcviewerEclipse48.gif" i64="icons/hpcviewerEclipse64.gif" i128="icons/hpcviewerEclipse128.gif"/>
+   <windowImages i16="/edu.rice.cs.hpc/icons/hpc-16x16.gif" i32="/edu.rice.cs.hpc/icons/hpc-32x32.gif" i64="/edu.rice.cs.hpc/icons/hpcviewer64.gif" i128="/edu.rice.cs.hpc/icons/hpcviewer128.gif"/>
 
    <launcher>
       <solaris/>
@@ -39,11 +38,8 @@ Software and the Performance Engineering Research Institute.
    <plugins>
       <plugin id="com.ibm.icu"/>
       <plugin id="edu.rice.cs.hpc"/>
-      <plugin id="javax.servlet"/>
       <plugin id="org.apache.xerces"/>
       <plugin id="org.apache.xml.resolver"/>
-      <plugin id="org.eclipse.ant.core"/>
-      <plugin id="org.eclipse.compare"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.databinding"/>
@@ -66,15 +62,11 @@ Software and the Performance Engineering Research Institute.
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.text"/>
-      <plugin id="org.eclipse.ltk.core.refactoring"/>
-      <plugin id="org.eclipse.ltk.ui.refactoring"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.search"/>
       <plugin id="org.eclipse.swt"/>
-      <plugin id="org.eclipse.swt.gtk.linux.x86"/>
-      <plugin id="org.eclipse.team.core"/>
-      <plugin id="org.eclipse.team.ui"/>
+      <plugin id="org.eclipse.swt.gtk.linux.x86" fragment="true"/>
       <plugin id="org.eclipse.text"/>
       <plugin id="org.eclipse.ui"/>
       <plugin id="org.eclipse.ui.console"/>

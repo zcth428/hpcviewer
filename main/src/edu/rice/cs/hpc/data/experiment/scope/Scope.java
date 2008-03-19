@@ -404,25 +404,27 @@ public Scope getSubscope(int index)
 /*************************************************************************
  *	Returns a scope list of all subscopes within this scope.
  ************************************************************************/
-	
+// TODO Laks 03.18.2008: it seems nobody use this method
+	/*
 public ScopeList getSubscopeList()
 {
 	return new ArrayScopeList(this.experiment, this);
 }
 
-
+*/
 
 
 /*************************************************************************
  *	Returns a scope list of all descendent scopes of this scope.
  ************************************************************************/
-	
+//TODO Laks 03.18.2008: it seems nobody use this method
+	/*
 public ScopeList getDescendentScopeList()
 {
 	return new ArrayScopeList(this.experiment, this);
 }
 
-
+*/
 
 
 /*************************************************************************
@@ -467,7 +469,8 @@ public boolean removeSubscope(Scope subscope)
  *	Returns the number of source file lines <code>(LineScope</code>s)
  *	within this scope.
  ************************************************************************/
-	
+//TODO Laks 03.18.2008: it seems nobody use this method
+	/*
 public int getLineScopeCount()
 {
 	Dialogs.notCalled("Scope.getLineScopeCount");
@@ -475,20 +478,21 @@ public int getLineScopeCount()
 	return 50;
 }
 
-
+*/
 
 
 /*************************************************************************
  *	Returns the line scope at a given index.
  ************************************************************************/
-	
+//TODO Laks 03.18.2008: it seems nobody use this method
+	/*
 public LineScope getLineScope(int index)
 {
 	Dialogs.notCalled("Scope.getLineScope");
 
 	return new LineScope(this.experiment, this.experiment.getSourceFile(0), index * 10);
 }
-
+*/
 
 
 

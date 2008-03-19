@@ -9,7 +9,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.core.runtime.IStatus;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;

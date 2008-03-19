@@ -309,7 +309,8 @@ void normalizeLineScopes(Scope scope, MetricValuePropagationFilter filter)
 	NormalizeLineScopesVisitor nls = new NormalizeLineScopesVisitor(this.getMetricCount(), filter);
 	scope.dfsVisitScopeTree(nls);
 }
-
+// Laks 03.18.2008: nobody uses this method
+/*
 void report(RootScope scope)
 {
 	ReportScopeVisitor rsv = new ReportScopeVisitor();
@@ -317,7 +318,7 @@ void report(RootScope scope)
 	System.out.print("report view total for scope " + scope.getRootName() + " = ");
 	System.out.println(rsv.total);
 }
-
+*/
 void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter filter)
 {
 	InclusiveMetricsScopeVisitor isv = new InclusiveMetricsScopeVisitor(this.getMetricCount(), filter);

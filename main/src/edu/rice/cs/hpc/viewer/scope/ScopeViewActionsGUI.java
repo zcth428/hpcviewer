@@ -52,7 +52,7 @@ public class ScopeViewActionsGUI {
 	private ToolItem tiUnFlatten ;	// unflatten button
 	private ToolItem tiZoomin;		// zoom-in button
 	private ToolItem tiZoomout ;	// zoom-out button
-	private ToolItem tiResize ;		// resize column button
+//	private ToolItem tiResize ;		// resize column button
 	private ToolItem tiColumns ;	// show/hide button
 	private ToolItem tiHotCallPath;
 	    
@@ -168,7 +168,7 @@ public class ScopeViewActionsGUI {
 		this.tiUnFlatten.setEnabled(false);
 		this.tiZoomin.setEnabled(false);
 		this.tiZoomout.setEnabled(false);
-		this.tiResize.setEnabled(false);
+//		this.tiResize.setEnabled(false);
 		this.tiColumns.setEnabled(false);
 		this.tiHotCallPath.setEnabled(false);
 	}
@@ -177,7 +177,7 @@ public class ScopeViewActionsGUI {
 	 * Enable the some actions (resize and column properties) actions for this view
 	 */
 	public void enableActions() {
-		this.tiResize.setEnabled(true);
+//		this.tiResize.setEnabled(true);
 		this.tiColumns.setEnabled(true);
 	}
 	
@@ -370,7 +370,7 @@ public class ScopeViewActionsGUI {
     	});
     	
     	new ToolItem(toolbar, SWT.SEPARATOR);
-    	
+    /*	
     	tiResize = new ToolItem(toolbar, SWT.PUSH);
     	tiResize.setToolTipText("Resize columns width");
     	tiResize.setImage(iconsCollection.imgResize);
@@ -379,7 +379,7 @@ public class ScopeViewActionsGUI {
           	resizeTableColumns();
       	  }
       	});
-    	
+  */  	
     	this.tiColumns = new ToolItem(toolbar, SWT.PUSH);
     	tiColumns.setImage(iconsCollection.imgColumns);
     	tiColumns.setToolTipText("Hide/show columns");

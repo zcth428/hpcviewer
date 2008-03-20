@@ -19,7 +19,7 @@ public class Icons {
 	public Image imgZoomOut;
 	public Image imgFlatten;
 	public Image imgUnFlatten;
-	public Image imgResize;
+	//public Image imgResize;
 	public Image imgColumns;
 	public Image imgFlame;
 	
@@ -30,7 +30,7 @@ public class Icons {
 	public ImageDescriptor imdZoomOut;
 	public ImageDescriptor imdFlatten;
 	public ImageDescriptor imdUnFlatten;
-	public ImageDescriptor imdResize;
+	//public ImageDescriptor imdResize;
 	public ImageDescriptor imdColumns;
 	public ImageDescriptor imdFlame;
 
@@ -43,7 +43,7 @@ public class Icons {
 		imdZoomOut = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
 		imdFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
 		imdUnFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
-		imdResize = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"resizeColumns.gif");
+		//imdResize = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"resizeColumns.gif");
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
 		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"flameIcon.gif");
 		
@@ -53,7 +53,7 @@ public class Icons {
 		imgZoomOut = this.imdZoomOut.createImage();
 		imgFlatten = this.imdFlatten.createImage();
 		imgUnFlatten = this.imdUnFlatten.createImage();
-		imgResize = this.imdResize.createImage();
+		//imgResize = this.imdResize.createImage();
 		imgColumns = this.imdColumns.createImage();
 		this.imgFlame = this.imdFlame.createImage();
 	}
@@ -66,7 +66,7 @@ public class Icons {
 			imgZoomOut.dispose();
 			imgFlatten.dispose();
 			imgUnFlatten.dispose();
-			imgResize.dispose();
+			//imgResize.dispose();
 			this.imgColumns.dispose();
 			this.imgFlame.dispose();
 		} catch (java.lang.Exception e) {

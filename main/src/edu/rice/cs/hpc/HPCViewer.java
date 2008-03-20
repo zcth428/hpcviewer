@@ -20,6 +20,25 @@ public class HPCViewer implements IApplication {
 			}
 			System.out.println();
 		}
+		java.util.Map<String, String> map = context.getArguments();
+		java.util.Collection<String> col = map.values();
+		for(java.util.Iterator<String> i=col.iterator();i.hasNext();) {
+			Object o = i.next();
+			String s;
+			if(o.getClass().isArray()) {
+				Object []oo = (Object []) o;
+				if(oo != null && oo.length>0 && oo[0] instanceof String) {
+					for(int k=0;k<oo.length;k++) {
+						System.out.println("\t"+oo[k]);
+					}
+				}
+		} else {
+				s = (String) o;
+				System.out.println("\t"+s);
+			}
+		}
+		System.out.println("hpcviewer: "+context.getBrandingApplication()+"\n"+context.getBrandingId()+
+				"\n"+context.getBrandingName()+"\n");
 		return args;
 	}
 	/* (non-Javadoc)

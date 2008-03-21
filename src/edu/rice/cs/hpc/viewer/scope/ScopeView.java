@@ -213,8 +213,8 @@ public class ScopeView extends ViewPart {
         this.objViewActions = new ScopeViewActions(this.getViewSite(),
         		aParent); //actions of the tree
         
-		// -----
-    	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION);
+		// ----- 03.21.2008 Laks: add virtual library for better memory consumption
+    	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL);
     	// set the attributes
     	this.treeContentProvider = new ScopeTreeContentProvider(); 
     	treeViewer.setContentProvider(this.treeContentProvider);

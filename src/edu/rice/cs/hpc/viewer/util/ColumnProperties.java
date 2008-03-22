@@ -118,10 +118,10 @@ public class ColumnProperties extends TitleAreaDialog {
 	    Control contents = super.createContents(parent);
 
 	    // Set the title
-	    setTitle("Column Properties");
+	    setTitle("Column Selection");
 
 	    // Set the message
-	    setMessage("Please check columns to be shown and uncheck columns to be hidden", IMessageProvider.INFORMATION);
+	    setMessage("Check columns to be shown and uncheck columns to be hidden", IMessageProvider.INFORMATION);
 
 	    return contents;
 	  }

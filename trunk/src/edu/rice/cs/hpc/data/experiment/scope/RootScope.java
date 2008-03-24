@@ -41,7 +41,9 @@ public class RootScope extends Scope
 protected String programName;
 protected String rootScopeName;
 protected RootScopeType rootScopeType;
-public int MAX_LEVELS=0;
+//public int MAX_LEVELS=0;
+
+protected int iFlattenLevel = -1;
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
@@ -111,36 +113,142 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 //Support for flattening the kids
 //////////////////////-----------------------------------------
 
+	/**
+	 * Table of list of flattened node. We need to keep it in memory to avoid
+	 * recomputation of the flattening nodes
+	 */
 	private java.util.Hashtable<Integer, ArrayOfNodes> tableNodes;
-	
 	/**
 	 * Method to retrieve the list of nodes 
 	 * @return
 	 */
+	/*
 	public java.util.Hashtable<Integer, ArrayOfNodes> getTableOfNodes() {
 		return this.tableNodes;
-	}
+	}*/
 	/**
 	 * method to generate the list of nodes
 	 * This method should be called when an experiment has been loaded
 	 */
+	/*
 	public void createFlattenNode() {
 		this.tableNodes =  new java.util.Hashtable<Integer, ArrayOfNodes>();
 		this.createFlattenNode(this.treeNode, 0, " ");
-	}
+	} */
 	
 	/**
 	 * variable to store the leaves in a given level
 	 * The list of the leaves is in form of ArrayOfNodes objects, which is an 
 	 *  array list of nodes
 	 */
-	private java.util.Hashtable<Integer, ArrayOfNodes> tblLeaves = new java.util.Hashtable<Integer, ArrayOfNodes>();
+	//private java.util.Hashtable<Integer, ArrayOfNodes> tblLeaves = new java.util.Hashtable<Integer, ArrayOfNodes>();
+	//private java.util.ArrayList<Scope.Node[]> tblFlattenNodes;
+
+	
+	//=====================================
+	private void addChildren(Scope.Node node, ArrayOfNodes arrNodes) {
+		int nbChildren = node.getChildCount();
+		for(int i=0;i<nbChildren;i++) {
+			arrNodes.add((Scope.Node)node.getChildAt(i));
+		}
+	}
+
+	/**
+	 * Return the maximum depth of the tree
+	 * @return
+	 */
+	public int getMaxLevel() {
+		// the method getDepth is computed based on 1 as the root, while in
+		// our case, we prefer based on 0, so let decrease the value by 1
+		return this.getTreeNode().getDepth() - 1;
+	}
+	
+	/**
+	 * Return the list of flattened nodes
+	 * We will flatten the current node by one level
+	 * @return
+	 */
+	public ArrayOfNodes getFlatten() {
+		if(this.iFlattenLevel<0)
+			this.getFlatten(0);
+		return this.getFlatten(this.iFlattenLevel + 1);
+	}
+	
+	/**
+	 * Return the unflattened list of nodes
+	 * The tree has to be flattened, otherwise it return null
+	 * @return
+	 */
+	public ArrayOfNodes getUnflatten() {
+		return this.getFlatten(this.iFlattenLevel - 1);
+	}
+	
+	/**
+	 * Return the current level of flatten node
+	 * @return
+	 */
+	public int getFlattenLevel() {
+		return this.iFlattenLevel;
+	}
+	
+	/**
+	 * Return the list of flattened node
+	 * @param iLevel: level of flattened nodes, 0 is the root
+	 * @return
+	 */
+	private ArrayOfNodes getFlatten(int iLevel) {
+		if (iLevel<0)
+			return null; // TODO: should return an exception instead
+		ArrayOfNodes arrNodes;
+		Integer objLevel = Integer.valueOf(iLevel);
+		if(iLevel == 0) {
+			if(this.tableNodes == null) {
+				this.tableNodes = new java.util.Hashtable<Integer, ArrayOfNodes>();
+				arrNodes = new ArrayOfNodes(iLevel);
+				this.addChildren(this.getTreeNode(), arrNodes);
+				this.tableNodes.put(objLevel, arrNodes);
+			} else {
+				arrNodes = this.tableNodes.get(objLevel);
+			}
+		}  else  {
+			// check if the flattened node already exist in our database
+			if(this.tableNodes.containsKey(objLevel)) {
+				arrNodes = this.tableNodes.get(objLevel);
+ 			} else {
+ 				// create the list of flattened node
+ 				ArrayOfNodes arrParentNodes = this.tableNodes.get(Integer.valueOf(iLevel - 1));
+ 				arrNodes = new ArrayOfNodes(iLevel);
+ 				boolean hasKids = false;
+ 				for (int i=0;i<arrParentNodes.size();i++) {
+ 					Scope.Node node = arrParentNodes.get(i);
+ 					if(node.getChildCount()>0) {
+ 						// this node has children, add the children
+ 						this.addChildren(node, arrNodes);
+ 						hasKids = true;
+ 					} else {
+ 						// no children: add the node itself !
+ 						arrNodes.add(node);
+ 					}
+ 				}
+ 				if(hasKids)
+ 					this.tableNodes.put(objLevel, arrNodes);
+ 				else {
+ 					// no more kids !
+ 					return null;
+ 				}
+ 			}
+		}
+		this.iFlattenLevel = iLevel;
+		return arrNodes;
+	}
+	//=====================================
 	/**
 	 * recursive private method to walk through the tree to get the list of nodes
 	 * @param node
 	 * @param iLevel
 	 * @param str
 	 */
+	/*
 	private void createFlattenNode(Scope.Node node, int iLevel, String str) {
 		if(node != null) {
 			Integer objLevel = Integer.valueOf(iLevel);
@@ -176,35 +284,6 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 			this.tableNodes.put(objLevel, listOfNodes);
 		}
 	}
-	
-	/**
-	 * Debugger for printing the list of nodes
-	 */
-	public void printFlattenNodes(){
-		if(this.tableNodes != null) {
-			String str= " ";
-			for(int i=0;i<this.tableNodes.size();i++) {
-				// print the leaves:
-				ArrayOfNodes listOfLeaves = this.tblLeaves.get(Integer.valueOf(i));
-				if(listOfLeaves != null) {
-					//System.out.println(str+"*** leaves:"+listOfLeaves.size());
-					/*for(int j=0;j<listOfLeaves.size();j++) {
-						Scope.Node node = listOfLeaves.get(j);
-						System.out.println("***-l:"+node.getScope().getShortName()+" -> " + node.getChildCount());
-					} */
-				}
-			
-				ArrayOfNodes listOfNodes = this.tableNodes.get(Integer.valueOf(i));
-				if(listOfNodes != null) {
-					/*for(int j=0;j<listOfNodes.size();j++) {
-						Scope.Node node = listOfNodes.get(j);
-					} */
-					//System.out.println(str+"nodes:"+listOfNodes.size());
-				}
-				str += "  ";
-			}
-		}
-	}
-
+	*/
 }
 

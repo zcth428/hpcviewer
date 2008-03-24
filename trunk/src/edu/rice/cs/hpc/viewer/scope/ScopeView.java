@@ -348,10 +348,10 @@ public class ScopeView extends ViewPart {
         
         // generate flattening structure 
         if(((RootScope)this.myRootScope).getType() == RootScopeType.Flat) {
-            ((RootScope)this.myRootScope).createFlattenNode();
+            //((RootScope)this.myRootScope).createFlattenNode();
         }
         // update the root scope of the actions !
-        this.objViewActions.updateContent(this.myExperiment, this.myRootScope, this.colMetrics);
+        this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, this.colMetrics);
         // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
         // so we need to do it here, manually ... sigh
         this.objViewActions.resizeColumns();	// resize the column to fit all metrics

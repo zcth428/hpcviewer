@@ -13,6 +13,7 @@ public class HPCViewer implements IApplication {
 
 	private String[] checkArguments(IApplicationContext context) {
 		String[] args = (String[])context.getArguments().get("application.args");
+/*
 		if(args != null) {
 			System.out.print("Arguments: ");
 			for(int i=0;i<args.length;i++) {
@@ -39,6 +40,7 @@ public class HPCViewer implements IApplication {
 		}
 		System.out.println("hpcviewer: "+context.getBrandingApplication()+"\n"+context.getBrandingId()+
 				"\n"+context.getBrandingName()+"\n");
+		*/
 		return args;
 	}
 	/* (non-Javadoc)

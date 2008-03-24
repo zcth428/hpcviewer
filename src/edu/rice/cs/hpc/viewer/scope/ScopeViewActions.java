@@ -35,7 +35,7 @@ public class ScopeViewActions {
     //-------------- DATA
 	private ScopeViewActionsGUI objActionsGUI;	// associated GUI (toolbar)
     private ScopeTreeViewer 	treeViewer;		  	// tree 
-    private Scope 		myRootScope;		// the root scope of this view
+    private RootScope 		myRootScope;		// the root scope of this view
     private IViewSite objSite;				// associated view
 
     // stack to store the position of the zoom, tree state, ...
@@ -64,7 +64,7 @@ public class ScopeViewActions {
      * @param scope
      * @param columns
      */
-	public void updateContent(Experiment exp, Scope scope, TreeViewerColumn []columns) {
+	public void updateContent(Experiment exp, RootScope scope, TreeViewerColumn []columns) {
     	this.myRootScope = scope;
     	this.objActionsGUI.updateContent(exp, scope, columns);
     }
@@ -259,10 +259,36 @@ public class ScopeViewActions {
 			this.treeViewer.setExpandedElements(o);
 		}
 	}
+	
+	/**
+	 * Flatten the tree one level more
+	 */
+	public void flatten() {
+		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getFlatten();
+		if(arrNodes != null) {
+			this.treeViewer.setInput(arrNodes);
+			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+		} else {
+			// either there is something wrong or we cannot flatten anymore
+			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
+			
+		}
+	}
 
+	/**
+	 * Unflatten flattened tree (tree has to be flattened before)
+	 */
+	public void unflatten() {
+		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getUnflatten();
+		if(arrNodes != null) {
+			this.treeViewer.setInput(arrNodes);
+			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+		}
+	}
 	/**
 	 * Go deeper one level
 	 */
+	/*
 	public void flattenNode() {
 		int iNewFlatLevel = this.objActionsGUI.iFlatLevel + 1;
 		Integer objLevel = Integer.valueOf(iNewFlatLevel);
@@ -276,10 +302,11 @@ public class ScopeViewActions {
 			System.err.println("ScopeView-flatten: error cannot flatten further");
 		}
 	}
-	
+	*/
 	/**
 	 * go back one level
 	 */
+	/*
 	public void unflattenNode() {
 		if(this.objActionsGUI.iFlatLevel <2) return;
 		
@@ -293,7 +320,7 @@ public class ScopeViewActions {
 				this.objActionsGUI.updateFlattenView(iNewFlatLevel, true);
 			}
 		}
-	}
+	}*/
 	
 	/**
 	 * Resize the columns

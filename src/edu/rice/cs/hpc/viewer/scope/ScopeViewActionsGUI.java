@@ -43,9 +43,9 @@ public class ScopeViewActionsGUI {
     private IStatusLineManager statusLine;
 
 	//------------------------------------DATA
-    public int iFlatLevel = 1;			// for unknown reason, the level starts with 1
+    //public int iFlatLevel = 1;			// for unknown reason, the level starts with 1
     private Experiment 	myExperiment;		// experiment data	
-    private Scope 		myRootScope;		// the root scope of this view
+    private RootScope 		myRootScope;		// the root scope of this view
 
     // variable declaration uniquely for coolbar
 	private ToolItem tiFlatten;		//flatten button
@@ -82,12 +82,12 @@ public class ScopeViewActionsGUI {
 	 * @param scope
 	 * @param columns
 	 */
-	public void updateContent(Experiment exp, Scope scope, TreeViewerColumn []columns) {
+	public void updateContent(Experiment exp, RootScope scope, TreeViewerColumn []columns) {
 		// save the new data and properties
 		this.myExperiment = exp;
 		this.myRootScope = scope;
 		this.colMetrics = columns;
-		this.setLevelText(scope.getTreeNode().iLevel+1);	// @TODO: initialized with root level
+		this.setLevelText(scope.getTreeNode().iLevel);	// @TODO: initialized with root level
 		
 		// actions needed when a new experiment is loaded
 		this.resizeTableColumns();	// we assume the data has been populated
@@ -186,8 +186,9 @@ public class ScopeViewActionsGUI {
 	 * @param iLevel
 	 */
 	private void setLevelText(int iLevel) {
-		this.iFlatLevel = iLevel;
-		this.statusLine.setMessage("Node level: "+iLevel + " / " + ((RootScope)this.myRootScope).MAX_LEVELS );
+		//this.iFlatLevel = iLevel;
+		this.statusLine.setMessage("Node level: "+iLevel +
+				" / " + this.myRootScope.getMaxLevel());
 		// every time we change the level, we need to check the status of the buttons
 		this.checkFlattenButtons();
 	}
@@ -244,7 +245,8 @@ public class ScopeViewActionsGUI {
     }
 
     private boolean shouldFlattenBeEnabled() {
-    	return(this.iFlatLevel<((RootScope)this.myRootScope).MAX_LEVELS );
+    	return this.myRootScope.getTreeNode().getDepth()>this.myRootScope.getFlattenLevel() + 1;
+    	//return(this.iFlatLevel<((RootScope)this.myRootScope).MAX_LEVELS );
     }
     
     /**
@@ -253,7 +255,8 @@ public class ScopeViewActionsGUI {
      * @return
      */
     private boolean shouldUnflattenBeEnabled() {
-    	return (this.iFlatLevel>1);
+    	return (this.myRootScope.getFlattenLevel()>0);
+    	//return (this.iFlatLevel>1);
     }
 
     //======================================================
@@ -324,7 +327,8 @@ public class ScopeViewActionsGUI {
     	tiFlatten.setImage(iconsCollection.imgFlatten);
     	tiFlatten.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
-      	  		objViewActions.flattenNode();
+      	  		//objViewActions.flattenNode();
+      	  		objViewActions.flatten();
       	  	}
       	});
     	
@@ -334,7 +338,8 @@ public class ScopeViewActionsGUI {
     	tiUnFlatten.setImage(iconsCollection.imgUnFlatten);
     	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
       	  	public void widgetSelected(SelectionEvent e) {
-      	  		objViewActions.unflattenNode();
+      	  		//objViewActions.unflattenNode();
+      	  		objViewActions.unflatten();
       	  	}    		
     	});
     	

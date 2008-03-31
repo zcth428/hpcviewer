@@ -1,7 +1,5 @@
 package edu.rice.cs.hpc.viewer.scope;
 
-import javax.swing.Icon;
-
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Color;
@@ -9,8 +7,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.SWT;
 
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
-import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
@@ -60,17 +56,10 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 		if(element instanceof Scope.Node) {
 			Scope.Node node = (Scope.Node) element;
 			Scope scope = node.getScope();
-			SourceFile newFile = ((SourceFile)scope.getSourceFile());
-			if((newFile != null && (newFile != SourceFile.NONE)
-				|| (newFile.isAvailable()))  ){
-				if(newFile instanceof FileSystemSourceFile) {
-					FileSystemSourceFile srcFile = (FileSystemSourceFile) newFile;
-					if(srcFile !=null && srcFile.isAvailable()) {
-						node.hasSourceCodeFile = true; //update the indicator flag in the node
-						// put the color blue
-						return this.windowCurrent.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
-					}
-				}
+			if(Utilities.isFileReadable(scope)) {
+				node.hasSourceCodeFile = true; //update the indicator flag in the node
+				// put the color blue
+				return this.windowCurrent.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
 			}
 		}
 		return null;

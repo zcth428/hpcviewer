@@ -76,6 +76,11 @@ protected boolean stop;
 // Laks 11.07.07: we need a pointer to the Metric of this scope
 protected Metric metricScope;
 
+static public final int SOURCE_CODE_UNKNOWN = 0;
+static public final int SOURCE_CODE_AVAILABLE = 1;
+static public final int SOURCE_CODE_NOT_AVAILABLE= 2;
+public int iSourceCodeAvailability = Scope.SOURCE_CODE_UNKNOWN;
+
 //////////////////////////////////////////////////////////////////////////
 //	PUBLIC CONSTANTS						//
 //////////////////////////////////////////////////////////////////////////

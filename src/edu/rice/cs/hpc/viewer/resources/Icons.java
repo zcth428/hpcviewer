@@ -15,6 +15,8 @@ public class Icons {
 	// -------------------------- image files
 	public Image imgCallFrom;
 	public Image imgCallTo;
+	public Image imgCallFromDisabled;
+	public Image imgCallToDisabled;
 	public Image imgZoomIn;
 	public Image imgZoomOut;
 	public Image imgFlatten;
@@ -26,6 +28,8 @@ public class Icons {
 	//-------------------------- image descriptor
 	public ImageDescriptor imdCallFrom;
 	public ImageDescriptor imdCallTo;
+	public ImageDescriptor imdCallFromDisabled;
+	public ImageDescriptor imdCallToDisabled;
 	public ImageDescriptor imdZoomIn;
 	public ImageDescriptor imdZoomOut;
 	public ImageDescriptor imdFlatten;
@@ -39,6 +43,8 @@ public class Icons {
 	public void createIcons() {
 		imdCallFrom = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallFrom.gif");
 		imdCallTo = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallTo.gif");
+		imdCallFromDisabled = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallFromDisabled.gif");
+		imdCallToDisabled = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallToDisabled.gif");
 		imdZoomIn = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom in large.gif");
 		imdZoomOut = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
 		imdFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
@@ -49,6 +55,8 @@ public class Icons {
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();
+		this.imgCallFromDisabled = this.imdCallFromDisabled.createImage();
+		this.imgCallToDisabled = this.imdCallToDisabled.createImage();
 		imgZoomIn = this.imdZoomIn.createImage();
 		imgZoomOut = this.imdZoomOut.createImage();
 		imgFlatten = this.imdFlatten.createImage();
@@ -62,6 +70,8 @@ public class Icons {
 		try {
 			imgCallFrom.dispose();
 			imgCallTo.dispose();
+			imgCallFromDisabled.dispose();
+			imgCallToDisabled.dispose();
 			imgZoomIn.dispose();
 			imgZoomOut.dispose();
 			imgFlatten.dispose();

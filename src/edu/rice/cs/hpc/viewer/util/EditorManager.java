@@ -71,8 +71,9 @@ public class EditorManager {
 			sLongName = newFile.getCompleteFilename();
 			int iLine = node.getScope().getFirstLineNumber();
 			openFileEditor( sLongName, newFile.getName(), iLine );
-		} else
-			System.out.println("Source file not available"+ ":"+ "("+node.getScope().getName()+")");
+		}
+		//} else
+		//	System.out.println("Source file not available"+ ":"+ "("+node.getScope().getName()+")");
 	}
 	
 	/**

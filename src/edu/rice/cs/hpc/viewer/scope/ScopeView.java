@@ -1,20 +1,19 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 // User interface
-import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
 
 // SWT
 import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.graphics.Rectangle;
 
 // Jface
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -22,6 +21,7 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 // HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
@@ -240,28 +240,72 @@ public class ScopeView extends ViewPart {
         // create the context menus
         this.createContextMenu();
 
-        //------------------------ LISTENER
+        //------------------------ LISTENER --------------
+        /**
+         * add listener when left button mouse is clicked 
+         * On MAC it doesn't matter which button, but on Windows, we need to make sure !
+         */
+        treeViewer.getTree().addListener(SWT.MouseDown, new Listener(){
+        	public void handleEvent(Event event) {
+        		// this doesn't matter on Mac since the OS only one button
+        		// but on other OS, this can make differences
+        		if(event.button != 1) // yes, we only allow the first button 
+        			return;
+        		// get the item
+        		TreeItem item = treeViewer.getTree().getSelection()[0];
+        		Rectangle recImage = item.getImageBounds(0);	// get the image location (if exist)
+        		// verify if the user click on the icon
+        		if(recImage.intersects(event.x, event.y, event.width, event.height)) {
+        			// Check the object of the click/select item
+    		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
+    		        Object o = selection.getFirstElement();
+    		        // we will treat this click if the object is Scope.Node
+    		        if(o instanceof Scope.Node) {
+    		        	Scope.Node objNode = (Scope.Node) o;
+    		        	Scope scope = objNode.getScope();
+    		            // show the call site in case this one exists
+    		            if(scope instanceof CallSiteScope) {
+    		            	// get the call site scope
+    		            	CallSiteScope callSiteScope = (CallSiteScope) scope;
+    		            	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
+    		            	displayFileEditor(lineScope.getTreeNode());
+    		            } else {
+    		            }
+    		        }
+        		} else {
+        			// Check the object of the click/select item
+    		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
+    		        Object o = selection.getFirstElement();
+    		        // we will treat this click if the object is Scope.Node
+    		        if(o instanceof Scope.Node) {
+    		        	Scope.Node objNode = (Scope.Node) o;
+    		        	displayFileEditor(objNode);
+    		        }
+        		}
+        	}
+        });
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
+		
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
 			public void selectionChanged(SelectionChangedEvent event)
 		      {
-		        IStructuredSelection selection =
-		          (IStructuredSelection) event.getSelection();
+		        TreeSelection selection =
+		          (TreeSelection) event.getSelection();
 
 		        if(selection.getFirstElement() instanceof Scope.Node) {
 			        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
 			        if(nodeSelected != null) {
 			        	// update the state of the toolbar items
 			        	objViewActions.checkButtons(nodeSelected);
-						if(nodeSelected.hasSourceCodeFile)
-							displayFileEditor(nodeSelected);
+						//if(nodeSelected.hasSourceCodeFile)
+						//s	displayFileEditor(nodeSelected);
 			        }
 		        } else {
 		        	// selection on wrong node
 		        }
 		      }
-		});
+		}); 
 		
 	}
 	

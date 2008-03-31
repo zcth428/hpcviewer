@@ -68,10 +68,18 @@ public class Utilities {
 	 */
 	static public Image getScopeNavButton(Scope scope) {
 		if (scope instanceof CallSiteScope) {
+			CallSiteScope scopeCall = (CallSiteScope) scope;
+        	LineScope lineScope = (LineScope) (scopeCall).getLineScope();
 			if (((CallSiteScope) scope).getType() == CallSiteScopeType.CALL_TO_PROCEDURE) {
-				return Icons.getInstance().imgCallTo;
+				if(Utilities.isFileReadable(lineScope))
+					return Icons.getInstance().imgCallTo;
+				else
+					return Icons.getInstance().imgCallToDisabled;
 			} else {
-				return Icons.getInstance().imgCallFrom;
+				if(Utilities.isFileReadable(lineScope))
+					return Icons.getInstance().imgCallFrom;
+				else
+					return Icons.getInstance().imgCallFromDisabled;
 			}
 		} else if (scope instanceof RootScope) {
 			RootScope rs = (RootScope) scope;
@@ -96,19 +104,35 @@ public class Utilities {
 	}
 
     /**
-     * Verify if the file exist or not
+     * Verify if the file exist or not.
+     * Remark: we will update the flag that indicates the availability of the source code
+     * in the scope level. The reason is that it is less time consuming (apparently) to
+     * access to the scope level instead of converting and checking into FileSystemSourceFile
+     * level.
      * @param scope
-     * @return
+     * @return true if the source is available. false otherwise
      */
     static public boolean isFileReadable(Scope scope) {
-		SourceFile newFile = ((SourceFile)scope.getSourceFile());
-		if((newFile != null && (newFile != SourceFile.NONE)
-			|| (newFile.isAvailable()))  ) {
-			if (newFile instanceof FileSystemSourceFile) {
-				FileSystemSourceFile objFile = (FileSystemSourceFile) newFile;
-				return objFile.isAvailable();
-			}
-		}
+    	// check if the source code availability is already computed
+    	if(scope.iSourceCodeAvailability == Scope.SOURCE_CODE_UNKNOWN) {
+    		SourceFile newFile = ((SourceFile)scope.getSourceFile());
+    		if((newFile != null && (newFile != SourceFile.NONE)
+    			|| (newFile.isAvailable()))  ) {
+    			if (newFile instanceof FileSystemSourceFile) {
+    				FileSystemSourceFile objFile = (FileSystemSourceFile) newFile;
+    				if(objFile != null) {
+    					// find the availability of the source code
+    					if (objFile.isAvailable()) {
+    						scope.iSourceCodeAvailability = Scope.SOURCE_CODE_AVAILABLE;
+    						return true;
+    					} else
+    						scope.iSourceCodeAvailability = Scope.SOURCE_CODE_NOT_AVAILABLE;
+    				}
+    			}
+    		}
+    	} else
+    		// the source code availability is already computed, we just reuse it
+    		return (scope.iSourceCodeAvailability == Scope.SOURCE_CODE_AVAILABLE);
 		return false;
     }
 

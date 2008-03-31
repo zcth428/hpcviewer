@@ -6,7 +6,7 @@
    <aboutInfo>
       <image path="icons/hpcviewerEclipse128.gif"/>
       <text>
-hpcviewer is a user interface for analyzing a database of   
+         hpcviewer is a user interface for analyzing a database of   
 performance metrics in conjunction with an application&apos;s source code.
 
 hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of 
@@ -21,14 +21,25 @@ Software and the Performance Engineering Research Institute.
    <configIni use="default"/>
 
    <launcherArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+      <vmArgs>-Xmx400m</vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xmx400m</vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="icons/hpcviewerEclipse16.gif" i32="icons/hpcviewerEclipse32.gif" i48="icons/hpcviewerEclipse48.gif" i64="icons/hpcviewerEclipse64.gif" i128="icons/hpcviewerEclipse128.gif"/>
 
+   <launcher>
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
    <plugins>
       <plugin id="com.ibm.icu"/>
-      <plugin id="com.ibm.icu36.data.update"/>
+      <plugin id="com.ibm.icu36.data.update" fragment="true"/>
       <plugin id="edu.rice.cs.hpc"/>
       <plugin id="org.apache.xerces"/>
       <plugin id="org.apache.xml.resolver"/>

@@ -44,11 +44,11 @@ public class PreferencePage
 	 * restore itself.
 	 */
 	public void createFieldEditors() {
-		/*
+		
 		objDirectory = new DirectoryFieldEditor(PreferenceConstants.P_PATH, 
-				"&Directory preference:", getFieldEditorParent()); 
+				"&Default database directory:", getFieldEditorParent()); 
 		addField(objDirectory); 
-		*/
+		
 		objThreshold = new StringFieldEditor(PreferenceConstants.P_THRESHOLD,
 				"&Threshold for hot call path\n(fraction from parent metric value, between 0.0 and 1.0)", 
 				this.getFieldEditorParent());
@@ -56,6 +56,7 @@ public class PreferencePage
 		objThreshold.setEmptyStringAllowed(true);
 		objThreshold.setStringValue(String.valueOf(ScopeViewActions.fTHRESHOLD));
 		addField(objThreshold);
+		
 		this.objFont = new FontFieldEditor(PreferenceConstants.P_FONT_VIEW,
 				"Font for metric columns", getFieldEditorParent());
 		

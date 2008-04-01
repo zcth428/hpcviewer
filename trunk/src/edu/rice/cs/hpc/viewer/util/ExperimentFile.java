@@ -5,42 +5,94 @@ package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
+import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.analysis.ExperimentView;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
+
 /**
+ * This class manages to select, load and open a database directory
+ * We assume that a database directory contains an XML file (i.e. extension .xml)
+ * Warning: This class is not compatible with the old version of experiment file 
+ *  (the old version has no xml extension)
  * @author laksono
  *
  */
 public class ExperimentFile {
-
+	/**
+	 * Last path of the opened directory
+	 */
+	static public String sLastPath=null;
+	/**
+	 * pointer to the current active workbench window (supposed to be only one)
+	 */
 	private IWorkbenchWindow window;
 	
 	/**
-	 * 
-	 * @param win
+	 * Constructor to instantiate experiment file
+	 * @param win: the current workbench window
 	 */
 	public ExperimentFile(IWorkbenchWindow win) {
 		this.window = win;
+		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+		if(ExperimentFile.sLastPath == null)
+			ExperimentFile.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
 	}
 	
+	/**
+	 * Class to filter the list of files in a directory and return only XML files 
+	 * The filter is basically very simple: if the last 3 letters has "xml" substring
+	 * then we consider it as XML file.
+	 * TODO: we need to have a more sophisticated approach to filter only the real XML files
+	 * @author laksono
+	 *
+	 */
+	static class FileXMLFilter implements FilenameFilter {
+		public boolean accept(File pathname, String sName) {
+			int iLength = sName.length();
+			if (iLength <4) // the file should contain at least four letters: ".xml"
+				return false;
+			String sExtension = (sName.substring(iLength-3, iLength)).toLowerCase();
+			return (pathname.canRead() && sExtension.endsWith("xml"));
+		}
+	}
 	/**
 	 * Attempt to open an experiment database if valid then
 	 * open the scope view  
 	 * @return true if everything is OK. false otherwise
 	 */
 	public boolean openFileExperiment() {
-		FileDialog fileDialog=new FileDialog(window.getShell(),
-    			org.eclipse.swt.SWT.OPEN);
-    	fileDialog.setText("Load an XML experiment file");
-    	String sFile = fileDialog.open();
-    	// load the experiment file
-    	if(sFile != null) {
+		// preparing the dialog for selecting a directory
+		DirectoryDialog dirDlg = new DirectoryDialog(this.window.getShell());
+		dirDlg.setText("hpcviewer");
+		dirDlg.setFilterPath(ExperimentFile.sLastPath);		// recover the last opened path
+		dirDlg.setMessage("Select a database directory");
+		String sDir = dirDlg.open();	// ask the user to select a directory
+		if(sDir == null)
+			return false;				// return immediately for "cancel"
+		
+		// find XML files in this directory
+		File files = new File(sDir);
+		File filesXML[] = files.listFiles(new FileXMLFilter());
+		if(filesXML.length>0) {
+			String sFile = filesXML[0].getAbsolutePath(); // by default, we look at the first file
     		System.out.println("Opening "+ sFile + " .... ");
-    		return this.setExperiment(sFile);
-    	}
+    		ExperimentFile.sLastPath = sDir;
+    		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+    		objPref.setValue(PreferenceConstants.P_PATH, sDir);
+    		boolean bSuccessful = this.setExperiment(sFile);
+    		if(!bSuccessful) {
+    			MessageDialog.openError(window.getShell(), "Failed to open a database", "The directory is not a database.\n"+
+    					"The database directory has to contains an XML file\n containing the information of the profiling.");
+    		} else
+    			return true;
+		}
     	return false;
 	}
 	

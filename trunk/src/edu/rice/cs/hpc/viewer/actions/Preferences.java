@@ -22,6 +22,8 @@ import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 import edu.rice.cs.hpc.viewer.scope.ScopeViewActions;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
+import edu.rice.cs.hpc.viewer.util.ExperimentFile;
+
 /**
  * @author laksono
  *
@@ -48,13 +50,12 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
 	public void run(IAction action) {
-		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-		String str = objPref.getDefaultString(PreferenceConstants.P_FONT_VIEW);
+		/*String str = objPref.getDefaultString(PreferenceConstants.P_FONT_VIEW);
 		if(str.length() == 0) {
 			objPref.setValue(PreferenceConstants.P_FONT_VIEW, Utilities.fontMetric.toString());
 			// for unknown reason, the above approach does not work, we need to use the default one
 			objPref.setDefault(PreferenceConstants.P_FONT_VIEW, Utilities.fontMetric.toString());
-		}
+		}*/
 		//Show the preference for hpcviewer
 		PreferenceDialog objDialog = PreferencesUtil.createPreferenceDialogOn(this.objWindow.getShell(), 
 				"edu.rice.cs.hpc.viewer.util.PreferencePage", null, null);
@@ -62,6 +63,7 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 			int iRet = objDialog.open();
 			if(iRet == Window.OK) {
 				// user click OK
+				ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
 				// get the threshold
 				double fThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
 				ScopeViewActions.fTHRESHOLD = fThreshold;
@@ -69,6 +71,7 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 				FontData objFont = PreferenceConverter.getFontData(objPref, PreferenceConstants.P_FONT_VIEW);
 				//System.out.println("Preference-update:"+objFont.toString());
 				Utilities.fontMetric = new Font(null, objFont);
+				ExperimentFile.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
 			}
 		}
 	}

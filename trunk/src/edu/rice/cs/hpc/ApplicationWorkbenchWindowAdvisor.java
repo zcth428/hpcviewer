@@ -84,7 +84,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		     }
 		} else {
 			// there is no information about the database
-			statusline.setMessage(null, "Load an experiment file to start.");
+			statusline.setMessage(null, "Load a database to start.");
 			// we need load the file ASAP
 			ExperimentFile expFile = new ExperimentFile(this.getWindowConfigurer().getWindow());
 			if(expFile != null) {

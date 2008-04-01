@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.viewer.scope;
 
 // User interface
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.IWorkbenchActionConstants;
 
 // SWT
 import org.eclipse.swt.*;
@@ -21,7 +22,6 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 // HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
@@ -120,7 +120,7 @@ public class ScopeView extends ViewPart {
         mgr.add(acZoomout);
         acZoomout.setEnabled(this.objViewActions.shouldZoomOutBeEnabled());
         // additional feature
-        mgr.add(new Separator());
+        mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         // Laks: we don't need additional marker
         //mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         Scope scope = node.getScope();
@@ -252,7 +252,10 @@ public class ScopeView extends ViewPart {
         		if(event.button != 1) // yes, we only allow the first button 
         			return;
         		// get the item
-        		TreeItem item = treeViewer.getTree().getSelection()[0];
+        		TreeItem []itemsSelected = treeViewer.getTree().getSelection();
+        		if(itemsSelected == null || itemsSelected.length==0)
+        			return; // no selected. it will hard to for us to go further
+        		TreeItem item = itemsSelected[0];
         		Rectangle recImage = item.getImageBounds(0);	// get the image location (if exist)
         		// verify if the user click on the icon
         		if(recImage.intersects(event.x, event.y, event.width, event.height)) {

@@ -15,7 +15,7 @@ import edu.rice.cs.hpc.viewer.util.*;
  * The action proxy will be created by the workbench and
  * shown in the UI. When the user tries to use the action,
  * this delegate will be created and execution will be 
- * delegated to it.
+ * delegated to it. 
  * @see IWorkbenchWindowActionDelegate
  */
 public class LoadExperiment implements IWorkbenchWindowActionDelegate {

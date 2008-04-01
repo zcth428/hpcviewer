@@ -141,12 +141,12 @@ public Scope(Experiment experiment)
 {
 	this(experiment, SourceFile.NONE, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
 }
-
+/*
 public void flatten()
 {
 	this.treeNode.setFlattenThis(true);
 }
-
+*/
 public int hashCode() {
 	return this.sourceFile.getName().hashCode() ^ this.firstLineNumber;
 }
@@ -802,7 +802,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 
 		/** Used by <code>ScopeTreeFilter</code>.
 n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		protected boolean flattenThis;
+		//protected boolean flattenThis;
 
 
 		/**
@@ -824,7 +824,7 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 			
 			// fields used by ScopeView
 			this.flattenCount = 0;
-			this.flattenThis  = false;
+			//this.flattenThis  = false;
 			this.hasSourceCodeFile = false;
 		};
 		
@@ -865,19 +865,19 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 		
 		/** Sets whether this node should be flattened.
 			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		public void setFlattenThis(boolean flatten)
+		/*public void setFlattenThis(boolean flatten)
 		{
 			this.flattenThis = flatten;
-		};
+		};*/
 		
 		
 		/** Returns whether this node should be flattened.
 			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		public boolean getFlattenThis()
+		/*public boolean getFlattenThis()
 		{
 			return this.flattenThis;
 		};
-		
+		*/
 		/**
 		 * Update the scope of the node
 		 * @param o

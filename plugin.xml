@@ -59,20 +59,20 @@
          <action
                class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
                id="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               label="&amp;Augment experiment view..."
+               label="&amp;Augment database view..."
                menubarPath="FileMenu/databaseGroup"
                tooltip="Add an experiment&apos;s data to the open view">
          </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
                id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               label="&amp;Display an experiment&apos;s raw XML"
+               label="&amp;Display a database&apos;s raw XML"
                menubarPath="DebugMenu/debuggingGroup">
          </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
                id="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
-               label="&amp;Open experiment..."
+               label="&amp;Open database..."
                menubarPath="FileMenu/databaseGroup">
          </action>
          <action
@@ -105,11 +105,11 @@
          </property>
          <property
                name="aboutText"
-               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2007, Rice University">
+               value="hpcviewer is a user interface for analyzing a database of&#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of&#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of&#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2007, Rice University">
          </property>
          <property
                name="windowImages"
-               value="icons/hpcviewerEclipse16.gif,icons/hpcviewerEclipse32.gif,icons/hpcviewerEclipse48.gif,icons/hpcviewerEclipse64.gif,icons/hpcviewerEclipse128.gif">
+               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
          </property>
       </product>
    </extension>

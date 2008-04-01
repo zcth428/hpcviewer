@@ -123,7 +123,8 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		FileScope file = (FileScope) fileht.get(sfile);
 		if (file == null) {
 			file  = new FileScope(exp, sfile);
-			file.flatten(); // FileScopes initially flattened in the FlatView
+			//file.flatten(); // LA 03.25.2008: we do not need flattening here
+			// FileScopes initially flattened in the FlatView
 			fileht.put(sfile, file);
 			flatViewRootScope.addSubscope(file);
 			file.setParentScope(this.flatViewRootScope);

@@ -22,7 +22,7 @@ import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 import edu.rice.cs.hpc.viewer.scope.ScopeViewActions;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
-import edu.rice.cs.hpc.viewer.util.ExperimentFile;
+import edu.rice.cs.hpc.viewer.util.ExperimentManager;
 
 /**
  * @author laksono
@@ -71,7 +71,7 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 				FontData objFont = PreferenceConverter.getFontData(objPref, PreferenceConstants.P_FONT_VIEW);
 				//System.out.println("Preference-update:"+objFont.toString());
 				Utilities.fontMetric = new Font(null, objFont);
-				ExperimentFile.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
+				ExperimentManager.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
 			}
 		}
 	}

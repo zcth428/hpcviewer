@@ -9,6 +9,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 //import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.IViewPart;
 import edu.rice.cs.hpc.viewer.util.*;
+import edu.rice.cs.hpc.viewer.resources.ExperimentData;
+
 //import edu.rice.cs.HPCVision.data.Experiment.*;
 /**
  * Our sample action implements workbench action delegate.
@@ -19,7 +21,7 @@ import edu.rice.cs.hpc.viewer.util.*;
  * @see IWorkbenchWindowActionDelegate
  */
 public class LoadExperiment implements IWorkbenchWindowActionDelegate {
-	private ExperimentFile expFile;
+	private ExperimentManager expFile;
 	/**
 	 * The constructor.
 	 */
@@ -62,7 +64,7 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
 	public void init(IWorkbenchWindow window) {
-		expFile = new ExperimentFile(window);
+		expFile = ExperimentData.getInstance().getExperimentManager();
 	}
 	
 } 

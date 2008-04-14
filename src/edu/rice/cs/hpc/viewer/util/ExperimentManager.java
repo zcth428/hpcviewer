@@ -24,7 +24,7 @@ import edu.rice.cs.hpc.viewer.scope.ScopeView;
  * @author laksono
  *
  */
-public class ExperimentFile {
+public class ExperimentManager {
 	/**
 	 * Last path of the opened directory
 	 */
@@ -38,11 +38,11 @@ public class ExperimentFile {
 	 * Constructor to instantiate experiment file
 	 * @param win: the current workbench window
 	 */
-	public ExperimentFile(IWorkbenchWindow win) {
+	public ExperimentManager(IWorkbenchWindow win) {
 		this.window = win;
 		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-		if(ExperimentFile.sLastPath == null)
-			ExperimentFile.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
+		if(ExperimentManager.sLastPath == null)
+			ExperimentManager.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
 	}
 	
 	/**
@@ -62,36 +62,60 @@ public class ExperimentFile {
 			return (pathname.canRead() && sExtension.endsWith("xml"));
 		}
 	}
+	
+	/**
+	 * Get the list of database file name
+	 * @param sTitle
+	 * @return the list of XML files in the selected directory
+	 * null if the user click the "cancel" button
+	 */
+	public File[] getDatabaseFileList(String sTitle) {
+		// preparing the dialog for selecting a directory
+		DirectoryDialog dirDlg = new DirectoryDialog(this.window.getShell());
+		dirDlg.setText("hpcviewer");
+		dirDlg.setFilterPath(ExperimentManager.sLastPath);		// recover the last opened path
+		dirDlg.setMessage(sTitle);
+		String sDir = dirDlg.open();	// ask the user to select a directory
+		if(sDir != null){
+			// find XML files in this directory
+			File files = new File(sDir);
+			// for debugging purpose, let have separate variable
+			File filesXML[] = files.listFiles(new FileXMLFilter());
+			// store it in the class variable for further usage
+    		ExperimentManager.sLastPath = sDir;
+    		// store the current path in the preference
+    		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+    		objPref.setValue(PreferenceConstants.P_PATH, sDir);
+			return filesXML;
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Attempt to open an experiment database if valid then
 	 * open the scope view  
 	 * @return true if everything is OK. false otherwise
 	 */
 	public boolean openFileExperiment() {
-		// preparing the dialog for selecting a directory
-		DirectoryDialog dirDlg = new DirectoryDialog(this.window.getShell());
-		dirDlg.setText("hpcviewer");
-		dirDlg.setFilterPath(ExperimentFile.sLastPath);		// recover the last opened path
-		dirDlg.setMessage("Select a database directory");
-		String sDir = dirDlg.open();	// ask the user to select a directory
-		if(sDir == null)
-			return false;				// return immediately for "cancel"
-		
-		// find XML files in this directory
-		File files = new File(sDir);
-		File filesXML[] = files.listFiles(new FileXMLFilter());
-		if(filesXML.length>0) {
-			String sFile = filesXML[0].getAbsolutePath(); // by default, we look at the first file
-    		System.out.println("Opening "+ sFile + " .... ");
-    		ExperimentFile.sLastPath = sDir;
-    		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-    		objPref.setValue(PreferenceConstants.P_PATH, sDir);
-    		boolean bSuccessful = this.setExperiment(sFile);
-    		if(!bSuccessful) {
-    			MessageDialog.openError(window.getShell(), "Failed to open a database", "The directory is not a database.\n"+
-    					"The database directory has to contains an XML file\n containing the information of the profiling.");
-    		} else
-    			return true;
+		File []fileXML = this.getDatabaseFileList("Select a directory containing a profiling database.");
+		if((fileXML != null) && (fileXML.length>0)) {
+			boolean bContinue = true;
+			// let's make it complicated: assuming there are more than 1 XML file in this directory,
+			// we need to test one by one if it is a valid database file.
+			// Problem: if in the directory it has two XML files, then the second one will NEVER be opened !
+			for(int i=0;i<(fileXML.length) && (bContinue);i++) {
+				String sFile=fileXML[i].getAbsolutePath();
+				// we will continue to verify the content of the list of XML files
+				// until we fine the good one.
+		    	bContinue = (this.setExperiment(sFile) == false);
+		    	//System.out.println(fileXML[i].getName()+":"+(!bContinue));
+			}
+	   		if(bContinue) {
+	   			MessageDialog.openError(window.getShell(), "Failed to open a database", "The directory is not a database.\n"+
+	    					"The database directory has to contains at least one XML file\n containing the information of the profiling.");
+	   		} else
+	   			return true;
 		}
     	return false;
 	}

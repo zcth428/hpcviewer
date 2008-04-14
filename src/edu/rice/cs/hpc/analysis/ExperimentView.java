@@ -9,6 +9,8 @@ import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 
+import edu.rice.cs.hpc.viewer.util.ShowProgressTask;
+
 /**
  * Class to be used as an interface between the GUI and the data experiment
  * This class should be called from an eclipse view !
@@ -54,7 +56,6 @@ public class ExperimentView {
 	        experiment.postprocess();
 	        this.generateView(experiment);
 	        this.dataExperiment.setExperiment(experiment);
-	        this.dataExperiment.setFilename(sFilename);
 		}
 	}
 	/**
@@ -65,11 +66,12 @@ public class ExperimentView {
 	public Experiment loadExperiment(String sFilename) {
 	       Experiment experiment;
 	       org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
-           
+	       ShowProgressTask objTask = new ShowProgressTask(this.objPage.getWorkbenchWindow().getShell());
+	       //objTask.run(12, true);
            // open the experiment if possible
       try
            {
-           experiment = new Experiment(new java.io.File(sFilename));
+           experiment = new Experiment(new java.io.File(sFilename), objTask);
            experiment.open();
            
       } catch(java.io.FileNotFoundException fnf)

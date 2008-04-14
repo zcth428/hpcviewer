@@ -8,10 +8,14 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.resources.ExperimentData;
 
+/**
+ * Class to display the content of the XML file (for debugging purpose only)
+ * @author laksono
+ *
+ */
 public class DisplayExperiment implements IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow windowCurrent;
-	private ExperimentData globalData;
 	
 	public void dispose() {
 		// TODO Auto-generated method stub
@@ -23,10 +27,10 @@ public class DisplayExperiment implements IWorkbenchWindowActionDelegate {
 	}
 
 	public void run(IAction action) {
-		this.globalData = ExperimentData.getInstance();
-		if(this.globalData.getExperiment() != null) {
+		ExperimentData expData = ExperimentData.getInstance();
+		if(expData.getExperiment() != null) {
 			EditorManager editor = new EditorManager(this.windowCurrent);
-			editor.openFileEditor(this.globalData.getFilename());
+			editor.openFileEditor(expData.getFilename());
 		} else {
 			org.eclipse.jface.dialogs.MessageDialog.openError(this.windowCurrent.getShell(), 
 					"Error: Need to open an experiment database", 

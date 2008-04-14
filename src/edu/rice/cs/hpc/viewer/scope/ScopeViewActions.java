@@ -185,7 +185,7 @@ public class ScopeViewActions {
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
 			if(objHot != null) {
 				// we found the hot path
-				this.treeViewer.setSelection(new TreeSelection(objHot.path));
+				this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
 				// System.out.println(" found: "+ objHot.node.getScope().getName());
 				//objHot.item.setBackground(0, new Color(null,255,106,106));
 			} else {

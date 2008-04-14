@@ -1,11 +1,16 @@
 package edu.rice.cs.hpc.viewer.resources;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.viewer.util.ExperimentManager;
+
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 public class ExperimentData {
     private Experiment experimentActive;	// experiment data
-    private String sXMLFilename;	// XML filename
     private String[] args; // command line arguments
+    private IWorkbenchWindow window;
+    private ExperimentManager expManager;
     
 	static private ExperimentData _singleton = null;
 	
@@ -17,10 +22,22 @@ public class ExperimentData {
 	static public ExperimentData getInstance() {
 		if(ExperimentData._singleton == null) {
 			ExperimentData._singleton = new ExperimentData();
+			// normally only one single workbench window !
+			ExperimentData._singleton.window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			// theoretically, only one single experiment file for one RCP
+			// or do we want to support multiple experiments in the future ?
+			ExperimentData._singleton.expManager = new ExperimentManager(ExperimentData._singleton.window);
 		}
 		return ExperimentData._singleton;
 	}
 	
+	/**
+	 * Retrieve the active experiment manager
+	 * @return
+	 */
+	public ExperimentManager getExperimentManager() {
+		return this.expManager;
+	}
 	/**
 	 * Update a new experiment data
 	 * @param experiment
@@ -38,19 +55,11 @@ public class ExperimentData {
 	}
 	
 	/**
-	 * Set the XML filename
-	 * @param sXMLfile
-	 */
-	public void setFilename(String sXMLfile) {
-		this.sXMLFilename = sXMLfile;
-	}
-	
-	/**
 	 * Get the XML filename
 	 * @return
 	 */
 	public String getFilename() {
-		return this.sXMLFilename;
+		return this.experimentActive.getXMLExperimentFile().getAbsolutePath();
 	}
 	
 	/**

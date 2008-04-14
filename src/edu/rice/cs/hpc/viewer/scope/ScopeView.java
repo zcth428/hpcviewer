@@ -290,6 +290,10 @@ public class ScopeView extends ViewPart {
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
 		
+		/**
+		 * Add Listener for change of selection so that every change will update
+		 * the status of the toolbar buttons (able or disabled) 
+		 */
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
 			public void selectionChanged(SelectionChangedEvent event)
 		      {
@@ -301,8 +305,6 @@ public class ScopeView extends ViewPart {
 			        if(nodeSelected != null) {
 			        	// update the state of the toolbar items
 			        	objViewActions.checkButtons(nodeSelected);
-						//if(nodeSelected.hasSourceCodeFile)
-						//s	displayFileEditor(nodeSelected);
 			        }
 		        } else {
 		        	// selection on wrong node
@@ -384,7 +386,8 @@ public class ScopeView extends ViewPart {
         						// column will be sorted here, instead of initializing inside the sort class.
         		
         	}
-            treeViewer.setColumnProperties(titles);
+            treeViewer.setColumnProperties(titles); // do need this ??
+            //treeViewer.getTree().setSelection(TreeItem);
         }
         
         // Update root scope
@@ -393,10 +396,6 @@ public class ScopeView extends ViewPart {
         // update the window title
         this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
         
-        // generate flattening structure 
-        if(((RootScope)this.myRootScope).getType() == RootScopeType.Flat) {
-            //((RootScope)this.myRootScope).createFlattenNode();
-        }
         // update the root scope of the actions !
         this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, this.colMetrics);
         // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,

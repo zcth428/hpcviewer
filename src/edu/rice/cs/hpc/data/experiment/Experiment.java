@@ -49,6 +49,12 @@ protected ExperimentFile experimentFile;
 /** The directory from which to resolve relative source file paths. */
 protected File defaultDirectory;
 
+/**
+ * The experiment (XML) file 
+ * @author laksono
+ */
+protected File fileExperiment;
+
 /** The experiment's configuration. */
 protected ExperimentConfiguration configuration;
 
@@ -66,6 +72,8 @@ protected Scope rootScope;
 
 /** A mapping from internal name strings to metric objects. */
 protected HashMap metricMap;
+
+//private ICheckProcess objTask;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -93,16 +101,26 @@ public Experiment()
  *
  ************************************************************************/
 	
-public Experiment(File filename)
+public Experiment(File filename, ICheckProcess objTask)
 // laks: no exception needed
  /* *throws
 	IOException,
 	InvalExperimentException*/
 {
 	this.experimentFile   = ExperimentFile.makeFile(filename);
+	this.fileExperiment = filename;
 	// protect ourselves against filename being `foo' with no parent
 	// information whatsoever.
 	this.defaultDirectory = filename.getAbsoluteFile().getParentFile();
+	//if(objTask != null)
+	//this.objTask = objTask;
+	/*else {
+		this.objTask = new ICheckProcess() {
+			public void advance(String str) {
+				System.out.println("Experiment task: "+ str);
+			}
+		};
+	}*/
 }
 
 
@@ -114,7 +132,7 @@ public Experiment(Experiment exp)
 	this.configuration = exp.configuration;
 	this.defaultDirectory = exp.getDefaultDirectory();
 	this.experimentFile = null;
-	
+	this.fileExperiment = exp.getXMLExperimentFile();
 	// setSourceFiles(files); // union sourcefiles later
 	// setMetrics(metricList);	// sets metrics (w/ index) and metricMap
 	// setScopes(scopes, rootScope); // union scopeLists, and build new scopeTree from rootScope
@@ -144,7 +162,9 @@ throws
 	InvalExperimentException
 {
 	// parsing may throw exceptions
+	//this.objTask.advance("start opening file .... ");
 	this.experimentFile.parse(this);
+	//this.objTask.advance("parsing .... ");
 }
 
 
@@ -350,39 +370,53 @@ public void postprocess() {
 	if (firstRootType.equals(RootScopeType.CallTree)) {
 		// accumulate, create views, percents, etc
 		Scope callingContextViewRootScope = firstSubTree;
-	
+
+		// laks: prepare metrics
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
+		//this.objTask.advance("Metric preparation .... ");
 
+		// Laks: normalize the line scope
 //		normalizeLineScopes(callingContextViewRootScope, rootInclProp); // Incl only
 		normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 		// report((RootScope) callingContextViewRootScope);
+		//this.objTask.advance("Normalize context view .... ");
 
 		addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
 		addInclusiveMetrics(callingContextViewRootScope, 
 		  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
 //		  new CallingContextTreeInclMetricPropagationFilter(this.getMetrics()));
+		//this.objTask.advance("Compute inclusive metrics .... ");
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
+		//this.objTask.advance("Set inclusize metrics into new column .... ");
 
 
 		// Callers View
 		Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
+		//this.objTask.advance("Create caller view .... ");
 		copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
+		//this.objTask.advance("Copy caller view metrics .... ");
 
 		//		callingContextViewRootScope.copyMetrics(callersViewRootScope);
 
 		// Flat View
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
+		//this.objTask.advance("Create flat view .... ");
 		// report((RootScope) flatViewRootScope);
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
+		//this.objTask.advance("add inclusive flat view metrics .... ");
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
+		//this.objTask.advance("Compute the total aggreagate flat view .... ");
 
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
+		//this.objTask.advance("ccx view percent .... ");
 
 		addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
+		//this.objTask.advance("caller view percent .... ");
 
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
+		//this.objTask.advance("flat view percent .... ");
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
 	} else {
@@ -634,13 +668,18 @@ public FileScope getFileScope(int index)
 	return (FileScope) this.rootScope.getSubscope(index);
 }
 
+public File getXMLExperimentFile() {
+	return this.fileExperiment;
+}
+
+
 	static public void main(String argv[]) {
        Experiment experiment;
 	   String sFilename = argv[0];
 	           // open the experiment if possible
 	    try
 	           {
-	           experiment = new Experiment(new java.io.File(sFilename));
+	           experiment = new Experiment(new java.io.File(sFilename), null);
 	           // laks: try to debug to verify if apache xml is accessible
 	           System.out.print("DataExperiment: Opening file:"+sFilename);
 	           experiment.open();

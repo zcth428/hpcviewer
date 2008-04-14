@@ -86,7 +86,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// there is no information about the database
 			statusline.setMessage(null, "Load a database to start.");
 			// we need load the file ASAP
-			ExperimentFile expFile = new ExperimentFile(this.getWindowConfigurer().getWindow());
+			this.dataEx = ExperimentData.getInstance();
+			ExperimentManager expFile = this.dataEx.getExperimentManager();
 			if(expFile != null) {
 				expFile.openFileExperiment();
 			}
@@ -97,7 +98,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Performs arbitrary actions as the window's shell is being closed directly, and possibly veto the close.
 	 */
 	public boolean preWindowShellClose() {
-		this.getWindowConfigurer().getWindow().getActivePage().closeAllEditors(false);
+		boolean bClosed = this.getWindowConfigurer().getWindow().getActivePage().closeAllEditors(false);
+		//System.out.println("Close all editors:"+bClosed);
 		return super.preWindowShellClose();
 	}
 }

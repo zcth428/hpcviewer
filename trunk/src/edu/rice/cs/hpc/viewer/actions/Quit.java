@@ -13,7 +13,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
  *
  */
 public class Quit implements IWorkbenchWindowActionDelegate {
-
+	IWorkbenchWindow winWorkbench;
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#dispose()
 	 */
@@ -27,15 +27,17 @@ public class Quit implements IWorkbenchWindowActionDelegate {
 	 */
 	public void init(IWorkbenchWindow window) {
 		// TODO Auto-generated method stub
-
+		this.winWorkbench = window;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
 	public void run(IAction action) {
-		// TODO Auto-generated method stub
-		org.eclipse.ui.PlatformUI.getWorkbench().close();
+		// close editor windows
+		this.winWorkbench.getActivePage().closeAllEditors(false);
+		// close the workbench (which will close the application as well)
+		this.winWorkbench.close();
 	}
 
 	/* (non-Javadoc)

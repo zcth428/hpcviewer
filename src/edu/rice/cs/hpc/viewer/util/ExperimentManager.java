@@ -128,10 +128,10 @@ public class ExperimentManager {
 	private boolean setExperiment(String sFilename) {
 		IWorkbenchPage objPage= this.window.getActivePage();
 		// read the XML experiment file
-		ExperimentView data = new ExperimentView(objPage);
-	    if(data != null) {
+		ExperimentView expViewer = new ExperimentView(objPage);
+	    if(expViewer != null) {
 	    	// data looks OK
-	    	data.loadExperimentAndProcess(sFilename);
+	    	expViewer.loadExperimentAndProcess(sFilename);
 	     } else
 	    	 return false; //TODO we need to throw an exception instead
 

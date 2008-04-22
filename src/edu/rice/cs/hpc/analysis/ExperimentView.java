@@ -9,8 +9,6 @@ import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 
-import edu.rice.cs.hpc.viewer.util.ShowProgressTask;
-
 /**
  * Class to be used as an interface between the GUI and the data experiment
  * This class should be called from an eclipse view !
@@ -51,12 +49,15 @@ public class ExperimentView {
 	 * @param sFilename
 	 */
 	public void loadExperimentAndProcess(String sFilename) {
-		Experiment experiment = this.loadExperiment(sFilename);
+		ExperimentExt exp = new ExperimentExt(this.objPage.getWorkbenchWindow().getShell(),
+				this, new java.io.File(sFilename));
+		exp.openAndprocessExperiment();
+		/*Experiment experiment = this.loadExperiment(sFilename);
 		if(experiment != null) {
 	        experiment.postprocess();
 	        this.generateView(experiment);
-	        this.dataExperiment.setExperiment(experiment);
 		}
+		*/
 	}
 	/**
 	 * Load an XML experiment file based on the filename (uncheck for its inexistence)
@@ -66,12 +67,11 @@ public class ExperimentView {
 	public Experiment loadExperiment(String sFilename) {
 	       Experiment experiment;
 	       org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
-	       ShowProgressTask objTask = new ShowProgressTask(this.objPage.getWorkbenchWindow().getShell());
 	       //objTask.run(12, true);
            // open the experiment if possible
       try
            {
-           experiment = new Experiment(new java.io.File(sFilename), objTask);
+           experiment = new Experiment(new java.io.File(sFilename));
            experiment.open();
            
       } catch(java.io.FileNotFoundException fnf)
@@ -114,6 +114,7 @@ public class ExperimentView {
 	 * @param experiment Experiment data
 	 */
 	public void generateView(Experiment experiment) {
+        this.dataExperiment.setExperiment(experiment);
 		// optimistic approach: hide all the visible views first
 		this.removeViews();
 		// remove the old-irrelevant editors

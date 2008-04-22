@@ -68,8 +68,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// see if the argument provides the database to load
 		if(this.dataEx != null) {
 			// possibly we have express the experiment file in the command line
-			ExperimentView data = new ExperimentView(this.getWindowConfigurer().getWindow().getActivePage());
-		    if(data != null) {
+			ExperimentView expViewer = new ExperimentView(this.getWindowConfigurer().getWindow().getActivePage());
+		    if(expViewer != null) {
 		    	// data looks OK
 		    	String []sArgs = this.dataEx.getArguments();
 		    	String sFilename = null;
@@ -80,7 +80,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    		}
 		    	}
 		    	if(sFilename != null)
-		    		data.loadExperimentAndProcess(sFilename);
+		    		expViewer.loadExperimentAndProcess(sFilename);
 		     }
 		} else {
 			// there is no information about the database

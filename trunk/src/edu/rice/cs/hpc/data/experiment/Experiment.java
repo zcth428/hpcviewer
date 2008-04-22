@@ -101,7 +101,7 @@ public Experiment()
  *
  ************************************************************************/
 	
-public Experiment(File filename, ICheckProcess objTask)
+public Experiment(File filename)
 // laks: no exception needed
  /* *throws
 	IOException,
@@ -295,7 +295,7 @@ public void beginScope(Scope scope)
 	this.scopes.addScope(scope);
 }
 
-Scope createCallersView(Scope callingContextViewRootScope)
+protected Scope createCallersView(Scope callingContextViewRootScope)
 {
 	EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
 
@@ -310,7 +310,7 @@ Scope createCallersView(Scope callingContextViewRootScope)
 	return callersViewRootScope;
 }
 
-Scope createFlatView(Scope callingContextViewRootScope)
+protected Scope createFlatView(Scope callingContextViewRootScope)
 {
 	MetricValuePropagationFilter fvf = new FlatViewMetricPropagationFilter();
 
@@ -324,7 +324,7 @@ Scope createFlatView(Scope callingContextViewRootScope)
 	return flatViewRootScope;
 }
 
-void normalizeLineScopes(Scope scope, MetricValuePropagationFilter filter)
+protected void normalizeLineScopes(Scope scope, MetricValuePropagationFilter filter)
 {
 	NormalizeLineScopesVisitor nls = new NormalizeLineScopesVisitor(this.getMetricCount(), filter);
 	scope.dfsVisitScopeTree(nls);
@@ -339,13 +339,13 @@ void report(RootScope scope)
 	System.out.println(rsv.total);
 }
 */
-void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter filter)
+protected void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter filter)
 {
 	InclusiveMetricsScopeVisitor isv = new InclusiveMetricsScopeVisitor(this.getMetricCount(), filter);
 	scope.dfsVisitScopeTree(isv);
 }
 
-void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropagationFilter filter) {
+protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropagationFilter filter) {
 	for (int i = 0; i< this.getMetricCount(); i++) {
 		Metric metric = this.getMetric(i);
 		if (metric.getMetricType() == sourceType) {
@@ -354,7 +354,7 @@ void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropaga
 	}
 }
 
-void addPercents(Scope scope, RootScope totalScope)
+protected void addPercents(Scope scope, RootScope totalScope)
 {
 	PercentScopeVisitor psv = new PercentScopeVisitor(this.getMetricCount(), totalScope);
 	scope.dfsVisitScopeTree(psv);
@@ -679,7 +679,7 @@ public File getXMLExperimentFile() {
 	           // open the experiment if possible
 	    try
 	           {
-	           experiment = new Experiment(new java.io.File(sFilename), null);
+	           experiment = new Experiment(new java.io.File(sFilename));
 	           // laks: try to debug to verify if apache xml is accessible
 	           System.out.print("DataExperiment: Opening file:"+sFilename);
 	           experiment.open();

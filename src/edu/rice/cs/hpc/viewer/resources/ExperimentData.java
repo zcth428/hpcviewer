@@ -22,11 +22,6 @@ public class ExperimentData {
 	static public ExperimentData getInstance() {
 		if(ExperimentData._singleton == null) {
 			ExperimentData._singleton = new ExperimentData();
-			// normally only one single workbench window !
-			ExperimentData._singleton.window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-			// theoretically, only one single experiment file for one RCP
-			// or do we want to support multiple experiments in the future ?
-			ExperimentData._singleton.expManager = new ExperimentManager(ExperimentData._singleton.window);
 		}
 		return ExperimentData._singleton;
 	}
@@ -36,6 +31,13 @@ public class ExperimentData {
 	 * @return
 	 */
 	public ExperimentManager getExperimentManager() {
+		if(this.expManager == null) {
+			// normally only one single workbench window !
+			this.window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			// theoretically, only one single experiment file for one RCP
+			// or do we want to support multiple experiments in the future ?
+			this.expManager = new ExperimentManager(ExperimentData._singleton.window);
+		}
 		return this.expManager;
 	}
 	/**

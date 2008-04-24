@@ -66,9 +66,11 @@ public class ExperimentExt {
         try {
             monitorDlg.run(true, true, this.expProc);
           } catch (InvocationTargetException e) {
-            MessageDialog.openError(shell, "Error", e.getMessage());
+            //MessageDialog.openError(shell, "Error", e.getMessage());
+        	  System.err.println("Progress-monitor:"+e.getCause());
           } catch (InterruptedException e) {
-            MessageDialog.openInformation(shell, "Cancelled", e.getMessage());
+        	  System.err.println("Progress-monitor: canceled");
+            //MessageDialog.openInformation(shell, "Cancelled", e.getMessage());
           }
 
 	}

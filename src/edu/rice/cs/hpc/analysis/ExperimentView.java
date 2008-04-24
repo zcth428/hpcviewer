@@ -49,15 +49,16 @@ public class ExperimentView {
 	 * @param sFilename
 	 */
 	public void loadExperimentAndProcess(String sFilename) {
-		ExperimentExt exp = new ExperimentExt(this.objPage.getWorkbenchWindow().getShell(),
+		/*ExperimentExt exp = new ExperimentExt(this.objPage.getWorkbenchWindow().getShell(),
 				this, new java.io.File(sFilename));
 		exp.openAndprocessExperiment();
-		/*Experiment experiment = this.loadExperiment(sFilename);
+		*/
+		Experiment experiment = this.loadExperiment(sFilename);
 		if(experiment != null) {
 	        experiment.postprocess();
 	        this.generateView(experiment);
 		}
-		*/
+		
 	}
 	/**
 	 * Load an XML experiment file based on the filename (uncheck for its inexistence)

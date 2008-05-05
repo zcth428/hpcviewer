@@ -424,8 +424,21 @@ public int getFormattedLength()
 }
 
 
-
-
+/**
+ * format the value without the information from MetricValue. This
+ * method is need to compute the derived metrics on the fly without
+ * instantiating or creating new class which will consume more memory
+ * (I guess ---laks).
+ * @param value
+ * @return <code>String</code> the text format.
+ */
+public String format(double value) {
+	StringBuffer formatted = new StringBuffer();
+	String string = this.formatDouble(value, this.valueFormatter, this.valueStyle);
+	formatted.append(string);
+	formatted.append(Util.spaces(this.percentStyle.fieldWidth));
+	return formatted.toString();
+}
 /*************************************************************************
  *	Returns a <code>String</code> showing a given <code>MetricValue</code>
  *	according to this format.

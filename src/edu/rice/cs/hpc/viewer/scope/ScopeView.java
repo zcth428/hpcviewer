@@ -30,7 +30,7 @@ public class ScopeView extends ViewPart {
 
     private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private TreeViewerColumn colTree;		// column for the calls tree
-    private TreeViewerColumn []colMetrics;	// metric columns
+    //private TreeViewerColumn []colMetrics;	// metric columns
     private Experiment 	myExperiment;		// experiment data	
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
@@ -358,7 +358,7 @@ public class ScopeView extends ViewPart {
         // prepare the experiment for the content provider of the tree column
         this.treeContentProvider.setExperiment(myExperiment);
         // dirty solution to update titles
-        this.colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
+        TreeViewerColumn []colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
         {
             // Update metric title labels
             String[] titles = new String[myExperiment.getMetricCount()+1];
@@ -367,24 +367,7 @@ public class ScopeView extends ViewPart {
         	for (int i=0; i<myExperiment.getMetricCount(); i++)
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
-        		colMetrics[i] = new TreeViewerColumn(treeViewer,SWT.LEFT);	// add column
-        		colMetrics[i].getColumn().setText(titles[i+1]);	// set the title
-        		colMetrics[i].getColumn().setWidth(120); //TODO dynamic size
-        		colMetrics[i].getColumn().setAlignment(SWT.RIGHT);
-        		// associate the data of this column to the metric since we
-        		// allowed columns to move (col position is not enough !)
-        		colMetrics[i].getColumn().setData(this.myExperiment.getMetric(i));
-        		// laks: addendum for column        		
-        		this.colMetrics[i].setLabelProvider(new MetricLabelProvider( 
-        				myExperiment.getMetric(i), Utilities.fontMetric));
-        		this.colMetrics[i].getColumn().setMoveable(true);
-        		//this.colMetrics[i].getColumn().pack();			// resize as much as possible
-        		ColumnViewerSorter colSorter = new ColumnViewerSorter(this.treeViewer, 
-        				colMetrics[i].getColumn(), myExperiment.getMetric(i),i+1); // sorting mechanism
-        		if(i==0)
-        			colSorter.setSorter(colSorter, ColumnViewerSorter.ASC); // laks: by default, the first
-        						// column will be sorted here, instead of initializing inside the sort class.
-        		
+        		colMetrics[i] = Utilities.addTreeColumn(treeViewer, myExperiment.getMetric(i), i+1, (i==0));
         	}
             treeViewer.setColumnProperties(titles); // do need this ??
             //treeViewer.getTree().setSelection(TreeItem);
@@ -397,7 +380,7 @@ public class ScopeView extends ViewPart {
         this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
         
         // update the root scope of the actions !
-        this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, this.colMetrics);
+        this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, colMetrics);
         // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
         // so we need to do it here, manually ... sigh
         this.objViewActions.resizeColumns();	// resize the column to fit all metrics

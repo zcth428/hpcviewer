@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.swt.widgets.Shell;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -69,9 +70,15 @@ public class ExperimentManager {
 	 * @return the list of XML files in the selected directory
 	 * null if the user click the "cancel" button
 	 */
-	public File[] getDatabaseFileList(String sTitle) {
+	public File[] getDatabaseFileList(Shell shell, String sTitle) {
 		// preparing the dialog for selecting a directory
-		DirectoryDialog dirDlg = new DirectoryDialog(this.window.getShell());
+		Shell objShell = shell;
+		if(shell == null)
+			if(this.window == null) {
+				this.window = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				objShell = this.window.getShell();
+			}
+		DirectoryDialog dirDlg = new DirectoryDialog(objShell);
 		dirDlg.setText("hpcviewer");
 		dirDlg.setFilterPath(ExperimentManager.sLastPath);		// recover the last opened path
 		dirDlg.setMessage(sTitle);
@@ -97,8 +104,8 @@ public class ExperimentManager {
 	 * open the scope view  
 	 * @return true if everything is OK. false otherwise
 	 */
-	public boolean openFileExperiment() {
-		File []fileXML = this.getDatabaseFileList("Select a directory containing a profiling database.");
+	public boolean openFileExperiment(Shell shell) {
+		File []fileXML = this.getDatabaseFileList(shell, "Select a directory containing a profiling database.");
 		if((fileXML != null) && (fileXML.length>0)) {
 			boolean bContinue = true;
 			// let's make it complicated: assuming there are more than 1 XML file in this directory,

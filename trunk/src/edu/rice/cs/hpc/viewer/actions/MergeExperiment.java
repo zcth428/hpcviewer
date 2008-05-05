@@ -37,7 +37,7 @@ public class MergeExperiment  implements IWorkbenchWindowActionDelegate {
 		// get the database to merge
 		ExperimentData expData = ExperimentData.getInstance();
 		ExperimentManager expManager= expData.getExperimentManager();
-		File[] fileXML = expManager.getDatabaseFileList("Select a database to be augmented");
+		File[] fileXML = expManager.getDatabaseFileList(this.wParent.getShell(),"Select a database to be augmented");
 		
 		// if the user click "Ok", then we have to find the XML file
 		if(fileXML  != null && fileXML.length>0) {

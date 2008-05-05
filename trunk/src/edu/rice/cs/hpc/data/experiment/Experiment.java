@@ -454,6 +454,36 @@ public void addComputedMetrics(int nMetrics, double scaling)
 	this.rootScope.dfsVisitScopeTree(cmv);
 }
 
+/**
+ * Add a derived metric based on a single metric
+ * @param indexPartner: the base metric
+ * @param scale: the scale coefficient. The value will be base_metric x sclae
+ * @return the new derived metric
+ */
+public DerivedMetric addDerivedMetric(RootScope scopeRoot, int indexPartner, float scale) {
+	Metric mPartner = this.getMetric(indexPartner);
+	DerivedMetric cm = new DerivedMetric(scopeRoot, mPartner, scale);
+	this.addMetric(cm);
+	return cm;
+}
+
+/**
+ * Add a new derived metric based on two metrics
+ * @param partner1: the index of the first metric
+ * @param scale1: the scale coefficient of the first metric
+ * @param partner2: the index of the second metric
+ * @param scale2: the scale coefficient of the second metric
+ * @param opCode: the operation code (add, sub, mul, div)
+ * @return: the new derived metric. The value will be computed on the fly
+ */
+public DerivedMetric addDerivedMetric(RootScope scopeRoot, int partner1, float scale1, 
+		int partner2, float scale2, int opCode) {
+	Metric mPartner = this.getMetric(partner1);
+	Metric mPartner2 = this.getMetric(partner2);
+	DerivedMetric cm = new DerivedMetric(scopeRoot, mPartner, scale1, mPartner2, scale2, opCode);
+	this.addMetric(cm);
+	return cm;
+}
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO CONFIGURATION												//
 //////////////////////////////////////////////////////////////////////////

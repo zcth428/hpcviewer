@@ -29,6 +29,8 @@ import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.Metric;
 /**
  * @author laksono
  *
@@ -38,26 +40,26 @@ public class ScopeViewActionsGUI {
     //======================================================
 	// ------ DATA ----------------------------------------
     //======================================================
+	// GUI STUFFs
     private TreeViewer 	treeViewer;		  	// tree for the caller and callees
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;
     private IStatusLineManager statusLine;
 
-	//------------------------------------DATA
-    //public int iFlatLevel = 1;			// for unknown reason, the level starts with 1
-    private Experiment 	myExperiment;		// experiment data	
-    private RootScope 		myRootScope;		// the root scope of this view
-
     // variable declaration uniquely for coolbar
 	private ToolItem tiFlatten;		//flatten button
 	private ToolItem tiUnFlatten ;	// unflatten button
 	private ToolItem tiZoomin;		// zoom-in button
 	private ToolItem tiZoomout ;	// zoom-out button
-//	private ToolItem tiResize ;		// resize column button
 	private ToolItem tiColumns ;	// show/hide button
 	private ToolItem tiHotCallPath;
-	    
+	private ToolItem tiAddMetric; 	// add a new derived metric
+
+	//------------------------------------DATA
+	private Scope.Node nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
+    private Experiment 	myExperiment;		// experiment data	
+    private RootScope 		myRootScope;		// the root scope of this view
 
     /**
      * Constructor initializing the data
@@ -121,18 +123,40 @@ public class ScopeViewActionsGUI {
     	this.treeViewer = tree;
     }
 
+    /**
+     * Inserting a "node header" on the top of the table to display
+     * either aggregate metrics or "parent" node (due to zoom-in)
+     * TODO: we need to shift to the left a little bit
+     * @param nodeParent
+     */
     public void insertParentNode(Scope.Node nodeParent) {
     	Scope scope = nodeParent.getScope();
-    	int nbColumns = this.myExperiment.getMetricCount() + 1;
+    	int nbColumns = this.myExperiment.getMetricCount() + 1;	// coloumns in base metrics
     	String []sText = new String[nbColumns];
     	sText[0] = new String(scope.getName());
+    	// --- prepare text for base metrics
     	// get the metrics for all columns
     	for (int i=0; i< nbColumns - 1; i++) {
-        	edu.rice.cs.hpc.data.experiment.metric.Metric metric = this.myExperiment.getMetric(i);
-        	sText[i+1] = scope.getMetricTextValue(metric);
+        	Metric metric = this.myExperiment.getMetric(i);
+        	if(metric instanceof DerivedMetric) {
+        		sText[i+1] = DerivedMetric.getTextValue(scope, (DerivedMetric)metric);
+        		//System.out.println("SVAG:"+i+":"+sText[i+1]);
+        	} else
+        		sText[i+1] = scope.getMetricTextValue(metric);
     	}
+    	
     	// draw the root node item
     	Utilities.insertTopRow(treeViewer, Utilities.getScopeNavButton(scope), sText);
+    	this.nodeTopParent = nodeParent;
+    }
+    
+    /**
+     * Restoring the "node header" in case of refresh method in the viewer
+     */
+    private void restoreParentNode() {
+    	if(this.nodeTopParent != null) {
+    		this.insertParentNode(this.nodeTopParent);
+    	}
     }
 	/**
 	 * Add the aggregate metrics item on the top of the tree
@@ -173,6 +197,7 @@ public class ScopeViewActionsGUI {
 //		this.tiResize.setEnabled(false);
 		this.tiColumns.setEnabled(false);
 		this.tiHotCallPath.setEnabled(false);
+		this.tiAddMetric.setEnabled(false);
 	}
 	
 	/**
@@ -181,6 +206,7 @@ public class ScopeViewActionsGUI {
 	public void enableActions() {
 //		this.tiResize.setEnabled(true);
 		this.tiColumns.setEnabled(true);
+		this.tiAddMetric.setEnabled(true);
 	}
 	
 	/**
@@ -195,6 +221,14 @@ public class ScopeViewActionsGUI {
 		this.checkFlattenButtons();
 	}
     
+	public void hideMetricColumn(int iColumnPosition) {
+			int iWidth = this.colMetrics[iColumnPosition].getColumn().getWidth();
+   			if(iWidth > 0) {
+       			Integer objWidth = Integer.valueOf(iWidth); 
+       			this.colMetrics[iColumnPosition].getColumn().setData(objWidth);
+       			this.colMetrics[iColumnPosition].getColumn().setWidth(0);
+   			}
+	}
     /**
      * Show column properties (hidden, visible ...)
      */
@@ -206,12 +240,7 @@ public class ScopeViewActionsGUI {
            	for(int i=0;i<result.length;i++) {
            		// hide this column
            		if(!result[i]) {
-           			int iWidth = this.colMetrics[i].getColumn().getWidth();
-           			if(iWidth > 0) {
-               			Integer objWidth = Integer.valueOf(iWidth); 
-               			this.colMetrics[i].getColumn().setData(objWidth);
-               			this.colMetrics[i].getColumn().setWidth(0);
-           			}
+           			this.hideMetricColumn(i);
            		} else {
            			// display the hidden column
             		Object o = this.colMetrics[i].getColumn().getData();
@@ -225,6 +254,21 @@ public class ScopeViewActionsGUI {
    		}
     }
     
+    /**
+     * Add a new metric column
+     * @param colMetric
+     */
+    public void addMetricColumns(TreeViewerColumn colMetric) {
+    	int nbCols = this.colMetrics.length + 1;
+    	TreeViewerColumn arrColumns[] = new TreeViewerColumn[nbCols];
+    	for(int i=0;i<nbCols-1;i++)
+    		arrColumns[i] = this.colMetrics[i];
+    	arrColumns[nbCols-1] = colMetric;
+    	this.colMetrics = arrColumns;
+    	// when adding a new column, we have to refresh the viewer
+    	// and this means we have to recompute again the top row of the table
+    	this.restoreParentNode();
+    }
     //======================================================
     // ................ BUTTON ............................
     //======================================================
@@ -377,6 +421,14 @@ public class ScopeViewActionsGUI {
     	});
     	
     	new ToolItem(toolbar, SWT.SEPARATOR);
+    	this.tiAddMetric = new ToolItem(toolbar, SWT.PUSH);
+    	this.tiAddMetric.setToolTipText("Add a new derived metric");
+    	this.tiAddMetric.setImage(iconsCollection.imgAddMetric);
+    	this.tiAddMetric.addSelectionListener(new SelectionAdapter(){
+      	  public void widgetSelected(SelectionEvent e) {
+    		  objViewActions.addNewMetric();
+    	  }
+    	});
     /*	
     	tiResize = new ToolItem(toolbar, SWT.PUSH);
     	tiResize.setToolTipText("Resize columns width");

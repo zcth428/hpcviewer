@@ -5,10 +5,14 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.dialogs.Dialog;
+
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.SWT;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -16,7 +20,9 @@ import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 
 /**
  * Class to manage the actions of the tree view such as zooms, flattening,
@@ -91,12 +97,33 @@ public class ScopeViewActions {
 			TreeItem child = item.getItem(i);
 			Object o = child.getData();
 			if(o instanceof Scope.Node) {
+				// get the child node
 				Scope.Node nodeChild = (Scope.Node) o;
 				Scope scopeChild = nodeChild.getScope();
-				double dParent = scope.getMetricPercentValue(metric);
-				double dChild = scopeChild.getMetricPercentValue(metric);
-
-				if(dChild < (ScopeViewActions.fTHRESHOLD * dParent)) {
+				// get the values
+				double x1, x2;
+				double dParent, dChild;
+				// derived metric has no information on the percentage
+				// so we need to treat them exclusively
+				if(metric instanceof DerivedMetric) {
+					DerivedMetric dm = (DerivedMetric) metric;
+					dParent = DerivedMetric.getValue(scope, dm);
+					dChild = DerivedMetric.getValue(scopeChild, dm);
+				} else {
+					dParent = scope.getMetricPercentValue(metric);
+					dChild = scopeChild.getMetricPercentValue(metric);
+				}
+				if(dParent > dChild) {
+					x1 = dParent; x2 = dChild;
+				} else {
+					x1 = dChild; x2 = dParent;
+				}
+				double d = ScopeViewActions.fTHRESHOLD * x1;
+				boolean b = (x2 < d);
+				//System.out.println("SVA:"+b+" -> "+d+" " + x2/x1);
+				// simple comparison: if the child has "huge" difference compared to its parent
+				// then we consider it as host spot node.
+				if(x2 < (ScopeViewActions.fTHRESHOLD * x1)) {
 					HotCallPath objCallPath = new HotCallPath();
 					// we found the hot call path
 					objCallPath.path = pathItem; // this.treeViewer.getTreePath(child);
@@ -105,8 +132,12 @@ public class ScopeViewActions {
 					return objCallPath;
 				} else {
 					// let move deeper down the tree
-					return this.getHotCallPath(this.treeViewer.getTreePath(child), 
+					HotCallPath objHotPath = this.getHotCallPath(this.treeViewer.getTreePath(child), 
 							child, scopeChild, metric, iLevel+ 1);
+					// BUG FIX no 126: 
+					if(objHotPath != null) {
+						return objHotPath; // a hot path is found
+					}
 				}
 			}
 		}
@@ -285,43 +316,62 @@ public class ScopeViewActions {
 			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
 		}
 	}
-	/**
-	 * Go deeper one level
-	 */
-	/*
-	public void flattenNode() {
-		int iNewFlatLevel = this.objActionsGUI.iFlatLevel + 1;
-		Integer objLevel = Integer.valueOf(iNewFlatLevel);
-		// get the next level
-		ArrayOfNodes nodeArray = ((RootScope)this.myRootScope).getTableOfNodes().get(objLevel);
-		if(nodeArray != null) {
-			this.treeViewer.setInput(nodeArray);
-			this.objActionsGUI.updateFlattenView(iNewFlatLevel, true);
-		} else {
-			// there is something wrong. we return to the original node
-			System.err.println("ScopeView-flatten: error cannot flatten further");
-		}
-	}
-	*/
-	/**
-	 * go back one level
-	 */
-	/*
-	public void unflattenNode() {
-		if(this.objActionsGUI.iFlatLevel <2) return;
-		
-		int iNewFlatLevel = this.objActionsGUI.iFlatLevel - 1;
-		Integer objLevel = Integer.valueOf(iNewFlatLevel);
-		java.util.Hashtable<Integer, ArrayOfNodes> tableOfNodes = ((RootScope)this.myRootScope).getTableOfNodes();
-		if(tableOfNodes != null) {
-			ArrayOfNodes nodeArray = tableOfNodes.get(objLevel);
-			if(nodeArray != null) {
-				this.treeViewer.setInput(nodeArray);
-				this.objActionsGUI.updateFlattenView(iNewFlatLevel, true);
-			}
-		}
-	}*/
 	
+	/**
+	 * Add a new derived metric based on the existing metric(s). Two base metrics AT MOST !
+	 * Currently the derived metric only support simple arithmetic operation.
+	 * TODO: a more complex mathematics operation is to be supported in the future
+	 * @return
+	 */
+	public boolean addNewMetric() {
+		boolean bResult=false;
+		Tree treeCurrent = this.treeViewer.getTree();
+		int nbColumns = treeCurrent.getColumnCount()-1;
+		if(nbColumns > 0) {
+			// collect the title of the columns
+			String []sColumns = new String[nbColumns];
+			for(int i=1;i<=nbColumns;i++) {
+				sColumns[i-1] = i+":"+treeCurrent.getColumn(i).getText();
+			}
+			
+			// show the dialog 
+			DerivedMetricsDlg metricDlg = new DerivedMetricsDlg(this.objSite.getShell(),sColumns);
+			if (metricDlg.open() == Dialog.OK) {
+				// retrieve the information typed by the user
+				float f1 = metricDlg.fCoefficient1.floatValue();
+				int iMetric = metricDlg.iChosenMetric1;
+				Float objCoef2 = metricDlg.fCoefficient2;
+				Experiment exp = this.myRootScope.getExperiment();
+				DerivedMetric objNewMetric;
+				// verify if the second operand exists
+				if(objCoef2 != null) {
+					float f2 = objCoef2.floatValue();
+					int iMetric2 = metricDlg.iChosenMetric2;
+					int iOpCode = metricDlg.iOperation;
+					objNewMetric= exp.addDerivedMetric(this.myRootScope, iMetric, f1, iMetric2, f2, iOpCode);
+				} else {
+					objNewMetric = exp.addDerivedMetric(this.myRootScope, iMetric, f1);
+				}
+				// compute the percentage ?
+				objNewMetric.setPercent(metricDlg.bPercent);
+				if(metricDlg.sMetricName != null)
+					objNewMetric.setName(metricDlg.sMetricName);
+				// add the column to the viewer
+				int iPosition = exp.getMetricCount()+1; 
+				TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objNewMetric, 
+						iPosition, false);
+				// update the viewer, to refresh its content and invoke the provider
+				this.treeViewer.refresh();
+				// notify the GUI that we have added a new column
+				this.objActionsGUI.addMetricColumns(colDerived); 
+				// once the column has been added, we need to tell if it should be displayed or not
+				if(!metricDlg.bDisplay)
+					this.objActionsGUI.hideMetricColumn(iPosition);
+			}
+				
+		}
+		return bResult;
+	}
 	/**
 	 * Resize the columns
 	 */

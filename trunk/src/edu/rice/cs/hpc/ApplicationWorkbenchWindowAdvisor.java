@@ -6,6 +6,8 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.IWorkbench;
 
+import org.eclipse.swt.widgets.Shell;
+
 import edu.rice.cs.hpc.viewer.resources.ExperimentData;
 import edu.rice.cs.hpc.analysis.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.*;
@@ -89,7 +91,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			this.dataEx = ExperimentData.getInstance();
 			ExperimentManager expFile = this.dataEx.getExperimentManager();
 			if(expFile != null) {
-				expFile.openFileExperiment();
+				Shell objShell = this.getWindowConfigurer().getWindow().getShell();
+				if(objShell != null)
+					expFile.openFileExperiment(objShell);
+				else
+					System.out.println("AWWA: shell is null. please open the database manually.");
+			} else {
+				System.out.println("AWWA: exp manager is null. create a new one.");
 			}
 		}
 	}

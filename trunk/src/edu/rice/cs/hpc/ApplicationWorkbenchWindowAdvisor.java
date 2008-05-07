@@ -82,7 +82,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    		}
 		    	}
 		    	if(sFilename != null)
-		    		expViewer.loadExperimentAndProcess(sFilename);
+		    		expViewer.asyncLoadExperimentAndProcess(sFilename);
 		     }
 		} else {
 			// there is no information about the database

@@ -44,6 +44,28 @@ public class ExperimentView {
 		this.init();
 	}
 	
+	class ThrLoadProcessingThread extends Thread {
+		String sFilename;
+		public ThrLoadProcessingThread(String file) {
+			this.sFilename = file;
+		}
+		public void run() {
+			ScopeView viewScope = null;
+		      try {
+		    	  viewScope = (ScopeView) objPage.showView(ScopeView.ID);
+		    	  viewScope.setFocus();
+		    	  viewScope.showProcessingMessage();
+		      } catch(org.eclipse.ui.PartInitException e) {
+		    	  e.printStackTrace();
+		      }
+		}
+	}
+	
+	public void asyncLoadExperimentAndProcess(String sFilename) {
+		ThrLoadProcessingThread thr = new ThrLoadProcessingThread(sFilename);
+		thr.start();
+		loadExperimentAndProcess(sFilename);
+	}
 	/**
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
 	 * @param sFilename
@@ -66,12 +88,13 @@ public class ExperimentView {
 	 * @param sFilename: the xml experiment file
 	 */
 	public Experiment loadExperiment(String sFilename) {
-	       Experiment experiment;
-	       org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
+		Experiment experiment;
+			// first view: usually already created by default by the perspective
+      org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
 	       //objTask.run(12, true);
            // open the experiment if possible
       try
-           {
+      {
            experiment = new Experiment(new java.io.File(sFilename));
            experiment.open();
            
@@ -91,13 +114,15 @@ public class ExperimentView {
       {
            String where = sFilename + " " + " " + ex.getLineNumber();
            System.err.println("$" +  where);
-           MessageDialog.openError(objShell, "Incorrect Experiment File", "File "+sFilename + " has incorrect tag at line:"+ex.getLineNumber());
+           MessageDialog.openError(objShell, "Incorrect Experiment File", "File "+sFilename 
+        		   + " has incorrect tag at line:"+ex.getLineNumber());
            experiment = null;
       } 
       catch(NullPointerException npe)
       {
            System.err.println("$" + npe.getMessage() + sFilename);
-           MessageDialog.openError(objShell, "File is invalid", "File has null pointer:"+sFilename + ":"+npe.getMessage());
+           MessageDialog.openError(objShell, "File is invalid", "File has null pointer:"
+        		   +sFilename + ":"+npe.getMessage());
            experiment = null;
       }
       return experiment;

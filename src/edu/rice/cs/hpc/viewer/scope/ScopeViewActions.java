@@ -180,10 +180,39 @@ public class ScopeViewActions {
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
+	public void showProcessingMessage() {
+		this.objActionsGUI.showWarningMessagge("... Processing .... Please wait ...");
+	}
+	class RestoreMessageThread extends Thread {	
+		RestoreMessageThread() {
+			super();
+		}
+         public void run() {
+             try{
+            	 sleep(5000);
+             } catch(InterruptedException e) {
+            	 e.printStackTrace();
+             }
+        	 restoreProcessingMessage();
+         }
+     }
+	
+	public void showErrorMessage(String strMsg) {
+		this.objActionsGUI.showErrorMessage(strMsg);
+		// remove the msg in 5 secs
+		RestoreMessageThread thrRestoreMessage = new RestoreMessageThread();
+		thrRestoreMessage.start();
+	}
+	
+	public void restoreProcessingMessage() {
+		this.objActionsGUI.restoreMessage();
+	}
 	/**
 	 * show the hot path below the selected node in the tree
 	 */
 	public void showHotCallPath() {
+		// preparing the message
+		this.showProcessingMessage();
 		// find the selected node
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
@@ -224,7 +253,10 @@ public class ScopeViewActions {
 				// System.out.println(" cannot be found.\nPlease adjust the threshold in the preference dialog box.");
 			}
 		}
+		this.restoreProcessingMessage();
 	}
+	
+	
 	/**
 	 * Zoom-in the children
 	 */
@@ -325,6 +357,8 @@ public class ScopeViewActions {
 	 */
 	public boolean addNewMetric() {
 		boolean bResult=false;
+		// prepare the processing
+		//this.objActionsGUI.showWarningMessagge("... adding new metric. Please wait ...");
 		Tree treeCurrent = this.treeViewer.getTree();
 		int nbColumns = treeCurrent.getColumnCount()-1;
 		if(nbColumns > 0) {
@@ -337,39 +371,46 @@ public class ScopeViewActions {
 			// show the dialog 
 			DerivedMetricsDlg metricDlg = new DerivedMetricsDlg(this.objSite.getShell(),sColumns);
 			if (metricDlg.open() == Dialog.OK) {
+				this.showProcessingMessage(); 
+
 				// retrieve the information typed by the user
 				float f1 = metricDlg.fCoefficient1.floatValue();
 				int iMetric = metricDlg.iChosenMetric1;
-				Float objCoef2 = metricDlg.fCoefficient2;
-				Experiment exp = this.myRootScope.getExperiment();
 				DerivedMetric objNewMetric;
+				Experiment exp = this.myRootScope.getExperiment();
+				int iMetric2 = metricDlg.iChosenMetric2;
 				// verify if the second operand exists
-				if(objCoef2 != null) {
-					float f2 = objCoef2.floatValue();
-					int iMetric2 = metricDlg.iChosenMetric2;
+				if(iMetric2 >= 0) {
+					float f2 = metricDlg.fCoefficient2.floatValue();
 					int iOpCode = metricDlg.iOperation;
 					objNewMetric= exp.addDerivedMetric(this.myRootScope, iMetric, f1, iMetric2, f2, iOpCode);
 				} else {
 					objNewMetric = exp.addDerivedMetric(this.myRootScope, iMetric, f1);
 				}
-				// compute the percentage ?
-				objNewMetric.setPercent(metricDlg.bPercent);
-				if(metricDlg.sMetricName != null)
-					objNewMetric.setName(metricDlg.sMetricName);
-				// add the column to the viewer
-				int iPosition = exp.getMetricCount()+1; 
-				TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objNewMetric, 
-						iPosition, false);
-				// update the viewer, to refresh its content and invoke the provider
-				this.treeViewer.refresh();
-				// notify the GUI that we have added a new column
-				this.objActionsGUI.addMetricColumns(colDerived); 
-				// once the column has been added, we need to tell if it should be displayed or not
-				if(!metricDlg.bDisplay)
-					this.objActionsGUI.hideMetricColumn(iPosition);
+				if(objNewMetric != null) {
+					// compute the percentage ?
+					objNewMetric.setPercent(metricDlg.bPercent);
+					if(metricDlg.sMetricName != null)
+						objNewMetric.setName(metricDlg.sMetricName);
+					// add the column to the viewer
+					int iPosition = exp.getMetricCount()+1; 
+					TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objNewMetric, 
+							iPosition, false);
+					// update the viewer, to refresh its content and invoke the provider
+					this.treeViewer.refresh();
+					// notify the GUI that we have added a new column
+					this.objActionsGUI.addMetricColumns(colDerived); 
+					// once the column has been added, we need to tell if it should be displayed or not
+					if(!metricDlg.bDisplay)
+						this.objActionsGUI.hideMetricColumn(iPosition);
+					this.restoreProcessingMessage();
+				} else {
+					this.showErrorMessage("Error... unable to add a new derived metric.");
+				}
 			}
 				
 		}
+		
 		return bResult;
 	}
 	/**

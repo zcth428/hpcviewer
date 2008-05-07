@@ -5,7 +5,6 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.jface.viewers.StructuredSelection;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -20,6 +19,8 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.jface.action.IStatusLineManager;
 
@@ -55,12 +56,18 @@ public class ScopeViewActionsGUI {
 	private ToolItem tiColumns ;	// show/hide button
 	private ToolItem tiHotCallPath;
 	private ToolItem tiAddMetric; 	// add a new derived metric
+	private ToolBar tbMessageToolbar;
+	private ToolItem tiMessage;
 
+	private java.lang.Runnable thrGUI;
 	//------------------------------------DATA
 	private Scope.Node nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
     private Experiment 	myExperiment;		// experiment data	
     private RootScope 		myRootScope;		// the root scope of this view
 
+    // ----------------------------------- CONSTANTS
+    private Color clrYELLOW, clrRED, clrNORMAL;
+    
     /**
      * Constructor initializing the data
      * @param shellGUI
@@ -75,6 +82,9 @@ public class ScopeViewActionsGUI {
 		this.shell = viewSite.getShell();
 		this.statusLine = viewSite.getActionBars().getStatusLineManager();
 		
+		this.clrNORMAL = this.shell.getBackground();
+		this.clrYELLOW = new Color(this.shell.getDisplay(),255,255,0);
+		this.clrRED = new Color(this.shell.getDisplay(), 250,128,114);
 		// ----- coolbar
 		this.createCoolBar(parent);
 	}
@@ -185,7 +195,24 @@ public class ScopeViewActionsGUI {
 	//======================================================
     // ................ GUI and LAYOUT ....................
     //======================================================
+	public void showWarningMessagge(String sMsg) {
+		this.tbMessageToolbar.setBackground(this.clrYELLOW);
+		this.tiMessage.setText(sMsg);
+	}
 	
+	public void showErrorMessage(String sMsg) {
+		this.tbMessageToolbar.setBackground(this.clrRED);
+		this.tiMessage.setText(sMsg);
+	}
+	
+	public void restoreMessage() {
+		if(this.tbMessageToolbar != null) {
+			//System.out.println("SVAG:"+this.tbMessageToolbar.getDisplay()+" "+this.tbMessageToolbar.getShell());
+			
+			this.tbMessageToolbar.setBackground(this.clrNORMAL);
+			this.tiMessage.setText("");
+		}
+	}
 	/**
 	 * Reset the button and actions into disabled state
 	 */
@@ -451,7 +478,13 @@ public class ScopeViewActionsGUI {
         // set the coolitem
     	this.createCoolItem(coolBar, toolbar);
     	this.resetActions();
+    	
+    	// message text
+    	 tbMessageToolbar = new ToolBar(coolBar, SWT.FLAT);
+    	 tiMessage = new ToolItem(tbMessageToolbar, SWT.NONE);
+    	this.createCoolItem(coolBar, tbMessageToolbar);
 
     	return aParent;
     }
+    
 }

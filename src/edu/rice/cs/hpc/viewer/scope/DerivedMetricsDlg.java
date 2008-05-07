@@ -6,7 +6,9 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -23,6 +25,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.SWTException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -32,7 +36,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
  */
 public class DerivedMetricsDlg extends TitleAreaDialog {
 
-	final private static String NONE = "none";
+	final private static String NONE = "No metric";
 	
 	private Text txtCoef1;
 	private Text txtCoef2;
@@ -137,27 +141,47 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 	    	lbl1.setText("Left:");
 	    	txtCoef1 = new Text(metricsArea, SWT.NONE);
 	    	txtCoef1.setText("1.0");
+	    	// make the coefficient field small enough for couple of numbers
+	    	GridDataFactory.fillDefaults().hint(40, SWT.DEFAULT).grab(false, false).applyTo(txtCoef1);
 	    	txtCoef1.setToolTipText("The scale coefficient for the first metric");
 	     
 	    	cbMetric1 = new Combo(metricsArea, SWT.READ_ONLY);
 	    	cbMetric1.setItems(this.metricsName);
-	    	cbMetric1.setText(this.metricsName[0]);
+	    	cbMetric1.add(DerivedMetricsDlg.NONE, 0);
+	    	cbMetric1.setText(DerivedMetricsDlg.NONE);
 	    	cbMetric1.setToolTipText("Select the first metric");
 	   	 
 	    	Label lbl2 = new Label(metricsArea, SWT.NONE);
 	    	lbl2.setText("Right (optional):");
 
 	    	txtCoef2 = new Text(metricsArea, SWT.NONE);
-	    	txtCoef2.setText("");
+	    	//txtCoef2.setText("");
+	    	txtCoef2.setEnabled(false);
 	    	txtCoef2.setToolTipText("Optional scale coefficient for the second operand");
-	   	 
+	    	// make the coefficient field small enough for couple of numbers
+	    	GridDataFactory.fillDefaults().hint(40, SWT.DEFAULT).grab(false, false).applyTo(txtCoef2);
+
 	    	cbMetric2 = new Combo(metricsArea, SWT.READ_ONLY);
 	    	cbMetric2.setItems(this.metricsName);
-	    	cbMetric2.setItem(0, this.metricsName[0]);
-	    	cbMetric2.setText(this.metricsName[0]);
+	    	cbMetric2.add(DerivedMetricsDlg.NONE, 0);
+	    	cbMetric2.setText(DerivedMetricsDlg.NONE);
 	    	cbMetric2.setToolTipText("Select the second metric (optional)");
-	    	GridLayoutFactory.fillDefaults().numColumns(3).margins(
-				LayoutConstants.getMargins()).generateLayout(metricsArea);
+	    	cbMetric2.addSelectionListener(new SelectionListener() {
+	    		public void widgetSelected(SelectionEvent e) {
+	    			int iSelect = cbMetric2.getSelectionIndex();
+	    			if(iSelect > 0) {
+	    				cbOperation.setEnabled(true);
+	    				txtCoef2.setEnabled(true);
+	    				txtCoef2.setText("1.0");
+	    			}
+	    		}
+	    		public void widgetDefaultSelected(SelectionEvent e) {
+	    			
+	    		}
+	    	});
+	    	GridLayoutFactory.swtDefaults().numColumns(3).generateLayout(metricsArea);
+	    	//GridLayoutFactory.fillDefaults().numColumns(3).margins(
+			//	LayoutConstants.getMargins()).generateLayout(metricsArea);
 	    }
 
 		new Label(grpBase, SWT.SEPARATOR | SWT.HORIZONTAL);
@@ -237,16 +261,24 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 		//======================= EVENTS  ======================//
 		//------------------------------------------------------//
 	  /**
-	   * Event fired when the OK button is pressed
+	   * Event fired when the OK button is pressed.
+	   * We will check that the filled form is valid
 	   */
 	  protected void okPressed() {
 		  this.fCoefficient1 = this.checkCoefficient(this.txtCoef1);
-		  this.fCoefficient2 = this.checkCoefficient(this.txtCoef2);
+		  if(this.fCoefficient1 == null) return;
 		  // check if the coefficient is well defined
-		  if(this.fCoefficient1 != null && this.fCoefficient2 != null) {
-			  this.iChosenMetric1 = this.cbMetric1.getSelectionIndex();
-			  this.iChosenMetric2 = this.cbMetric2.getSelectionIndex();
-			  this.iOperation = this.cbOperation.getSelectionIndex();
+		  this.iChosenMetric1 = this.cbMetric1.getSelectionIndex()-1;
+		  // if the left coefficient is valid, then the metric has to be also valid
+		  if(this.iChosenMetric1 >= 0){
+			  // check for the second coefficient
+			  this.iChosenMetric2 = this.cbMetric2.getSelectionIndex()-1;
+			  if(this.iChosenMetric2>=0) {
+				  this.fCoefficient2 = this.checkCoefficient(this.txtCoef2);
+				  if(this.fCoefficient2 == null) return;
+				  // now get the operator
+				  this.iOperation = this.cbOperation.getSelectionIndex();
+			  }
 			  // options
 			  this.sMetricName = this.txtName.getText();
 			  if(this.sMetricName.length() == 0)
@@ -257,6 +289,8 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 			  this.bPercent = this.btnPercent.getSelection();
 			  
 			  super.okPressed();
+		  } else {
+			  MessageDialog.openError(this.shell, "Incorrect metric", "Please choose at least a metric to derive.");
 		  }
 	  }
 
@@ -269,11 +303,19 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 		// TODO Auto-generated method stub
 		DerivedMetricsDlg der = new DerivedMetricsDlg(null, new String[]{"one", "two", "three"});
 		der.open();
+		System.out.println("output:"+der.iChosenMetric1+" "+der.iChosenMetric2+" "+der.iOperation
+				+" "+der.sMetricName+" "+ der.bDisplay+" "+der.bPercent+" "+der.fCoefficient1+" "+der.fCoefficient2);
 	}
 	
 	//------------------------------------------------------//
 	//======================= CLASSES ======================//
 	//------------------------------------------------------//
+	/*class ComboMetric extends Combo {
+		public ComboMetric(Composite parent, int style) {
+			super(parent, style);
+		}
+	}*/
+	
 	/**
 	 * Listener class to verify if the field of the coefficient is empty or not
 	 * If it is not empty, then the next control can be activated

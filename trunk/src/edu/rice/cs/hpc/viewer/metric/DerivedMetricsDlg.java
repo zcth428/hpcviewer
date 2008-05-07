@@ -1,17 +1,14 @@
 /**
  * 
  */
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.metric;
 
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 
 import org.eclipse.swt.widgets.Shell;
@@ -23,13 +20,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.SWTException;
 
-import org.eclipse.jface.dialogs.MessageDialog;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 /**
  * @author la5
  *
@@ -37,6 +31,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 public class DerivedMetricsDlg extends TitleAreaDialog {
 
 	final private static String NONE = "No metric";
+	final private float fValue1 = 2;
+	final private float fValue2 = 3;
 	
 	private Text txtCoef1;
 	private Text txtCoef2;
@@ -48,7 +44,11 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 	private Text txtName;
 	private Button btnPercent;
 	private Button btnDisplay;
+	private Label lblCoef2;
+	private Label opLabel;
 	
+	private Label lblExp;
+	private Label lblPreview;
 	//------------------------------------------------------//
 	//================= PUBLIC FIELDS ======================//
 	//------------------------------------------------------//
@@ -99,6 +99,57 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 	//------------------------------------------------------//
 	//======================= METHODS ======================//
 	//------------------------------------------------------//
+	
+	/**
+	 * check the fields, compute, and generate the preview of the expression
+	 */
+	private void generatePreview() {
+		int iMetric1 = this.cbMetric1.getSelectionIndex();
+		if(iMetric1 == 0) return;
+		
+		this.fCoefficient1 = this.checkCoefficient(this.txtCoef1);
+		if(this.fCoefficient1 == null) return;
+		float fResult = this.fCoefficient1 * this.fValue1;
+		String strText = "( metric_1 * " + this.fCoefficient1+" )";
+		int iMetric2 = this.cbMetric2.getSelectionIndex();
+		if(iMetric2 > 0) {
+			 // binary
+			this.fCoefficient2 = this.checkCoefficient(this.txtCoef2);
+			if(this.fCoefficient2 != null) {
+				float fCoef2 = this.fCoefficient2 * this.fValue2;
+				int iOp = this.cbOperation.getSelectionIndex();
+				String strCoef2 = "( metric_2 * "+this.fCoefficient2 +")";
+				switch (iOp) {
+				case DerivedMetric.ADD:
+					fResult = fResult + (fCoef2);
+					strText = strText + " + " + strCoef2;
+					break;
+				case DerivedMetric.SUB:
+					fResult = fResult - (fCoef2);
+					strText = strText + " - " + strCoef2;
+					break;
+				case DerivedMetric.MUL:
+					fResult = fResult * (fCoef2);
+					strText = strText + " * " + strCoef2;
+					break;
+				case DerivedMetric.DIV:
+					if(fCoef2 != 0) {
+						fResult = fResult / (fCoef2);
+						strText = strText + " / " + strCoef2;
+					} else {
+						strText = "Error division by zero: "+strText+" / " + strCoef2;
+						fResult = 0;
+					}
+					break;
+				}
+			}
+		} else {
+			// unary
+		}
+		this.lblExp.setText("Expression: "+strText);
+		this.lblPreview.setText("Preview: "+fResult);
+	}
+	
 	  /**
 	   * Creates the dialog's contents
 	   * 
@@ -140,22 +191,39 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 	    	Label lbl1 = new Label(metricsArea, SWT.NONE);
 	    	lbl1.setText("Left:");
 	    	txtCoef1 = new Text(metricsArea, SWT.NONE);
-	    	txtCoef1.setText("1.0");
+	    	txtCoef1.setToolTipText("The scale coefficient for the first metric");
+	    	txtCoef1.setEnabled(false);
 	    	// make the coefficient field small enough for couple of numbers
 	    	GridDataFactory.fillDefaults().hint(40, SWT.DEFAULT).grab(false, false).applyTo(txtCoef1);
-	    	txtCoef1.setToolTipText("The scale coefficient for the first metric");
 	     
 	    	cbMetric1 = new Combo(metricsArea, SWT.READ_ONLY);
 	    	cbMetric1.setItems(this.metricsName);
 	    	cbMetric1.add(DerivedMetricsDlg.NONE, 0);
 	    	cbMetric1.setText(DerivedMetricsDlg.NONE);
 	    	cbMetric1.setToolTipText("Select the first metric");
-	   	 
+	   	 	cbMetric1.addSelectionListener(new SelectionListener(){
+	   			public void widgetSelected(SelectionEvent e) {
+	   				int iSelect = cbMetric1.getSelectionIndex();
+	   				if(iSelect > 0) {
+	   					txtCoef1.setEnabled(true);
+	   					String str = txtCoef1.getText(); 
+	   					if(str == null || str.length()==0)
+	   						txtCoef1.setText("1.0");
+	   					cbMetric2.setEnabled(true);
+	   				} else {
+	   					txtCoef1.setEnabled(false);
+	   					cbMetric2.setEnabled(false);
+	   				}
+	   			}
+	   			public void widgetDefaultSelected(SelectionEvent e) {
+	   				
+	   			}
+
+	   	 	});
+	   	 	
 	    	Label lbl2 = new Label(metricsArea, SWT.NONE);
 	    	lbl2.setText("Right (optional):");
-
 	    	txtCoef2 = new Text(metricsArea, SWT.NONE);
-	    	//txtCoef2.setText("");
 	    	txtCoef2.setEnabled(false);
 	    	txtCoef2.setToolTipText("Optional scale coefficient for the second operand");
 	    	// make the coefficient field small enough for couple of numbers
@@ -166,43 +234,74 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 	    	cbMetric2.add(DerivedMetricsDlg.NONE, 0);
 	    	cbMetric2.setText(DerivedMetricsDlg.NONE);
 	    	cbMetric2.setToolTipText("Select the second metric (optional)");
-	    	cbMetric2.addSelectionListener(new SelectionListener() {
-	    		public void widgetSelected(SelectionEvent e) {
-	    			int iSelect = cbMetric2.getSelectionIndex();
-	    			if(iSelect > 0) {
-	    				cbOperation.setEnabled(true);
-	    				txtCoef2.setEnabled(true);
-	    				txtCoef2.setText("1.0");
-	    			}
-	    		}
-	    		public void widgetDefaultSelected(SelectionEvent e) {
-	    			
-	    		}
-	    	});
+	    	cbMetric2.addSelectionListener(new SelectionListener(){
+	   			public void widgetSelected(SelectionEvent e) {
+	   				int iSelect = cbMetric2.getSelectionIndex();
+	   				if(iSelect > 0) {
+	   					txtCoef2.setEnabled(true);
+	   					String str = txtCoef2.getText(); 
+	   					if(str == null || str.length()==0)
+	   						txtCoef2.setText("1.0");
+	   					cbOperation.setEnabled(true);
+	   				} else {
+	   					txtCoef2.setEnabled(false);
+	   					cbOperation.setEnabled(false);
+	   				}
+	   			}
+	   			public void widgetDefaultSelected(SelectionEvent e) {
+	   				
+	   			}
+
+	   	 	});
+	    	cbMetric2.setEnabled(false);
 	    	GridLayoutFactory.swtDefaults().numColumns(3).generateLayout(metricsArea);
 	    	//GridLayoutFactory.fillDefaults().numColumns(3).margins(
 			//	LayoutConstants.getMargins()).generateLayout(metricsArea);
 	    }
 
-		new Label(grpBase, SWT.SEPARATOR | SWT.HORIZONTAL);
+		new Label(grpBase, SWT.SEPARATOR | SWT.VERTICAL);
 		
 		Composite opArea = new Composite(grpBase, SWT.NONE);
 		{
-			Label opLabel = new Label(opArea, SWT.NONE);
-			opLabel.setText("Arithmetic operation for the two metrics:");
+			opLabel = new Label(opArea, SWT.NONE);
+			opLabel.setText("Arithmetic operation:");
 			this.cbOperation = new Combo(opArea, SWT.READ_ONLY);
 			String []sOperations = new String[]{"Add (+)","Substract (-)","Multipy (*)","Divide (/)"};
 			this.cbOperation.setItems(sOperations);
 			this.cbOperation.setText(sOperations[0]);
 			this.cbOperation.setEnabled(false);
+			GridLayoutFactory.fillDefaults().numColumns(1) .generateLayout(opArea);
+		}		
+		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(grpBase);
+		
+		//-------
+		// preview
+		Group grpPreview = new Group(composite, SWT.BORDER);
+		{
+			grpPreview.setText("Evaluation and preview");
+			Button btnPreview = new Button(grpPreview, SWT.NONE);
+			btnPreview.setText("Generate preview");
+			btnPreview.addSelectionListener(new SelectionListener() {
+	   			public void widgetSelected(SelectionEvent e) {
+	   				generatePreview();
+	   			}
+	   			public void widgetDefaultSelected(SelectionEvent e) {
+	   				
+	   			}
+			});
+			Composite compoLabels = new Composite(grpPreview, SWT.NONE);
+			Label lblValues = new Label(compoLabels, SWT.NONE);
+			lblValues.setText("Example values: metric_1 = 2.0 and metric_2 = 3.0");
+			lblExp = new Label(compoLabels, SWT.NONE);
+			lblExp.setText("Expression:");
+			lblPreview = new Label(compoLabels, SWT.NONE);
+			lblPreview.setText("Preview:");
+			GridLayoutFactory.swtDefaults().numColumns(1).generateLayout(compoLabels);
+			GridLayoutFactory.swtDefaults().numColumns(2).generateLayout(grpPreview);
 		}
-		txtCoef2.addVerifyListener(new CoefficientVerifyListener(this.txtCoef2, this.cbOperation));
-
-		GridLayoutFactory.fillDefaults().numColumns(2).margins(
-				LayoutConstants.getMargins()).generateLayout(opArea);
 		
-		GridLayoutFactory.fillDefaults().generateLayout(grpBase);
-		
+		//-------
+		// options
 		Group grpOptions = new Group(composite,SWT.BORDER);
 		{
 			Composite nameArea = new Composite(grpOptions, SWT.NONE);
@@ -315,42 +414,29 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 			super(parent, style);
 		}
 	}*/
-	
-	/**
-	 * Listener class to verify if the field of the coefficient is empty or not
-	 * If it is not empty, then the next control can be activated
-	 * @author la5
-	 *
-	 */
-	class CoefficientVerifyListener implements VerifyListener {
-		Control ctrlNext = null;
-		Control ctrlCurrent = null;
-		
-		public CoefficientVerifyListener(Control cCurrent, Control cNext) {
-			super();
-			this.ctrlNext = cNext;
-			this.ctrlCurrent = cCurrent;
+	class ComboMetricSelectionListener implements SelectionListener {
+		private Combo combo;
+		private Text text;
+		private Control next;
+		public ComboMetricSelectionListener(Combo cb, Text txt, Control nextCtrl) {
+			this.combo = cb;
+			this.text = txt;
+			this.next = nextCtrl;
 		}
-		// check if the text is a valid number
-		// if the text is valid, then go to the next control (or field)
-		// otherwise show an error message
-		public void verifyText(VerifyEvent e) {
-			String sText = e.text;
-			if(sText.length() > 0) {
-				try {
-					if((ctrlNext != null)) {
-						try{
-							this.ctrlNext.setEnabled(true);
-						} catch (SWTException ex) {
-							System.err.println("Unable enabling "+this.ctrlNext.toString() +":"+ex.getMessage());
-						}
-						
-					}
-				} catch(java.lang.NumberFormatException eFloat) {
-					MessageDialog.openError(shell, "Incorrect coefficient", "The number is not valid.");
-					ctrlCurrent.setFocus();
-				}
+		public void widgetSelected(SelectionEvent e) {
+			int iSelect = combo.getSelectionIndex();
+			if(iSelect > 0) {
+				text.setEnabled(true);
+				String str = text.getText(); 
+				if(str == null || str.length()==0)
+					text.setText("1.0");
+			} else {
+				text.setEnabled(false);
 			}
 		}
+		public void widgetDefaultSelected(SelectionEvent e) {
+			
+		}
+
 	}
 }

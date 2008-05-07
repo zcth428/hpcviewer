@@ -21,6 +21,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.viewer.metric.DerivedMetricsDlg;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 

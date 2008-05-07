@@ -21,12 +21,15 @@ Software and the Performance Engineering Research Institute.
    <configIni use="default"/>
 
    <launcherArgs>
+      <vmArgs>-Xmx400m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="icons/hpcviewerEclipse16.gif" i32="icons/hpcviewerEclipse32.gif" i48="icons/hpcviewerEclipse48.gif" i64="icons/hpcviewerEclipse64.gif" i128="icons/hpcviewerEclipse128.gif"/>
 
-   <launcher>
+   <splash
+      startupProgressRect="0,275,445,25" />
+   <launcher name="hpcviewer">
       <solaris/>
       <win useIco="false">
          <bmp/>

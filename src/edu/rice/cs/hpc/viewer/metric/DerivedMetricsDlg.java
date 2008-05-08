@@ -8,7 +8,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.jface.layout.GridDataFactory;
-
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.graphics.Point;
 
 import org.eclipse.swt.widgets.Shell;
@@ -44,7 +45,6 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 	private Text txtName;
 	private Button btnPercent;
 	private Button btnDisplay;
-	private Label lblCoef2;
 	private Label opLabel;
 	
 	private Label lblExp;
@@ -254,12 +254,14 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 
 	   	 	});
 	    	cbMetric2.setEnabled(false);
-	    	GridLayoutFactory.swtDefaults().numColumns(3).generateLayout(metricsArea);
+	    	GridLayout gl = new GridLayout(3,false);
+	    	metricsArea.setLayout(gl);
+	    	//GridLayoutFactory.swtDefaults().numColumns(3).generateLayout(metricsArea);
 	    	//GridLayoutFactory.fillDefaults().numColumns(3).margins(
 			//	LayoutConstants.getMargins()).generateLayout(metricsArea);
 	    }
 
-		new Label(grpBase, SWT.SEPARATOR | SWT.VERTICAL);
+		//new Label(grpBase, SWT.SEPARATOR | SWT.VERTICAL);
 		
 		Composite opArea = new Composite(grpBase, SWT.NONE);
 		{
@@ -270,9 +272,11 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 			this.cbOperation.setItems(sOperations);
 			this.cbOperation.setText(sOperations[0]);
 			this.cbOperation.setEnabled(false);
+			GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER);
 			GridLayoutFactory.fillDefaults().numColumns(1) .generateLayout(opArea);
+			opArea.setLayoutData(gd);
 		}		
-		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(grpBase);
+		GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(grpBase);
 		
 		//-------
 		// preview
@@ -290,12 +294,12 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 	   			}
 			});
 			Composite compoLabels = new Composite(grpPreview, SWT.NONE);
-			Label lblValues = new Label(compoLabels, SWT.NONE);
-			lblValues.setText("Example values: metric_1 = 2.0 and metric_2 = 3.0");
 			lblExp = new Label(compoLabels, SWT.NONE);
 			lblExp.setText("Expression:");
+			Label lblValues = new Label(compoLabels, SWT.NONE);
+			lblValues.setText("Example values: metric_1 = 2.0 and metric_2 = 3.0");
 			lblPreview = new Label(compoLabels, SWT.NONE);
-			lblPreview.setText("Preview:");
+			lblPreview.setText("Result:");
 			GridLayoutFactory.swtDefaults().numColumns(1).generateLayout(compoLabels);
 			GridLayoutFactory.swtDefaults().numColumns(2).generateLayout(grpPreview);
 		}
@@ -344,8 +348,11 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 		  if(sCoef.length() > 0) {
 			  try {
 				  fCoef = new Float(sCoef);
-				  if(fCoef.floatValue() == 0)
+				  if(fCoef.floatValue() == 0) {
+					  MessageDialog.openError(this.shell, "Incorrect coefficient scale",
+							  "A coefficient scale can not be zero.");
 					  fCoef = null;
+				  }
 			  } catch(java.lang.NumberFormatException e){
 				  MessageDialog.openError(this.shell, "Incorrect number", "The field contains incorrect number.");
 				  txtCoef.setFocus();
@@ -389,7 +396,8 @@ public class DerivedMetricsDlg extends TitleAreaDialog {
 			  
 			  super.okPressed();
 		  } else {
-			  MessageDialog.openError(this.shell, "Incorrect metric", "Please choose at least a metric to derive.");
+			  MessageDialog.openError(this.shell, "Incorrect metric", 
+					  "Please select a metric to derive in the \"derived metric definition\" box.");
 		  }
 	  }
 

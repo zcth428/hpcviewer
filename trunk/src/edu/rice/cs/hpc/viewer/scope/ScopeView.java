@@ -27,6 +27,9 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
+import org.eclipse.swt.events.MouseEvent;
+
+
 public class ScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
 
@@ -251,6 +254,7 @@ public class ScopeView extends ViewPart {
          * add listener when left button mouse is clicked 
          * On MAC it doesn't matter which button, but on Windows, we need to make sure !
          */
+        
         treeViewer.getTree().addListener(SWT.MouseDown, new Listener(){
         	public void handleEvent(Event event) {
         		// this doesn't matter on Mac since the OS only one button
@@ -263,6 +267,7 @@ public class ScopeView extends ViewPart {
         			return; // no selected. it will hard to for us to go further
         		TreeItem item = itemsSelected[0];
         		Rectangle recImage = item.getImageBounds(0);	// get the image location (if exist)
+        		Rectangle recText = item.getTextBounds(0);
         		// verify if the user click on the icon
         		if(recImage.intersects(event.x, event.y, event.width, event.height)) {
         			// Check the object of the click/select item
@@ -281,7 +286,7 @@ public class ScopeView extends ViewPart {
     		            } else {
     		            }
     		        }
-        		} else {
+        		} else if(recText.intersects(event.x, event.y, 1, 1)){
         			// Check the object of the click/select item
     		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
     		        Object o = selection.getFirstElement();
@@ -292,7 +297,24 @@ public class ScopeView extends ViewPart {
     		        }
         		}
         	}
-        });
+        }); 
+        /*
+        this.treeViewer.getTree().addMouseListener(new org.eclipse.swt.events.MouseListener(){
+        	public void mouseDoubleClick(MouseEvent e) {
+        		
+        	}
+        	public void mouseDown(MouseEvent e) {
+        		System.out.println("SV:"+e.button+"\t"+"\t"+e.x);
+        		if(e.data != null) {
+        			System.out.println("SV data: "+e.data.getClass());
+        		}
+        		if(e.widget != null)
+        			System.out.println("SV widget:  "+e.widget.getClass());
+        	}
+        	public void mouseUp(MouseEvent e) {
+        		
+        	}
+        });*/
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
 		

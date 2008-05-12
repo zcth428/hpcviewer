@@ -1,9 +1,13 @@
 package edu.rice.cs.hpc.viewer.actions;
 
+import java.io.FileNotFoundException;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.resources.ExperimentData;
@@ -30,9 +34,15 @@ public class DisplayExperiment implements IWorkbenchWindowActionDelegate {
 		ExperimentData expData = ExperimentData.getInstance();
 		if(expData.getExperiment() != null) {
 			EditorManager editor = new EditorManager(this.windowCurrent);
-			editor.openFileEditor(expData.getFilename());
+			try {
+				editor.openFileEditor(expData.getFilename());
+			} catch (FileNotFoundException e) {
+				MessageDialog.openError(this.windowCurrent.getShell(), 
+						"Error: File not found", 
+						e.getMessage());
+			}
 		} else {
-			org.eclipse.jface.dialogs.MessageDialog.openError(this.windowCurrent.getShell(), 
+			MessageDialog.openError(this.windowCurrent.getShell(), 
 					"Error: Need to open an experiment database", 
 					"In order to display the XML file of the experiment, you need to load first the experiment database !");
 		}

@@ -61,20 +61,21 @@ public class ExperimentView {
 		}
 	}
 	
+	/**
+	 * Asynchronously showing a processing message in the message bar and opening a database 
+	 * @param sFilename: the name of XML database file
+	 */
 	public void asyncLoadExperimentAndProcess(String sFilename) {
 		ThrLoadProcessingThread thr = new ThrLoadProcessingThread(sFilename);
 		thr.start();
 		loadExperimentAndProcess(sFilename);
 	}
+	
 	/**
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
 	 * @param sFilename
 	 */
 	public void loadExperimentAndProcess(String sFilename) {
-		/*ExperimentExt exp = new ExperimentExt(this.objPage.getWorkbenchWindow().getShell(),
-				this, new java.io.File(sFilename));
-		exp.openAndprocessExperiment();
-		*/
 		Experiment experiment = this.loadExperiment(sFilename);
 		if(experiment != null) {
 	        experiment.postprocess();

@@ -1,9 +1,11 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+import java.io.FileNotFoundException;
+
 // User interface
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-
+import org.eclipse.ui.PartInitException;
 // SWT
 import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
@@ -51,7 +53,11 @@ public class ScopeView extends ViewPart {
     	if(editorSourceCode == null) {
     		this.editorSourceCode = new EditorManager(this.getSite());
     	}
-    	this.editorSourceCode.displayFileEditor(node);
+    	try {
+    		this.editorSourceCode.displayFileEditor(node);
+    	} catch (FileNotFoundException e) {
+    		this.objViewActions.showErrorMessage(e.getMessage());
+    	}
     }
 
     //======================================================

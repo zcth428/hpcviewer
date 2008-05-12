@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.viewer.util;
 
 import java.util.ArrayList;
+import java.io.FileNotFoundException;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -63,7 +64,9 @@ public class EditorManager {
 	 * Open and Display editor
 	 * @param node
 	 */
-	public void displayFileEditor(Scope.Node node) {
+	public void displayFileEditor(Scope.Node node) 
+	throws FileNotFoundException
+	{
 		// get the complete file name
 		if(Utilities.isFileReadable(node.getScope())) {
 			String sLongName;
@@ -81,14 +84,18 @@ public class EditorManager {
 	 * The filename should be a complete absolute path to the local file
 	 * @param sFilename
 	 */
-	public void openFileEditor(String sFilename) {
+	public void openFileEditor(String sFilename) 
+	throws FileNotFoundException
+	{
 		java.io.File objInfo = new java.io.File(sFilename);
 		if(objInfo.exists())
 			this.openFileEditor(sFilename, objInfo.getName(), 1);
 		else
+			throw new FileNotFoundException("File not found: "+sFilename);
+			/*
 			org.eclipse.jface.dialogs.MessageDialog.openError(this.windowCurrent.getShell(), 
 					"Error Opening File",
-					"File:" +sFilename + "("+objInfo.getName()+") does not exist");
+					"File:" +sFilename + "("+objInfo.getName()+") does not exist");*/
 	}
 	
 	/**
@@ -97,7 +104,9 @@ public class EditorManager {
 	 * 			this project should be cleaned in the future !
 	 * @param sFilename the complete path of the file to display in IDE
 	 */
-	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber) {
+	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber)
+		throws FileNotFoundException
+	{
 		// get the complete path of the file
 		org.eclipse.core.filesystem.IFileStore objFile = 
 			org.eclipse.core.filesystem.EFS.getLocalFileSystem().getStore(new 
@@ -108,8 +117,7 @@ public class EditorManager {
 			//objFile=objFile.getChild(objFile.fetchInfo().getName());
 			objFile=objFile.getChild(sFilename);
 	    	if(!objFile.fetchInfo().exists()) {
-	    		System.err.println(sFilename+": File not found.");
-	    		 return; // do we need this ?
+	    		throw new FileNotFoundException(sFilename+": File not found.");
 	    	}
 	    	try {
 	    		IEditorPart objEditor = openEditorOnFileStore(wbPage, objFile); 
@@ -117,7 +125,7 @@ public class EditorManager {
 	    	} catch (PartInitException e) {
 	    		System.err.println("Error opening the file !");
 	    		System.err.println(e.getMessage());
-	     }
+	    	}
 		}
 	}
 

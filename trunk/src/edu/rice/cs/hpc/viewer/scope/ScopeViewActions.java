@@ -181,9 +181,21 @@ public class ScopeViewActions {
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
+	
 	public void showProcessingMessage() {
-		this.objActionsGUI.showWarningMessagge("... Processing .... Please wait ...");
+		this.objSite.getShell().getDisplay().asyncExec(new Runnable(){
+			public void run() {
+				objActionsGUI.showWarningMessagge("... Processing .... Please wait ...");
+			}
+		});
 	}
+	
+	/**
+	 * Class to restoring the background of the message bar by waiting for 5 seconds
+	 * TODO: we need to parameterize the timing for the wait
+	 * @author la5
+	 *
+	 */
 	class RestoreMessageThread extends Thread {	
 		RestoreMessageThread() {
 			super();
@@ -194,19 +206,39 @@ public class ScopeViewActions {
              } catch(InterruptedException e) {
             	 e.printStackTrace();
              }
-        	 restoreProcessingMessage();
+             // need to run from UI-thread for restoring the background
+             // without UI-thread we will get SWTException !!
+             objSite.getShell().getDisplay().asyncExec( new Runnable() {
+            	 public void run() {
+                	 objActionsGUI.restoreMessage();
+            	 }
+             });
          }
      }
 	
+	/**
+	 * Show an error message on the message bar (closed to the toolbar) and
+	 * wait for 5 seconds before removing the message
+	 * @param strMsg
+	 */
 	public void showErrorMessage(String strMsg) {
 		this.objActionsGUI.showErrorMessage(strMsg);
 		// remove the msg in 5 secs
 		RestoreMessageThread thrRestoreMessage = new RestoreMessageThread();
 		thrRestoreMessage.start();
+
 	}
 	
+	/**
+	 * asynchronously removing the message on the message bar and restoring the
+	 * background color
+	 */
 	public void restoreProcessingMessage() {
-		this.objActionsGUI.restoreMessage();
+		this.objSite.getShell().getDisplay().asyncExec(new Runnable(){
+			public void run() {
+				objActionsGUI.restoreMessage();
+			}
+		});
 	}
 	/**
 	 * show the hot path below the selected node in the tree

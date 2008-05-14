@@ -5,6 +5,7 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.layout.*;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -20,7 +21,8 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
+//import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.jface.action.IStatusLineManager;
 
@@ -56,10 +58,10 @@ public class ScopeViewActionsGUI {
 	private ToolItem tiColumns ;	// show/hide button
 	private ToolItem tiHotCallPath;
 	private ToolItem tiAddMetric; 	// add a new derived metric
-	private ToolBar tbMessageToolbar;
-	private ToolItem tiMessage;
-
-	private java.lang.Runnable thrGUI;
+//	private ToolBar tbMessageToolbar;
+//	private ToolItem tiMessage;
+	private Label lblMessage;
+	
 	//------------------------------------DATA
 	private Scope.Node nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
     private Experiment 	myExperiment;		// experiment data	
@@ -195,22 +197,34 @@ public class ScopeViewActionsGUI {
 	//======================================================
     // ................ GUI and LAYOUT ....................
     //======================================================
+	
+	/**
+	 * Show a warning message (with yellow background).
+	 * The caller has to remove the message and restore it to the original state
+	 * by calling restoreMessage() method
+	 */
 	public void showWarningMessagge(String sMsg) {
-		this.tbMessageToolbar.setBackground(this.clrYELLOW);
-		this.tiMessage.setText(sMsg);
+		this.lblMessage.setBackground(this.clrYELLOW);
+		this.lblMessage.setText(sMsg);
 	}
 	
+	/**
+	 * Show an error message on the message bar. It is the caller responsibility to 
+	 * remove the message
+	 * @param sMsg
+	 */
 	public void showErrorMessage(String sMsg) {
-		this.tbMessageToolbar.setBackground(this.clrRED);
-		this.tiMessage.setText(sMsg);
+		this.lblMessage.setBackground(this.clrRED);
+		this.lblMessage.setText(" " + sMsg);
 	}
-	
+
+	/**
+	 * Restore the message bar into the original state
+	 */
 	public void restoreMessage() {
-		if(this.tbMessageToolbar != null) {
-			//System.out.println("SVAG:"+this.tbMessageToolbar.getDisplay()+" "+this.tbMessageToolbar.getShell());
-			
-			this.tbMessageToolbar.setBackground(this.clrNORMAL);
-			this.tiMessage.setText("");
+		if(this.lblMessage != null) {
+			this.lblMessage.setBackground(this.clrNORMAL);
+			this.lblMessage.setText("");
 		}
 	}
 	/**
@@ -248,6 +262,10 @@ public class ScopeViewActionsGUI {
 		this.checkFlattenButtons();
 	}
     
+	/**
+	 * Hiding a metric column
+	 * @param iColumnPosition: the index of the metric
+	 */
 	public void hideMetricColumn(int iColumnPosition) {
 			int iWidth = this.colMetrics[iColumnPosition].getColumn().getWidth();
    			if(iWidth > 0) {
@@ -383,9 +401,10 @@ public class ScopeViewActionsGUI {
      */
     private Composite createCoolBar(Composite aParent) {
     	// make the parent with grid layout
+    	Composite toolbarArea = new Composite(aParent, SWT.NONE);
     	GridLayout grid = new GridLayout(1,false);
     	aParent.setLayout(grid);
-    	CoolBar coolBar = new CoolBar(aParent, SWT.FLAT);
+    	CoolBar coolBar = new CoolBar(toolbarArea, SWT.FLAT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
     	coolBar.setLayoutData(data);
 
@@ -475,15 +494,23 @@ public class ScopeViewActionsGUI {
         	  }
         	});
     	
+    	new ToolItem(toolbar, SWT.SEPARATOR);
         // set the coolitem
     	this.createCoolItem(coolBar, toolbar);
-    	this.resetActions();
     	
     	// message text
-    	 tbMessageToolbar = new ToolBar(coolBar, SWT.FLAT);
-    	 tiMessage = new ToolItem(tbMessageToolbar, SWT.NONE);
-    	this.createCoolItem(coolBar, tbMessageToolbar);
+    	// tbMessageToolbar = new ToolBar(coolBar, SWT.FLAT);
+    	// tiMessage = new ToolItem(tbMessageToolbar, SWT.NONE);
+    	// this.createCoolItem(coolBar, tbMessageToolbar);
+    	lblMessage = new Label(toolbarArea, SWT.NONE);
+    	lblMessage.setText("");
+    	//lblMessage.setSize(1000, SWT.DefaultSelection);
+    	GridDataFactory.fillDefaults().grab(false, false).applyTo(coolBar);
+    	GridDataFactory.fillDefaults().grab(true, false).applyTo(lblMessage);
+    	GridDataFactory.fillDefaults().grab(true, false).applyTo(toolbarArea);
+    	GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(toolbarArea);
 
+    	this.resetActions();
     	return aParent;
     }
     

@@ -245,7 +245,7 @@ public class ScopeViewActions {
 	 */
 	public void showHotCallPath() {
 		// preparing the message
-		this.showProcessingMessage();
+		//this.showProcessingMessage();
 		// find the selected node
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
@@ -265,8 +265,11 @@ public class ScopeViewActions {
 		TreeColumn colSelected = this.treeViewer.getTree().getSortColumn();
 		if((colSelected == null) || colSelected.getWidth() == 0) {
 			// the column is hidden or there is no column sorted
-			org.eclipse.jface.dialogs.MessageDialog.openError(this.objSite.getShell(), 
-					"Unknown sorted column", "Please select a column to sort before using this feature.");
+			this.showErrorMessage("Please select a column to sort before using this feature.");
+			//this.restoreProcessingMessage();
+			//org.eclipse.jface.dialogs.MessageDialog.openError(this.objSite.getShell(), 
+			//		"Unknown sorted column", "Please select a column to sort before using this feature.");
+			return;
 		}
 		// get the metric data
 		Object data = colSelected.getData();
@@ -286,7 +289,7 @@ public class ScopeViewActions {
 				// System.out.println(" cannot be found.\nPlease adjust the threshold in the preference dialog box.");
 			}
 		}
-		this.restoreProcessingMessage();
+		//this.restoreProcessingMessage();
 	}
 	
 	

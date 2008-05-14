@@ -113,11 +113,19 @@ public class DerivedMetric extends Metric {
 			// find the first operand
 		double fResult = 0.0;
 		Metric metricBase1 = metric.metric1;
-		float fScale = metric.coef1;
+		float fScale = metric.coef1;	
 		MetricValue value = scope.getMetricValue(metricBase1);
 		// check if the base metric has a value and the scale factor is not zero
-		if(value != MetricValue.NONE && fScale != 0) {
-			double fVal = value.getValue() * fScale;
+		// bug no 127: unable to retrieve correct value if the metric is derived metric
+		if(((metricBase1 instanceof DerivedMetric) || (value != MetricValue.NONE)) && fScale != 0) {
+			double fVal;
+			if(metricBase1 instanceof DerivedMetric) {
+				// indirect computation of derived metric may hurt program performance.
+				// we need to have a variable to store the value of derived metric
+				fVal = DerivedMetric.getValue(scope, (DerivedMetric)metricBase1);
+			} else  {
+				fVal = value.getValue() * fScale;
+			}
 			Metric metricBase2 = metric.metric2;
 
 			// check if we need the second operand
@@ -125,9 +133,13 @@ public class DerivedMetric extends Metric {
 				float fScale2 = metric.coef2;
 				value = scope.getMetricValue(metricBase2);
 				double fVal2;
-				if(value == MetricValue.NONE)
-					fVal2 = 0;
-				else
+				if(value == MetricValue.NONE) {
+					// bug no. 127: we need to handle properly when the second operand is also derived metric
+					if(metricBase2 instanceof DerivedMetric) {
+						fVal2 = DerivedMetric.getValue(scope, (DerivedMetric) metricBase2);
+					} else 
+						fVal2 = 0;
+				} else
 					fVal2 = scope.getMetricValue(metricBase2).getValue() * fScale2;
 				
 				// combine the two operations

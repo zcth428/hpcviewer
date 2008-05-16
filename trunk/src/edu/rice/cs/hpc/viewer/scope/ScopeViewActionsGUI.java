@@ -24,7 +24,7 @@ import org.eclipse.swt.graphics.Color;
 //import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IViewSite;
-import org.eclipse.jface.action.IStatusLineManager;
+//import org.eclipse.jface.action.IStatusLineManager;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -32,7 +32,8 @@ import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 /**
  * @author laksono
@@ -48,7 +49,7 @@ public class ScopeViewActionsGUI {
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;
-    private IStatusLineManager statusLine;
+    //private IStatusLineManager statusLine;
 
     // variable declaration uniquely for coolbar
 	private ToolItem tiFlatten;		//flatten button
@@ -57,7 +58,8 @@ public class ScopeViewActionsGUI {
 	private ToolItem tiZoomout ;	// zoom-out button
 	private ToolItem tiColumns ;	// show/hide button
 	private ToolItem tiHotCallPath;
-	private ToolItem tiAddMetric; 	// add a new derived metric
+	//private ToolItem tiAddMetric; 	// add a new derived metric
+	private ToolItem tiAddExtMetric;
 //	private ToolBar tbMessageToolbar;
 //	private ToolItem tiMessage;
 	private Label lblMessage;
@@ -82,7 +84,7 @@ public class ScopeViewActionsGUI {
 
 		this.objViewActions = objActions;
 		this.shell = viewSite.getShell();
-		this.statusLine = viewSite.getActionBars().getStatusLineManager();
+		//this.statusLine = viewSite.getActionBars().getStatusLineManager();
 		
 		this.clrNORMAL = this.shell.getBackground();
 		this.clrYELLOW = new Color(this.shell.getDisplay(),255,255,0);
@@ -103,7 +105,7 @@ public class ScopeViewActionsGUI {
 		this.myExperiment = exp;
 		this.myRootScope = scope;
 		this.colMetrics = columns;
-		this.setLevelText(scope.getTreeNode().iLevel);	// @TODO: initialized with root level
+		//this.setLevelText(scope.getTreeNode().iLevel);	// @TODO: initialized with root level
 		
 		// actions needed when a new experiment is loaded
 		this.resizeTableColumns();	// we assume the data has been populated
@@ -121,15 +123,16 @@ public class ScopeViewActionsGUI {
 	public void updateFlattenView(int iLevel, boolean showAggregate) {
 		if(showAggregate)
 			this.displayRootExperiment();	// display the aggregate metrics
-		this.updateFlattenView(iLevel);
+		//this.updateFlattenView(iLevel);
 	}
 	/**
 	 * Update the GUI when a flatten actions are performed
 	 * @param iLevel: the level of flatten
 	 */
+	/*
 	public void updateFlattenView(int iLevel) {
-		this.setLevelText(iLevel);		// update the display of the level of flattening
-	}
+		//this.setLevelText(iLevel);		// update the display of the level of flattening
+	}*/
     //======================================================
     public void setTreeViewer(TreeViewer tree) {
     	this.treeViewer = tree;
@@ -150,9 +153,12 @@ public class ScopeViewActionsGUI {
     	// get the metrics for all columns
     	for (int i=0; i< nbColumns - 1; i++) {
         	Metric metric = this.myExperiment.getMetric(i);
-        	if(metric instanceof DerivedMetric) {
+        	/*if(metric instanceof DerivedMetric) {
         		sText[i+1] = DerivedMetric.getTextValue(scope, (DerivedMetric)metric);
         		//System.out.println("SVAG:"+i+":"+sText[i+1]);
+        	} else */
+        		if(metric instanceof ExtDerivedMetric) {
+        		sText[i+1] = ((ExtDerivedMetric)metric).getTextValue(scope);
         	} else
         		sText[i+1] = scope.getMetricTextValue(metric);
     	}
@@ -238,7 +244,8 @@ public class ScopeViewActionsGUI {
 //		this.tiResize.setEnabled(false);
 		this.tiColumns.setEnabled(false);
 		this.tiHotCallPath.setEnabled(false);
-		this.tiAddMetric.setEnabled(false);
+		//this.tiAddMetric.setEnabled(false);
+		this.tiAddExtMetric.setEnabled(false);
 	}
 	
 	/**
@@ -247,20 +254,22 @@ public class ScopeViewActionsGUI {
 	public void enableActions() {
 //		this.tiResize.setEnabled(true);
 		this.tiColumns.setEnabled(true);
-		this.tiAddMetric.setEnabled(true);
+		//this.tiAddMetric.setEnabled(true);
+		this.tiAddExtMetric.setEnabled(true);
 	}
 	
 	/**
 	 * Display the new level of flattening on the info toolbar
 	 * @param iLevel
 	 */
+	/*
 	private void setLevelText(int iLevel) {
 		//this.iFlatLevel = iLevel;
 		this.statusLine.setMessage("Node level: "+iLevel +
 				" / " + this.myRootScope.getMaxLevel());
 		// every time we change the level, we need to check the status of the buttons
 		this.checkFlattenButtons();
-	}
+	}*/
     
 	/**
 	 * Hiding a metric column
@@ -467,13 +476,22 @@ public class ScopeViewActionsGUI {
     	});
     	
     	new ToolItem(toolbar, SWT.SEPARATOR);
-    	this.tiAddMetric = new ToolItem(toolbar, SWT.PUSH);
+    	/*this.tiAddMetric = new ToolItem(toolbar, SWT.PUSH);
     	this.tiAddMetric.setToolTipText("Add a new derived metric");
     	this.tiAddMetric.setImage(iconsCollection.imgAddMetric);
     	this.tiAddMetric.addSelectionListener(new SelectionAdapter(){
       	  public void widgetSelected(SelectionEvent e) {
     		  objViewActions.addNewMetric();
     	  }
+    	}); */
+    	
+    	this.tiAddExtMetric = new ToolItem(toolbar, SWT.PUSH);
+    	tiAddExtMetric.setImage(iconsCollection.imgExtAddMetric);
+    	tiAddExtMetric.setToolTipText("Add a new derived metric");
+    	tiAddExtMetric.addSelectionListener(new SelectionAdapter(){
+    		public void widgetSelected(SelectionEvent e) {
+    			objViewActions.addExtNewMetric();
+    		}
     	});
     /*	
     	tiResize = new ToolItem(toolbar, SWT.PUSH);

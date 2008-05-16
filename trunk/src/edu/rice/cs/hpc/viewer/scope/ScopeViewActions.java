@@ -12,19 +12,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.SWT;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-import edu.rice.cs.hpc.viewer.metric.DerivedMetricsDlg;
+import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
+import edu.rice.cs.hpc.viewer.metric.*;
+//math expression
+import com.graphbuilder.math.*;
 /**
  * Class to manage the actions of the tree view such as zooms, flattening,
  * resize the columns, etc. This class will add additional toolbar on the top
@@ -106,10 +106,16 @@ public class ScopeViewActions {
 				double dParent, dChild;
 				// derived metric has no information on the percentage
 				// so we need to treat them exclusively
+				if(metric instanceof ExtDerivedMetric) {
+					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
+					dParent = edm.getDoubleValue(scope);
+					dChild = edm.getDoubleValue(scopeChild);
+				/*
 				if(metric instanceof DerivedMetric) {
 					DerivedMetric dm = (DerivedMetric) metric;
 					dParent = DerivedMetric.getValue(scope, dm);
-					dChild = DerivedMetric.getValue(scopeChild, dm);
+					dChild = DerivedMetric.getValue(scopeChild, dm); 
+					*/
 				} else {
 					dParent = scope.getMetricPercentValue(metric);
 					dChild = scopeChild.getMetricPercentValue(metric);
@@ -286,6 +292,7 @@ public class ScopeViewActions {
 				//objHot.item.setBackground(0, new Color(null,255,106,106));
 			} else {
 				// we cannot find it
+				this.showErrorMessage("Unable to find a hot spot.");
 				// System.out.println(" cannot be found.\nPlease adjust the threshold in the preference dialog box.");
 			}
 		}
@@ -293,17 +300,24 @@ public class ScopeViewActions {
 	}
 	
 	
+	private Scope.Node getSelectedNode() {
+		ISelection sel = treeViewer.getSelection();
+		if (!(sel instanceof TreeSelection))
+			return null;
+		Object o = ((TreeSelection)sel).getFirstElement();
+		if (!(o instanceof Scope.Node)) {
+			return null;
+		}
+		return (Scope.Node) o;
+	}
 	/**
 	 * Zoom-in the children
 	 */
 	public void zoomIn() {
-		ISelection sel = treeViewer.getSelection();
-		if (!(sel instanceof TreeSelection))
+		// set the new view based on the selected node
+		Scope.Node current = this.getSelectedNode();
+		if(current == null)
 			return;
-		Object o = ((TreeSelection)sel).getFirstElement();
-		if (!(o instanceof Scope.Node)) {
-			return;
-		}
 		
 		// ---------------------- save the current view
 		Scope.Node objInputNode = this.getInputNode();
@@ -312,8 +326,6 @@ public class ScopeViewActions {
 		this.stackTreeStates.push(treeStates);
 		// ---------------------- 
 
-		// set the new view based on the selected node
-		Scope.Node current = (Scope.Node) o;
 		treeViewer.setInput(current);
 		// we need to insert the selected node on the top of the table
 		// FIXME: this approach is not elegant, but we don't have any choice
@@ -369,7 +381,7 @@ public class ScopeViewActions {
 			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
 		} else {
 			// either there is something wrong or we cannot flatten anymore
-			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
+			//this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
 			
 		}
 	}
@@ -386,12 +398,42 @@ public class ScopeViewActions {
 	}
 	
 	/**
+	 * create a new metric based on a free expression
+	 */
+	public void addExtNewMetric() {
+		// prepare the dialog box
+		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objSite.getShell(), this.myRootScope.getExperiment().getMetrics());
+		// prepare the scope node for the preview of the expression
+		Scope.Node node = this.getSelectedNode();
+		if(node == null)
+			node = (Scope.Node) this.getInputNode();
+		dlg.setScope(node.getScope());
+		// display the dialog box
+		if(dlg.open() == Dialog.OK) {
+			// the expression is valid (already verified in the dialog box)
+			Expression expFormula = dlg.getExpression();
+			String sName = dlg.getName();					// metric name
+			boolean bPercent = dlg.getPercentDisplay();		// display the percentage ?
+			Experiment exp = this.myRootScope.getExperiment();
+			// add a derived metric and register it to the experiment database
+			ExtDerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent);
+			
+			int iPosition = exp.getMetricCount()+1; 
+			TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objMetric, 
+					iPosition, false);
+			// update the viewer, to refresh its content and invoke the provider
+			this.treeViewer.refresh();
+			// notify the GUI that we have added a new column
+			this.objActionsGUI.addMetricColumns(colDerived); 
+		}
+	}
+	/**
 	 * Add a new derived metric based on the existing metric(s). Two base metrics AT MOST !
 	 * Currently the derived metric only support simple arithmetic operation.
 	 * TODO: a more complex mathematics operation is to be supported in the future
 	 * @return
 	 */
-	public boolean addNewMetric() {
+	/*public boolean addNewMetric() {
 		boolean bResult=false;
 		// prepare the processing
 		//this.objActionsGUI.showWarningMessagge("... adding new metric. Please wait ...");
@@ -448,7 +490,7 @@ public class ScopeViewActions {
 		}
 		
 		return bResult;
-	}
+	} */
 	/**
 	 * Resize the columns
 	 */

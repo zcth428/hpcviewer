@@ -24,6 +24,7 @@ public class Icons {
 	public Image imgAddMetric;
 	public Image imgColumns;
 	public Image imgFlame;
+	public Image imgExtAddMetric;
 	
 	//-------------------------- image descriptor
 	public ImageDescriptor imdCallFrom;
@@ -37,7 +38,8 @@ public class Icons {
 	public ImageDescriptor imdAddMetric;
 	public ImageDescriptor imdColumns;
 	public ImageDescriptor imdFlame;
-
+	public ImageDescriptor imdExtAddMetric;
+	
 	static private Icons __singleton=null;
 	
 	public void createIcons() {
@@ -52,6 +54,7 @@ public class Icons {
 		this.imdAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"AddMetric.gif");
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
 		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"flameIcon.gif");
+		this.imdExtAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "ExtAddMetric.gif");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();
@@ -64,6 +67,7 @@ public class Icons {
 		this.imgAddMetric = this.imdAddMetric.createImage();
 		imgColumns = this.imdColumns.createImage();
 		this.imgFlame = this.imdFlame.createImage();
+		this.imgExtAddMetric = this.imdExtAddMetric.createImage();
 	}
 	
 	public void disposeIcon() {

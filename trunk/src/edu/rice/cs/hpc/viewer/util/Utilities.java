@@ -24,11 +24,13 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
 
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 import edu.rice.cs.hpc.viewer.scope.MetricLabelProvider;
 import edu.rice.cs.hpc.viewer.scope.DerivedMetricLabelProvider;
+import edu.rice.cs.hpc.viewer.scope.ExtDerivedMetricLabelProvider;
 /**
  * @author laksono
  *
@@ -166,13 +168,30 @@ public class Utilities {
      * @param bSorted
      * @return
      */
+    /*
     static public TreeViewerColumn addTreeColumn(TreeViewer treeViewer, DerivedMetric objMetric, int iPosition, 
     		boolean bSorted) {
     	TreeViewerColumn col = Utilities.addTreeColumn(treeViewer, objMetric, iPosition, bSorted, true);
     	col.setLabelProvider(new DerivedMetricLabelProvider(objMetric, Utilities.fontMetric));
     	return col;
     }
-    
+    */
+    /**
+     * Create a new column for extended derived metric (which uses an expression formula)
+     * 
+     * @param treeViewer
+     * @param objMetric
+     * @param iPosition
+     * @param bSorted
+     * @return
+     */
+    static public TreeViewerColumn addTreeColumn(TreeViewer treeViewer, ExtDerivedMetric objMetric, int iPosition, 
+    		boolean bSorted) {
+    	TreeViewerColumn col = Utilities.addTreeColumn(treeViewer, objMetric, iPosition, bSorted, true);
+    	col.setLabelProvider(new ExtDerivedMetricLabelProvider(objMetric, Utilities.fontMetric));
+    	return col;
+    }
+
     /**
      * Add new tree column for derived metric
      * @param treeViewer

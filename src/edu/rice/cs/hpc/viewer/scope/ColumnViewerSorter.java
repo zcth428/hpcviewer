@@ -10,7 +10,8 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.graphics.Image;
 
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -162,12 +163,18 @@ public class ColumnViewerSorter extends ViewerComparator {
 				return this.doCompare(node1, node2);
 			} else {
 				// different treatment between normal metrics and derived metrics
-				if(metric instanceof DerivedMetric) {
+				if(metric instanceof ExtDerivedMetric) {
+					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
+					double d1 = edm.getDoubleValue(node1.getScope());
+					double d2 = edm.getDoubleValue(node2.getScope());
+					if(d1>d2) return -1;
+					if(d1<d2) return 1;
+				/*if(metric instanceof DerivedMetric) {
 					DerivedMetric md = (DerivedMetric) metric;
 					double d1 = DerivedMetric.getValue(node1.getScope(), md);
 					double d2 = DerivedMetric.getValue(node2.getScope(), md);
 					if(d1>d2) return -1;
-					if(d1<d2) return 1;
+					if(d1<d2) return 1; */
 				} else {
 					MetricValue mv1 = node1.getScope().getMetricValue(metric);
 					MetricValue mv2 = node2.getScope().getMetricValue(metric);

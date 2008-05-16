@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+//math expression
+import com.graphbuilder.math.*;
 
 //////////////////////////////////////////////////////////////////////////
 //	CLASS EXPERIMENT													//
@@ -460,13 +462,14 @@ public void addComputedMetrics(int nMetrics, double scaling)
  * @param scale: the scale coefficient. The value will be base_metric x sclae
  * @return the new derived metric
  */
+/*§
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, int indexPartner, float scale) {
 	Metric mPartner = this.getMetric(indexPartner);
 	DerivedMetric cm = new DerivedMetric(scopeRoot, mPartner, scale);
 	this.addMetric(cm);
 	return cm;
 }
-
+*/
 /**
  * Add a new derived metric based on two metrics
  * @param partner1: the index of the first metric
@@ -476,6 +479,7 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, int indexPartner, flo
  * @param opCode: the operation code (add, sub, mul, div)
  * @return: the new derived metric. The value will be computed on the fly
  */
+/*
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, int partner1, float scale1, 
 		int partner2, float scale2, int opCode) {
 	Metric mPartner = this.getMetric(partner1);
@@ -483,6 +487,18 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, int partner1, float s
 	DerivedMetric cm = new DerivedMetric(scopeRoot, mPartner, scale1, mPartner2, scale2, opCode);
 	this.addMetric(cm);
 	return cm;
+}
+*/
+/**
+ * Create a derived metric based on formula expression
+ * @param scopeRoot
+ * @param expFormula
+ * @return
+ */
+public ExtDerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, boolean bPercent) {
+	ExtDerivedMetric objMetric = new ExtDerivedMetric(scopeRoot, expFormula, sName, bPercent);
+	this.addMetric(objMetric); // add this metric into our list
+	return objMetric;
 }
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO CONFIGURATION												//

@@ -23,13 +23,11 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
 
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 import edu.rice.cs.hpc.viewer.scope.MetricLabelProvider;
-import edu.rice.cs.hpc.viewer.scope.DerivedMetricLabelProvider;
 import edu.rice.cs.hpc.viewer.scope.ExtDerivedMetricLabelProvider;
 /**
  * @author laksono

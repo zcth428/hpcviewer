@@ -94,7 +94,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   */
 	  protected Control createDialogArea(Composite parent) {
 	    Composite composite = (Composite) super.createDialogArea(parent);
-	    Group grpBase = new Group(composite, SWT.BORDER);
+	    Group grpBase = new Group(composite, SWT.NONE);
 	    grpBase.setText("Derived metric definition");
 	    Composite expressionArea = new Composite(grpBase, SWT.NONE);
 	    {
@@ -106,7 +106,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(grpExpression);
 	    	
 	    	//--------------- inserting metric
-	    	Group grpInsertion = new Group(expressionArea, SWT.BORDER);
+	    	Group grpInsertion = new Group(expressionArea, SWT.NONE);
 	    	grpInsertion.setText("Help: Inserting metrics/functions");
 
 	    	Label lblMetric = new Label(grpInsertion, SWT.NONE);
@@ -160,7 +160,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(grpInsertion);
 	    	
 	    	//---------------- preview
-	    	Group grpPreview = new Group(expressionArea, SWT.BORDER);
+	    	Group grpPreview = new Group(expressionArea, SWT.NONE);
 	    	grpPreview.setText("Help: Formula preview");
 	    	Button btnExpression = new Button(grpPreview, SWT.PUSH);
 	    	btnExpression.setText("Preview");	    	
@@ -192,7 +192,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		
 		//-------
 		// options
-		Group grpOptions = new Group(composite,SWT.BORDER);
+		Group grpOptions = new Group(composite,SWT.NONE);
 		{
 			Composite nameArea = new Composite(grpOptions, SWT.NONE);
 			Label lblName = new Label(nameArea, SWT.LEFT);

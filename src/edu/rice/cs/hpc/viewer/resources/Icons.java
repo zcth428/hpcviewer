@@ -54,7 +54,7 @@ public class Icons {
 		this.imdAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"AddMetric.gif");
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
 		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"flameIcon.gif");
-		this.imdExtAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "ExtAddMetric.gif");
+		this.imdExtAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FnMetric.gif");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();

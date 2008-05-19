@@ -123,6 +123,7 @@ public class ScopeViewActionsGUI {
 	public void updateFlattenView(int iLevel, boolean showAggregate) {
 		if(showAggregate)
 			this.displayRootExperiment();	// display the aggregate metrics
+		this.checkFlattenButtons();
 		//this.updateFlattenView(iLevel);
 	}
 	/**
@@ -153,11 +154,7 @@ public class ScopeViewActionsGUI {
     	// get the metrics for all columns
     	for (int i=0; i< nbColumns - 1; i++) {
         	Metric metric = this.myExperiment.getMetric(i);
-        	/*if(metric instanceof DerivedMetric) {
-        		sText[i+1] = DerivedMetric.getTextValue(scope, (DerivedMetric)metric);
-        		//System.out.println("SVAG:"+i+":"+sText[i+1]);
-        	} else */
-        		if(metric instanceof ExtDerivedMetric) {
+       		if(metric instanceof ExtDerivedMetric) {
         		sText[i+1] = ((ExtDerivedMetric)metric).getTextValue(scope);
         	} else
         		sText[i+1] = scope.getMetricTextValue(metric);
@@ -241,10 +238,8 @@ public class ScopeViewActionsGUI {
 		this.tiUnFlatten.setEnabled(false);
 		this.tiZoomin.setEnabled(false);
 		this.tiZoomout.setEnabled(false);
-//		this.tiResize.setEnabled(false);
 		this.tiColumns.setEnabled(false);
 		this.tiHotCallPath.setEnabled(false);
-		//this.tiAddMetric.setEnabled(false);
 		this.tiAddExtMetric.setEnabled(false);
 	}
 	
@@ -252,10 +247,9 @@ public class ScopeViewActionsGUI {
 	 * Enable the some actions (resize and column properties) actions for this view
 	 */
 	public void enableActions() {
-//		this.tiResize.setEnabled(true);
 		this.tiColumns.setEnabled(true);
-		//this.tiAddMetric.setEnabled(true);
 		this.tiAddExtMetric.setEnabled(true);
+		this.checkFlattenButtons();
 	}
 	
 	/**
@@ -476,14 +470,6 @@ public class ScopeViewActionsGUI {
     	});
     	
     	new ToolItem(toolbar, SWT.SEPARATOR);
-    	/*this.tiAddMetric = new ToolItem(toolbar, SWT.PUSH);
-    	this.tiAddMetric.setToolTipText("Add a new derived metric");
-    	this.tiAddMetric.setImage(iconsCollection.imgAddMetric);
-    	this.tiAddMetric.addSelectionListener(new SelectionAdapter(){
-      	  public void widgetSelected(SelectionEvent e) {
-    		  objViewActions.addNewMetric();
-    	  }
-    	}); */
     	
     	this.tiAddExtMetric = new ToolItem(toolbar, SWT.PUSH);
     	tiAddExtMetric.setImage(iconsCollection.imgExtAddMetric);
@@ -493,16 +479,7 @@ public class ScopeViewActionsGUI {
     			objViewActions.addExtNewMetric();
     		}
     	});
-    /*	
-    	tiResize = new ToolItem(toolbar, SWT.PUSH);
-    	tiResize.setToolTipText("Resize columns width");
-    	tiResize.setImage(iconsCollection.imgResize);
-    	tiResize.addSelectionListener(new SelectionAdapter() {
-      	  public void widgetSelected(SelectionEvent e) {
-          	resizeTableColumns();
-      	  }
-      	});
-  */  	
+
     	this.tiColumns = new ToolItem(toolbar, SWT.PUSH);
     	tiColumns.setImage(iconsCollection.imgColumns);
     	tiColumns.setToolTipText("Hide/show columns");
@@ -517,15 +494,16 @@ public class ScopeViewActionsGUI {
     	this.createCoolItem(coolBar, toolbar);
     	
     	// message text
-    	// tbMessageToolbar = new ToolBar(coolBar, SWT.FLAT);
-    	// tiMessage = new ToolItem(tbMessageToolbar, SWT.NONE);
-    	// this.createCoolItem(coolBar, tbMessageToolbar);
     	lblMessage = new Label(toolbarArea, SWT.NONE);
     	lblMessage.setText("");
-    	//lblMessage.setSize(1000, SWT.DefaultSelection);
+
+    	// the coolbar part shouldn't be expanded 
     	GridDataFactory.fillDefaults().grab(false, false).applyTo(coolBar);
+    	// but the message label yes
     	GridDataFactory.fillDefaults().grab(true, false).applyTo(lblMessage);
+    	// now the toolbar area should be able to be expanded automatically
     	GridDataFactory.fillDefaults().grab(true, false).applyTo(toolbarArea);
+    	// two kids for toolbar area: coolbar and message label
     	GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(toolbarArea);
 
     	this.resetActions();

@@ -28,7 +28,8 @@ Software and the Performance Engineering Research Institute.
    <windowImages i16="icons/hpcviewerEclipseShadow16.png" i32="icons/hpcviewerEclipseShadow32.png" i48="icons/hpcviewerEclipseShadow48.png" i64="icons/hpcviewerEclipseShadow64.png" i128="icons/hpcviewerEclipseShadow128.png"/>
 
    <splash
-      location="edu.rice.cs.hpc" />
+      location="edu.rice.cs.hpc"
+      startupProgressRect="1,273,245,7" />
    <launcher name="hpcviewer">
       <macosx icon="/edu.rice.cs.hpc/hpcviewer.icns"/>
       <solaris/>
@@ -36,7 +37,6 @@ Software and the Performance Engineering Research Institute.
          <bmp/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>

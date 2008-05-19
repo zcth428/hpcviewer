@@ -5,7 +5,6 @@ import org.eclipse.swt.graphics.Font;
 
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 
 /**
  * Label provide class to write text (and image) in the column item

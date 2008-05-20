@@ -6,6 +6,7 @@ package edu.rice.cs.hpc.viewer.metric;
 import com.graphbuilder.math.VarMap;
 import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
@@ -71,6 +72,7 @@ public class MetricVarMap extends VarMap {
 	 * If the variable is a normal variable, it will call the parent method.		
 	 */
 	public double getValue(String varName) {
+		this.hasValidValue = true;
 		if(varName.startsWith("$")) {
 			// Metric variable
 			String sIndex = varName.substring(1);
@@ -82,8 +84,16 @@ public class MetricVarMap extends VarMap {
 					// we should use polymorphism instead in the future
 					if(metric instanceof ExtDerivedMetric) {
 						return ((ExtDerivedMetric)metric).getDoubleValue(scope);
-					} else
-						return this.scope.getMetricValue(metric).getValue();
+					} else {
+						MetricValue mv  = scope.getMetricValue(metric);
+						if(mv.isAvailable())
+							return this.scope.getMetricValue(metric).getValue();
+						// in this case, the value is invalid or the metric has no value
+						// it is important to notify not to include the value into the table
+						this.hasValidValue = false;
+						throw new RuntimeException(varName);
+
+					}
 				} else
 					throw new RuntimeException("metric index is not valid: " + varName);
 			} catch (java.lang.NumberFormatException e) {
@@ -92,5 +102,17 @@ public class MetricVarMap extends VarMap {
 			}
 		} else
 			return super.getValue(varName);
+	}
+	
+	private boolean hasValidValue;
+	
+	/**
+	 * check if the expression, the scope and the metric have a valid value.
+	 * To some cases, a metric has no value, and any arithmetric operation for
+	 * void value is invalid.
+	 * @return true if the value of the expression is valid.
+	 */
+	public boolean isValueValid() {
+		return this.hasValidValue;
 	}
 }

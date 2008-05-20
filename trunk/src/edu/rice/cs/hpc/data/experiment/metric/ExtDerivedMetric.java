@@ -51,8 +51,13 @@ public class ExtDerivedMetric extends Metric {
 		this.fctMap.loadDefaultFunctions(); // initialize it with the default functions
 		this.varMap = new MetricVarMap(scopeRoot.getExperiment().getMetrics());
 		// compute the aggregate value if necessary
-		if(bPercent)
-			this.dRootValue = this.getDoubleValue(scopeRoot.getTreeNode().getScope());
+		if(bPercent) {
+			Double dVal = this.getDoubleValue(scopeRoot.getTreeNode().getScope());
+			if(dVal != null)
+				this.dRootValue = dVal.doubleValue();
+			else
+				this.dRootValue = 0.0;
+		}
 	}
 
 	/**
@@ -60,9 +65,15 @@ public class ExtDerivedMetric extends Metric {
 	 * @param scope
 	 * @return
 	 */
-	public double getDoubleValue(Scope scope) {
+	public Double getDoubleValue(Scope scope) {
 		this.varMap.setScope(scope);
-		return this.expression.eval(this.varMap, this.fctMap);
+		Double dValue = null;
+		try {
+			dValue = this.expression.eval(this.varMap, this.fctMap); 
+		} catch(java.lang.Exception e) {
+			//System.err.println(""+e.getMessage());
+		}
+		return dValue;
 	}
 	
 	/**
@@ -72,7 +83,10 @@ public class ExtDerivedMetric extends Metric {
 	 */
 	public String getTextValue(Scope scope) {
 		MetricValue mv;
-		double dVal = this.getDoubleValue(scope);
+		Double dVal = this.getDoubleValue(scope);
+		// if the expression contains invalid value, do not display it on the table
+		if(dVal == null)
+			return null;
 		if(this.percent && this.dRootValue != 0.0) {
 			mv = new MetricValue(dVal, (double)dVal/this.dRootValue);
 		} else {

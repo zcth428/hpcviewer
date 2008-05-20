@@ -108,14 +108,16 @@ public class ScopeViewActions {
 				// so we need to treat them exclusively
 				if(metric instanceof ExtDerivedMetric) {
 					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
-					dParent = edm.getDoubleValue(scope);
-					dChild = edm.getDoubleValue(scopeChild);
-				/*
-				if(metric instanceof DerivedMetric) {
-					DerivedMetric dm = (DerivedMetric) metric;
-					dParent = DerivedMetric.getValue(scope, dm);
-					dChild = DerivedMetric.getValue(scopeChild, dm); 
-					*/
+					Double objParent = edm.getDoubleValue(scope);
+					Double objChild = edm.getDoubleValue(scopeChild);
+					if(objParent == null)
+						dParent = -1;
+					else
+						dParent = objParent.doubleValue();
+					if(objChild == null)
+						dChild = -1;
+					else
+						dChild = objChild.doubleValue();
 				} else {
 					dParent = scope.getMetricPercentValue(metric);
 					dChild = scopeChild.getMetricPercentValue(metric);
@@ -125,8 +127,7 @@ public class ScopeViewActions {
 				} else {
 					x1 = dChild; x2 = dParent;
 				}
-				double d = ScopeViewActions.fTHRESHOLD * x1;
-				boolean b = (x2 < d);
+
 				//System.out.println("SVA:"+b+" -> "+d+" " + x2/x1);
 				// simple comparison: if the child has "huge" difference compared to its parent
 				// then we consider it as host spot node.
@@ -292,7 +293,7 @@ public class ScopeViewActions {
 				//objHot.item.setBackground(0, new Color(null,255,106,106));
 			} else {
 				// we cannot find it
-				this.showErrorMessage("Unable to find a hot spot.");
+				this.showErrorMessage("No hot path detected.");
 				// System.out.println(" cannot be found.\nPlease adjust the threshold in the preference dialog box.");
 			}
 		}
@@ -423,6 +424,7 @@ public class ScopeViewActions {
 					iPosition, false);
 			// update the viewer, to refresh its content and invoke the provider
 			this.treeViewer.refresh();
+			colDerived.getColumn().pack();
 			// notify the GUI that we have added a new column
 			this.objActionsGUI.addMetricColumns(colDerived); 
 		}

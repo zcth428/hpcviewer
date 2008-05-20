@@ -165,10 +165,16 @@ public class ColumnViewerSorter extends ViewerComparator {
 				// different treatment between normal metrics and derived metrics
 				if(metric instanceof ExtDerivedMetric) {
 					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
-					double d1 = edm.getDoubleValue(node1.getScope());
-					double d2 = edm.getDoubleValue(node2.getScope());
-					if(d1>d2) return -1;
-					if(d1<d2) return 1;
+					Double d1 = edm.getDoubleValue(node1.getScope());
+					Double d2 = edm.getDoubleValue(node2.getScope());
+					if(d1 == null && d2 == null)
+						return this.doCompare(node1, node2);
+					if(d1 == null) 
+						return 1;
+					if(d2 == null)
+						return -1;
+					if(d1.doubleValue()>d2.doubleValue()) return -1;
+					if(d1.doubleValue()<d2.doubleValue()) return 1;
 				/*if(metric instanceof DerivedMetric) {
 					DerivedMetric md = (DerivedMetric) metric;
 					double d1 = DerivedMetric.getValue(node1.getScope(), md);

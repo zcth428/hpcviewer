@@ -47,7 +47,6 @@ Software and the Performance Engineering Research Institute.
       <plugin id="edu.rice.cs.hpc"/>
       <plugin id="org.apache.xerces"/>
       <plugin id="org.apache.xml.resolver"/>
-      <plugin id="org.eclipse.compare"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.databinding"/>
@@ -71,14 +70,10 @@ Software and the Performance Engineering Research Institute.
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.text"/>
-      <plugin id="org.eclipse.ltk.core.refactoring"/>
-      <plugin id="org.eclipse.ltk.ui.refactoring"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.search"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.carbon.macosx" fragment="true"/>
-      <plugin id="org.eclipse.team.core"/>
-      <plugin id="org.eclipse.team.ui"/>
       <plugin id="org.eclipse.text"/>
       <plugin id="org.eclipse.ui"/>
       <plugin id="org.eclipse.ui.carbon" fragment="true"/>

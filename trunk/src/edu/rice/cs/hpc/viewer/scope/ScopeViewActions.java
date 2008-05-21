@@ -255,12 +255,15 @@ public class ScopeViewActions {
 		//this.showProcessingMessage();
 		// find the selected node
 		ISelection sel = treeViewer.getSelection();
-		if (!(sel instanceof TreeSelection))
+		if (!(sel instanceof TreeSelection)) {
+			System.err.println("SVA: not a TreeSelecton instance");
 			return;
+		}
 		TreeSelection objSel = (TreeSelection) sel;
 		// get the node
 		Object o = objSel.getFirstElement();
 		if (!(o instanceof Scope.Node)) {
+			System.err.println("SVA: not a Scope.Node instance");
 			return;
 		}
 		Scope.Node current = (Scope.Node) o;

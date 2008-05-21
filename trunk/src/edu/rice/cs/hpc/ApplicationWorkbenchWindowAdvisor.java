@@ -5,6 +5,8 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 
 import org.eclipse.swt.widgets.Shell;
 
@@ -47,7 +49,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		configurer.setShowCoolBar(false);	// remove toolbar/coolbar
 		configurer.setShowStatusLine(true);	// show status bar
 		configurer.setTitle("hpcviewer");	// default title (to be updated)
-		
 	}
 
 	/**
@@ -64,13 +65,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			e.printStackTrace();
 		}
 		// set the status bar
+
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
 		// -------------------
 		// see if the argument provides the database to load
 		if(this.dataEx != null) {
 			// possibly we have express the experiment file in the command line
-			ExperimentView expViewer = new ExperimentView(this.getWindowConfigurer().getWindow().getActivePage());
+			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
+			if(windowCurrent == null) {
+				System.err.println("Anomaly event occured: active window not found");
+				return;
+			}
+			IWorkbenchPage pageCurrent = windowCurrent.getActivePage();
+			if(pageCurrent == null) {
+				System.err.println("Anomaly event occured: active page not found");
+			}
+			ExperimentView expViewer = new ExperimentView(pageCurrent);
 		    if(expViewer != null) {
 		    	// data looks OK
 		    	String []sArgs = this.dataEx.getArguments();
@@ -83,22 +94,39 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    	}
 		    	if(sFilename != null)
 		    		expViewer.asyncLoadExperimentAndProcess(sFilename);
+		    	else 
+		    		this.openDatabase();
+		     } else {
+		    	 statusline.setMessage("Cannot relocate the viewer. Please open the database manually.");
+		    	 System.err.println("Cannot relocate the viewer. Please open the database manually.");
+		    	 
 		     }
 		} else {
 			// there is no information about the database
 			statusline.setMessage(null, "Load a database to start.");
 			// we need load the file ASAP
-			this.dataEx = ExperimentData.getInstance();
-			ExperimentManager expFile = this.dataEx.getExperimentManager();
-			if(expFile != null) {
-				Shell objShell = this.getWindowConfigurer().getWindow().getShell();
+			this.openDatabase();
+		}
+	}
+	
+	private void openDatabase() {
+		IWorkbench workbench = org.eclipse.ui.PlatformUI.getWorkbench();
+		this.dataEx = ExperimentData.getInstance();
+		ExperimentManager expFile = this.dataEx.getExperimentManager();
+		if(expFile != null) {
+			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow();
+			if(windowCurrent != null) {
+				Shell objShell = windowCurrent.getShell();
+				//Shell objShell = this.getWindowConfigurer().getWindow().getShell();
 				if(objShell != null)
 					expFile.openFileExperiment(objShell);
 				else
 					System.out.println("AWWA: shell is null. please open the database manually.");
-			} else {
-				System.out.println("AWWA: exp manager is null. create a new one.");
-			}
+			} else 
+				System.err.println("AWWA: No active window detected");
+
+		} else {
+			System.out.println("AWWA: exp manager is null. create a new one.");
 		}
 	}
 

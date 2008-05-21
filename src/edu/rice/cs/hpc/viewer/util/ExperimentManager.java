@@ -100,19 +100,52 @@ public class ExperimentManager {
 	}
 	
 	/**
-	 * Attempt to open an experiment database if valid then
-	 * open the scope view  
-	 * @return true if everything is OK. false otherwise
+	 * Open experiment database based on database directory
+	 * @param sDatabaseDir
+	 * @return
 	 */
-	public boolean openFileExperiment(Shell shell) {
-		File []fileXML = this.getDatabaseFileList(shell, "Select a directory containing a profiling database.");
-		if((fileXML != null) && (fileXML.length>0)) {
+	public boolean openFileExperimentFromDatabase(String sDatabaseDir) {
+		// find XML files in this directory
+		File files = new File(sDatabaseDir);
+		// for debugging purpose, let have separate variable
+		File filesXML[] = files.listFiles(new FileXMLFilter());
+		// store it in the class variable for further usage
+		ExperimentManager.sLastPath = sDatabaseDir;
+		// store the current path in the preference
+		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+		objPref.setValue(PreferenceConstants.P_PATH, sDatabaseDir);
+
+		return openFileExperimentFromFiles(filesXML);
+	}
+	
+	/**
+	 * Open database that can be based on the database directory or file
+	 * @param sPath
+	 * @return
+	 */
+	public boolean openFileOrDatabase(String sPath) {
+		File objPath = new File(sPath);
+		if(objPath.isFile()) {
+			return this.setExperiment(sPath);
+		} else if(objPath.isDirectory()) {
+			return this.openFileExperimentFromDatabase(sPath);
+		} 
+		return false;
+	}
+	
+	/**
+	 * Open an experiment database based on given an array of java.lang.File
+	 * @param filesXML: list of files
+	 * @return true if the opening is successful
+	 */
+	private boolean openFileExperimentFromFiles(File []filesXML) {
+		if((filesXML != null) && (filesXML.length>0)) {
 			boolean bContinue = true;
 			// let's make it complicated: assuming there are more than 1 XML file in this directory,
 			// we need to test one by one if it is a valid database file.
 			// Problem: if in the directory it has two XML files, then the second one will NEVER be opened !
-			for(int i=0;i<(fileXML.length) && (bContinue);i++) {
-				String sFile=fileXML[i].getAbsolutePath();
+			for(int i=0;i<(filesXML.length) && (bContinue);i++) {
+				String sFile=filesXML[i].getAbsolutePath();
 				// we will continue to verify the content of the list of XML files
 				// until we fine the good one.
 		    	bContinue = (this.setExperiment(sFile) == false);
@@ -124,7 +157,17 @@ public class ExperimentManager {
 	   		} else
 	   			return true;
 		}
-    	return false;
+		return false;
+	}
+	
+	/**
+	 * Attempt to open an experiment database if valid then
+	 * open the scope view  
+	 * @return true if everything is OK. false otherwise
+	 */
+	public boolean openFileExperiment(Shell shell) {
+		File []fileXML = this.getDatabaseFileList(shell, "Select a directory containing a profiling database.");
+    	return this.openFileExperimentFromFiles(fileXML);
 	}
 	
 	/**

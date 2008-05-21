@@ -50,14 +50,17 @@ public class ExperimentView {
 			this.sFilename = file;
 		}
 		public void run() {
-			ScopeView viewScope = null;
-		      try {
-		    	  viewScope = (ScopeView) objPage.showView(ScopeView.ID);
-		    	  viewScope.setFocus();
-		    	  viewScope.showProcessingMessage();
-		      } catch(org.eclipse.ui.PartInitException e) {
-		    	  e.printStackTrace();
-		      }
+			objPage.getWorkbenchWindow().getShell().getDisplay().syncExec(new Runnable() {
+				public void run() {
+					try {
+						final ScopeView viewScope = (ScopeView) objPage.showView(ScopeView.ID);
+						viewScope.setFocus();
+						viewScope.showProcessingMessage();
+					} catch(org.eclipse.ui.PartInitException e) {
+						e.printStackTrace();
+					}
+				}
+			});
 		}
 	}
 	

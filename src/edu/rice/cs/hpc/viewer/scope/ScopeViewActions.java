@@ -263,7 +263,7 @@ public class ScopeViewActions {
 		// get the node
 		Object o = objSel.getFirstElement();
 		if (!(o instanceof Scope.Node)) {
-			System.err.println("SVA: not a Scope.Node instance");
+			showErrorMessage("Please select a scope node.");
 			return;
 		}
 		Scope.Node current = (Scope.Node) o;
@@ -299,11 +299,17 @@ public class ScopeViewActions {
 				this.showErrorMessage("No hot path detected.");
 				// System.out.println(" cannot be found.\nPlease adjust the threshold in the preference dialog box.");
 			}
+		} else {
+			// It is almost impossible for the jvm to reach this part of branch.
+			// but if it is the case, it should be a BUG !!
+			System.err.println("SVA BUG: data="+data.getClass()+" item= " + (item==null? 0 : item.getItemCount()));
 		}
-		//this.restoreProcessingMessage();
 	}
 	
-	
+	/**
+	 * Retrieve the selected node
+	 * @return null if there is no selected node
+	 */
 	private Scope.Node getSelectedNode() {
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
@@ -529,6 +535,16 @@ public class ScopeViewActions {
     	this.objActionsGUI.checkZoomButtons(node);
     }
 
+    /**
+     * Check if zooms and hot-path button need to be disabled or not
+     * This is required to solve bug no 132: 
+     * https://outreach.scidac.gov/tracker/index.php?func=detail&aid=132&group_id=22&atid=169
+     */
+    public void checkNodeButtons() {
+    	Scope.Node node = this.getSelectedNode();
+    	if(node == null)
+    		this.objActionsGUI.disableNodeButtons();
+    }
     /**
      * Update the content of tree viewer
      * @param tree

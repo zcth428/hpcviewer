@@ -20,6 +20,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.ITreeViewerListener;
 
 // HPC
 import edu.rice.cs.hpc.data.experiment.*;
@@ -298,6 +299,16 @@ public class ScopeView extends ViewPart {
         		}
         	}
         }); 
+        // bug #132: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=132&group_id=22&atid=169
+        // need to capture event of "collapse" tree then check if the button state should be updated or not.
+        treeViewer.addTreeListener(new ITreeViewerListener(){
+        	public void treeCollapsed(TreeExpansionEvent event) {
+        		objViewActions.checkNodeButtons();
+        	}
+        	public void treeExpanded(TreeExpansionEvent event){
+        		
+        	}
+        });
         /*
         this.treeViewer.getTree().addMouseListener(new org.eclipse.swt.events.MouseListener(){
         	public void mouseDoubleClick(MouseEvent e) {

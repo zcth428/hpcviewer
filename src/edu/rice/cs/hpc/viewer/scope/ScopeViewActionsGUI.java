@@ -41,6 +41,7 @@ import edu.rice.cs.hpc.data.experiment.metric.Metric;
  */
 public class ScopeViewActionsGUI {
 
+	final static private String COLUMN_DATA_WIDTH = "w"; 
     //======================================================
 	// ------ DATA ----------------------------------------
     //======================================================
@@ -236,11 +237,10 @@ public class ScopeViewActionsGUI {
 	public void resetActions() {
 		this.tiFlatten.setEnabled(false);
 		this.tiUnFlatten.setEnabled(false);
-		this.tiZoomin.setEnabled(false);
-		this.tiZoomout.setEnabled(false);
 		this.tiColumns.setEnabled(false);
-		this.tiHotCallPath.setEnabled(false);
 		this.tiAddExtMetric.setEnabled(false);
+		// disable zooms and hot-path buttons
+		this.disableNodeButtons();
 	}
 	
 	/**
@@ -273,7 +273,8 @@ public class ScopeViewActionsGUI {
 			int iWidth = this.colMetrics[iColumnPosition].getColumn().getWidth();
    			if(iWidth > 0) {
        			Integer objWidth = Integer.valueOf(iWidth); 
-       			this.colMetrics[iColumnPosition].getColumn().setData(objWidth);
+       			// Laks: bug no 131: we need to have special key for storing the column width
+       			this.colMetrics[iColumnPosition].getColumn().setData(COLUMN_DATA_WIDTH,objWidth);
        			this.colMetrics[iColumnPosition].getColumn().setWidth(0);
    			}
 	}
@@ -291,7 +292,8 @@ public class ScopeViewActionsGUI {
            			this.hideMetricColumn(i);
            		} else {
            			// display the hidden column
-            		Object o = this.colMetrics[i].getColumn().getData();
+           			// Laks: bug no 131: we need to have special key for storing the column width
+            		Object o = this.colMetrics[i].getColumn().getData(COLUMN_DATA_WIDTH);
            			int iWidth = 120;
            			if((o != null) && (o instanceof Integer) ) {
            				iWidth = ((Integer)o).intValue();
@@ -353,6 +355,14 @@ public class ScopeViewActionsGUI {
     	//return (this.iFlatLevel>1);
     }
 
+    /**
+     * Disable actions that need a selected node
+     */
+    public void disableNodeButtons() {
+    	this.tiZoomin.setEnabled(false);
+    	this.tiZoomout.setEnabled(false);
+    	this.tiHotCallPath.setEnabled(false);
+    }
     //======================================================
     // ................ ZOOM ............................
     //======================================================
@@ -374,8 +384,9 @@ public class ScopeViewActionsGUI {
      * @return
      */
     public boolean shouldZoomOutBeEnabled() {
-    	return this.objViewActions.shouldZoomOutBeEnabled();
-    	
+    	// FIXME: this is a spaghetti code: need to call the user object
+    	// 		  in order to see if the zoom out can be enabled :-(
+    	return this.objViewActions.shouldZoomOutBeEnabled();   	
     }
     //======================================================
     // ................ CREATION ............................

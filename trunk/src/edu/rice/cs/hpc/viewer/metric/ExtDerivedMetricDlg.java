@@ -100,7 +100,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    {
 	    	Group grpExpression = new Group(expressionArea, SWT.NONE);
 	    	Label lbl = new Label(grpExpression, SWT.NONE);
-	    	lbl.setText("Type a formula for the derived metric. Example: avg($1,$2,$3)/sum($1,$2,$3)");
+	    	lbl.setText("Type the formula for the derived metric. Example: $0+(avg($1,$2,$3)/max($1,$2,$3))");
 	    	this.txtExpression = new Text(grpExpression, SWT.NONE);
 	    	txtExpression.setToolTipText("Write a simple arithmetic expression");
 	    	GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(grpExpression);

@@ -104,6 +104,10 @@ public class ColumnViewerSorter extends ViewerComparator {
 	 * @param direction
 	 */
 	public void setSorter(ColumnViewerSorter sorter, int direction) {
+		// bug Eclipse no 199811 https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
+		// sorting can be very slow in mac OS
+		// we need to manually disable redraw before comparison and the refresh after the comparison 
+		this.viewer.getTree().setRedraw(false);
 		if( direction == NONE ) {
 			column.getParent().setSortColumn(null);
 			column.getParent().setSortDirection(SWT.NONE);
@@ -126,6 +130,11 @@ public class ColumnViewerSorter extends ViewerComparator {
 			}
 			
 		}
+		// bug Eclipse no 199811 https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
+		// sorting can be very slow in mac OS
+		// we need to manually disable redraw before comparison and the refresh after the comparison 
+		this.viewer.getTree().setRedraw(true);
+		this.viewer.refresh();
 	}
 
 	/**
@@ -200,42 +209,5 @@ public class ColumnViewerSorter extends ViewerComparator {
 		super.sort(viewer, elements);
 	}
 	
-	public class ScopeSelectionAdapter extends SelectionAdapter {
-		TreeViewer treeViewer;
-		public ScopeSelectionAdapter(TreeViewer viewer) {
-			super();
-			this.treeViewer = viewer;
-		}
 
-		public void widgetSelected(SelectionEvent e) {
-			// before sorting, we need to check if the first row is an element header 
-			// something like "aggregate metrics" or zoom-in item
-			TreeItem item = this.treeViewer.getTree().getItem(0);
-			if(item.getData() instanceof Scope.Node) {
-				// the table has been zoomed-out
-				System.out.println("CVS: zoom-out");
-			} else {
-				// the table is in original form or flattened or zoom-in
-				System.out.println("CVS: original");
-			}
-			if( ColumnViewerSorter.this.viewer.getComparator() != null ) {
-				if( ColumnViewerSorter.this.viewer.getComparator() == ColumnViewerSorter.this ) {
-					int tdirection = ColumnViewerSorter.this.direction;
-					
-					if( tdirection == ASC ) {
-						setSorter(ColumnViewerSorter.this, DESC);
-					} else if( tdirection == DESC ) {
-						setSorter(ColumnViewerSorter.this, ASC);
-					}
-				} else {
-					setSorter(ColumnViewerSorter.this, ASC);
-				}
-			} else {
-				setSorter(ColumnViewerSorter.this, ASC);
-			}
-			// post-sorting 
-			this.treeViewer.getTree().setTopItem(item);
-		}
-
-	}
 }

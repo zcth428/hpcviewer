@@ -216,13 +216,25 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			trace("added flat counterpart " + flat_s.getName() + " in flat view.");
 		}
 		if (s instanceof CallSiteScope) {
-//			accumulateMetrics(flat_s, s, inclusiveOnly);
-			EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
-			flat_s.accumulateMetrics(s, emptyFilter, this.numberOfPrimaryMetrics);
-			if (flat_s instanceof CallSiteScope)
+			//---------------------------------------------------------------------------------------------------
+			// in the calling context view, exclusive costs are used to show the cost at the callsite and for
+			// the immediate call. for the flat view, we only want to propagate exclusive costs for the call site,
+			// not the cost of the call. thus, don't propagate exclusive costs from the calling context tree to
+			// the flat view; only propagate inclusive costs.
+			// 2008 06 07 - John Mellor-Crummey
+			//---------------------------------------------------------------------------------------------------
+			flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
+			if (flat_s instanceof CallSiteScope) {
+				//---------------------------------------------------------------------------------------------------
+				// for the flat view, we only want to propagate exclusive costs for the call site,
+				// not the cost of the call. thus, we propagate costs attributed to the line scope inside the 
+				// CallSiteScope, which corresponds to costs attributed to the call site only, not the inclusive
+				// cost of the call. do this only for CallSiteScopes.
+				// 2008 06 07 - John Mellor-Crummey
+				//---------------------------------------------------------------------------------------------------
 				((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
-						((CallSiteScope) s).getLineScope(), emptyFilter, this.numberOfPrimaryMetrics);
-			// accumulateMetrics(flat_s, ((CallSiteScope) s).getLineScope(), exclusiveOnly);
+						((CallSiteScope) s).getLineScope(), exclusiveOnly, this.numberOfPrimaryMetrics);
+			}
 		} else flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
 
 		return flat_s;

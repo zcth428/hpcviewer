@@ -295,7 +295,10 @@ public class ScopeViewActions {
 		} else {
 			// It is almost impossible for the jvm to reach this part of branch.
 			// but if it is the case, it should be a BUG !!
-			System.err.println("SVA BUG: data="+data.getClass()+" item= " + (item==null? 0 : item.getItemCount()));
+			if(data !=null )
+				System.err.println("SVA BUG: data="+data.getClass()+" item= " + (item==null? 0 : item.getItemCount()));
+			else
+				this.showErrorMessage("Please select a metric column !");
 		}
 	}
 	
@@ -366,13 +369,16 @@ public class ScopeViewActions {
 			// Bug fix: we need to insert the parent on the top of the table
 	    	this.objActionsGUI.insertParentNode(parent);
 		}
-		//this.objActionsGUI.updateFlattenView(parent.iLevel);
-		this.objActionsGUI.checkZoomButtons(null); // no node has been selected ?
+
 		// return the previous expanded tree items
 		if(this.stackTreeStates.size()>0) {
 			Object o[] = this.stackTreeStates.pop();
 			this.treeViewer.setExpandedElements(o);
 		}
+		// funny behavior on Windows: they still keep the track of the previously selected item !!
+		// therefore we need to check again the state of the buttons
+		Scope.Node nodeSelected = this.getSelectedNode();
+		this.objActionsGUI.checkZoomButtons(nodeSelected); // no node has been selected ?
 	}
 	
 	/**
@@ -432,70 +438,7 @@ public class ScopeViewActions {
 			this.objActionsGUI.addMetricColumns(colDerived); 
 		}
 	}
-	/**
-	 * Add a new derived metric based on the existing metric(s). Two base metrics AT MOST !
-	 * Currently the derived metric only support simple arithmetic operation.
-	 * TODO: a more complex mathematics operation is to be supported in the future
-	 * @return
-	 */
-	/*public boolean addNewMetric() {
-		boolean bResult=false;
-		// prepare the processing
-		//this.objActionsGUI.showWarningMessagge("... adding new metric. Please wait ...");
-		Tree treeCurrent = this.treeViewer.getTree();
-		int nbColumns = treeCurrent.getColumnCount()-1;
-		if(nbColumns > 0) {
-			// collect the title of the columns
-			String []sColumns = new String[nbColumns];
-			for(int i=1;i<=nbColumns;i++) {
-				sColumns[i-1] = i+":"+treeCurrent.getColumn(i).getText();
-			}
-			
-			// show the dialog 
-			DerivedMetricsDlg metricDlg = new DerivedMetricsDlg(this.objSite.getShell(),sColumns);
-			if (metricDlg.open() == Dialog.OK) {
-				this.showProcessingMessage(); 
 
-				// retrieve the information typed by the user
-				float f1 = metricDlg.fCoefficient1.floatValue();
-				int iMetric = metricDlg.iChosenMetric1;
-				DerivedMetric objNewMetric;
-				Experiment exp = this.myRootScope.getExperiment();
-				int iMetric2 = metricDlg.iChosenMetric2;
-				// verify if the second operand exists
-				if(iMetric2 >= 0) {
-					float f2 = metricDlg.fCoefficient2.floatValue();
-					int iOpCode = metricDlg.iOperation;
-					objNewMetric= exp.addDerivedMetric(this.myRootScope, iMetric, f1, iMetric2, f2, iOpCode);
-				} else {
-					objNewMetric = exp.addDerivedMetric(this.myRootScope, iMetric, f1);
-				}
-				if(objNewMetric != null) {
-					// compute the percentage ?
-					objNewMetric.setPercent(metricDlg.bPercent);
-					if(metricDlg.sMetricName != null)
-						objNewMetric.setName(metricDlg.sMetricName);
-					// add the column to the viewer
-					int iPosition = exp.getMetricCount()+1; 
-					TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objNewMetric, 
-							iPosition, false);
-					// update the viewer, to refresh its content and invoke the provider
-					this.treeViewer.refresh();
-					// notify the GUI that we have added a new column
-					this.objActionsGUI.addMetricColumns(colDerived); 
-					// once the column has been added, we need to tell if it should be displayed or not
-					if(!metricDlg.bDisplay)
-						this.objActionsGUI.hideMetricColumn(iPosition);
-					this.restoreProcessingMessage();
-				} else {
-					this.showErrorMessage("Error... unable to add a new derived metric.");
-				}
-			}
-				
-		}
-		
-		return bResult;
-	} */
 	/**
 	 * Resize the columns
 	 */

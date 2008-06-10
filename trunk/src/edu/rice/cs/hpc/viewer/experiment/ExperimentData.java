@@ -1,7 +1,6 @@
-package edu.rice.cs.hpc.viewer.resources;
+package edu.rice.cs.hpc.viewer.experiment;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.viewer.util.ExperimentManager;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;

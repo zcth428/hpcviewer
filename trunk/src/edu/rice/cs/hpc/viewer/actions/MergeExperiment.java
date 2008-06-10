@@ -10,9 +10,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.analysis.ExperimentView;
-import edu.rice.cs.hpc.viewer.util.ExperimentManager;
-import edu.rice.cs.hpc.viewer.resources.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 
 public class MergeExperiment  implements IWorkbenchWindowActionDelegate {
 

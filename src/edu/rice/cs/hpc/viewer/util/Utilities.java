@@ -29,7 +29,10 @@ import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 import edu.rice.cs.hpc.viewer.scope.MetricLabelProvider;
 import edu.rice.cs.hpc.viewer.scope.ExtDerivedMetricLabelProvider;
+
 /**
+ * Class providing auxiliary utilities methods.
+ * Remark: it is useless to instantiate this class since all its methods are static !
  * @author laksono
  *
  */
@@ -50,20 +53,22 @@ public class Utilities {
 	 * Insert an item on the top on the tree/table with additional image if not null
 	 * @param treeViewer : the tree viewer
 	 * @param imgScope : the icon for the tree node
-	 * @param sText : the label of the items (started from  col 0..n-1)
+	 * @param arrText : the label of the items (started from  col 0..n-1)
 	 */
-	static public void insertTopRow(TreeViewer treeViewer, Image imgScope, String []sText) {
-		if(sText == null)
+	static public void insertTopRow(TreeViewer treeViewer, Image imgScope, String []arrText) {
+		if(arrText == null)
 			return;
     	TreeItem item = new TreeItem(treeViewer.getTree(), SWT.BOLD, 0);
     	if(imgScope != null)
     		item.setImage(0,imgScope);
-    	item.setText(sText);
-    	item.setData(sText);
-    	// make them bold .... why ?? on windows it looks ok :-(
-    	for (int i=1; i< sText.length; i++) {
-    		item.setFont(i,Utilities.fontMetric);
-    	}
+    	Font fntOrig = item.getFont();	// retrieve the original font
+    	// make monospace font for all metric columns
+    	item.setFont(Utilities.fontMetric);
+    	item.setFont(0, fntOrig); // The tree has the original font
+    	// put the text on the table
+    	item.setText(arrText);
+    	// FIXME: set the array of text as the item data (do we need this ?)
+    	//item.setData(arrText);
 
 	}
 	
@@ -132,14 +137,15 @@ public class Utilities {
     					if (objFile.isAvailable()) {
     						scope.iSourceCodeAvailability = Scope.SOURCE_CODE_AVAILABLE;
     						return true;
-    					} else
-    						scope.iSourceCodeAvailability = Scope.SOURCE_CODE_NOT_AVAILABLE;
+    					} 
     				}
     			}
     		}
     	} else
     		// the source code availability is already computed, we just reuse it
     		return (scope.iSourceCodeAvailability == Scope.SOURCE_CODE_AVAILABLE);
+    	// in this level, we don't think the source code is available
+		scope.iSourceCodeAvailability = Scope.SOURCE_CODE_NOT_AVAILABLE;
 		return false;
     }
 
@@ -158,22 +164,6 @@ public class Utilities {
 		return colMetric;
     }
     
-    /**
-     * Special method to add a column for derived metric since it needs a special Metric
-     * @param treeViewer
-     * @param objMetric
-     * @param iPosition
-     * @param bSorted
-     * @return
-     */
-    /*
-    static public TreeViewerColumn addTreeColumn(TreeViewer treeViewer, DerivedMetric objMetric, int iPosition, 
-    		boolean bSorted) {
-    	TreeViewerColumn col = Utilities.addTreeColumn(treeViewer, objMetric, iPosition, bSorted, true);
-    	col.setLabelProvider(new DerivedMetricLabelProvider(objMetric, Utilities.fontMetric));
-    	return col;
-    }
-    */
     /**
      * Create a new column for extended derived metric (which uses an expression formula)
      * 

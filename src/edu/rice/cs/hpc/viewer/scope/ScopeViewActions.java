@@ -276,9 +276,6 @@ public class ScopeViewActions {
 		if((colSelected == null) || colSelected.getWidth() == 0) {
 			// the column is hidden or there is no column sorted
 			this.showErrorMessage("Please select a column to sort before using this feature.");
-			//this.restoreProcessingMessage();
-			//org.eclipse.jface.dialogs.MessageDialog.openError(this.objSite.getShell(), 
-			//		"Unknown sorted column", "Please select a column to sort before using this feature.");
 			return;
 		}
 		// get the metric data
@@ -287,17 +284,13 @@ public class ScopeViewActions {
 			Metric metric = (Metric) data;
 			// find the hot call path
 			int iLevel = 0;
-			// System.out.print("Looking for the hot path with threshold of " + ScopeViewActions.fTHRESHOLD + " ... ");
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
 			if(objHot != null) {
 				// we found the hot path
 				this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
-				// System.out.println(" found: "+ objHot.node.getScope().getName());
-				//objHot.item.setBackground(0, new Color(null,255,106,106));
 			} else {
 				// we cannot find it
 				this.showErrorMessage("No hot path detected.");
-				// System.out.println(" cannot be found.\nPlease adjust the threshold in the preference dialog box.");
 			}
 		} else {
 			// It is almost impossible for the jvm to reach this part of branch.
@@ -348,17 +341,16 @@ public class ScopeViewActions {
 	 * Zoom-out the node
 	 */
 	public void zoomOut() {
-		Scope.Node child;
+		Scope.Node parent; 
 		if(this.stackRootTree.size()>0) {
 			// the tree has been zoomed
-			child = this.stackRootTree.pop();
+			parent = this.stackRootTree.pop();
 		} else {
 			// case where the tree hasn't been zoomed
 			// FIXME: there must be a bug if the code comes to here !
-			child = (Scope.Node)treeViewer.getInput();
-			throw( new java.lang.RuntimeException("ScopeViewActions - illegal zoomout"+child));
+			parent = (Scope.Node)treeViewer.getInput();
+			throw( new java.lang.RuntimeException("ScopeViewActions - illegal zoomout"+parent));
 		}
-		Scope.Node parent = child; //(Scope.Node)child.getParent();
 		if (parent == null)
 			return;
 		Object userObject = parent.getUserObject();
@@ -371,6 +363,8 @@ public class ScopeViewActions {
 	    	this.objActionsGUI.insertParentNode(node);
 		} else {
 			treeViewer.setInput( parent );
+			// Bug fix: we need to insert the parent on the top of the table
+	    	this.objActionsGUI.insertParentNode(parent);
 		}
 		//this.objActionsGUI.updateFlattenView(parent.iLevel);
 		this.objActionsGUI.checkZoomButtons(null); // no node has been selected ?

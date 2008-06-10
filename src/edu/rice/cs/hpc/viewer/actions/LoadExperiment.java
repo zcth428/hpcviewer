@@ -9,7 +9,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 //import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.IViewPart;
 import edu.rice.cs.hpc.viewer.util.*;
-import edu.rice.cs.hpc.viewer.resources.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 
 //import edu.rice.cs.HPCVision.data.Experiment.*;
 /**

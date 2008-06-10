@@ -19,10 +19,10 @@ import org.eclipse.jface.preference.PreferenceConverter;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.scope.ScopeViewActions;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
-import edu.rice.cs.hpc.viewer.util.ExperimentManager;
 
 /**
  * @author laksono

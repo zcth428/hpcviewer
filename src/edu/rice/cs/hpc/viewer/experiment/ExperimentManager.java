@@ -1,7 +1,7 @@
 /**
  * Experiment File to manage the database: open, edit, fusion, ...
  */
-package edu.rice.cs.hpc.viewer.util;
+package edu.rice.cs.hpc.viewer.experiment;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -14,8 +14,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import edu.rice.cs.hpc.Activator;
-import edu.rice.cs.hpc.analysis.ExperimentView;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
+import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
 /**
  * This class manages to select, load and open a database directory

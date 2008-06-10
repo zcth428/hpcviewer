@@ -10,8 +10,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import org.eclipse.swt.widgets.Shell;
 
-import edu.rice.cs.hpc.viewer.resources.ExperimentData;
-import edu.rice.cs.hpc.analysis.ExperimentView;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.*;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {

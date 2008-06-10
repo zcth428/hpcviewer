@@ -10,7 +10,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.viewer.util.EditorManager;
-import edu.rice.cs.hpc.viewer.resources.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 
 /**
  * Class to display the content of the XML file (for debugging purpose only)

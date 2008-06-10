@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.analysis;
+package edu.rice.cs.hpc.viewer.experiment;
 
 import java.util.ArrayList;
 

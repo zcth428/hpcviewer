@@ -67,8 +67,9 @@ public class Utilities {
     	item.setFont(0, fntOrig); // The tree has the original font
     	// put the text on the table
     	item.setText(arrText);
-    	// FIXME: set the array of text as the item data (do we need this ?)
-    	//item.setData(arrText);
+    	// set the array of text as the item data 
+    	// we will use this information when the table is sorted (to restore the original top row)
+    	item.setData(arrText);
 
 	}
 	

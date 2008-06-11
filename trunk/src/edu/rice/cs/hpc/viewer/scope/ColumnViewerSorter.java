@@ -133,8 +133,8 @@ public class ColumnViewerSorter extends ViewerComparator {
 		// bug Eclipse no 199811 https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
 		// sorting can be very slow in mac OS
 		// we need to manually disable redraw before comparison and the refresh after the comparison 
-		this.viewer.getTree().setRedraw(true);
 		this.viewer.refresh();
+		this.viewer.getTree().setRedraw(true);
 	}
 
 	/**

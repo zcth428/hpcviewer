@@ -432,7 +432,11 @@ public class ScopeViewActions {
 			TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objMetric, 
 					iPosition, false);
 			// update the viewer, to refresh its content and invoke the provider
-			this.treeViewer.refresh();
+			// bug SWT https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
+			// we need to hold the UI to draw until all the data is available
+			this.treeViewer.getTree().setRedraw(false);
+			this.treeViewer.refresh();	// we refresh to update the data model of the table
+			this.treeViewer.getTree().setRedraw(true);
 			colDerived.getColumn().pack();
 			// notify the GUI that we have added a new column
 			this.objActionsGUI.addMetricColumns(colDerived); 

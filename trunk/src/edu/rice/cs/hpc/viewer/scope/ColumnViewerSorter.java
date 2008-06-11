@@ -123,10 +123,10 @@ public class ColumnViewerSorter extends ViewerComparator {
 			}
 			
 			if( viewer.getComparator() == sorter ) {
-				viewer.refresh();
+				//viewer.refresh(); // Laks: I don't think we need to refresh the UI now
 			} else {
 				viewer.setComparator(sorter);
-				//viewer.refresh(); // johnmc
+				//viewer.refresh(); // was: johnmc. Laks: we don't need to refresh
 			}
 			
 		}

@@ -36,7 +36,6 @@ public class ScopeView extends ViewPart {
 
     private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private TreeViewerColumn colTree;		// column for the calls tree
-    //private TreeViewerColumn []colMetrics;	// metric columns
     private Experiment 	myExperiment;		// experiment data	
     private Scope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
@@ -309,23 +308,7 @@ public class ScopeView extends ViewPart {
         		
         	}
         });
-        /*
-        this.treeViewer.getTree().addMouseListener(new org.eclipse.swt.events.MouseListener(){
-        	public void mouseDoubleClick(MouseEvent e) {
-        		
-        	}
-        	public void mouseDown(MouseEvent e) {
-        		System.out.println("SV:"+e.button+"\t"+"\t"+e.x);
-        		if(e.data != null) {
-        			System.out.println("SV data: "+e.data.getClass());
-        		}
-        		if(e.widget != null)
-        			System.out.println("SV widget:  "+e.widget.getClass());
-        	}
-        	public void mouseUp(MouseEvent e) {
-        		
-        	}
-        });*/
+
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);
 		
@@ -395,7 +378,7 @@ public class ScopeView extends ViewPart {
         // prepare the data for the sorter class for tree
         this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
         // prepare the experiment for the content provider of the tree column
-        this.treeContentProvider.setExperiment(myExperiment);
+        //this.treeContentProvider.setExperiment(myExperiment);
         // dirty solution to update titles
         TreeViewerColumn []colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
         {
@@ -414,7 +397,6 @@ public class ScopeView extends ViewPart {
         
         // Update root scope
         treeViewer.setInput(myRootScope.getTreeNode());
-
         // update the window title
         this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
         

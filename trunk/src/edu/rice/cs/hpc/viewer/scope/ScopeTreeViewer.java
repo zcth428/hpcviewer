@@ -4,6 +4,7 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 
@@ -12,7 +13,7 @@ import org.eclipse.swt.widgets.TreeItem;
 
 /**
  * @author laksono
- *
+ * we set lazy virtual bit in this viewer
  */
 public class ScopeTreeViewer extends TreeViewer {
 
@@ -20,7 +21,7 @@ public class ScopeTreeViewer extends TreeViewer {
 	 * @param parent
 	 */
 	public ScopeTreeViewer(Composite parent) {
-		super(parent);
+		super(parent, SWT.VIRTUAL);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -28,7 +29,7 @@ public class ScopeTreeViewer extends TreeViewer {
 	 * @param tree
 	 */
 	public ScopeTreeViewer(Tree tree) {
-		super(tree);
+		super(tree, SWT.VIRTUAL);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -37,7 +38,8 @@ public class ScopeTreeViewer extends TreeViewer {
 	 * @param style
 	 */
 	public ScopeTreeViewer(Composite parent, int style) {
-		super(parent, style);
+		super(parent, SWT.VIRTUAL | style);
+		this.setUseHashlookup(true);
 		// TODO Auto-generated constructor stub
 	}
 

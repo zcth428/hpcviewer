@@ -388,7 +388,10 @@ public class ScopeViewActions {
 		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getFlatten();
 		if(arrNodes != null) {
 			this.treeViewer.setInput(arrNodes);
+			this.treeViewer.getTree().setRedraw(false);
 			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+			this.treeViewer.refresh();
+			this.treeViewer.getTree().setRedraw(true);
 		} else {
 			// either there is something wrong or we cannot flatten anymore
 			//this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
@@ -428,18 +431,18 @@ public class ScopeViewActions {
 			// add a derived metric and register it to the experiment database
 			ExtDerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent);
 			
-			int iPosition = exp.getMetricCount()+1; 
+			int iPosition = exp.getMetricCount()+1;
+			this.treeViewer.getTree().setRedraw(false);
 			TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objMetric, 
 					iPosition, false);
 			// update the viewer, to refresh its content and invoke the provider
 			// bug SWT https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
 			// we need to hold the UI to draw until all the data is available
-			this.treeViewer.getTree().setRedraw(false);
-			this.treeViewer.refresh();	// we refresh to update the data model of the table
-			this.treeViewer.getTree().setRedraw(true);
 			colDerived.getColumn().pack();
 			// notify the GUI that we have added a new column
 			this.objActionsGUI.addMetricColumns(colDerived); 
+			this.treeViewer.refresh();	// we refresh to update the data model of the table
+			this.treeViewer.getTree().setRedraw(true);
 		}
 	}
 

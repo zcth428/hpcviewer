@@ -70,9 +70,8 @@ public class Utilities {
     	// set the array of text as the item data 
     	// we will use this information when the table is sorted (to restore the original top row)
     	item.setData(arrText);
-
 	}
-	
+
 	/**
 	 * Return an image depending on the scope of the node.
 	 * The criteria is based on ScopeTreeCellRenderer.getScopeNavButton()

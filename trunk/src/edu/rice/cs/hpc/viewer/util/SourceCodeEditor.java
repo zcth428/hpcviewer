@@ -4,6 +4,7 @@
 package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 /**
  * @author laksono
@@ -11,17 +12,18 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
  */
 public class SourceCodeEditor extends TextEditor {
 	static public String ID = "edu.rice.cs.hpc.viewer.util.SourceCodeEditor";  
-	/*
+	
 	public SourceCodeEditor() {
 		super();
-	}*/
+	}
 	/*
 	 * @see org.eclipse.ui.texteditor.StatusTextEditor#validateEditorInputState()
 	 * @since 3.3
 	 */
 	public boolean validateEditorInputState() {
 		//return super.validateEditorInputState();
-		return (new org.eclipse.ui.texteditor.StatusTextEditor()).validateEditorInputState();
+		//return (new org.eclipse.ui.texteditor.StatusTextEditor()).validateEditorInputState();
+		return ((AbstractTextEditor)(this)).validateEditorInputState();
 	}
 
 	/**
@@ -31,5 +33,14 @@ public class SourceCodeEditor extends TextEditor {
 	protected boolean isLineNumberRulerVisible() {
 		this.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER, true);
 		return true;
+	}
+	
+	/**
+	 * Description copied from interface: ITextEditor
+	 * Returns whether the text in this text editor can be changed by the user.
+	 */
+	public boolean isEditable() {
+		super.isEditable();
+		return false;
 	}
 }

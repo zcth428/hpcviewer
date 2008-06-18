@@ -5,23 +5,20 @@ package edu.rice.cs.hpc.data.experiment.metric;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.filters.FlatViewMetricPropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.FlatViewScopeVisitor;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.NormalizeLineScopesVisitor;
 import edu.rice.cs.hpc.viewer.metric.MetricVarMap;
 
 //math expression
 import com.graphbuilder.math.*;
-import com.graphbuilder.math.func.*;
 
 /**
  * @author la5
  *
  */
 public class ExtDerivedMetric extends Metric {
+	//===================================================================================
+	// DATA
+	//===================================================================================
+	
 	// a counter to know the number of derived metrics
 	static public int Counter = 0;
 	// formula expression
@@ -36,6 +33,10 @@ public class ExtDerivedMetric extends Metric {
 	// map variable 
 	private MetricVarMap varMap;
 
+	//===================================================================================
+	// CONSTRUCTORS
+	//===================================================================================
+	
 	/**
 	 * @param experiment
 	 * @param shortName
@@ -75,57 +76,15 @@ public class ExtDerivedMetric extends Metric {
 		this.varMap = new MetricVarMap(scopeRoot.getExperiment().getMetrics());
 		// compute the aggregate value if necessary
 		if(bPercent) {
-			//if(scopeRoot.getType() == RootScopeType.Flat) {
-				//MetricValuePropagationFilter fvf = new FlatViewMetricPropagationFilter();
-				//int nbMetrics = scopeRoot.getExperiment().getMetricCount();
-				//FlatViewScopeVisitor fsv = new FlatViewScopeVisitor(scopeRoot.getExperiment(), 
-				//		scopeRoot, nbMetrics, false, fvf, index);
-				//scopeRoot.dfsVisitScopeTree(fsv);
-				// we consider exclusive only
-				//accumulateMetricsFromKids(scopeRoot, nbMetrics);
-			//} else {
-				// Compute the aggregate metrics
-				//MetricValue value = MetricValue.NONE;
-				// tell the scope that we have a new derived metric value
-				//scopeRoot.addMetricValue(value, index);
-				// recursive computation
-				//Scope objAggregate = scopeRoot.getSubscope(0);
-				//if(scopeRoot.getSubscopeCount()>1)
-				//	System.err.println("Error: "+scopeRoot.getShortName()+" has "+scopeRoot.getSubscopeCount());
-			/*
-			EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
-			DerivedNormalizeLineScopesVisitor nls = new DerivedNormalizeLineScopesVisitor(index, emptyFilter);
-			scopeRoot.dfsVisitScopeTree(nls);
-			*/
 			MetricValue objValue = this.computeAggregate(scopeRoot, index);//accumulateMetricsFromKids(scopeRoot, scopeRoot, index);
 			this.dRootValue = (!objValue.isAvailable()?0.0:objValue.getValue());
 			this.objAggregateValue = new MetricValue(this.dRootValue);
-			//scopeRoot.setDerivedMetricValue(objValue, index);
-			//scopeRoot.setMetricValue(index, objValue);
-			//System.out.println("EDM END: "+objValue.getValue() + " vs. "+this.dRootValue);
-			//}
 		}
 	}
-	/*
-	class DerivedNormalizeLineScopesVisitor extends NormalizeLineScopesVisitor {
-		int index;
-		MetricValuePropagationFilter filter;
-		public DerivedNormalizeLineScopesVisitor(int iMetric, MetricValuePropagationFilter filter) {
-			super(iMetric, filter);
-			this.index = iMetric;
-			this.filter = filter;
-		}
-		public void visit(CallSiteScope scope, 			ScopeVisitType vt) { 
-			if (vt == ScopeVisitType.PreVisit) {
-				//----------------------------------------------------
-				// propagate any metric values associated with the 
-				// line of the call site to the CallSiteScope itself
-				//----------------------------------------------------
-				scope.accumulateMetrics(scope.getLineScope(), this.index, filter);
-			}
-		}
 
-	}*/
+	//===================================================================================
+	// AGGREGATE VALUE
+	//===================================================================================
 	
 	/**
 	 * Computing the aggregate value of a metric
@@ -159,6 +118,7 @@ public class ExtDerivedMetric extends Metric {
 		int nkids = current.getSubscopeCount();
 		MetricValue objCurrentValue = this.getValue(current);//current.getDerivedMetricValue(this, index);
 		double dTotal = 0.0;
+		// ATT: we accumulate only the leaves, and DO NOT add the current value into the total value
 		if(objCurrentValue.isAvailable() && (nkids==0)) {
 			//dTotal = objCurrentValue.getValue();
 			return objCurrentValue;
@@ -171,16 +131,12 @@ public class ExtDerivedMetric extends Metric {
 			if(objTotalChildrenValue.isAvailable()) {
 				dTotal = dTotal + objTotalChildrenValue.getValue();// + objChildValue.getValue();
 			}
-			//--------------------- DEBUG MODE
-			String sChildName = child.getShortName();
-			String sParentName = current.getShortName();
-
-			//System.out.println("EDM "+ sParentName +":"+dTotal+" <-" + objTotalChildrenValue.getValue() + " ("+sChildName+")");
 		}
+		// we have computed all the kids. If the total is zero, then return none
+		// otherwise return the total
 		MetricValue objTotalValue;
 		if(dTotal != 0.0) {
 			objTotalValue = new MetricValue(dTotal);
-			//System.out.println("\t TOTAL EDM: " + current.getShortName()+" = "+dTotal);
 		} else
 			objTotalValue = MetricValue.NONE;
 		return objTotalValue;
@@ -267,15 +223,18 @@ public class ExtDerivedMetric extends Metric {
 			// attention: we treat 0.0 as value none !
 			if(d1 == d2)
 				return 0;
+			// if one the value is zero, the other has higher priority, regardless the value
 			if(d1 == 0.0 && d2 != 0.0)
 				return 1;
 			if(d2 == 0.0 && d1 != 0.0)
 				return -1;
-			if(d2>d1)
+			// simple comparison.
+			return(int) (d2-d1);
+			/*if(d2>d1)
 				return 1;
 			if(d1>d2)
 				return -1;
-			return 0;
+			return 0; */
 		}
 		return iResult;
 	}

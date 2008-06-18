@@ -17,7 +17,7 @@ import edu.rice.cs.hpc.viewer.util.*;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private ExperimentData dataEx ;
-
+	private IWorkbench workbench;
 	/**
 	 * Creates a new workbench window advisor for configuring a workbench window via the given workbench window configurer
 	 * Retrieve the RCP's arguments and verify if it contains database to open
@@ -27,8 +27,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []args) {
 		super(configurer);
+		this.workbench = configurer.getWindow().getWorkbench();
 		if(args != null && args.length > 0) {
-			dataEx = ExperimentData.getInstance();
+			//dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+			dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
 			dataEx.setArguments(args);
 		}
 	}
@@ -57,23 +59,24 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public void postWindowOpen() {
 		// set the perspective (to setup the view as well)
-		IWorkbench workbench = org.eclipse.ui.PlatformUI.getWorkbench();
-		try {
+		/*
+		 * try {
 		   workbench.showPerspective("edu.rice.cs.hpc.perspective", 
 		      workbench.getActiveWorkbenchWindow());
 		   
 		} catch (org.eclipse.ui.WorkbenchException e) {
 			e.printStackTrace();
 		}
+		*/
 		// set the status bar
-
+		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
+		System.out.println("AWWA: "+this.workbench.toString()+"/"+windowCurrent.toString()+" "+windowCurrent.getShell().getText());
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
 		// -------------------
 		// see if the argument provides the database to load
 		if(this.dataEx != null) {
 			// possibly we have express the experiment file in the command line
-			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
 			if(windowCurrent == null) {
 				System.err.println("Anomaly event occured: active window not found");
 				return;
@@ -111,16 +114,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	}
 	
 	private void openDatabase() {
-		IWorkbench workbench = org.eclipse.ui.PlatformUI.getWorkbench();
-		this.dataEx = ExperimentData.getInstance();
+		this.dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		ExperimentManager expFile = this.dataEx.getExperimentManager();
 		if(expFile != null) {
 			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow();
 			if(windowCurrent != null) {
 				Shell objShell = windowCurrent.getShell();
-				//Shell objShell = this.getWindowConfigurer().getWindow().getShell();
 				if(objShell != null)
-					expFile.openFileExperiment(objShell);
+					expFile.openFileExperiment();
 				else
 					System.out.println("AWWA: shell is null. please open the database manually.");
 			} else 
@@ -135,7 +136,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Performs arbitrary actions as the window's shell is being closed directly, and possibly veto the close.
 	 */
 	public boolean preWindowShellClose() {
-		boolean bClosed = this.getWindowConfigurer().getWindow().getActivePage().closeAllEditors(false);
+		boolean bClosed = this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
 		//System.out.println("Close all editors:"+bClosed);
 		return super.preWindowShellClose();
 	}

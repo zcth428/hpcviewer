@@ -168,7 +168,8 @@ public boolean isPercentAvailable()
 	
 public double getPercentValue()
 {
-	Dialogs.Assert(this.percentAvailable, "MetricValue::getPercentValue");
+	// Laks: I think it is normal not to have percent available
+	//Dialogs.Assert(this.percentAvailable, "MetricValue::getPercentValue");
 	return this.percent;
 }
 

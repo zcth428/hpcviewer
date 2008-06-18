@@ -173,9 +173,14 @@ public class ColumnViewerSorter extends ViewerComparator {
 			} else {
 				// different treatment between normal metrics and derived metrics
 				if(metric instanceof ExtDerivedMetric) {
+					
 					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
-					Double d1 = edm.getDoubleValue(node1.getScope());
-					Double d2 = edm.getDoubleValue(node2.getScope());
+					int iResult = edm.compare(node1.getScope(), node2.getScope());
+					if(iResult != 0)
+						return iResult;
+					/*
+					Double d1 = edm.computeValue(node1.getScope()); //edm.getDoubleValue(node1.getScope());
+					Double d2 = edm.computeValue(node2.getScope()); //edm.getDoubleValue(node2.getScope());
 					if(d1 == null && d2 == null)
 						return this.doCompare(node1, node2);
 					if(d1 == null) 
@@ -184,12 +189,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 						return -1;
 					if(d1.doubleValue()>d2.doubleValue()) return -1;
 					if(d1.doubleValue()<d2.doubleValue()) return 1;
-				/*if(metric instanceof DerivedMetric) {
-					DerivedMetric md = (DerivedMetric) metric;
-					double d1 = DerivedMetric.getValue(node1.getScope(), md);
-					double d2 = DerivedMetric.getValue(node2.getScope(), md);
-					if(d1>d2) return -1;
-					if(d1<d2) return 1; */
+					*/
 				} else {
 					MetricValue mv1 = node1.getScope().getMetricValue(metric);
 					MetricValue mv2 = node2.getScope().getMetricValue(metric);

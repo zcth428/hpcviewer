@@ -44,6 +44,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	int numberOfPrimaryMetrics;
 	MetricValuePropagationFilter filter;
 
+	int iMetric=-1; // metric index
 	//----------------------------------------------------
 	// constructor for FlatViewScopeVisitor
 	//----------------------------------------------------
@@ -61,6 +62,20 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 	}
 
+	public FlatViewScopeVisitor(Experiment experiment, Scope fvrs, int nMetrics, boolean dodebug,
+			MetricValuePropagationFilter filter, int iMetricIndex) {
+		this.flatViewRootScope = fvrs;
+		this.exp = experiment;
+		this.isdebug = dodebug;
+		this.numberOfPrimaryMetrics = nMetrics;
+		this.filter = filter;
+		
+		Metric[] metrics = exp.getMetrics();
+		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
+		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+		
+		this.iMetric = iMetricIndex;
+	}
 
 	//----------------------------------------------------
 	// visitor pattern instantiations for each Scope type
@@ -223,7 +238,10 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			// the flat view; only propagate inclusive costs.
 			// 2008 06 07 - John Mellor-Crummey
 			//---------------------------------------------------------------------------------------------------
-			flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
+			//if(this.iMetric>=0)
+			//	flat_s.accumulateMetrics(s, this.iMetric, inclusiveOnly);
+			//else
+				flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
 			if (flat_s instanceof CallSiteScope) {
 				//---------------------------------------------------------------------------------------------------
 				// for the flat view, we only want to propagate exclusive costs for the call site,
@@ -232,10 +250,20 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 				// cost of the call. do this only for CallSiteScopes.
 				// 2008 06 07 - John Mellor-Crummey
 				//---------------------------------------------------------------------------------------------------
-				((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
-						((CallSiteScope) s).getLineScope(), exclusiveOnly, this.numberOfPrimaryMetrics);
+				/*if(this.iMetric>=0)
+					((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
+						((CallSiteScope) s).getLineScope(), this.iMetric, exclusiveOnly);
+				else*/
+					((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
+							((CallSiteScope) s).getLineScope(), exclusiveOnly, this.numberOfPrimaryMetrics);
+
 			}
-		} else flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
+		} else {
+			/*if(this.iMetric>=0)
+				flat_s.accumulateMetrics(s, this.iMetric, filter);
+			else */
+				flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
+		}
 
 		return flat_s;
 	}

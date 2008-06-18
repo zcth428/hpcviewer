@@ -4,11 +4,13 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.WorkbenchException;
+import org.eclipse.ui.PlatformUI;
+
 
 //import org.eclipse.ui.IWorkbenchPage;
 //import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.IViewPart;
-import edu.rice.cs.hpc.viewer.util.*;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 
@@ -39,7 +41,7 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 */
 	public void run(IAction action) {
     	// open a file dialog
-		expFile.openFileExperiment(this.window.getShell());
+			expFile.openFileExperiment();
 	}
 
 	/**
@@ -66,8 +68,9 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
 	public void init(IWorkbenchWindow window) {
-		expFile = ExperimentData.getInstance().getExperimentManager();
 		this.window = window;
+		System.out.println("LE: win="+window.toString());
+		expFile = ExperimentData.getInstance(window).getExperimentManager();
 	}
 	
 } 

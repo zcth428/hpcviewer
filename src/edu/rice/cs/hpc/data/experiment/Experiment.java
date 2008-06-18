@@ -114,15 +114,6 @@ public Experiment(File filename)
 	// protect ourselves against filename being `foo' with no parent
 	// information whatsoever.
 	this.defaultDirectory = filename.getAbsoluteFile().getParentFile();
-	//if(objTask != null)
-	//this.objTask = objTask;
-	/*else {
-		this.objTask = new ICheckProcess() {
-			public void advance(String str) {
-				System.out.println("Experiment task: "+ str);
-			}
-		};
-	}*/
 }
 
 
@@ -164,9 +155,7 @@ throws
 	InvalExperimentException
 {
 	// parsing may throw exceptions
-	//this.objTask.advance("start opening file .... ");
 	this.experimentFile.parse(this);
-	//this.objTask.advance("parsing .... ");
 }
 
 
@@ -373,52 +362,37 @@ public void postprocess() {
 		// accumulate, create views, percents, etc
 		Scope callingContextViewRootScope = firstSubTree;
 
-		// laks: prepare metrics
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
-		//this.objTask.advance("Metric preparation .... ");
 
-		// Laks: normalize the line scope
 //		normalizeLineScopes(callingContextViewRootScope, rootInclProp); // Incl only
 		normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 		// report((RootScope) callingContextViewRootScope);
-		//this.objTask.advance("Normalize context view .... ");
 
 		addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
 		addInclusiveMetrics(callingContextViewRootScope, 
 		  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
 //		  new CallingContextTreeInclMetricPropagationFilter(this.getMetrics()));
-		//this.objTask.advance("Compute inclusive metrics .... ");
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
-		//this.objTask.advance("Set inclusize metrics into new column .... ");
-
 
 		// Callers View
 		Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
-		//this.objTask.advance("Create caller view .... ");
 		copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
-		//this.objTask.advance("Copy caller view metrics .... ");
 
 		//		callingContextViewRootScope.copyMetrics(callersViewRootScope);
 
 		// Flat View
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
-		//this.objTask.advance("Create flat view .... ");
 		// report((RootScope) flatViewRootScope);
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
-		//this.objTask.advance("add inclusive flat view metrics .... ");
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
-		//this.objTask.advance("Compute the total aggreagate flat view .... ");
 
+		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
-		//this.objTask.advance("ccx view percent .... ");
-
 		addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
-		//this.objTask.advance("caller view percent .... ");
-
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
-		//this.objTask.advance("flat view percent .... ");
+
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
 	} else {
@@ -457,46 +431,13 @@ public void addComputedMetrics(int nMetrics, double scaling)
 }
 
 /**
- * Add a derived metric based on a single metric
- * @param indexPartner: the base metric
- * @param scale: the scale coefficient. The value will be base_metric x sclae
- * @return the new derived metric
- */
-/*§
-public DerivedMetric addDerivedMetric(RootScope scopeRoot, int indexPartner, float scale) {
-	Metric mPartner = this.getMetric(indexPartner);
-	DerivedMetric cm = new DerivedMetric(scopeRoot, mPartner, scale);
-	this.addMetric(cm);
-	return cm;
-}
-*/
-/**
- * Add a new derived metric based on two metrics
- * @param partner1: the index of the first metric
- * @param scale1: the scale coefficient of the first metric
- * @param partner2: the index of the second metric
- * @param scale2: the scale coefficient of the second metric
- * @param opCode: the operation code (add, sub, mul, div)
- * @return: the new derived metric. The value will be computed on the fly
- */
-/*
-public DerivedMetric addDerivedMetric(RootScope scopeRoot, int partner1, float scale1, 
-		int partner2, float scale2, int opCode) {
-	Metric mPartner = this.getMetric(partner1);
-	Metric mPartner2 = this.getMetric(partner2);
-	DerivedMetric cm = new DerivedMetric(scopeRoot, mPartner, scale1, mPartner2, scale2, opCode);
-	this.addMetric(cm);
-	return cm;
-}
-*/
-/**
  * Create a derived metric based on formula expression
  * @param scopeRoot
  * @param expFormula
  * @return
  */
 public ExtDerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, boolean bPercent) {
-	ExtDerivedMetric objMetric = new ExtDerivedMetric(scopeRoot, expFormula, sName, bPercent);
+	ExtDerivedMetric objMetric = new ExtDerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), bPercent);
 	this.addMetric(objMetric); // add this metric into our list
 	return objMetric;
 }

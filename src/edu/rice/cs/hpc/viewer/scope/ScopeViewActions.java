@@ -108,8 +108,8 @@ public class ScopeViewActions {
 				// so we need to treat them exclusively
 				if(metric instanceof ExtDerivedMetric) {
 					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
-					Double objParent = edm.getDoubleValue(scope);
-					Double objChild = edm.getDoubleValue(scopeChild);
+					Double objParent = edm.computeValue(scope); //edm.getDoubleValue(scope);
+					Double objChild = edm.computeValue(scopeChild); //edm.getDoubleValue(scopeChild);
 					if(objParent == null)
 						dParent = -1;
 					else
@@ -387,10 +387,13 @@ public class ScopeViewActions {
 	public void flatten() {
 		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getFlatten();
 		if(arrNodes != null) {
-			this.treeViewer.setInput(arrNodes);
 			this.treeViewer.getTree().setRedraw(false);
-			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+			// we update the data of the table
+			this.treeViewer.setInput(arrNodes);
+			// refreshing the table to take into account a new data
 			this.treeViewer.refresh();
+			// post processing: inserting the "aggregate metric" into the top row of the table
+			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
 			this.treeViewer.getTree().setRedraw(true);
 		} else {
 			// either there is something wrong or we cannot flatten anymore
@@ -438,11 +441,12 @@ public class ScopeViewActions {
 			// update the viewer, to refresh its content and invoke the provider
 			// bug SWT https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
 			// we need to hold the UI to draw until all the data is available
-			colDerived.getColumn().pack();
+			this.treeViewer.refresh();	// we refresh to update the data model of the table
 			// notify the GUI that we have added a new column
 			this.objActionsGUI.addMetricColumns(colDerived); 
-			this.treeViewer.refresh();	// we refresh to update the data model of the table
 			this.treeViewer.getTree().setRedraw(true);
+			// adjust the column width 
+			colDerived.getColumn().pack();
 		}
 	}
 

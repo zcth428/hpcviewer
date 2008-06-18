@@ -22,6 +22,7 @@ import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.*;
+import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric; // laks: add derived metric feature
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -615,6 +616,76 @@ public void setMetricValue(int index, MetricValue value)
 	this.metrics[index] = value;
 }
 
+//===================================================================
+// DERIVED METRIC METHODS
+//===================================================================
+/**
+ * Compute the derived value of a metric
+ * @param objMetric
+ * @param index
+ * @return
+ */
+/*
+public MetricValue getDerivedMetricValue(ExtDerivedMetric objMetric, int index) {
+	MetricValue value = MetricValue.NONE;
+	// the scope has no metrics. Don't bother to compute
+	if (this.metrics == null)
+		return value; 
+	// the index doesn't match to the array of metrics ?
+	if(index == this.metrics.length) {
+		// ask the derived metric to compute the formula
+		//this.checkDerivedMetrics(index);
+		value = objMetric.getValue(this);	// compute the formula
+		// store the result into the metric table so we do need to compute it again
+		//  TODO: need to explore more elegant solution
+		//this.setMetricValue(index, value);
+	} else if(index < this.metrics.length){
+		// the derived value is already computed
+		value = this.metrics[index];
+	} 
+	return value;
+}
+
+public MetricValue getDerivedMetricValue(ExtDerivedMetric objMetric) {
+	return this.getDerivedMetricValue(objMetric, objMetric.getIndex());
+} */
+/**
+ * Setting a derived metric is somewhat tricky: we need to make sure that the index is
+ * either "within" the range or not. If yes, then we can set it into the metric table
+ * @param objValue
+ * @param index
+ */
+/*
+public void setDerivedMetricValue(MetricValue objValue, int index) {
+	if (this.checkDerivedMetrics(index)) {
+		this.setMetricValue(index, objValue);
+	}
+}
+*/
+/**
+ * Verify if the index is within the range or not
+ * If the index is the same as the number of metrics, then we just add it into the array
+ * Otherwise there must be something wrong !
+ * @param index
+ * @return
+ */
+/*
+private boolean checkDerivedMetrics(int index) {
+	boolean bResult = (index <= this.metrics.length); 
+	if(index == this.metrics.length) {
+		// create a new metric at the end
+		MetricValue []arrValues = new MetricValue[this.metrics.length + 1];
+		// copy the old into the new extended list of metrics
+		System.arraycopy(this.metrics, 0, arrValues, 0, this.metrics.length);
+		this.metrics = arrValues;
+	} else {
+		// we better to throw an exception here. But for dev purpose it is better to print it out
+		System.err.println("Scope.java ERROR: access to metric index "+index+" is invalid ");
+	}
+	return bResult;
+}*/
+//===================================================================
+
 //---------------- Laks: add new method to find the text 
 /**
  * Retrieve the text value of the metric
@@ -646,6 +717,17 @@ public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter,
 	}
 }
 
+/**
+ * Laks: special accumulate metrics method for just calculating specific metric
+ * @param source
+ * @param iMetricIndex 
+ * @param filter
+ */
+/*
+public void accumulateMetrics(Scope source, int iMetricIndex, MetricValuePropagationFilter filter) {
+	this.accumulateMetric(source, iMetricIndex, iMetricIndex, filter);
+}
+*/
 public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, this, src_i, targ_i)) {
 		MetricValue m = source.getMetricValue(src_i);
@@ -655,6 +737,11 @@ public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePro
 	}
 }
 
+/**
+ * Laks: accumulate a metric value (used to compute aggregate value)
+ * @param index
+ * @param value
+ */
 public void accumulateMetricValue(int index, double value)
 {
 	ensureMetricStorage();

@@ -31,7 +31,7 @@ public class DisplayExperiment implements IWorkbenchWindowActionDelegate {
 	}
 
 	public void run(IAction action) {
-		ExperimentData expData = ExperimentData.getInstance();
+		ExperimentData expData = ExperimentData.getInstance(this.windowCurrent);
 		if(expData.getExperiment() != null) {
 			EditorManager editor = new EditorManager(this.windowCurrent);
 			try {

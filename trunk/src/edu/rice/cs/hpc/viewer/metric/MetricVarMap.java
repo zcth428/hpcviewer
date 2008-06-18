@@ -80,10 +80,11 @@ public class MetricVarMap extends VarMap {
 				int index = Integer.parseInt(sIndex);
 				if(index<this.metrics.length) {
 					Metric metric = this.metrics[index];
-					// TODO: dirty tricks: separate treatement for derived metric.
-					// we should use polymorphism instead in the future
+					// TODO: dirty tricks: separate treatment for derived metric.
+					// we should use polymorphism  in the future
 					if(metric instanceof ExtDerivedMetric) {
-						return ((ExtDerivedMetric)metric).getDoubleValue(scope);
+						//return scope.getDerivedMetricValue((ExtDerivedMetric)metric, metric.getIndex()).getValue();
+						return ((ExtDerivedMetric)metric).computeValue(scope); 
 					} else {
 						MetricValue mv  = scope.getMetricValue(metric);
 						if(mv.isAvailable())

@@ -162,7 +162,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			prev = next;
 		}
 	}
-
+/*
 	protected void accumulateMetricsFromLineScopeKids(Scope target, Scope source, 
 			MetricValuePropagationFilter filter) {
 		int nkids = source.getSubscopeCount();
@@ -183,7 +183,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				accumulateMetricsFromMyKids(target, child, filter); 
 		}
 	}
-
+*/
 	//----------------------------------------------------
 	// debugging support 
 	//----------------------------------------------------

@@ -19,11 +19,11 @@ public class ExperimentView {
 	private ExperimentData dataExperiment;
 	//ScopeView objView;
 	private org.eclipse.ui.IWorkbenchPage objPage;		// workbench current page
-	private ScopeView []listOfViews; // list of views used
+	//private ScopeView []listOfViews; // list of views used
 	
 	private void init() {
 		if(this.dataExperiment == null) {
-			this.dataExperiment = ExperimentData.getInstance();
+			this.dataExperiment = ExperimentData.getInstance(this.objPage.getWorkbenchWindow());
 		}
 	}
 	/**
@@ -31,18 +31,23 @@ public class ExperimentView {
 	 * @param objTarget: the scope view to link with
 	 */
 	public ExperimentView(org.eclipse.ui.IWorkbenchPage objTarget) {
-		this.objPage = objTarget;
-		this.init();
+		if(objTarget != null) {
+			this.objPage = objTarget;
+			this.init();
+		} else {
+			System.err.println("EV Error: active page is null !");
+		}
 	}
 	
 	/**
 	 * DO NOT CALL THIS CONSTRUCTOR if possible
 	 * This will try to find the ScopeView manually and not portable
 	 */
+	/*
 	public ExperimentView(){
 		objPage = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		this.init();
-	}
+	}*/
 	
 	class ThrLoadProcessingThread extends Thread {
 		String sFilename;
@@ -136,9 +141,11 @@ public class ExperimentView {
 	 * Retrieve the list of all used views
 	 * @return list of views
 	 */
+	/*
 	public ScopeView[] getViews() {
 		return this.listOfViews;
 	}
+	*/
 	/**
 	 * Generate multiple views for an experiment depending on the number of root scopes
 	 * @param experiment Experiment data
@@ -152,19 +159,21 @@ public class ExperimentView {
 		// next, we retrieve all children of the scope and display them in separate views
 		ArrayList<RootScope> rootChildren = (ArrayList<RootScope>)experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.size();
-		this.listOfViews = new ScopeView[nbChildren];
+		//this.listOfViews = new ScopeView[nbChildren];
 		for(int k=0;nbChildren>k;k++)
 		{
 			RootScope child = (RootScope) rootChildren.get(k);
 			try {
 				ScopeView objView; 
-				if(k>0)
+				if(k>0) {
 					// multiple view: we need to have additional secondary ID
 					objView = (ScopeView)this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID, 
 					"view"+child.getRootName(), org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
-				else
+				} else {
 					// first view: usually already created by default by the perspective
 					objView = (ScopeView) this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
+					// the first view is the main view
+				}
 				// ATTENTION: for unknown reason, call-tree will not display the aggregate values when using the child
 				// therefore, we need to create a dummy root then attach it to the children
 				// TODO: This should be fix in the Scope class in the future
@@ -172,12 +181,11 @@ public class ExperimentView {
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
 				// enable the view's actions
 				//objView.enableActions();
-				this.listOfViews[k] = objView;
+				//this.listOfViews[k] = objView;
 			} catch (org.eclipse.ui.PartInitException e) {
 				e.printStackTrace();
 			}
 		}
-
 	}
 	
 	/**

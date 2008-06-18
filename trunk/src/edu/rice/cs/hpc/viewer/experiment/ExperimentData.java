@@ -13,14 +13,18 @@ public class ExperimentData {
     
 	static private ExperimentData _singleton = null;
 	
+	//==================
+	public ExperimentData(IWorkbenchWindow w) {
+		this.window = w;
+	}
 	/**
 	 * Get the single instance of this class. If the object is already created, then 
 	 * return the object.
 	 * @return
 	 */
-	static public ExperimentData getInstance() {
+	static public ExperimentData getInstance(IWorkbenchWindow w) {
 		if(ExperimentData._singleton == null) {
-			ExperimentData._singleton = new ExperimentData();
+			ExperimentData._singleton = new ExperimentData(w);
 		}
 		return ExperimentData._singleton;
 	}
@@ -32,7 +36,7 @@ public class ExperimentData {
 	public ExperimentManager getExperimentManager() {
 		if(this.expManager == null) {
 			// normally only one single workbench window !
-			this.window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			//this.window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 			// theoretically, only one single experiment file for one RCP
 			// or do we want to support multiple experiments in the future ?
 			this.expManager = new ExperimentManager(ExperimentData._singleton.window);

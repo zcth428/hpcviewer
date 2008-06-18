@@ -76,6 +76,12 @@
                menubarPath="FileMenu/databaseGroup">
          </action>
          <action
+               class="edu.rice.cs.hpc.viewer.actions.NewWindow"
+               id="edu.rice.cs.hpc.viewer.actions.NewWindow"
+               label="&amp;New Window"
+               menubarPath="FileMenu/databaseGroup">
+         </action>
+         <action
                class="edu.rice.cs.hpc.viewer.actions.Preferences"
                id="edu.rice.cs.hpc.viewer.actions.preferences"
                label="Preferences..."

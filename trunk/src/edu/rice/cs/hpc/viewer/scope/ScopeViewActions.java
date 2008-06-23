@@ -108,14 +108,14 @@ public class ScopeViewActions {
 				// so we need to treat them exclusively
 				if(metric instanceof ExtDerivedMetric) {
 					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
-					Double objParent = edm.computeValue(scope); //edm.getDoubleValue(scope);
-					Double objChild = edm.computeValue(scopeChild); //edm.getDoubleValue(scopeChild);
+					Double objParent = edm.getDoubleValue(scope); //edm.getDoubleValue(scope);
+					Double objChild = edm.getDoubleValue(scopeChild); //edm.getDoubleValue(scopeChild);
 					if(objParent == null)
-						dParent = -1;
+						dParent = Integer.MIN_VALUE; //-1;
 					else
 						dParent = objParent.doubleValue();
 					if(objChild == null)
-						dChild = -1;
+						dChild = Integer.MIN_VALUE; //-1;
 					else
 						dChild = objChild.doubleValue();
 				} else {
@@ -423,16 +423,21 @@ public class ScopeViewActions {
 		Scope.Node node = this.getSelectedNode();
 		if(node == null)
 			node = (Scope.Node) this.getInputNode();
-		dlg.setScope(node.getScope());
+		//dlg.setScope(node.getScope());
 		// display the dialog box
 		if(dlg.open() == Dialog.OK) {
 			// the expression is valid (already verified in the dialog box)
 			Expression expFormula = dlg.getExpression();
 			String sName = dlg.getName();					// metric name
 			boolean bPercent = dlg.getPercentDisplay();		// display the percentage ?
+			MetricType objMetricType;
+			if(dlg.isExclusive())
+				objMetricType = MetricType.EXCLUSIVE;
+			else
+				objMetricType = MetricType.INCLUSIVE;
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
-			ExtDerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent);
+			ExtDerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, objMetricType);
 			
 			int iPosition = exp.getMetricCount()+1;
 			this.treeViewer.getTree().setRedraw(false);

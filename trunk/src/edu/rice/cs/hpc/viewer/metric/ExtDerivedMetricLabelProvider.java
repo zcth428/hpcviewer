@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.metric;
 
 import org.eclipse.swt.graphics.Font;
 

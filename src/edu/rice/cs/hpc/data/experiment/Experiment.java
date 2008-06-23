@@ -436,8 +436,10 @@ public void addComputedMetrics(int nMetrics, double scaling)
  * @param expFormula
  * @return
  */
-public ExtDerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, boolean bPercent) {
-	ExtDerivedMetric objMetric = new ExtDerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), bPercent);
+public ExtDerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
+		boolean bPercent, MetricType metricType) {
+	ExtDerivedMetric objMetric = new ExtDerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
+			bPercent, metricType);
 	this.addMetric(objMetric); // add this metric into our list
 	return objMetric;
 }

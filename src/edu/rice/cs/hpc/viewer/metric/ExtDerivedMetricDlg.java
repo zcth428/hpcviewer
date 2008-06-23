@@ -31,24 +31,31 @@ import com.graphbuilder.math.func.*;
 
 /**
  * @author la5
- *
+ * Dialog box to enter a math formula to define a derived metric
  */
 public class ExtDerivedMetricDlg extends TitleAreaDialog {
-	private Label lblExpression;
+	//------------- GUI variables
+	//private Label lblExpression;
 	private Text txtName;
 	private Button btnPercent;
+	private Button btnExclusive;
+	private Button btnInclusive;
 
-	private Metric []arrMetrics;
+	// ------------ Metric and math variables
+	//private Metric []arrMetrics;
 	private String []arrStrMetrics;
 	private Text txtExpression;
-	final FuncMap fctMap = new FuncMap();
-
-	private Scope scope;
 	private Expression expFormula;
+	final ExtFuncMap fctMap;
+
+	// ------------- Others
+	//private Scope scope;
 
 	private String sMetricName;
 	private boolean bPercent;
-	  //==========================================================
+	private boolean bExclusive = false;
+
+	//==========================================================
 	  // ---- Constructor
 	  //==========================================================
 	/**
@@ -59,11 +66,13 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	public ExtDerivedMetricDlg(Shell parentShell, Metric []listOfMetrics) {
 		super(parentShell);
 		this.setMetrics(listOfMetrics);
+		this.fctMap = new ExtFuncMap(listOfMetrics, null);
 	}
 	
 	public ExtDerivedMetricDlg(Shell parent, Metric []listOfMetrics, Scope s) {
 		super(parent);
 		this.setMetrics(listOfMetrics);
+		this.fctMap = new ExtFuncMap(listOfMetrics, null);
 	}
 	
 	  //==========================================================
@@ -88,7 +97,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    return contents;
 	  }
 
-	  /**
+	  /*
 	   * {@docRoot org.eclipse.jface.dialogs.TitleAreaDialog}
 	   * @see {@link org.eclipse.jface.dialogs.TitleAreaDialog} 
 	   */
@@ -114,6 +123,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	// combo box that lists the metrics
 	    	final Combo cbMetric = new Combo(grpInsertion, SWT.READ_ONLY);
 	    	cbMetric.setItems(this.arrStrMetrics);
+	    	cbMetric.setText(this.arrStrMetrics[0]);
 	    	// button to insert the metric code into the expression field
 	    	Button btnMetric = new Button(grpInsertion, SWT.PUSH);
 	    	btnMetric.setText("Insert metric");
@@ -132,22 +142,29 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	final Combo cbFunc = new Combo(grpInsertion, SWT.READ_ONLY);
 	    	fctMap.loadDefaultFunctions();
 	    	Function arrFct[] = fctMap.getFunctions();
+	    	// create the list of the name of the function
+	    	// list of the name  of the function and its arguments
 	    	final String []arrFunctions = new String[arrFct.length];
+	    	// the list of the name of the function to be inserted
 	    	final String []arrFuncNames = fctMap.getFunctionNames();
 	    	for(int i=0;i<arrFct.length;i++) {
 	    		arrFunctions[i] = arrFct[i].toString();
 	    	}
+	    	// insert the name of the function into the combo box
 	    	if(arrFunctions != null && arrFunctions.length>0) {
 	    		cbFunc.setItems(arrFunctions);
+	    		// by default insert the toplist function
 	    		cbFunc.setText(arrFunctions[0]);
 	    	}
 	    	final Button btnFunc = new Button(grpInsertion, SWT.PUSH);
 	    	btnFunc.setText("Insert function");
 	    	btnFunc.addSelectionListener(new SelectionListener() {
+	    		 // action to insert the name of the function into the formula text
 	   			public void widgetSelected(SelectionEvent e) {
 	   				int iPos = txtExpression.getCaretPosition();
 	   				String sFunc = arrFuncNames[cbFunc.getSelectionIndex()];
 	   				txtExpression.insert( sFunc + "()");
+	   				// put the caret inside the parentheses
 	   				txtExpression.setSelection(iPos+sFunc.length()+1);
 	   			}
 	   			public void widgetDefaultSelected(SelectionEvent e) {
@@ -159,33 +176,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	GridDataFactory.fillDefaults().grab(false, false).applyTo(grpInsertion);
 	    	GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(grpInsertion);
 	    	
-	    	//---------------- preview
-	    	Group grpPreview = new Group(expressionArea, SWT.NONE);
-	    	grpPreview.setText("Help: Formula preview");
-	    	Button btnExpression = new Button(grpPreview, SWT.PUSH);
-	    	btnExpression.setText("Preview");	    	
-	    	lblExpression = new Label(grpPreview, SWT.NONE);
-	    	lblExpression.setText("");
-			GridDataFactory.fillDefaults().grab(true, false).applyTo(lblExpression);
-	    	btnExpression.addSelectionListener(new SelectionListener() {
-	   			public void widgetSelected(SelectionEvent e) {
-	   				if(checkExpression()) {
-	   					Double val = applyFormula(scope);
-	   					if(val != null) {
-	   						lblExpression.setText("Scope:"+scope.getName()+", result:" + val);
-	   						return;
-	   					}
-	   				}
-	   				// there is something wrong with the expression
-	   				lblExpression.setText("Expression is invalid");
-	   			}
-	   			public void widgetDefaultSelected(SelectionEvent e) {
-	   				
-	   			}
-	    	});
-	    	//GridDataFactory.fillDefaults().grab(false, false).applyTo(grpPreview);
-	    	GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(grpPreview);
-	    	
 	    	GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(expressionArea);
 	    }
 		GridLayoutFactory.fillDefaults().margins(5, 5).generateLayout(grpBase);
@@ -194,14 +184,42 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		// options
 		Group grpOptions = new Group(composite,SWT.NONE);
 		{
+			// exclusive or inclusive ?
+			Composite typeArea = new Composite(grpOptions, SWT.NONE);
+			Label lblType = new Label(typeArea, SWT.LEFT);
+			lblType.setText("Type of metric: ");
+			btnExclusive = new Button(typeArea, SWT.RADIO);
+			btnExclusive.setText("Exclusive");
+			btnExclusive.addSelectionListener(new SelectionListener() {
+				public void widgetSelected(SelectionEvent e) { 
+					appendMetricType();
+				}
+	   			public void widgetDefaultSelected(SelectionEvent e) {
+	   				
+	   			}
+			});
+			btnExclusive.setSelection(true);
+			btnInclusive = new Button(typeArea, SWT.RADIO);
+			btnInclusive.setText("Inclusive");
+			btnInclusive.addSelectionListener(new SelectionListener() {
+				public void widgetSelected(SelectionEvent e) { 
+					appendMetricType();
+				}
+	   			public void widgetDefaultSelected(SelectionEvent e) {
+	   				
+	   			}
+			});
+			GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(typeArea);
+
+			// name of the metric
 			Composite nameArea = new Composite(grpOptions, SWT.NONE);
 			Label lblName = new Label(nameArea, SWT.LEFT);
 			lblName.setText("New name for the derived metric:");
 			this.txtName = new Text(nameArea, SWT.NONE);
 			this.txtName.setToolTipText("Enter the new name of the derived metric");
 			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
-			//nameArea.setLayout(new FillLayout(SWT.HORIZONTAL));
 			
+			// percent option
 			this.btnPercent = new Button(grpOptions, SWT.CHECK);
 			this.btnPercent.setText("Display the metric percentage");
 			this.btnPercent.setToolTipText("Also compute the percent in the metric");
@@ -221,28 +239,41 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  //==========================================================
 	  // ---- PRIVATE METHODS
 	  //==========================================================
-	  /**
-	   * Attempt to apply the metrics in the scope into the expression 
-	   * @param scope
-	   * @return
-	   */
-	  private Double applyFormula(Scope scope) {
-		  Double result = null;
-		  MetricVarMap varMap;
-		  if(scope != null) {
-			  varMap = new MetricVarMap(scope);
+	  private boolean appendMetricType() {
+		  int iAppendType = 0; // 0=no append, 1=append inc, 2=append exc
+		  String sName = this.txtName.getText();
+		  boolean bEndsWithInc = sName.endsWith("(I)");
+		  boolean bEndsWithExc = sName.endsWith("(E)");
+		  boolean bIsInclusive = this.btnInclusive.getSelection();
+		  if(bEndsWithInc) {
+			  if(bIsInclusive)
+				  return false;
+			  else {
+				  iAppendType = 2;
+				  sName = sName.substring(0, sName.length()-3);
+			  }
+		  } else if(bEndsWithExc) {
+			  if(!bIsInclusive)
+				  return false;
+			  else {
+				  sName = sName.substring(0, sName.length()-3);
+				  iAppendType = 1;
+			  }
 		  } else {
-			  System.out.println("Warning: scope of the node is not set !");
-			  varMap = new MetricVarMap();
+			  // the name has no suffix for inclusive/exclusive, we just append it
+			  if(bIsInclusive)
+				  iAppendType = 1;
+			  else
+				  iAppendType = 2;
 		  }
-		  varMap.setMetrics(arrMetrics);
-		  try {
-			  result = expFormula.eval(varMap, fctMap);
-		  } catch (java.lang.Exception objException) {
-			  MessageDialog.openError(getShell(),"Invalid expression", "Error:"+objException.toString());
-		  }	   					
-		  return result;
+		  if(iAppendType == 1) {
+			  this.txtName.setText(sName + "(I)");
+		  } else if(iAppendType == 2) {
+			  this.txtName.setText(sName + "(E)");
+		  }
+		  return (iAppendType==0);
 	  }
+
 	  /**
 	   * check if the expression is correct
 	   * @return
@@ -270,7 +301,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		
 	  public void setMetrics(Metric []listOfMetrics) {
 		  int nbMetrics = listOfMetrics.length;
-		  this.arrMetrics = listOfMetrics;
+		  //this.arrMetrics = listOfMetrics;
 		  this.arrStrMetrics = new String[nbMetrics];
 		  for(int i=0;i<nbMetrics;i++) {
 			  this.arrStrMetrics[i]="$"+i + ": "+ listOfMetrics[i].getDisplayName();
@@ -299,6 +330,14 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  public boolean getPercentDisplay() {
 		  return this.bPercent;
 	  }
+	  
+	  /**
+	   * return true if the metrics' type is exclusive
+	   * @return
+	   */
+	  public boolean isExclusive() {
+		  return this.bExclusive;
+	  }
 	  /**
 	   * Call back method when the OK button is pressed
 	   */
@@ -307,6 +346,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			// save the options for further usage (required by the caller)
 			this.bPercent = this.btnPercent.getSelection();
 			this.sMetricName = this.txtName.getText();
+			this.bExclusive = this.btnExclusive.getSelection();
 			super.okPressed();
 		}
 	  }
@@ -315,9 +355,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   * Set the scope for verifying the formula
 	   * @param s scope
 	   */
+	  /*
 	  public void setScope(Scope s) {
 		this.scope = s;
-	  }
+	  } */
 	  
 	//-----------------------------
 	/**
@@ -334,7 +375,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			//scope.setMetricValue(i, val);
 		}
 		ExtDerivedMetricDlg dlg =  new ExtDerivedMetricDlg(null, metrics);
-		dlg.setScope(scope);
+		//dlg.setScope(scope);
 		dlg.open();
 	}
 

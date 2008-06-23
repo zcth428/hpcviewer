@@ -11,11 +11,11 @@ import com.graphbuilder.math.VarMap;
 public class MathTest {
 
 	public static void main(String[] args) {
-		String s = "pi*r^2";
+		String s = "&pi*r^2";
 		Expression x = ExpressionTree.parse(s);
 
 		VarMap vm = new VarMap(false /* case sensitive */);
-		vm.setValue("pi", Math.PI);
+		vm.setValue("&pi", Math.PI);
 		vm.setValue("r", 5);
 
 		FuncMap fm = null; // no functions in expression

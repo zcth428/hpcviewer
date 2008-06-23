@@ -21,7 +21,6 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 
 
-
 //////////////////////////////////////////////////////////////////////////
 //	CLASS METRIC														//
 //////////////////////////////////////////////////////////////////////////
@@ -264,6 +263,9 @@ public MetricValueFormat getDisplayFormat()
 	return this.displayFormat;
 }
 
+/*************************************************************************
+ *	MISC
+ ************************************************************************/
 
 public MetricType getMetricType()
 {
@@ -280,6 +282,9 @@ public void setPartnerIndex(int ei)
 	this.partnerIndex = ei;
 }
 
+public Scope getRootScope() {
+	return this.experiment.getRootScope();
+}
 }
 
 

@@ -29,9 +29,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		super(configurer);
 		this.workbench = configurer.getWindow().getWorkbench();
 		if(args != null && args.length > 0) {
-			//dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-			dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
+			dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+			//dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
 			dataEx.setArguments(args);
+			//configurer.setData(ExperimentData.KEY, dataEx);
 		}
 	}
 
@@ -71,6 +72,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// set the status bar
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
 		System.out.println("AWWA: "+this.workbench.toString()+"/"+windowCurrent.toString()+" "+windowCurrent.getShell().getText());
+		System.out.println("AWWA-2: "+this.workbench.getWorkbenchWindowCount()+
+				" nb-pp:"+ windowCurrent.getPages().length + " active: "+windowCurrent.getActivePage().toString());
+
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
 		// -------------------
@@ -113,8 +117,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		}
 	}
 	
+	/**
+	 * Open an experiment database. A database is a folder that contains XML experiment files 
+	 * (only the first one will be taken into account)
+	 */
 	private void openDatabase() {
-		this.dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		this.dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
+		//ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		ExperimentManager expFile = this.dataEx.getExperimentManager();
 		if(expFile != null) {
 			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow();

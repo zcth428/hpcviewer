@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -31,6 +33,10 @@ public class DisplayExperiment implements IWorkbenchWindowActionDelegate {
 	}
 
 	public void run(IAction action) {
+		//IWorkbenchWindowConfigurer wconf;
+		//if(this.windowCurrent instanceof WorkbenchWindow) {
+		//	wconf = ((WorkbenchWindow)this.windowCurrent).getw
+		//}
 		ExperimentData expData = ExperimentData.getInstance(this.windowCurrent);
 		if(expData.getExperiment() != null) {
 			EditorManager editor = new EditorManager(this.windowCurrent);

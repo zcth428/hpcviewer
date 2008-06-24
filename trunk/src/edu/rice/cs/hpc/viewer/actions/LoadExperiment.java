@@ -69,7 +69,8 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 */
 	public void init(IWorkbenchWindow window) {
 		this.window = window;
-		System.out.println("LE: win="+window.toString());
+		//System.out.println("LE: win="+window.toString());
+		//expFile =  new ExperimentManager(window); //E
 		expFile = ExperimentData.getInstance(window).getExperimentManager();
 	}
 	

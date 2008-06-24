@@ -11,7 +11,11 @@ public class ExperimentData {
     private IWorkbenchWindow window;
     private ExperimentManager expManager;
     
-	static private ExperimentData _singleton = null;
+	//static private ExperimentData _singleton = null;
+	// data key for IWorkbenchWindowConfigurer
+	//static public String KEY = "data";
+    static private java.util.HashMap<IWorkbenchWindow, ExperimentData> mapData = 
+    	new java.util.HashMap<IWorkbenchWindow, ExperimentData>(3);
 	
 	//==================
 	public ExperimentData(IWorkbenchWindow w) {
@@ -22,13 +26,23 @@ public class ExperimentData {
 	 * return the object.
 	 * @return
 	 */
+	/*
 	static public ExperimentData getInstance(IWorkbenchWindow w) {
 		if(ExperimentData._singleton == null) {
 			ExperimentData._singleton = new ExperimentData(w);
 		}
 		return ExperimentData._singleton;
-	}
+	}*/
 	
+	static public ExperimentData getInstance(IWorkbenchWindow w) {
+		if (mapData.containsKey(w)) {
+			return mapData.get(w);
+		} else {
+			ExperimentData objData = new ExperimentData(w);
+			mapData.put(w, objData);
+			return objData;
+		}
+	}
 	/**
 	 * Retrieve the active experiment manager
 	 * @return
@@ -39,7 +53,7 @@ public class ExperimentData {
 			//this.window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 			// theoretically, only one single experiment file for one RCP
 			// or do we want to support multiple experiments in the future ?
-			this.expManager = new ExperimentManager(ExperimentData._singleton.window);
+			this.expManager = new ExperimentManager(this.window);//(ExperimentData._singleton.window);
 		}
 		return this.expManager;
 	}

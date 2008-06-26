@@ -238,10 +238,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			// the flat view; only propagate inclusive costs.
 			// 2008 06 07 - John Mellor-Crummey
 			//---------------------------------------------------------------------------------------------------
-			//if(this.iMetric>=0)
-			//	flat_s.accumulateMetrics(s, this.iMetric, inclusiveOnly);
-			//else
-				flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
+			flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
 			if (flat_s instanceof CallSiteScope) {
 				//---------------------------------------------------------------------------------------------------
 				// for the flat view, we only want to propagate exclusive costs for the call site,
@@ -250,19 +247,12 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 				// cost of the call. do this only for CallSiteScopes.
 				// 2008 06 07 - John Mellor-Crummey
 				//---------------------------------------------------------------------------------------------------
-				/*if(this.iMetric>=0)
-					((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
-						((CallSiteScope) s).getLineScope(), this.iMetric, exclusiveOnly);
-				else*/
-					((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
+				((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
 							((CallSiteScope) s).getLineScope(), exclusiveOnly, this.numberOfPrimaryMetrics);
 
 			}
 		} else {
-			/*if(this.iMetric>=0)
-				flat_s.accumulateMetrics(s, this.iMetric, filter);
-			else */
-				flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
+			flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
 		}
 
 		return flat_s;

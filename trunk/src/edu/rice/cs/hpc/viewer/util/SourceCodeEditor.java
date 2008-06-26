@@ -16,13 +16,12 @@ public class SourceCodeEditor extends TextEditor {
 	public SourceCodeEditor() {
 		super();
 	}
-	/*
-	 * @see org.eclipse.ui.texteditor.StatusTextEditor#validateEditorInputState()
-	 * @since 3.3
-	 */
+	
+	/**
+	 * Disable editing the editor 
+	 * 	 
+	 * */
 	public boolean validateEditorInputState() {
-		//return super.validateEditorInputState();
-		//return (new org.eclipse.ui.texteditor.StatusTextEditor()).validateEditorInputState();
 		return ((AbstractTextEditor)(this)).validateEditorInputState();
 	}
 

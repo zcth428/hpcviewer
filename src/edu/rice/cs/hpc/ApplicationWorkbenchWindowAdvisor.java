@@ -71,10 +71,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		*/
 		// set the status bar
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
-		System.out.println("AWWA: "+this.workbench.toString()+"/"+windowCurrent.toString()+" "+windowCurrent.getShell().getText());
-		System.out.println("AWWA-2: "+this.workbench.getWorkbenchWindowCount()+
-				" nb-pp:"+ windowCurrent.getPages().length + " active: "+windowCurrent.getActivePage().toString());
-
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
 		// -------------------

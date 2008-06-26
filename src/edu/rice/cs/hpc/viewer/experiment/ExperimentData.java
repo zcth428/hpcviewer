@@ -5,6 +5,18 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+/**
+ * Class to store an experiment data for each instance of Workbench Window
+ * This class is used to share the data between different objects within the
+ * same workbench window.
+ * Since it is possible to have multiple instances of hpcviewer RCP, and 
+ * consequently multiple instances of WorkbenchWindow, ExperimentData has
+ * to stores multiple experiment data (one for each workbench window).
+ * 
+ * In order to use this class, user needs to 
+ * @author laksonoadhianto
+ *
+ */
 public class ExperimentData {
     private Experiment experimentActive;	// experiment data
     private String[] args; // command line arguments
@@ -17,7 +29,14 @@ public class ExperimentData {
     static private java.util.HashMap<IWorkbenchWindow, ExperimentData> mapData = 
     	new java.util.HashMap<IWorkbenchWindow, ExperimentData>(3);
 	
-	//==================
+	//========================================================================
+    // CONSTRUCTOR
+	//========================================================================
+    /**
+     * Constructor of the class. IF POSSIBLE, DO NOT INSTANTIATE THIS CLASS DIRECTLY
+     * INSTEAD, USER SHOULD USE THE METHOD getInstance()
+     * @param w: the current workbench window
+     */
 	public ExperimentData(IWorkbenchWindow w) {
 		this.window = w;
 	}
@@ -34,6 +53,10 @@ public class ExperimentData {
 		return ExperimentData._singleton;
 	}*/
 	
+	/**
+	 * Retrieve a global experiment data of a given workbench window
+	 * If the data doesn't exist, create it, otherwise return the existing data
+	 */
 	static public ExperimentData getInstance(IWorkbenchWindow w) {
 		if (mapData.containsKey(w)) {
 			return mapData.get(w);

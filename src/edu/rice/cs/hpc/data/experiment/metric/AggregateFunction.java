@@ -10,7 +10,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
  * @author laksonoadhianto
  *
  */
-public class Aggregate implements Function {
+public class AggregateFunction implements Function {
 
 	private Metric []arrMetrics;
 	private RootScope rootscope;
@@ -19,7 +19,7 @@ public class Aggregate implements Function {
 	 * Retrieve the aggregate value of a metric
 	 * @param metrics: a list of metrics
 	 */
-	public Aggregate(Metric []metrics, RootScope scope) {
+	public AggregateFunction(Metric []metrics, RootScope scope) {
 		this.arrMetrics = metrics;
 		this.rootscope = scope;
 	}

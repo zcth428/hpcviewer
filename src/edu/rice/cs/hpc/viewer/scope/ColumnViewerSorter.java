@@ -181,9 +181,9 @@ public class ColumnViewerSorter extends ViewerComparator {
 				} else {
 					MetricValue mv1 = node1.getScope().getMetricValue(metric);
 					MetricValue mv2 = node2.getScope().getMetricValue(metric);
-					
-					if (mv1.getValue()>mv2.getValue()) return -1;
-					if (mv1.getValue()<mv2.getValue()) return 1;
+					return mv2.compareTo(mv1);
+					//if (mv1.getValue()>mv2.getValue()) return -1;
+					//if (mv1.getValue()<mv2.getValue()) return 1;
 				}
 				// if the two values are equal, look at the text of the tree node
 				return this.doCompare(node1, node2);

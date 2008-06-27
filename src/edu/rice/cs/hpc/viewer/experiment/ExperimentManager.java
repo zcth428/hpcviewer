@@ -112,42 +112,6 @@ public class ExperimentManager {
 			return this.openFileExperimentFromFiles(fileXML);
 		return false;
 	}
-	
-	/**
-	 * Open experiment database based on database directory
-	 * @param sDatabaseDir
-	 * @return
-	 */
-	/*
-	public boolean openFileExperimentFromDatabase(String sDatabaseDir) {
-		// find XML files in this directory
-		File files = new File(sDatabaseDir);
-		// for debugging purpose, let have separate variable
-		File filesXML[] = files.listFiles(new FileXMLFilter());
-		// store it in the class variable for further usage
-		ExperimentManager.sLastPath = sDatabaseDir;
-		// store the current path in the preference
-		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-		objPref.setValue(PreferenceConstants.P_PATH, sDatabaseDir);
-
-		return openFileExperimentFromFiles(filesXML);
-	}
-	*/
-	/**
-	 * Open database that can be based on the database directory or file
-	 * @param sPath
-	 * @return
-	 */
-	/*
-	public boolean openFileOrDatabase(String sPath) {
-		File objPath = new File(sPath);
-		if(objPath.isFile()) {
-			return this.setExperiment(sPath);
-		} else if(objPath.isDirectory()) {
-			return this.openFileExperimentFromDatabase(sPath);
-		} 
-		return false;
-	}*/
 
 	//==================================================================
 	// ---------- PRIVATE PART-----------------------------------------
@@ -168,7 +132,6 @@ public class ExperimentManager {
 				// we will continue to verify the content of the list of XML files
 				// until we fine the good one.
 		    	bContinue = (this.setExperiment(sFile) == false);
-		    	//System.out.println(fileXML[i].getName()+":"+(!bContinue));
 			}
 	   		if(bContinue) {
 	   		} else
@@ -186,7 +149,6 @@ public class ExperimentManager {
 	 */
 	private boolean setExperiment(String sFilename) {
 		IWorkbenchPage objPage= this.window.getActivePage();
-		System.out.println("EM Debug: workbench has "+this.window.getPages().length+" pages");
 		// read the XML experiment file
 		ExperimentView expViewer = new ExperimentView(objPage);
 	    if(expViewer != null) {
@@ -194,20 +156,6 @@ public class ExperimentManager {
 	    	expViewer.loadExperimentAndProcess(sFilename);
 	     } else
 	    	 return false; //TODO we need to throw an exception instead
-	    /*
-	    ScopeView objView=(ScopeView) objPage.findView(ScopeView.ID);
-		if(objView == null) {
-   	     //the view is not hidden, instead it has not
-   	     //been opened yet
-			try {
-				objView=(ScopeView) objPage.showView(
-						ScopeView.ID, "Scope", IWorkbenchPage.VIEW_CREATE);
-			} catch(org.eclipse.ui.PartInitException e) {
-				MessageDialog.openError(window.getShell(), 
-						"Error opening view", "Unabale to open the scope view. Please activate the scope view manually.");
-				return false;
-			}
-		}*/
 		return true;
 	}
 

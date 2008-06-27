@@ -52,12 +52,12 @@ public class ScopeView extends ViewPart {
      * Display the source code of the node in the editor area
      * @param node the current OR selected node
      */
-    private void displayFileEditor(Scope.Node node) {
+    private void displayFileEditor(Scope scope) {
     	if(editorSourceCode == null) {
     		this.editorSourceCode = new EditorManager(this.getSite());
     	}
     	try {
-    		this.editorSourceCode.displayFileEditor(node);
+    		this.editorSourceCode.displayFileEditor(scope);
     	} catch (FileNotFoundException e) {
     		this.objViewActions.showErrorMessage(e.getMessage());
     	}
@@ -142,9 +142,9 @@ public class ScopeView extends ViewPart {
         		sMenuTitle = "Show " + scope.getSourceFile().getName();
         	} else
         		sMenuTitle= "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
-        	ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, node){
+        	ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, scope){
             	public void run() {
-            		displayFileEditor(this.nodeSelected);
+            		displayFileEditor(this.scope);
             	}
         	};
         	acShowCode.setEnabled(node.hasSourceCodeFile);
@@ -158,9 +158,9 @@ public class ScopeView extends ViewPart {
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
         	// setup the menu
             	sMenuTitle = "Callsite "+lineScope.getToolTip();
-            	ScopeViewTreeAction acShowCallsite = new ScopeViewTreeAction(sMenuTitle, lineScope.getTreeNode()){
+            	ScopeViewTreeAction acShowCallsite = new ScopeViewTreeAction(sMenuTitle, lineScope){
                 	public void run() {
-                		displayFileEditor(this.nodeSelected);
+                		displayFileEditor(this.scope);
                 	}
                 }; 
             	// do not show up in the menu context if the callsite does not exist
@@ -197,13 +197,13 @@ public class ScopeView extends ViewPart {
      *
      */
     private class ScopeViewTreeAction extends Action {
-    	protected Scope.Node nodeSelected;
-    	public ScopeViewTreeAction(String sTitle, Scope.Node nodeCurrent) {
+    	protected Scope scope;
+    	public ScopeViewTreeAction(String sTitle, Scope scopeCurrent) {
     		super(sTitle);
-    		this.nodeSelected = nodeCurrent;
+    		this.scope = scopeCurrent;
     	}
-    	public void setScopeNode(Scope.Node node) {
-    		this.nodeSelected = node;
+    	public void setScopeNode(Scope scopeCurrent) {
+    		this.scope = scopeCurrent;
     	}
     }
     
@@ -282,7 +282,7 @@ public class ScopeView extends ViewPart {
     		            	// get the call site scope
     		            	CallSiteScope callSiteScope = (CallSiteScope) scope;
     		            	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
-    		            	displayFileEditor(lineScope.getTreeNode());
+    		            	displayFileEditor(lineScope);
     		            } else {
     		            }
     		        }
@@ -293,7 +293,7 @@ public class ScopeView extends ViewPart {
     		        // we will treat this click if the object is Scope.Node
     		        if(o instanceof Scope.Node) {
     		        	Scope.Node objNode = (Scope.Node) o;
-    		        	displayFileEditor(objNode);
+    		        	displayFileEditor(objNode.getScope());
     		        }
         		}
         	}
@@ -389,7 +389,7 @@ public class ScopeView extends ViewPart {
         	for (int i=0; i<myExperiment.getMetricCount(); i++)
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
-        		colMetrics[i] = Utilities.addTreeColumn(treeViewer, myExperiment.getMetric(i), i+1, (i==0));
+        		colMetrics[i] = this.treeViewer.addTreeColumn(myExperiment.getMetric(i), i+1, (i==0));
         	}
             treeViewer.setColumnProperties(titles); // do need this ??
             //treeViewer.getTree().setSelection(TreeItem);

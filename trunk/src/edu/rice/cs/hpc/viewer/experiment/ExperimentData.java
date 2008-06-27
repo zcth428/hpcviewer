@@ -13,7 +13,8 @@ import org.eclipse.ui.PlatformUI;
  * consequently multiple instances of WorkbenchWindow, ExperimentData has
  * to stores multiple experiment data (one for each workbench window).
  * 
- * In order to use this class, user needs to 
+ * In order to use this class, user needs to call getInstance() method first 
+ * 
  * @author laksonoadhianto
  *
  */
@@ -23,9 +24,6 @@ public class ExperimentData {
     private IWorkbenchWindow window;
     private ExperimentManager expManager;
     
-	//static private ExperimentData _singleton = null;
-	// data key for IWorkbenchWindowConfigurer
-	//static public String KEY = "data";
     static private java.util.HashMap<IWorkbenchWindow, ExperimentData> mapData = 
     	new java.util.HashMap<IWorkbenchWindow, ExperimentData>(3);
 	
@@ -67,16 +65,15 @@ public class ExperimentData {
 		}
 	}
 	/**
-	 * Retrieve the active experiment manager
+	 * Retrieve the current experiment manager of this workbench window.
+	 * Remark: each workbench window has its own data and its own ExperimentManager
 	 * @return
 	 */
 	public ExperimentManager getExperimentManager() {
 		if(this.expManager == null) {
-			// normally only one single workbench window !
-			//this.window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-			// theoretically, only one single experiment file for one RCP
-			// or do we want to support multiple experiments in the future ?
-			this.expManager = new ExperimentManager(this.window);//(ExperimentData._singleton.window);
+			// In order to reduce memory consumption we need to make sure that only one
+			// ExperimentManager is created per workbench window
+			this.expManager = new ExperimentManager(this.window);
 		}
 		return this.expManager;
 	}

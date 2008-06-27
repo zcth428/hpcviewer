@@ -33,16 +33,16 @@ public class DisplayExperiment implements IWorkbenchWindowActionDelegate {
 	}
 
 	public void run(IAction action) {
-		//IWorkbenchWindowConfigurer wconf;
-		//if(this.windowCurrent instanceof WorkbenchWindow) {
-		//	wconf = ((WorkbenchWindow)this.windowCurrent).getw
-		//}
+		// get the the experiment for this workbench window
 		ExperimentData expData = ExperimentData.getInstance(this.windowCurrent);
+		// is experiment already opened ?
 		if(expData.getExperiment() != null) {
+			// prepare the editor
 			EditorManager editor = new EditorManager(this.windowCurrent);
 			try {
 				editor.openFileEditor(expData.getFilename());
 			} catch (FileNotFoundException e) {
+				// can not find the file (or something goes wrong)
 				MessageDialog.openError(this.windowCurrent.getShell(), 
 						"Error: File not found", 
 						e.getMessage());

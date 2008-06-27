@@ -441,7 +441,7 @@ public class ScopeViewActions {
 			
 			int iPosition = exp.getMetricCount()+1;
 			this.treeViewer.getTree().setRedraw(false);
-			TreeViewerColumn colDerived = Utilities.addTreeColumn(this.treeViewer, objMetric, 
+			TreeViewerColumn colDerived = this.treeViewer.addTreeColumn(objMetric, 
 					iPosition, false);
 			// update the viewer, to refresh its content and invoke the provider
 			// bug SWT https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811

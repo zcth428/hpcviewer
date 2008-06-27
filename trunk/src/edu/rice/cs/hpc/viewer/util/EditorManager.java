@@ -62,17 +62,17 @@ public class EditorManager {
 	
 	/**
 	 * Open and Display editor
-	 * @param node
+	 * @param scope of the node
 	 */
-	public void displayFileEditor(Scope.Node node) 
+	public void displayFileEditor(Scope scope) 
 	throws FileNotFoundException
 	{
 		// get the complete file name
-		if(Utilities.isFileReadable(node.getScope())) {
+		if(Utilities.isFileReadable(scope)) {
 			String sLongName;
-			FileSystemSourceFile newFile = ((FileSystemSourceFile)node.getScope().getSourceFile());
+			FileSystemSourceFile newFile = ((FileSystemSourceFile)scope.getSourceFile());
 			sLongName = newFile.getCompleteFilename();
-			int iLine = node.getScope().getFirstLineNumber();
+			int iLine = scope.getFirstLineNumber();
 			openFileEditor( sLongName, newFile.getName(), iLine );
 		}
 		//} else
@@ -92,10 +92,6 @@ public class EditorManager {
 			this.openFileEditor(sFilename, objInfo.getName(), 1);
 		else
 			throw new FileNotFoundException("File not found: "+sFilename);
-			/*
-			org.eclipse.jface.dialogs.MessageDialog.openError(this.windowCurrent.getShell(), 
-					"Error Opening File",
-					"File:" +sFilename + "("+objInfo.getName()+") does not exist");*/
 	}
 	
 	/**
@@ -114,7 +110,6 @@ public class EditorManager {
 		// get the active page for the editor
 		org.eclipse.ui.IWorkbenchPage wbPage = this.windowCurrent.getActivePage();
 		if(wbPage != null ){
-			//objFile=objFile.getChild(objFile.fetchInfo().getName());
 			objFile=objFile.getChild(sFilename);
 	    	if(!objFile.fetchInfo().exists()) {
 	    		throw new FileNotFoundException(sFilename+": File not found.");
@@ -123,7 +118,7 @@ public class EditorManager {
 	    		IEditorPart objEditor = openEditorOnFileStore(wbPage, objFile); 
 	    		this.setEditorMarker(wbPage, iLineNumber);
 	    	} catch (PartInitException e) {
-	    		System.err.println("Error opening the file !");
+	    		System.err.println(sFilename+": Error opening the file.");
 	    		System.err.println(e.getMessage());
 	    	}
 		}
@@ -164,15 +159,9 @@ public class EditorManager {
 		}
 
         IEditorInput input = getEditorInput(fileStore);
-        String editorId = getEditorId(fileStore);
+        //String editorId = getEditorId(fileStore);
         // forbid eclipse to use an external editor
-        // for unknown reason, sometimes eclipse linux version call this external editor
-        if(editorId.compareTo(org.eclipse.ui.IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID) == 0) {
-        	// use CDT if installed
-        	//editorId = "org.eclipse.cdt.ui.editor.CEditor";
-        	editorId = EditorsUI.DEFAULT_TEXT_EDITOR_ID;
-        }
-        editorId = edu.rice.cs.hpc.viewer.util.SourceCodeEditor.ID;
+        String editorId = edu.rice.cs.hpc.viewer.util.SourceCodeEditor.ID;
         // open the editor on the file
         return page.openEditor(input, editorId);
     }
@@ -187,6 +176,7 @@ public class EditorManager {
 	 * @return the id of the appropriate editor
 	 * @since 3.3
 	 */
+	/*
 	private static String getEditorId(IFileStore fileStore) {
 		IEditorDescriptor descriptor;
 		try {
@@ -198,7 +188,7 @@ public class EditorManager {
 			return descriptor.getId();
 		return null;
 	}
-
+*/
 	/**
 	 * Create the Editor Input appropriate for the given <code>IFileStore</code>.
 	 * The result is a normal file editor input if the file exists in the

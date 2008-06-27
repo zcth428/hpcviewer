@@ -37,7 +37,7 @@ public class ExtFuncMap extends FuncMap {
 	}
 
 	public void init(Metric []metrics, RootScope rootscope) {
-		Aggregate fct = new Aggregate(metrics, rootscope);
+		AggregateFunction fct = new AggregateFunction(metrics, rootscope);
 		this.setFunction("aggregate", fct);
 		this.loadDefaultFunctions();
 	}

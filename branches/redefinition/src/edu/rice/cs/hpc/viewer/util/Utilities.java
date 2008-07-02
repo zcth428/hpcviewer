@@ -23,7 +23,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 
 import edu.rice.cs.hpc.viewer.metric.ExtDerivedMetricLabelProvider;
 import edu.rice.cs.hpc.viewer.metric.MetricLabelProvider;

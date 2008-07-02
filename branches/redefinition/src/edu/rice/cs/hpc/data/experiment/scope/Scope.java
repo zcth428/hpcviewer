@@ -22,7 +22,7 @@ import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.*;
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric; // laks: add derived metric feature
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -623,6 +623,7 @@ public void setMetricValue(int index, MetricValue value)
  * Retrieve the text value of the metric
  * @PARAM: the metric
  */
+/*
 public String getMetricTextValue(Metric metric) {
 	MetricValue mv = this.getMetricValue(metric);
 	String sText;
@@ -632,7 +633,7 @@ public String getMetricTextValue(Metric metric) {
 	}
 	return sText;
 }
-
+*/
 /**
  * Get the percentage of this scope
  * @param metric

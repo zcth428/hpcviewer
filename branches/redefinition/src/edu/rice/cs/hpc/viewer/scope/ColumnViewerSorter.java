@@ -11,8 +11,8 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.graphics.Image;
 
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
+//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -29,13 +29,13 @@ public class ColumnViewerSorter extends ViewerComparator {
 	private TreeColumn column;		// column
 	private TreeViewer viewer;	// viewer
 	private int iColNumber;			// column position
-	private Metric metric;			// data for metric table
+	private BaseMetric metric;			// data for metric table
 	
 	/**
 	 * Update the metric for this column
 	 * @param newMetric
 	 */
-	public void setMetric(Metric newMetric) {
+	public void setMetric(BaseMetric newMetric) {
 		this.metric = newMetric;
 	}
 	/**
@@ -45,7 +45,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 	 * @param newMetric: the metric
 	 * @param colNum: the position
 	 */
-	public ColumnViewerSorter(TreeViewer viewer, TreeColumn column, Metric newMetric, int colNum) {
+	public ColumnViewerSorter(TreeViewer viewer, TreeColumn column, BaseMetric newMetric, int colNum) {
 		this.column = column;
 		this.iColNumber = colNum;
 		this.viewer = viewer;
@@ -171,10 +171,16 @@ public class ColumnViewerSorter extends ViewerComparator {
 			if(this.iColNumber==0) {
 				return this.doCompare(node1, node2);
 			} else {
+				MetricValue mv1 = this.metric.getValue(node1.getScope());
+				MetricValue mv2 = this.metric.getValue(node2.getScope());
+				int iRet = mv2.compareTo(mv1);
+				if(iRet != 0)
+					return iRet;
 				// different treatment between normal metrics and derived metrics
-				if(metric instanceof ExtDerivedMetric) {
+				/*
+				if(metric instanceof DerivedMetric) {
 					
-					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
+					DerivedMetric edm = (DerivedMetric) metric;
 					int iResult = edm.compare(node1.getScope(), node2.getScope());
 					if(iResult != 0)
 						return iResult;
@@ -184,7 +190,7 @@ public class ColumnViewerSorter extends ViewerComparator {
 					return mv2.compareTo(mv1);
 					//if (mv1.getValue()>mv2.getValue()) return -1;
 					//if (mv1.getValue()<mv2.getValue()) return 1;
-				}
+				} */
 				// if the two values are equal, look at the text of the tree node
 				return this.doCompare(node1, node2);
 			}

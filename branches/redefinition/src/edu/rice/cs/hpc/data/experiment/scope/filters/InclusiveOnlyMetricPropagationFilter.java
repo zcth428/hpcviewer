@@ -1,6 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.filters;
 
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.LineScope;
@@ -9,9 +9,9 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 //only propagagate inclusive metrics
 public class InclusiveOnlyMetricPropagationFilter implements MetricValuePropagationFilter {
 	/** The parsed metric objects. */
-	protected Metric[] metrics;
+	protected BaseMetric[] metrics;
 
-	public InclusiveOnlyMetricPropagationFilter(Metric[] metricArray) {
+	public InclusiveOnlyMetricPropagationFilter(BaseMetric[] metricArray) {
 		this.metrics = metricArray;
 	}
 

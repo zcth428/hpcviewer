@@ -85,7 +85,7 @@ public class ScopeViewActions {
 	 * @param iLevel
 	 * @return
 	 */
-	private HotCallPath getHotCallPath(TreePath pathItem, TreeItem item, Scope scope, Metric metric, int iLevel) {
+	private HotCallPath getHotCallPath(TreePath pathItem, TreeItem item, Scope scope, BaseMetric metric, int iLevel) {
 		if(scope == null || metric == null || item == null)
 			return null;
 		// expand the immediate child if necessary
@@ -106,8 +106,13 @@ public class ScopeViewActions {
 				double dParent, dChild;
 				// derived metric has no information on the percentage
 				// so we need to treat them exclusively
-				if(metric instanceof ExtDerivedMetric) {
-					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
+				MetricValue mvParent = metric.getValue(scope);
+				MetricValue mvChild = metric.getValue(scopeChild);
+				dParent = mvParent.getValue();
+				dChild = mvChild.getValue();
+				/*
+				if(metric instanceof DerivedMetric) {
+					DerivedMetric edm = (DerivedMetric) metric;
 					Double objParent = edm.getDoubleValue(scope); //edm.getDoubleValue(scope);
 					Double objChild = edm.getDoubleValue(scopeChild); //edm.getDoubleValue(scopeChild);
 					if(objParent == null)
@@ -121,7 +126,7 @@ public class ScopeViewActions {
 				} else {
 					dParent = scope.getMetricPercentValue(metric);
 					dChild = scopeChild.getMetricPercentValue(metric);
-				}
+				}*/
 				if(dParent > dChild) {
 					x1 = dParent; x2 = dChild;
 				} else {
@@ -280,8 +285,8 @@ public class ScopeViewActions {
 		}
 		// get the metric data
 		Object data = colSelected.getData();
-		if(data instanceof Metric && item != null) {
-			Metric metric = (Metric) data;
+		if(data instanceof BaseMetric && item != null) {
+			BaseMetric metric = (BaseMetric) data;
 			// find the hot call path
 			int iLevel = 0;
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
@@ -418,7 +423,8 @@ public class ScopeViewActions {
 	 */
 	public void addExtNewMetric() {
 		// prepare the dialog box
-		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objSite.getShell(), this.myRootScope.getExperiment().getMetrics());
+		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objSite.getShell(), 
+				this.myRootScope.getExperiment().getMetrics());
 		// prepare the scope node for the preview of the expression
 		Scope.Node node = this.getSelectedNode();
 		if(node == null)
@@ -437,7 +443,7 @@ public class ScopeViewActions {
 				objMetricType = MetricType.INCLUSIVE;
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
-			ExtDerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, objMetricType);
+			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, objMetricType);
 			
 			int iPosition = exp.getMetricCount()+1;
 			this.treeViewer.getTree().setRedraw(false);

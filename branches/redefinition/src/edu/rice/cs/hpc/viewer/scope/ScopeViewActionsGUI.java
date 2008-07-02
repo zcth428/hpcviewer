@@ -33,8 +33,8 @@ import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
+//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 /**
  * @author laksono
  *
@@ -154,11 +154,14 @@ public class ScopeViewActionsGUI {
     	// --- prepare text for base metrics
     	// get the metrics for all columns
     	for (int i=0; i< nbColumns - 1; i++) {
-        	Metric metric = this.myExperiment.getMetric(i);
-       		if(metric instanceof ExtDerivedMetric) {
-        		sText[i+1] = ((ExtDerivedMetric)metric).getTextValue(scope);
+        	BaseMetric metric = this.myExperiment.getMetric(i);
+        	sText[i+1] = metric.getMetricTextValue(scope);
+        	/*
+       		if(metric instanceof DerivedMetric) {
+        		sText[i+1] = ((DerivedMetric)metric).getTextValue(scope);
         	} else
         		sText[i+1] = scope.getMetricTextValue(metric);
+       		*/
     	}
     	
     	// draw the root node item

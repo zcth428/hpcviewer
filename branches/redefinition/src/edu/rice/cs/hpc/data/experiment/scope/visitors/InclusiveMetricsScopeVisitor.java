@@ -18,6 +18,8 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.FlatViewInclMetricPropagati
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
+import edu.rice.cs.hpc.data.experiment.metric.*;
+
 public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 	private int numberOfPrimaryMetrics;
 	MetricValuePropagationFilter filter;

@@ -13,8 +13,9 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.swt.widgets.TreeItem;
 
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.viewer.metric.ExtDerivedMetricLabelProvider;
 import edu.rice.cs.hpc.viewer.metric.MetricLabelProvider;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -68,7 +69,7 @@ public class ScopeTreeViewer extends TreeViewer {
      * @param bSorted: flag if the column should be sorted or not
      * @return the tree viewer column
      */
-	public TreeViewerColumn addTreeColumn(Metric objMetric, int iPosition, boolean bSorted) {
+	public TreeViewerColumn addTreeColumn(BaseMetric objMetric, int iPosition, boolean bSorted) {
 		// laks: addendum for column  
     	TreeViewerColumn colMetric = addTreeColumn(objMetric, iPosition, bSorted, false);
 		colMetric.setLabelProvider(new MetricLabelProvider(objMetric, Utilities.fontMetric));
@@ -84,13 +85,14 @@ public class ScopeTreeViewer extends TreeViewer {
      * @param bSorted
      * @return
      */
-    public TreeViewerColumn addTreeColumn(ExtDerivedMetric objMetric, int iPosition, 
+	/*
+    public TreeViewerColumn addTreeColumn(DerivedMetric objMetric, int iPosition, 
     		boolean bSorted) {
     	TreeViewerColumn col = addTreeColumn(objMetric, iPosition, bSorted, true);
     	col.setLabelProvider(new ExtDerivedMetricLabelProvider(objMetric, Utilities.fontMetric));
     	return col;
     }
-
+*/
     /**
      * Add new tree column for derived metric
      * @param treeViewer
@@ -100,7 +102,7 @@ public class ScopeTreeViewer extends TreeViewer {
      * @param b: flag to indicate if this column should be displayed or not (default should be true)
      * @return
      */
-    private TreeViewerColumn addTreeColumn(Metric objMetric, int iPosition, 
+    private TreeViewerColumn addTreeColumn(BaseMetric objMetric, int iPosition, 
     		boolean bSorted, boolean bDisplayed) {
     	TreeViewerColumn colMetric = new TreeViewerColumn(this,SWT.RIGHT);	// add column
     	TreeColumn col = colMetric.getColumn();

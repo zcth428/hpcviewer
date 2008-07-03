@@ -30,9 +30,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		this.workbench = configurer.getWindow().getWorkbench();
 		if(args != null && args.length > 0) {
 			dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-			//dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
 			dataEx.setArguments(args);
-			//configurer.setData(ExperimentData.KEY, dataEx);
 		}
 	}
 
@@ -59,16 +57,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Action when the window is already opened
 	 */
 	public void postWindowOpen() {
-		// set the perspective (to setup the view as well)
-		/*
-		 * try {
-		   workbench.showPerspective("edu.rice.cs.hpc.perspective", 
-		      workbench.getActiveWorkbenchWindow());
-		   
-		} catch (org.eclipse.ui.WorkbenchException e) {
-			e.printStackTrace();
-		}
-		*/
 		// set the status bar
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
@@ -90,15 +78,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    	// data looks OK
 		    	String []sArgs = this.dataEx.getArguments();
 		    	String sFilename = null;
+		    	// find the file in the list of arguments
 		    	for(int i=0;i<sArgs.length;i++) {
 		    		if(sArgs[i].charAt(0) != '-') {
 		    			sFilename = sArgs[i];
 		    			break;
 		    		}
 		    	}
+		    	// if a filename exist, try to open it
 		    	if(sFilename != null)
 		    		expViewer.asyncLoadExperimentAndProcess(sFilename);
 		    	else 
+		    		// otherwise, show the open folder dialog to choose the database
 		    		this.openDatabase();
 		     } else {
 		    	 statusline.setMessage("Cannot relocate the viewer. Please open the database manually.");
@@ -118,8 +109,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * (only the first one will be taken into account)
 	 */
 	private void openDatabase() {
-		this.dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
-		//ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
+			ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		ExperimentManager expFile = this.dataEx.getExperimentManager();
 		if(expFile != null) {
 			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow();
@@ -142,7 +133,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public boolean preWindowShellClose() {
 		boolean bClosed = this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
-		//System.out.println("Close all editors:"+bClosed);
 		return super.preWindowShellClose();
 	}
 }

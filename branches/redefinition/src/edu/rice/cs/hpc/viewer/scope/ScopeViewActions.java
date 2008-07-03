@@ -110,30 +110,13 @@ public class ScopeViewActions {
 				MetricValue mvChild = metric.getValue(scopeChild);
 				dParent = mvParent.getValue();
 				dChild = mvChild.getValue();
-				/*
-				if(metric instanceof DerivedMetric) {
-					DerivedMetric edm = (DerivedMetric) metric;
-					Double objParent = edm.getDoubleValue(scope); //edm.getDoubleValue(scope);
-					Double objChild = edm.getDoubleValue(scopeChild); //edm.getDoubleValue(scopeChild);
-					if(objParent == null)
-						dParent = Integer.MIN_VALUE; //-1;
-					else
-						dParent = objParent.doubleValue();
-					if(objChild == null)
-						dChild = Integer.MIN_VALUE; //-1;
-					else
-						dChild = objChild.doubleValue();
-				} else {
-					dParent = scope.getMetricPercentValue(metric);
-					dChild = scopeChild.getMetricPercentValue(metric);
-				}*/
+
 				if(dParent > dChild) {
 					x1 = dParent; x2 = dChild;
 				} else {
 					x1 = dChild; x2 = dParent;
 				}
 
-				//System.out.println("SVA:"+b+" -> "+d+" " + x2/x1);
 				// simple comparison: if the child has "huge" difference compared to its parent
 				// then we consider it as host spot node.
 				if(x2 < (ScopeViewActions.fTHRESHOLD * x1)) {

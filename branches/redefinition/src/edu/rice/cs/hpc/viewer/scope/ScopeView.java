@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 // User interface
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.PartInitException;
+
 // SWT
 import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;

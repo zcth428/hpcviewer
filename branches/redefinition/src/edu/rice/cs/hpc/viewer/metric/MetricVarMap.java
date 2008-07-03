@@ -86,24 +86,11 @@ public class MetricVarMap extends VarMap {
 					MetricValue value = metric.getValue(scope);
 					if(value.isAvailable())
 						return value.getValue();
-					throw new RuntimeException(varName);
+					// Laks 2008.07.03: if the value is not available, we just assume it equals to zero
+					else
+						return 0;
+					//throw new RuntimeException(varName);
 					
-					/*
-					// TODO: dirty tricks: separate treatment for derived metric.
-					// we should use polymorphism  in the future
-					if(metric instanceof DerivedMetric) {
-						//return scope.getDerivedMetricValue((ExtDerivedMetric)metric, metric.getIndex()).getValue();
-						return ((DerivedMetric)metric).getDoubleValue(scope); 
-					} else {
-						MetricValue mv  = scope.getMetricValue(metric);
-						if(mv.isAvailable())
-							return this.scope.getMetricValue(metric).getValue();
-						// in this case, the value is invalid or the metric has no value
-						// it is important to notify not to include the value into the table
-						//this.hasValidValue = false;
-						throw new RuntimeException(varName);
-					}
-					*/
 				} else
 					throw new RuntimeException("metric index is not valid: " + varName);
 			} catch (java.lang.NumberFormatException e) {

@@ -77,23 +77,6 @@ public class ScopeTreeViewer extends TreeViewer {
     }
     
     /**
-     * Create a new column for extended derived metric (which uses an expression formula)
-     * 
-     * @param treeViewer
-     * @param objMetric
-     * @param iPosition
-     * @param bSorted
-     * @return
-     */
-	/*
-    public TreeViewerColumn addTreeColumn(DerivedMetric objMetric, int iPosition, 
-    		boolean bSorted) {
-    	TreeViewerColumn col = addTreeColumn(objMetric, iPosition, bSorted, true);
-    	col.setLabelProvider(new ExtDerivedMetricLabelProvider(objMetric, Utilities.fontMetric));
-    	return col;
-    }
-*/
-    /**
      * Add new tree column for derived metric
      * @param treeViewer
      * @param objMetric

@@ -196,6 +196,7 @@ public class DerivedMetric extends BaseMetric {
 	 * @param scope2
 	 * @return zero if the values are identical, <0 if the first is less, >0 otherwise
 	 */
+	/*
 	public int compare(Scope scope1, Scope scope2) {
 		int iResult = 0;
 		MetricValue mv1 = this.getValue(scope1); 	//scope1.getDerivedMetricValue(this);
@@ -224,6 +225,5 @@ public class DerivedMetric extends BaseMetric {
 			return(int) (d2-d1);
 		}
 		return iResult;
-	}
+	}*/
 }
-

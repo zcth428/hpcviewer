@@ -49,9 +49,11 @@ public class NewWindow implements IWorkbenchWindowActionDelegate {
 			if(workbench == null) {
 				System.err.println("NW: unable to create an RCP workbench");
 			} else {
+				/*
 				System.out.println("NW: successful: "+workbench.toString()+ 
 						"wrk: "+workbench.getWorkbench().toString()+" pp: "+workbench.getActivePage().toString() +
 						"nb-pp:"+workbench.getPages().length);
+				*/
 			}
 		} catch (WorkbenchException e) {
 			e.printStackTrace();

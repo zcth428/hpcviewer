@@ -9,6 +9,11 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.filesystem.IFileInfo;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -100,6 +105,30 @@ public class ExperimentManager {
 		return null;
 	}
 	
+	/**
+	 * Open database from a directory or file
+	 * @param sDir
+	 * @return
+	 */
+	public boolean openDatabase(String sDir) {
+		// find XML files in this directory
+		Path path = new Path(sDir);
+		// get the absolute path: 
+		//	Attention: this will return incorrectly in debug mode, but in RCP mode it works !!!
+		IPath ipath = path.makeAbsolute();
+		// convert to File class so that we can check if is it a directory or not
+		File files = ipath.toFile();		
+		// by default a directory, we check if it has XML files
+		File filesXML[] = files.listFiles(new FileXMLFilter());
+		
+		if(filesXML != null && filesXML.length>0) {
+				return this.openFileExperimentFromFiles(filesXML);
+		} else if(files.isFile()) {
+			// there is no XML file, and the path is a file.
+				return this.setExperiment(sDir);
+		}
+		return false;
+	}
 	/**
 	 * Attempt to open an experiment database if valid then
 	 * open the scope view  

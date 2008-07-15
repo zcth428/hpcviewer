@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.viewer.experiment;
 import java.util.ArrayList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PartInitException;
 
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
@@ -61,7 +62,7 @@ public class ExperimentView {
 						final ScopeView viewScope = (ScopeView) objPage.showView(ScopeView.ID);
 						viewScope.setFocus();
 						viewScope.showProcessingMessage();
-					} catch(org.eclipse.ui.PartInitException e) {
+					} catch(PartInitException e) {
 						e.printStackTrace();
 					}
 				}
@@ -77,6 +78,13 @@ public class ExperimentView {
 		ThrLoadProcessingThread thr = new ThrLoadProcessingThread(sFilename);
 		thr.start();
 		loadExperimentAndProcess(sFilename);
+		try {
+			final ScopeView viewScope = (ScopeView) this.objPage.showView(ScopeView.ID);
+			viewScope.restoreProcessingMessage();
+		} catch(PartInitException e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 	/**

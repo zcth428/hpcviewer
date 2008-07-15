@@ -30,9 +30,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		this.workbench = configurer.getWindow().getWorkbench();
 		if(args != null && args.length > 0) {
 			dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-			//dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
 			dataEx.setArguments(args);
-			//configurer.setData(ExperimentData.KEY, dataEx);
 		}
 	}
 
@@ -96,9 +94,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    			break;
 		    		}
 		    	}
-		    	if(sFilename != null)
-		    		expViewer.asyncLoadExperimentAndProcess(sFilename);
-		    	else 
+		    	if(sFilename != null) {
+		    		ExperimentData objData = ExperimentData.getInstance(this.getWindowConfigurer().getWindow());
+		    		objData.getExperimentManager().openDatabase(sFilename);
+		    		//expViewer.asyncLoadExperimentAndProcess(sFilename);
+		    	} else 
 		    		this.openDatabase();
 		     } else {
 		    	 statusline.setMessage("Cannot relocate the viewer. Please open the database manually.");

@@ -95,7 +95,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    		}
 		    	}
 		    	if(sFilename != null) {
-		    		ExperimentData objData = ExperimentData.getInstance(this.getWindowConfigurer().getWindow());
+		    		// Bug fixed: DO NOT make a reference of window based on configurer
+		    		// In some machines (especially the slow ones) the window is not instantiated yet !!
+		    		ExperimentData objData = ExperimentData.getInstance(windowCurrent);
 		    		objData.getExperimentManager().openDatabase(sFilename);
 		    		//expViewer.asyncLoadExperimentAndProcess(sFilename);
 		    	} else 

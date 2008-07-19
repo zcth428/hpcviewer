@@ -113,16 +113,16 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		Scope parent = s.getParentScope();
 		while(true) {
 			if (parent instanceof CallSiteScope) {
-				if (!((CallSiteScope) parent).getProcedureScope().isAlien()) break;
+				ProcedureScope proc = ((CallSiteScope) parent).getProcedureScope();
+				if (!proc.isAlien()) return proc;
+			}
+			if (parent instanceof ProcedureScope) {
+				ProcedureScope proc = (ProcedureScope) parent;
+				if (!proc.isAlien()) return proc;
 			}
 			if (parent instanceof RootScope) return null;
 			parent = parent.getParentScope();
 		}
-		if (parent instanceof CallSiteScope) {
-			ProcedureScope proc = ((CallSiteScope) parent).getProcedureScope();
-			return proc;
-		}
-		return null;
 	}
 
 	protected Hashtable/*<String, ProcedureScope>*/ getFileProcHashtable(FileScope file) {
@@ -181,7 +181,9 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		ProcedureScope flat_encl_proc = getProcedureScope(encl_proc.getSourceFile(), encl_proc);
 		Hashtable ht = getProcContentsHashtable(flat_encl_proc);
 		Scope flat_encl_context;
-		if (encl_context instanceof CallSiteScope) {
+		if (encl_context instanceof ProcedureScope && encl_proc == (ProcedureScope) encl_context) {
+			flat_encl_context = flat_encl_proc;
+		} else if (encl_context instanceof CallSiteScope) {
 			CallSiteScope csp = (CallSiteScope) encl_context;
 			ProcedureScope called = csp.getProcedureScope();
 			if (called.isAlien()) flat_encl_context = getFlatCounterpart(encl_context, flat_encl_proc,ht);

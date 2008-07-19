@@ -88,11 +88,19 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			while (next instanceof CallSiteScope || next instanceof LoopScope ||
 					next instanceof ProcedureScope)
 			{
-				if (!(next instanceof LoopScope || next instanceof ProcedureScope)) {
-					CallSiteScope enclosingCS = (CallSiteScope) next;
+				if (!(next instanceof LoopScope)) {
+					CallSiteScope enclosingCS = null;
+					ProcedureScope mycaller = null;
+					if (next instanceof ProcedureScope) {
+						mycaller = (ProcedureScope) next.duplicate();
+					}
+					else if (next instanceof CallSiteScope) {
+						enclosingCS = (CallSiteScope) next;
+						mycaller = (ProcedureScope) enclosingCS.getProcedureScope().duplicate();
+					}
 					CallSiteScope callerScope =
 						new CallSiteScope((LineScope) innerCS.getLineScope().duplicate(), 
-								(ProcedureScope) enclosingCS.getProcedureScope().duplicate(),
+								mycaller,
 								CallSiteScopeType.CALL_FROM_PROCEDURE);
 					callerScope.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 					callPathList.addLast(callerScope);
@@ -112,7 +120,35 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	public void visit(RootScope scope, ScopeVisitType vt) { }
 	public void visit(LoadModuleScope scope, ScopeVisitType vt) { }
 	public void visit(FileScope scope, ScopeVisitType vt) { }
-	public void visit(ProcedureScope scope, ScopeVisitType vt) { }
+	
+	public void visit(ProcedureScope scope, ScopeVisitType vt) { 
+		ProcedureScope mycallee  = scope;
+		if (vt == ScopeVisitType.PreVisit) { // && !mycallee.isAlien()) {
+			String procedureName = mycallee.getName();
+			trace("handling scope " + procedureName);
+
+			ProcedureScope tmp = (ProcedureScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
+			tmp.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+
+			// if there are no exclusive costs to attribute from this context, we are done here
+			if (!tmp.hasNonzeroMetrics()) return; 
+
+			// Find (or add) callee in top-level hashtable
+			// TODO: we should use a fully qualified procedure name (including file, module)
+			Scope callee = (Scope) calleeht.get(new Integer(mycallee.hashCode()));
+			if (callee == null) {
+				callee  = mycallee.duplicate();
+				calleeht.put(new Integer(callee.hashCode()), callee);
+				callersViewRootScope.addSubscope(callee);
+				callee.setParentScope(this.callersViewRootScope);
+				exp.getScopeList().addScope(callee);
+				trace("added top level entry in bottom up tree");
+			}
+			callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), 
+					numberOfPrimaryMetrics);
+		}
+	}
+	
 	public void visit(AlienScope scope, ScopeVisitType vt) { }
 	public void visit(LoopScope scope, ScopeVisitType vt) { }
 	public void visit(StatementRangeScope scope, ScopeVisitType vt) { }

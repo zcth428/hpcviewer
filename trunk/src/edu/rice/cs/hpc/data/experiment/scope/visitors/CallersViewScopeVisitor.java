@@ -4,7 +4,6 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
@@ -88,7 +87,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			while (next instanceof CallSiteScope || next instanceof LoopScope ||
 					next instanceof ProcedureScope)
 			{
-				if (!(next instanceof LoopScope)) {
+				if (!(next instanceof LoopScope) && innerCS != null) {
 					CallSiteScope enclosingCS = null;
 					ProcedureScope mycaller = null;
 					if (next instanceof ProcedureScope) {

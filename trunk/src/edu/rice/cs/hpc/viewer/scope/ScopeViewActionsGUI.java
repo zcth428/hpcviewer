@@ -50,7 +50,6 @@ public class ScopeViewActionsGUI {
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;
-    //private IStatusLineManager statusLine;
 
     // variable declaration uniquely for coolbar
 	private ToolItem tiFlatten;		//flatten button
@@ -59,10 +58,7 @@ public class ScopeViewActionsGUI {
 	private ToolItem tiZoomout ;	// zoom-out button
 	private ToolItem tiColumns ;	// show/hide button
 	private ToolItem tiHotCallPath;
-	//private ToolItem tiAddMetric; 	// add a new derived metric
 	private ToolItem tiAddExtMetric;
-//	private ToolBar tbMessageToolbar;
-//	private ToolItem tiMessage;
 	private Label lblMessage;
 	
 	//------------------------------------DATA
@@ -87,7 +83,6 @@ public class ScopeViewActionsGUI {
 		this.shell = viewSite.getShell();
 		//this.statusLine = viewSite.getActionBars().getStatusLineManager();
 		
-		this.clrNORMAL = this.shell.getBackground();
 		this.clrYELLOW = new Color(this.shell.getDisplay(),255,255,0);
 		this.clrRED = new Color(this.shell.getDisplay(), 250,128,114);
 		// ----- coolbar
@@ -106,7 +101,6 @@ public class ScopeViewActionsGUI {
 		this.myExperiment = exp;
 		this.myRootScope = scope;
 		this.colMetrics = columns;
-		//this.setLevelText(scope.getTreeNode().iLevel);	// @TODO: initialized with root level
 		
 		// actions needed when a new experiment is loaded
 		this.resizeTableColumns();	// we assume the data has been populated
@@ -127,14 +121,7 @@ public class ScopeViewActionsGUI {
 		this.checkFlattenButtons();
 		//this.updateFlattenView(iLevel);
 	}
-	/**
-	 * Update the GUI when a flatten actions are performed
-	 * @param iLevel: the level of flatten
-	 */
-	/*
-	public void updateFlattenView(int iLevel) {
-		//this.setLevelText(iLevel);		// update the display of the level of flattening
-	}*/
+
     //======================================================
     public void setTreeViewer(TreeViewer tree) {
     	this.treeViewer = tree;
@@ -252,19 +239,6 @@ public class ScopeViewActionsGUI {
 		this.checkFlattenButtons();
 	}
 	
-	/**
-	 * Display the new level of flattening on the info toolbar
-	 * @param iLevel
-	 */
-	/*
-	private void setLevelText(int iLevel) {
-		//this.iFlatLevel = iLevel;
-		this.statusLine.setMessage("Node level: "+iLevel +
-				" / " + this.myRootScope.getMaxLevel());
-		// every time we change the level, we need to check the status of the buttons
-		this.checkFlattenButtons();
-	}*/
-    
 	/**
 	 * Hiding a metric column
 	 * @param iColumnPosition: the index of the metric
@@ -507,11 +481,12 @@ public class ScopeViewActionsGUI {
     	// message text
     	lblMessage = new Label(toolbarArea, SWT.NONE);
     	lblMessage.setText("");
+    	this.clrNORMAL = toolbarArea.getBackground();
 
     	// the coolbar part shouldn't be expanded 
     	GridDataFactory.fillDefaults().grab(false, false).applyTo(coolBar);
     	// but the message label yes
-    	GridDataFactory.fillDefaults().grab(true, false).applyTo(lblMessage);
+    	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, false).applyTo(lblMessage);
     	// now the toolbar area should be able to be expanded automatically
     	GridDataFactory.fillDefaults().grab(true, false).applyTo(toolbarArea);
     	// two kids for toolbar area: coolbar and message label

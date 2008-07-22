@@ -112,6 +112,9 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	{
 		Scope parent = s.getParentScope();
 		while(true) {
+			//String sName = s.getName();
+			//String sParent = parent.getName();
+			//System.out.println("\tFVSV: scope="+sName+"("+s.getClass()+")"+"\tparent:"+sParent+"("+parent.getClass()+")");
 			if (parent instanceof CallSiteScope) {
 				ProcedureScope proc = ((CallSiteScope) parent).getProcedureScope();
 				if (!proc.isAlien()) return proc;
@@ -203,7 +206,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	        int code = s.hashCode(); 
 		//	new test code
 		Scope unique = s;
-		int indent = 0;
+		//int indent = 0;
 		while ((unique instanceof ProcedureScope) && (((ProcedureScope) unique).isAlien())) {
 		    Scope parent = unique.getParentScope();
 		    //System.err.println("code = " + code);
@@ -211,7 +214,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		    int i = 0;
 		    //for (i = 0; i < indent; i++) System.err.print(" "); 
 		    //System.err.println("adjusting hash code by " + parent.hashCode());
-		    indent++;
+		    //indent++;
 		    unique = parent;
 		}
 		Scope flat_s = (Scope) ht.get(new Integer(code));
@@ -229,7 +232,6 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 
 			flat_parent.addSubscope(flat_s);
 			flat_s.setParentScope(flat_parent);
-
 			trace("added flat counterpart " + flat_s.getName() + " in flat view.");
 		}
 		if (s instanceof CallSiteScope) {

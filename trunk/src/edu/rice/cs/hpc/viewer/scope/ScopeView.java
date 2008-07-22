@@ -420,12 +420,13 @@ public class ScopeView extends ViewPart {
     public void setFocus() {
             treeViewer.getTree().setFocus();
     }
-    
+  /*  
     public void showProcessingMessage() {
     	this.objViewActions.showProcessingMessage();
     }
+    
     public void restoreProcessingMessage() {
     	this.objViewActions.restoreProcessingMessage();
     }
-
+*/
 }

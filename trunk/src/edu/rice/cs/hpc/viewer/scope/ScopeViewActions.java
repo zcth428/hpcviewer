@@ -188,7 +188,7 @@ public class ScopeViewActions {
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
-	
+	/*
 	public void showProcessingMessage() {
 		this.objSite.getShell().getDisplay().asyncExec(new Runnable(){
 			public void run() {
@@ -196,7 +196,7 @@ public class ScopeViewActions {
 			}
 		});
 	}
-	
+	*/
 	/**
 	 * Class to restoring the background of the message bar by waiting for 5 seconds
 	 * TODO: we need to parameterize the timing for the wait

@@ -181,7 +181,9 @@ public class ColumnViewerSorter extends ViewerComparator {
 				} else {
 					MetricValue mv1 = node1.getScope().getMetricValue(metric);
 					MetricValue mv2 = node2.getScope().getMetricValue(metric);
-					return mv2.compareTo(mv1);
+					int iRet = mv2.compareTo(mv1);
+					if(iRet != 0) 
+						return iRet;
 					//if (mv1.getValue()>mv2.getValue()) return -1;
 					//if (mv1.getValue()<mv2.getValue()) return 1;
 				}

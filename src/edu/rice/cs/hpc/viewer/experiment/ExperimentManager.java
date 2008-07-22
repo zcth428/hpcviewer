@@ -107,12 +107,12 @@ public class ExperimentManager {
 	
 	/**
 	 * Open database from a directory or file
-	 * @param sDir
-	 * @return
+	 * @param sPath
+	 * @return true if the database can be loaded
 	 */
-	public boolean openDatabase(String sDir) {
+	public boolean openDatabase(String sPath) {
 		// find XML files in this directory
-		Path path = new Path(sDir);
+		Path path = new Path(sPath);
 		// get the absolute path: 
 		//	Attention: this will return incorrectly in debug mode, but in RCP mode it works !!!
 		IPath ipath = path.makeAbsolute();
@@ -125,7 +125,7 @@ public class ExperimentManager {
 				return this.openFileExperimentFromFiles(filesXML);
 		} else if(files.isFile()) {
 			// there is no XML file, and the path is a file.
-				return this.setExperiment(sDir);
+				return this.setExperiment(sPath);
 		}
 		return false;
 	}
@@ -182,10 +182,9 @@ public class ExperimentManager {
 		ExperimentView expViewer = new ExperimentView(objPage);
 	    if(expViewer != null) {
 	    	// data looks OK
-	    	expViewer.loadExperimentAndProcess(sFilename);
+	    	return expViewer.loadExperimentAndProcess(sFilename);
 	     } else
 	    	 return false; //TODO we need to throw an exception instead
-		return true;
 	}
 
 }

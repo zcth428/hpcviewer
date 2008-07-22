@@ -97,13 +97,16 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 						enclosingCS = (CallSiteScope) next;
 						mycaller = (ProcedureScope) enclosingCS.getProcedureScope().duplicate();
 					}
-					CallSiteScope callerScope =
-						new CallSiteScope((LineScope) innerCS.getLineScope().duplicate(), 
-								mycaller,
-								CallSiteScopeType.CALL_FROM_PROCEDURE);
-					callerScope.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
-					callPathList.addLast(callerScope);
-					innerCS = enclosingCS;
+					LineScope lineScope = innerCS.getLineScope();
+					if(lineScope != null) {
+						CallSiteScope callerScope =
+							new CallSiteScope((LineScope) lineScope.duplicate(), 
+									mycaller,
+									CallSiteScopeType.CALL_FROM_PROCEDURE);
+						callerScope.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+						callPathList.addLast(callerScope);
+						innerCS = enclosingCS;
+					}
 				}
 				next = next.getParentScope();
 			}

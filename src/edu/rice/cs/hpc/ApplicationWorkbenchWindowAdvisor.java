@@ -69,8 +69,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		*/
 		// set the status bar
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
-		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
-		.getActionBarConfigurer().getStatusLineManager();
 		// -------------------
 		// see if the argument provides the database to load
 		if(this.dataEx != null) {
@@ -79,16 +77,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				System.err.println("Anomaly event occured: active window not found");
 				return;
 			}
+			/*
 			IWorkbenchPage pageCurrent = windowCurrent.getActivePage();
 			if(pageCurrent == null) {
 				System.err.println("Anomaly event occured: active page not found");
 			}
-			ExperimentView expViewer = new ExperimentView(pageCurrent);
-		    if(expViewer != null) {
+			*/
+			//ExperimentView expViewer = new ExperimentView(pageCurrent);
+		    //if(expViewer != null) {
 		    	// data looks OK
 		    	String []sArgs = this.dataEx.getArguments();
 		    	String sFilename = null;
 		    	for(int i=0;i<sArgs.length;i++) {
+		    		// check the argument, and skip if it is a flag/option
 		    		if(sArgs[i].charAt(0) != '-') {
 		    			sFilename = sArgs[i];
 		    			break;
@@ -98,17 +99,25 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    		// Bug fixed: DO NOT make a reference of window based on configurer
 		    		// In some machines (especially the slow ones) the window is not instantiated yet !!
 		    		ExperimentData objData = ExperimentData.getInstance(windowCurrent);
-		    		objData.getExperimentManager().openDatabase(sFilename);
+		    		ExperimentManager objManager = objData.getExperimentManager();
+		    		if(objManager != null) {
+		    			if (objManager.openDatabase(sFilename))
+		    				return;
+		    		}
+		    	}
 		    		//expViewer.asyncLoadExperimentAndProcess(sFilename);
-		    	} else 
-		    		this.openDatabase();
-		     } else {
+		    	//} else 
+		    	this.openDatabase();
+		    	
+		     /*} else {
 		    	 statusline.setMessage("Cannot relocate the viewer. Please open the database manually.");
 		    	 System.err.println("Cannot relocate the viewer. Please open the database manually.");
 		    	 
-		     }
+		     }*/
 		} else {
 			// there is no information about the database
+			org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
+				.getActionBarConfigurer().getStatusLineManager();
 			statusline.setMessage(null, "Load a database to start.");
 			// we need load the file ASAP
 			this.openDatabase();

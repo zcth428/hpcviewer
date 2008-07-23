@@ -351,6 +351,13 @@ protected void addPercents(Scope scope, RootScope totalScope)
 	scope.dfsVisitScopeTree(psv);
 }
 
+/**
+ * Post-processing for CCT:
+ * Step 1: normalizing CCT view
+ *  - normalize line scope, which means to add the cost of line scope into call site scope
+ *  - compute inclusive metrics for I
+ *  - compute inclusive metrics for X
+ */
 public void postprocess() {
 	if (this.rootScope.getSubscopeCount() <= 0) return;
 	// Get first scope subtree: CCT or Flat

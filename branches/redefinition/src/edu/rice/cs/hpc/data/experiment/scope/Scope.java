@@ -634,17 +634,6 @@ public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter,
 	}
 }
 
-/**
- * Laks: special accumulate metrics method for just calculating specific metric
- * @param source
- * @param iMetricIndex 
- * @param filter
- */
-/*
-public void accumulateMetrics(Scope source, int iMetricIndex, MetricValuePropagationFilter filter) {
-	this.accumulateMetric(source, iMetricIndex, iMetricIndex, filter);
-}
-*/
 public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, this, src_i, targ_i)) {
 		MetricValue m = source.getMetricValue(src_i);
@@ -807,7 +796,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 		{
 			return (Scope) this.userObject;
 		};
-		
+
 		/**
 		 * Update the scope of the node
 		 * @param o

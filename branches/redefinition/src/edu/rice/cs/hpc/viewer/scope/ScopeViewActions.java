@@ -104,13 +104,13 @@ public class ScopeViewActions {
 				// get the values
 				double x1, x2;
 				double dParent, dChild;
-				// derived metric has no information on the percentage
-				// so we need to treat them exclusively
+
 				MetricValue mvParent = metric.getValue(scope);
 				MetricValue mvChild = metric.getValue(scopeChild);
 				dParent = mvParent.getValue();
 				dChild = mvChild.getValue();
-
+				
+				// normalization: x1 must be bigger than x2
 				if(dParent > dChild) {
 					x1 = dParent; x2 = dChild;
 				} else {

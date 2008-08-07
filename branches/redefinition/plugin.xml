@@ -29,6 +29,13 @@
             id="edu.rice.cs.hpc.scope.ScopeView"
             name="ScopeView">
       </view>
+      <view
+            category="hpcviewer"
+            class="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
+            icon="icons/flatview16x16.png"
+            id="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
+            name="FlatScopeView">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">

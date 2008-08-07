@@ -3,11 +3,15 @@ package edu.rice.cs.hpc.viewer.experiment;
 import java.util.ArrayList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IViewPart;
 
 import edu.rice.cs.hpc.data.experiment.*; 
+import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
+import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 
 /**
  * Class to be used as an interface between the GUI and the data experiment
@@ -48,7 +52,7 @@ public class ExperimentView {
 		objPage = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		this.init();
 	}*/
-	
+	/*
 	class ThrLoadProcessingThread extends Thread {
 		String sFilename;
 		public ThrLoadProcessingThread(String file) {
@@ -59,7 +63,7 @@ public class ExperimentView {
 				public void run() {
 					try {
 						final ScopeView viewScope = (ScopeView) objPage.showView(ScopeView.ID);
-						viewScope.setFocus();
+						//viewScope.setFocus();
 						viewScope.showProcessingMessage();
 					} catch(org.eclipse.ui.PartInitException e) {
 						e.printStackTrace();
@@ -68,17 +72,18 @@ public class ExperimentView {
 			});
 		}
 	}
-	
+	*/
 	/**
 	 * Asynchronously showing a processing message in the message bar and opening a database 
 	 * @param sFilename: the name of XML database file
 	 */
+	/*
 	public void asyncLoadExperimentAndProcess(String sFilename) {
 		ThrLoadProcessingThread thr = new ThrLoadProcessingThread(sFilename);
 		thr.start();
 		loadExperimentAndProcess(sFilename);
 	}
-	
+	*/
 	/**
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
 	 * @param sFilename
@@ -93,7 +98,8 @@ public class ExperimentView {
 	}
 	/**
 	 * Load an XML experiment file based on the filename (uncheck for its inexistence)
-	 * This method will display errors whenever encountered
+	 * This method will display errors whenever encountered.
+	 * This method does not include post-processing and generating scope views
 	 * @param sFilename: the xml experiment file
 	 */
 	public Experiment loadExperiment(String sFilename) {
@@ -164,14 +170,29 @@ public class ExperimentView {
 		{
 			RootScope child = (RootScope) rootChildren.get(k);
 			try {
-				ScopeView objView; 
+				BaseScopeView objView; 
 				if(k>0) {
 					// multiple view: we need to have additional secondary ID
-					objView = (ScopeView)this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID, 
-					"view"+child.getRootName(), org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
+					if(child.getType() == RootScopeType.Flat) {
+						FlatScopeView objFlatView = (FlatScopeView)this.objPage.showView(edu.rice.cs.hpc.viewer.scope.FlatScopeView.ID);
+						objView = (BaseScopeView)objFlatView;
+					} else
+						objView = (BaseScopeView)this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID, 
+								"view"+child.getRootName(), org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
 				} else {
 					// first view: usually already created by default by the perspective
-					objView = (ScopeView) this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
+					IViewPart objViewPart = this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
+					if(objViewPart != null) { 
+						if(objViewPart instanceof ScopeView)
+							objView = (ScopeView) objViewPart;
+						else {
+							System.err.println("Error EV.java: unknown view:" +objViewPart.getClass());
+							return;
+						}
+					} else {
+						System.err.println("Eror EV.java: view is null ");
+						return;
+					}
 					// the first view is the main view
 				}
 				// ATTENTION: for unknown reason, call-tree will not display the aggregate values when using the child

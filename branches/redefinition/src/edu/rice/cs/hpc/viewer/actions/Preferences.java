@@ -20,7 +20,7 @@ import org.eclipse.jface.preference.PreferenceConverter;
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
-import edu.rice.cs.hpc.viewer.scope.ScopeViewActions;
+import edu.rice.cs.hpc.viewer.scope.ScopeActions;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
 
@@ -66,7 +66,7 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 				ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
 				// get the threshold
 				double fThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
-				ScopeViewActions.fTHRESHOLD = fThreshold;
+				ScopeActions.fTHRESHOLD = fThreshold;
 				// get the font for metrics columns
 				FontData objFont = PreferenceConverter.getFontData(objPref, PreferenceConstants.P_FONT_VIEW);
 				//System.out.println("Preference-update:"+objFont.toString());

@@ -9,9 +9,9 @@ import org.eclipse.jface.dialogs.Dialog;
 
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IViewSite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.CoolBar;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -20,7 +20,6 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
-import edu.rice.cs.hpc.viewer.util.Utilities;
 
 import edu.rice.cs.hpc.viewer.metric.*;
 //math expression
@@ -36,14 +35,12 @@ import com.graphbuilder.math.*;
  * @author laksono
  *
  */
-public class ScopeViewActions {
-	// public preference
-	static public double fTHRESHOLD = 0.6; 
+public class ScopeViewActions extends ScopeActions {
     //-------------- DATA
-	private ScopeViewActionsGUI objActionsGUI;	// associated GUI (toolbar)
-    private ScopeTreeViewer 	treeViewer;		  	// tree 
-    private RootScope 		myRootScope;		// the root scope of this view
-    private IViewSite objSite;				// associated view
+	//private ScopeViewActionsGUI objActionsGUI;	// associated GUI (toolbar)
+    protected ScopeTreeViewer 	treeViewer;		  	// tree 
+    protected RootScope 		myRootScope;		// the root scope of this view
+    //private IViewSite objSite;				// associated view
 
     // stack to store the position of the zoom, tree state, ...
     private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
@@ -55,14 +52,19 @@ public class ScopeViewActions {
      * @param viewSite the site of the view (used for retrieving shell, display, ...)
      * @param parent composite
      */
-    public ScopeViewActions(IViewSite viewSite, Composite parent) {
-    	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, this);
-    	IPreferenceStore objPref = Activator.getDefault().getPreferenceStore();
-    	double fDefaultThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
-    	if(fDefaultThreshold > 0.0)
-    		ScopeViewActions.fTHRESHOLD= fDefaultThreshold; 
-    	this.objSite = viewSite;
+    public ScopeViewActions(Shell shell, Composite parent, CoolBar coolbar) {
+    	super(shell, parent, coolbar);
+    	createGUI(parent, coolbar);
     }
+
+    /**
+     * Each class has its own typical GUI creation
+     */
+	protected  Composite createGUI(Composite parent, CoolBar coolbar) {
+    	this.objActionsGUI = new ScopeViewActionsGUI(objShell, parent, this);
+    	this.objActionsGUI.buildGUI(parent, coolbar);
+		return parent;
+	}
 
     /**
      * The tree has been updated or has new content. This object needs to refresh
@@ -178,7 +180,7 @@ public class ScopeViewActions {
 	//====================================================================================
 	
 	public void showProcessingMessage() {
-		this.objSite.getShell().getDisplay().asyncExec(new Runnable(){
+		this.objShell.getDisplay().asyncExec(new Runnable(){
 			public void run() {
 				objActionsGUI.showWarningMessagge("... Processing .... Please wait ...");
 			}
@@ -203,7 +205,7 @@ public class ScopeViewActions {
              }
              // need to run from UI-thread for restoring the background
              // without UI-thread we will get SWTException !!
-             objSite.getShell().getDisplay().asyncExec( new Runnable() {
+             objShell.getDisplay().asyncExec( new Runnable() {
             	 public void run() {
                 	 objActionsGUI.restoreMessage();
             	 }
@@ -229,7 +231,7 @@ public class ScopeViewActions {
 	 * background color
 	 */
 	public void restoreProcessingMessage() {
-		this.objSite.getShell().getDisplay().asyncExec(new Runnable(){
+		this.objShell.getDisplay().asyncExec(new Runnable(){
 			public void run() {
 				objActionsGUI.restoreMessage();
 			}
@@ -278,7 +280,7 @@ public class ScopeViewActions {
 				this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
 			} else {
 				// we cannot find it
-				this.showErrorMessage("No hot path detected.");
+				this.showErrorMessage("No hot call path detected.");
 			}
 		} else {
 			// It is almost impossible for the jvm to reach this part of branch.
@@ -369,44 +371,13 @@ public class ScopeViewActions {
 		this.objActionsGUI.checkZoomButtons(nodeSelected); // no node has been selected ?
 	}
 	
-	/**
-	 * Flatten the tree one level more
-	 */
-	public void flatten() {
-		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getFlatten();
-		if(arrNodes != null) {
-			this.treeViewer.getTree().setRedraw(false);
-			// we update the data of the table
-			this.treeViewer.setInput(arrNodes);
-			// refreshing the table to take into account a new data
-			this.treeViewer.refresh();
-			// post processing: inserting the "aggregate metric" into the top row of the table
-			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
-			this.treeViewer.getTree().setRedraw(true);
-		} else {
-			// either there is something wrong or we cannot flatten anymore
-			//this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
-			
-		}
-	}
-
-	/**
-	 * Unflatten flattened tree (tree has to be flattened before)
-	 */
-	public void unflatten() {
-		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getUnflatten();
-		if(arrNodes != null) {
-			this.treeViewer.setInput(arrNodes);
-			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
-		}
-	}
 	
 	/**
 	 * create a new metric based on a free expression
 	 */
 	public void addExtNewMetric() {
 		// prepare the dialog box
-		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objSite.getShell(), 
+		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objShell, 
 				this.myRootScope.getExperiment().getMetrics());
 		// prepare the scope node for the preview of the expression
 		Scope.Node node = this.getSelectedNode();
@@ -473,7 +444,6 @@ public class ScopeViewActions {
      * @param node
      */
     public void checkButtons(Scope.Node node) {
-    	this.objActionsGUI.checkFlattenButtons();
     	this.objActionsGUI.checkZoomButtons(node);
     }
 

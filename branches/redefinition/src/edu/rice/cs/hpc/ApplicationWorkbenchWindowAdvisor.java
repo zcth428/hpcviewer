@@ -87,7 +87,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    	}
 		    	// if a filename exist, try to open it
 		    	if(sFilename != null)
-		    		expViewer.asyncLoadExperimentAndProcess(sFilename);
+		    		expViewer.loadExperimentAndProcess(sFilename);
+		    		//expViewer.asyncLoadExperimentAndProcess(sFilename);
 		    	else 
 		    		// otherwise, show the open folder dialog to choose the database
 		    		this.openDatabase();

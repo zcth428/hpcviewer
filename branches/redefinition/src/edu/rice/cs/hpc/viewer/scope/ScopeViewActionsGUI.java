@@ -35,7 +35,10 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+
 /**
+ * General actions GUI for basic scope views like caller view and calling context view
+ * This GUI includes toolbar for zooms, add derived metrics, show/hide columns, and hot call path 
  * @author laksono
  *
  */
@@ -50,17 +53,13 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;
-    //private IStatusLineManager statusLine;
 
     // variable declaration uniquely for coolbar
 	private ToolItem tiZoomin;		// zoom-in button
 	private ToolItem tiZoomout ;	// zoom-out button
 	private ToolItem tiColumns ;	// show/hide button
 	private ToolItem tiHotCallPath;
-	//private ToolItem tiAddMetric; 	// add a new derived metric
 	private ToolItem tiAddExtMetric;
-//	private ToolBar tbMessageToolbar;
-//	private ToolItem tiMessage;
 	private Label lblMessage;
 	
 	//------------------------------------DATA

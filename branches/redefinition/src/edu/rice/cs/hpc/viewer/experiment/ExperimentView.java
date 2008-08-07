@@ -8,7 +8,9 @@ import org.eclipse.ui.IViewPart;
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
+import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
+
 import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
@@ -171,15 +173,18 @@ public class ExperimentView {
 			RootScope child = (RootScope) rootChildren.get(k);
 			try {
 				BaseScopeView objView; 
-				if(k>0) {
+				//if(k>0) {
 					// multiple view: we need to have additional secondary ID
 					if(child.getType() == RootScopeType.Flat) {
-						FlatScopeView objFlatView = (FlatScopeView)this.objPage.showView(edu.rice.cs.hpc.viewer.scope.FlatScopeView.ID);
+						FlatScopeView objFlatView = (FlatScopeView)this.objPage.showView(FlatScopeView.ID);
 						objView = (BaseScopeView)objFlatView;
+					} else if(child.getType() == RootScopeType.CallerTree) {
+						CallerScopeView objScopeView = (CallerScopeView) this.objPage.showView(CallerScopeView.ID);
+						objView = (BaseScopeView) objScopeView;
 					} else
-						objView = (BaseScopeView)this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID, 
-								"view"+child.getRootName(), org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
-				} else {
+						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID); 
+								//"view"+child.getRootName(), org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
+				/*} else {
 					// first view: usually already created by default by the perspective
 					IViewPart objViewPart = this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
 					if(objViewPart != null) { 
@@ -195,6 +200,7 @@ public class ExperimentView {
 					}
 					// the first view is the main view
 				}
+				*/
 				// ATTENTION: for unknown reason, call-tree will not display the aggregate values when using the child
 				// therefore, we need to create a dummy root then attach it to the children
 				// TODO: This should be fix in the Scope class in the future

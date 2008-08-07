@@ -290,7 +290,7 @@ protected Scope createCallersView(Scope callingContextViewRootScope)
 {
 	EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
 
-	Scope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallTree);
+	Scope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallerTree);
 	beginScope(callersViewRootScope);
 	
 	CallersViewScopeVisitor csv = new CallersViewScopeVisitor(this, callersViewRootScope, 
@@ -365,7 +365,7 @@ public void postprocess() {
 	if (!(firstSubTree instanceof RootScope)) return;
 	RootScopeType firstRootType = ((RootScope)firstSubTree).getType();
 	
-	if (firstRootType.equals(RootScopeType.CallTree)) {
+	if (firstRootType.equals(RootScopeType.CallingContextTree)) {
 		// accumulate, create views, percents, etc
 		Scope callingContextViewRootScope = firstSubTree;
 

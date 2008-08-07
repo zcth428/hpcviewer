@@ -16,6 +16,9 @@ import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeViewActions;
 
 /**
+ * Actions GUI class specifically designed for flat view. 
+ * This view includes toolbar for flatten and unflatten actions
+ * 
  * @author laksonoadhianto
  *
  */
@@ -41,14 +44,15 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 * @return
 	 */
 	public Composite buildGUI(Composite parent, CoolBar coolbar) {
-		//this.addTooBarAction(coolbar);
-		//super.addTooBarAction(coolbar);
-		//super.finalizeToolBar(parent, coolbar);
+		// add toobar actions for flatten and unflatten
 		Composite c =  addTooBarAction(coolbar);
 		super.finalizeToolBar(parent, coolbar);
 		return c;
 	}
 
+	/**
+	 * Disables all actions
+	 */
 	public void resetActions() {
 		super.resetActions();
 		this.tiFlatten.setEnabled(false);
@@ -80,9 +84,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
     	tiFlatten.setImage(iconsCollection.imgFlatten);
     	tiFlatten.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
-      	  	objFlatAction.flatten();
-      	  		//objViewActions.flattenNode();
-      	  		//objViewActions.flatten();
+      	  		objFlatAction.flatten();
       	  	}
       	});
     	
@@ -92,13 +94,13 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
     	tiUnFlatten.setImage(iconsCollection.imgUnFlatten);
     	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
       	  	public void widgetSelected(SelectionEvent e) {
-      	  	objFlatAction.unflatten();
-      	  		//objViewActions.unflattenNode();
-      	  		//objViewActions.unflatten();
+      	  		objFlatAction.unflatten();
       	  	}    		
     	});
     	this.createCoolItem(parent, toolbar);
 
+    	// we need to add the parent's default actions
+    	// Without this statement, the default actions disappear
 		Composite objComposite = super.addTooBarAction(parent);
     	
 		return objComposite;
@@ -123,19 +125,22 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 		//this.updateFlattenView(iLevel);
 	}
 
+	/**
+	 * Check if it is possible to flatten the tree
+	 * @return
+	 */
     private boolean shouldFlattenBeEnabled() {
+    	// DO NOT flatten if we reach to the point where there is no children 
     	return this.myRootScope.getTreeNode().getDepth()>this.myRootScope.getFlattenLevel() + 1;
-    	//return(this.iFlatLevel<((RootScope)this.myRootScope).MAX_LEVELS );
     }
     
     /**
      * Verify if unflatten can be done
-     * @param node root node
      * @return
      */
     private boolean shouldUnflattenBeEnabled() {
+    	// DO NOT unflatten if we reach to root scope level
     	return (this.myRootScope.getFlattenLevel()>0);
-    	//return (this.iFlatLevel>1);
     }
 
 

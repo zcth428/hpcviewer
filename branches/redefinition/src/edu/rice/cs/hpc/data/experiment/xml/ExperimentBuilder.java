@@ -580,7 +580,7 @@ public class ExperimentBuilder extends Builder
 		
 		if (this.csviewer) {
 			// create Calling Context Tree scope
-			this.callingContextViewRootScope  = new RootScope(this.experiment, name,"Calling Context View", RootScopeType.CallTree);
+			this.callingContextViewRootScope  = new RootScope(this.experiment, name,"Calling Context View", RootScopeType.CallingContextTree);
 			beginScope(this.callingContextViewRootScope);
 		} else {
 			// flat scope

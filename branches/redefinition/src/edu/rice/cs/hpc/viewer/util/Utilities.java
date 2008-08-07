@@ -95,7 +95,7 @@ public class Utilities {
 			}
 		} else if (scope instanceof RootScope) {
 			RootScope rs = (RootScope) scope;
-			if (rs.getType() == RootScopeType.CallTree)	{ 
+			if (rs.getType() == RootScopeType.CallingContextTree)	{ 
 				return null;
 			}
 		} else if (scope instanceof ProcedureScope) {

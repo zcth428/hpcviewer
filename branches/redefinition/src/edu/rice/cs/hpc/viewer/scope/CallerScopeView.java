@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 
 /**
+ * View class for caller view. At the moment, the caller view is the same as calling context view
  * @author laksonoadhianto
  *
  */

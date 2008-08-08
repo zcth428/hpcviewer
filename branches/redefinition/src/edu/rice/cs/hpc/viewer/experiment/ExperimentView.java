@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.viewer.experiment;
 import java.util.ArrayList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IViewPart;
 
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
@@ -11,7 +10,6 @@ import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
 
-import edu.rice.cs.hpc.viewer.resources.*;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 
@@ -23,9 +21,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
  */
 public class ExperimentView {
 	private ExperimentData dataExperiment;
-	//ScopeView objView;
 	private org.eclipse.ui.IWorkbenchPage objPage;		// workbench current page
-	//private ScopeView []listOfViews; // list of views used
 	
 	private void init() {
 		if(this.dataExperiment == null) {
@@ -173,42 +169,20 @@ public class ExperimentView {
 			RootScope child = (RootScope) rootChildren.get(k);
 			try {
 				BaseScopeView objView; 
-				//if(k>0) {
-					// multiple view: we need to have additional secondary ID
+
+				// every root scope type has its own view
 					if(child.getType() == RootScopeType.Flat) {
-						FlatScopeView objFlatView = (FlatScopeView)this.objPage.showView(FlatScopeView.ID);
-						objView = (BaseScopeView)objFlatView;
+						//FlatScopeView objFlatView = (FlatScopeView)this.objPage.showView(FlatScopeView.ID);
+						objView = (BaseScopeView) this.objPage.showView(FlatScopeView.ID);
 					} else if(child.getType() == RootScopeType.CallerTree) {
-						CallerScopeView objScopeView = (CallerScopeView) this.objPage.showView(CallerScopeView.ID);
-						objView = (BaseScopeView) objScopeView;
+						//CallerScopeView objScopeView = (CallerScopeView) this.objPage.showView(CallerScopeView.ID);
+						objView = (BaseScopeView) this.objPage.showView(CallerScopeView.ID);
 					} else
 						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID); 
-								//"view"+child.getRootName(), org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
-				/*} else {
-					// first view: usually already created by default by the perspective
-					IViewPart objViewPart = this.objPage.showView(edu.rice.cs.hpc.viewer.scope.ScopeView.ID);
-					if(objViewPart != null) { 
-						if(objViewPart instanceof ScopeView)
-							objView = (ScopeView) objViewPart;
-						else {
-							System.err.println("Error EV.java: unknown view:" +objViewPart.getClass());
-							return;
-						}
-					} else {
-						System.err.println("Eror EV.java: view is null ");
-						return;
-					}
-					// the first view is the main view
-				}
-				*/
-				// ATTENTION: for unknown reason, call-tree will not display the aggregate values when using the child
-				// therefore, we need to create a dummy root then attach it to the children
-				// TODO: This should be fix in the Scope class in the future
+
 				objView.setInput(experiment, child);
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
-				// enable the view's actions
-				//objView.enableActions();
-				//this.listOfViews[k] = objView;
+
 			} catch (org.eclipse.ui.PartInitException e) {
 				e.printStackTrace();
 			}

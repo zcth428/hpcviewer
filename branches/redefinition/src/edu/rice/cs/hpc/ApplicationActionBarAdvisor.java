@@ -26,6 +26,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private IWorkbenchAction showViewMenu;
 	private IWorkbenchAction showEditorMenu;
 	private IWorkbenchAction showPreference;
+	//private IWorkbenchAction dynamicHelpAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -54,6 +55,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	    register(this.showEditorMenu);
 	    this.showPreference = ActionFactory.PREFERENCES.create(window);
 	    register(this.showPreference);
+	    //dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window); // NEW
+	    //register(dynamicHelpAction);
 	}
 
 	protected void fillMenuBar(IMenuManager menuBar) {
@@ -79,6 +82,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// Help
 		helpMenu.add(aboutAction);
 		helpMenu.add(showHelpAction); 
+		//helpMenu.add(dynamicHelpAction);
 	}
 
 }

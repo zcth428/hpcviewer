@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 
 import edu.rice.cs.hpc.Activator;
-import edu.rice.cs.hpc.viewer.scope.ScopeViewActions;
+import edu.rice.cs.hpc.viewer.scope.ScopeActions;
 
 /**
  * This class represents a preference page that
@@ -54,7 +54,7 @@ public class PreferencePage
 				this.getFieldEditorParent());
 		objThreshold.setValidateStrategy(StringFieldEditor.VALIDATE_ON_FOCUS_LOST);
 		objThreshold.setEmptyStringAllowed(true);
-		objThreshold.setStringValue(String.valueOf(ScopeViewActions.fTHRESHOLD));
+		objThreshold.setStringValue(String.valueOf(ScopeActions.fTHRESHOLD));
 		addField(objThreshold);
 		
 		this.objFont = new FontFieldEditor(PreferenceConstants.P_FONT_VIEW,

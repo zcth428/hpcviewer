@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;

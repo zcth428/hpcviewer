@@ -57,7 +57,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		this.numberOfPrimaryMetrics = nMetrics;
 		this.filter = filter;
 		
-		Metric[] metrics = exp.getMetrics();
+		BaseMetric[] metrics = exp.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 	}
@@ -70,7 +70,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		this.numberOfPrimaryMetrics = nMetrics;
 		this.filter = filter;
 		
-		Metric[] metrics = exp.getMetrics();
+		BaseMetric[] metrics = exp.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 		

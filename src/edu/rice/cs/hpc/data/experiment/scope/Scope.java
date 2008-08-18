@@ -22,7 +22,7 @@ import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.*;
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric; // laks: add derived metric feature
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -618,21 +618,6 @@ public void setMetricValue(int index, MetricValue value)
 
 //===================================================================
 
-//---------------- Laks: add new method to find the text 
-/**
- * Retrieve the text value of the metric
- * @PARAM: the metric
- */
-public String getMetricTextValue(Metric metric) {
-	MetricValue mv = this.getMetricValue(metric);
-	String sText;
-	if(mv.getPercentValue() == 0.0) sText = "";
-	else{
-			sText = metric.getDisplayFormat().format(mv);
-	}
-	return sText;
-}
-
 /**
  * Get the percentage of this scope
  * @param metric
@@ -649,17 +634,6 @@ public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter,
 	}
 }
 
-/**
- * Laks: special accumulate metrics method for just calculating specific metric
- * @param source
- * @param iMetricIndex 
- * @param filter
- */
-/*
-public void accumulateMetrics(Scope source, int iMetricIndex, MetricValuePropagationFilter filter) {
-	this.accumulateMetric(source, iMetricIndex, iMetricIndex, filter);
-}
-*/
 public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, this, src_i, targ_i)) {
 		MetricValue m = source.getMetricValue(src_i);
@@ -790,22 +764,6 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	// @SuppressWarnings("serial")
 	public static class Node extends DefaultMutableTreeNode
 	{
-		public int iLevel;				// Laks: can be obtained too by a parent class method
-
-		/** Used by <code>ScopeTreeFilter</code>.
-			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		protected int flattenCount;
-
-		/** Used by <code>ScopeTreeFilter</code>.
-n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		//protected boolean flattenThis;
-
-
-		/**
-		 * Laks: need to simulate java swing DefaultMutableTreeNode
-		 */
-		//protected Scope userObject;
-		
 		/**
 		 * This public variable indicates if the node contains information about the source code file.
 		 * If the boolean is true, then the filename can be retrieved from its scope
@@ -818,8 +776,6 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 		{
 			super();
 			
-			// fields used by ScopeView
-			this.flattenCount = 0;
 			//this.flattenThis  = false;
 			this.hasSourceCodeFile = false;
 		};
@@ -841,39 +797,6 @@ n			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
 			return (Scope) this.userObject;
 		};
 
-		
-		
-		/** Sets the "flatten count" associated with this node.
-			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		public void setFlattenCount(int count)
-		{
-			this.flattenCount = count;
-		};
-		
-		
-		/** Returns the "flatten count" associated with this node.
-			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		public int getFlattenCount()
-		{
-			return this.flattenCount;
-		};
-		
-		
-		/** Sets whether this node should be flattened.
-			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		/*public void setFlattenThis(boolean flatten)
-		{
-			this.flattenThis = flatten;
-		};*/
-		
-		
-		/** Returns whether this node should be flattened.
-			@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter */
-		/*public boolean getFlattenThis()
-		{
-			return this.flattenThis;
-		};
-		*/
 		/**
 		 * Update the scope of the node
 		 * @param o

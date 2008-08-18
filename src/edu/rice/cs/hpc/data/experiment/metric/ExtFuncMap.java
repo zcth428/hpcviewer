@@ -30,13 +30,13 @@ public class ExtFuncMap extends FuncMap {
 	/**
 	 * 
 	 */
-	public ExtFuncMap(Metric []metrics, RootScope rootscope) {
+	public ExtFuncMap(BaseMetric []metrics, RootScope rootscope) {
 		// TODO Auto-generated constructor stub
 		super(false);
 		this.init(metrics, rootscope);
 	}
 
-	public void init(Metric []metrics, RootScope rootscope) {
+	public void init(BaseMetric []metrics, RootScope rootscope) {
 		AggregateFunction fct = new AggregateFunction(metrics, rootscope);
 		this.setFunction("aggregate", fct);
 		this.loadDefaultFunctions();

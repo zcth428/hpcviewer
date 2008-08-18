@@ -1,0 +1,157 @@
+<html>
+<head>
+<title>hpcviewer</title>
+</head>
+<body>
+<h1>The hpcviewer User Interface </h1>
+<p>
+HPCToolkit provides the hpcviewer browser for interactive examination of 
+performance databases. Figure 1 shows a screenshot of a brower window with 
+panes and key controls labeled. The browser supports three different views 
+of performance data. The browser window is divided into three panes. We 
+first explain the views of performance data and then the role of the different 
+panes. 
+</p>
+
+<center>
+<img src="flatview-BT-legend.png" />
+<br/>
+Figure 1: A snapshot of hpcviewer
+</center>
+
+<h2>Views</h2>
+<p> hpcviewer supports three principal views of an application's performance data: a top-down calling context view, a bottom-up caller's view, 
+and a flat view. One selects the desired view by clicking on the corresponding 
+view control tab. We briefly describe the three views and their corresponding 
+purposes. 
+</p>
+<ul>
+ <li> <b>Calling context view</b>. This top-down view represents the dynamic calling contexts (call paths) in which costs were incurred. Using this view, 
+one can explore performance measurements of an application in a top- 
+down fashion to understand the costs (We use the term cost rather than simply time since hpcviewer can present a multiplicity 
+of measured (e.g. cycles, or cache misses) or derived metrics (e.g. cache miss rates or 
+bandwidth consumed) that that are other indicators of execution cost.) incurred by calls to a procedure 
+in a particular calling context. A calling context for a procedure f consists of the stack of procedure frames active when the call was made to 
+<code>f</code>. Using this view, one can readily see how much of the application's 
+cost was incurred by <code>f</code> when called from a particular calling context. If 
+finer detail is of interest, one can explore how the costs incurred by a call 
+to <code>f</code> in a particular context are divided between <code>f</code> itself and the procedures
+ it calls. HPCToolkit's call path profiler csprof and the hpcviewer 
+user interface distinguish calling context precisely by individual call 
+sites; this means that if a procedure g contains calls to procedure <code>f</code> in 
+different places, these represent separate calling contexts.
+</li> 
+<li> <b>Callers view</b>. This bottom up view enables one to look upward along 
+call paths. This view is particularly useful for understanding the performance of software components or procedures that are used in more 
+than one context. For instance, a message-passing program may call 
+MPI Wait in many different calling contexts. The cost of any particular call will depend upon the structure of the parallelization in which 
+ the call is made. Serialization or load imbalance may cause long waits 
+in some calling contexts while other parts of the program may have 
+short waits because computation is balanced and communication is 
+overlapped with computation. 
+</li>
+<li><b>Flat view</b>. This view organizes performance measurement data accord- 
+ing to the static structure of an application. All costs incurred in any 
+calling context by a procedure are aggregated together in the flat view. 
+This complements the calling context view, in which the costs incurred 
+by a particular procedure are represented separately for each call to 
+the procedure from a different calling context. 
+</li>
+</ul>
+
+<h2>Panes</h2>
+<p>The browser window is divided into three panes: the <b>navigation</b> 
+pane, the <b>source</b> pane, and the <b>metrics</b> pane. We briefly describe the role of 
+each pane. </p>
+<ul>
+<li> <b>Source pane</b>. The source pane displays the source code associated with 
+the current entity selected in the navigation pane. When a performance 
+database is first opened with hpcviewer, the source pane is initially 
+blank because no entity is selected in the navigation pane. Selecting 
+any entity in the navigation pane will cause the source pane to load the 
+corresponding file, scroll to and highlight the line corresponding to the 
+selection. Switching the source pane to view to a different source file 
+is accomplished by making another selection in the navigation pane. 
+</li>
+<li> <b>Navigation pane</b>. The navigation pane presents a hierarchical tree- 
+based structure that is used to organize the presentation of an applications's 
+ performance data. Entities that occur in the navigation pane's 
+tree include load modules, files, procedures, procedure activations, inlined code, loops, and source lines. Selecting any of these entities will 
+cause its corresponding source code (if any) to be displayed in the 
+source pane. One can reveal or conceal children in this hierarchy by 
+"opening" or "closing" any non-leaf (i.e., individual source line) entry 
+in this view. 
+<p>
+The nature of the entities in the navigation pane's tree structure depends
+ upon whether one is exploring the calling context view, the 
+callers view, or the flat view of the performance data. 
+</p>
+<ul>
+<li> In the <b>calling context view</b>, entities in the navigation tree represent 
+procedure activations, inlined code, loops, and source lines. While 
+most entities link to a single location in source code, procedure 
+activations link to two: the call site from which a procedure was 
+called and the procedure itself. </li>
+<li> In the <b>callers view</b>, entities in the navigation tree are procedure 
+activations. Unlike procedure activations in the calling context 
+tree view in which call sites are paired with the called procedure, 
+in the caller's view, call sites are paired with the calling procedure 
+to facilitate attribution of costs for a called procedure to multiple 
+different call sites and callers. </li>
+<li> In the <b>flat view</b>, entities in the navigation tree correspond to source 
+files, procedure call sites (which are rendered the same way as 
+procedure activations), loops, and source lines. 
+</li>
+</ul>
+<p>
+The header above the navigation pane contains some controls for the 
+navigation and metric view. In Figure 1, they are labeled as "navigation/metric control
+." 
+<ul>
+ <li><b>Flatten/unflatten</b>: These buttons are only available for flat view. They enable one to flatten and unflatten 
+the navigation hierarchy. Clicking on the flatten button (the icon that 
+shows a tree node with a slash through it) will replace each top-level 
+scope shown with its children. If a scope has no children (i.e., it is a 
+leaf ), the node will remain in the view. This flattening operation is 
+useful for relaxing the strict hierarchical view so that peers at the same 
+level in the tree can be viewed and ranked together. For instance, this 
+can be used to hide procedures in the flat view so that outermost loops 
+can be ranked and compared to one another. The inverse of the flatten 
+operation is the unflatten operation, which causes an elided node in 
+the tree to be made visible once again. 
+</li>
+ <li><b>Zoom-in/out</b>: Depressing the up arrow button will zoom in to show only information
+for the selected line and its descendants. One can zoom out 
+(reversing a prior zoom operation) by depressing the down arrow button</li>
+ <li><b>Hot call path</b>: This accounts for cost of performance hot-spots, and is used to show the chain of responsibility for costs.
+ The "hot spot" is computed by comparing parent and child values, and show the chain where the difference is greater that a threshold 
+ (by default is <code>50%</code>). It is also possible to change the threshold value by clicking the menu "File-Preference".</li>
+ 
+ <li><b>Derived metric</b>: Creating a new metric based on mathematics expression formula.</li>
+ <li><b>Show/hide metrics</b>: Showing and hiding metric columns. A dialog box will appear, and user can select which columns to show or hide.</li>
+</ul>
+</p>
+</li>
+
+<li> <b>Metric pane</b>. The metric pane displays one or more performance metrics associated with entities to the left in the navigation pane. Entities 
+in the tree view of the navigation pane are sorted at each level of the 
+hierarchy by the metric in the selected column. When hpcviewer is 
+launched, the leftmost metric column is the default selection and the 
+navigation pane is sorted according to the values of that metric in de- 
+scending order. One can change the selected metric by clicking on a 
+column header. Clicking on the header of the selected column toggles 
+the sort order between descending and ascending. 
+<p>
+During analysis, one often wants to consider the relationship between 
+two metrics. This is easier when the metrics of interest are in adjacent 
+columns of the metric pane. One can change the order of columns in 
+the metric pane by selecting the column header for a metric and then 
+dragging it left or right to its desired position. The metric pane also 
+includes scroll bars for horizontal scrolling (to reveal other metrics) 
+and vertical scrolling (to reveal other scopes). Vertical scrolling of the 
+metric and navigation panes is synchronized. 
+</p>
+</li>
+</ul>
+</body>
+</html>

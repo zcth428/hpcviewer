@@ -18,6 +18,8 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.FlatViewInclMetricPropagati
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
+import edu.rice.cs.hpc.data.experiment.metric.*;
+
 public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 	private int numberOfPrimaryMetrics;
 	MetricValuePropagationFilter filter;
@@ -62,6 +64,14 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 					} else {
 						parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);						
 					}
+				/*} else if(scope instanceof LoopScope) {
+					// Laks 2008.07.08: nested loop is not included in the exclusive metric
+					if(filter instanceof ExclusiveOnlyMetricPropagationFilter) {
+						System.out.println("Scope:"+scope.getShortName());
+						// do nothing ?
+					} else {
+						parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);
+					} */
 				} else {
 					parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);
 				}

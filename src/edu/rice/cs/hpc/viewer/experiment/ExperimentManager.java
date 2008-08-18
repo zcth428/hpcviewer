@@ -9,11 +9,6 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.filesystem.IFileInfo;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -90,43 +85,21 @@ public class ExperimentManager {
 		dirDlg.setMessage(sTitle);
 		String sDir = dirDlg.open();	// ask the user to select a directory
 		if(sDir != null){
-			// find XML files in this directory
-			File files = new File(sDir);
-			// for debugging purpose, let have separate variable
-			File filesXML[] = files.listFiles(new FileXMLFilter());
-			// store it in the class variable for further usage
-    		ExperimentManager.sLastPath = sDir;
-    		// store the current path in the preference
-    		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-    		objPref.setValue(PreferenceConstants.P_PATH, sDir);
-			return filesXML;
+			return this.getListOfXMLFiles(sDir);
 		}
 		
 		return null;
 	}
 	
 	/**
-	 * Open database from a directory or file
+	 * Open a database given a path to the database directory
 	 * @param sPath
-	 * @return true if the database can be loaded
+	 * @return
 	 */
-	public boolean openDatabase(String sPath) {
-		// find XML files in this directory
-		Path path = new Path(sPath);
-		// get the absolute path: 
-		//	Attention: this will return incorrectly in debug mode, but in RCP mode it works !!!
-		IPath ipath = path.makeAbsolute();
-		// convert to File class so that we can check if is it a directory or not
-		File files = ipath.toFile();		
-		// by default a directory, we check if it has XML files
-		File filesXML[] = files.listFiles(new FileXMLFilter());
-		
-		if(filesXML != null && filesXML.length>0) {
-				return this.openFileExperimentFromFiles(filesXML);
-		} else if(files.isFile()) {
-			// there is no XML file, and the path is a file.
-				return this.setExperiment(sPath);
-		}
+	public boolean openDatabaseFromDirectory(String sPath) {
+		File []fileXML = this.getListOfXMLFiles(sPath);
+		if(fileXML != null)
+			return this.openFileExperimentFromFiles(fileXML);
 		return false;
 	}
 	/**
@@ -182,9 +155,29 @@ public class ExperimentManager {
 		ExperimentView expViewer = new ExperimentView(objPage);
 	    if(expViewer != null) {
 	    	// data looks OK
-	    	return expViewer.loadExperimentAndProcess(sFilename);
+	    	expViewer.loadExperimentAndProcess(sFilename);
 	     } else
 	    	 return false; //TODO we need to throw an exception instead
+		return true;
 	}
+	
+	/**
+	 * Return the list of .xml files in a directory
+	 * @param sPath: the directory of the database
+	 * @return
+	 */
+	private File[] getListOfXMLFiles(String sPath) {
+		// find XML files in this directory
+		File files = new File(sPath);
+		// for debugging purpose, let have separate variable
+		File filesXML[] = files.listFiles(new FileXMLFilter());
+		// store it in the class variable for further usage
+		ExperimentManager.sLastPath = sPath;
+		// store the current path in the preference
+		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+		objPref.setValue(PreferenceConstants.P_PATH, sPath);
+		return filesXML;
+	}
+	
 
 }

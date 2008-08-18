@@ -63,13 +63,13 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	 * @param parentShell
 	 * @param listOfMetrics
 	 */
-	public ExtDerivedMetricDlg(Shell parentShell, Metric []listOfMetrics) {
+	public ExtDerivedMetricDlg(Shell parentShell, BaseMetric []listOfMetrics) {
 		super(parentShell);
 		this.setMetrics(listOfMetrics);
 		this.fctMap = new ExtFuncMap(listOfMetrics, null);
 	}
 	
-	public ExtDerivedMetricDlg(Shell parent, Metric []listOfMetrics, Scope s) {
+	public ExtDerivedMetricDlg(Shell parent, BaseMetric []listOfMetrics, Scope s) {
 		super(parent);
 		this.setMetrics(listOfMetrics);
 		this.fctMap = new ExtFuncMap(listOfMetrics, null);
@@ -299,7 +299,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  // ---- PUBLIC METHODS
 	  //==========================================================
 		
-	  public void setMetrics(Metric []listOfMetrics) {
+	  public void setMetrics(BaseMetric []listOfMetrics) {
 		  int nbMetrics = listOfMetrics.length;
 		  //this.arrMetrics = listOfMetrics;
 		  this.arrStrMetrics = new String[nbMetrics];

@@ -25,9 +25,23 @@
             allowMultiple="true"
             category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.ScopeView"
-            icon="icons/hpc-16x16.png"
+            icon="icons/cct.png"
             id="edu.rice.cs.hpc.scope.ScopeView"
             name="ScopeView">
+      </view>
+      <view
+            category="hpcviewer"
+            class="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
+            icon="icons/flat.png"
+            id="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
+            name="FlatScopeView">
+      </view>
+      <view
+            category="hpcviewer"
+            class="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
+            icon="icons/caller.png"
+            id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
+            name="CallerView">
       </view>
    </extension>
    <extension
@@ -137,6 +151,12 @@
           id="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
           name="Source Code Editor">
    		</editor>
+    <editor
+          class="edu.rice.cs.hpc.viewer.help.HTMLEditor"
+          icon="icons/hpc-merged-16x16.png"
+          id="edu.rice.cs.hpc.viewer.util.HTMLEditor"
+          name="Web editor">
+    </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

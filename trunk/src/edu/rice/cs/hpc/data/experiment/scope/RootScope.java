@@ -128,7 +128,10 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	}
 
 	/**
-	 * Return the list of flattened node
+	 * Return the list of flattened node.
+	 * Algo: 
+	 *  - browse the tree. If the tree node has children, then add the children into the table
+	 *    Otherwise, add the node itself.
 	 * @param iLevel: level of flattened nodes, 0 is the root
 	 * @return
 	 */

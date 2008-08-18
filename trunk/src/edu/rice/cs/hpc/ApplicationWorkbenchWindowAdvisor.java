@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc;
 
+import java.io.File;
+
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -7,13 +9,13 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchListener;
 
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
-import edu.rice.cs.hpc.viewer.util.*;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private ExperimentData dataEx ;
@@ -57,18 +59,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Action when the window is already opened
 	 */
 	public void postWindowOpen() {
-		// set the perspective (to setup the view as well)
-		/*
-		 * try {
-		   workbench.showPerspective("edu.rice.cs.hpc.perspective", 
-		      workbench.getActiveWorkbenchWindow());
-		   
-		} catch (org.eclipse.ui.WorkbenchException e) {
-			e.printStackTrace();
-		}
-		*/
 		// set the status bar
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
+		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
+		.getActionBarConfigurer().getStatusLineManager();
 		// -------------------
 		// see if the argument provides the database to load
 		if(this.dataEx != null) {
@@ -77,51 +71,51 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				System.err.println("Anomaly event occured: active window not found");
 				return;
 			}
-			/*
 			IWorkbenchPage pageCurrent = windowCurrent.getActivePage();
 			if(pageCurrent == null) {
 				System.err.println("Anomaly event occured: active page not found");
 			}
-			*/
-			//ExperimentView expViewer = new ExperimentView(pageCurrent);
-		    //if(expViewer != null) {
+			ExperimentView expViewer = new ExperimentView(pageCurrent);
+		    if(expViewer != null) {
 		    	// data looks OK
 		    	String []sArgs = this.dataEx.getArguments();
-		    	String sFilename = null;
+		    	String sPath = null;
+		    	// find the file in the list of arguments
 		    	for(int i=0;i<sArgs.length;i++) {
-		    		// check the argument, and skip if it is a flag/option
 		    		if(sArgs[i].charAt(0) != '-') {
-		    			sFilename = sArgs[i];
+		    			sPath = sArgs[i];
 		    			break;
 		    		}
 		    	}
-		    	if(sFilename != null) {
-		    		// Bug fixed: DO NOT make a reference of window based on configurer
-		    		// In some machines (especially the slow ones) the window is not instantiated yet !!
-		    		ExperimentData objData = ExperimentData.getInstance(windowCurrent);
-		    		ExperimentManager objManager = objData.getExperimentManager();
-		    		if(objManager != null) {
-		    			if (objManager.openDatabase(sFilename))
-		    				return;
+		    	// if a filename exist, try to open it
+		    	if(sPath != null) {
+		    		File file = new File(sPath);
+		    		if(file.isFile())
+		    			expViewer.loadExperimentAndProcess(sPath);
+		    		else {
+		    			// bug fix: needs to treat a folder/directory
+		    			// it is a directory
+		    			this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
+		    				ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		    			ExperimentManager objManager = this.dataEx.getExperimentManager();
+		    			objManager.openDatabaseFromDirectory(sPath);
 		    		}
-		    	}
 		    		//expViewer.asyncLoadExperimentAndProcess(sFilename);
-		    	//} else 
-		    	this.openDatabase();
-		    	
-		     /*} else {
+		    	} else 
+		    		// otherwise, show the open folder dialog to choose the database
+		    		this.openDatabase();
+		     } else {
 		    	 statusline.setMessage("Cannot relocate the viewer. Please open the database manually.");
 		    	 System.err.println("Cannot relocate the viewer. Please open the database manually.");
 		    	 
-		     }*/
+		     }
 		} else {
 			// there is no information about the database
-			org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
-				.getActionBarConfigurer().getStatusLineManager();
 			statusline.setMessage(null, "Load a database to start.");
 			// we need load the file ASAP
 			this.openDatabase();
 		}
+		this.shutdownEvent(this.workbench, windowCurrent.getActivePage());
 	}
 	
 	/**
@@ -129,8 +123,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * (only the first one will be taken into account)
 	 */
 	private void openDatabase() {
-		this.dataEx = new ExperimentData(this.workbench.getActiveWorkbenchWindow());
-		//ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
+			ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		ExperimentManager expFile = this.dataEx.getExperimentManager();
 		if(expFile != null) {
 			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow();
@@ -153,7 +147,26 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public boolean preWindowShellClose() {
 		boolean bClosed = this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
-		//System.out.println("Close all editors:"+bClosed);
-		return super.preWindowShellClose();
+		return true; // we allow app to shut down
+	}
+	
+	/**
+	 * add a shutdown event to the workbench
+	 * @param IWorkbench
+	 * @param IWorkbenchPage
+	 */
+	private void shutdownEvent(IWorkbench workbench, final IWorkbenchPage pageCurrent) {
+		// attach a new listener to the workbench
+		workbench.addWorkbenchListener(new IWorkbenchListener(){
+			public boolean preShutdown(IWorkbench workbench,
+                    boolean forced) {
+				// somehow, closeEditors method works better than closeAllEditors.
+				pageCurrent.closeEditors(pageCurrent.getEditorReferences(), false);
+				return true;
+			}
+			public void postShutdown(IWorkbench workbench) {
+				// do nothing
+			}
+		});
 	}
 }

@@ -9,9 +9,9 @@ import org.eclipse.jface.dialogs.Dialog;
 
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IViewSite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.CoolBar;
 
 import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -20,7 +20,6 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
-import edu.rice.cs.hpc.viewer.util.Utilities;
 
 import edu.rice.cs.hpc.viewer.metric.*;
 //math expression
@@ -36,14 +35,12 @@ import com.graphbuilder.math.*;
  * @author laksono
  *
  */
-public class ScopeViewActions {
-	// public preference
-	static public double fTHRESHOLD = 0.6; 
+public class ScopeViewActions extends ScopeActions {
     //-------------- DATA
-	private ScopeViewActionsGUI objActionsGUI;	// associated GUI (toolbar)
-    private ScopeTreeViewer 	treeViewer;		  	// tree 
-    private RootScope 		myRootScope;		// the root scope of this view
-    private IViewSite objSite;				// associated view
+	//private ScopeViewActionsGUI objActionsGUI;	// associated GUI (toolbar)
+    protected ScopeTreeViewer 	treeViewer;		  	// tree 
+    protected RootScope 		myRootScope;		// the root scope of this view
+    //private IViewSite objSite;				// associated view
 
     // stack to store the position of the zoom, tree state, ...
     private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
@@ -55,14 +52,19 @@ public class ScopeViewActions {
      * @param viewSite the site of the view (used for retrieving shell, display, ...)
      * @param parent composite
      */
-    public ScopeViewActions(IViewSite viewSite, Composite parent) {
-    	this.objActionsGUI = new ScopeViewActionsGUI(viewSite, parent, this);
-    	IPreferenceStore objPref = Activator.getDefault().getPreferenceStore();
-    	double fDefaultThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
-    	if(fDefaultThreshold > 0.0)
-    		ScopeViewActions.fTHRESHOLD= fDefaultThreshold; 
-    	this.objSite = viewSite;
+    public ScopeViewActions(Shell shell, Composite parent, CoolBar coolbar) {
+    	super(shell, parent, coolbar);
+    	createGUI(parent, coolbar);
     }
+
+    /**
+     * Each class has its own typical GUI creation
+     */
+	protected  Composite createGUI(Composite parent, CoolBar coolbar) {
+    	this.objActionsGUI = new ScopeViewActionsGUI(objShell, parent, this);
+    	this.objActionsGUI.buildGUI(parent, coolbar);
+		return parent;
+	}
 
     /**
      * The tree has been updated or has new content. This object needs to refresh
@@ -85,7 +87,7 @@ public class ScopeViewActions {
 	 * @param iLevel
 	 * @return
 	 */
-	private HotCallPath getHotCallPath(TreePath pathItem, TreeItem item, Scope scope, Metric metric, int iLevel) {
+	private HotCallPath getHotCallPath(TreePath pathItem, TreeItem item, Scope scope, BaseMetric metric, int iLevel) {
 		if(scope == null || metric == null || item == null)
 			return null;
 		// expand the immediate child if necessary
@@ -104,31 +106,19 @@ public class ScopeViewActions {
 				// get the values
 				double x1, x2;
 				double dParent, dChild;
-				// derived metric has no information on the percentage
-				// so we need to treat them exclusively
-				if(metric instanceof ExtDerivedMetric) {
-					ExtDerivedMetric edm = (ExtDerivedMetric) metric;
-					Double objParent = edm.getDoubleValue(scope); //edm.getDoubleValue(scope);
-					Double objChild = edm.getDoubleValue(scopeChild); //edm.getDoubleValue(scopeChild);
-					if(objParent == null)
-						dParent = Integer.MIN_VALUE; //-1;
-					else
-						dParent = objParent.doubleValue();
-					if(objChild == null)
-						dChild = Integer.MIN_VALUE; //-1;
-					else
-						dChild = objChild.doubleValue();
-				} else {
-					dParent = scope.getMetricPercentValue(metric);
-					dChild = scopeChild.getMetricPercentValue(metric);
-				}
+
+				MetricValue mvParent = metric.getValue(scope);
+				MetricValue mvChild = metric.getValue(scopeChild);
+				dParent = mvParent.getValue();
+				dChild = mvChild.getValue();
+				
+				// normalization: x1 must be bigger than x2
 				if(dParent > dChild) {
 					x1 = dParent; x2 = dChild;
 				} else {
 					x1 = dChild; x2 = dParent;
 				}
 
-				//System.out.println("SVA:"+b+" -> "+d+" " + x2/x1);
 				// simple comparison: if the child has "huge" difference compared to its parent
 				// then we consider it as host spot node.
 				if(x2 < (ScopeViewActions.fTHRESHOLD * x1)) {
@@ -188,15 +178,15 @@ public class ScopeViewActions {
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
-	/*
+	
 	public void showProcessingMessage() {
-		this.objSite.getShell().getDisplay().asyncExec(new Runnable(){
+		this.objShell.getDisplay().asyncExec(new Runnable(){
 			public void run() {
 				objActionsGUI.showWarningMessagge("... Processing .... Please wait ...");
 			}
 		});
 	}
-	*/
+	
 	/**
 	 * Class to restoring the background of the message bar by waiting for 5 seconds
 	 * TODO: we need to parameterize the timing for the wait
@@ -215,7 +205,7 @@ public class ScopeViewActions {
              }
              // need to run from UI-thread for restoring the background
              // without UI-thread we will get SWTException !!
-             objSite.getShell().getDisplay().asyncExec( new Runnable() {
+             objShell.getDisplay().asyncExec( new Runnable() {
             	 public void run() {
                 	 objActionsGUI.restoreMessage();
             	 }
@@ -241,7 +231,7 @@ public class ScopeViewActions {
 	 * background color
 	 */
 	public void restoreProcessingMessage() {
-		this.objSite.getShell().getDisplay().asyncExec(new Runnable(){
+		this.objShell.getDisplay().asyncExec(new Runnable(){
 			public void run() {
 				objActionsGUI.restoreMessage();
 			}
@@ -280,8 +270,8 @@ public class ScopeViewActions {
 		}
 		// get the metric data
 		Object data = colSelected.getData();
-		if(data instanceof Metric && item != null) {
-			Metric metric = (Metric) data;
+		if(data instanceof BaseMetric && item != null) {
+			BaseMetric metric = (BaseMetric) data;
 			// find the hot call path
 			int iLevel = 0;
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
@@ -290,7 +280,7 @@ public class ScopeViewActions {
 				this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
 			} else {
 				// we cannot find it
-				this.showErrorMessage("No hot path detected.");
+				this.showErrorMessage("No hot call path detected.");
 			}
 		} else {
 			// It is almost impossible for the jvm to reach this part of branch.
@@ -381,44 +371,14 @@ public class ScopeViewActions {
 		this.objActionsGUI.checkZoomButtons(nodeSelected); // no node has been selected ?
 	}
 	
-	/**
-	 * Flatten the tree one level more
-	 */
-	public void flatten() {
-		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getFlatten();
-		if(arrNodes != null) {
-			this.treeViewer.getTree().setRedraw(false);
-			// we update the data of the table
-			this.treeViewer.setInput(arrNodes);
-			// refreshing the table to take into account a new data
-			this.treeViewer.refresh();
-			// post processing: inserting the "aggregate metric" into the top row of the table
-			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
-			this.treeViewer.getTree().setRedraw(true);
-		} else {
-			// either there is something wrong or we cannot flatten anymore
-			//this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
-			
-		}
-	}
-
-	/**
-	 * Unflatten flattened tree (tree has to be flattened before)
-	 */
-	public void unflatten() {
-		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getUnflatten();
-		if(arrNodes != null) {
-			this.treeViewer.setInput(arrNodes);
-			this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
-		}
-	}
 	
 	/**
 	 * create a new metric based on a free expression
 	 */
 	public void addExtNewMetric() {
 		// prepare the dialog box
-		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objSite.getShell(), this.myRootScope.getExperiment().getMetrics());
+		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objShell, 
+				this.myRootScope.getExperiment().getMetrics());
 		// prepare the scope node for the preview of the expression
 		Scope.Node node = this.getSelectedNode();
 		if(node == null)
@@ -437,8 +397,8 @@ public class ScopeViewActions {
 				objMetricType = MetricType.INCLUSIVE;
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
-			ExtDerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, objMetricType);
-			
+			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, objMetricType);
+			System.out.println("SVA:"+objMetric.getAggregateValue());
 			int iPosition = exp.getMetricCount()+1;
 			this.treeViewer.getTree().setRedraw(false);
 			TreeViewerColumn colDerived = this.treeViewer.addTreeColumn(objMetric, 
@@ -484,7 +444,6 @@ public class ScopeViewActions {
      * @param node
      */
     public void checkButtons(Scope.Node node) {
-    	this.objActionsGUI.checkFlattenButtons();
     	this.objActionsGUI.checkZoomButtons(node);
     }
 

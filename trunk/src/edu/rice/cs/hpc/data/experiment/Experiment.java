@@ -64,7 +64,7 @@ protected ExperimentConfiguration configuration;
 protected SourceFile[] files;
 
 /** The experiment's metrics. */
-protected Vector metricList;
+protected Vector<BaseMetric> metricList;
 
 /** The experiment's scopes. */
 protected ScopeList scopes;
@@ -290,7 +290,7 @@ protected Scope createCallersView(Scope callingContextViewRootScope)
 {
 	EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
 
-	Scope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallTree);
+	Scope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallerTree);
 	beginScope(callersViewRootScope);
 	
 	CallersViewScopeVisitor csv = new CallersViewScopeVisitor(this, callersViewRootScope, 
@@ -338,7 +338,7 @@ protected void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter fil
 
 protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropagationFilter filter) {
 	for (int i = 0; i< this.getMetricCount(); i++) {
-		Metric metric = this.getMetric(i);
+		Metric metric = (Metric)this.getMetric(i);
 		if (metric.getMetricType() == sourceType) {
 			copyMetric(scope, scope, i, metric.getPartnerIndex(), filter);
 		}
@@ -351,6 +351,13 @@ protected void addPercents(Scope scope, RootScope totalScope)
 	scope.dfsVisitScopeTree(psv);
 }
 
+/**
+ * Post-processing for CCT:
+ * Step 1: normalizing CCT view
+ *  - normalize line scope, which means to add the cost of line scope into call site scope
+ *  - compute inclusive metrics for I
+ *  - compute inclusive metrics for X
+ */
 public void postprocess() {
 	if (this.rootScope.getSubscopeCount() <= 0) return;
 	// Get first scope subtree: CCT or Flat
@@ -358,7 +365,7 @@ public void postprocess() {
 	if (!(firstSubTree instanceof RootScope)) return;
 	RootScopeType firstRootType = ((RootScope)firstSubTree).getType();
 	
-	if (firstRootType.equals(RootScopeType.CallTree)) {
+	if (firstRootType.equals(RootScopeType.CallingContextTree)) {
 		// accumulate, create views, percents, etc
 		Scope callingContextViewRootScope = firstSubTree;
 
@@ -403,6 +410,7 @@ public void postprocess() {
 //////////////////////////////////////////////////////////////////////////
 //Compute Derived Metrics												//
 //////////////////////////////////////////////////////////////////////////
+/*
 public void addComputedMetrics(int nMetrics, double scaling)
 {
 	// Setup metrics
@@ -429,6 +437,7 @@ public void addComputedMetrics(int nMetrics, double scaling)
 	ComputedMetricVisitor cmv = new ComputedMetricVisitor(nMetrics, this.getRootScope().getSubscope(0), scaling);
 	this.rootScope.dfsVisitScopeTree(cmv);
 }
+*/
 
 /**
  * Create a derived metric based on formula expression
@@ -436,9 +445,9 @@ public void addComputedMetrics(int nMetrics, double scaling)
  * @param expFormula
  * @return
  */
-public ExtDerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
+public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
-	ExtDerivedMetric objMetric = new ExtDerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
+	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
 			bPercent, metricType);
 	this.addMetric(objMetric); // add this metric into our list
 	return objMetric;
@@ -539,9 +548,10 @@ public SourceFile getSourceFile(int index)
  *	Returns the array of metrics in the experiment.
  ************************************************************************/
 	
-public Metric[] getMetrics()
+public BaseMetric[] getMetrics()
 {
-	return 	(Metric[])this.metricList.toArray(new Metric[0]);
+	return 	this.metricList.toArray(new BaseMetric[0]);
+	//return 	(Metric[])this.metricList.toArray(new Metric[0]);
 }
 
 
@@ -561,9 +571,9 @@ public int getMetricCount()
  *	Returns the metric with a given index.
  ************************************************************************/
 	
-public Metric getMetric(int index)
+public BaseMetric getMetric(int index)
 {
-	return (Metric)this.metricList.get(index);
+	return this.metricList.get(index);
 }
 
 
@@ -580,7 +590,7 @@ public Metric getMetric(String name)
 	return metric;
 }
 
-public void addMetric(Metric m)
+public void addMetric(BaseMetric m)
 {
 	m.setIndex(this.getMetricCount());
 	m.setShortName(""+m.getIndex());

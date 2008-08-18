@@ -1,6 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.filters;
 
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -8,9 +8,9 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 //prevent inclusive metrics from being propagated to the FileScope level in the flat view
 public class FlatViewInclMetricPropagationFilter implements MetricValuePropagationFilter {
 	/** The parsed metric objects. */
-	protected Metric[] metrics;
+	protected BaseMetric[] metrics;
 
-	public FlatViewInclMetricPropagationFilter(Metric[] metricArray) {
+	public FlatViewInclMetricPropagationFilter(BaseMetric[] metricArray) {
 		this.metrics = metricArray;
 	}
 	

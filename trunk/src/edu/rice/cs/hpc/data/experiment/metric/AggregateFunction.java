@@ -12,14 +12,14 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
  */
 public class AggregateFunction implements Function {
 
-	private Metric []arrMetrics;
+	private BaseMetric []arrMetrics;
 	private RootScope rootscope;
 	
 	/**
 	 * Retrieve the aggregate value of a metric
 	 * @param metrics: a list of metrics
 	 */
-	public AggregateFunction(Metric []metrics, RootScope scope) {
+	public AggregateFunction(BaseMetric []metrics, RootScope scope) {
 		this.arrMetrics = metrics;
 		this.rootscope = scope;
 	}
@@ -40,15 +40,8 @@ public class AggregateFunction implements Function {
 		int index = (int) param[0];
 		if(index > this.arrMetrics.length || index<0)
 			throw new java.lang.ArrayIndexOutOfBoundsException("Aggregate(x): the value of x is out of range.");
-		Metric metric = this.arrMetrics[index];
-		if(metric instanceof ExtDerivedMetric) {
-			ExtDerivedMetric edm = (ExtDerivedMetric) metric;
-			double dVal = edm.getAggregateValue(); 
-			return dVal;
-		} else {
-			double dVal = metric.getValue(this.rootscope).getValue();
-			return dVal;
-		}
+		BaseMetric metric = this.arrMetrics[index];
+		return metric.getValue(this.rootscope).getValue();
 	}
 
 	public String toString() {

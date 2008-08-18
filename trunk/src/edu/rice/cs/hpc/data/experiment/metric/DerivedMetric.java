@@ -3,10 +3,8 @@
  */
 package edu.rice.cs.hpc.data.experiment.metric;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.metric.MetricVarMap;
-import edu.rice.cs.hpc.data.experiment.metric.*;
 
 //math expression
 import com.graphbuilder.math.*;
@@ -15,11 +13,11 @@ import com.graphbuilder.math.*;
  * @author la5
  *
  */
-public class ExtDerivedMetric extends Metric {
+public class DerivedMetric extends BaseMetric {
 	//===================================================================================
 	// DATA
 	//===================================================================================
-	
+	protected RootScope scopeOfTheRoot;
 	// a counter to know the number of derived metrics
 	static public int Counter = 0;
 	// formula expression
@@ -37,26 +35,6 @@ public class ExtDerivedMetric extends Metric {
 	//===================================================================================
 	
 	/**
-	 * @param experiment
-	 * @param shortName
-	 * @param nativeName
-	 * @param displayName
-	 * @param displayed
-	 * @param percent
-	 * @param sampleperiod
-	 * @param metricType
-	 * @param partnerIndex
-	 */
-	public ExtDerivedMetric(Experiment experiment, String shortName,
-			String nativeName, String displayName, boolean displayed,
-			boolean percent, String sampleperiod, MetricType metricType,
-			int partnerIndex) {
-		super(experiment, shortName, nativeName, displayName, displayed,
-				percent, sampleperiod, metricType, partnerIndex);
-		this.metricType = MetricType.DERIVED;
-	}
-
-	/**
 	 * Extended derived metric which is based on a formula of expression
 	 * @param scopeRoot
 	 * @param e
@@ -64,54 +42,29 @@ public class ExtDerivedMetric extends Metric {
 	 * @param index
 	 * @param bPercent
 	 */
-	public ExtDerivedMetric(RootScope scopeRoot, Expression e, String sName, int index, boolean bPercent, MetricType objType) {
-		super(scopeRoot.getExperiment(), "EDM"+ExtDerivedMetric.Counter, "ExtDerivedMetric"+ExtDerivedMetric.Counter,
-				sName, true, bPercent, ".",MetricType.DERIVED, 0);
-		ExtDerivedMetric.Counter++;
-		this.setIndex(index);
+	public DerivedMetric(RootScope scopeRoot, Expression e, String sName, int index, boolean bPercent, MetricType objType) {
+		super(sName, true, bPercent, index);
+		DerivedMetric.Counter++;
 		this.expression = e;
+		this.scopeOfTheRoot = scopeRoot;
 		// set up the functions
 		this.fctMap = new ExtFuncMap();
-		this.fctMap.init(scopeRoot.getExperiment().getMetrics(), scopeRoot);
+		BaseMetric []metrics = scopeRoot.getExperiment().getMetrics(); 
+		this.fctMap.init(metrics, scopeRoot);
 
 		// set up the variables
 		this.varMap = new MetricVarMap(scopeRoot.getExperiment().getMetrics());
 		this.metricType = objType;//MetricType.DERIVED;
-		// compute the aggregate value if necessary
-		if(bPercent) {
-			MetricValue objValue = this.accumulateMetricsFromKids(scopeRoot, index);
-			// save the aggregate value into global variable
-			this.dRootValue = (!objValue.isAvailable()?0.0:objValue.getValue());
-		}
+		// Bug fix: always compute the aggregate value 
+		//MetricValue objValue = this.getAggregateMetrics(scopeRoot);
+		this.dRootValue = this.getAggregateMetrics(scopeRoot);
+		//this.dRootValue = objValue.value;
 	}
 
 	//===================================================================================
 	// AGGREGATE VALUE
 	//===================================================================================
 	
-	/**
-	 * Computing the aggregate value of a metric
-	 */
-	/*
-	private MetricValue computeAggregate(Scope scopeAggregate, int index) {
-		MetricValue objValue = new MetricValue();
-		int nbKids = scopeAggregate.getSubscopeCount();
-		double dTotal = 0.0;
-		for(int i=0;i<nbKids;i++) {
-			Scope kid = scopeAggregate.getSubscope(i);
-			MetricValue objKidValue = this.accumulateMetricsFromKids(kid, index);
-			if(objKidValue.isAvailable()) {
-				dTotal = dTotal + objKidValue.getValue();
-			}
-		}
-		if(dTotal != 0.0) {
-			objValue = new MetricValue(dTotal);
-		} else
-			// if for unknown reason, the total aggregate (sum reduction) is zero,
-			// we initialize it with the value of the scope (computed with the formula)
-			objValue = this.getValue(scopeAggregate);
-		return objValue;
-	}*/
 	/**
 	 * Computing the aggregate values of the children and save it to the original "parent" 
 	 * (which is the root scope)
@@ -120,42 +73,73 @@ public class ExtDerivedMetric extends Metric {
 	 * @param index: matrix index
 	 * @return the value, MetricValue.NONE if there is no value
 	 */
-	private MetricValue accumulateMetricsFromKids(Scope current, int index) {
+	private double accumulateMetricsFromKids(Scope current) {
 		int nkids = current.getSubscopeCount();
 		MetricValue objCurrentValue = this.getValue(current);//current.getDerivedMetricValue(this, index);
 		double dTotal = 0.0;
 		// ATT: we accumulate only the leaves, and DO NOT add the current value into the total value
 		if(objCurrentValue.isAvailable() && (nkids==0)) {
 			//dTotal = objCurrentValue.getValue();
-			return objCurrentValue;
+			return objCurrentValue.value;
 		}
 		for (int i = 0; i < nkids; i++) {
 			Scope child = current.getSubscope(i);
 			// for debuggin        g purpose
 			String sChildName = child.getShortName();
 			// compute the accumulated value of the children of the child
-			MetricValue objTotalChildrenValue = accumulateMetricsFromKids(child, index);
+			double dTotalChildrenValue = accumulateMetricsFromKids(child);
 			// compute the total
-			if(objTotalChildrenValue.isAvailable()) {
-				dTotal = dTotal + objTotalChildrenValue.getValue();// + objChildValue.getValue();
+			if(dTotalChildrenValue != -1.0) {
+				dTotal = dTotal + dTotalChildrenValue;// + objChildValue.getValue();
+				//System.out.println("DM:"+current.getName()+"="+dTotal+"\tFrom: "+sChildName+"\t= "+objTotalChildrenValue.getValue());
 			}
 		}
 		// we have computed all the kids. If the total is zero, then return none
 		// otherwise return the total
-		MetricValue objTotalValue;
+		double dTotalValue;
 		if(dTotal != 0.0) {
-			objTotalValue = new MetricValue(dTotal);
+			dTotalValue = dTotal;
 		} else
 			// the total value of the kids are zeros, but the current scope is not !
-			objTotalValue = objCurrentValue; //MetricValue.NONE;
-		return objTotalValue;
+			dTotalValue = objCurrentValue.value; //MetricValue.NONE;
+		return dTotalValue;
 	}
-	/*
-	public MetricValue getAggregateValue() {
-		return this.objAggregateValue;
-	}
-	*/
 
+	private double getAggregateMetrics(RootScope scopeRoot) {
+		if(scopeRoot.getType() == RootScopeType.CallerTree) {
+			// just get the one who has no children --> the main program
+			int nbKids = scopeRoot.getSubscopeCount();
+			for(int i=0; i<nbKids; i++) {
+				Scope child = scopeRoot.getSubscope(i);
+				if(child.getSubscopeCount() == 0) {
+					return this.getValue(child).value;
+				}
+			}
+			System.err.println("Warning: the tree has no main program ! Impossible to compute the aggregate value");
+
+		} else if(scopeRoot.getType() == RootScopeType.Flat) {
+			// flat view: sum all files (for exclusive) sum all functions (for inclusive)
+			int nbKids = scopeRoot.getSubscopeCount();
+			double dSum = 0.0;
+			for(int i=0; i<nbKids; i++) {
+				Scope child = scopeRoot.getSubscope(i);
+				int nbGrandKids = child.getSubscopeCount(); 
+				if(nbGrandKids > 0) {
+					for(int j=0;j<nbGrandKids;j++) {
+						Scope grandChild = child.getSubscope(j);
+						Double dChild = this.getDoubleValue(grandChild);
+						if(dChild != null)
+							dSum += dChild.doubleValue();
+					}
+				}
+			}
+			//MetricValue objValue = new MetricValue(dSum);
+			return dSum;
+
+		}
+		double dValue = this.accumulateMetricsFromKids(scopeRoot);
+		return dValue;
+	}
 	//===================================================================================
 	// GET VALUE
 	//===================================================================================
@@ -181,10 +165,22 @@ public class ExtDerivedMetric extends Metric {
 	 * Return a MetricValue
 	 */
 	public MetricValue getValue(Scope scope) {
-		Double dVal = this.getDoubleValue(scope);
-		if(dVal == null)
-			return MetricValue.NONE;	// the value is not available !
-		return new MetricValue(dVal);
+		double dVal;
+		// if the scope is a root scope, then we return the aggregate value
+		if(scope instanceof RootScope) {
+			dVal = (this.dRootValue);
+		} else {
+			// otherwise, we need to recompute the value again via the equation
+			Double objVal = this.getDoubleValue(scope);
+			if(objVal == null)
+				return MetricValue.NONE;	// the value is not available !
+			dVal = objVal.doubleValue();
+		}
+		if(this.getPercent()){
+			return new MetricValue(dVal,dVal/this.dRootValue);
+		} else {
+			return new MetricValue(dVal);
+		}
 	}
 	
 	/**
@@ -221,7 +217,7 @@ public class ExtDerivedMetric extends Metric {
 	 */
 	public double getAggregateValue() {
 		if(this.dRootValue == 0.0)
-			return this.getDoubleValue(this.experiment.getRootScope());
+			return this.getDoubleValue(this.scopeOfTheRoot).doubleValue();
 		else
 			return this.dRootValue;
 	}
@@ -234,6 +230,7 @@ public class ExtDerivedMetric extends Metric {
 	 * @param scope2
 	 * @return zero if the values are identical, <0 if the first is less, >0 otherwise
 	 */
+	/*
 	public int compare(Scope scope1, Scope scope2) {
 		int iResult = 0;
 		MetricValue mv1 = this.getValue(scope1); 	//scope1.getDerivedMetricValue(this);
@@ -262,6 +259,5 @@ public class ExtDerivedMetric extends Metric {
 			return(int) (d2-d1);
 		}
 		return iResult;
-	}
+	}*/
 }
-

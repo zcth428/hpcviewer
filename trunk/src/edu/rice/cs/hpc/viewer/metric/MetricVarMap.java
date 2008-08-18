@@ -7,8 +7,8 @@ import com.graphbuilder.math.Expression;
 import com.graphbuilder.math.ExpressionTree;
 import com.graphbuilder.math.FuncMap;
 import com.graphbuilder.math.VarMap;
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
@@ -18,7 +18,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
  */
 public class MetricVarMap extends VarMap {
 
-	private Metric metrics[] = new Metric[2];
+	private BaseMetric metrics[];// = new BaseMetric[2];
 	private Scope scope;
 	/**
 	 * 
@@ -32,12 +32,12 @@ public class MetricVarMap extends VarMap {
 		this.scope = s;
 	}
 	
-	public MetricVarMap(Metric m[]) {
+	public MetricVarMap(BaseMetric m[]) {
 		super(false);
 		this.metrics = m;
 	}
 	
-	public MetricVarMap(Scope s, Metric m[]) {
+	public MetricVarMap(Scope s, BaseMetric m[]) {
 		super(false);
 		this.scope = s;
 		this.metrics = m;
@@ -58,7 +58,7 @@ public class MetricVarMap extends VarMap {
 	 * @param iMetricID: the index of the metric
 	 * @param metric: pointer to the metric
 	 */
-	public void setMetrics(Metric []arrMetrics) {
+	public void setMetrics(BaseMetric []arrMetrics) {
 		this.metrics = arrMetrics;
 	}
 
@@ -82,22 +82,15 @@ public class MetricVarMap extends VarMap {
 			try {
 				int index = Integer.parseInt(sIndex);
 				if(index<this.metrics.length) {
-					Metric metric = this.metrics[index];
-					// TODO: dirty tricks: separate treatment for derived metric.
-					// we should use polymorphism  in the future
-					if(metric instanceof ExtDerivedMetric) {
-						//return scope.getDerivedMetricValue((ExtDerivedMetric)metric, metric.getIndex()).getValue();
-						return ((ExtDerivedMetric)metric).getDoubleValue(scope); 
-					} else {
-						MetricValue mv  = scope.getMetricValue(metric);
-						if(mv.isAvailable())
-							return this.scope.getMetricValue(metric).getValue();
-						// in this case, the value is invalid or the metric has no value
-						// it is important to notify not to include the value into the table
-						//this.hasValidValue = false;
-						throw new RuntimeException(varName);
-
-					}
+					BaseMetric metric = this.metrics[index];
+					MetricValue value = metric.getValue(scope);
+					if(value.isAvailable())
+						return value.getValue();
+					// Laks 2008.07.03: if the value is not available, we just assume it equals to zero
+					else
+						return 0;
+					//throw new RuntimeException(varName);
+					
 				} else
 					throw new RuntimeException("metric index is not valid: " + varName);
 			} catch (java.lang.NumberFormatException e) {

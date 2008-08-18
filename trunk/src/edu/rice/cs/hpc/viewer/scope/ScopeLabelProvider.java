@@ -12,7 +12,6 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 
 public class ScopeLabelProvider extends ColumnLabelProvider {
 	static protected Icons iconCollection = Icons.getInstance();
-	//static boolean debug = true;
 	private IWorkbenchWindow windowCurrent;
 	/**
 	 * Default constructor
@@ -43,11 +42,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 		String text = "-";
 		if (element instanceof Scope.Node){
 			Scope.Node node = (Scope.Node) element;
-			Scope scope = node.getScope();
-			/*if (debug)
-				text = scope.getScopeType().substring(0, 1) + ":" + scope.getName();
-			else */
-				text = scope.getName();
+			text = node.getScope().getName();			
 		} else
 			text = element.getClass().toString();
 		return text;

@@ -355,7 +355,8 @@ public class ExperimentBuilder extends Builder
 		// check semantic constraints
 		if( this.fileList.size() == 0 ) {
 			System.out.println("Warning: no source files found!");
-			this.error();
+			// bug no 189: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=189&group_id=22&atid=169
+			//this.error();
 		}
 
 		if( this.scopeList.size() == 0 ) {
@@ -580,7 +581,7 @@ public class ExperimentBuilder extends Builder
 		
 		if (this.csviewer) {
 			// create Calling Context Tree scope
-			this.callingContextViewRootScope  = new RootScope(this.experiment, name,"Calling Context View", RootScopeType.CallTree);
+			this.callingContextViewRootScope  = new RootScope(this.experiment, name,"Calling Context View", RootScopeType.CallingContextTree);
 			beginScope(this.callingContextViewRootScope);
 		} else {
 			// flat scope

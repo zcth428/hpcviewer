@@ -5,7 +5,7 @@ package edu.rice.cs.hpc.viewer.metric;
 
 import org.eclipse.swt.graphics.Font;
 
-import edu.rice.cs.hpc.data.experiment.metric.ExtDerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
@@ -13,13 +13,13 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
  *
  */
 public class ExtDerivedMetricLabelProvider extends MetricLabelProvider {
-	private ExtDerivedMetric metricDerivation;
+	private DerivedMetric metricDerivation;
 	
 	/**
 	 * @param metricNew
 	 * @param font
 	 */
-	public ExtDerivedMetricLabelProvider(ExtDerivedMetric metricNew, Font font) {
+	public ExtDerivedMetricLabelProvider(DerivedMetric metricNew, Font font) {
 		super(metricNew, font);
 		this.metricDerivation = metricNew;
 	}

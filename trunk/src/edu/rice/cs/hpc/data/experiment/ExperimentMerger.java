@@ -55,10 +55,10 @@ public class ExperimentMerger {
 		return files;
 	}
 	
-	private List buildMetricList(Experiment exp, Metric[] m1, Metric[] m2) {
+	private List buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
 		Vector metricList = new Vector();
 		for (int i=0; i<m1.length; i++) {
-			Metric m = m1[i];
+			Metric m = (Metric) m1[i];
 			// TODO [me] change (display/native) names (+ Exp#)
 			String shortName = "" + metricList.size();
 			Metric newM = new Metric(exp, shortName, 
@@ -68,7 +68,7 @@ public class ExperimentMerger {
 			metricList.add(newM);
 		}
 		for (int i=0; i<m2.length; i++) {
-			Metric m = m2[i];
+			Metric m = (Metric)m2[i];
 			// TODO [me] change (display/native) names (+ Exp#)
 			String shortName = "" + metricList.size();
 			MetricType metricType = m.getMetricType();

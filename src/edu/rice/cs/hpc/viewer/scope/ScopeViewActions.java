@@ -398,7 +398,7 @@ public class ScopeViewActions extends ScopeActions {
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
 			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, objMetricType);
-			System.out.println("SVA:"+objMetric.getAggregateValue());
+			//System.out.println("SVA:"+objMetric.getAggregateValue());
 			int iPosition = exp.getMetricCount()+1;
 			this.treeViewer.getTree().setRedraw(false);
 			TreeViewerColumn colDerived = this.treeViewer.addTreeColumn(objMetric, 

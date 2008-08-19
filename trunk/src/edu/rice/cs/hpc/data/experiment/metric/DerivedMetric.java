@@ -58,6 +58,8 @@ public class DerivedMetric extends BaseMetric {
 		// Bug fix: always compute the aggregate value 
 		//MetricValue objValue = this.getAggregateMetrics(scopeRoot);
 		this.dRootValue = this.getAggregateMetrics(scopeRoot);
+		if(this.dRootValue == 0.0)
+			this.percent = false;
 		//this.dRootValue = objValue.value;
 	}
 
@@ -73,7 +75,7 @@ public class DerivedMetric extends BaseMetric {
 	 * @param index: matrix index
 	 * @return the value, MetricValue.NONE if there is no value
 	 */
-	private double accumulateMetricsFromKids(Scope current) {
+	private double computeAggregateBU_LeavesOnly(Scope current) {
 		int nkids = current.getSubscopeCount();
 		MetricValue objCurrentValue = this.getValue(current);//current.getDerivedMetricValue(this, index);
 		double dTotal = 0.0;
@@ -84,14 +86,13 @@ public class DerivedMetric extends BaseMetric {
 		}
 		for (int i = 0; i < nkids; i++) {
 			Scope child = current.getSubscope(i);
-			// for debuggin        g purpose
+			// for debugging purpose
 			String sChildName = child.getShortName();
 			// compute the accumulated value of the children of the child
-			double dTotalChildrenValue = accumulateMetricsFromKids(child);
+			double dTotalChildrenValue = computeAggregateBU_LeavesOnly(child);
 			// compute the total
 			if(dTotalChildrenValue != -1.0) {
-				dTotal = dTotal + dTotalChildrenValue;// + objChildValue.getValue();
-				//System.out.println("DM:"+current.getName()+"="+dTotal+"\tFrom: "+sChildName+"\t= "+objTotalChildrenValue.getValue());
+				dTotal = dTotal + dTotalChildrenValue;
 			}
 		}
 		// we have computed all the kids. If the total is zero, then return none
@@ -104,41 +105,90 @@ public class DerivedMetric extends BaseMetric {
 			dTotalValue = objCurrentValue.value; //MetricValue.NONE;
 		return dTotalValue;
 	}
+	
+	private double computeAggregateBU(Scope current) {
+		int nkids = current.getSubscopeCount();
+		double dTotal = 0.0;
+		MetricValue mv = this.getValue(current);
+		if(mv.isAvailable())
+			dTotal = mv.value;
+		else if(mv.value != -1.0)
+			System.out.println("Aggregate check:"+mv.value);
+		
+		// sum the total with the children
+		for (int i = 0; i < nkids; i++) {
+			Scope child = current.getSubscope(i);
+			// for debugging purpose
+			String sChildName = child.getShortName();
+			// compute the accumulated value of the children of the child
+			double dTotalChildrenValue = computeAggregateBU(child);
+			// compute the total
+			if(dTotalChildrenValue != -1.0) {
+				dTotal = dTotal + dTotalChildrenValue;
+			}
+		}
+		return dTotal;
+	}
 
+/**
+ * Compute the aggregate value for caller-tree
+ * @param scopeRoot
+ * @return
+ */
+	private double computeAggregateValueCT(RootScope scopeRoot) {
+		if(this.metricType == MetricType.EXCLUSIVE)
+			return this.computeAggregateBU(scopeRoot);
+		
+		// just get the one who has no children --> the main program
+		int nbKids = scopeRoot.getSubscopeCount();
+		for(int i=0; i<nbKids; i++) {
+			Scope child = scopeRoot.getSubscope(i);
+			if(child.getSubscopeCount() == 0) {
+				return this.getValue(child).value;
+			}
+		}
+		System.err.println("Computing aggregate value -- Warning: the tree has no main program ! Impossible to compute the aggregate value");
+		return 0.0;
+	}
+	
+	/**
+	 * Compute the aggregate value for flat-tree
+	 * @param scopeRoot
+	 * @return
+	 */
+	private double computeAggregateValueFT(RootScope scopeRoot) {
+		// exclusive: compute with bottom-up approach
+		if (this.metricType == MetricType.EXCLUSIVE) {
+			return this.computeAggregateBU(scopeRoot);
+		} else {
+			// temporary solution for inclusive: compute the aggregate value using math formula
+			double dSum = this.getDoubleValue(scopeRoot).doubleValue();
+			return dSum;
+		}
+	}
+	
+	private double computeAggregateValueCCT(RootScope scopeRoot) {
+		if(this.metricType == MetricType.EXCLUSIVE) {
+			return this.computeAggregateBU(scopeRoot);
+		}  else {
+			return this.computeAggregateBU_LeavesOnly(scopeRoot);
+		}
+	}
+	/**
+	 * Compute the general aggregate metric for cct, caller tree and flat tree
+	 * @param scopeRoot
+	 * @return the aggregate value
+	 */
 	private double getAggregateMetrics(RootScope scopeRoot) {
 		if(scopeRoot.getType() == RootScopeType.CallerTree) {
-			// just get the one who has no children --> the main program
-			int nbKids = scopeRoot.getSubscopeCount();
-			for(int i=0; i<nbKids; i++) {
-				Scope child = scopeRoot.getSubscope(i);
-				if(child.getSubscopeCount() == 0) {
-					return this.getValue(child).value;
-				}
-			}
-			System.err.println("Warning: the tree has no main program ! Impossible to compute the aggregate value");
-
+			return computeAggregateValueCT(scopeRoot);
 		} else if(scopeRoot.getType() == RootScopeType.Flat) {
-			// flat view: sum all files (for exclusive) sum all functions (for inclusive)
-			int nbKids = scopeRoot.getSubscopeCount();
-			double dSum = 0.0;
-			for(int i=0; i<nbKids; i++) {
-				Scope child = scopeRoot.getSubscope(i);
-				int nbGrandKids = child.getSubscopeCount(); 
-				if(nbGrandKids > 0) {
-					for(int j=0;j<nbGrandKids;j++) {
-						Scope grandChild = child.getSubscope(j);
-						Double dChild = this.getDoubleValue(grandChild);
-						if(dChild != null)
-							dSum += dChild.doubleValue();
-					}
-				}
-			}
-			//MetricValue objValue = new MetricValue(dSum);
-			return dSum;
-
+			return computeAggregateValueFT(scopeRoot);
+		} else {
+			// calling context tree
+			double dValue = this.computeAggregateValueCCT(scopeRoot);
+			return dValue;
 		}
-		double dValue = this.accumulateMetricsFromKids(scopeRoot);
-		return dValue;
 	}
 	//===================================================================================
 	// GET VALUE
@@ -215,12 +265,13 @@ public class DerivedMetric extends BaseMetric {
 	 * Retrieve the aggregate value of this metric
 	 * @return
 	 */
+	/*
 	public double getAggregateValue() {
 		if(this.dRootValue == 0.0)
 			return this.getDoubleValue(this.scopeOfTheRoot).doubleValue();
 		else
 			return this.dRootValue;
-	}
+	} */
 	//===================================================================================
 	// COMPARISON
 	//===================================================================================

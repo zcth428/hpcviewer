@@ -92,6 +92,11 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					CallSiteScope enclosingCS = null;
 					ProcedureScope mycaller = null;
 					if (next instanceof ProcedureScope) {
+						/*ProcedureScope theProc = (ProcedureScope) next;
+						if (theProc.isAlien()) {  
+							next = next.getParentScope(); 
+							continue; 
+						}*/
 						mycaller = (ProcedureScope) next.duplicate();
 					}
 					else if (next instanceof CallSiteScope) {
@@ -126,7 +131,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	
 	public void visit(ProcedureScope scope, ScopeVisitType vt) { 
 		ProcedureScope mycallee  = scope;
-		if (vt == ScopeVisitType.PreVisit) { // && !mycallee.isAlien()) {
+		if (vt == ScopeVisitType.PreVisit && !mycallee.isAlien()) {
 			String procedureName = mycallee.getName();
 			trace("handling scope " + procedureName);
 

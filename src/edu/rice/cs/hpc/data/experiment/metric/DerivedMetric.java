@@ -54,26 +54,33 @@ public class DerivedMetric extends BaseMetric {
 
 		// set up the variables
 		this.varMap = new MetricVarMap(scopeRoot.getExperiment().getMetrics());
-		this.metricType = objType;//MetricType.DERIVED;
+		this.metricType = objType;//either inclusive OR exclusive;
 		// Bug fix: always compute the aggregate value 
-		//MetricValue objValue = this.getAggregateMetrics(scopeRoot);
 		this.dRootValue = this.getAggregateMetrics(scopeRoot);
 		if(this.dRootValue == 0.0)
 			this.percent = false;
-		//this.dRootValue = objValue.value;
 	}
 
 	//===================================================================================
 	// AGGREGATE VALUE
 	//===================================================================================
+	/**
+	 * 		CCT		CT		FT
+	 *	I	BU-l	Mp		Formula
+	 *	E	BU		BU		BU
+	 *
+		Notes:
+			- BU-l: bottom-up sum reduction for leaves only
+			- BU: bottom-up sum reduction for all nodes
+			- Mp: Main program. The aggregate value is equal to the main program's value
+			- Formula: Applying math formula to the aggregate value
+	 */
 	
 	/**
-	 * Computing the aggregate values of the children and save it to the original "parent" 
-	 * (which is the root scope)
-	 * @param parent: the root scope
+	 * Computing the aggregate values of the children 
+	 *  This method will add the value of all leave nodes only.
 	 * @param current: current scope
-	 * @param index: matrix index
-	 * @return the value, MetricValue.NONE if there is no value
+	 * @return the value
 	 */
 	private double computeAggregateBU_LeavesOnly(Scope current) {
 		int nkids = current.getSubscopeCount();
@@ -106,6 +113,11 @@ public class DerivedMetric extends BaseMetric {
 		return dTotalValue;
 	}
 	
+	/**
+	 * Computing the aggregate values by using sum-reduction for all nodes
+	 * @param current
+	 * @return
+	 */
 	private double computeAggregateBU(Scope current) {
 		int nkids = current.getSubscopeCount();
 		double dTotal = 0.0;
@@ -167,6 +179,11 @@ public class DerivedMetric extends BaseMetric {
 		}
 	}
 	
+	/**
+	 * Compute the aggregate value of calling context tree
+	 * @param scopeRoot
+	 * @return
+	 */
 	private double computeAggregateValueCCT(RootScope scopeRoot) {
 		if(this.metricType == MetricType.EXCLUSIVE) {
 			return this.computeAggregateBU(scopeRoot);
@@ -174,6 +191,8 @@ public class DerivedMetric extends BaseMetric {
 			return this.computeAggregateBU_LeavesOnly(scopeRoot);
 		}
 	}
+	
+	//-------------------- MAIN FUNCTION FOR COMPUTING AGGREGATE VALUE ------------------
 	/**
 	 * Compute the general aggregate metric for cct, caller tree and flat tree
 	 * @param scopeRoot
@@ -261,54 +280,4 @@ public class DerivedMetric extends BaseMetric {
 		return this.getDisplayFormat().format(mv);
 	}
 	
-	/**
-	 * Retrieve the aggregate value of this metric
-	 * @return
-	 */
-	/*
-	public double getAggregateValue() {
-		if(this.dRootValue == 0.0)
-			return this.getDoubleValue(this.scopeOfTheRoot).doubleValue();
-		else
-			return this.dRootValue;
-	} */
-	//===================================================================================
-	// COMPARISON
-	//===================================================================================
-	/**
-	 * Compare two derived values from two different scopes
-	 * @param scope1
-	 * @param scope2
-	 * @return zero if the values are identical, <0 if the first is less, >0 otherwise
-	 */
-	/*
-	public int compare(Scope scope1, Scope scope2) {
-		int iResult = 0;
-		MetricValue mv1 = this.getValue(scope1); 	//scope1.getDerivedMetricValue(this);
-		MetricValue mv2 = this.getValue(scope2);	//scope2.getDerivedMetricValue(this);
-		if(mv1.isAvailable() || mv2.isAvailable()) {
-			if(!mv1.isAvailable()) {
-				// only mv2 is available
-				return 1;
-			}
-			if(!mv2.isAvailable()) {
-				// only mv1 is available
-				return -1;
-			}
-			// compare both values
-			double d1 = mv1.getValue();
-			double d2 = mv2.getValue();
-			// attention: we treat 0.0 as value none !
-			if(d1 == d2)
-				return 0;
-			// if one the value is zero, the other has higher priority, regardless the value
-			if(d1 == 0.0 && d2 != 0.0)
-				return 1;
-			if(d2 == 0.0 && d1 != 0.0)
-				return -1;
-			// simple comparison.
-			return(int) (d2-d1);
-		}
-		return iResult;
-	}*/
 }

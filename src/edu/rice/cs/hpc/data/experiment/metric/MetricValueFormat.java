@@ -503,10 +503,17 @@ protected String formatDouble(double d, DecimalFormat formatter, Style style)
 			d /= 10.0;
 			exponent += 1;
 		}
-		
-		String e = Integer.toString(exponent);
+		if (d != 0.0) {
+			while( Math.abs(d) < 1.0 )
+			{
+				d *= 10.0;
+				exponent -= 1;
+			}
+		}
+		String e = Integer.toString(Math.abs(exponent));
 		if( e.length() == 1 ) e = "0" + e;
-		s = formatter.format(d) + "e" + e;
+		s = formatter.format(d) + "e";
+		s = s + ((exponent < 0) ? "-" : "+") + e;
 	}
 	else
 		s = Util.formatDouble(d, formatter, fieldWidth);

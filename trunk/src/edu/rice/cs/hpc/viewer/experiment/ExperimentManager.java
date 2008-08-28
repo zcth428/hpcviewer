@@ -130,10 +130,12 @@ public class ExperimentManager {
 			// we need to test one by one if it is a valid database file.
 			// Problem: if in the directory it has two XML files, then the second one will NEVER be opened !
 			for(int i=0;i<(filesXML.length) && (bContinue);i++) {
-				String sFile=filesXML[i].getAbsolutePath();
+				File objFile = filesXML[i];
+				String sFile=objFile.getAbsolutePath();
 				// we will continue to verify the content of the list of XML files
 				// until we fine the good one.
-		    	bContinue = (this.setExperiment(sFile) == false);
+				if(!objFile.getName().startsWith("config"))
+					bContinue = (this.setExperiment(sFile) == false);
 			}
 	   		if(bContinue) {
 	   		} else

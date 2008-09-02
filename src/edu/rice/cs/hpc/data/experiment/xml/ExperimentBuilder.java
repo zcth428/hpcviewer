@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.ArrayList;
 //johnmc
 import java.util.Hashtable;
+// laks 2008.08.27
+import java.util.EmptyStackException;
 
 
 
@@ -342,8 +344,13 @@ public class ExperimentBuilder extends Builder
 
 	public void end()
 	{
-		// pop out root scope
-		this.stack.pop();
+		// bugs no 224: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=224&group_id=22&atid=169
+		try {
+			// pop out root scope
+			this.stack.pop();
+		} catch (EmptyStackException e) {
+			System.err.println("ExperimentBuilder: no root scope !");
+		}
 		
 		// check that input was properly nested
 		if (!this.stack.empty()) {
@@ -552,7 +559,8 @@ public class ExperimentBuilder extends Builder
 			this.Assert(attributes.length == 5);
 
 			Metric metric = new Metric(this.experiment,
-					values[N_shortName], values[N_nativeName], values[N_displayName],
+					values[N_shortName], values[N_nativeName], 
+					values[N_displayName],
 					Util.booleanValue(values[N_display]), Util.booleanValue(values[N_percent]), defaultName,
 					MetricType.INCLUSIVE, 
 					Metric.NO_PARTNER_INDEX);
@@ -768,8 +776,13 @@ public class ExperimentBuilder extends Builder
 			int lastLn  = Integer.parseInt(val_line[1]);
 			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
 					firstLn-1, lastLn-1, 
-					val_function[0], isalien);
+					val_function[0], attr_sid, isalien);
 
+			/** Laks 2008.08.25: original code
+			 * 			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
+					firstLn-1, lastLn-1, 
+					val_function[0], isalien);
+			 */
 			if (this.stack.peek() instanceof LineScope) {
 
 				//System.out.println("CallSiteScope Building..."+((Scope) this.stack.peek()).getName());

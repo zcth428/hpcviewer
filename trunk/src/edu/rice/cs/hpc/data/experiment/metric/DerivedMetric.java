@@ -152,6 +152,7 @@ public class DerivedMetric extends BaseMetric {
 			return this.computeAggregateBU(scopeRoot);
 		
 		// just get the one who has no children --> the main program
+		/*
 		int nbKids = scopeRoot.getSubscopeCount();
 		for(int i=0; i<nbKids; i++) {
 			Scope child = scopeRoot.getSubscope(i);
@@ -161,6 +162,10 @@ public class DerivedMetric extends BaseMetric {
 		}
 		System.err.println("Computing aggregate value -- Warning: the tree has no main program ! Impossible to compute the aggregate value");
 		return 0.0;
+		*/
+		// temporary solution for the CPE paper
+		double dSum = this.getDoubleValue(scopeRoot).doubleValue();
+		return dSum;
 	}
 	
 	/**

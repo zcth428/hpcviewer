@@ -15,7 +15,9 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
 
@@ -40,7 +42,12 @@ public class ProcedureScope extends Scope
 protected String procedureName;
 protected boolean isalien;
 
+/**
+ * sequence ID of the procedure frame
+ */
+protected int iSequenceID;
 
+public int iCounter = 0;
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION	
 //////////////////////////////////////////////////////////////////////////
@@ -58,6 +65,22 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
 	this.isalien = _isalien;
 	this.procedureName = proc;
 	this.id = "ProcedureScope";
+}
+
+/**
+ * Laks 2008.08.25: We need a special constructor to accept the SID
+ * @param experiment
+ * @param file
+ * @param first
+ * @param last
+ * @param proc
+ * @param sid
+ * @param _isalien
+ */
+public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, int sid, boolean _isalien)
+{
+	this(experiment, file, first, last,proc,_isalien);
+	this.iSequenceID = sid;
 }
 
 public int hashCode() {
@@ -103,6 +126,7 @@ public Scope duplicate() {
 			this.firstLineNumber, 
 			this.lastLineNumber,
 			this.procedureName,
+			this.iSequenceID, // Laks 2008.08.26: add the sequence ID
 			this.isalien);
 
 }
@@ -118,6 +142,11 @@ public boolean isAlien() {
 public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
+
+public int getSID() {
+	return this.iSequenceID;
+}
+
 
 }
 

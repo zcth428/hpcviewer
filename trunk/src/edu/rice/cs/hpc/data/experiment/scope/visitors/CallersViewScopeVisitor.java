@@ -7,6 +7,8 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
+import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
+import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
 public class CallersViewScopeVisitor implements ScopeVisitor {
@@ -21,6 +23,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	protected Scope callersViewRootScope;
 	protected MetricValuePropagationFilter filter;
 	protected int numberOfPrimaryMetrics;
+	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
+	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 
 	//----------------------------------------------------
 	// constructor for CallerViewScopeVisitor
@@ -33,6 +37,9 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		this.numberOfPrimaryMetrics = nMetrics;
 		this.isdebug = dodebug;
 		this.filter = filter;
+		BaseMetric []metrics = experiment.getMetrics();
+		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
+		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 	}
 
 	//----------------------------------------------------
@@ -41,6 +48,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 	public void visit(CallSiteScope scope, ScopeVisitType vt) {
 		ProcedureScope mycallee  = scope.getProcedureScope();
+		Integer objCode = new Integer(mycallee.hashCode());
 		if (vt == ScopeVisitType.PreVisit) { // && !mycallee.isAlien()) {
 			String procedureName = mycallee.getName();
 
@@ -48,7 +56,6 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 			CallSiteScope tmp = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
 			tmp.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
-			// accumulateMetricsFromMyKids(tmp, scope, filter);
 			// Remove linescope-normalization from CS-scope
 			for (int i=0; i<numberOfPrimaryMetrics; i++) {
 				double lsval = scope.getLineScope().getMetricValue(i).getValue();
@@ -60,16 +67,26 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 			// Find (or add) callee in top-level hashtable
 			// TODO: we should use a fully qualified procedure name (including file, module)
-			Scope callee = (Scope) calleeht.get(new Integer(mycallee.hashCode()));
+			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
 			if (callee == null) {
-				callee  = mycallee.duplicate();
-				calleeht.put(new Integer(callee.hashCode()), callee);
+				callee  = (ProcedureScope)mycallee.duplicate();
+				//calleeht.put(objCode, callee);
 				callersViewRootScope.addSubscope(callee);
 				callee.setParentScope(this.callersViewRootScope);
 				exp.getScopeList().addScope(callee);
-				trace("added top level entry in bottom up tree");
+ 				trace("added top level entry in bottom up tree");
+				// we assume that the first entry has the highest cost ?
+				callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
+				callee.iCounter++;
+			} else {
+				// add the cost into the procedure "root" if necessary
+				if(callee.iCounter == 0) {
+					callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
+				}
+				callee.iCounter++;
 			}
-			callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+			callee.accumulateMetrics(scope, exclusiveOnly, numberOfPrimaryMetrics);
+			calleeht.put(objCode, callee);
 
 			//-----------------------------------------------------------------------
 			// compute callPath: a chain of my callers
@@ -92,11 +109,6 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					CallSiteScope enclosingCS = null;
 					ProcedureScope mycaller = null;
 					if (next instanceof ProcedureScope) {
-						/*ProcedureScope theProc = (ProcedureScope) next;
-						if (theProc.isAlien()) {  
-							next = next.getParentScope(); 
-							continue; 
-						}*/
 						mycaller = (ProcedureScope) next.duplicate();
 					}
 					else if (next instanceof CallSiteScope) {
@@ -121,6 +133,13 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
 			mergeCallerPath(callee, callPathList);
+			
+		} else if (vt == ScopeVisitType.PostVisit)  {
+			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
+			if(callee != null)
+				// it is nearly impossible that the callee is null but I prefer to do this in case we envounter
+				//		a bug or a very strange call path
+				callee.iCounter--;
 		}
 	}
 
@@ -143,9 +162,9 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 			// Find (or add) callee in top-level hashtable
 			// TODO: we should use a fully qualified procedure name (including file, module)
-			Scope callee = (Scope) calleeht.get(new Integer(mycallee.hashCode()));
+			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
 			if (callee == null) {
-				callee  = mycallee.duplicate();
+				callee  = (ProcedureScope)mycallee.duplicate();
 				calleeht.put(new Integer(callee.hashCode()), callee);
 				callersViewRootScope.addSubscope(callee);
 				callee.setParentScope(this.callersViewRootScope);
@@ -185,7 +204,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					(existingCaller.getName()).equals(first.getName())) {
 
 				// add metric values for first to those of existingCaller. 
-				existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
+					existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
 
 				// merge rest of call path as a child of existingCaller.
 				mergeCallerPath(existingCaller, callerPathList);
@@ -206,28 +225,6 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			prev = next;
 		}
 	}
-/*
-	protected void accumulateMetricsFromLineScopeKids(Scope target, Scope source, 
-			MetricValuePropagationFilter filter) {
-		int nkids = source.getSubscopeCount();
-		for (int i = 0; i < nkids; i++) {
-			Scope child = source.getSubscope(i);
-			if (child instanceof LineScope) target.accumulateMetrics(child, filter, numberOfPrimaryMetrics);
-		}
-	}
-
-	protected void accumulateMetricsFromMyKids(Scope target, Scope source, 
-			MetricValuePropagationFilter filter) {
-		int nkids = source.getSubscopeCount();
-		for (int i = 0; i < nkids; i++) {
-			Scope child = source.getSubscope(i);
-			if (child instanceof LineScope || child instanceof CallSiteScope) 
-				target.accumulateMetrics(child, filter, numberOfPrimaryMetrics);
-			if (child instanceof LoopScope || child instanceof ProcedureScope)
-				accumulateMetricsFromMyKids(target, child, filter); 
-		}
-	}
-*/
 	//----------------------------------------------------
 	// debugging support 
 	//----------------------------------------------------

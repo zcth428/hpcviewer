@@ -723,6 +723,19 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
+public void setMetric(Scope scope) {
+	ensureMetricStorage();
+	for(int i=0;i<scope.metrics.length;i++) {
+		MetricValue m = scope.metrics[i];
+		if(m.isAvailable()) {
+			this.metrics[i] = new MetricValue(m.getValue(), m.getPercentValue());
+		} else {
+			this.metrics[i] = MetricValue.NONE;
+		}
+	}
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //support for visitors													//

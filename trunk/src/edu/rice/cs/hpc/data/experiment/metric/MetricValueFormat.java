@@ -498,13 +498,15 @@ protected String formatDouble(double d, DecimalFormat formatter, Style style)
 	if( kind == FLOAT )
 	{
 		int exponent = 0;
-		while( Math.abs(d) >= 10.0 )
+		// laks: if d = 9.999, the formatter will force to round it to 10.00
+		// 	since I don't know how to prevent the rounding, let make a dirty solution here
+		while ( Math.abs(d) > 9.5 )//Laks 2008.09.03 fix previously ( Math.abs(d) >= 10.0 )
 		{
 			d /= 10.0;
 			exponent += 1;
 		}
 		if (d != 0.0) {
-			while( Math.abs(d) < 1.0 )
+			while( Math.abs(d) < 0.95 )//laks 2008.09.03 fix, previously ( Math.abs(d) < 1.0 )
 			{
 				d *= 10.0;
 				exponent -= 1;

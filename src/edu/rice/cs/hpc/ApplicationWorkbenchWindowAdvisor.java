@@ -146,7 +146,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Performs arbitrary actions as the window's shell is being closed directly, and possibly veto the close.
 	 */
 	public boolean preWindowShellClose() {
-		boolean bClosed = this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
+		this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
 		return true; // we allow app to shut down
 	}
 	

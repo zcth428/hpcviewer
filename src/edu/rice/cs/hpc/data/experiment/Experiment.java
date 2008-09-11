@@ -314,6 +314,7 @@ protected Scope createCallersView(Scope callingContextViewRootScope)
 	CallersViewScopeVisitor csv = new CallersViewScopeVisitor(this, callersViewRootScope, 
 			this.getMetricCount(), false, filter);
 	callingContextViewRootScope.dfsVisitScopeTree(csv);
+	// compute the aggregate metrics
 	accumulateMetricsFromKids(callersViewRootScope, callersViewRootScope, filter);
 	//accumulateMetricsFromKidsNoRecursive(callersViewRootScope, callersViewRootScope, filter);
 	return callersViewRootScope;

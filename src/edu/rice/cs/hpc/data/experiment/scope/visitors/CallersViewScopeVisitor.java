@@ -82,6 +82,9 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				// add the cost into the procedure "root" if necessary
 				if(callee.iCounter == 0) {
 					callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
+				} else {
+					// recursive routine
+					//System.out.println("CVSV "+callee.getName()+"\t"+callee.getMetricValue(0).getValue()+"\t"+scope.getName()+"\t"+scope.getMetricValue(0).getValue());
 				}
 				callee.iCounter++;
 			}
@@ -121,6 +124,13 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 							new CallSiteScope((LineScope) lineScope.duplicate(), 
 									mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE);
+						//if(callerScope.getName().compareTo(tmp.getName()) != 0)
+						//	callerScope.accumulateMetrics(tmp, this.inclusiveOnly, numberOfPrimaryMetrics);
+						/*else {
+							// recursive
+							callerScope.accumulateMetrics(tmp, this.inclusiveOnly, numberOfPrimaryMetrics);
+						} */
+						//callerScope.accumulateMetrics(tmp, this.exclusiveOnly, numberOfPrimaryMetrics);
 						callerScope.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 						callPathList.addLast(callerScope);
 						innerCS = enclosingCS;
@@ -132,12 +142,13 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
+			//System.out.println("----"+callee.getName()+"\t"+callee.getMetricValue(0).getValue()+"\t"+callee.getSubscopeCount());
 			mergeCallerPath(callee, callPathList);
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
 			if(callee != null)
-				// it is nearly impossible that the callee is null but I prefer to do this in case we envounter
+				// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
 				//		a bug or a very strange call path
 				callee.iCounter--;
 		}
@@ -170,9 +181,16 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				callee.setParentScope(this.callersViewRootScope);
 				exp.getScopeList().addScope(callee);
 				trace("added top level entry in bottom up tree");
+				// laks: for inclusive metric, we only add once
+				//callee.accumulateMetrics(tmp, inclusiveOnly, numberOfPrimaryMetrics);
+			} else {
+				// recursive ? 
+				System.out.println("ProcScope "+callee.getName()+"\t"+callee.getMetricValue(0).getValue());
 			}
-			callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), 
+			callee.accumulateMetrics(tmp, exclusiveOnly, 
 					numberOfPrimaryMetrics);
+			//callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), 
+			//		numberOfPrimaryMetrics);
 		}
 	}
 	
@@ -198,14 +216,19 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		int nCallers = callee.getSubscopeCount();
 		for (int i = 0; i < nCallers; i++) {
 			CallSiteScope existingCaller = (CallSiteScope) callee.getSubscope(i);
-
+			//String sProcName = existingCaller.getName();
+			//double dVal = existingCaller.getMetricValue(0).getValue();
+			//System.out.println(i+": "+callee.getName()+"\t"+callee.getMetricValue(0).getValue()+"\t"+sProcName+"\t"+dVal+"\t"+first.getName()+"\t"+first.getMetricValue(0).getValue());
 			// if first matches an existing caller
 			if (existingCaller.getLineScope().isequal(first.getLineScope()) &&
 					(existingCaller.getName()).equals(first.getName())) {
 
-				// add metric values for first to those of existingCaller. 
-					existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
-
+				// add metric values for first to those of existingCaller.
+				// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
+				existingCaller.mergeMetric(first);
+				//existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
+				//existingCaller.copyMetrics(first);
+				
 				// merge rest of call path as a child of existingCaller.
 				mergeCallerPath(existingCaller, callerPathList);
 

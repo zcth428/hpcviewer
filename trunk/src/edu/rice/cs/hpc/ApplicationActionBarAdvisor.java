@@ -24,7 +24,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	// when fillActionBars is called with FILL_PROXY.
 	//private IWorkbenchAction exitAction;
 	private IWorkbenchAction aboutAction; // about dialog box
-	private IWorkbenchAction showHelpAction; // help dialog box
 	private IWorkbenchAction showViewMenu;
 	private IWorkbenchAction showEditorMenu;
 	private IWorkbenchAction showPreference;

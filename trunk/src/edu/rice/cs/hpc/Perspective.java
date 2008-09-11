@@ -2,7 +2,6 @@ package edu.rice.cs.hpc;
 
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
-import org.eclipse.ui.IViewLayout;
 import org.eclipse.ui.IPlaceholderFolderLayout;
 
 import edu.rice.cs.hpc.viewer.scope.ScopeView;

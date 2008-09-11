@@ -72,7 +72,11 @@ protected String srcCitation;
 
 /** special marker used for halting during debugging. */
 protected boolean stop;
-
+/**
+ * FIXME: this variable is only used for the creation of callers view to count
+ * 			the number of instances. To be removed in the future
+ */
+public int iCounter = 0;
 // --------------------------
 
 static public final int SOURCE_CODE_UNKNOWN = 0;
@@ -723,14 +727,19 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
-public void setMetric(Scope scope) {
+public void mergeMetric(Scope scope) {
 	ensureMetricStorage();
-	for(int i=0;i<scope.metrics.length;i++) {
-		MetricValue m = scope.metrics[i];
-		if(m.isAvailable()) {
-			this.metrics[i] = new MetricValue(m.getValue(), m.getPercentValue());
-		} else {
-			this.metrics[i] = MetricValue.NONE;
+	for(int i=0;i<scope.metrics.length && i<this.metrics.length;i++) {
+		MetricValue mTarget = scope.metrics[i];
+		MetricValue mMine = this.metrics[i];
+		if(mTarget.isAvailable()) {
+			if( mMine.isAvailable() ) {
+				if(mMine.getValue() < mTarget.getValue()) {
+					this.metrics[i] = new MetricValue(mTarget.getValue());
+				}
+			} else {
+				this.metrics[i] = new MetricValue(mTarget.getValue());
+			}
 		}
 	}
 

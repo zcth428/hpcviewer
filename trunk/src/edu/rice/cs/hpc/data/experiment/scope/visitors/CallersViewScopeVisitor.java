@@ -83,8 +83,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				if(callee.iCounter == 0) {
 					callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
 				} else {
-					// recursive routine
-					//System.out.println("CVSV "+callee.getName()+"\t"+callee.getMetricValue(0).getValue()+"\t"+scope.getName()+"\t"+scope.getMetricValue(0).getValue());
+					// debugging purpose
+					// to be here, it must be a recursive routine
 				}
 				callee.iCounter++;
 			}
@@ -124,13 +124,6 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 							new CallSiteScope((LineScope) lineScope.duplicate(), 
 									mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE);
-						//if(callerScope.getName().compareTo(tmp.getName()) != 0)
-						//	callerScope.accumulateMetrics(tmp, this.inclusiveOnly, numberOfPrimaryMetrics);
-						/*else {
-							// recursive
-							callerScope.accumulateMetrics(tmp, this.inclusiveOnly, numberOfPrimaryMetrics);
-						} */
-						//callerScope.accumulateMetrics(tmp, this.exclusiveOnly, numberOfPrimaryMetrics);
 						callerScope.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 						callPathList.addLast(callerScope);
 						innerCS = enclosingCS;
@@ -147,10 +140,15 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
-			if(callee != null)
-				// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
-				//		a bug or a very strange call path
-				callee.iCounter--;
+			// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
+			//		a bug or a very strange call path
+			if(callee != null) {
+				// BUG ! For unknown reason, it is possible to have multiple post-visit for the same callee hash code !
+				// It seems the hashcode is not suitable in our case. 
+				// Here we make a temporary fix by not decrementing to negative value.
+				if(callee.iCounter>0)
+					callee.iCounter--;
+			}
 		}
 	}
 

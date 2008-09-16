@@ -56,22 +56,25 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 				if (scope instanceof CallSiteScope) {
 					if (filter instanceof ExclusiveOnlyMetricPropagationFilter) {
 						parent.accumulateMetrics(((CallSiteScope)scope).getLineScope(), filter, numberOfPrimaryMetrics);
-					} else if (filter instanceof FlatViewInclMetricPropagationFilter){
+					} 
+					// in case of FLAT VIEW, we need to specially deal with recursive functions:
+					//	avoid recomputation of the cost
+					else if (filter instanceof FlatViewInclMetricPropagationFilter){
 						parent.accumulateMetrics(((CallSiteScope)scope).getLineScope(), 
 								new ExclusiveOnlyMetricPropagationFilter(scope.getExperiment().getMetrics()), numberOfPrimaryMetrics);
+						// we need to make sure that recursive functions not counted twice
+						if(parent instanceof ProcedureScope) {
+							if( ((CallSiteScope)scope).isRecursive) {
+								// callsite from recursive function
+								parent.mergeMetric(scope);
+								return;
+							}
+						}
 						parent.accumulateMetrics(scope, 
 								new InclusiveOnlyMetricPropagationFilter(scope.getExperiment().getMetrics()), numberOfPrimaryMetrics);
 					} else {
 						parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);						
 					}
-				/*} else if(scope instanceof LoopScope) {
-					// Laks 2008.07.08: nested loop is not included in the exclusive metric
-					if(filter instanceof ExclusiveOnlyMetricPropagationFilter) {
-						System.out.println("Scope:"+scope.getShortName());
-						// do nothing ?
-					} else {
-						parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);
-					} */
 				} else {
 					parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);
 				}

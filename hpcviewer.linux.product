@@ -25,7 +25,7 @@ and supported by the Center for Scalable Application Development Software (CScAD
 
    <windowImages i16="/edu.rice.cs.hpc/icons/hpc-16x16.gif" i32="/edu.rice.cs.hpc/icons/hpc-32x32.gif" i64="/edu.rice.cs.hpc/icons/hpcviewer64.gif" i128="/edu.rice.cs.hpc/icons/hpcviewer128.gif"/>
 
-   <launcher>
+   <launcher name="hpcviewer">
       <solaris/>
       <win useIco="false">
          <bmp/>

@@ -299,6 +299,8 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		} else {
 			// in case of callsite, this means we encounter a recursive routine
 			flat_s.iCounter++; 
+			if(flat_s instanceof CallSiteScope)
+				((CallSiteScope) flat_s).isRecursive = true;
 		}
 		if (s instanceof CallSiteScope) {
 			//---------------------------------------------------------------------------------------------------

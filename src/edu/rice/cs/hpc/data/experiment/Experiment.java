@@ -390,15 +390,11 @@ public void postprocess() {
 
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
-
-//		normalizeLineScopes(callingContextViewRootScope, rootInclProp); // Incl only
 		normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
-		// report((RootScope) callingContextViewRootScope);
 
 		addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
 		addInclusiveMetrics(callingContextViewRootScope, 
 		  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
-//		  new CallingContextTreeInclMetricPropagationFilter(this.getMetrics()));
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
 
@@ -406,11 +402,8 @@ public void postprocess() {
 		Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
 		copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
 
-		//		callingContextViewRootScope.copyMetrics(callersViewRootScope);
-
 		// Flat View
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
-		// report((RootScope) flatViewRootScope);
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
 

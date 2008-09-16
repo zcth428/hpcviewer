@@ -728,6 +728,8 @@ public void copyMetrics(Scope targetScope) {
 }
 
 public void mergeMetric(Scope scope) {
+	if(scope == null || scope.metrics == null)
+		return;
 	ensureMetricStorage();
 	for(int i=0;i<scope.metrics.length && i<this.metrics.length;i++) {
 		MetricValue mTarget = scope.metrics[i];

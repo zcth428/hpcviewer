@@ -97,17 +97,17 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			// get the FT's procedure scope
 			FileScope file = getFileScope(proc.getSourceFile());
 			String procName = proc.getName();
-			Hashtable<String, ProcedureCounter> htProcCounter = (Hashtable<String, ProcedureCounter>)getFileProcHashtable(file);
+			Hashtable<String, ProcedureScope> htProcCounter = (Hashtable<String, ProcedureScope>)getFileProcHashtable(file);
 			if(htProcCounter == null) 
 				return;
-			ProcedureCounter objProcCounter = htProcCounter.get(procName);
+			ProcedureScope objProcScope = htProcCounter.get(procName);
 			// decrement the counter
-			if(objProcCounter != null) {
-				objProcCounter.iCounter--;
+			if(objProcScope != null) {
+				objProcScope.iCounter--;
 			}
 			
 			// get the FT's callsite scope
-			Hashtable ht = getProcContentsHashtable(objProcCounter.scopeProcedure);
+			Hashtable ht = getProcContentsHashtable(objProcScope);
 			int code = getCode(scope);
 			Scope flat_s = (Scope) ht.get(new Integer(code));
 			if(flat_s != null) {
@@ -133,19 +133,10 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		}
 	}
 
-	final private class ProcedureCounter {
-		public ProcedureScope scopeProcedure;
-		public int iCounter;
-		ProcedureCounter(Scope s) {
-			scopeProcedure = (ProcedureScope)s.duplicate();
-			iCounter = 0;
-		}
-	}
-
-	protected Hashtable/*<String, ProcedureScope>*/ getFileProcHashtable(FileScope file) {
-		Hashtable<String, ProcedureCounter> htProc = (Hashtable) fileprocht.get(file);
+	protected Hashtable<String, ProcedureScope> getFileProcHashtable(FileScope file) {
+		Hashtable<String, ProcedureScope> htProc = (Hashtable) fileprocht.get(file);
 		if(htProc == null) {
-			htProc = new java.util.Hashtable<String, ProcedureCounter>();
+			htProc = new java.util.Hashtable<String, ProcedureScope>();
 			this.fileprocht.put(file, htProc);
 		}
 		return htProc;
@@ -186,25 +177,25 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		// find the file
 		FileScope file = getFileScope(sfile);
 		// get the list of procedures in this file scope
-		Hashtable<String, ProcedureCounter> htProcCounter = (Hashtable<String, ProcedureCounter>)getFileProcHashtable(file);
+		Hashtable<String, ProcedureScope> htProcCounter = getFileProcHashtable(file);
 		String procName = procScope.getName();
-		ProcedureCounter objProcCounter = htProcCounter.get(procName);
+		ProcedureScope objFlatProcScope = htProcCounter.get(procName);
 		
 		// if the procedure has been in our database, then we just increment the "counter"
 		//  	otherwise, we insert it in the database.
-		if(objProcCounter == null) {
-			objProcCounter = new ProcedureCounter(procScope);
-			objProcCounter.iCounter = 1;
+		if(objFlatProcScope == null) {
+			objFlatProcScope = (ProcedureScope)procScope.duplicate();
+			objFlatProcScope.iCounter = 1;
 			// java spec wants us to insert the kid first, then link the kid to the parent
 			// an attempt to do reverse will throw an exception.... strange :-(
-			file.addSubscope(objProcCounter.scopeProcedure);	// add into its file
+			file.addSubscope(objFlatProcScope);	// add into its file
 			// a double linked list: we need to set the parent as well
-			objProcCounter.scopeProcedure.setParentScope(file);
-			htProcCounter.put(procName, objProcCounter);		// save it into our database
+			objFlatProcScope.setParentScope(file);
+			htProcCounter.put(procName, objFlatProcScope);		// save it into our database
 		} else {
-			objProcCounter.iCounter++;	// counting the number call instances of this procedure in this sequence
+			objFlatProcScope.iCounter++;	// counting the number call instances of this procedure in this sequence
 		}
-		return objProcCounter.scopeProcedure;
+		return objFlatProcScope;
 	}
 	/*
 	protected ProcedureScope getProcedureScope(SourceFile sfile, Scope procScope, Scope objScopeCCT) {

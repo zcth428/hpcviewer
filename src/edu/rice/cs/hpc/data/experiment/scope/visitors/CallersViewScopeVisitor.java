@@ -59,6 +59,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			// Remove linescope-normalization from CS-scope
 			for (int i=0; i<numberOfPrimaryMetrics; i++) {
 				double lsval = scope.getLineScope().getMetricValue(i).getValue();
+				// LA: This statement means removing the cost of line scope from the call site.
 				tmp.accumulateMetricValue(i, (lsval<0.0) ? 0.0 : (-1*lsval) );
 			}
 
@@ -180,7 +181,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				exp.getScopeList().addScope(callee);
 				trace("added top level entry in bottom up tree");
 				// laks: for inclusive metric, we only add once
-				//callee.accumulateMetrics(tmp, inclusiveOnly, numberOfPrimaryMetrics);
+				callee.accumulateMetrics(tmp, inclusiveOnly, numberOfPrimaryMetrics);
 			} else {
 				// recursive ? 
 				System.out.println("ProcScope "+callee.getName()+"\t"+callee.getMetricValue(0).getValue());
@@ -214,9 +215,6 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		int nCallers = callee.getSubscopeCount();
 		for (int i = 0; i < nCallers; i++) {
 			CallSiteScope existingCaller = (CallSiteScope) callee.getSubscope(i);
-			//String sProcName = existingCaller.getName();
-			//double dVal = existingCaller.getMetricValue(0).getValue();
-			//System.out.println(i+": "+callee.getName()+"\t"+callee.getMetricValue(0).getValue()+"\t"+sProcName+"\t"+dVal+"\t"+first.getName()+"\t"+first.getMetricValue(0).getValue());
 			// if first matches an existing caller
 			if (existingCaller.getLineScope().isequal(first.getLineScope()) &&
 					(existingCaller.getName()).equals(first.getName())) {
@@ -225,7 +223,6 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
 				existingCaller.mergeMetric(first);
 				//existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
-				//existingCaller.copyMetrics(first);
 				
 				// merge rest of call path as a child of existingCaller.
 				mergeCallerPath(existingCaller, callerPathList);

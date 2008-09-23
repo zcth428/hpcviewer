@@ -422,34 +422,6 @@ public void postprocess() {
 //////////////////////////////////////////////////////////////////////////
 //Compute Derived Metrics												//
 //////////////////////////////////////////////////////////////////////////
-/*
-public void addComputedMetrics(int nMetrics, double scaling)
-{
-	// Setup metrics
-	for (int i=0; i<nMetrics; i++) {
-		Metric m = this.getMetric(i);
-		// TODO [me] better names? %? 
-		MetricType metricType = m.getMetricType();
-		String shortName = "S" + m.getShortName();
-		String nativeName = m.getNativeName();
-		String type = (metricType==MetricType.INCLUSIVE) ? "I":"E";
-		String stype = (scaling==1.0) ? "W":"S";
-		String oldDisplay = m.getDisplayName();
-		String displayName = "X"+stype+"("+type+",n) " + oldDisplay.substring(0, oldDisplay.length()-4);
-		boolean showPercent = m.getPercent();
-		int partnerIndex = m.getPartnerIndex();
-		if (partnerIndex != Metric.NO_PARTNER_INDEX)
-			partnerIndex += this.getMetricCount() - m.getIndex();
-		Metric cm = new Metric(this, shortName, nativeName, displayName,
-	              true, showPercent, m.getSamplePeriod(), metricType, partnerIndex);
-		this.addMetric(cm);
-	}
-	
-	// Walk scope tree, compute derived metrics
-	ComputedMetricVisitor cmv = new ComputedMetricVisitor(nMetrics, this.getRootScope().getSubscope(0), scaling);
-	this.rootScope.dfsVisitScopeTree(cmv);
-}
-*/
 
 /**
  * Create a derived metric based on formula expression

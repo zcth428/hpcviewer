@@ -139,6 +139,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		} else {
 			System.out.println("AWWA: exp manager is null. create a new one.");
+			assert(expFile == null);
 		}
 	}
 

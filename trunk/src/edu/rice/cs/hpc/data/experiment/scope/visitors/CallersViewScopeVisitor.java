@@ -180,16 +180,9 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				callee.setParentScope(this.callersViewRootScope);
 				exp.getScopeList().addScope(callee);
 				trace("added top level entry in bottom up tree");
-				// laks: for inclusive metric, we only add once
-				callee.accumulateMetrics(tmp, inclusiveOnly, numberOfPrimaryMetrics);
-			} else {
-				// recursive ? 
-				System.out.println("ProcScope "+callee.getName()+"\t"+callee.getMetricValue(0).getValue());
 			}
-			callee.accumulateMetrics(tmp, exclusiveOnly, 
+			callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), 
 					numberOfPrimaryMetrics);
-			//callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), 
-			//		numberOfPrimaryMetrics);
 		}
 	}
 	

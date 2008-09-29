@@ -404,6 +404,7 @@ public void postprocess() {
 
 		// Flat View
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
+		// compute the inclusive metrics: accumulate the cost of loops and line scopes
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
 

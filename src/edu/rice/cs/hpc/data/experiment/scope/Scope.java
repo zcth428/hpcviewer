@@ -727,20 +727,22 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
-public void mergeMetric(Scope scope) {
+public void mergeMetric(Scope scope, MetricValuePropagationFilter filter) {
 	if(scope == null || scope.metrics == null)
 		return;
 	ensureMetricStorage();
 	for(int i=0;i<scope.metrics.length && i<this.metrics.length;i++) {
-		MetricValue mTarget = scope.metrics[i];
-		MetricValue mMine = this.metrics[i];
-		if(mTarget.isAvailable()) {
-			if( mMine.isAvailable() ) {
-				if(mMine.getValue() < mTarget.getValue()) {
+		if(filter.doPropagation(scope, this, i, i)) {
+			MetricValue mTarget = scope.metrics[i];
+			MetricValue mMine = this.metrics[i];
+			if(mTarget.isAvailable()) {
+				if( mMine.isAvailable() ) {
+					if(mMine.getValue() < mTarget.getValue()) {
+						this.metrics[i] = new MetricValue(mTarget.getValue());
+					}
+				} else {
 					this.metrics[i] = new MetricValue(mTarget.getValue());
 				}
-			} else {
-				this.metrics[i] = new MetricValue(mTarget.getValue());
 			}
 		}
 	}

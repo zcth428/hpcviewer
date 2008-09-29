@@ -214,7 +214,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 				// add metric values for first to those of existingCaller.
 				// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
-				existingCaller.mergeMetric(first);
+				existingCaller.mergeMetric(first, this.inclusiveOnly);
 				//existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
 				
 				// merge rest of call path as a child of existingCaller.

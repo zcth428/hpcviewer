@@ -60,17 +60,13 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 					// in case of FLAT VIEW, we need to specially deal with recursive functions:
 					//	avoid recomputation of the cost
 					else if (filter instanceof FlatViewInclMetricPropagationFilter){
+						// Exclusive metrics: Add the cost of the line scope into the parent
 						parent.accumulateMetrics(((CallSiteScope)scope).getLineScope(), 
 								new ExclusiveOnlyMetricPropagationFilter(scope.getExperiment().getMetrics()), numberOfPrimaryMetrics);
-						// we need to make sure that recursive functions not counted twice
-						if(parent instanceof ProcedureScope) {
-							if( ((CallSiteScope)scope).isRecursive) {
-								// callsite from recursive function
-								parent.mergeMetric(scope);
-								return;
-							}
-						}
-						parent.accumulateMetrics(scope, 
+						// Inclusive metrics: if the parent is not procedure, add the scope into the parent
+						// the cost of the procedure scope should have to be precomputed in the FlatViewScopeVisitor class
+						if(!(parent instanceof ProcedureScope))
+							parent.accumulateMetrics(scope, 
 								new InclusiveOnlyMetricPropagationFilter(scope.getExperiment().getMetrics()), numberOfPrimaryMetrics);
 					} else {
 						parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);						

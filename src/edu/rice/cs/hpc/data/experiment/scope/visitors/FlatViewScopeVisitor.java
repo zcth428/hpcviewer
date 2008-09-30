@@ -39,7 +39,9 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	protected Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/ proc_to_proc_contents_ht = 
 		new Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/();
 
-	//private Hashtable<Scope, ProcedureScope> htFlatParent = new Hashtable<Scope, ProcedureScope>();
+	/**
+	 * Stack to store the flat procedure scope of a cct's callsite scope
+	 */
 	private Stack<ProcedureScope> stackProcScope  = new Stack<ProcedureScope>();
 	Experiment exp;
 	Scope flatViewRootScope;
@@ -174,6 +176,11 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		}
 	}
 
+	/**
+	 * Iteratively finding an enclosing procedure of a CCT scope
+	 * @param s
+	 * @return
+	 */
 	public ProcedureScope findEnclosingProcedure(Scope s)
 	{
 		Scope parent = s.getParentScope();
@@ -191,6 +198,12 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		}
 	}
 
+	/**
+	 * Retrieve the hashtable that containing list of procedures within a file scope
+	 * If the file doesn't exist in the database, return a new hashtable
+	 * @param file
+	 * @return
+	 */
 	protected Hashtable<String, ProcedureScope> getFileProcHashtable(FileScope file) {
 		Hashtable<String, ProcedureScope> htProc = (Hashtable) fileprocht.get(file);
 		if(htProc == null) {
@@ -200,6 +213,12 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		return htProc;
 	}
 
+	/**
+	 * Retrieve the flat file scope of the CCT source file
+	 * If the flat file scope doesn't exist, create a new one, and attach it to flat tree
+	 * @param sfile
+	 * @return
+	 */
 	protected FileScope getFileScope(SourceFile sfile) {
 		FileScope file = (FileScope) fileht.get(sfile);
 		if (file == null) {
@@ -248,6 +267,11 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		return objFlatProcScope;
 	}
 
+	/**
+	 * Return the hashtable containing a list of scopes in flat tree indexed by a code (TBD)
+	 * @param proc
+	 * @return
+	 */
 	protected Hashtable/*<Integer, Scope>*/ getProcContentsHashtable(ProcedureScope proc) {
 		Hashtable/*<Integer, Scope>*/ lsht = (Hashtable) proc_to_proc_contents_ht.get(proc);
 		if (lsht == null) {
@@ -257,6 +281,13 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		return lsht;
 	}
 
+	/**
+	 * Prepare the creation of flat tree.
+	 * @param s
+	 * @param encl_context
+	 * @param encl_proc
+	 * @return
+	 */
 	protected Scope  augmentFlatView(Scope s, Scope encl_context, ProcedureScope encl_proc) {
 		ProcedureScope flat_encl_proc = retrieveProcedureScope(encl_proc.getSourceFile(), encl_proc, s);
 		Hashtable ht = getProcContentsHashtable(flat_encl_proc);
@@ -295,6 +326,20 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		return code;
 	}
 
+	/**
+	 * Construct a flat tree.
+	 * Algorithm:
+	 * 	- get the flat tree scope version of the CCT scope. 
+	 * 		* If the scope doesn't exist, create a new one and attach it to the parent
+	 *  - If the CCT scope is a callsite, then:
+	 *  	* inclusive metric: assign the CCT scope's cost into flat scope
+	 *  	* exclusive metric: assign the cost of the call into flat scope
+	 *  - otherwise: assign the cost to flat scope
+	 * @param s
+	 * @param flat_parent
+	 * @param ht
+	 * @return
+	 */
 	protected Scope getFlatCounterpart(Scope s, Scope flat_parent, Hashtable ht) {
 		//	new test code
 		int code = getCode(s);
@@ -314,13 +359,6 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			flat_parent.addSubscope(flat_s);
 			flat_s.setParentScope(flat_parent);
 			trace("added flat counterpart " + flat_s.getName() + " in flat view.");
-			// laks: we need to make sure if the call is recursive or not
-			flat_s.iCounter = 1;
-		} else {
-			// in case of callsite, this means we encounter a recursive routine
-			flat_s.iCounter++; 
-			if(flat_s instanceof CallSiteScope)
-				((CallSiteScope) flat_s).isRecursive = true;
 		}
 		if (s instanceof CallSiteScope) {
 			//---------------------------------------------------------------------------------------------------
@@ -330,8 +368,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			// the flat view; only propagate inclusive costs.
 			// 2008 06 07 - John Mellor-Crummey
 			//---------------------------------------------------------------------------------------------------
-			if(flat_s.iCounter == 1)
-				flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
+			flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
 			if (flat_s instanceof CallSiteScope) {
 				//---------------------------------------------------------------------------------------------------
 				// for the flat view, we only want to propagate exclusive costs for the call site,

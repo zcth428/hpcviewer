@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.viewer.scope;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreePath;
@@ -13,13 +12,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.CoolBar;
 
-import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.*;
-import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
 import edu.rice.cs.hpc.viewer.metric.*;
 //math expression
@@ -37,10 +34,8 @@ import com.graphbuilder.math.*;
  */
 public class ScopeViewActions extends ScopeActions {
     //-------------- DATA
-	//private ScopeViewActionsGUI objActionsGUI;	// associated GUI (toolbar)
     protected ScopeTreeViewer 	treeViewer;		  	// tree 
     protected RootScope 		myRootScope;		// the root scope of this view
-    //private IViewSite objSite;				// associated view
 
     // stack to store the position of the zoom, tree state, ...
     private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
@@ -383,22 +378,24 @@ public class ScopeViewActions extends ScopeActions {
 		Scope.Node node = this.getSelectedNode();
 		if(node == null)
 			node = (Scope.Node) this.getInputNode();
-		//dlg.setScope(node.getScope());
+
 		// display the dialog box
 		if(dlg.open() == Dialog.OK) {
 			// the expression is valid (already verified in the dialog box)
 			Expression expFormula = dlg.getExpression();
 			String sName = dlg.getName();					// metric name
 			boolean bPercent = dlg.getPercentDisplay();		// display the percentage ?
-			MetricType objMetricType;
+			/*
+			MetricType objMetricType;			
 			if(dlg.isExclusive())
 				objMetricType = MetricType.EXCLUSIVE;
 			else
 				objMetricType = MetricType.INCLUSIVE;
+			*/
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
-			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, objMetricType);
-			//System.out.println("SVA:"+objMetric.getAggregateValue());
+			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
+
 			int iPosition = exp.getMetricCount()+1;
 			this.treeViewer.getTree().setRedraw(false);
 			TreeViewerColumn colDerived = this.treeViewer.addTreeColumn(objMetric, 

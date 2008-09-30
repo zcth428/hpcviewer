@@ -35,25 +35,21 @@ import com.graphbuilder.math.func.*;
  */
 public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	//------------- GUI variables
-	//private Label lblExpression;
 	private Text txtName;
 	private Button btnPercent;
-	private Button btnExclusive;
-	private Button btnInclusive;
+	//private Button btnExclusive;
+	//private Button btnInclusive;
 
 	// ------------ Metric and math variables
-	//private Metric []arrMetrics;
 	private String []arrStrMetrics;
 	private Text txtExpression;
 	private Expression expFormula;
 	final ExtFuncMap fctMap;
 
 	// ------------- Others
-	//private Scope scope;
-
 	private String sMetricName;
 	private boolean bPercent;
-	private boolean bExclusive = false;
+	//private boolean bExclusive = false;
 
 	//==========================================================
 	  // ---- Constructor
@@ -185,6 +181,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		Group grpOptions = new Group(composite,SWT.NONE);
 		{
 			// exclusive or inclusive ?
+			/*
 			Composite typeArea = new Composite(grpOptions, SWT.NONE);
 			Label lblType = new Label(typeArea, SWT.LEFT);
 			lblType.setText("Type of metric: ");
@@ -210,7 +207,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   			}
 			});
 			GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(typeArea);
-
+			*/
 			// name of the metric
 			Composite nameArea = new Composite(grpOptions, SWT.NONE);
 			Label lblName = new Label(nameArea, SWT.LEFT);
@@ -239,6 +236,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  //==========================================================
 	  // ---- PRIVATE METHODS
 	  //==========================================================
+	  /*
 	  private boolean appendMetricType() {
 		  int iAppendType = 0; // 0=no append, 1=append inc, 2=append exc
 		  String sName = this.txtName.getText();
@@ -272,7 +270,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			  this.txtName.setText(sName + "(E)");
 		  }
 		  return (iAppendType==0);
-	  }
+	  }*/
 
 	  /**
 	   * check if the expression is correct
@@ -335,9 +333,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   * return true if the metrics' type is exclusive
 	   * @return
 	   */
+	  /*
 	  public boolean isExclusive() {
 		  return this.bExclusive;
-	  }
+	  }*/
 	  /**
 	   * Call back method when the OK button is pressed
 	   */
@@ -346,7 +345,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			// save the options for further usage (required by the caller)
 			this.bPercent = this.btnPercent.getSelection();
 			this.sMetricName = this.txtName.getText();
-			this.bExclusive = this.btnExclusive.getSelection();
+			//this.bExclusive = this.btnExclusive.getSelection();
 			super.okPressed();
 		}
 	  }

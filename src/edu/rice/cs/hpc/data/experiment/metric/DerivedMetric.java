@@ -53,7 +53,7 @@ public class DerivedMetric extends BaseMetric {
 		this.fctMap.init(metrics, scopeRoot);
 
 		// set up the variables
-		this.varMap = new MetricVarMap(scopeRoot.getExperiment().getMetrics());
+		this.varMap = new MetricVarMap(metrics);
 		this.metricType = objType;//either inclusive OR exclusive;
 		// Bug fix: always compute the aggregate value 
 		this.dRootValue = this.getAggregateMetrics(scopeRoot);
@@ -69,20 +69,25 @@ public class DerivedMetric extends BaseMetric {
 	 *	I	BU-l	Mp		Formula
 	 *	E	BU		BU		BU
 	 *
-		Notes:
-			- BU-l: bottom-up sum reduction for leaves only
-			- BU: bottom-up sum reduction for all nodes
-			- Mp: Main program. The aggregate value is equal to the main program's value
-			- Formula: Applying math formula to the aggregate value
+	 *	Notes:
+	 *		- BU-l: bottom-up sum reduction for leaves only
+	 *		- BU: bottom-up sum reduction for all nodes
+	 *		- Mp: Main program. The aggregate value is equal to the main program's value
+	 *		- Formula: Applying math formula to the aggregate value
 	 */
 	
+	// -----------------------------------------------------------------------
+	//	For the time being, the aggregate value will be computed point-wise, just like
+	//	the way scopes are computed.
+	// -----------------------------------------------------------------------
+
 	/**
 	 * Computing the aggregate values of the children 
 	 *  This method will add the value of all leave nodes only.
 	 * @param current: current scope
 	 * @return the value
 	 */
-	private double computeAggregateBU_LeavesOnly(Scope current) {
+/*	private double computeAggregateBU_LeavesOnly(Scope current) {
 		int nkids = current.getSubscopeCount();
 		MetricValue objCurrentValue = this.getValue(current);//current.getDerivedMetricValue(this, index);
 		double dTotal = 0.0;
@@ -111,14 +116,14 @@ public class DerivedMetric extends BaseMetric {
 			// the total value of the kids are zeros, but the current scope is not !
 			dTotalValue = objCurrentValue.value; //MetricValue.NONE;
 		return dTotalValue;
-	}
+	}*/
 	
 	/**
 	 * Computing the aggregate values by using sum-reduction for all nodes
 	 * @param current
 	 * @return
 	 */
-	private double computeAggregateBU(Scope current) {
+/*	private double computeAggregateBU(Scope current) {
 		int nkids = current.getSubscopeCount();
 		double dTotal = 0.0;
 		MetricValue mv = this.getValue(current);
@@ -140,7 +145,7 @@ public class DerivedMetric extends BaseMetric {
 			}
 		}
 		return dTotal;
-	}
+	}*/
 
 /**
  * Compute the aggregate value for caller-tree
@@ -148,8 +153,8 @@ public class DerivedMetric extends BaseMetric {
  * @return
  */
 	private double computeAggregateValueCT(RootScope scopeRoot) {
-		if(this.metricType == MetricType.EXCLUSIVE)
-			return this.computeAggregateBU(scopeRoot);
+//		if(this.metricType == MetricType.EXCLUSIVE)
+//			return this.computeAggregateBU(scopeRoot);
 		
 		// just get the one who has no children --> the main program
 		/*
@@ -173,7 +178,7 @@ public class DerivedMetric extends BaseMetric {
 	 * @param scopeRoot
 	 * @return
 	 */
-	private double computeAggregateValueFT(RootScope scopeRoot) {
+/*	private double computeAggregateValueFT(RootScope scopeRoot) {
 		// exclusive: compute with bottom-up approach
 		if (this.metricType == MetricType.EXCLUSIVE) {
 			return this.computeAggregateBU(scopeRoot);
@@ -182,28 +187,35 @@ public class DerivedMetric extends BaseMetric {
 			double dSum = this.getDoubleValue(scopeRoot).doubleValue();
 			return dSum;
 		}
-	}
+	}*/
 	
 	/**
 	 * Compute the aggregate value of calling context tree
 	 * @param scopeRoot
 	 * @return
 	 */
-	private double computeAggregateValueCCT(RootScope scopeRoot) {
+/*	private double computeAggregateValueCCT(RootScope scopeRoot) {
 		if(this.metricType == MetricType.EXCLUSIVE) {
 			return this.computeAggregateBU(scopeRoot);
 		}  else {
 			return this.computeAggregateBU_LeavesOnly(scopeRoot);
 		}
 	}
-	
+*/	
 	//-------------------- MAIN FUNCTION FOR COMPUTING AGGREGATE VALUE ------------------
+	// -----------------------------------------------------------------------
+	//	For the time being, the aggregate value will be computed point-wise, just like
+	//	the way scopes are computed.
+	// -----------------------------------------------------------------------
 	/**
 	 * Compute the general aggregate metric for cct, caller tree and flat tree
 	 * @param scopeRoot
 	 * @return the aggregate value
 	 */
 	private double getAggregateMetrics(RootScope scopeRoot) {
+		double dSum = this.getDoubleValue(scopeRoot).doubleValue();
+		return dSum;
+		/*
 		if(scopeRoot.getType() == RootScopeType.CallerTree) {
 			return computeAggregateValueCT(scopeRoot);
 		} else if(scopeRoot.getType() == RootScopeType.Flat) {
@@ -212,7 +224,7 @@ public class DerivedMetric extends BaseMetric {
 			// calling context tree
 			double dValue = this.computeAggregateValueCCT(scopeRoot);
 			return dValue;
-		}
+		} */
 	}
 	//===================================================================================
 	// GET VALUE

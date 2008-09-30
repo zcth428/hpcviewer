@@ -265,25 +265,7 @@ protected void accumulateMetricsFromKids(Scope target, Scope source, MetricValue
 		target.accumulateMetrics(child, filter, this.getMetricCount());
 	}
 }
-/*
-protected void accumulateMetricsFromKidsNoRecursive(Scope target, Scope source, MetricValuePropagationFilter filter) {
-	int nkids = source.getSubscopeCount();
-	for (int i = 0; i < nkids; i++) {
-		Scope child = source.getSubscope(i);
-		if (child instanceof LoopScope) {
-			accumulateMetricsFromKidsNoRecursive(target, child, filter);
-		}
-		if(target instanceof ProcedureScope && source instanceof ProcedureScope) {
-			ProcedureScope objTarget = (ProcedureScope) target;
-			ProcedureScope objSource = (ProcedureScope) source;
-			if(objTarget.getSID() != objSource.getSID())
-				target.accumulateMetrics(child, filter, this.getMetricCount());
-			else
-				System.out.println("E:"+objTarget.getSID()+"\t"+objSource.getSID());
-		}
-	}
-}
-*/
+
 protected void copyMetric(Scope target, Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, target, src_i, targ_i)) {
 		MetricValue mv = source.getMetricValue(src_i);
@@ -316,7 +298,6 @@ protected Scope createCallersView(Scope callingContextViewRootScope)
 	callingContextViewRootScope.dfsVisitScopeTree(csv);
 	// compute the aggregate metrics
 	accumulateMetricsFromKids(callersViewRootScope, callersViewRootScope, filter);
-	//accumulateMetricsFromKidsNoRecursive(callersViewRootScope, callersViewRootScope, filter);
 	return callersViewRootScope;
 }
 

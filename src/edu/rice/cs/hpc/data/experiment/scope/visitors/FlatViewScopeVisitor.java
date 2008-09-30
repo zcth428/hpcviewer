@@ -139,6 +139,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 				ProcedureScope flat_encl_proc = retrieveProcedureScope(proc.getSourceFile(), proc, scope);
 				// assign the cost to this scope
 				flat_encl_proc.mergeMetric(scope, this.inclusiveOnly);
+				flat_encl_proc.iCounter++;
 			}
 			return;
 		}
@@ -153,13 +154,13 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			if(scope instanceof CallSiteScope) {
 				ProcedureScope callSiteProcScope = ((CallSiteScope)scope).getProcedureScope();
 				// create the flat procedure scope of this scope
-				ProcedureScope scopeProc = this.retrieveProcedureScope(scope.getSourceFile(), callSiteProcScope, scope);
-				scopeProc.iCounter++;
+				ProcedureScope flat_encl_proc = this.retrieveProcedureScope(scope.getSourceFile(), callSiteProcScope, scope);
+				flat_encl_proc.iCounter++;
 				// In case of recursive procedure, we don't accumulate the cost of its descendants
-				if(scopeProc.iCounter == 1)
-					scopeProc.accumulateMetrics(scope, this.inclusiveOnly, this.numberOfPrimaryMetrics);
+				if(flat_encl_proc.iCounter == 1)
+					flat_encl_proc.accumulateMetrics(scope, this.inclusiveOnly, this.numberOfPrimaryMetrics);
 				// use stack to save the state. This will be used for post visit
-				this.stackProcScope.push(scopeProc);
+				this.stackProcScope.push(flat_encl_proc);
 			}
 			augmentFlatView(scope, context, proc);
 		} 

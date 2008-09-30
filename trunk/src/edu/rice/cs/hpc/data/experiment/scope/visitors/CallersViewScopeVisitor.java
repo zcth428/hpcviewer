@@ -175,6 +175,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
 			if (callee == null) {
 				callee  = (ProcedureScope)mycallee.duplicate();
+				callee.iCounter++;
 				calleeht.put(new Integer(callee.hashCode()), callee);
 				callersViewRootScope.addSubscope(callee);
 				callee.setParentScope(this.callersViewRootScope);

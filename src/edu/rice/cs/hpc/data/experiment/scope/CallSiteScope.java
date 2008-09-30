@@ -43,10 +43,6 @@ protected ProcedureScope procScope;
 
 protected CallSiteScopeType type;
 
-/**
- * Flag to indicate if the callsite is a call to recursive function
- */
-public boolean isRecursive = false;
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION	
 //////////////////////////////////////////////////////////////////////////

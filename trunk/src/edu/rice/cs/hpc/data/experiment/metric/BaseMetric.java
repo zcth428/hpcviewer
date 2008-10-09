@@ -41,7 +41,7 @@ public abstract class BaseMetric {
 	// CONSTRUCTOR
 	//-------------------------------------------------------------------------------
 	public BaseMetric(String sDisplayName, boolean displayed, boolean percent, int index) {
-		this.displayName = sDisplayName;
+		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;
 		this.displayed = displayed;
 		this.percent = percent;
 		this.index = index;

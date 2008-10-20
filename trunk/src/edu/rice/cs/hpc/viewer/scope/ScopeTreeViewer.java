@@ -13,10 +13,7 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.swt.widgets.TreeItem;
 
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.viewer.metric.ExtDerivedMetricLabelProvider;
 import edu.rice.cs.hpc.viewer.metric.MetricLabelProvider;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
@@ -69,9 +66,9 @@ public class ScopeTreeViewer extends TreeViewer {
      * @param bSorted: flag if the column should be sorted or not
      * @return the tree viewer column
      */
-	public TreeViewerColumn addTreeColumn(BaseMetric objMetric, int iPosition, boolean bSorted) {
+	public TreeViewerColumn addTreeColumn(BaseMetric objMetric, boolean bSorted) {
 		// laks: addendum for column  
-    	TreeViewerColumn colMetric = addTreeColumn(objMetric, iPosition, bSorted, false);
+    	TreeViewerColumn colMetric = addTreeColumn(objMetric, bSorted, false);
 		colMetric.setLabelProvider(new MetricLabelProvider(objMetric, Utilities.fontMetric));
 		return colMetric;
     }
@@ -85,7 +82,7 @@ public class ScopeTreeViewer extends TreeViewer {
      * @param b: flag to indicate if this column should be displayed or not (default should be true)
      * @return
      */
-    private TreeViewerColumn addTreeColumn(BaseMetric objMetric, int iPosition, 
+    private TreeViewerColumn addTreeColumn(BaseMetric objMetric, //int iPosition, 
     		boolean bSorted, boolean bDisplayed) {
     	TreeViewerColumn colMetric = new TreeViewerColumn(this,SWT.RIGHT);	// add column
     	TreeColumn col = colMetric.getColumn();
@@ -96,6 +93,7 @@ public class ScopeTreeViewer extends TreeViewer {
     	col.setData(objMetric);
 		col.setMoveable(true);
 		//this.colMetrics[i].getColumn().pack();			// resize as much as possible
+		int iPosition = this.doGetColumnCount();
 		ColumnViewerSorter colSorter = new ColumnViewerSorter(this, 
 				col, objMetric,iPosition); // sorting mechanism
 		if(bSorted)

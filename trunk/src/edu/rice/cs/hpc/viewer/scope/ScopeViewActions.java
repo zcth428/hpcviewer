@@ -6,6 +6,7 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.dialogs.Dialog;
 
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -18,6 +19,9 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.metric.*;
 //math expression
 import com.graphbuilder.math.*;
@@ -41,15 +45,16 @@ public class ScopeViewActions extends ScopeActions {
     private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
 	private java.util.Stack<Object[]> stackTreeStates = new java.util.Stack<Object[]>();
 	
-	
+	protected IWorkbenchWindow objWindow;
     /**
      * Constructor: create actions and the GUI (which is a coolbar)
      * @param viewSite the site of the view (used for retrieving shell, display, ...)
      * @param parent composite
      */
-    public ScopeViewActions(Shell shell, Composite parent, CoolBar coolbar) {
+    public ScopeViewActions(Shell shell, IWorkbenchWindow window, Composite parent, CoolBar coolbar) {
     	super(shell, parent, coolbar);
     	createGUI(parent, coolbar);
+    	this.objWindow  = window;
     }
 
     /**
@@ -366,6 +371,13 @@ public class ScopeViewActions extends ScopeActions {
 		this.objActionsGUI.checkZoomButtons(nodeSelected); // no node has been selected ?
 	}
 	
+	/**
+	 * add a new column for metric
+	 * @param colMetric
+	 */
+	protected void addTreeColumn(TreeViewerColumn colMetric) {
+		this.objActionsGUI.addMetricColumns(colMetric);
+	}
 	
 	/**
 	 * create a new metric based on a free expression
@@ -395,20 +407,25 @@ public class ScopeViewActions extends ScopeActions {
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
 			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
-
-			int iPosition = exp.getMetricCount()+1;
-			this.treeViewer.getTree().setRedraw(false);
-			TreeViewerColumn colDerived = this.treeViewer.addTreeColumn(objMetric, 
-					iPosition, false);
-			// update the viewer, to refresh its content and invoke the provider
-			// bug SWT https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
-			// we need to hold the UI to draw until all the data is available
-			this.treeViewer.refresh();	// we refresh to update the data model of the table
-			// notify the GUI that we have added a new column
-			this.objActionsGUI.addMetricColumns(colDerived); 
-			this.treeViewer.getTree().setRedraw(true);
-			// adjust the column width 
-			colDerived.getColumn().pack();
+			ExperimentData objExpData = ExperimentData.getInstance(this.objWindow);
+			ExperimentManager objExpManager = objExpData.getExperimentManager();
+			BaseScopeView arrScopeViews[] = objExpManager.getExperimentView().getViews();
+			for(int i=0; i<arrScopeViews.length; i++) {
+				ScopeTreeViewer objTreeViewer = arrScopeViews[i].getTreeViewer();
+				objTreeViewer.getTree().setRedraw(false);
+				TreeViewerColumn colDerived = objTreeViewer.addTreeColumn(objMetric,  false);
+				// update the viewer, to refresh its content and invoke the provider
+				// bug SWT https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
+				// we need to hold the UI to draw until all the data is available
+				objTreeViewer.refresh();	// we refresh to update the data model of the table
+				// notify the GUI that we have added a new column
+				ScopeViewActions objAction = arrScopeViews[i].getViewActions();
+				objAction.addTreeColumn(colDerived);
+				//this.objActionsGUI.addMetricColumns(colDerived); 
+				objTreeViewer.getTree().setRedraw(true);
+				// adjust the column width 
+				colDerived.getColumn().pack();
+			}
 		}
 	}
 

@@ -23,10 +23,14 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 	private int numberOfPrimaryMetrics;
 	MetricValuePropagationFilter filter;
+	private ExclusiveOnlyMetricPropagationFilter filterExclusive;
+	private InclusiveOnlyMetricPropagationFilter filterInclusive;
 
-	public InclusiveMetricsScopeVisitor(int nMetrics, MetricValuePropagationFilter filter) {
-		this.numberOfPrimaryMetrics = nMetrics;
+	public InclusiveMetricsScopeVisitor(BaseMetric []metrics, MetricValuePropagationFilter filter) {
+		this.numberOfPrimaryMetrics = metrics.length;
 		this.filter = filter;
+		filterExclusive = new ExclusiveOnlyMetricPropagationFilter(metrics);
+		filterInclusive = new InclusiveOnlyMetricPropagationFilter(metrics);
 	}
 
 	//----------------------------------------------------
@@ -62,16 +66,23 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 					else if (filter instanceof FlatViewInclMetricPropagationFilter){
 						// Exclusive metrics: Add the cost of the line scope into the parent
 						parent.accumulateMetrics(((CallSiteScope)scope).getLineScope(), 
-								new ExclusiveOnlyMetricPropagationFilter(scope.getExperiment().getMetrics()), numberOfPrimaryMetrics);
+								this.filterExclusive, numberOfPrimaryMetrics);
 						// Inclusive metrics: if the parent is not procedure, add the scope into the parent
 						// the cost of the procedure scope should have to be precomputed in the FlatViewScopeVisitor class
 						if(!(parent instanceof ProcedureScope))
 							parent.accumulateMetrics(scope, 
-								new InclusiveOnlyMetricPropagationFilter(scope.getExperiment().getMetrics()), numberOfPrimaryMetrics);
+								this.filterInclusive, numberOfPrimaryMetrics);
 					} else {
 						parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);						
 					}
 				} else {
+					// New definition of exclusive cost:
+					//	The cost of Outer loop does not include the cost of inner loop 
+					if(parent instanceof LoopScope && scope instanceof LoopScope) {
+						// for nested loop: we need to accumulate the inclusive but not exclusive.
+						parent.accumulateMetrics(scope, this.filterInclusive, this.numberOfPrimaryMetrics);
+						return;
+					}
 					parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);
 				}
 			}

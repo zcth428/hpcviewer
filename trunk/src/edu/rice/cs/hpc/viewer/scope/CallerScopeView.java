@@ -5,6 +5,7 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
+import org.eclipse.ui.IWorkbenchWindow;
 
 /**
  * View class for caller view. At the moment, the caller view is the same as calling context view
@@ -19,7 +20,8 @@ public class CallerScopeView extends BaseScopeView {
 	 */
 	@Override
 	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
-        return new ScopeViewActions(this.getViewSite().getShell(), parent, coolbar); 
+    	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
+        return new ScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
 	}
 
 }

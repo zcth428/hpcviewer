@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import edu.rice.cs.hpc.Activator;
-import edu.rice.cs.hpc.viewer.scope.ScopeView;
+import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
 /**
@@ -35,6 +35,7 @@ public class ExperimentManager {
 	 */
 	private IWorkbenchWindow window;
 	
+	private ExperimentView expViewer;
 	/**
 	 * Constructor to instantiate experiment file
 	 * @param win: the current workbench window
@@ -115,6 +116,13 @@ public class ExperimentManager {
 		return false;
 	}
 
+	/**
+	 * Retrieve the experiment view of this experiment
+	 * @return
+	 */
+	public ExperimentView getExperimentView() {
+		return this.expViewer;
+	}
 	//==================================================================
 	// ---------- PRIVATE PART-----------------------------------------
 	//==================================================================
@@ -154,10 +162,12 @@ public class ExperimentManager {
 	private boolean setExperiment(String sFilename) {
 		IWorkbenchPage objPage= this.window.getActivePage();
 		// read the XML experiment file
-		ExperimentView expViewer = new ExperimentView(objPage);
+		this.expViewer = new ExperimentView(objPage);
 	    if(expViewer != null) {
 	    	// data looks OK
-	    	expViewer.loadExperimentAndProcess(sFilename);
+	    	if (expViewer.loadExperimentAndProcess(sFilename)) {
+	    	} else
+		    	 return false; //TODO we need to throw an exception instead
 	     } else
 	    	 return false; //TODO we need to throw an exception instead
 		return true;

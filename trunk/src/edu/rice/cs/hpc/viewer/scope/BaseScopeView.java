@@ -40,15 +40,18 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 abstract public class BaseScopeView  extends ViewPart {
 
     private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
-    private TreeViewerColumn colTree;		// column for the calls tree
+    //private TreeViewerColumn colTree;		// column for the calls tree
     private Experiment 	myExperiment;		// experiment data	
     private RootScope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
-    private ScopeTreeContentProvider treeContentProvider;
+    //private ScopeTreeContentProvider treeContentProvider;
 	private ScopeViewActions objViewActions;	// actions for this scope view
     
-	protected Composite objCompositeParent;
+	//protected Composite objCompositeParent;
+	/**
+	 * bar composite for placing toolbar and tool items
+	 */
 	protected CoolBar objCoolbar;
     //======================================================
     // ................ HELPER ............................
@@ -224,9 +227,10 @@ abstract public class BaseScopeView  extends ViewPart {
      * Create the content of the view
      */
     public void createPartControl(Composite aParent) {
-    	this.objCompositeParent = this.createToolBarArea(aParent);
+    	Composite objCompositeParent;
+    	objCompositeParent = this.createToolBarArea(aParent);
     	this.objCoolbar = this.initToolbar(objCompositeParent);
-		this.objViewActions =  createActions(this.objCompositeParent, this.objCoolbar); //actions of the tree
+		this.objViewActions =  createActions(objCompositeParent, this.objCoolbar); //actions of the tree
 		
 		// prepare the font for metric columns: it is supposed to be fixed font
 		Display display = Display.getCurrent();
@@ -235,18 +239,20 @@ abstract public class BaseScopeView  extends ViewPart {
 		// ----- 03.21.2008 Laks: add virtual library for better memory consumption
     	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL);
     	// set the attributes
-    	this.treeContentProvider = new ScopeTreeContentProvider(); 
-    	treeViewer.setContentProvider(this.treeContentProvider);
+    	ScopeTreeContentProvider treeContentProvider;
+    	treeContentProvider = new ScopeTreeContentProvider(); 
+    	treeViewer.setContentProvider(treeContentProvider);
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
         //treeViewer.setAutoExpandLevel(2);
         
         //----------------- create the column tree
-        this.colTree = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
-        this.colTree.getColumn().setText("Scope");
-        this.colTree.getColumn().setWidth(200); //TODO dynamic size
-        this.colTree.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
-        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, this.colTree.getColumn(), null,0); 
+        TreeViewerColumn colTree;		// column for the calls tree
+        colTree = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
+        colTree.getColumn().setText("Scope");
+        colTree.getColumn().setWidth(200); //TODO dynamic size
+        colTree.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
+        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, colTree.getColumn(), null,0); 
 
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view
@@ -410,7 +416,7 @@ abstract public class BaseScopeView  extends ViewPart {
         	for (int i=0; i<myExperiment.getMetricCount(); i++)
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
-        		colMetrics[i] = this.treeViewer.addTreeColumn(myExperiment.getMetric(i), i+1, (i==0));
+        		colMetrics[i] = this.treeViewer.addTreeColumn(myExperiment.getMetric(i), (i==0));
         	}
             treeViewer.setColumnProperties(titles); // do need this ??
             //treeViewer.getTree().setSelection(TreeItem);
@@ -440,6 +446,17 @@ abstract public class BaseScopeView  extends ViewPart {
 	}
     public void setFocus() {
             treeViewer.getTree().setFocus();
+    }
+    
+    public ScopeViewActions getViewActions() {
+    	return this.objViewActions;
+    }
+    /**
+     * return the tree of this viewer (even though there's no experiment active)
+     * @return
+     */
+    public ScopeTreeViewer getTreeViewer() {
+    	return this.treeViewer;
     }
     /*
     public void showProcessingMessage() {

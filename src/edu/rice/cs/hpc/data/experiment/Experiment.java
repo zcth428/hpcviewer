@@ -332,7 +332,7 @@ void report(RootScope scope)
 */
 protected void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter filter)
 {
-	InclusiveMetricsScopeVisitor isv = new InclusiveMetricsScopeVisitor(this.getMetricCount(), filter);
+	InclusiveMetricsScopeVisitor isv = new InclusiveMetricsScopeVisitor(this.getMetrics(), filter);
 	scope.dfsVisitScopeTree(isv);
 }
 
@@ -384,6 +384,8 @@ public void postprocess() {
 		copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
 
 		// Flat View
+		// While creating the flat tree, we attribute the cost for procedure scopes
+		// One the tree has been created, we compute the inclusive cost for other scopes
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
 		// compute the inclusive metrics: accumulate the cost of loops and line scopes
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));

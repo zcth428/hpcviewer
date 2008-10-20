@@ -6,6 +6,7 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.widgets.CoolBar;
 
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
@@ -23,8 +24,8 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * @param viewSite
 	 * @param parent
 	 */
-	public FlatScopeViewActions(Shell shell, Composite parent, CoolBar coolbar) {
-		super(shell, parent, coolbar);
+	public FlatScopeViewActions(Shell shell, IWorkbenchWindow window, Composite parent, CoolBar coolbar) {
+		super(shell, window, parent, coolbar);
 		//this.createGUI(parent, coolbar);
 		// TODO Auto-generated constructor stub
 	}

@@ -22,6 +22,10 @@ import org.eclipse.ui.PartInitException;
 public class ExperimentView {
 	private ExperimentData dataExperiment;
 	private org.eclipse.ui.IWorkbenchPage objPage;		// workbench current page
+	/**
+	 * List of registered views in the current experiment
+	 */
+	protected BaseScopeView []arrScopeViews;
 	
 	private void init() {
 		if(this.dataExperiment == null) {
@@ -86,13 +90,14 @@ public class ExperimentView {
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
 	 * @param sFilename
 	 */
-	public void loadExperimentAndProcess(String sFilename) {
+	public boolean loadExperimentAndProcess(String sFilename) {
 		Experiment experiment = this.loadExperiment(sFilename);
 		if(experiment != null) {
 	        experiment.postprocess();
 	        this.generateView(experiment);
+	        return true;
 		}
-		
+		return false;
 	}
 	/**
 	 * Load an XML experiment file based on the filename (uncheck for its inexistence)
@@ -145,11 +150,10 @@ public class ExperimentView {
 	 * Retrieve the list of all used views
 	 * @return list of views
 	 */
-	/*
-	public ScopeView[] getViews() {
-		return this.listOfViews;
+	public BaseScopeView[] getViews() {
+		return this.arrScopeViews;
 	}
-	*/
+	
 	/**
 	 * Generate multiple views for an experiment depending on the number of root scopes
 	 * @param experiment Experiment data
@@ -164,6 +168,7 @@ public class ExperimentView {
 		ArrayList<RootScope> rootChildren = (ArrayList<RootScope>)experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.size();
 		BaseScopeView objCCView = null;
+		arrScopeViews = new BaseScopeView[nbChildren];
 		//this.listOfViews = new ScopeView[nbChildren];
 		for(int k=0;nbChildren>k;k++)
 		{
@@ -184,7 +189,7 @@ public class ExperimentView {
 					}
 				objView.setInput(experiment, child);
 				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
-
+				arrScopeViews[k] = objView;
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}

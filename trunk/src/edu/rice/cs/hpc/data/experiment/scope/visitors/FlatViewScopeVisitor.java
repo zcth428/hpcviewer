@@ -26,6 +26,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 public class FlatViewScopeVisitor implements ScopeVisitor {
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
+	private final EmptyMetricValuePropagationFilter noFilter;
 	//----------------------------------------------------
 	// private data
 	//----------------------------------------------------
@@ -68,6 +69,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		BaseMetric[] metrics = exp.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+		noFilter = new EmptyMetricValuePropagationFilter();
 	}
 
 
@@ -171,11 +173,14 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 				// use stack to save the state. This will be used for post visit
 				this.stackProcScope.push(flat_encl_proc);
 			}
+			// construct the flat tree of this scope
 			FlatFileProcedure objFlat = augmentFlatView(scope, context, proc);
+			
+			// compute the file scope
 			FileScope objFile = objFlat.objFile;
 			objFile.iCounter++;
 			if(objFile.iCounter == 1) {
-				objFile.accumulateMetrics(scope, this.inclusiveOnly, this.numberOfPrimaryMetrics);
+				objFile.accumulateMetrics(scope, noFilter, this.numberOfPrimaryMetrics);
 			}
 			this.stackFileScope.push(objFile);
 		} 

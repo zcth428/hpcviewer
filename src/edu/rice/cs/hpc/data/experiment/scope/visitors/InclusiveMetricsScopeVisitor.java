@@ -80,7 +80,14 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 					//	The cost of Outer loop does not include the cost of inner loop 
 					if(parent instanceof LoopScope && scope instanceof LoopScope) {
 						// for nested loop: we need to accumulate the inclusive but not exclusive.
-						parent.accumulateMetrics(scope, this.filterInclusive, this.numberOfPrimaryMetrics);
+						if(filter instanceof InclusiveOnlyMetricPropagationFilter) {
+							// During the creation of CCT, we call this class twice: one for exclusive, the other for incl
+							// so we need to make sure that only the inclusive is taken
+							parent.accumulateMetrics(scope, this.filter, this.numberOfPrimaryMetrics);
+						} else if (filter instanceof FlatViewInclMetricPropagationFilter) {
+							// This path is from flat tree construction, we just take into account inclusive loops
+							parent.accumulateMetrics(scope, this.filterInclusive, this.numberOfPrimaryMetrics);
+						}
 						return;
 					}
 					parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);

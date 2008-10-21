@@ -43,10 +43,15 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * Stack to store the flat procedure scope of a cct's callsite scope
 	 */
 	private Stack<ProcedureScope> stackProcScope  = new Stack<ProcedureScope>();
-	Experiment exp;
-	Scope flatViewRootScope;
-	int numberOfPrimaryMetrics;
-	MetricValuePropagationFilter filter;
+	/**
+	 * Stack to store flat file scope 
+	 */
+	private Stack<FileScope> stackFileScope  = new Stack<FileScope>();
+	
+	private Experiment exp;
+	private Scope flatViewRootScope;
+	private int numberOfPrimaryMetrics;
+	private MetricValuePropagationFilter filter;
 
 	//----------------------------------------------------
 	// constructor for FlatViewScopeVisitor
@@ -136,7 +141,9 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			if(scope instanceof ProcedureScope) {
 				proc = (ProcedureScope) scope;
 				// create a new scope into flat tree
-				ProcedureScope flat_encl_proc = retrieveProcedureScope(proc.getSourceFile(), proc, scope);
+				FlatFileProcedure objFlat = retrieveProcedureScope(proc.getSourceFile(), proc, scope);
+				ProcedureScope flat_encl_proc = objFlat.objProc;
+				//ProcedureScope flat_encl_proc = retrieveProcedureScope(proc.getSourceFile(), proc, scope);
 				// assign the cost to this scope
 				flat_encl_proc.mergeMetric(scope, this.inclusiveOnly);
 				flat_encl_proc.iCounter++;
@@ -154,7 +161,9 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			if(scope instanceof CallSiteScope) {
 				ProcedureScope callSiteProcScope = ((CallSiteScope)scope).getProcedureScope();
 				// create the flat procedure scope of this scope
-				ProcedureScope flat_encl_proc = this.retrieveProcedureScope(scope.getSourceFile(), callSiteProcScope, scope);
+				FlatFileProcedure objFlat = this.retrieveProcedureScope(scope.getSourceFile(), callSiteProcScope, scope);
+				ProcedureScope flat_encl_proc = objFlat.objProc;
+				//ProcedureScope flat_encl_proc = this.retrieveProcedureScope(scope.getSourceFile(), callSiteProcScope, scope);
 				flat_encl_proc.iCounter++;
 				// In case of recursive procedure, we don't accumulate the cost of its descendants
 				if(flat_encl_proc.iCounter == 1)
@@ -162,7 +171,13 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 				// use stack to save the state. This will be used for post visit
 				this.stackProcScope.push(flat_encl_proc);
 			}
-			augmentFlatView(scope, context, proc);
+			FlatFileProcedure objFlat = augmentFlatView(scope, context, proc);
+			FileScope objFile = objFlat.objFile;
+			objFile.iCounter++;
+			if(objFile.iCounter == 1) {
+				objFile.accumulateMetrics(scope, this.inclusiveOnly, this.numberOfPrimaryMetrics);
+			}
+			this.stackFileScope.push(objFile);
 		} 
 		// ------------- POST VISIT
 		else if(vt == ScopeVisitType.PostVisit) {
@@ -173,6 +188,12 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 				if(scopeProc.iCounter<0) {
 					System.out.println("\tError:"+scopeProc.getName()+"\t"+scopeProc.iCounter);
 				}
+			}
+			try {
+				FileScope scopeFile = this.stackFileScope.pop();
+				scopeFile.iCounter--;
+			} catch (java.util.EmptyStackException e) {
+				System.err.println("Empty stack for file !");
 			}
 		}
 	}
@@ -220,10 +241,12 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * @param sfile
 	 * @return
 	 */
-	protected FileScope getFileScope(SourceFile sfile) {
+	protected FileScope getFileScope(SourceFile sfile, Scope objScopeCCT) {
 		FileScope file = (FileScope) fileht.get(sfile);
 		if (file == null) {
 			file  = new FileScope(exp, sfile);
+			// the first time a routine in this file has been called
+			file.iCounter = 0;
 			fileht.put(sfile, file);
 			flatViewRootScope.addSubscope(file);
 			file.setParentScope(this.flatViewRootScope);
@@ -241,9 +264,9 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * @param objScopeCCT: the current scope from CCT
 	 * @return FT's procedure scope
 	 */
-	protected ProcedureScope retrieveProcedureScope(SourceFile sfile, Scope procScope, Scope objScopeCCT) {
+	protected FlatFileProcedure retrieveProcedureScope(SourceFile sfile, Scope procScope, Scope objScopeCCT) {
 		// find the file
-		FileScope file = getFileScope(sfile);
+		FileScope file = getFileScope(sfile, objScopeCCT);
 		// get the list of procedures in this file scope
 		Hashtable<String, ProcedureScope> htProcCounter = getFileProcHashtable(file);
 		String procName = procScope.getName();
@@ -265,7 +288,9 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			// must be a recursive routine
 			//objFlatProcScope.iCounter++;	// counting the number call instances of this procedure in this sequence
 		}
-		return objFlatProcScope;
+		FlatFileProcedure objFlat = new FlatFileProcedure(file, objFlatProcScope);
+		return objFlat;
+		//return objFlatProcScope;
 	}
 
 	/**
@@ -289,8 +314,10 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * @param encl_proc
 	 * @return
 	 */
-	protected Scope  augmentFlatView(Scope s, Scope encl_context, ProcedureScope encl_proc) {
-		ProcedureScope flat_encl_proc = retrieveProcedureScope(encl_proc.getSourceFile(), encl_proc, s);
+	protected FlatFileProcedure  augmentFlatView(Scope s, Scope encl_context, ProcedureScope encl_proc) {
+		FlatFileProcedure objFlat = retrieveProcedureScope(encl_proc.getSourceFile(), encl_proc, s);
+		ProcedureScope flat_encl_proc = objFlat.objProc;
+		//ProcedureScope flat_encl_proc = retrieveProcedureScope(encl_proc.getSourceFile(), encl_proc, s);
 		Hashtable ht = getProcContentsHashtable(flat_encl_proc);
 		Scope flat_encl_context;
 		if (encl_context instanceof ProcedureScope && encl_proc == (ProcedureScope) encl_context) {
@@ -307,7 +334,8 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		}
 		else 
 			flat_encl_context = getFlatCounterpart(encl_context, flat_encl_proc, ht);
-		return getFlatCounterpart(s, flat_encl_context, ht);
+		Scope scopeFlat = getFlatCounterpart(s, flat_encl_context, ht);
+		return objFlat;
 	}
 
 	/**
@@ -369,7 +397,10 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			// the flat view; only propagate inclusive costs.
 			// 2008 06 07 - John Mellor-Crummey
 			//---------------------------------------------------------------------------------------------------
-			flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
+			//flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
+			// Laks 2008.10.21 bug fix: do not add "blindly" the descendant. Instead, we just compare if the kid
+			//							is smaller (which is very likely) or not. If the former is the case, then assign it.
+			flat_s.mergeMetric(s, inclusiveOnly);
 			if (flat_s instanceof CallSiteScope) {
 				//---------------------------------------------------------------------------------------------------
 				// for the flat view, we only want to propagate exclusive costs for the call site,
@@ -394,5 +425,15 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 
 	void trace(String msg) {
 		if (isdebug) System.out.println(msg);
+	}
+	
+	private class FlatFileProcedure {
+		public FileScope objFile;
+		public ProcedureScope objProc;
+		
+		public FlatFileProcedure(FileScope file, ProcedureScope proc) {
+			objFile = file;
+			objProc = proc;
+		}
 	}
 }

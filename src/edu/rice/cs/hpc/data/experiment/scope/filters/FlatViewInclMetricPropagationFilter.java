@@ -4,6 +4,7 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 //prevent inclusive metrics from being propagated to the FileScope level in the flat view
@@ -23,6 +24,12 @@ public class FlatViewInclMetricPropagationFilter implements MetricValuePropagati
 		if (target instanceof FileScope || (target instanceof ProcedureScope)) {
 			return ( metrics[src_idx].getMetricType() == MetricType.EXCLUSIVE);
 		}
+		// Laks 2008.10.21: since inclusive cost of file scope has been computed in the 
+		//		flat tree creation, we have to avoid to include it in aggregate value
+		//if(source instanceof FileScope)
+		//	return false; //( metrics[src_idx].getMetricType() == MetricType.EXCLUSIVE);
+		if(target instanceof RootScope)
+			return false;
 		return true;
 	}
 }

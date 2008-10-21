@@ -297,7 +297,10 @@ protected Scope createCallersView(Scope callingContextViewRootScope)
 			this.getMetricCount(), false, filter);
 	callingContextViewRootScope.dfsVisitScopeTree(csv);
 	// compute the aggregate metrics
-	accumulateMetricsFromKids(callersViewRootScope, callersViewRootScope, filter);
+	// bug fix 2008.10.21 : we don't need to recompute the aggregate metrics here. Just copy it from the CCT
+	//	This will solve the problem where there is only nested loops in the programs
+	callersViewRootScope.accumulateMetrics(callingContextViewRootScope, filter, this.getMetricCount());
+	//accumulateMetricsFromKids(callersViewRootScope, callersViewRootScope, filter);
 	return callersViewRootScope;
 }
 
@@ -389,7 +392,8 @@ public void postprocess() {
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
 		// compute the inclusive metrics: accumulate the cost of loops and line scopes
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
-		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
+		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, emptyFilter, this.getMetricCount());
+		//flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
 
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);

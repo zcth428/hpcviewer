@@ -26,6 +26,9 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 
+	private Scope scopeCurrentCall;
+	private boolean isParentScopeCallProcedureScope = false;
+	
 	//----------------------------------------------------
 	// constructor for CallerViewScopeVisitor
 	//----------------------------------------------------
@@ -54,17 +57,17 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 			trace("handling scope " + procedureName);
 
-			CallSiteScope tmp = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
-			tmp.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+			CallSiteScope scopeCall = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
+			scopeCall.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 			// Remove linescope-normalization from CS-scope
 			for (int i=0; i<numberOfPrimaryMetrics; i++) {
 				double lsval = scope.getLineScope().getMetricValue(i).getValue();
 				// LA: This statement means removing the cost of line scope from the call site.
-				tmp.accumulateMetricValue(i, (lsval<0.0) ? 0.0 : (-1*lsval) );
+				scopeCall.accumulateMetricValue(i, (lsval<0.0) ? 0.0 : (-1*lsval) );
 			}
 
 			// if there are no exclusive costs to attribute from this context, we are done here
-			if (!tmp.hasNonzeroMetrics()) return; 
+			if (!scopeCall.hasNonzeroMetrics()) return; 
 
 			// Find (or add) callee in top-level hashtable
 			// TODO: we should use a fully qualified procedure name (including file, module)
@@ -125,7 +128,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 							new CallSiteScope((LineScope) lineScope.duplicate(), 
 									mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE);
-						callerScope.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+						callerScope.accumulateMetrics(scopeCall, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 						callPathList.addLast(callerScope);
 						innerCS = enclosingCS;
 					}
@@ -138,6 +141,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			//-------------------------------------------------------
 			//System.out.println("----"+callee.getName()+"\t"+callee.getMetricValue(0).getValue()+"\t"+callee.getSubscopeCount());
 			mergeCallerPath(callee, callPathList);
+			this.scopeCurrentCall = callee;
+			isParentScopeCallProcedureScope = false;
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
@@ -184,18 +189,29 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			}
 			callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), 
 					numberOfPrimaryMetrics);
+			this.scopeCurrentCall = callee;
+			isParentScopeCallProcedureScope = true;
 		}
 	}
 	
 	public void visit(AlienScope scope, ScopeVisitType vt) { }
-	public void visit(LoopScope scope, ScopeVisitType vt) { }
-	public void visit(StatementRangeScope scope, ScopeVisitType vt) { }
+	public void visit(LoopScope scope, ScopeVisitType vt) { this.accumulateExclusiveProcedureCost(scope, vt);	}
+	public void visit(StatementRangeScope scope, ScopeVisitType vt) { 	}
 	public void visit(LineScope scope, ScopeVisitType vt) { }
 	public void visit(GroupScope scope, ScopeVisitType vt) { }
 
 	//----------------------------------------------------
 	// helper functions  
 	//----------------------------------------------------
+	protected void accumulateExclusiveProcedureCost(Scope scope, ScopeVisitType vt) {
+		/*if(vt == ScopeVisitType.PreVisit) {
+			if(isParentScopeCallProcedureScope && this.scopeCurrentCall != null) {
+				System.out.println(this.scopeCurrentCall.getName()+"\t"+this.scopeCurrentCall.getMetricValue(1).getValue()+
+						"\t"+scope.getName()+"\t"+scope.getMetricValue(1).getValue());
+				this.scopeCurrentCall.accumulateMetrics(scope, this.exclusiveOnly, this.numberOfPrimaryMetrics);
+			}
+		} */
+	}
 
 	protected void mergeCallerPath(Scope callee, LinkedList callerPathList) 
 	{

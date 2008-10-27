@@ -87,12 +87,29 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 						} else if (filter instanceof FlatViewInclMetricPropagationFilter) {
 							// This path is from flat tree construction, we just take into account inclusive loops
 							parent.accumulateMetrics(scope, this.filterInclusive, this.numberOfPrimaryMetrics);
+							this.accumulateAncestor(scope, parent);
+						} else if(filter instanceof ExclusiveOnlyMetricPropagationFilter) {
+							// for exclusive filter, we want to add all the loop cost into the parent if the parent 
+							// is either procedure scope or call site scope
+							// this is the effect of due to not attributing the inner loop cost into outer loop cost
+							this.accumulateAncestor(scope, parent);
 						}
 						return;
 					}
 					parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);
 				}
 			}
+		}
+	}
+	
+	protected void accumulateAncestor(Scope scope, Scope parent) {
+		Scope ancestor = parent.getParentScope();
+		while((ancestor != null ) && !(ancestor instanceof RootScope) &&
+				!(ancestor instanceof ProcedureScope) && !(ancestor instanceof CallSiteScope)) {
+			ancestor = ancestor.getParentScope();
+		}
+		if(ancestor != null && !(ancestor instanceof RootScope)) {
+			ancestor.accumulateMetrics(scope, this.filterExclusive, this.numberOfPrimaryMetrics);
 		}
 	}
 }

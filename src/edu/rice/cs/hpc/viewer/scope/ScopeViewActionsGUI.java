@@ -68,7 +68,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	protected RootScope 		myRootScope;		// the root scope of this view
 
     // ----------------------------------- CONSTANTS
-    private Color clrYELLOW, clrRED, clrNORMAL;
+    private Color clrGreen, clrYELLOW, clrRED, clrNORMAL;
     
     /**
      * Constructor initializing the data
@@ -87,6 +87,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 		this.clrNORMAL = this.shell.getBackground();
 		this.clrYELLOW = new Color(this.shell.getDisplay(),255,255,0);
 		this.clrRED = new Color(this.shell.getDisplay(), 250,128,114);
+		this.clrGreen = new Color(this.shell.getDisplay(), 153,255,153);
 	}
 
 	/**
@@ -191,6 +192,14 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	//======================================================
     // ................ GUI and LAYOUT ....................
     //======================================================
+	
+	/**
+	 * Show a message with information style (with green background)
+	 */
+	public void showInfoMessgae(String sMsg) {
+		this.lblMessage.setBackground(this.clrGreen);
+		this.lblMessage.setText(sMsg);
+	}
 	
 	/**
 	 * Show a warning message (with yellow background).

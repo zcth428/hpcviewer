@@ -9,6 +9,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Event;
 
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.swt.widgets.TreeItem;
@@ -98,6 +100,7 @@ public class ScopeTreeViewer extends TreeViewer {
 				col, objMetric,iPosition); // sorting mechanism
 		if(bSorted)
 			colSorter.setSorter(colSorter, ColumnViewerSorter.ASC);
+
 		return colMetric;
     }
 

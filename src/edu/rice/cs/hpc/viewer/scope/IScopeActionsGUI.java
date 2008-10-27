@@ -67,6 +67,11 @@ public interface IScopeActionsGUI {
 	public void showErrorMessage(String sMsg);
 	
 	/**
+	 * Show the information on the message bar
+	 * @param sMsg
+	 */
+	public void showInfoMessgae(String sMsg);
+	/**
      * Check zoom buttons (zoom out and zoom in)
      * @param node: the current selected node
      */

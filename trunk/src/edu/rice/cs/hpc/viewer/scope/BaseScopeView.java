@@ -11,6 +11,7 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
@@ -25,9 +26,11 @@ import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ITreeViewerListener;
+import org.eclipse.jface.viewers.ViewerCell;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
+import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -40,15 +43,12 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 abstract public class BaseScopeView  extends ViewPart {
 
     private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
-    //private TreeViewerColumn colTree;		// column for the calls tree
     private Experiment 	myExperiment;		// experiment data	
     private RootScope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
-    //private ScopeTreeContentProvider treeContentProvider;
 	private ScopeViewActions objViewActions;	// actions for this scope view
     
-	//protected Composite objCompositeParent;
 	/**
 	 * bar composite for placing toolbar and tool items
 	 */
@@ -267,7 +267,6 @@ abstract public class BaseScopeView  extends ViewPart {
          * add listener when left button mouse is clicked 
          * On MAC it doesn't matter which button, but on Windows, we need to make sure !
          */
-        
         treeViewer.getTree().addListener(SWT.MouseDown, new Listener(){
         	public void handleEvent(Event event) {
         		// this doesn't matter on Mac since the OS only one button
@@ -308,6 +307,21 @@ abstract public class BaseScopeView  extends ViewPart {
     		        	Scope.Node objNode = (Scope.Node) o;
     		        	displayFileEditor(objNode.getScope());
     		        }
+        		} else {
+        			// User click a region other than tree
+        			int iCol = getColumnMouseDown(event);
+        			// we treat any click outside tree column (assuming the tree node column is on 0th index)
+        			// TODO: if the user move the tree node column, then this code DOES NOT work
+        			if(iCol > 0) {
+        		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
+        		        Object o = selection.getFirstElement();
+        		        // we will treat this click if the object is Scope.Node
+        		        if(o instanceof Scope.Node) {
+        		        	Scope scope = ((Scope.Node)o).getScope();
+        		        	MetricValue mValue = scope.getMetricValue(iCol - 1);
+        		        	objViewActions.showInfoMessage(scope.getName()+" ( " + iCol + " ) : "+ mValue.getValue());
+        		        }
+        			}
         		}
         	}
         }); 
@@ -323,7 +337,7 @@ abstract public class BaseScopeView  extends ViewPart {
         });
 
 		// allow other views to listen for selections in this view (site)
-		this.getSite().setSelectionProvider(treeViewer);
+		//this.getSite().setSelectionProvider(treeViewer);
 		
 		/**
 		 * Add Listener for change of selection so that every change will update
@@ -349,6 +363,11 @@ abstract public class BaseScopeView  extends ViewPart {
 		
 	}
     
+    /**
+     * Create the toolbar layout
+     * @param parent
+     * @return
+     */
     protected Composite createToolBarArea(Composite parent) {
     	// make the parent with grid layout
     	Composite toolbarArea = new Composite(parent, SWT.NONE);
@@ -356,7 +375,12 @@ abstract public class BaseScopeView  extends ViewPart {
     	parent.setLayout(grid);
     	return toolbarArea;
     }
-    
+
+    /**
+     * Create and Initialize coolbar, set the layout and return the coolbar 
+     * @param toolbarArea
+     * @return
+     */
     protected CoolBar initToolbar(Composite toolbarArea) {
     	CoolBar coolBar = new CoolBar(toolbarArea, SWT.FLAT);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -376,12 +400,7 @@ abstract public class BaseScopeView  extends ViewPart {
     public void setInput(Experiment ex, RootScope scope) {
     	myExperiment = ex;
     	myRootScope = scope;// try to get the aggregate value
-		// Create the actions (flatten, unflatten,...) and the tollbar on top of the table
-		//if(this.myRootScope.getType() == RootScopeType.Flat)
-		//	this.objViewActions = new FlatScopeViewActions(this.getSite().getShell(), objCompositeParent);
-		//else
 
-		//this.objViewActions.createGUI();
         // tell the action class that we have built the tree
         this.objViewActions.setTreeViewer(treeViewer);
 
@@ -404,8 +423,7 @@ abstract public class BaseScopeView  extends ViewPart {
         }
         // prepare the data for the sorter class for tree
         this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
-        // prepare the experiment for the content provider of the tree column
-        //this.treeContentProvider.setExperiment(myExperiment);
+
         // dirty solution to update titles
         TreeViewerColumn []colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
         {
@@ -418,8 +436,7 @@ abstract public class BaseScopeView  extends ViewPart {
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
         		colMetrics[i] = this.treeViewer.addTreeColumn(myExperiment.getMetric(i), (i==0));
         	}
-            treeViewer.setColumnProperties(titles); // do need this ??
-            //treeViewer.getTree().setSelection(TreeItem);
+            treeViewer.setColumnProperties(titles); // do we need this ??
         }
         
         // Update root scope
@@ -458,13 +475,19 @@ abstract public class BaseScopeView  extends ViewPart {
     public ScopeTreeViewer getTreeViewer() {
     	return this.treeViewer;
     }
-    /*
-    public void showProcessingMessage() {
-    	this.objViewActions.showProcessingMessage();
-    }
-    public void restoreProcessingMessage() {
-    	this.objViewActions.restoreProcessingMessage();
-    }
-    */
 
+    /**
+     * Find which column the user has clicked. Return the index of the column if exist,
+     * 		-1 otherwise 
+     * @param event
+     * @return
+     */
+    protected int getColumnMouseDown(Event event) {
+    	Point p = new Point(event.x, event.y);
+    	ViewerCell cell = this.treeViewer.getCell(p); 
+    	if(cell == null)
+    		return -1;
+    	int iPos = cell.getColumnIndex();
+    	return iPos;
+    }
 }

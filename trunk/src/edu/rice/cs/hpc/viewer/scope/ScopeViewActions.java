@@ -213,6 +213,13 @@ public class ScopeViewActions extends ScopeActions {
          }
      }
 	
+	public void showInfoMessage(String sMsg) {
+		this.objActionsGUI.showInfoMessgae(sMsg);
+		// remove the msg in 5 secs
+		RestoreMessageThread thrRestoreMessage = new RestoreMessageThread();
+		thrRestoreMessage.start();
+	}
+	
 	/**
 	 * Show an error message on the message bar (closed to the toolbar) and
 	 * wait for 5 seconds before removing the message

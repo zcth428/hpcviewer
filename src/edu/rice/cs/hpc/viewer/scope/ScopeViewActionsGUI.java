@@ -24,10 +24,13 @@ import org.eclipse.swt.graphics.Color;
 //import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchWindow;
 //import org.eclipse.jface.action.IStatusLineManager;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
@@ -53,6 +56,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;
+    private IWorkbenchWindow objWindow;
 
     // variable declaration uniquely for coolbar
 	private ToolItem tiZoomin;		// zoom-in button
@@ -77,17 +81,19 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * @param fontMetricColumn
      * @param objActions
      */
-	public ScopeViewActionsGUI(Shell objShell, Composite parent, 
+	public ScopeViewActionsGUI(Shell objShell, IWorkbenchWindow window, Composite parent, 
 			ScopeViewActions objActions) {
 
 		this.objViewActions = objActions;
-		this.shell = objShell;
+		shell = objShell;
+		this.objWindow = window;
+		//Shell shell = window.getShell();
 		//this.statusLine = viewSite.getActionBars().getStatusLineManager();
 		
-		this.clrNORMAL = this.shell.getBackground();
-		this.clrYELLOW = new Color(this.shell.getDisplay(),255,255,0);
-		this.clrRED = new Color(this.shell.getDisplay(), 250,128,114);
-		this.clrGreen = new Color(this.shell.getDisplay(), 153,255,153);
+		this.clrNORMAL = shell.getBackground();
+		this.clrYELLOW = new Color(shell.getDisplay(),255,255,0);
+		this.clrRED = new Color(shell.getDisplay(), 250,128,114);
+		this.clrGreen = new Color(shell.getDisplay(), 153,255,153);
 	}
 
 	/**
@@ -265,28 +271,55 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * Show column properties (hidden, visible ...)
      */
     private void showColumnsProperties() {
-    	ColumnProperties objProp = new ColumnProperties(this.shell, this.colMetrics);
+    	ColumnProperties objProp = new ColumnProperties(this.objWindow.getShell(), this.colMetrics);
     	objProp.open();
     	if(objProp.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.OK_ID) {
         	boolean result[] = objProp.getResult();
-           	for(int i=0;i<result.length;i++) {
-           		// hide this column
-           		if(!result[i]) {
-           			this.hideMetricColumn(i);
-           		} else {
-           			// display the hidden column
-           			// Laks: bug no 131: we need to have special key for storing the column width
-            		Object o = this.colMetrics[i].getColumn().getData(COLUMN_DATA_WIDTH);
-           			int iWidth = 120;
-           			if((o != null) && (o instanceof Integer) ) {
-           				iWidth = ((Integer)o).intValue();
-               			this.colMetrics[i].getColumn().setWidth(iWidth);
-           			}
-           		}
-           	}
+        	boolean isAppliedToAllViews = objProp.getStatusApplication();
+        	// apply to all views ?
+        	if(isAppliedToAllViews) {
+        		// apply the changes for all views
+        		this.showHideColumnsAllViews(result);
+        	} else {
+        		// apply the changes only in this view
+        		this.setColumnsStatus(result);
+        	}
    		}
     }
     
+    /**
+     * Apply the show/hidden columns on all views
+     * @param status
+     */
+    private void showHideColumnsAllViews(boolean []status) {
+		ExperimentData objExpData = ExperimentData.getInstance(this.objWindow);
+		ExperimentManager objExpManager = objExpData.getExperimentManager();
+		BaseScopeView arrScopeViews[] = objExpManager.getExperimentView().getViews();
+		for(int i=0; i<arrScopeViews.length; i++) {
+			arrScopeViews[i].getViewActions().setColumnStatus(status);
+		}
+    }
+    
+    /**
+     * Change the column status (hide/show) in this view only
+     */
+    public void setColumnsStatus(boolean []status) {
+       	for(int i=0;i<status.length;i++) {
+       		// hide this column
+       		if(!status[i]) {
+       			this.hideMetricColumn(i);
+       		} else {
+       			// display the hidden column
+       			// Laks: bug no 131: we need to have special key for storing the column width
+        		Object o = this.colMetrics[i].getColumn().getData(COLUMN_DATA_WIDTH);
+       			int iWidth = 120;
+       			if((o != null) && (o instanceof Integer) ) {
+       				iWidth = ((Integer)o).intValue();
+           			this.colMetrics[i].getColumn().setWidth(iWidth);
+       			}
+       		}
+       	}
+    }
     /**
      * Add a new metric column
      * @param colMetric

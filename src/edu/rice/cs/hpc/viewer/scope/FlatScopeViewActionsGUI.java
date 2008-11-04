@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeViewActions;
@@ -32,9 +33,9 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 * @param parent
 	 * @param objActions
 	 */
-	public FlatScopeViewActionsGUI(Shell objShell, Composite parent,
+	public FlatScopeViewActionsGUI(Shell objShell, IWorkbenchWindow window, Composite parent,
 			ScopeViewActions objActions) {
-		super(objShell, parent, objActions);
+		super(objShell, window, parent, objActions);
 		this.objFlatAction = (FlatScopeViewActions) objActions;
 	}
 

@@ -53,15 +53,15 @@ public class ScopeViewActions extends ScopeActions {
      */
     public ScopeViewActions(Shell shell, IWorkbenchWindow window, Composite parent, CoolBar coolbar) {
     	super(shell, parent, coolbar);
-    	createGUI(parent, coolbar);
     	this.objWindow  = window;
+    	createGUI(parent, coolbar);
     }
 
     /**
      * Each class has its own typical GUI creation
      */
 	protected  Composite createGUI(Composite parent, CoolBar coolbar) {
-    	this.objActionsGUI = new ScopeViewActionsGUI(objShell, parent, this);
+    	this.objActionsGUI = new ScopeViewActionsGUI(this.objShell, this.objWindow, parent, this);
     	this.objActionsGUI.buildGUI(parent, coolbar);
 		return parent;
 	}

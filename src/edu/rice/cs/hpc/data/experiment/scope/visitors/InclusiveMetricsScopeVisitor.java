@@ -20,6 +20,15 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilte
 
 import edu.rice.cs.hpc.data.experiment.metric.*;
 
+/**
+ * Visitor class to accumulate metrics
+ * This class is used to compute inclusive and exclusive cost for :
+ *  - CCT when filter are InclusiveOnlyMetricPropagationFilter and ExclusiveOnlyMetricPropagationFilter
+ *  - FT when filter is FlatViewInclMetricPropagationFilter
+ *  
+ * @author laksonoadhianto
+ *
+ */
 public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 	private int numberOfPrimaryMetrics;
 	MetricValuePropagationFilter filter;
@@ -58,12 +67,9 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 			Scope parent = scope.getParentScope();
 			if (parent != null) {
 				if (scope instanceof CallSiteScope) {
-					if (filter instanceof ExclusiveOnlyMetricPropagationFilter) {
-						parent.accumulateMetrics(((CallSiteScope)scope).getLineScope(), filter, numberOfPrimaryMetrics);
-					} 
 					// in case of FLAT VIEW, we need to specially deal with recursive functions:
 					//	avoid recomputation of the cost
-					else if (filter instanceof FlatViewInclMetricPropagationFilter){
+					if (filter instanceof FlatViewInclMetricPropagationFilter){
 						// Exclusive metrics: Add the cost of the line scope into the parent
 						parent.accumulateMetrics(((CallSiteScope)scope).getLineScope(), 
 								this.filterExclusive, numberOfPrimaryMetrics);
@@ -73,6 +79,7 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 							parent.accumulateMetrics(scope, 
 								this.filterInclusive, numberOfPrimaryMetrics);
 					} else {
+						// inclusive view: add everything
 						parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);						
 					}
 				} else {
@@ -87,29 +94,34 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 						} else if (filter instanceof FlatViewInclMetricPropagationFilter) {
 							// This path is from flat tree construction, we just take into account inclusive loops
 							parent.accumulateMetrics(scope, this.filterInclusive, this.numberOfPrimaryMetrics);
-							this.accumulateAncestor(scope, parent);
-						} else if(filter instanceof ExclusiveOnlyMetricPropagationFilter) {
-							// for exclusive filter, we want to add all the loop cost into the parent if the parent 
-							// is either procedure scope or call site scope
-							// this is the effect of due to not attributing the inner loop cost into outer loop cost
-							this.accumulateAncestor(scope, parent);
+							this.accumulateAncestor(scope, scope);
 						}
 						return;
-					}
+					} 
 					parent.accumulateMetrics(scope, filter, numberOfPrimaryMetrics);
 				}
 			}
 		}
 	}
 	
-	protected void accumulateAncestor(Scope scope, Scope parent) {
+	/**
+	 * Accumulate the exclusive cost of a scope into its procedure scope.
+	 * Specifically designed for Flat View.
+	 * @param scope
+	 * @param parent
+	 */
+	private void accumulateAncestor(Scope scope, Scope parent) {
 		Scope ancestor = parent.getParentScope();
 		while((ancestor != null ) && !(ancestor instanceof RootScope) &&
 				!(ancestor instanceof ProcedureScope) && !(ancestor instanceof CallSiteScope)) {
 			ancestor = ancestor.getParentScope();
 		}
-		if(ancestor != null && !(ancestor instanceof RootScope)) {
-			ancestor.accumulateMetrics(scope, this.filterExclusive, this.numberOfPrimaryMetrics);
+		if(ancestor != null && (ancestor instanceof ProcedureScope) ) {
+			ProcedureScope scopeAncestorProc = (ProcedureScope) ancestor;
+			if (!scopeAncestorProc.isAlien())
+				ancestor.accumulateMetrics(scope, this.filterExclusive, this.numberOfPrimaryMetrics);
+			else
+				System.err.println("IMSV alien detected for "+scope.getName()+"\t: "+scopeAncestorProc.getName());
 		}
 	}
 }

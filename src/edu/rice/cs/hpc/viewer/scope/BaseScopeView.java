@@ -319,7 +319,7 @@ abstract public class BaseScopeView  extends ViewPart {
         		        if(o instanceof Scope.Node) {
         		        	Scope scope = ((Scope.Node)o).getScope();
         		        	MetricValue mValue = scope.getMetricValue(iCol - 1);
-        		        	objViewActions.showInfoMessage(scope.getName()+" ( " + iCol + " ) : "+ mValue.getValue());
+        		        	objViewActions.showInfoMessage(scope.getName()+" : "+ mValue.getValue());
         		        }
         			}
         		}
@@ -482,12 +482,14 @@ abstract public class BaseScopeView  extends ViewPart {
      * @param event
      * @return
      */
+    
     protected int getColumnMouseDown(Event event) {
     	Point p = new Point(event.x, event.y);
+    	// the method getCell is only supported in Eclipse 3.4
     	ViewerCell cell = this.treeViewer.getCell(p); 
     	if(cell == null)
     		return -1;
     	int iPos = cell.getColumnIndex();
     	return iPos;
-    }
+    } 
 }

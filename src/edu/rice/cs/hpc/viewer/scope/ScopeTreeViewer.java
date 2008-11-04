@@ -5,7 +5,10 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.ViewerRow;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
@@ -103,5 +106,23 @@ public class ScopeTreeViewer extends TreeViewer {
 
 		return colMetric;
     }
+	/**
+	 * Returns the viewer cell at the given widget-relative coordinates, or
+	 * <code>null</code> if there is no cell at that location
+	 * 
+	 * @param point
+	 * 		the widget-relative coordinates
+	 * @return the cell or <code>null</code> if no cell is found at the given
+	 * 	point
+	 * 
+	 * @since 3.4
+	 */
+	public ViewerCell getCell(Point point) {
+		ViewerRow row = getViewerRow(point);
+		if (row != null) {
+			return row.getCell(point);
+		}
 
+		return null;
+	}
 }

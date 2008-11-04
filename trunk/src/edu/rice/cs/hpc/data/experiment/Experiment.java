@@ -339,6 +339,11 @@ protected void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter fil
 	scope.dfsVisitScopeTree(isv);
 }
 
+private void computeExclusiveMetrics(Scope scope) {
+	ExclusiveCallingContextVisitor visitor = new ExclusiveCallingContextVisitor(this.getMetrics());
+	scope.dfsVisitScopeTree(visitor);
+}
+
 protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropagationFilter filter) {
 	for (int i = 0; i< this.getMetricCount(); i++) {
 		Metric metric = (Metric)this.getMetric(i);
@@ -377,8 +382,9 @@ public void postprocess() {
 		normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 
 		addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
-		addInclusiveMetrics(callingContextViewRootScope, 
-		  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
+		this.computeExclusiveMetrics(callingContextViewRootScope);
+		//addInclusiveMetrics(callingContextViewRootScope, 
+		//  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
 

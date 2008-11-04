@@ -26,8 +26,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 
-	private Scope scopeCurrentCall;
-	private boolean isParentScopeCallProcedureScope = false;
+	//private Scope scopeCurrentCall;
+	//private boolean isParentScopeCallProcedureScope = false;
 	
 	//----------------------------------------------------
 	// constructor for CallerViewScopeVisitor
@@ -74,23 +74,20 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
 			if (callee == null) {
 				callee  = (ProcedureScope)mycallee.duplicate();
+				callee.iCounter = 0;
 				//calleeht.put(objCode, callee);
 				callersViewRootScope.addSubscope(callee);
 				callee.setParentScope(this.callersViewRootScope);
 				exp.getScopeList().addScope(callee);
  				trace("added top level entry in bottom up tree");
-				// we assume that the first entry has the highest cost ?
-				callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
-				callee.iCounter++;
 			} else {
-				// add the cost into the procedure "root" if necessary
-				if(callee.iCounter == 0) {
-					callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
-				} else {
 					// debugging purpose
 					// to be here, it must be a recursive routine
-				}
-				callee.iCounter++;
+			}
+			callee.iCounter++;
+			if(callee.iCounter == 1) {
+				// add the cost into the procedure "root" if necessary
+				callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
 			}
 			callee.accumulateMetrics(scope, exclusiveOnly, numberOfPrimaryMetrics);
 			calleeht.put(objCode, callee);
@@ -139,10 +136,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			//System.out.println("----"+callee.getName()+"\t"+callee.getMetricValue(0).getValue()+"\t"+callee.getSubscopeCount());
 			mergeCallerPath(callee, callPathList);
-			this.scopeCurrentCall = callee;
-			isParentScopeCallProcedureScope = false;
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
@@ -154,6 +148,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				// Here we make a temporary fix by not decrementing to negative value.
 				if(callee.iCounter>0)
 					callee.iCounter--;
+				else
+					System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
 			}
 		}
 	}
@@ -165,53 +161,105 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	
 	public void visit(ProcedureScope scope, ScopeVisitType vt) { 
 		ProcedureScope mycallee  = scope;
-		if (vt == ScopeVisitType.PreVisit && !mycallee.isAlien()) {
-			String procedureName = mycallee.getName();
-			trace("handling scope " + procedureName);
+		if (vt == ScopeVisitType.PreVisit) {
+			if(!mycallee.isAlien()) {
+				String procedureName = mycallee.getName();
+				trace("handling scope " + procedureName);
 
-			ProcedureScope tmp = (ProcedureScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
-			tmp.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+				ProcedureScope tmp = (ProcedureScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
+				tmp.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 
-			// if there are no exclusive costs to attribute from this context, we are done here
-			if (!tmp.hasNonzeroMetrics()) return; 
+				// if there are no exclusive costs to attribute from this context, we are done here
+				if (!tmp.hasNonzeroMetrics()) return; 
 
-			// Find (or add) callee in top-level hashtable
-			// TODO: we should use a fully qualified procedure name (including file, module)
-			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
-			if (callee == null) {
-				callee  = (ProcedureScope)mycallee.duplicate();
-				callee.iCounter++;
-				calleeht.put(new Integer(callee.hashCode()), callee);
-				callersViewRootScope.addSubscope(callee);
-				callee.setParentScope(this.callersViewRootScope);
-				exp.getScopeList().addScope(callee);
-				trace("added top level entry in bottom up tree");
+				// Find (or add) callee in top-level hashtable
+				// TODO: we should use a fully qualified procedure name (including file, module)
+				ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
+				if (callee == null) {
+					callee  = (ProcedureScope)mycallee.duplicate();
+					callee.iCounter = 1;
+					calleeht.put(new Integer(callee.hashCode()), callee);
+					callersViewRootScope.addSubscope(callee);
+					callee.setParentScope(this.callersViewRootScope);
+					exp.getScopeList().addScope(callee);
+					trace("added top level entry in bottom up tree");
+				}
+				callee.accumulateMetrics(tmp, this.inclusiveOnly, 
+						numberOfPrimaryMetrics);
+			} else {
+				
 			}
-			callee.accumulateMetrics(tmp, new EmptyMetricValuePropagationFilter(), 
-					numberOfPrimaryMetrics);
-			this.scopeCurrentCall = callee;
-			isParentScopeCallProcedureScope = true;
+		} else if (vt == ScopeVisitType.PostVisit){
+			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
+			if  (callee != null) {
+				callee.iCounter--;
+			}
 		}
+	
 	}
 	
 	public void visit(AlienScope scope, ScopeVisitType vt) { }
-	public void visit(LoopScope scope, ScopeVisitType vt) { this.accumulateExclusiveProcedureCost(scope, vt);	}
+	public void visit(LoopScope scope, ScopeVisitType vt) { 
+		//this.accumulateExclusiveProcedureCost(scope, vt);	
+		}
 	public void visit(StatementRangeScope scope, ScopeVisitType vt) { 	}
-	public void visit(LineScope scope, ScopeVisitType vt) { }
+	public void visit(LineScope scope, ScopeVisitType vt) { 
+		if(vt == ScopeVisitType.PreVisit) {
+			if(scope.getParentScope() instanceof LoopScope) {
+				
+			} else {
+			//	this.accumulateExclusiveProcedureCost(scope, vt);
+			}
+		}
+	}
 	public void visit(GroupScope scope, ScopeVisitType vt) { }
 
 	//----------------------------------------------------
 	// helper functions  
 	//----------------------------------------------------
-	protected void accumulateExclusiveProcedureCost(Scope scope, ScopeVisitType vt) {
-		/*if(vt == ScopeVisitType.PreVisit) {
-			if(isParentScopeCallProcedureScope && this.scopeCurrentCall != null) {
-				System.out.println(this.scopeCurrentCall.getName()+"\t"+this.scopeCurrentCall.getMetricValue(1).getValue()+
-						"\t"+scope.getName()+"\t"+scope.getMetricValue(1).getValue());
-				this.scopeCurrentCall.accumulateMetrics(scope, this.exclusiveOnly, this.numberOfPrimaryMetrics);
+	
+	/**
+	 * Method to accumulate the cost of a loop and attribute it to the enclosed procedure scope
+	 * Rationale:
+	 *  - A procedure scope in CT can be call sites in CCT. However, the exclusive cost of call sites in CCT 
+	 *  	does not include the exclusive cost of its loops/statements 
+	 *  - The exclusive cost of a loop (in CCT) is uniquely the cost of the loop without taking into account
+	 *  	its inner loops.
+	 *  Therefore, it is imperative for all loops to attribute its cost to the procedure scope in CT
+	 *  
+	 */
+	/*
+	private void accumulateExclusiveProcedureCost(Scope scope, ScopeVisitType vt) {
+		if(vt == ScopeVisitType.PreVisit) {
+			// get the procedure or callsite scope
+			Scope ancestor = scope.getParentScope();
+			while( (ancestor != null) && !(ancestor instanceof ProcedureScope && !((ProcedureScope)ancestor).isAlien()) && 
+					!(ancestor instanceof RootScope) && !(ancestor instanceof CallSiteScope) ) {
+				ancestor = ancestor.getParentScope();
 			}
-		} */
-	}
+			// find the corresponding CV's scope of the enclosed procedure
+			if ( (ancestor != null) && !(ancestor instanceof RootScope) ) {
+				ProcedureScope scopeProc = null;
+				if(ancestor instanceof ProcedureScope)
+					scopeProc = (ProcedureScope) ancestor;
+				else if(ancestor instanceof CallSiteScope) {
+					CallSiteScope callee = (CallSiteScope) ancestor;
+					scopeProc = callee.getProcedureScope();
+				} else
+					// should be never happens to be in this path
+					return;
+				if( (scopeProc != null) && (!scopeProc.isAlien()) ) {
+					Integer objCode = new Integer(scopeProc.hashCode());
+					ProcedureScope scopeEnclosedProc = (ProcedureScope) calleeht.get(objCode);
+					// once we have the enclosed procedure, accumulate the exclusive cost of this loop
+					if(scopeEnclosedProc != null) {
+						//if(scopeEnclosedProc.iCounter == 1)
+							scopeEnclosedProc.accumulateMetrics(scope, this.exclusiveOnly, this.numberOfPrimaryMetrics);
+					} 
+				}
+			}
+		} 
+	} */
 
 	protected void mergeCallerPath(Scope callee, LinkedList callerPathList) 
 	{

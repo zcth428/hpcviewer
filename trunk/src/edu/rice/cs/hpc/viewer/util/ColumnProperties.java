@@ -6,6 +6,9 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.SWT;
@@ -20,8 +23,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
 
 import java.util.ArrayList;
 
@@ -30,6 +31,8 @@ public class ColumnProperties extends TitleAreaDialog {
 	private CheckboxTableViewer objCheckBoxTable ;
 	private TreeViewerColumn []objColumns;
 	private boolean []results;
+	private Button btnApplyToAllViews;
+	private boolean isAppliedToAllViews = false;
 	
 	//--------------------------------------------------
 	/**
@@ -142,7 +145,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	    
 	    // prepare the buttons: check and uncheck
 	    GridLayout gridButtons = new GridLayout();
-	    gridButtons.numColumns=2;
+	    gridButtons.numColumns=3;
 	    Composite groupButtons = new Composite(composite, SWT.BORDER);
 	    groupButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	    groupButtons.setLayout(gridButtons);
@@ -165,6 +168,10 @@ public class ColumnProperties extends TitleAreaDialog {
 	    		objCheckBoxTable.setAllChecked(false);
 	    	}
 	    });
+	    
+	    btnApplyToAllViews = new Button(groupButtons, SWT.CHECK);
+	    btnApplyToAllViews.setText("Apply to all views");
+	    btnApplyToAllViews.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 	    
 	    // list of columns (we use table for practical purpose)
 	    Table table = new Table(composite, SWT.CHECK | SWT.BORDER);
@@ -241,6 +248,7 @@ public class ColumnProperties extends TitleAreaDialog {
 				  }
 			  }
 		  }
+		  this.isAppliedToAllViews = this.btnApplyToAllViews.getSelection();
 		  super.okPressed();
 	  }
 	  
@@ -252,6 +260,13 @@ public class ColumnProperties extends TitleAreaDialog {
 		  return this.results;
 	  }
 
+	  /**
+	   * Return the status if the modification is to apply to all views or not
+	   * @return
+	   */
+	  public boolean getStatusApplication() {
+		  return this.isAppliedToAllViews;
+	  }
 		//--------------------------------------------------
 	  /**
 	   * Example for the test unit

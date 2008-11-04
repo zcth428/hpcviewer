@@ -36,7 +36,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * @return
 	 */
 	protected Composite createGUI(Composite parent, CoolBar coolbar) {
-		objFlatActionsGUI = new FlatScopeViewActionsGUI(this.objShell, parent, this);
+		objFlatActionsGUI = new FlatScopeViewActionsGUI(this.objShell, this.objWindow, parent, this);
 		this.objActionsGUI = this.objFlatActionsGUI;
 		this.objFlatActionsGUI.buildGUI(parent, coolbar);
 		return parent;

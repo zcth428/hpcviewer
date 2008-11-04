@@ -35,6 +35,9 @@ public abstract class  ScopeActions {
     	this.objShell = shell;
 	}
 	
+	public void setColumnStatus(boolean []status) {
+		this.objActionsGUI.setColumnsStatus(status);
+	}
 	/**
 	 * Create your own specific GUI
 	 * @param parent

@@ -176,10 +176,10 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 					// we have already computed this scope, so let's decrement the counter
 					scopeProc.iCounter--;
 					if(scopeProc.iCounter<0) {
-						System.out.println("\tError:"+scopeProc.getName()+"\t"+scopeProc.iCounter);
+						trace("\tError:"+scopeProc.getName()+"\t"+scopeProc.iCounter);
 					}
 				} catch (java.util.EmptyStackException e) {
-					System.err.println("Empty stack for procedure ! Scope = "+scope.getName()+"\tparent="+scope.getParentScope().getName());
+					trace("Empty stack for procedure ! Scope = "+scope.getName()+"\tparent="+scope.getParentScope().getName());
 				}
 			}
 			try {
@@ -188,10 +188,10 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 					if(scopeFile.iCounter>0)
 						scopeFile.iCounter--;
 					else
-						System.err.println("ERROR: scopeFile counter is negative "+scopeFile.getName()+"\tscope:"+scope.getName());
+						trace("ERROR: scopeFile counter is negative "+scopeFile.getName()+"\tscope:"+scope.getName());
 				}
 			} catch (java.util.EmptyStackException e) {
-				System.err.println("Empty stack for file ! Scope = "+scope.getName());
+				trace("Empty stack for file ! Scope = "+scope.getName());
 			}
 		}
 	}
@@ -266,7 +266,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		// find the file
 		FileScope file = null;
 		if(sfile == null) {
-			System.out.println("--- ERROR: "+procScope.getName()+" file is null");
+			trace("--- ERROR: "+procScope.getName()+" file is null");
 			return null;
 		} else {
 			file = getFileScope(sfile, procScope);
@@ -289,10 +289,8 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			htProcCounter.put(procName, objFlatProcScope);		// save it into our database
 		} else {
 			// must be a recursive routine
-			//objFlatProcScope.iCounter++;	// counting the number call instances of this procedure in this sequence
 		}
 		FlatFileProcedure objFlat = new FlatFileProcedure(file, objFlatProcScope);
-		//return objFlatProcScope;
 		return objFlat;
 	}
 
@@ -310,6 +308,11 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		return lsht;
 	}
 
+	/**
+	 * Assign the inclusive cost of a CCT scope into FT's procedure scope
+	 * @param flat_encl_proc
+	 * @param scopeCCT
+	 */
 	private void attributeCostToFlatProc(ProcedureScope flat_encl_proc, Scope scopeCCT) {
 		flat_encl_proc.iCounter++;
 		// In case of recursive procedure, we don't accumulate the cost of its descendants
@@ -321,18 +324,16 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		this.stackProcScope.push(flat_encl_proc);
 	}
 	
+	/**
+	 * Attribute the inclusive cost of a CCT scope into FT's file scope
+	 * @param objFile
+	 * @param scopeCCT
+	 */
 	private void attributeCostToFlatFile(FileScope objFile, Scope scopeCCT) {
 		if(objFile != null) {
 			objFile.iCounter++;
 			if(objFile.iCounter == 1) {
-				//objFile.mergeMetric(scopeCCT, this.inclusiveOnly);
 				objFile.accumulateMetrics(scopeCCT, this.inclusiveOnly, this.numberOfPrimaryMetrics);
-			} else {
-				// special treatment for exclusive cost: add everything except when the parent is a loop and the current is not !
-				// Rationale: the cost of a loop will include everything except inner loops 
-				if( !(scopeCCT instanceof LoopScope) && (scopeCCT.getParentScope() instanceof LoopScope) ) {
-				} else {
-				}
 			}
 			this.stackFileScope.push(objFile);
 		}
@@ -374,17 +375,17 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			FlatFileProcedure objFlatProc = retrieveProcedureScope(scopeProc.getSourceFile(), scopeProc, s);
 			// attribute the cost of this call site into procedure level (inclusively)
 			this.attributeCostToFlatProc(objFlatProc.objProc, s);
+			// attribute the cost to flat scope 
 			this.attributeCostToFlatFile(objFlatProc.objFile, s);
-			if (s.getName().compareTo(scopeProc.getName()) != 0) {
-				System.err.println("ERROR FVSV: callsite diffs to proc "+s.getName()+" - "+scopeProc.getName());
-			}
 		} else {
-			FileScope scopeFile = (FileScope) this.fileht.get(s.getSourceFile()); //this.getFileScope(s.getSourceFile(), s);
+			FileScope scopeFile = (FileScope) this.fileht.get(s.getSourceFile()); 
 			if(scopeFile == null) {
+				// there is no file scope for this procedure (it may be inlined ?)
+				// so we put an empty object into the stack
 				this.stackFileScope.push(this.EMPTY_FILE_SCOPE);
 				return null;
 			}
-				
+			// add the cost of this scope into the file scope
 			this.attributeCostToFlatFile(scopeFile, s);
 		}
 		// attribute the cost of this scope into its file
@@ -470,26 +471,10 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			}
 		} else {
 			flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
-			/*if( (s instanceof LoopScope) || 
-					( (s instanceof LineScope) && !(s.getParentScope() instanceof LoopScope)) ) {
-				flat_parent.accumulateMetrics(s, this.exclusiveOnly, this.numberOfPrimaryMetrics);
-			} */
 		}
 		return flat_s;
 	}
 	
-	private void accumulateExclusiveProcedure(Scope scope, Scope scopeProc) {
-		// get the procedure or callsite scope
-		Scope ancestor = scope.getParentScope();
-		while( (ancestor != null) && !(ancestor instanceof ProcedureScope) && 
-				!(ancestor instanceof RootScope) && !(ancestor instanceof CallSiteScope) ) {
-			ancestor = ancestor.getParentScope();
-		}
-		// find the corresponding CV's scope of the enclosed procedure
-		if ( (ancestor != null) && !(ancestor instanceof RootScope) )  {
-			
-		}
-	}
 	//----------------------------------------------------
 	// debugging support 
 	//----------------------------------------------------

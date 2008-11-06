@@ -117,12 +117,13 @@ public class ScopeTreeViewer extends TreeViewer {
 	 * 
 	 * @since 3.4
 	 */
-	public ViewerCell getCell(Point point) {
+	/*
+    public ViewerCell getCell(Point point) {
 		ViewerRow row = getViewerRow(point);
 		if (row != null) {
 			return row.getCell(point);
 		}
 
 		return null;
-	}
+	}*/
 }

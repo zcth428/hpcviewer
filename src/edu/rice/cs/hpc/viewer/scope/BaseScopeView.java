@@ -309,7 +309,7 @@ abstract public class BaseScopeView  extends ViewPart {
     		        }
         		} else {
         			// User click a region other than tree
-        			int iCol = getColumnMouseDown(event);
+        			/*int iCol = getColumnMouseDown(event);
         			// we treat any click outside tree column (assuming the tree node column is on 0th index)
         			// TODO: if the user move the tree node column, then this code DOES NOT work
         			if(iCol > 0) {
@@ -319,9 +319,9 @@ abstract public class BaseScopeView  extends ViewPart {
         		        if(o instanceof Scope.Node) {
         		        	Scope scope = ((Scope.Node)o).getScope();
         		        	MetricValue mValue = scope.getMetricValue(iCol - 1);
-        		        	objViewActions.showInfoMessage(scope.getName()+" : "+ mValue.getValue());
+        		        	objViewActions.showInfoMessage(scope.getName()+" ("+iCol+") : "+ mValue.getValue());
         		        }
-        			}
+        			}*/
         		}
         	}
         }); 
@@ -482,7 +482,7 @@ abstract public class BaseScopeView  extends ViewPart {
      * @param event
      * @return
      */
-    
+    /*
     protected int getColumnMouseDown(Event event) {
     	Point p = new Point(event.x, event.y);
     	// the method getCell is only supported in Eclipse 3.4
@@ -491,5 +491,5 @@ abstract public class BaseScopeView  extends ViewPart {
     		return -1;
     	int iPos = cell.getColumnIndex();
     	return iPos;
-    } 
+    } */
 }

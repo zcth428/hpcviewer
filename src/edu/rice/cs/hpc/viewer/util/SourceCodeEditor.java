@@ -1,6 +1,5 @@
-/**
- * 
- */
+
+
 package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.ui.editors.text.TextEditor;

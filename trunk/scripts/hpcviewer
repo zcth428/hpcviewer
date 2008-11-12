@@ -6,4 +6,4 @@ workspacedir=${HOME}/.hpctoolkit/hpcviewer
 # output message to user
 echo "Running ${bdir}/hpcviewer -data ${workspacedir}"
 # run the actual hpcviewer
-${bdir}/../hpcviewer -data ${workspacedir} 
+${bdir}/../libexec/hpcviewer/hpcviewer -data ${workspacedir} 

@@ -120,8 +120,8 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 			ProcedureScope scopeAncestorProc = (ProcedureScope) ancestor;
 			if (!scopeAncestorProc.isAlien())
 				ancestor.accumulateMetrics(scope, this.filterExclusive, this.numberOfPrimaryMetrics);
-			else
-				System.err.println("IMSV alien detected for "+scope.getName()+"\t: "+scopeAncestorProc.getName());
+			//else
+			//	System.err.println("IMSV alien detected for "+scope.getName()+"\t: "+scopeAncestorProc.getName());
 		}
 	}
 }

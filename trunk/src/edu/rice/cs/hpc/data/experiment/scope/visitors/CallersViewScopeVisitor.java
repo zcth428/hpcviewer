@@ -103,14 +103,27 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			CallSiteScope innerCS = scope;
 			LinkedList callPathList = new LinkedList();
 			Scope next = scope.getParentScope();
-			while (next instanceof CallSiteScope || next instanceof LoopScope ||
-					next instanceof ProcedureScope)
+			while ( (next != null) && (next instanceof CallSiteScope || next instanceof LoopScope ||
+					next instanceof ProcedureScope) )
 			{
 				if (!(next instanceof LoopScope) && innerCS != null) {
 					CallSiteScope enclosingCS = null;
 					ProcedureScope mycaller = null;
 					if (next instanceof ProcedureScope) {
 						mycaller = (ProcedureScope) next.duplicate();
+						ProcedureScope scopeProc = (ProcedureScope) next;
+						// Laks 2008.11.11: bug fix for adding alien proc into call chain
+						// ----
+						// for alien procedure (such as inlined proc) we need to add it into the call chain.
+						// however, since there is way to convert from Procedure scope into CallSite scope,
+						// 	we are forced to create a new dummy instance of CallSiteScope based on this Procedure 
+						if(scopeProc.isAlien()) {
+							// FIXME two dummies instance creation. we hope this doesn't make significant 
+							//			performance degradation !
+							LineScope scopeLine = new LineScope(scopeProc.getExperiment(), scopeProc.getSourceFile(), 
+									scopeProc.getFirstLineNumber());
+							enclosingCS = new CallSiteScope(scopeLine, scopeProc, CallSiteScopeType.CALL_FROM_PROCEDURE);
+						}
 					}
 					else if (next instanceof CallSiteScope) {
 						enclosingCS = (CallSiteScope) next;
@@ -140,7 +153,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
 			//		a bug or a very strange call path
 			if(callee != null) {
-				// BUG ! For unknown reason, it is possible to have multiple post-visit for the same callee hash code !
+				// FIXME BUG ! For unknown reason, it is possible to have multiple post-visit for the same callee hash code !
 				// It seems the hashcode is not suitable in our case. 
 				// Here we make a temporary fix by not decrementing to negative value.
 				if(callee.iCounter>0)

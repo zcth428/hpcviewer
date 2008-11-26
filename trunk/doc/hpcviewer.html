@@ -14,7 +14,7 @@ panes.
 </p>
 
 <center>
-<img src="flatview-BT-legend.png" />
+<img src="images/hpcviewer-legend.tiff" alt="hpcviewer flatview"/>
 <br/>
 Figure 1: A snapshot of hpcviewer
 </center>
@@ -105,10 +105,9 @@ procedure activations), loops, and source lines.
 </ul>
 <p>
 The header above the navigation pane contains some controls for the 
-navigation and metric view. In Figure 1, they are labeled as "navigation/metric control
-." 
+navigation and metric view. In Figure 1, they are labeled as "navigation/metric control". 
 <ul>
- <li><b>Flatten/unflatten</b>: These buttons are only available for flat view. They enable one to flatten and unflatten 
+ <li><img src="images/Flatten.gif"/> <b>Flatten / <img src="images/Unflatten.gif"/> unflatten</b>: These buttons are only available for flat view. They enable one to flatten and unflatten 
 the navigation hierarchy. Clicking on the flatten button (the icon that 
 shows a tree node with a slash through it) will replace each top-level 
 scope shown with its children. If a scope has no children (i.e., it is a 
@@ -120,15 +119,16 @@ can be ranked and compared to one another. The inverse of the flatten
 operation is the unflatten operation, which causes an elided node in 
 the tree to be made visible once again. 
 </li>
- <li><b>Zoom-in/out</b>: Depressing the up arrow button will zoom in to show only information
+ <li><b><img src="images/Zoom in large.gif"/> Zoom-in/ <img src="images/Zoom out large.gif"/> Zoom-out</b>: Depressing the up arrow button will zoom in to show only information
 for the selected line and its descendants. One can zoom out 
 (reversing a prior zoom operation) by depressing the down arrow button</li>
- <li><b>Hot call path</b>: This accounts for cost of performance hot-spots, and is used to show the chain of responsibility for costs.
+
+ <li><img src="images/Flatten.gif"/> <b>Hot call path</b>: This accounts for cost of performance hot-spots, and is used to show the chain of responsibility for costs.
  The "hot spot" is computed by comparing parent and child values, and show the chain where the difference is greater that a threshold 
  (by default is <code>50%</code>). It is also possible to change the threshold value by clicking the menu "File-Preference".</li>
  
- <li><b>Derived metric</b>: Creating a new metric based on mathematics expression formula.</li>
- <li><b>Show/hide metrics</b>: Showing and hiding metric columns. A dialog box will appear, and user can select which columns to show or hide.</li>
+ <li><img src="images/FnMetric.gif"/> <b>Derived metric</b>: Creating a new metric based on mathematics expression formula.</li>
+ <li><img src="images/flameIcon.gif"/> <b>Show/hide metrics</b>: Showing and hiding metric columns. A dialog box will appear, and user can select which columns to show or hide.</li>
 </ul>
 </p>
 </li>

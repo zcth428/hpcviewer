@@ -69,7 +69,7 @@ abstract public class BaseScopeView  extends ViewPart {
     	try {
     		this.editorSourceCode.displayFileEditor(scope);
     	} catch (FileNotFoundException e) {
-    		this.objViewActions.showErrorMessage(e.getMessage());
+    		this.objViewActions.showErrorMessage("No source available for binary file "+e.getMessage());
     	}
     }
 

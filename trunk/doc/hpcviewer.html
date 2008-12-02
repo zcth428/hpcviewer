@@ -14,7 +14,7 @@ panes.
 </p>
 
 <center>
-<img src="images/hpcviewer-legend.tiff" alt="hpcviewer flatview"/>
+<img src="images/hpcviewer-legend.png" alt="hpcviewer flatview"/>
 <br/>
 Figure 1: A snapshot of hpcviewer
 </center>
@@ -31,21 +31,23 @@ one can explore performance measurements of an application in a top-
 down fashion to understand the costs (We use the term cost rather than simply time since hpcviewer can present a multiplicity 
 of measured (e.g. cycles, or cache misses) or derived metrics (e.g. cache miss rates or 
 bandwidth consumed) that that are other indicators of execution cost.) incurred by calls to a procedure 
-in a particular calling context. A calling context for a procedure f consists of the stack of procedure frames active when the call was made to 
-<code>f</code>. Using this view, one can readily see how much of the application's 
-cost was incurred by <code>f</code> when called from a particular calling context. If 
+in a particular calling context. <br/>
+A calling context for a procedure <b><code>f</code></b> consists of the stack of procedure frames active when the call was made to 
+<b><code>f</code></b>. Using this view, one can readily see how much of the application's 
+cost was incurred by <b><code>f</code></b> when called from a particular calling context. If 
 finer detail is of interest, one can explore how the costs incurred by a call 
-to <code>f</code> in a particular context are divided between <code>f</code> itself and the procedures
- it calls. HPCToolkit's call path profiler csprof and the hpcviewer 
+to <b><code>f</code></b> in a particular context are divided between <b><code>f</code></b> itself and the procedures
+ it calls. HPCToolkit's call path profiler <i>hpcprof</i> and the hpcviewer 
 user interface distinguish calling context precisely by individual call 
-sites; this means that if a procedure g contains calls to procedure <code>f</code> in 
+sites; this means that if a procedure <b><code>g</code></b> contains calls to procedure <b><code>f</code></b> in 
 different places, these represent separate calling contexts.
 </li> 
 <li> <b>Callers view</b>. This bottom up view enables one to look upward along 
 call paths. This view is particularly useful for understanding the performance of software components or procedures that are used in more 
 than one context. For instance, a message-passing program may call 
-MPI Wait in many different calling contexts. The cost of any particular call will depend upon the structure of the parallelization in which 
- the call is made. Serialization or load imbalance may cause long waits 
+<b><code>MPI_Wait</code></b> in many different calling contexts. The cost of any particular call will depend upon the structure of the parallelization in which 
+ the call is made. 
+ Serialization or load imbalance may cause long waits 
 in some calling contexts while other parts of the program may have 
 short waits because computation is balanced and communication is 
 overlapped with computation. 
@@ -123,19 +125,19 @@ the tree to be made visible once again.
 for the selected line and its descendants. One can zoom out 
 (reversing a prior zoom operation) by depressing the down arrow button</li>
 
- <li><img src="images/Flatten.gif"/> <b>Hot call path</b>: This accounts for cost of performance hot-spots, and is used to show the chain of responsibility for costs.
+ <li><img src="images/flameIcon.gif"/> <b>Hot call path</b>: This accounts for cost of performance hot-spots, and is used to show the chain of responsibility for costs.
  The "hot spot" is computed by comparing parent and child values, and show the chain where the difference is greater that a threshold 
  (by default is <code>50%</code>). It is also possible to change the threshold value by clicking the menu "File-Preference".</li>
  
  <li><img src="images/FnMetric.gif"/> <b>Derived metric</b>: Creating a new metric based on mathematics expression formula.</li>
- <li><img src="images/flameIcon.gif"/> <b>Show/hide metrics</b>: Showing and hiding metric columns. A dialog box will appear, and user can select which columns to show or hide.</li>
+ <li><img src="images/checkColumns.gif"/> <b>Show/hide metrics</b>: Showing and hiding metric columns. A dialog box will appear, and user can select which columns to show or hide.</li>
 </ul>
 </p>
 </li>
 
 <li> <b>Metric pane</b>. The metric pane displays one or more performance metrics associated with entities to the left in the navigation pane. Entities 
 in the tree view of the navigation pane are sorted at each level of the 
-hierarchy by the metric in the selected column. When hpcviewer is 
+hierarchy by the metric in the selected column. When <i>hpcviewer</i> is 
 launched, the leftmost metric column is the default selection and the 
 navigation pane is sorted according to the values of that metric in de- 
 scending order. One can change the selected metric by clicking on a 
@@ -153,5 +155,109 @@ metric and navigation panes is synchronized.
 </p>
 </li>
 </ul>
+
+<h2>Understanding Metrics</h2>
+<p>
+The data gathered by profiler attributes the cost for each scope (a file, procedure, loop, or inlined function) exclusively. 
+<i>hpcviewer</i> presents inclusive values for each cost metric associated with a program scope as well. 
+Exclusive costs are those incurred by scope itself; whereas inclusive costs for a scope include costs incurred by 
+any calls it makes. 
+</p>
+
+<h3>How metrics are computed ?</h3>
+<p>Call path profile measurements collected by <i>hpcrun</i> correspond directly to the calling context view. <i>hpcviewer</i> 
+derives all other views from exclusive metric costs in the calling context view. For the caller view, <i>hpcviewer</i> collects the 
+cost of all samples in each function and attribute that to a top-level entry in the caller view. Under each top-level 
+function, <i>hpcviewer</i> can look up the call chain at all of the context in which the function is called. For each function, <i>hpcviewer</i> 
+apportions its costs among each of the calling contexts in which they were incurred. <i>hpcviewer</i> computes the flat view by 
+traversing the calling context tree and attributing all costs for a scope to the scope within its static source code 
+structure. The flat view presents a hierarchy of nested scopes from the load module, file, routine, loops, inlined 
+code and statements. 
+</p>
+
+<h3>Example</h3>
+<center>
+<table>
+<thead><tr><th>Figure 2a: file1.c</th><th>Figure 2b: file2.c</th></tr></thead>
+<tbody>
+<tr>
+<td><pre>f () { 
+ 	g (); 
+} 
+// m is the main routine 
+m () { 
+ 	f (); 
+ 	g (); 
+} 
+</pre></td>
+<td><pre>// g can be a recursive function
+g () { 
+	if ( . . ) g (); 
+	if ( . . ) h (); 
+} 
+h () { 
+} 
+</pre></td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead><tr><th>Figure 3: Calling context view</th></tr></thead>
+<tbody>
+<tr><td><img src="images/metrics-cct.png"></td></tr>
+</tbody>
+</table>
+
+<table>
+<thead><tr><th>Figure 4: Caller view</th></tr></thead>
+<tbody>
+<tr><td><img src="images/metrics-ct.png"></td></tr>
+</tbody>
+</table>
+
+<table>
+<thead><tr><th>Figure 5: Flat view</th></tr></thead>
+<tbody>
+<tr><td><img src="images/metrics-ft.png"></td></tr>
+</tbody>
+</table>
+
+</center>
+<p>
+Figure 2 (a and b) shows an example of a recursive program separated into two files: <code>file1.c</code> and <code>file2.c</code> .
+Routine <code>g</code> (Figure 2b) can behave as a recursive function depending on the value of the condition branch (Line 3-4).
+Figure 3 shows an example of the call chain execution of the program annotated with both inclusive and exclusive costs. Computation of inclusive costs from exclusive costs in the calling context view involves simply summing up all of the costs in the subtree below.
+</p>
+<p>
+In this figure, we can see that on the right path of the routine <code>m</code>, routine <code>g</code>
+(instantiated in the diagram as <code>g<sub>1</sub></code>) performed a recursive call (<code>g<sub>2</sub></code>) before calling routine <code>h</code> (in this figure, we use numerical subscripts to distinguish between different instances of the same procedure. In the other parts of this figure, we use alphabetic subscripts. We use different labels because there is no natural one-to-one correspondence between the instances in the different views.) 
+Although <code>g<sub>1</sub></code>, <code>g<sub>2</sub></code> and <code>g<sub>3</sub></code> are all instances from the same routine (i.e., <code>g</code>), we attribute  a different cost for each instance.
+This separation of cost can be critical to identify which instance has a performance problem. 
+</p>
+<p>
+Figure 4 shows the corresponding scope structure for the caller view and the costs we compute for this recursive program. The procedure <code>g</code> noted as <code>g<sub>a</sub></code> (which is a root node in the diagram), has different cost to <code>g</code> as a callsite as noted as <code>g<sub>b</sub></code>, <code>g<sub>c</sub></code> and <code>g<sub>d</sub></code>. 
+For instance, on the first tree of this figure, the inclusive cost of  <code>g<sub>a</sub></code> is <code>9</code>, which is the sum of the highest  cost for each branch in calling context tree (Figure 3):  the inclusive cost of  <code>g<sub>3</sub></code> (which is <code>3</code>) and <code>g<sub>1</sub></code> (which is <code>6</code>).
+We do not attribute the cost of <code>g<sub>2</sub></code> here since it is a descendant of <code>g<sub>1</sub></code> (in other term, the cost of <code>g<sub>2</sub></code> is included in <code>g<sub>1</sub></code>). 
+
+</p>
+<p>
+Inclusive costs need to be computed similarly in the flat view. The inclusive cost of a recursive routine is the sum of the highest cost for each branch in calling context tree.
+For instance, in Figure 5, The inclusive cost of <code>g<sub>x</sub></code>, defined as the total cost of all instances of <code>g</code>, is <code>9</code> and this is consistently the same as the cost in caller tree.
+The advantage of attributing different cost for each instance of <code>g</code> is that it enables user to identify which instance is the responsible for performance losses.
+
+</p>
+
+<h2>Derived Metrics</h2>
+<p>
+Frequently, the data become useful only when combined with other information such as the number of instructions executed or 
+the total number of cache accesses. 
+While users don't mind a bit of mental arithmetic and frequently compare values in different 
+columns to see how they relate for a scope, doing this for many scopes is exhausting. 
+To address this problem, <i>hpcviewer</i> provides a mechanism for defining derived metrics. 
+A derived metric is defined by specifying a spreadsheet-like mathematical formula that 
+refers to data in other columns in the metric table by using <code>$n</code> to refer to the value in the <code>n</code><sup>th</sup> column.
+</p>
+
 </body>
 </html>

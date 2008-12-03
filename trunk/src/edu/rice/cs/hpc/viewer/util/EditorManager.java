@@ -91,7 +91,9 @@ public class EditorManager {
 		if(objInfo.exists())
 			this.openFileEditor(sFilename, objInfo.getName(), 1);
 		else
-			throw new FileNotFoundException("File not found: "+sFilename);
+			// Laks: 12.1.2008: return the filename in case the file is not found
+			throw new FileNotFoundException(sFilename);
+			//throw new FileNotFoundException("File not found: "+sFilename);
 	}
 	
 	/**

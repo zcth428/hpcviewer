@@ -20,6 +20,7 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
+import edu.rice.cs.hpc.data.experiment.xml.DatabaseToken.TokenXML;
 import edu.rice.cs.hpc.data.util.*;
 
 import java.io.*;
@@ -45,15 +46,15 @@ import java.util.EmptyStackException;
  */
 
 
-public class ExperimentBuilder extends Builder
+public class ExperimentDatabaseBuilder extends Builder
 {
 
-	final static String BEGIN_LINE_ATTRIBUTE 	= "b";
-	final static String END_LINE_ATTRIBUTE 		= "e";
-	final static String NAME_ATTRIBUTE 			= "n";
-	final static String FILENAME_ATTRIBUTE 		= "f";
-	final static String VALUE_ATTRIBUTE 		= "v";
-	final static String PATHNAME_ATTRIBUTE 		= "name";
+	//final static String BEGIN_LINE_ATTRIBUTE 	= "b";
+	//final static String END_LINE_ATTRIBUTE 		= "e";
+	private final static String LINE_ATTRIBUTE			= "l";
+	private final static String NAME_ATTRIBUTE 			= "n";
+	private final static String FILENAME_ATTRIBUTE 		= "f";
+	private final static String VALUE_ATTRIBUTE 		= "v";
 	
 
 	/** The experiment to own parsed objects. */
@@ -84,6 +85,7 @@ public class ExperimentBuilder extends Builder
 	protected Scope flatViewRootScope;
 
 	/** A stack to keep track of scope nesting while parsing. */
+	//protected StackScope/*<Scope>*/ stack;
 	protected Stack/*<Scope>*/ stack;
 
 	/** The current source file while parsing. */
@@ -100,9 +102,13 @@ public class ExperimentBuilder extends Builder
     We use the maxNumberOfMetrics value to generate short names for the self metrics*/
 	protected int maxNumberOfMetrics;
 
+	// Laks
+	private DatabaseToken.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
+	private DatabaseToken.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
+	//private DatabaseToken.TokenXML currentToken = TokenXML.T_INVALID_ELEMENT_NAME;
+	private boolean csviewer;
 
 //	INITIALIZATION							//
-
 
 
 
@@ -126,7 +132,7 @@ public class ExperimentBuilder extends Builder
 	 *
 	 ************************************************************************/
 
-	public ExperimentBuilder(Experiment experiment, String defaultName)
+	public ExperimentDatabaseBuilder(Experiment experiment, String defaultName)
 	{
 		super();
 
@@ -143,6 +149,7 @@ public class ExperimentBuilder extends Builder
 
 		// parse action data structures
 		this.stack = new Stack/*<Scope>*/();
+		//this.stack = new StackScope/*<Scope>*/();
 		this.srcFileStack = new Stack/*<SourceFile>*/();
 		this.srcFileStack.push(null); // mimic old behavior
 
@@ -171,78 +178,82 @@ public class ExperimentBuilder extends Builder
 
 	/*************************************************************************
 	 *	Takes notice of the beginning of an element.
+	 * @throws OldXMLFormatException 
 	 ************************************************************************/
 
-	public void beginElement(String element, String[] attributes, String[] values)
+	public void beginElement(String element, String[] attributes, String[] values) 
 	{
-		switch(Token.map(element))
+		TokenXML current = DatabaseToken.map(element);
+		//currentToken = current;
+		switch(current)
 		{
+		case T_HPCTOOLKIT_EXPERIMENT:
+			break;
+		case T_HEADER:
+			this.do_Header(attributes,values);	
+			break;
+		case T_INFO:
+			this.do_Info();
+			break;
+		case T_NAME_VALUE:
+			this.do_NV(attributes, values);
+			break;
+		
 		// CONFIG elements
-		case Token.TITLE:
-			this.do_TITLE (attributes, values);	break;
-		case Token.PATH:
-			this.do_PATH  (attributes, values);	break;
-		case Token.METRIC:
+		case T_METRIC:
 			this.do_METRIC(attributes, values);	break;
-
 			// PGM elements
-		case Token.PGM:
+		case T_SEC_FLAT_PROFILE_DATA:
+		case T_SEC_CALLPATH_PROFILE_DATA:
 			this.begin_PGM(attributes, values);	break;
-		case Token.LM:
+		case T_LM:
 			this.begin_LM (attributes, values);	break;
-		case Token.G:
-			this.begin_G  (attributes, values);	break;
-		case Token.F:
+		case T_F:
 			this.begin_F  (attributes, values);	break;
-		case Token.P:
-			this.begin_P  (attributes, values);	break;
-		case Token.A:
+		case T_P:
+		case T_PR:
+		case T_PF:
+			this.begin_PF  (attributes, values);	break;
+		case T_A:
 			this.begin_A  (attributes, values);	break;
-		case Token.L:
+		case T_L:
 			this.begin_L  (attributes, values);	break;
-		case Token.S:
+		case T_S:
 			this.begin_S  (attributes, values);	break;
-		case Token.M:
+		case T_M:
 			this.do_M     (attributes, values);	break;
 
-			// ignored elements
-		case Token.HPCVIEWER:
-			this.csviewer = false;
-			break;
-		case Token.CONFIG:
-		case Token.METRICS:
-		case Token.REPLACE:
-			break;
-
 			// callstack elements
-		case Token.CSPROFILE:
+		case T_SEC_CALLPATH_PROFILE:
+			// we need to retrieve the profile name and the ID
 			this.csviewer = true;
 			break;
-		case Token.TARGET:		
-			this.do_TARGET(attributes,values);	
-			break;
-		case Token.CALLSITE:
+
+		case T_C:
 			//System.out.println("callSite...");
 			this.begin_CALLSITE(attributes,values); 
 			break;
-		case Token.PROCEDURE_FRAME:	
-			this.begin_P(attributes,values); 
-			break;
-		case Token.STATEMENT:		
-			this.begin_S(attributes,values); 
-			break;
-
-		case Token.SCOPETREE:
-		case Token.CSPROFILEHDR:
-		case Token.CSPROFILEPARAMS:
-		case Token.CSPROFILETREE:
-			break;
-
+			
+			// old token from old XML
+		case T_CSPROFILE:
+			throw new java.lang.RuntimeException(new OldXMLFormatException());
 			// unknown elements
+
+		// ---------------------
+		// Tokens to be ignored 
+		// ---------------------
+		case T_SEC_HEADER:
+		case T_SEC_FLAT_PROFILE:
+		case T_METRIC_TABLE:
+			break;
+		
 		default:
 			this.error();
 		break;
 		} 
+		// laks: preserve the state of the current token for the next parsing state
+		this.previousToken = current;
+
 	}
 
 
@@ -270,64 +281,54 @@ public class ExperimentBuilder extends Builder
 
 	public void endElement(String element)
 	{
-		switch(Token.map(element))
+		TokenXML current = DatabaseToken.map(element);
+		//currentToken = current;
+		switch(current)
 		{
 		// PGM elements
-		case Token.PGM:
+		case T_SEC_FLAT_PROFILE_DATA:
+		case T_SEC_CALLPATH_PROFILE_DATA:
 			this.end_PGM();
 			break;
-		case Token.LM:
+		case T_LM:
 			this.end_LM();
 			break;
-		case Token.G:
-			this.end_G();
-			break;
-		case Token.F:
+		case T_F:
 			this.end_F();
 			break;
-		case Token.P:
-			this.end_P();
+			
+		case T_P:
+		case T_PR:
+		case T_PF:
+			this.end_PF();
 			break;
-		case Token.A:
+		case T_A:
 			this.end_A();
 			break;
-		case Token.L:
+		case T_L:
 			this.end_L();
 			break;
-		case Token.S:
+		case T_S:
 			this.end_S();
 			break;
-
-
-			// ignored elements
-		case Token.HPCVIEWER:
-		case Token.TITLE:
-		case Token.PATH:
-		case Token.METRIC:
-		case Token.CONFIG:
-		case Token.METRICS:
-		case Token.REPLACE:
-		case Token.M:
-			break;
-
-			//callstack elements---FMZ
-		case Token.CALLSITE: 		
+		case T_C: 		
 			this.end_CALLSITE();
 			break;
-		case Token.PROCEDURE_FRAME:     
-			this.end_P(); 
-			break;
-		case Token.STATEMENT:
-			this.end_S();
-			break;
-		case Token.CSPROFILE:
-		case Token.SCOPETREE:
-		case Token.CSPROFILEHDR:
-		case Token.CSPROFILEPARAMS:
-		case Token.CSPROFILETREE:
-		case Token.TARGET:
-			break;
 
+			// ignored elements
+		case T_M:
+			break;
+		case T_HPCTOOLKIT_EXPERIMENT:
+			break;
+		case T_NAME_VALUE:
+		case T_HEADER:
+		case T_INFO:
+		case T_METRIC_TABLE:
+		case T_SEC_HEADER:
+		case T_METRIC:
+		case T_SEC_FLAT_PROFILE:
+		case T_SEC_CALLPATH_PROFILE:
+			break;
 
 		default:
 			this.error();
@@ -348,6 +349,7 @@ public class ExperimentBuilder extends Builder
 		try {
 			// pop out root scope
 			this.stack.pop();
+			//System.out.println("end:"+parser.getLineNumber()+"\t"+this.stack.size());
 		} catch (EmptyStackException e) {
 			System.err.println("ExperimentBuilder: no root scope !");
 		}
@@ -405,7 +407,7 @@ public class ExperimentBuilder extends Builder
 	 *	Processes a TITLE element.
 	 ************************************************************************/
 
-	public void do_TITLE(String[] attributes, String[] values)
+	private void do_TITLE(String[] attributes, String[] values)
 	{
 		// TITLE name = "experiment title"
 		this.Assert(attributes.length == 1);
@@ -418,7 +420,7 @@ public class ExperimentBuilder extends Builder
 	 *      Processes a TARGET element as TITLE.
 	 ************************************************************************/
 
-	public void do_TARGET(String[] attributes, String[] values)
+	private void do_Header(String[] attributes, String[] values)
 	{
 		// TITLE name = "experiment title"
 		this.Assert(attributes.length == 1);
@@ -428,131 +430,48 @@ public class ExperimentBuilder extends Builder
 
 
 	/*************************************************************************
-	 *	Processes a PATH element.
-	 ************************************************************************/
-
-	public void do_PATH(String[] attributes, String[] values)
-	{
-		// PATH name="somepath"
-		String name = getAttributeByName(PATHNAME_ATTRIBUTE, attributes, values);
-		File path = new File(name);
-		this.pathList.add(path);
-	}
-
-	/*************************************************************************
 	 *	Processes a METRIC element.
+	 *    <!ELEMENT Metric (MetricFormula?, Info?) >
+    	  <!ATTLIST Metric
+              i    CDATA #REQUIRED
+              n    CDATA #REQUIRED
+              fmt  CDATA #IMPLIED
+              show (1|0) "1">
+
 	 ************************************************************************/
 
-	public double prd;
 
-	public boolean csviewer;
-
-	public void do_METRIC(String[] attributes, String[] values)
+	private void do_METRIC(String[] attributes, String[] values)
 	{
-		if(this.csviewer)
+		//if(this.csviewer)
 		{
-			// METRIC shortName="internal" nativeName="native" 
-			//         displayName="User Visible" display="bool" percent="bool" 
-			//
-			// CSPROF: shortName="0" nativeName="IA64_INST_RETIRE" 
-			//         displayName=NULL display=NULL percent=NULL 
-			//         period="int number"  
-			//
-			// Alpha CSPROF: shortName="0" nativeName="# bytes allocated" default period=1
-			//               shortName="1" nativeName="# bytes freed" default period=1;
-			//               shortName="2" nativeName="SIGSEGVs received" period="0"
-
-			String[] new_values=new String[6];
-
-			final int N_shortName = 0, N_nativeName = 1, N_displayName = 2, N_display = 3, N_percent = 4, N_sampleperiod = 5;
-			if (attributes.length==5) { 
-
-				int exclusiveIndex = this.metricList.size() + 1;
-
-				new_values[N_sampleperiod]="1";
-				Metric metric = new Metric(this.experiment,
-						values[N_shortName], 
-						values[N_nativeName], 
-						values[N_displayName]+" (total)",
-						Util.booleanValue(values[N_display]), 
-						Util.booleanValue(values[N_percent]),
-						new_values[N_sampleperiod],
-						MetricType.INCLUSIVE, exclusiveIndex);
-				this.metricList.add(metric);
-
-
-				// add a new metric for self values
-				//  use internal name = <old internal name> + MaxMetrics 
-				// for now use MaxMetrics = 100
-				int intShortName = Integer.parseInt(values[N_shortName]);
-				int newShortName = intShortName + 100;
-				String stringNewShortName = ""+newShortName;
-				String selfMetricDisplayName = values[N_displayName]+" (self)";
-				Metric selfMetric = new Metric(this.experiment,
-						stringNewShortName, 
-						values[N_nativeName], 
-						selfMetricDisplayName,
-						Util.booleanValue(values[N_display]), 
-						Util.booleanValue(values[N_percent]),
-						new_values[N_sampleperiod],
-						MetricType.EXCLUSIVE, 
-						exclusiveIndex-1);
-
-				this.metricList.add(selfMetric);
-
-
-			} else {
-				this.Assert(attributes.length == 4);   
-				// call stack profiler: <shortName, nativeName, period,flags>
-				//                       nativeName as "displayName" 
-				//                       flags: not used right now
-				// System.out.println(Double.valueOf(values[2]).doubleValue()); 
-
-				new_values[0]=values[N_shortName]; 
-				new_values[1]=values[N_shortName];
-				new_values[2]=values[N_nativeName];
-				new_values[3]="true"; 
-				new_values[4]="true"; 
-				new_values[5]=values[2];  //sample period
-
-				int exclusiveIndex = this.metricList.size() + 1;
-				Metric metric = new Metric(this.experiment,
-						new_values[N_shortName], new_values[N_nativeName], 
-						new_values[N_displayName]+" (I)",
-						Util.booleanValue(new_values[N_display]), 
-						Util.booleanValue(new_values[N_percent]),
-						new_values[N_sampleperiod],
-						MetricType.INCLUSIVE, exclusiveIndex);
-				this.metricList.add(metric);    
-
-				// add a new metric for self values
-				//  use internal name = <old internal name> + MaxMetrics 
-				// for now use MaxMetrics = 100
-				int intShortName = Integer.parseInt(values[N_shortName]);
-				int newShortName = intShortName + 100; 
-
-				String selfMetricDisplayName = 
-					new_values[N_displayName]+" (E)";
-
-				String stringNewShortName = ""+newShortName; 
-
-				String displayValue = "true";
-				String displayPercentValue = "true";
-
-				Metric selfMetric = 
-					new Metric(this.experiment, 
-							stringNewShortName, 
-							new_values[N_nativeName], 
-							selfMetricDisplayName,
-							Util.booleanValue(displayValue), 
-							Util.booleanValue(displayPercentValue),
-							new_values[N_sampleperiod],	MetricType.EXCLUSIVE, 
-							exclusiveIndex-1);
-				this.metricList.add(selfMetric);
-			} 
-			this.numberOfPrimaryMetrics += 2;
+			int nID = 0;	// 1st index of values = metric ID
+			int nName = 1;	// 2nd index of values = metric name
+			int nbMetrics = this.metricList.size();
+			// set the inclusive metric
+			Metric metricInc = new Metric(this.experiment,
+					values[nID],			// short name
+					values[nName],			// native name
+					values[nName] + " (I)", 	// display name
+					true, true, 			// displayed ? percent ?
+					"",						// period (not defined at the moment)
+					MetricType.INCLUSIVE, nbMetrics+1);
+			this.metricList.add(metricInc);
+			
+			// set the exclusive metric
+			int iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
+			String sSelfName = "" + iSelf;
+			String sSelfDisplayName = values[nName] + " (E)";
+			Metric metricExc = new Metric(this.experiment,
+					sSelfName,			// short name
+					sSelfDisplayName,	// native name
+					sSelfDisplayName, 	// display name
+					true, true, 		// displayed ? percent ?
+					"",					// period (not defined at the moment)
+					MetricType.EXCLUSIVE, nbMetrics);
+			this.metricList.add(metricExc);
 		}
-		else
+		/*else
 		{
 			// METRIC shortName="internal" nativeName="native" displayName="User Visible" display="bool" percent="bool"
 			final int N_shortName = 0, N_nativeName = 1, N_displayName = 2, N_display = 3, N_percent = 4;
@@ -567,7 +486,7 @@ public class ExperimentBuilder extends Builder
 			this.metricList.add(metric);
 			
 			this.numberOfPrimaryMetrics++;
-		}
+		}*/
 	}
 
 
@@ -577,7 +496,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing a PGM (program) element.
 	 ************************************************************************/
 
-	public void begin_PGM(String[] attributes, String[] values) 
+	private void begin_PGM(String[] attributes, String[] values) 
 	{
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		
@@ -586,7 +505,7 @@ public class ExperimentBuilder extends Builder
 		// make the root scope
 		this.rootScope = new RootScope(this.experiment, name,"Invisible Outer Root Scope", RootScopeType.Invisible);
 		this.stack.push(this.rootScope);	// don't use 'beginScope'
-		
+		//System.out.println("begin_PGM:"+parser.getLineNumber()+"\t"+this.stack.size());
 		if (this.csviewer) {
 			// create Calling Context Tree scope
 			this.callingContextViewRootScope  = new RootScope(this.experiment, name,"Calling Context View", RootScopeType.CallingContextTree);
@@ -605,7 +524,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing a PGM (program) element.
 	 ************************************************************************/
 
-	public void end_PGM()
+	private void end_PGM()
 	{
 		this.endScope();
 	}
@@ -616,7 +535,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing an LM (load module) element.
 	 ************************************************************************/
 
-	public void begin_LM(String[] attributes, String[] values)
+	private void begin_LM(String[] attributes, String[] values)
 	{
 		// LM n="load module name"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
@@ -633,33 +552,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing an LM (load module) element.
 	 ************************************************************************/
 
-	public void end_LM()
-	{
-		this.endScope();
-	}
-
-
-	/*************************************************************************
-	 *	Begins processing an G (group) element.
-	 ************************************************************************/
-
-	public void begin_G(String[] attributes, String[] values)
-	{
-		// G n="group name"
-		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-
-		// make a new group scope object
-		Scope gs = new GroupScope(this.experiment, name);
-		this.beginScope(gs);
-	}
-
-
-
-	/*************************************************************************
-	 *	Finishes processing a G (group) element.
-	 ************************************************************************/
-
-	public void end_G()
+	private void end_LM()
 	{
 		this.endScope();
 	}
@@ -668,7 +561,7 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Begins processing an F (file) element.
 	 ************************************************************************/
-	public void begin_F(String[] attributes, String[] values)
+	private void begin_F(String[] attributes, String[] values)
 
 	{
 		// F n="filename"
@@ -693,7 +586,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing an F (file) element.
 	 ************************************************************************/
 
-	public void end_F()
+	private void end_F()
 	{
 		this.endScope();
 		this.srcFileStack.pop();
@@ -707,9 +600,9 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing a P (procedure) element.
 	 ************************************************************************/
 
-	public void begin_P(String[] attributes, String[] values)
+	private void begin_PF(String[] attributes, String[] values)
 	{
-		if(this.csviewer)
+		//if(this.csviewer)
 		{
 			// <PROCEDURE_FRAME sid="" f="filename" p="procname" alien="false">
 
@@ -717,6 +610,7 @@ public class ExperimentBuilder extends Builder
 			boolean isalien = false; 
 
 			int      attr_sid      = 0;
+			int firstLn = 0, lastLn = 0;
 			String[] attr_file     = new String[1];
 			String fileLine;
 			String[] attr_function = new String[3];
@@ -743,40 +637,42 @@ public class ExperimentBuilder extends Builder
 			
 
 			for(int i=0; i<attributes.length; i++) {
-				String sAtt = attributes[i];
-				if (sAtt.equals("sid")) { 
-					// In old XML format, sometime sid is a star (don;t know why)
-					if(!values[i].startsWith("*"))
-						attr_sid = Integer.parseInt(values[i]); 
+				if (attributes[i].equals("s")) { 
+					attr_sid = Integer.parseInt(values[i]); 
 				}
-				if(sAtt.equals("f")) { 
+				if(attributes[i].equals("f")) { 
 					istext = true;
 					fileLine = values[i]; 
 				}
-				else if(sAtt.equals("lm")) { 
+				else if(attributes[i].equals("lm")) { 
 					istext = false;
 					fileLine = values[i]; 
 				}
-				else if(sAtt.equals("p")) {
+				else if(attributes[i].equals("p") || attributes[i].equals("n")) {
 					val_function[0] = values[i];
 				}
-				else if(sAtt.equals("l")) {
-					val_function[1]=values[i];
-					val_function[2]=values[i];
-					val_line[0] = values[i];
-					val_line[1] = values[i];	 
-				} else if(sAtt.equals("alien")) { 
-					if (values[i].equals("true")) {
+				else if(attributes[i].equals("l")) {
+					StatementRange objRange = new StatementRange(values[i]);
+					firstLn = objRange.getFirstLine();
+					lastLn = objRange.getLastLine();
+				} else if(attributes[i].equals("a")) { 
+					if (values[i].equals("1")) {
 						isalien = true;
+					}
+				} else if(attributes[i].equals("v")) {
+					String sV = attributes[i];
+					int iComma = sV.indexOf(",");
+					while(iComma>=0) {
+						val_line[0] = sV.substring(0, iComma-1);
+						val_line[1] = sV.substring(iComma+1);
 					}
 				}
 			}
 
 			SourceFile srcFile = this.getFileForCallsite(fileLine);
 			srcFile.setIsText(istext);
+			this.srcFileStack.add(srcFile);
 
-			int firstLn = Integer.parseInt(val_line[0]);
-			int lastLn  = Integer.parseInt(val_line[1]);
 			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
 					firstLn-1, lastLn-1, 
 					val_function[0], attr_sid, isalien);
@@ -801,12 +697,13 @@ public class ExperimentBuilder extends Builder
 				CallSiteScope csn2 = (CallSiteScope) this.stack.pop();
 				this.stack.push(ls);
 				this.stack.push(csn2);
+				//System.out.println("begin_PF-Linescope:"+parser.getLineNumber()+"\t"+this.stack.size());
 
 			} else {
 				this.beginScope(procScope);
 			}
 		}
-		else
+		/*else
 		{
 			SourceFile topSrcFile = (SourceFile)this.srcFileStack.peek();
 			topSrcFile.setIsText(true);
@@ -822,7 +719,7 @@ public class ExperimentBuilder extends Builder
 			Scope procScope     = new ProcedureScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1, lastLn-1, name, isalien);
 
 			this.beginScope(procScope);
-		}
+		} */
 	}
 
 
@@ -830,26 +727,31 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing a P (procedure) element.
 	 ************************************************************************/
 
-	public void end_P()
+	private void end_PF()
 	{
+		this.srcFileStack.pop();
 		this.endScope();
 	}
 
 
 
+	
 	/*************************************************************************
 	 *	Begins processing a A (alien) element.
 	 ************************************************************************/
 
-	public void begin_A(String[] attributes, String[] values)
+	private void begin_A(String[] attributes, String[] values)
 	{
 		// A f="filename" n="procname" b="257" e="259" [vma=""]
 
 		// make a new alien scope object
 		String filenm = getAttributeByName(FILENAME_ATTRIBUTE, attributes, values);
 		String procnm = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-		int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
-		int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
+		String sLine = getAttributeByName(LINE_ATTRIBUTE, attributes, values);
+		int firstLn, lastLn;
+		StatementRange objRange = new StatementRange(sLine);
+		firstLn = objRange.getFirstLine();
+		lastLn = objRange.getLastLine();
 
 		File file = new File(filenm);
 		SourceFile sourceFile = new FileSystemSourceFile(experiment, file);
@@ -867,7 +769,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing a A (alien) element.
 	 ************************************************************************/
 
-	public void end_A()
+	private void end_A()
 	{
 		this.srcFileStack.pop();
 		this.endScope();
@@ -878,10 +780,21 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing an L (loop) element.
 	 ************************************************************************/
 
-	public void begin_L(String[] attributes, String[] values)
+	private void begin_L(String[] attributes, String[] values)
 	{
-		int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
-		int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
+		String sID;
+		int firstLn = 0;
+		int lastLn = 0;
+		for(int i=0; i<attributes.length; i++) {
+			if(attributes[i].equals("s")) {
+				sID = values[i];
+			} else if(attributes[i].equals("l")) {
+				String sLine = values[i];
+				StatementRange objRange = new StatementRange( sLine );
+				firstLn = objRange.getFirstLine();
+				lastLn = objRange.getLastLine();				
+			}
+		}
 
 		SourceFile sourceFile = (SourceFile)this.srcFileStack.peek();
 		if (this.csviewer) {
@@ -905,7 +818,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing an L (loop) element.
 	 ************************************************************************/
 
-	public void end_L()
+	private void end_L()
 	{
 		this.endScope();
 	}
@@ -913,15 +826,15 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Begins processing an LN (line) element.
 	 ************************************************************************/
-	public void begin_S(String[] attributes, String[] values)
+	private void begin_S(String[] attributes, String[] values)
 	{
 		begin_S_internal( attributes,  values, false);
 	}
-	public void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
+	private void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
 	{
 
 		// System.out.println("begin line");
-		if(csviewer)
+		//if(csviewer)
 		{
 			boolean istext = false; 
 			String[] attr_file     = new String[1];
@@ -968,9 +881,17 @@ public class ExperimentBuilder extends Builder
 				} 
 			}
 
-			SourceFile srcFile = this.getFileForCallsite(fileLine);
-
-			srcFile.setIsText(istext);
+			SourceFile srcFile = (SourceFile)this.srcFileStack.peek();
+			/*
+			Scope scopePrevious = this.stack.peek();
+			if(scopePrevious instanceof ProcedureScope) {
+				srcFile = ( (ProcedureScope)scopePrevious ).getSourceFile();
+			} else {
+				srcFile = this.getFileForCallsite(fileLine);
+			} */
+			//System.out.println("Callsite "+values[0]+"\t"+scopePrevious.getClass()+"\t"+srcFile.getName()+"\t"+srcFile.isText());
+			
+			//srcFile.setIsText(istext);
 
 			// make a new statement-range scope object
 			int firstLn = Integer.parseInt(val_line[0]);
@@ -991,7 +912,7 @@ public class ExperimentBuilder extends Builder
 			} else {
 				this.beginScope(scope);
 			}
-		} else {
+		} /*else {
 			SourceFile topSrcFile = (SourceFile)this.srcFileStack.peek();
 			topSrcFile.setIsText(true);
 
@@ -1005,14 +926,14 @@ public class ExperimentBuilder extends Builder
 				scope = new StatementRangeScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1, lastLn-1);
 
 			this.beginScope(scope);
-		}
+		} */
 	}
 
 	/*************************************************************************
 	 *	Finishes processing an S (line) element.
 	 ************************************************************************/
 
-	public void end_S()
+	private void end_S()
 	{
 		this.endScope(); 
 	}
@@ -1024,7 +945,7 @@ public class ExperimentBuilder extends Builder
 	 *	Processes an M (metric value) element.
 	 ************************************************************************/
 
-	public void do_M(String[] attributes, String[] values)
+	private void do_M(String[] attributes, String[] values)
 	{
 		// m n="abc" v="4.56e7"
 		// add a metric value to the current scope
@@ -1032,7 +953,8 @@ public class ExperimentBuilder extends Builder
 		String value = getAttributeByName(VALUE_ATTRIBUTE, attributes, values);
 		double actualValue  = Double.valueOf(value).doubleValue();
 		
-		if (this.csviewer) {
+		//if (this.csviewer) 
+		{
 			Metric metric = this.experiment.getMetric(internalName);
 			
 			// get the sample period
@@ -1052,11 +974,11 @@ public class ExperimentBuilder extends Builder
 			Metric selfMetric = this.experiment.getMetric(selfShortName); 
 			MetricValue selfMetricValue = new MetricValue(actualValue);
 			this.getCurrentScope().setMetricValue(selfMetric.getIndex(), selfMetricValue);  
-		} else {
+		} /* else {
 			Metric metric = this.experiment.getMetric(internalName);
 			MetricValue metricValue = new MetricValue(actualValue);
 			this.getCurrentScope().setMetricValue(metric.getIndex(), metricValue);
-		}
+		} */
 	}
 
 
@@ -1070,12 +992,12 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Adds a newly parsed scope to the scope tree.
 	 ************************************************************************/
-	public void beginScope(Scope scope)
+	private void beginScope(Scope scope)
 	{
 		beginScope_internal(scope, true);
 	}
 
-	public void beginScope_internal(Scope scope, boolean addToTree)
+	private void beginScope_internal(Scope scope, boolean addToTree)
 	{
 		Scope top = this.getCurrentScope();
 		if (addToTree) {
@@ -1083,6 +1005,7 @@ public class ExperimentBuilder extends Builder
 			scope.setParentScope(top);
 		}
 		this.stack.push(scope);
+		//System.out.println("begin_"+scope.getName()+":"+parser.getLineNumber()+"\t"+this.stack.size());
 
 		if (addToTree) recordOuterScope(scope);
 	}
@@ -1093,9 +1016,15 @@ public class ExperimentBuilder extends Builder
 	 *	Ends a newly parsed scope.
 	 ************************************************************************/
 
-	public void endScope()
+	private void endScope()
 	{
-		this.stack.pop();
+		try {
+			Scope scope = (Scope) this.stack.peek();
+			//System.out.println("end-scope "+scope.getName()+":"+parser.getLineNumber()+"\t"+this.stack.size());
+			this.stack.pop();
+		} catch (java.util.EmptyStackException e) {
+			System.out.println("End of stack:"+this.parser.getLineNumber());
+		}
 		// System.out.println("pop scope ");
 	}
 
@@ -1104,7 +1033,7 @@ public class ExperimentBuilder extends Builder
 	 ************************************************************************/
 
 
-	public void begin_CALLSITE(String[] attributes, String[] values) {  
+	private void begin_CALLSITE(String[] attributes, String[] values) {  
 		this.begin_S_internal(attributes, values, true);  
 	}
 
@@ -1129,22 +1058,48 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 * 	end a callsite.
 	 ************************************************************************/
-	public void end_CALLSITE() 
+	private void end_CALLSITE() 
 	{
 		end_S();
 	}
 
-
+	/**
+	 * Laks: special treatement when NV is called under INFO
+	 * @param attributes
+	 * @param values
+	 */
+	private void do_NV(String[] attributes, String[] values) {
+		if(this.previousState == TokenXML.T_METRIC) {
+			// previous state is metric. The attribute should be about periodicity or flags
+			if(values[0].startsWith("p")) {
+				// get the sample period of this metric
+				String sPeriod = values[1];
+				int nbMetrics= this.metricList.size();
+				if(nbMetrics > 1) {
+					// get the current metric (inc)
+					Metric metric = (Metric) this.metricList.get(nbMetrics-1);
+					metric.setSamplePeriod(sPeriod);
+					// get the current metric (exc)
+					metric = (Metric) this.metricList.get(nbMetrics-2);
+					metric.setSamplePeriod(sPeriod);
+				}
+			}
+		}
+	}
+	
+	private void do_Info() {
+		this.previousState = this.previousToken;
+	}
 	/*************************************************************************
 	 *	Returns the current scope.
 	 ************************************************************************/
 
-	public Scope getCurrentScope()
+	private Scope getCurrentScope()
 	{
 		return (Scope) this.stack.peek();
 	}
 
-	public void recordOuterScope(Scope scope) {
+	private void recordOuterScope(Scope scope) {
 		this.scopeList.add(scope);
 	}
 
@@ -1162,7 +1117,50 @@ public class ExperimentBuilder extends Builder
 		for (int i = 0; i < attributes.length; i++) if (name == attributes[i]) return values[i];
 		return null;
 	}
+	
+	/**
+	 * Class to treat a string of line or range of lines into two lines: first line and last line 
+	 * @author laksonoadhianto
+	 *
+	 */
+	private class StatementRange {
+		private int firstLn;
+		private int lastLn;
+		
+		public StatementRange(String sLine) {
+			// find the range separator
+			int iSeparator = sLine.indexOf('-');
+			if(iSeparator > 0) {
+				// separator exist, it should be a range
+				this.firstLn = Integer.parseInt( sLine.substring(0,iSeparator) );
+				this.lastLn = Integer.parseInt( sLine.substring(iSeparator+1) );
+			} else {
+				// no separator: no range
+				this.firstLn = Integer.parseInt(sLine);
+				this.lastLn = this.firstLn;
+			}
+		}
+		
+		public int getFirstLine( ) { return this.firstLn; }
+		public int getLastLine( ) { return this.lastLn; }
+	}
 
+	/*
+	private class StackScope extends java.util.Stack<Scope> {
+		public Scope push(Scope scope) {
+			super.push(scope);
+			//System.out.println(this.size()+"\t"+currentToken.name() + " Push " + scope.getName() + "\t"+scope.getClass());
+			return scope;
+		}
+		public Scope pop() {
+			int nSize = this.size();
+			if(nSize <= 0)
+				System.out.println(this.size()+"\t"+ " Pop null ");
+			/*else
+				System.out.println(this.size()+"\t"+currentToken.name() + " Pop " + this.peek().getName());
+			return super.pop();
+		}
+	} */
 
 }
 

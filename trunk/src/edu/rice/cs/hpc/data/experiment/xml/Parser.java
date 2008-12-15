@@ -115,11 +115,12 @@ public Parser(String inputName, InputStream inputStream, Builder builder)
 
 /*************************************************************************
  *	Parses the XML file sending parse actions to the builder.
+ * @throws Exception 
  ************************************************************************/
 	
 public void parse()
 throws
-	IOException
+	Exception
 {
 	// initialize building
 	this.builder.begin();
@@ -136,6 +137,7 @@ throws
 	{
 		// turn these into parse errors
 		this.builder.error(this.getLineNumber());
+		return;
 	}
 	catch( IOException e )
 	{
@@ -145,11 +147,19 @@ throws
 	}
 	catch( Exception e )
 	{
-		e.printStackTrace();
+		if(e instanceof OldXMLFormatException) {
+			System.err.println("Error found: old XML file");
+			throw e;
+		} else if(e.getCause() instanceof OldXMLFormatException) {
+			System.err.println("Cause of error: old XML file");
+			throw new OldXMLFormatException();
+		} else {
+			e.printStackTrace();
+		}
 		// TEMPORARY: do better inside 'builder'
 		// turn these into parse errors
 		this.builder.error(this.getLineNumber());
-
+		return;
 /**************************************************
 		// treat everything else as fatal
 		int lineNumber = this.getLineNumber();

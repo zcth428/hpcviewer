@@ -87,6 +87,13 @@ public String getSamplePeriod()
     return this.sampleperiod;
 }
 
+/**
+ * Laks: need an interface to update the sample period due to change in DTD
+ * @param s
+ */
+public void setSamplePeriod(String s) {
+	this.sampleperiod = s;
+}
 /*************************************************************************
  *	Returns the value of this metric at a given scope.
  ************************************************************************/	

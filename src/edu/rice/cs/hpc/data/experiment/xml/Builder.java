@@ -34,12 +34,16 @@ import edu.rice.cs.hpc.data.experiment.xml.Parser;
 public abstract class Builder
 {
 
+	//Constant
+	static public int PARSER_OK = 0;
+	static public int PARSER_FAIL = 1;
+	static public int PARSER_OLDXML = 2;
 
 /** The parser which owns this builder. */
 protected Parser parser;
 
 /** Whether parsing was successful. */
-protected boolean parseOK;
+protected int parseOK;
 
 /** The line number of the first parse error in the file. */
 protected int parseErrorLineNumber;
@@ -62,7 +66,7 @@ public Builder()
 {
 	this.parser = null;		// must be set non-null by 'setParser'
 	
-	this.parseOK = true;
+	this.parseOK = this.parseOK;
 	this.parseErrorLineNumber = -1;
 }
 
@@ -96,7 +100,7 @@ public void setParser(Parser parser)
  *	Returns whether parsing was successful.
  ************************************************************************/
 	
-public boolean getParseOK()
+public int getParseOK()
 {
 	return this.parseOK;
 }
@@ -134,6 +138,7 @@ public abstract void begin();
 
 /*************************************************************************
  *	Takes notice of the beginning of an element.
+ * @throws OldXMLFormatException 
  ************************************************************************/
 	
 public abstract void beginElement(String element, String[] attributes, String[] values);
@@ -174,9 +179,9 @@ public abstract void end();
 	
 public void error(int lineNumber)
 {
-	if( this.parseOK )
+	if( this.parseOK == this.PARSER_OK)
 	{
-		this.parseOK = false;
+		this.parseOK = this.PARSER_FAIL;
 		this.parseErrorLineNumber = lineNumber;
 	}
 }

@@ -114,7 +114,7 @@ public void parse(Experiment experiment)
 throws
 	IOException,
 	InvalExperimentException
-{
+	{
 	// get an appropriate input stream
 	String name;
 	InputStream stream;
@@ -123,12 +123,34 @@ throws
         stream = new FileInputStream(this.file);
     
 	// parse the stream
-	ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
-	Parser parser = new Parser(name, stream, builder);
-	parser.parse();
-	if( ! builder.getParseOK() )
-		throw new InvalExperimentException(builder.getParseErrorLineNumber());
-}
+	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
+        Builder builder = new ExperimentDatabaseBuilder(experiment, name);
+        Parser parser = new Parser(name, stream, builder);
+        try {
+            parser.parse();
+        } catch (java.lang.Exception e) {
+        	Throwable err = e.getCause();
+        	if ( (err instanceof OldXMLFormatException) || (e instanceof OldXMLFormatException) ) {
+            	// check the old xml ?
+            	builder = new ExperimentBuilder(experiment, name);
+            	// for unknown reason, the variable streat is reset here by JVM. So we need to allocate again
+                stream = new FileInputStream(this.file);
+            	parser = new Parser(name, stream, builder);
+                try {
+					parser.parse();
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+                if( builder.getParseOK() != Builder.PARSER_OK )
+                	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
+        	}
+        }
+        if( builder.getParseOK() == Builder.PARSER_OK ) {
+        	// parsing is done successfully
+        } else
+        	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
+	}
 
 }
 

@@ -28,7 +28,7 @@ Software and the Performance Engineering Research Institute.
 
    <windowImages i16="icons/hpcviewerEclipseShadow16.png" i32="icons/hpcviewerEclipseShadow32.png" i48="icons/hpcviewerEclipseShadow48.png" i64="icons/hpcviewerEclipseShadow64.png" i128="icons/hpcviewerEclipseShadow128.png"/>
 
-   <launcher>
+   <launcher name="hpcviewer">
       <solaris/>
       <win useIco="false">
          <bmp/>

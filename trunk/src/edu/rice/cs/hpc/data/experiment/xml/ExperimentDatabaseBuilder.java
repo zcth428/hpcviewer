@@ -49,8 +49,6 @@ import java.util.EmptyStackException;
 public class ExperimentDatabaseBuilder extends Builder
 {
 
-	//final static String BEGIN_LINE_ATTRIBUTE 	= "b";
-	//final static String END_LINE_ATTRIBUTE 		= "e";
 	private final static String LINE_ATTRIBUTE			= "l";
 	private final static String NAME_ATTRIBUTE 			= "n";
 	private final static String FILENAME_ATTRIBUTE 		= "f";
@@ -105,7 +103,6 @@ public class ExperimentDatabaseBuilder extends Builder
 	// Laks
 	private DatabaseToken.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	private DatabaseToken.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
-	//private DatabaseToken.TokenXML currentToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	private boolean csviewer;
 
 //	INITIALIZATION							//
@@ -184,7 +181,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	public void beginElement(String element, String[] attributes, String[] values) 
 	{
 		TokenXML current = DatabaseToken.map(element);
-		//currentToken = current;
+
 		switch(current)
 		{
 		case T_HPCTOOLKIT_EXPERIMENT:
@@ -198,14 +195,24 @@ public class ExperimentDatabaseBuilder extends Builder
 		case T_NAME_VALUE:
 			this.do_NV(attributes, values);
 			break;
-		
+
+		case T_SEC_CALLPATH_PROFILE:
+			// we need to retrieve the profile name and the ID
+			this.csviewer = true;
+			this.do_TITLE(attributes, values);
+			break;
+
+		case T_SEC_FLAT_PROFILE:
+			this.do_TITLE(attributes, values);
+			break;
+
 		// CONFIG elements
 		case T_METRIC:
 			this.do_METRIC(attributes, values);	break;
 			// PGM elements
 		case T_SEC_FLAT_PROFILE_DATA:
 		case T_SEC_CALLPATH_PROFILE_DATA:
-			this.begin_PGM(attributes, values);	break;
+			this.begin_SecData(attributes, values);	break;
 		case T_LM:
 			this.begin_LM (attributes, values);	break;
 		case T_F:
@@ -224,13 +231,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			this.do_M     (attributes, values);	break;
 
 			// callstack elements
-		case T_SEC_CALLPATH_PROFILE:
-			// we need to retrieve the profile name and the ID
-			this.csviewer = true;
-			break;
-
 		case T_C:
-			//System.out.println("callSite...");
 			this.begin_CALLSITE(attributes,values); 
 			break;
 			
@@ -242,8 +243,14 @@ public class ExperimentDatabaseBuilder extends Builder
 		// ---------------------
 		// Tokens to be ignored 
 		// ---------------------
+		case T_PROCEDURE_TABLE:
+		case T_PROCEDURE:
+		case T_FILE_TABLE:
+		case T_FILE:
+		case T_LOAD_MODULE_TABLE:
+		case T_LOAD_MODULE:
 		case T_SEC_HEADER:
-		case T_SEC_FLAT_PROFILE:
+		case T_METRIC_FORMULA:
 		case T_METRIC_TABLE:
 			break;
 		
@@ -257,8 +264,6 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
-
-
 	/*************************************************************************
 	 *	Takes notice of content characters within an element.
 	 *
@@ -266,26 +271,24 @@ public class ExperimentDatabaseBuilder extends Builder
 	 *	characters, so this method should never be called.
 	 *
 	 ************************************************************************/
-
 	public void content(String s)
 	{
 		Dialogs.notCalled("ExperimentBuilder.content");
 	}
 
-
-
-
 	/*************************************************************************
 	 *	Takes notice of the ending of an element.
 	 ************************************************************************/
-
 	public void endElement(String element)
 	{
 		TokenXML current = DatabaseToken.map(element);
-		//currentToken = current;
 		switch(current)
 		{
-		// PGM elements
+		case T_SEC_FLAT_PROFILE:
+		case T_SEC_CALLPATH_PROFILE:
+			break;
+
+		// Data elements
 		case T_SEC_FLAT_PROFILE_DATA:
 		case T_SEC_CALLPATH_PROFILE_DATA:
 			this.end_PGM();
@@ -317,26 +320,26 @@ public class ExperimentDatabaseBuilder extends Builder
 
 			// ignored elements
 		case T_M:
-			break;
 		case T_HPCTOOLKIT_EXPERIMENT:
-			break;
 		case T_NAME_VALUE:
 		case T_HEADER:
 		case T_INFO:
 		case T_METRIC_TABLE:
+		case T_METRIC_FORMULA:
 		case T_SEC_HEADER:
 		case T_METRIC:
-		case T_SEC_FLAT_PROFILE:
-		case T_SEC_CALLPATH_PROFILE:
+		case T_PROCEDURE_TABLE:
+		case T_PROCEDURE:
+		case T_FILE_TABLE:
+		case T_FILE:
+		case T_LOAD_MODULE_TABLE:
+		case T_LOAD_MODULE:
 			break;
-
 		default:
 			this.error();
 		break;
 		} 
 	}
-
-
 
 
 	/*************************************************************************
@@ -349,7 +352,6 @@ public class ExperimentDatabaseBuilder extends Builder
 		try {
 			// pop out root scope
 			this.stack.pop();
-			//System.out.println("end:"+parser.getLineNumber()+"\t"+this.stack.size());
 		} catch (EmptyStackException e) {
 			System.err.println("ExperimentBuilder: no root scope !");
 		}
@@ -399,20 +401,21 @@ public class ExperimentDatabaseBuilder extends Builder
 
 //	BUILDING															//
 
-
-
-
-
 	/*************************************************************************
 	 *	Processes a TITLE element.
 	 ************************************************************************/
 
 	private void do_TITLE(String[] attributes, String[] values)
 	{
-		// TITLE name = "experiment title"
-		this.Assert(attributes.length == 1);
-
-		this.configuration.setName(values[0]);
+		// <!ATTLIST SecCallPathProfile
+		//        i CDATA #REQUIRED
+		//        n CDATA #REQUIRED>
+		this.Assert(attributes.length == 2);
+		String sTitle = "";
+		if(values.length == 2) {
+			sTitle = values[1];
+		}
+		this.configuration.setName(sTitle);
 	}
 
 
@@ -437,66 +440,43 @@ public class ExperimentDatabaseBuilder extends Builder
               n    CDATA #REQUIRED
               fmt  CDATA #IMPLIED
               show (1|0) "1">
-
 	 ************************************************************************/
-
-
 	private void do_METRIC(String[] attributes, String[] values)
 	{
-		//if(this.csviewer)
-		{
-			int nID = 0;	// 1st index of values = metric ID
-			int nName = 1;	// 2nd index of values = metric name
-			int nbMetrics = this.metricList.size();
-			// set the inclusive metric
-			Metric metricInc = new Metric(this.experiment,
-					values[nID],			// short name
-					values[nName],			// native name
-					values[nName] + " (I)", 	// display name
-					true, true, 			// displayed ? percent ?
-					"",						// period (not defined at the moment)
-					MetricType.INCLUSIVE, nbMetrics+1);
-			this.metricList.add(metricInc);
-			
-			// set the exclusive metric
-			int iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
-			String sSelfName = "" + iSelf;
-			String sSelfDisplayName = values[nName] + " (E)";
-			Metric metricExc = new Metric(this.experiment,
-					sSelfName,			// short name
-					sSelfDisplayName,	// native name
-					sSelfDisplayName, 	// display name
-					true, true, 		// displayed ? percent ?
-					"",					// period (not defined at the moment)
-					MetricType.EXCLUSIVE, nbMetrics);
-			this.metricList.add(metricExc);
-		}
-		/*else
-		{
-			// METRIC shortName="internal" nativeName="native" displayName="User Visible" display="bool" percent="bool"
-			final int N_shortName = 0, N_nativeName = 1, N_displayName = 2, N_display = 3, N_percent = 4;
-			this.Assert(attributes.length == 5);
+		int nID = 0;	// 1st index of values = metric ID
+		int nName = 1;	// 2nd index of values = metric name
+		int nbMetrics = this.metricList.size();
+		// set the inclusive metric
+		Metric metricInc = new Metric(this.experiment,
+				values[nID],			// short name
+				values[nName],			// native name
+				values[nName] + " (I)", 	// display name
+				true, true, 			// displayed ? percent ?
+				"",						// period (not defined at the moment)
+				MetricType.INCLUSIVE, nbMetrics+1);
+		this.metricList.add(metricInc);
 
-			Metric metric = new Metric(this.experiment,
-					values[N_shortName], values[N_nativeName], 
-					values[N_displayName],
-					Util.booleanValue(values[N_display]), Util.booleanValue(values[N_percent]), defaultName,
-					MetricType.INCLUSIVE, 
-					Metric.NO_PARTNER_INDEX);
-			this.metricList.add(metric);
-			
-			this.numberOfPrimaryMetrics++;
-		}*/
+		// set the exclusive metric
+		int iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
+		String sSelfName = "" + iSelf;
+		String sSelfDisplayName = values[nName] + " (E)";
+		Metric metricExc = new Metric(this.experiment,
+				sSelfName,			// short name
+				sSelfDisplayName,	// native name
+				sSelfDisplayName, 	// display name
+				true, true, 		// displayed ? percent ?
+				"",					// period (not defined at the moment)
+				MetricType.EXCLUSIVE, nbMetrics);
+		this.metricList.add(metricExc);
 	}
 
 
 
 
 	/*************************************************************************
-	 *	Begins processing a PGM (program) element.
+	 *	Begins processing a profile data (program) element.
 	 ************************************************************************/
-
-	private void begin_PGM(String[] attributes, String[] values) 
+	private void begin_SecData(String[] attributes, String[] values) 
 	{
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		
@@ -505,7 +485,7 @@ public class ExperimentDatabaseBuilder extends Builder
 		// make the root scope
 		this.rootScope = new RootScope(this.experiment, name,"Invisible Outer Root Scope", RootScopeType.Invisible);
 		this.stack.push(this.rootScope);	// don't use 'beginScope'
-		//System.out.println("begin_PGM:"+parser.getLineNumber()+"\t"+this.stack.size());
+
 		if (this.csviewer) {
 			// create Calling Context Tree scope
 			this.callingContextViewRootScope  = new RootScope(this.experiment, name,"Calling Context View", RootScopeType.CallingContextTree);
@@ -533,8 +513,11 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	/*************************************************************************
 	 *	Begins processing an LM (load module) element.
+	 *	<!ATTLIST LM
+                i CDATA #IMPLIED
+                n CDATA #REQUIRED
+                v CDATA #IMPLIED>
 	 ************************************************************************/
-
 	private void begin_LM(String[] attributes, String[] values)
 	{
 		// LM n="load module name"
@@ -546,12 +529,9 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
-
-
 	/*************************************************************************
 	 *	Finishes processing an LM (load module) element.
 	 ************************************************************************/
-
 	private void end_LM()
 	{
 		this.endScope();
@@ -560,6 +540,9 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	/*************************************************************************
 	 *	Begins processing an F (file) element.
+	 *      <!ATTLIST F
+                i CDATA #IMPLIED
+                n CDATA #REQUIRED>
 	 ************************************************************************/
 	private void begin_F(String[] attributes, String[] values)
 
@@ -580,12 +563,9 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
-
-
 	/*************************************************************************
 	 *	Finishes processing an F (file) element.
 	 ************************************************************************/
-
 	private void end_F()
 	{
 		this.endScope();
@@ -594,16 +574,20 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
-
-
 	/*************************************************************************
-	 *	Begins processing a P (procedure) element.
+	 *	Begins processing a PF (procedure frame) element.
+	 *       <!ATTLIST Pr
+                i  CDATA #IMPLIED
+                s  CDATA #IMPLIED
+                n  CDATA #REQUIRED
+                lm CDATA #IMPLIED
+                f  CDATA #IMPLIED
+                l  CDATA #IMPLIED
+                a  (1|0) "0"
+                v  CDATA #IMPLIED>
 	 ************************************************************************/
-
 	private void begin_PF(String[] attributes, String[] values)
 	{
-		//if(this.csviewer)
-		{
 			// <PROCEDURE_FRAME sid="" f="filename" p="procname" alien="false">
 
 			boolean istext = false; 
@@ -684,8 +668,6 @@ public class ExperimentDatabaseBuilder extends Builder
 			 */
 			if (this.stack.peek() instanceof LineScope) {
 
-				//System.out.println("CallSiteScope Building..."+((Scope) this.stack.peek()).getName());
-
 				LineScope ls = (LineScope)this.stack.pop();
 				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, CallSiteScopeType.CALL_TO_PROCEDURE);
 
@@ -702,24 +684,6 @@ public class ExperimentDatabaseBuilder extends Builder
 			} else {
 				this.beginScope(procScope);
 			}
-		}
-		/*else
-		{
-			SourceFile topSrcFile = (SourceFile)this.srcFileStack.peek();
-			topSrcFile.setIsText(true);
-
-			// P n="procname" [ln="linkname"] b="123" e="456" [vma=""]
-
-			// make a new procedure scope object
-			String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-			int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
-			int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
-
-			boolean isalien = false;
-			Scope procScope     = new ProcedureScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1, lastLn-1, name, isalien);
-
-			this.beginScope(procScope);
-		} */
 	}
 
 
@@ -742,8 +706,15 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	private void begin_A(String[] attributes, String[] values)
 	{
-		// A f="filename" n="procname" b="257" e="259" [vma=""]
-
+		/*
+		 *   <!ELEMENT A (A|L|S|C|M)*>
+      		<!ATTLIST A
+                i CDATA #IMPLIED
+                f CDATA #IMPLIED
+                n CDATA #IMPLIED
+                l CDATA #IMPLIED
+                v CDATA #IMPLIED>
+		 */
 		// make a new alien scope object
 		String filenm = getAttributeByName(FILENAME_ATTRIBUTE, attributes, values);
 		String procnm = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
@@ -825,6 +796,11 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	/*************************************************************************
 	 *	Begins processing an LN (line) element.
+	 * <!ATTLIST S
+                i CDATA #IMPLIED
+                s CDATA #IMPLIED
+                l CDATA #IMPLIED
+                v CDATA #IMPLIED>
 	 ************************************************************************/
 	private void begin_S(String[] attributes, String[] values)
 	{
@@ -833,65 +809,20 @@ public class ExperimentDatabaseBuilder extends Builder
 	private void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
 	{
 
-		// System.out.println("begin line");
-		//if(csviewer)
 		{
-			boolean istext = false; 
-			String[] attr_file     = new String[1];
-			String fileLine;
-			String[] attr_function = new String[3];
-			String[] val_function  = new String[3];
-			String[] attr_line     = new String[2];
 			String[] val_line      = new String[2];
-
-			attr_file[0]= "n";
-			fileLine ="unknown file line"; 
-
-			attr_function[0]="n";
-			attr_function[1]="b";
-			attr_function[2]="e";
-
-			val_function[0]="unknown procedure";
-			val_function[1]="0";
-			val_function[2]="0";
-
-			attr_line[0]="b";
-			attr_line[1]="e";
 
 			val_line[0]="0";
 			val_line[1]="0";
 
 			for(int i=0; i<attributes.length; i++) {
-				if(attributes[i].equals("f")) { 
-					istext = true;
-					fileLine = values[i]; 
-				}
-				else if(attributes[i].equals("lm")) { 
-					istext = false;
-					fileLine = values[i]; 
-				}
-				else if(attributes[i].equals("p")) {
-					val_function[0] = values[i];
-				}
-				else if(attributes[i].equals("l")) {
-					val_function[1]=values[i];
-					val_function[2]=values[i];
+				if(attributes[i].equals("l")) {
 					val_line[0] = values[i];
 					val_line[1] = values[i];	 
 				} 
 			}
 
 			SourceFile srcFile = (SourceFile)this.srcFileStack.peek();
-			/*
-			Scope scopePrevious = this.stack.peek();
-			if(scopePrevious instanceof ProcedureScope) {
-				srcFile = ( (ProcedureScope)scopePrevious ).getSourceFile();
-			} else {
-				srcFile = this.getFileForCallsite(fileLine);
-			} */
-			//System.out.println("Callsite "+values[0]+"\t"+scopePrevious.getClass()+"\t"+srcFile.getName()+"\t"+srcFile.isText());
-			
-			//srcFile.setIsText(istext);
 
 			// make a new statement-range scope object
 			int firstLn = Integer.parseInt(val_line[0]);
@@ -906,27 +837,10 @@ public class ExperimentDatabaseBuilder extends Builder
 
 			if (isCallSite) {
 				this.beginScope_internal(scope, false);
-
-				//System.out.println("beginning a call site");
-				//System.out.println(this.getCurrentScope().getName());
 			} else {
 				this.beginScope(scope);
 			}
-		} /*else {
-			SourceFile topSrcFile = (SourceFile)this.srcFileStack.peek();
-			topSrcFile.setIsText(true);
-
-			int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
-			int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
-
-			Scope scope;
-			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1);
-			else
-				scope = new StatementRangeScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1, lastLn-1);
-
-			this.beginScope(scope);
-		} */
+		} 
 	}
 
 	/*************************************************************************
@@ -953,7 +867,6 @@ public class ExperimentDatabaseBuilder extends Builder
 		String value = getAttributeByName(VALUE_ATTRIBUTE, attributes, values);
 		double actualValue  = Double.valueOf(value).doubleValue();
 		
-		//if (this.csviewer) 
 		{
 			Metric metric = this.experiment.getMetric(internalName);
 			
@@ -974,20 +887,12 @@ public class ExperimentDatabaseBuilder extends Builder
 			Metric selfMetric = this.experiment.getMetric(selfShortName); 
 			MetricValue selfMetricValue = new MetricValue(actualValue);
 			this.getCurrentScope().setMetricValue(selfMetric.getIndex(), selfMetricValue);  
-		} /* else {
-			Metric metric = this.experiment.getMetric(internalName);
-			MetricValue metricValue = new MetricValue(actualValue);
-			this.getCurrentScope().setMetricValue(metric.getIndex(), metricValue);
-		} */
+		} 
 	}
 
 
 
 //	SCOPE TREE BUILDING													//
-
-
-
-
 
 	/*************************************************************************
 	 *	Adds a newly parsed scope to the scope tree.
@@ -1005,7 +910,6 @@ public class ExperimentDatabaseBuilder extends Builder
 			scope.setParentScope(top);
 		}
 		this.stack.push(scope);
-		//System.out.println("begin_"+scope.getName()+":"+parser.getLineNumber()+"\t"+this.stack.size());
 
 		if (addToTree) recordOuterScope(scope);
 	}
@@ -1019,20 +923,20 @@ public class ExperimentDatabaseBuilder extends Builder
 	private void endScope()
 	{
 		try {
-			Scope scope = (Scope) this.stack.peek();
-			//System.out.println("end-scope "+scope.getName()+":"+parser.getLineNumber()+"\t"+this.stack.size());
 			this.stack.pop();
 		} catch (java.util.EmptyStackException e) {
 			System.out.println("End of stack:"+this.parser.getLineNumber());
 		}
-		// System.out.println("pop scope ");
 	}
 
 	/*************************************************************************
 	 * Begin a new CALLSITE
+	 * <!ATTLIST C
+                i CDATA #IMPLIED
+                s CDATA #IMPLIED
+                l CDATA #IMPLIED
+                v CDATA #IMPLIED>
 	 ************************************************************************/
-
-
 	private void begin_CALLSITE(String[] attributes, String[] values) {  
 		this.begin_S_internal(attributes, values, true);  
 	}
@@ -1144,23 +1048,6 @@ public class ExperimentDatabaseBuilder extends Builder
 		public int getFirstLine( ) { return this.firstLn; }
 		public int getLastLine( ) { return this.lastLn; }
 	}
-
-	/*
-	private class StackScope extends java.util.Stack<Scope> {
-		public Scope push(Scope scope) {
-			super.push(scope);
-			//System.out.println(this.size()+"\t"+currentToken.name() + " Push " + scope.getName() + "\t"+scope.getClass());
-			return scope;
-		}
-		public Scope pop() {
-			int nSize = this.size();
-			if(nSize <= 0)
-				System.out.println(this.size()+"\t"+ " Pop null ");
-			/*else
-				System.out.println(this.size()+"\t"+currentToken.name() + " Pop " + this.peek().getName());
-			return super.pop();
-		}
-	} */
 
 }
 

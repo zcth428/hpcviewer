@@ -148,10 +148,10 @@ throws
 	catch( Exception e )
 	{
 		if(e instanceof OldXMLFormatException) {
-			System.err.println("Error found: old XML file");
+			//System.err.println("Error found: old XML file");
 			throw e;
 		} else if(e.getCause() instanceof OldXMLFormatException) {
-			System.err.println("Cause of error: old XML file");
+			//System.err.println("Cause of error: old XML file");
 			throw new OldXMLFormatException();
 		} else {
 			e.printStackTrace();

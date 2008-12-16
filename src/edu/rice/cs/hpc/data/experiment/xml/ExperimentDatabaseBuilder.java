@@ -446,9 +446,17 @@ public class ExperimentDatabaseBuilder extends Builder
 		int nID = 0;	// 1st index of values = metric ID
 		int nName = 1;	// 2nd index of values = metric name
 		int nbMetrics = this.metricList.size();
+		String sID = values[nID];
+		int iSelf ;
+		if(sID.charAt(0)=='*') {
+			iSelf = this.maxNumberOfMetrics;
+			sID = "0";
+		} else {
+			iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
+		}
 		// set the inclusive metric
 		Metric metricInc = new Metric(this.experiment,
-				values[nID],			// short name
+				sID,			// short name
 				values[nName],			// native name
 				values[nName] + " (I)", 	// display name
 				true, true, 			// displayed ? percent ?
@@ -457,7 +465,6 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.metricList.add(metricInc);
 
 		// set the exclusive metric
-		int iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
 		String sSelfName = "" + iSelf;
 		String sSelfDisplayName = values[nName] + " (E)";
 		Metric metricExc = new Metric(this.experiment,
@@ -870,8 +877,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		{
 			Metric metric = this.experiment.getMetric(internalName);
 			
-			// get the sample period
 			String prd_string =  metric.getSamplePeriod();
+			// get the sample period
 			double prd=Double.valueOf(prd_string).doubleValue();
 			// System.out.println(prd); 
 			// multiple by sample period 

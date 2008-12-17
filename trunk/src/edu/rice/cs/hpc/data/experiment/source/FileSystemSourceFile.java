@@ -89,7 +89,8 @@ public FileSystemSourceFile(Experiment experiment, File filename)
 	this.contentsAvailable = true;
 	
 	this.longName = null;
-	
+	//  laks: bug: default is a text file
+	this.istext = true;
 	// Note: 'this.resolvedPath' and 'this.lineCount' should not be accessed
 	//       unless 'this.contentsAvailable'.
 }

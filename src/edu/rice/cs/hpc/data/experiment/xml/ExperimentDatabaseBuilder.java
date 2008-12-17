@@ -597,20 +597,20 @@ public class ExperimentDatabaseBuilder extends Builder
 	{
 			// <PROCEDURE_FRAME sid="" f="filename" p="procname" alien="false">
 
-			boolean istext = false; 
+			boolean istext = true; 
 			boolean isalien = false; 
 
 			int      attr_sid      = 0;
 			int firstLn = 0, lastLn = 0;
 			String[] attr_file     = new String[1];
-			String fileLine;
+			String fileLine = null;
 			String[] attr_function = new String[3];
 			String[] val_function  = new String[3];
 			String[] attr_line     = new String[2];
-			String[] val_line      = new String[2];
+			//String[] val_line      = new String[2];
 
 			attr_file[0]= "n";
-			fileLine ="unknown file line"; 
+			//fileLine ="unknown file line"; 
 
 			attr_function[0]="n";
 			attr_function[1]="b";
@@ -623,8 +623,8 @@ public class ExperimentDatabaseBuilder extends Builder
 			attr_line[0]="b";
 			attr_line[1]="e";
 
-			val_line[0]="0";
-			val_line[1]="0";
+			//val_line[0]="0";
+			//val_line[1]="0";
 			
 
 			for(int i=0; i<attributes.length; i++) {
@@ -651,16 +651,21 @@ public class ExperimentDatabaseBuilder extends Builder
 						isalien = true;
 					}
 				} else if(attributes[i].equals("v")) {
-					String sV = attributes[i];
-					int iComma = sV.indexOf(",");
-					while(iComma>=0) {
-						val_line[0] = sV.substring(0, iComma-1);
-						val_line[1] = sV.substring(iComma+1);
-					}
+//					String sV = attributes[i];
+//					int iComma = sV.indexOf(",");
+//					while(iComma>=0) {
+//						val_line[0] = sV.substring(0, iComma-1);
+//						val_line[1] = sV.substring(iComma+1);
+//					}
 				}
 			}
-
-			SourceFile srcFile = this.getFileForCallsite(fileLine);
+			SourceFile srcFile;
+			if(fileLine == null) {
+				srcFile = (SourceFile) this.srcFileStack.peek();
+			} else {
+				srcFile = this.getFileForCallsite(fileLine);
+			}
+			 
 			srcFile.setIsText(istext);
 			this.srcFileStack.add(srcFile);
 

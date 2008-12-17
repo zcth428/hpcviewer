@@ -84,7 +84,10 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
 
 public int hashCode() {
 	int val = isalien ? 1 : 0;
-	return this.procedureName.hashCode() ^ val;
+	String sHashName = this.sourceFile.getName() + "/" + this.procedureName;
+	int iCode = sHashName.hashCode() ^ val;
+	return iCode;
+	//return this.procedureName.hashCode() ^ val;
 }
 
 public boolean equals(Object obj) {

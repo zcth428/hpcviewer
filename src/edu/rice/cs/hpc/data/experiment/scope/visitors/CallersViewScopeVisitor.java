@@ -52,8 +52,6 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		if (vt == ScopeVisitType.PreVisit) { // && !mycallee.isAlien()) {
 			String procedureName = mycallee.getName();
 
-			trace("handling scope " + procedureName);
-
 			CallSiteScope scopeCall = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
 			scopeCall.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 			// Remove linescope-normalization from CS-scope
@@ -81,6 +79,10 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					// debugging purpose
 					// to be here, it must be a recursive routine
 			}
+			/*
+			if(procedureName.equals("CsdScheduler")) {
+				System.out.println(procedureName+":"+callee.iCounter+"\t"+callee.getMetricValue(0).getValue()+"\t"+scope.getMetricValue(0).getValue());
+			}*/
 			callee.iCounter++;
 			if(callee.iCounter == 1) {
 				// add the cost into the procedure "root" if necessary
@@ -238,8 +240,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 				// add metric values for first to those of existingCaller.
 				// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
-				existingCaller.mergeMetric(first, this.inclusiveOnly);
-				//existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
+				//existingCaller.mergeMetric(first, this.inclusiveOnly);
+				existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
 				
 				// merge rest of call path as a child of existingCaller.
 				mergeCallerPath(existingCaller, callerPathList);

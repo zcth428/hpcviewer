@@ -84,6 +84,8 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
 
 public int hashCode() {
 	int val = isalien ? 1 : 0;
+	// Laks 2008.12.17: it is possible that routines with the same name are defined in different files.
+	//		TODO: routine the same name with different modules in the same file
 	String sHashName = this.sourceFile.getName() + "/" + this.procedureName;
 	int iCode = sHashName.hashCode() ^ val;
 	return iCode;

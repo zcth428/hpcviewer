@@ -103,6 +103,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	// Laks
 	private DatabaseToken.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	private DatabaseToken.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
+	private java.util.Hashtable<String, String> hashProcedureTable = new Hashtable<String, String>();
 	private boolean csviewer;
 
 //	INITIALIZATION							//
@@ -235,6 +236,9 @@ public class ExperimentDatabaseBuilder extends Builder
 			this.begin_CALLSITE(attributes,values); 
 			break;
 			
+		case T_PROCEDURE:
+			this.do_Procedure(attributes, values); break;
+
 			// old token from old XML
 		case T_CSPROFILE:
 			throw new java.lang.RuntimeException(new OldXMLFormatException());
@@ -244,7 +248,6 @@ public class ExperimentDatabaseBuilder extends Builder
 		// Tokens to be ignored 
 		// ---------------------
 		case T_PROCEDURE_TABLE:
-		case T_PROCEDURE:
 		case T_FILE_TABLE:
 		case T_FILE:
 		case T_LOAD_MODULE_TABLE:
@@ -581,6 +584,27 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
+	/**
+	 * 
+	 * @param attributes
+	 * @param values
+	 * <!ATTLIST Procedure
+              i CDATA #REQUIRED
+              n CDATA #REQUIRED>
+	 */
+	private void do_Procedure(String[] attributes, String[] values) {
+		String sID="";
+		String sData="";
+		for(int i=0;i<2;i++) {
+			if(attributes[i].equals("i")) {
+				sID = values[i];
+			} else if(attributes[i].equals("n")) {
+				sData = values[i];
+			}
+		}
+		this.hashProcedureTable.put(sID, sData);
+	}
+	
 	/*************************************************************************
 	 *	Begins processing a PF (procedure frame) element.
 	 *       <!ATTLIST Pr
@@ -595,43 +619,44 @@ public class ExperimentDatabaseBuilder extends Builder
 	 ************************************************************************/
 	private void begin_PF(String[] attributes, String[] values)
 	{
-			// <PROCEDURE_FRAME sid="" f="filename" p="procname" alien="false">
-
 			boolean istext = true; 
 			boolean isalien = false; 
-
+			boolean hashtableExist = (this.hashProcedureTable.size()>0);
 			int      attr_sid      = 0;
 			int firstLn = 0, lastLn = 0;
+			
 			String[] attr_file     = new String[1];
 			String fileLine = null;
 			String[] attr_function = new String[3];
-			String[] val_function  = new String[3];
+			String sProcName = "unknown procedure";
+			//String[] val_function  = new String[3];
 			String[] attr_line     = new String[2];
-			//String[] val_line      = new String[2];
 
 			attr_file[0]= "n";
-			//fileLine ="unknown file line"; 
 
 			attr_function[0]="n";
 			attr_function[1]="b";
 			attr_function[2]="e";
 
-			val_function[0]="unknown procedure";
-			val_function[1]="0";
-			val_function[2]="0";
+//			val_function[0]="unknown procedure";
+//			val_function[1]="0";
+//			val_function[2]="0";
 
 			attr_line[0]="b";
 			attr_line[1]="e";
 
-			//val_line[0]="0";
-			//val_line[1]="0";
-			
-
 			for(int i=0; i<attributes.length; i++) {
 				if (attributes[i].equals("s")) { 
 					attr_sid = Integer.parseInt(values[i]); 
+				} else if (attributes[i].equals("i")) {
+					// id of the proc frame. needs to cross ref
+					String sID = values[i];
+					String sData = this.hashProcedureTable.get(sID);
+					if(sData != null) {
+						// found the key, get the data from the database
+					}
 				}
-				if(attributes[i].equals("f")) { 
+				else if(attributes[i].equals("f")) { 
 					istext = true;
 					fileLine = values[i]; 
 				}
@@ -640,7 +665,10 @@ public class ExperimentDatabaseBuilder extends Builder
 					fileLine = values[i]; 
 				}
 				else if(attributes[i].equals("p") || attributes[i].equals("n")) {
-					val_function[0] = values[i];
+					if(hashtableExist) {
+						sProcName = this.hashProcedureTable.get(values[i]);
+					} else
+						sProcName = values[i];
 				}
 				else if(attributes[i].equals("l")) {
 					StatementRange objRange = new StatementRange(values[i]);
@@ -671,7 +699,7 @@ public class ExperimentDatabaseBuilder extends Builder
 
 			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
 					firstLn-1, lastLn-1, 
-					val_function[0], attr_sid, isalien);
+					sProcName, attr_sid, isalien);
 
 			/** Laks 2008.08.25: original code
 			 * 			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
@@ -865,8 +893,6 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
-
-
 	/*************************************************************************
 	 *	Processes an M (metric value) element.
 	 ************************************************************************/
@@ -914,6 +940,11 @@ public class ExperimentDatabaseBuilder extends Builder
 		beginScope_internal(scope, true);
 	}
 
+	/****************************************************************
+	 * 
+	 * @param scope
+	 * @param addToTree
+	 *****************************************************************/
 	private void beginScope_internal(Scope scope, boolean addToTree)
 	{
 		Scope top = this.getCurrentScope();
@@ -931,7 +962,6 @@ public class ExperimentDatabaseBuilder extends Builder
 	/*************************************************************************
 	 *	Ends a newly parsed scope.
 	 ************************************************************************/
-
 	private void endScope()
 	{
 		try {
@@ -1034,11 +1064,11 @@ public class ExperimentDatabaseBuilder extends Builder
 		return null;
 	}
 	
-	/**
+	/*************************************************************************
 	 * Class to treat a string of line or range of lines into two lines: first line and last line 
 	 * @author laksonoadhianto
 	 *
-	 */
+	 ************************************************************************/
 	private class StatementRange {
 		private int firstLn;
 		private int lastLn;

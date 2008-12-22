@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Shell;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import edu.rice.cs.hpc.Activator;
+import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 

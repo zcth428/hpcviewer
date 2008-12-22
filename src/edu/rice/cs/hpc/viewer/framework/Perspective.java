@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc;
+package edu.rice.cs.hpc.viewer.framework;
 
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;

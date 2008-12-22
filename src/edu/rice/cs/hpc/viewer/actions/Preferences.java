@@ -17,9 +17,9 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 
-import edu.rice.cs.hpc.Activator;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
+import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.ScopeActions;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 

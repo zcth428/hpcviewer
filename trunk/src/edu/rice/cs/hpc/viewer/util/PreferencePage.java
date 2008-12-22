@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 
-import edu.rice.cs.hpc.Activator;
+import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.ScopeActions;
 
 /**

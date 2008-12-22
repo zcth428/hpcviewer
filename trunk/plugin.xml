@@ -6,14 +6,14 @@
          point="org.eclipse.core.runtime.applications">
       <application>
          <run
-               class="edu.rice.cs.hpc.HPCViewer">
+               class="edu.rice.cs.hpc.viewer.framework.HPCViewer">
          </run>
       </application>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="edu.rice.cs.hpc.Perspective"
+            class="edu.rice.cs.hpc.viewer.framework.Perspective"
             icon="icons/hpc-16x16.png"
             id="edu.rice.cs.hpc.perspective"
             name="Perspective">

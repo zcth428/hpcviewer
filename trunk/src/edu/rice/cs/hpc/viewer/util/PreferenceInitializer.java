@@ -3,7 +3,7 @@ package edu.rice.cs.hpc.viewer.util;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-import edu.rice.cs.hpc.Activator;
+import edu.rice.cs.hpc.viewer.framework.Activator;
 
 /**
  * Class used to initialize default preference values.

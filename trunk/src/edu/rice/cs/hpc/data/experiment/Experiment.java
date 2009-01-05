@@ -61,7 +61,8 @@ protected File fileExperiment;
 protected ExperimentConfiguration configuration;
 
 /** The experiment's source files. */
-protected SourceFile[] files;
+//  Laks 2009.01.06: get rid off unused methods and attributes
+// protected SourceFile[] files;
 
 /** The experiment's metrics. */
 protected Vector<BaseMetric> metricList;
@@ -194,12 +195,12 @@ public void setConfiguration(ExperimentConfiguration configuration)
  *	This method is to be called only once, during <code>Experiment.open</code>.
  *
  ************************************************************************/
-	
+	/*  Laks 2009.01.06: get rid off unused methods and attributes
 public void setSourceFiles(List sourceFileList)
 {
 	this.files = (SourceFile[]) sourceFileList.toArray(new SourceFile[0]);
 }
-
+*/
 
 
 
@@ -496,24 +497,24 @@ public File getSearchPath(int index)
 /*************************************************************************
  *	Returns the number of source files in the experiment.
  ************************************************************************/
-	
+/* Laks 2009.01.06: get rid off unused methods and attributes	
 public int getSourceFileCount()
 {
 	return this.files.length;
 }
-
+*/
 
 
 
 /*************************************************************************
  *	Returns the source file with a given index.
  ************************************************************************/
-	
+/*  Laks 2009.01.06: get rid off unused methods and attributes	
 public SourceFile getSourceFile(int index)
 {
 	return this.files[index];
 }
-
+*/
 
 
 

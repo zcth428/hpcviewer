@@ -24,8 +24,9 @@ public class ExperimentMerger {
 		Experiment merged = new Experiment(exp1);
 		
 		// union SourceFile lists,
-		List files = unionSourceFiles(exp1.files, exp2.files);
-		merged.setSourceFiles(files);
+		//  Laks 2009.01.06: get rid off unused methods and attributes
+		// List files = unionSourceFiles(exp1.files, exp2.files);
+		// merged.setSourceFiles(files);
 		
 		// append metricList
 		List metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());

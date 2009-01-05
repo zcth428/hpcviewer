@@ -68,7 +68,8 @@ public class ExperimentDatabaseBuilder extends Builder
 	protected List/*<File>*/ pathList;
 
 	/** The parsed source file objects. */
-	protected List/*<SourceFile>*/ fileList;
+	// Laks 2009.01.06: get rid off unused methods and attributes
+//	protected List/*<SourceFile>*/ fileList;
 
 	/** The parsed metric objects. */
 	protected List/*<Metric>*/ metricList;
@@ -143,7 +144,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.csviewer = false;
 		// temporary storage for parsed objects
 		this.pathList   = new ArrayList/*<File>*/();
-		this.fileList   = new ArrayList/*<SourceFile>*/();
+		//  Laks 2009.01.06: get rid off unused methods and attributes
+		// this.fileList   = new ArrayList/*<SourceFile>*/();
 		this.metricList = new ArrayList/*<Metric>*/();
 		this.scopeList  = new ArrayList/*<Scope>*/();
 
@@ -375,11 +377,13 @@ public class ExperimentDatabaseBuilder extends Builder
 		}
 
 		// check semantic constraints
+		// Laks 2009.01.06: get rid off unused methods and attributes
+		/*
 		if( this.fileList.size() == 0 ) {
 			System.out.println("Warning: no source files found!");
 			// bug no 189: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=189&group_id=22&atid=169
 			//this.error();
-		}
+		}*/
 
 		if( this.scopeList.size() == 0 ) {
 			System.out.println("Warning: scope tree is empty!");
@@ -389,7 +393,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		// copy parse results into configuration
 		this.configuration.setSearchPaths(this.pathList);
 		this.experiment.setConfiguration(this.configuration);
-		this.experiment.setSourceFiles(this.fileList);
+		//  Laks 2009.01.06: get rid off unused methods and attributes
+		// this.experiment.setSourceFiles(this.fileList);
 		this.experiment.setScopes(this.scopeList, this.rootScope);
 
 		// supply defaults for missing info
@@ -608,7 +613,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		// make a new source file object
 		File filename = new File(name);
 		SourceFile sourceFile = new FileSystemSourceFile(experiment, filename);
-		this.fileList.add(sourceFile);
+		// Laks 2009.01.06: get rid off unused methods and attributes
+		// this.fileList.add(sourceFile);
 		this.srcFileStack.push(sourceFile);
 
 		// make a new file scope object
@@ -852,7 +858,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		File file = new File(filenm);
 		SourceFile sourceFile = new FileSystemSourceFile(experiment, file);
 		sourceFile.setIsText(true);
-		this.fileList.add(sourceFile);
+		// Laks 2009.01.06: get rid off unused methods and attributes
+		// this.fileList.add(sourceFile);
 		this.srcFileStack.push(sourceFile);
 
 		Scope alienScope = new AlienScope(this.experiment, sourceFile, filenm, procnm, firstLn-1, lastLn-1);
@@ -1082,7 +1089,8 @@ public class ExperimentDatabaseBuilder extends Builder
 			sourceFile = new FileSystemSourceFile(experiment, filename);
 			FileHashTable.put(fileLine,sourceFile);
 		}  
-		this.fileList.add(sourceFile);
+		// Laks 2009.01.06: get rid off unused methods and attributes
+		// this.fileList.add(sourceFile);
 		return sourceFile;
 	}
 

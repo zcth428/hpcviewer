@@ -374,7 +374,8 @@ public class ExperimentBuilder extends Builder
 		// copy parse results into configuration
 		this.configuration.setSearchPaths(this.pathList);
 		this.experiment.setConfiguration(this.configuration);
-		this.experiment.setSourceFiles(this.fileList);
+		// Laks 2009.01.06: get rid off unused methods and attributes
+		// this.experiment.setSourceFiles(this.fileList);
 		this.experiment.setScopes(this.scopeList, this.rootScope);
 
 		// supply defaults for missing info

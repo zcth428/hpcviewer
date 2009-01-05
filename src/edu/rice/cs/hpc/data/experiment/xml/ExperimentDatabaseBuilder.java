@@ -103,7 +103,9 @@ public class ExperimentDatabaseBuilder extends Builder
 	// Laks
 	private DatabaseToken.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	private DatabaseToken.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
-	private java.util.Hashtable<String, String> hashProcedureTable = new Hashtable<String, String>();
+	private java.util.Hashtable<Integer, String> hashProcedureTable = new Hashtable<Integer, String>();
+	private java.util.Hashtable<Integer, String> hashLoadModuleTable = new Hashtable<Integer, String>();
+	private java.util.Hashtable<Integer, String> hashFileTable = new Hashtable<Integer, String> ();
 	private boolean csviewer;
 
 //	INITIALIZATION							//
@@ -214,6 +216,14 @@ public class ExperimentDatabaseBuilder extends Builder
 		case T_SEC_FLAT_PROFILE_DATA:
 		case T_SEC_CALLPATH_PROFILE_DATA:
 			this.begin_SecData(attributes, values);	break;
+
+		case T_LOAD_MODULE:
+			this.do_LoadModule(attributes, values);
+			break;
+			
+		case T_FILE:
+			this.do_File(attributes, values); break;
+
 		case T_LM:
 			this.begin_LM (attributes, values);	break;
 		case T_F:
@@ -249,9 +259,7 @@ public class ExperimentDatabaseBuilder extends Builder
 		// ---------------------
 		case T_PROCEDURE_TABLE:
 		case T_FILE_TABLE:
-		case T_FILE:
 		case T_LOAD_MODULE_TABLE:
-		case T_LOAD_MODULE:
 		case T_SEC_HEADER:
 		case T_METRIC_FORMULA:
 		case T_METRIC_TABLE:
@@ -434,6 +442,19 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.configuration.setName(values[0]);
 	}
 
+	private void do_File(String[] attributes, String[] values) {
+		if(values.length < 2)
+			return;
+		String sID = values[0];
+		String sFile = values[1];
+		
+		try {
+			Integer objID = Integer.parseInt(sID);
+			this.hashFileTable.put(objID, sFile);
+		} catch (java.lang.NumberFormatException e) {
+			
+		}
+	}
 
 	/*************************************************************************
 	 *	Processes a METRIC element.
@@ -480,8 +501,32 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.metricList.add(metricExc);
 	}
 
-
-
+	/************************************************************************
+	 * <!ELEMENT LoadModule (Info?)>
+    <!ATTLIST LoadModule
+              i CDATA #REQUIRED
+              n CDATA #REQUIRED>
+	 * Example:
+	 *   <LoadModule i="43497" n="/lib64/libc-2.7.so"/>
+	 * @param attributes
+	 * @param values
+	 ************************************************************************/
+	private void do_LoadModule(String[] attributes, String[] values) {
+		if(values.length < 2)
+			return;
+		
+		// We assume that the 1st attribute is always the ID and the 2nd attribute is the value
+		String sValue = values[1];
+		String sID = values[0];
+		try {
+			Integer objID = new Integer(sID);
+			this.hashLoadModuleTable.put(objID, sValue);
+		} catch (java.lang.NumberFormatException e) {
+			System.err.println("Incorrect load module ID: "+sID);
+		} catch (java.lang.NullPointerException e) {
+			System.err.println("load module table is empty. Key: "+sID+" value: "+sValue);
+		}
+	}
 
 	/*************************************************************************
 	 *	Begins processing a profile data (program) element.
@@ -584,25 +629,26 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
-	/**
+	/*************************************************************************
 	 * 
 	 * @param attributes
 	 * @param values
 	 * <!ATTLIST Procedure
               i CDATA #REQUIRED
               n CDATA #REQUIRED>
-	 */
+	 *************************************************************************/
 	private void do_Procedure(String[] attributes, String[] values) {
-		String sID="";
-		String sData="";
-		for(int i=0;i<2;i++) {
-			if(attributes[i].equals("i")) {
-				sID = values[i];
-			} else if(attributes[i].equals("n")) {
-				sData = values[i];
-			}
+		if(values.length < 2)
+			return;
+		String sID = values[0];
+		String sData = values[1];
+
+		try {
+			Integer objID = Integer.parseInt(sID);
+			this.hashProcedureTable.put(objID, sData);
+		} catch (java.lang.NumberFormatException e) {
+			
 		}
-		this.hashProcedureTable.put(sID, sData);
 	}
 	
 	/*************************************************************************
@@ -656,25 +702,64 @@ public class ExperimentDatabaseBuilder extends Builder
 						// found the key, get the data from the database
 					}
 				}
-				else if(attributes[i].equals("f")) { 
+				else if(attributes[i].equals("f")) {
+					// file
 					istext = true;
-					fileLine = values[i]; 
+					fileLine = values[i];
+					try {
+						Integer objFileKey = Integer.parseInt(fileLine);
+						String sValue = this.hashFileTable.get(objFileKey);
+						if(sValue != null)
+							fileLine = sValue;
+					} catch (java.lang.NumberFormatException e) {
+						
+					}
+					
 				}
 				else if(attributes[i].equals("lm")) { 
+					// load module
 					istext = false;
 					fileLine = values[i]; 
+					try {
+						// let see if the value of ln is an ID or a simple load module name
+						int idLM = Integer.parseInt(fileLine);
+						// look at the dictionary for the name of the load module
+						String sValue = this.hashLoadModuleTable.get(new Integer(idLM));
+						if(sValue != null)
+							fileLine = sValue;
+					} catch (java.lang.NumberFormatException e) {
+						// this error means that the lm is not based on dictionary
+					}
 				}
-				else if(attributes[i].equals("p") || attributes[i].equals("n")) {
+				else if (attributes[i].equals("p") ) {
+					// obsolete format: p is the name of the procedure
+					sProcName = values[i];
+				}
+				else if(attributes[i].equals("n")) {
+					// new database format: n is the flat ID of the procedure
+					sProcName = values[i];
 					if(hashtableExist) {
-						sProcName = this.hashProcedureTable.get(values[i]);
-					} else
-						sProcName = values[i];
+						try {
+							Integer objProcID = Integer.parseInt(values[i]); 
+							// get the real name of the procedure from the dictionary
+							String sProc = this.hashProcedureTable.get(objProcID);
+							if(sProc != null) {
+								sProcName = sProc;
+							}
+						} catch (java.lang.NumberFormatException e) {
+							
+						}
+						
+					} 
+					// in case of error, we just refer the ID as the name of the procedure
 				}
 				else if(attributes[i].equals("l")) {
+					// line number (or range)
 					StatementRange objRange = new StatementRange(values[i]);
 					firstLn = objRange.getFirstLine();
 					lastLn = objRange.getLastLine();
 				} else if(attributes[i].equals("a")) { 
+					// alien
 					if (values[i].equals("1")) {
 						isalien = true;
 					}

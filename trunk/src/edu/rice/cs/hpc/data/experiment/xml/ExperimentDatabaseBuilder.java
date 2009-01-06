@@ -75,7 +75,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	protected List/*<Metric>*/ metricList;
 
 	/** The parsed scope objects. */
-	protected List/*<Scope>*/ scopeList;
+	//protected List/*<Scope>*/ scopeList;
 
 	/** The parsed root scope object. */
 	protected Scope rootScope;
@@ -147,7 +147,7 @@ public class ExperimentDatabaseBuilder extends Builder
 		//  Laks 2009.01.06: get rid off unused methods and attributes
 		// this.fileList   = new ArrayList/*<SourceFile>*/();
 		this.metricList = new ArrayList/*<Metric>*/();
-		this.scopeList  = new ArrayList/*<Scope>*/();
+		//this.scopeList  = new ArrayList/*<Scope>*/();
 
 		// parse action data structures
 		this.stack = new Stack/*<Scope>*/();
@@ -385,18 +385,20 @@ public class ExperimentDatabaseBuilder extends Builder
 			//this.error();
 		}*/
 
+		/* Laks 2009.01.06: get rid off unused methods and attributes
 		if( this.scopeList.size() == 0 ) {
 			System.out.println("Warning: scope tree is empty!");
 			this.error();
-		}
+		} */
 
 		// copy parse results into configuration
 		this.configuration.setSearchPaths(this.pathList);
 		this.experiment.setConfiguration(this.configuration);
 		//  Laks 2009.01.06: get rid off unused methods and attributes
 		// this.experiment.setSourceFiles(this.fileList);
-		this.experiment.setScopes(this.scopeList, this.rootScope);
-
+		//this.experiment.setScopes(this.scopeList, this.rootScope);
+		this.experiment.setScopes(null, this.rootScope);
+		
 		// supply defaults for missing info
 		if( this.configuration.getName() == null )
 			this.configuration.setName(this.defaultName);
@@ -1046,7 +1048,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		}
 		this.stack.push(scope);
 
-		if (addToTree) recordOuterScope(scope);
+		// Laks 2009.01.06: get rid off unused methods and attributes
+		//if (addToTree) recordOuterScope(scope);
 	}
 
 
@@ -1138,9 +1141,10 @@ public class ExperimentDatabaseBuilder extends Builder
 		return (Scope) this.stack.peek();
 	}
 
+	/* Laks 2009.01.06: get rid off unused methods and attributes
 	private void recordOuterScope(Scope scope) {
 		this.scopeList.add(scope);
-	}
+	}*/
 
 	protected void myDebug( boolean debugFlag,
 			String msg) {

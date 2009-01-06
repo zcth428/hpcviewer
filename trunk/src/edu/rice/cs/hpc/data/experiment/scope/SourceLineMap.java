@@ -94,7 +94,7 @@ public SourceLineMap(Experiment experiment, SourceFile sourceFile, ScopeList sco
 	
 public SourceLineMap(Experiment experiment, SourceFile sourceFile)
 {
-	this(experiment, sourceFile, experiment.getScopeList());
+	//this(experiment, sourceFile, experiment.getScopeList());
 }
 
 

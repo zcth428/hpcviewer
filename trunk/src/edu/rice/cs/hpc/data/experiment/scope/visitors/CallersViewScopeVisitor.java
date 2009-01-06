@@ -73,7 +73,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				//calleeht.put(objCode, callee);
 				callersViewRootScope.addSubscope(callee);
 				callee.setParentScope(this.callersViewRootScope);
-				exp.getScopeList().addScope(callee);
+				// Laks 2009.01.06: get rid off unused methods and attributes
+				//exp.getScopeList().addScope(callee);
  				trace("added top level entry in bottom up tree");
 			} else {
 					// debugging purpose
@@ -194,7 +195,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					calleeht.put(new Integer(callee.hashCode()), callee);
 					callersViewRootScope.addSubscope(callee);
 					callee.setParentScope(this.callersViewRootScope);
-					exp.getScopeList().addScope(callee);
+					// Laks 2009.01.06: get rid off unused methods and attributes
+					//exp.getScopeList().addScope(callee);
 					trace("added top level entry in bottom up tree");
 				}
 				callee.accumulateMetrics(tmp, emptyFilter, 

@@ -33,11 +33,12 @@ public class ExperimentMerger {
 		merged.setMetrics(metrics);
 
 		// union ScopeLists
-		List scopeList = unionScopeLists(exp1.getScopeList(), exp2.getScopeList());
+		// Laks 2009.01.06: get rid off unused methods and attributes
+		//List scopeList = unionScopeLists(exp1.getScopeList(), exp2.getScopeList());
 		
 		// Add tree1, walk tree2 & add; just CCT/Flat
-		RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);
-		merged.setScopes(scopeList, rootScope);
+		//RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);
+		//merged.setScopes(scopeList, rootScope);
 
 		mergeScopeTrees(merged, exp1, 0);
 		mergeScopeTrees(merged, exp2, exp1.getMetricCount());

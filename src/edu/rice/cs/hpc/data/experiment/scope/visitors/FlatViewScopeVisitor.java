@@ -248,7 +248,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			fileht.put(sfile, file);
 			flatViewRootScope.addSubscope(file);
 			file.setParentScope(this.flatViewRootScope);
-			exp.getScopeList().addScope(file);
+			//exp.getScopeList().addScope(file);
 			trace("added file " + file.getName() + " in flat view.");
 		}
 		return file;

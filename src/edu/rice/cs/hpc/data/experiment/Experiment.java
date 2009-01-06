@@ -68,7 +68,8 @@ protected ExperimentConfiguration configuration;
 protected Vector<BaseMetric> metricList;
 
 /** The experiment's scopes. */
-protected ScopeList scopes;
+//  Laks 2009.01.06: get rid off unused methods and attributes
+// protected ScopeList scopes;
 
 /** The experiment's root scope. */
 protected Scope rootScope;
@@ -238,7 +239,7 @@ public void setMetrics(List metricList)
 	
 public void setScopes(List scopeList, Scope rootScope)
 {
-	this.scopes    = new ArrayScopeList(this, scopeList, Strings.ALL_SCOPES);
+	//this.scopes    = new ArrayScopeList(this, scopeList, Strings.ALL_SCOPES);
 	this.rootScope = rootScope;
 }
 
@@ -284,7 +285,7 @@ public void beginScope(Scope scope)
 	Scope top = this.getRootScope();
 	top.addSubscope(scope);
 	scope.setParentScope(top);
-	this.scopes.addScope(scope);
+	//this.scopes.addScope(scope);
 }
 
 protected Scope createCallersView(Scope callingContextViewRootScope)
@@ -611,12 +612,12 @@ public ArrayList getRootScopeChildren()
 /*************************************************************************
  *	Returns a list of all the scopes in the experiment.
  ************************************************************************/
-	
+/*  Laks 2009.01.06: get rid off unused methods and attributes	
 public ScopeList getScopeList()
 {
 	return this.scopes;
 }
-
+*/
 
 
 

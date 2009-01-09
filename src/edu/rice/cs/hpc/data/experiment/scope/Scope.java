@@ -627,10 +627,12 @@ public void setMetricValue(int index, MetricValue value)
  * @param metric
  * @return
  */
+/* Laks 2009.01.06: remove unused codes
 public double getMetricPercentValue(Metric metric) {
 	MetricValue mv = this.getMetricValue(metric);
 	return mv.getPercentValue();
 }
+*/
 
 public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter, int nMetrics) {
 	for (int i = 0; i< nMetrics; i++) {
@@ -647,11 +649,11 @@ public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePro
 	}
 }
 
-/**
+/*************************************************************************
  * Laks: accumulate a metric value (used to compute aggregate value)
  * @param index
  * @param value
- */
+ ************************************************************************/
 public void accumulateMetricValue(int index, double value)
 {
 	ensureMetricStorage();
@@ -727,6 +729,11 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
+/*************************************************************************
+ * Merge two metrics by setting the higher metrics into account
+ * @param scope
+ * @param filter
+ *************************************************************************/
 public void mergeMetric(Scope scope, MetricValuePropagationFilter filter) {
 	if(scope == null || scope.metrics == null)
 		return;

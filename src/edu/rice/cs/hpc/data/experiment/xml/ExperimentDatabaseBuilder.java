@@ -1105,11 +1105,11 @@ public class ExperimentDatabaseBuilder extends Builder
 		end_S();
 	}
 
-	/**
+	/************************************************************************
 	 * Laks: special treatement when NV is called under INFO
 	 * @param attributes
 	 * @param values
-	 */
+	 ************************************************************************/
 	private void do_NV(String[] attributes, String[] values) {
 		if(this.previousState == TokenXML.T_METRIC) {
 			// previous state is metric. The attribute should be about periodicity or flags
@@ -1129,9 +1129,13 @@ public class ExperimentDatabaseBuilder extends Builder
 		}
 	}
 	
+	/************************************************************************
+	 * 
+	 ************************************************************************/
 	private void do_Info() {
 		this.previousState = this.previousToken;
 	}
+	
 	/*************************************************************************
 	 *	Returns the current scope.
 	 ************************************************************************/

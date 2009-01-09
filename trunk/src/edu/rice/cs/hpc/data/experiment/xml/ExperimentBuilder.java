@@ -393,20 +393,18 @@ public class ExperimentBuilder extends Builder
 	}
 
 
+	// ========================================================================
+	// ========================================================================
+	//	BUILDING															//
+	// ========================================================================
+	// ========================================================================
 
-
-
-//	BUILDING															//
-
-
-
-
-
+	
 	/*************************************************************************
 	 *	Processes a TITLE element.
 	 ************************************************************************/
 
-	public void do_TITLE(String[] attributes, String[] values)
+	private void do_TITLE(String[] attributes, String[] values)
 	{
 		// TITLE name = "experiment title"
 		this.Assert(attributes.length == 1);
@@ -419,7 +417,7 @@ public class ExperimentBuilder extends Builder
 	 *      Processes a TARGET element as TITLE.
 	 ************************************************************************/
 
-	public void do_TARGET(String[] attributes, String[] values)
+	private void do_TARGET(String[] attributes, String[] values)
 	{
 		// TITLE name = "experiment title"
 		this.Assert(attributes.length == 1);
@@ -432,7 +430,7 @@ public class ExperimentBuilder extends Builder
 	 *	Processes a PATH element.
 	 ************************************************************************/
 
-	public void do_PATH(String[] attributes, String[] values)
+	private void do_PATH(String[] attributes, String[] values)
 	{
 		// PATH name="somepath"
 		String name = getAttributeByName(PATHNAME_ATTRIBUTE, attributes, values);
@@ -444,11 +442,11 @@ public class ExperimentBuilder extends Builder
 	 *	Processes a METRIC element.
 	 ************************************************************************/
 
-	public double prd;
+	//public double prd;
 
 	public boolean csviewer;
 
-	public void do_METRIC(String[] attributes, String[] values)
+	private void do_METRIC(String[] attributes, String[] values)
 	{
 		if(this.csviewer)
 		{
@@ -578,7 +576,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing a PGM (program) element.
 	 ************************************************************************/
 
-	public void begin_PGM(String[] attributes, String[] values) 
+	private void begin_PGM(String[] attributes, String[] values) 
 	{
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		
@@ -606,7 +604,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing a PGM (program) element.
 	 ************************************************************************/
 
-	public void end_PGM()
+	private void end_PGM()
 	{
 		this.endScope();
 	}
@@ -617,7 +615,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing an LM (load module) element.
 	 ************************************************************************/
 
-	public void begin_LM(String[] attributes, String[] values)
+	private void begin_LM(String[] attributes, String[] values)
 	{
 		// LM n="load module name"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
@@ -634,7 +632,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing an LM (load module) element.
 	 ************************************************************************/
 
-	public void end_LM()
+	private void end_LM()
 	{
 		this.endScope();
 	}
@@ -644,7 +642,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing an G (group) element.
 	 ************************************************************************/
 
-	public void begin_G(String[] attributes, String[] values)
+	private void begin_G(String[] attributes, String[] values)
 	{
 		// G n="group name"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
@@ -660,7 +658,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing a G (group) element.
 	 ************************************************************************/
 
-	public void end_G()
+	private void end_G()
 	{
 		this.endScope();
 	}
@@ -669,7 +667,7 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Begins processing an F (file) element.
 	 ************************************************************************/
-	public void begin_F(String[] attributes, String[] values)
+	private void begin_F(String[] attributes, String[] values)
 
 	{
 		// F n="filename"
@@ -694,7 +692,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing an F (file) element.
 	 ************************************************************************/
 
-	public void end_F()
+	private void end_F()
 	{
 		this.endScope();
 		this.srcFileStack.pop();
@@ -708,7 +706,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing a P (procedure) element.
 	 ************************************************************************/
 
-	public void begin_P(String[] attributes, String[] values)
+	private void begin_P(String[] attributes, String[] values)
 	{
 		if(this.csviewer)
 		{
@@ -831,7 +829,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing a P (procedure) element.
 	 ************************************************************************/
 
-	public void end_P()
+	private void end_P()
 	{
 		this.endScope();
 	}
@@ -842,7 +840,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing a A (alien) element.
 	 ************************************************************************/
 
-	public void begin_A(String[] attributes, String[] values)
+	private void begin_A(String[] attributes, String[] values)
 	{
 		// A f="filename" n="procname" b="257" e="259" [vma=""]
 
@@ -868,7 +866,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing a A (alien) element.
 	 ************************************************************************/
 
-	public void end_A()
+	private void end_A()
 	{
 		this.srcFileStack.pop();
 		this.endScope();
@@ -879,7 +877,7 @@ public class ExperimentBuilder extends Builder
 	 *	Begins processing an L (loop) element.
 	 ************************************************************************/
 
-	public void begin_L(String[] attributes, String[] values)
+	private void begin_L(String[] attributes, String[] values)
 	{
 		int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
 		int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
@@ -906,7 +904,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing an L (loop) element.
 	 ************************************************************************/
 
-	public void end_L()
+	private void end_L()
 	{
 		this.endScope();
 	}
@@ -914,11 +912,11 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Begins processing an LN (line) element.
 	 ************************************************************************/
-	public void begin_S(String[] attributes, String[] values)
+	private void begin_S(String[] attributes, String[] values)
 	{
 		begin_S_internal( attributes,  values, false);
 	}
-	public void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
+	private void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
 	{
 
 		// System.out.println("begin line");
@@ -1013,7 +1011,7 @@ public class ExperimentBuilder extends Builder
 	 *	Finishes processing an S (line) element.
 	 ************************************************************************/
 
-	public void end_S()
+	private void end_S()
 	{
 		this.endScope(); 
 	}
@@ -1025,7 +1023,7 @@ public class ExperimentBuilder extends Builder
 	 *	Processes an M (metric value) element.
 	 ************************************************************************/
 
-	public void do_M(String[] attributes, String[] values)
+	private void do_M(String[] attributes, String[] values)
 	{
 		// m n="abc" v="4.56e7"
 		// add a metric value to the current scope
@@ -1071,12 +1069,12 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Adds a newly parsed scope to the scope tree.
 	 ************************************************************************/
-	public void beginScope(Scope scope)
+	private void beginScope(Scope scope)
 	{
 		beginScope_internal(scope, true);
 	}
 
-	public void beginScope_internal(Scope scope, boolean addToTree)
+	private void beginScope_internal(Scope scope, boolean addToTree)
 	{
 		Scope top = this.getCurrentScope();
 		if (addToTree) {
@@ -1094,7 +1092,7 @@ public class ExperimentBuilder extends Builder
 	 *	Ends a newly parsed scope.
 	 ************************************************************************/
 
-	public void endScope()
+	private void endScope()
 	{
 		this.stack.pop();
 		// System.out.println("pop scope ");
@@ -1105,7 +1103,7 @@ public class ExperimentBuilder extends Builder
 	 ************************************************************************/
 
 
-	public void begin_CALLSITE(String[] attributes, String[] values) {  
+	private void begin_CALLSITE(String[] attributes, String[] values) {  
 		this.begin_S_internal(attributes, values, true);  
 	}
 
@@ -1130,7 +1128,7 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 * 	end a callsite.
 	 ************************************************************************/
-	public void end_CALLSITE() 
+	private void end_CALLSITE() 
 	{
 		end_S();
 	}
@@ -1140,12 +1138,12 @@ public class ExperimentBuilder extends Builder
 	 *	Returns the current scope.
 	 ************************************************************************/
 
-	public Scope getCurrentScope()
+	private Scope getCurrentScope()
 	{
 		return (Scope) this.stack.peek();
 	}
 
-	public void recordOuterScope(Scope scope) {
+	private void recordOuterScope(Scope scope) {
 		this.scopeList.add(scope);
 	}
 
@@ -1158,7 +1156,7 @@ public class ExperimentBuilder extends Builder
 
 	// treat XML attributes like a named property list; this is an alternative to a brittle
 	// position-based approach for recognizing attributes
-	String getAttributeByName(String name, String[] attributes, String[] values)
+	private String getAttributeByName(String name, String[] attributes, String[] values)
 	{
 		for (int i = 0; i < attributes.length; i++) if (name == attributes[i]) return values[i];
 		return null;

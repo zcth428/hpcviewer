@@ -486,9 +486,13 @@ public class ExperimentDatabaseBuilder extends Builder
 		} else {
 			iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
 		}
+		// laks 2009.01.14: add variable to switch from callpath to flatpath
 		String sDisplayName = values[nName];
+		MetricType objType = MetricType.EXCLUSIVE;
+		
 		if(this.csviewer) {
 			sDisplayName = sDisplayName + " (I)";
+			objType = MetricType.INCLUSIVE;
 		}
 		// set the inclusive metric
 		Metric metricInc = new Metric(this.experiment,
@@ -497,7 +501,7 @@ public class ExperimentDatabaseBuilder extends Builder
 				sDisplayName, 	// display name
 				true, true, 			// displayed ? percent ?
 				"",						// period (not defined at the moment)
-				MetricType.INCLUSIVE, nbMetrics+1);
+				objType, nbMetrics+1);
 		this.metricList.add(metricInc);
 
 		// Laks 2009.01.14: only for call path profile

@@ -208,6 +208,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			break;
 
 		case T_SEC_FLAT_PROFILE:
+			this.csviewer = false;
 			this.do_TITLE(attributes, values);
 			break;
 
@@ -485,27 +486,34 @@ public class ExperimentDatabaseBuilder extends Builder
 		} else {
 			iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
 		}
+		String sDisplayName = values[nName];
+		if(this.csviewer) {
+			sDisplayName = sDisplayName + " (I)";
+		}
 		// set the inclusive metric
 		Metric metricInc = new Metric(this.experiment,
 				sID,			// short name
 				values[nName],			// native name
-				values[nName] + " (I)", 	// display name
+				sDisplayName, 	// display name
 				true, true, 			// displayed ? percent ?
 				"",						// period (not defined at the moment)
 				MetricType.INCLUSIVE, nbMetrics+1);
 		this.metricList.add(metricInc);
 
-		// set the exclusive metric
-		String sSelfName = "" + iSelf;
-		String sSelfDisplayName = values[nName] + " (E)";
-		Metric metricExc = new Metric(this.experiment,
-				sSelfName,			// short name
-				sSelfDisplayName,	// native name
-				sSelfDisplayName, 	// display name
-				true, true, 		// displayed ? percent ?
-				"",					// period (not defined at the moment)
-				MetricType.EXCLUSIVE, nbMetrics);
-		this.metricList.add(metricExc);
+		// Laks 2009.01.14: only for call path profile
+		if (this.csviewer) {
+			// set the exclusive metric
+			String sSelfName = "" + iSelf;
+			String sSelfDisplayName = values[nName] + " (E)";
+			Metric metricExc = new Metric(this.experiment,
+					sSelfName,			// short name
+					sSelfDisplayName,	// native name
+					sSelfDisplayName, 	// display name
+					true, true, 		// displayed ? percent ?
+					"",					// period (not defined at the moment)
+					MetricType.EXCLUSIVE, nbMetrics);
+			this.metricList.add(metricExc);
+		}
 	}
 
 	/************************************************************************
@@ -1011,14 +1019,16 @@ public class ExperimentDatabaseBuilder extends Builder
 			MetricValue metricValue = new MetricValue(actualValue);
 			this.getCurrentScope().setMetricValue(metric.getIndex(), metricValue);
 
-			// update also the self metric value
-			int intShortName = Integer.parseInt(internalName);
-			int newShortName = intShortName + this.maxNumberOfMetrics;
-			String selfShortName = "" + newShortName;
+			// update also the self metric value for calling context only
+			if (this.csviewer) {
+				int intShortName = Integer.parseInt(internalName);
+				int newShortName = intShortName + this.maxNumberOfMetrics;
+				String selfShortName = "" + newShortName;
 
-			Metric selfMetric = this.experiment.getMetric(selfShortName); 
-			MetricValue selfMetricValue = new MetricValue(actualValue);
-			this.getCurrentScope().setMetricValue(selfMetric.getIndex(), selfMetricValue);  
+				Metric selfMetric = this.experiment.getMetric(selfShortName); 
+				MetricValue selfMetricValue = new MetricValue(actualValue);
+				this.getCurrentScope().setMetricValue(selfMetric.getIndex(), selfMetricValue);  
+			}
 		} 
 	}
 

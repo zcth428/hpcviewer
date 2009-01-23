@@ -259,5 +259,55 @@ A derived metric is defined by specifying a spreadsheet-like mathematical formul
 refers to data in other columns in the metric table by using <code>$n</code> to refer to the value in the <code>n</code><sup>th</sup> column.
 </p>
 
+<h3>Formula</h3>
+<p>
+The formula supported by hpcviewer is mainly inspired by spreadsheet-like mathematical formula, and can be in any form of combined complex expression.
+The syntax is very simple:
+<blockquote>
+ <pre>
+&lt;expression&gt; ::= &lt;binary_op&gt; | &lt;function&gt; 
+&lt;binary_op&gt; ::= &lt;expression&gt; &lt;binary_operand&gt; &lt;expression&gt;
+&lt;binary_operand&gt; ::= + | - | * | /
+ </pre>
+</blockquote>
+</p>
+
+<h4>Intrinsic Functions</h4>
+The list of intrinsic functions supported can be found in <a href="functions.html">here</a>.
+
+<h3>Examples</h3>
+Assuming 
+
+<h3>Derived metric dialog box</h3>
+<p>
+A derived metric can be created by clicking the  <b>Derived metric</b> tool item in the navigation/control pane. 
+A derived metric window will then appear as shown in Figure 6 below. 
+<center>
+<img src="images/DerivedMetricDlg.png"/><br/>
+Figure 6: Derived metric dialog box
+</center>
+The window is comprised of two main parts:
+<ol>
+ <li><b>Derived metric definition</b>, which consists of:
+  <ul>
+    <li><i>Formula definition field</i>. In this field user can define a formula with spreadsheet-like mathematical formula. This field is required to be filled.</li>
+    <li><i>Metric help</i>. This is used to help user to find the <i>ID</i> of a metric. 
+    For instance, in this snapshot, the metric <code>PAPI_TOT_CYC</code> has the ID <code>44</code>. 
+    By clicking the button <b>Insert metric</b>, the metric ID will be inserted in formula definition field.</li>
+    <li><i>Function help</i>. This help is to guide user to insert a function in the formula definition field. 
+    Some functions require only one metric as the argument, but some can have two or more arguments.
+    For instance, the function <code>avg()</code> which computes the average of some metrics, need to have two arguments.</li>
+  </ul>
+ </li>
+ <li><b>Options</b>, which consists of two fields:
+   <ul>
+   	<li><i>New name for the derived metric</i>. This field assigns the title of the metric in the table.</li>
+   	<li><i>Display the metric percentage</i>. When the field is checked, the percentage of a metric will be computed and displayed. 
+   	To some cases, it is useful to have the percentage displayed. However, for some formula with multiplication, it does not make sense to have the percentage.</li>
+   </ul>
+ </li>
+</ol>
+
+</p>
 </body>
 </html>

@@ -480,7 +480,11 @@ public class ExperimentDatabaseBuilder extends Builder
 		int nbMetrics = this.metricList.size();
 		String sID = values[nID];
 		int iSelf ;
+		
+		// somehow, the ID of the metric is not number, but asterisk
 		if(sID.charAt(0)=='*') {
+			// parsing an asterisk can throw an exception, which is annoying
+			// so we make an artificial ID for this particular case
 			iSelf = this.maxNumberOfMetrics;
 			sID = "0";
 		} else {
@@ -490,6 +494,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		String sDisplayName = values[nName];
 		MetricType objType = MetricType.EXCLUSIVE;
 		
+		// Laks 2009.01.14: if the database is call path database, then we need
+		//	to distinguish between exclusive and inclusive
 		if(this.csviewer) {
 			sDisplayName = sDisplayName + " (I)";
 			objType = MetricType.INCLUSIVE;
@@ -505,10 +511,12 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.metricList.add(metricInc);
 
 		// Laks 2009.01.14: only for call path profile
+		// Laks 2009.01.14: if the database is call path database, then we need
+		//	to distinguish between exclusive and inclusive
 		if (this.csviewer) {
 			// set the exclusive metric
 			String sSelfName = "" + iSelf;
-			String sSelfDisplayName = values[nName] + " (E)";
+			String sSelfDisplayName = sDisplayName + " (E)";
 			Metric metricExc = new Metric(this.experiment,
 					sSelfName,			// short name
 					sSelfDisplayName,	// native name

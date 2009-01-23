@@ -7,6 +7,8 @@ import com.graphbuilder.math.Expression;
 import com.graphbuilder.math.ExpressionTree;
 import com.graphbuilder.math.FuncMap;
 import com.graphbuilder.math.VarMap;
+import com.graphbuilder.math.func.Function;
+
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
@@ -148,6 +150,10 @@ public class MetricVarMap extends VarMap {
 
 		vm.setValue("r", 10);
 		System.out.println(x.eval(vm, fm)); 
+		Function []fs = fm.getFunctions();
+		for( int i=0; i<fs.length ; i++) {
+			System.out.println("\t<tr><td>" + " <code> " + fs[i].toString() + " </code> </td> <td></td> </tr>");
+		}
 	}
 
 }

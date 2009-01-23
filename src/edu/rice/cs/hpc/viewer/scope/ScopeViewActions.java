@@ -7,6 +7,8 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.dialogs.Dialog;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -178,7 +180,46 @@ public class ScopeViewActions extends ScopeActions {
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
+	public void copyTable() {
+		final Clipboard cb = new Clipboard(this.objShell.getDisplay());
+		TextTransfer textTransfer = TextTransfer.getInstance();
+		Object []arrObjects = this.treeViewer.getExpandedElements();
+		//this.treeViewer.getTree().getColumn(0).get
+		// arrObjects can be either array of Scopes or ArrayOfNodes
+		if(arrObjects != null) {
+			int nbElements = arrObjects.length;
+			if(nbElements>0) {
+				StringBuilder strText = new StringBuilder();
+				if(arrObjects[0] instanceof Scope.Node) {
+					for (int i=0; i<nbElements; i++) {
+						Scope.Node objNode = (Scope.Node) arrObjects[i];
+						strText.append(objNode.getScope().getName());
+						
+					}
+				} else if(arrObjects[0] instanceof ArrayOfNodes) {
+					
+				} else {
+					System.err.println("SVA error: data is unknown type: "+arrObjects[0].getClass());
+				}
+			}
+		}
+	}
 	
+	private String getMetricText(Scope.Node objNode) {
+		TreeColumn []arrVisibleColumns = this.treeViewer.getTree().getColumns();
+		StringBuilder strText = new StringBuilder();
+		for (int i=0; i<arrVisibleColumns.length; i++) {
+			TreeColumn objColumn = arrVisibleColumns[i];
+			if(objColumn.getWidth()>0) {
+				BaseMetric metric = (BaseMetric)objColumn.getData();
+				//strText.append(objNode.getScope().getMetricValue(metric));
+			}
+		}
+		return strText.toString();
+	}
+	/**
+	 * 
+	 */
 	public void showProcessingMessage() {
 		this.objShell.getDisplay().asyncExec(new Runnable(){
 			public void run() {

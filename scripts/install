@@ -74,8 +74,10 @@ test $? -eq 0 || die "unable to install libexec files"
 
 echo "Resetting permissions ..."
 chmod 755 "${bin_dir}/hpcviewer" "${libexec_dir}/hpcviewer"
-find "$libexec_dir" -type d -print | xargs chmod 755
-find "$libexec_dir" -type f -print | xargs chmod a+r
+
+# NOTE: the find idiom below is used to deftly handle file names with embedded spaces 
+find "$libexec_dir" -type d -exec chmod 755 {} \;
+find "$libexec_dir" -type f -exec chmod a+r {} \;
 
 echo "hpcviewer install done"
 exit 0

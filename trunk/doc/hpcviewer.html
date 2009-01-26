@@ -274,9 +274,20 @@ The syntax is very simple:
 
 <h4>Intrinsic Functions</h4>
 The list of intrinsic functions supported can be found in <a href="functions.html">here</a>.
+In order to create a new intrinsic function, user can access to the source code, or by sending email to laksono@rice.edu.
 
 <h3>Examples</h3>
-Assuming 
+Assuming the database contains the information of 5 processes, each has two metrics: 
+<ol>
+	<li>Metric 0, 2, 4, 6 and 8: total number of cycles</li>
+	<li>Metric 1, 3, 5, 7 and 9: total number of floating point computation</li>
+</ol>
+In order to compute the average number of cycles of a floating point, we can define a formula as follows:
+<blockquote>
+ <pre>
+avg($0, $2, $4. $6. $8) / avg($1, $3, $5, $7, $9)
+ </pre>
+</blockquote>
 
 <h3>Derived metric dialog box</h3>
 <p>

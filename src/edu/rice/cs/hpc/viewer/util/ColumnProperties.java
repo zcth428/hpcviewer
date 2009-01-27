@@ -171,7 +171,8 @@ public class ColumnProperties extends TitleAreaDialog {
 	    
 	    btnApplyToAllViews = new Button(groupButtons, SWT.CHECK);
 	    btnApplyToAllViews.setText("Apply to all views");
-	    btnApplyToAllViews.setEnabled(true);
+	    // Laks 2009.01.26: by default, we apply for all views
+	    btnApplyToAllViews.setSelection(true);
 	    btnApplyToAllViews.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 	    
 	    // list of columns (we use table for practical purpose)

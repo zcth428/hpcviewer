@@ -61,6 +61,12 @@ public class HTMLEditor extends EditorPart {
 
 	}
 
+	/**
+	 * a constant to set the default external browser. This variable should be set
+	 * during the initialization of hpctoolkit/hpcviewer
+	 */
+	private final String sDEFAULT_BROWSER = "HPCTOOLKIT_BROWSER";
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
 	 */
@@ -116,9 +122,28 @@ public class HTMLEditor extends EditorPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		try {
+			// attempt to instantiate browser widget
 			browser = new Browser(parent, SWT.BORDER);
 		} catch (SWTError e) {
-			e.printStackTrace();
+			// if the platform doesn't support pluggable browser,
+			//   then we launch an external browser
+			
+			org.eclipse.swt.widgets.Shell objShell = this.getSite().getShell();
+			// find the default external browser
+			String sBrowser = System.getenv(this.sDEFAULT_BROWSER);
+
+			if(sBrowser != null) {
+				// launch the external browser
+				org.eclipse.swt.program.Program.launch(sBrowser+" "+sURI);
+			} else {
+				// the variable is not set or there is no external browser
+				org.eclipse.jface.dialogs.MessageDialog.openWarning(objShell,
+					"Unset default browser", "The environment variable "+this.sDEFAULT_BROWSER+
+					" has not been set.\n"+
+					"The help file can be displayed on "+sURI+
+					" with your browser.");
+			}
+			this.getEditorSite().getPage().closeEditor(this, false);
 			return;
 		}
 		// set the property

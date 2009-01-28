@@ -4,6 +4,19 @@
 </head>
 <body>
 <h1>The hpcviewer User Interface </h1>
+
+<h2>Table of Contents</h2>
+<ol>
+ <li><a href="#introduction">Introduction</a></li>
+ <li><a href="#views">Views</a></li>
+ <li><a href="#panes">Panes</a></li>
+ <li><a href="#understandingmetrics">Understanding Metrics</a></li>
+ <li><a href="#derivedmetrics">Derived Metrics</a></li>
+ <li><a href="#metriccolumns">Metric Columns Functionalities</a></li>
+ </ol>
+
+<a name="introduction"><h2>Introduction</h2></a>
+
 <p>
 HPCToolkit provides the hpcviewer browser for interactive examination of 
 performance databases. Figure 1 shows a screenshot of a brower window with 
@@ -19,7 +32,7 @@ panes.
 Figure 1: A snapshot of hpcviewer
 </center>
 
-<h2>Views</h2>
+<a name="views"><h2>Views</h2></a>
 <p> hpcviewer supports three principal views of an application's performance data: a top-down calling context view, a bottom-up caller's view, 
 and a flat view. One selects the desired view by clicking on the corresponding 
 view control tab. We briefly describe the three views and their corresponding 
@@ -61,7 +74,7 @@ the procedure from a different calling context.
 </li>
 </ul>
 
-<h2>Panes</h2>
+<a name="panes"><h2>Panes</h2></a>
 <p>The browser window is divided into three panes: the <b>navigation</b> 
 pane, the <b>source</b> pane, and the <b>metrics</b> pane. We briefly describe the role of 
 each pane. </p>
@@ -129,8 +142,10 @@ for the selected line and its descendants. One can zoom out
  The "hot spot" is computed by comparing parent and child values, and show the chain where the difference is greater that a threshold 
  (by default is <code>50%</code>). It is also possible to change the threshold value by clicking the menu "File-Preference".</li>
  
- <li><img src="images/FnMetric.gif"/> <b>Derived metric</b>: Creating a new metric based on mathematics expression formula.</li>
- <li><img src="images/checkColumns.gif"/> <b>Show/hide metrics</b>: Showing and hiding metric columns. A dialog box will appear, and user can select which columns to show or hide.</li>
+ <li><img src="images/FnMetric.gif"/> <b>Derived metric</b>: Creating a new metric based on mathematics expression formula. 
+ See <a href="#derivedmetrics">Derived metrics</a> section for more details.</li>
+ <li><img src="images/checkColumns.gif"/> <b>Show/hide metrics</b>: Showing and hiding metric columns. 
+ A dialog box will appear, and user can select which columns to show or hide. See <a href="#hideshowcolumn">hide/show column</a> section for more details </li>
 </ul>
 </p>
 </li>
@@ -156,7 +171,7 @@ metric and navigation panes is synchronized.
 </li>
 </ul>
 
-<h2>Understanding Metrics</h2>
+<a name="understandingmetrics"><h2>Understanding Metrics</h2></a>
 <p>
 The data gathered by profiler attributes the cost for each scope (a file, procedure, loop, or inlined function) exclusively. 
 <i>hpcviewer</i> presents inclusive values for each cost metric associated with a program scope as well. 
@@ -248,7 +263,8 @@ The advantage of attributing different cost for each instance of <code>g</code> 
 
 </p>
 
-<h2>Derived Metrics</h2>
+<a name="derivedmetrics"><h2>Derived Metrics</h2></a>
+
 <p>
 Frequently, the data become useful only when combined with other information such as the number of instructions executed or 
 the total number of cache accesses. 
@@ -321,12 +337,21 @@ The window is comprised of two main parts:
 </p>
 
 
-<h2>Metric Pane Functionalities</h2>
+<a name="metriccolumns"><h2>Metric Columns Functionalities</h2></a>
 <p>
 hpcviewer provides some functionalities for user convenience:
 </p>
+<ul>
+ <li><b>Sorting column</b>. In order to sort a column, one has to click the header of the column. 
+ The first click will sort the column in descending order, and the second column will sort in ascending order.</li>
+ <li><b>Changing column width</b>. One can change the width of the column by dragging the cursor from the border of the column header into the desired width.</li>
+ <li><b>Changing column order</b>. It is possible to switch the column order by dragging the column header into the desired position.</li>
+ <li><b>Hiding or showing metric columns</b>. This functionality is useful to help user to focus on certain metrics. 
+ See the <a href="#hideshowcolumn">next section</a> for more details.</li> 
+</ul>
 
-<h3>Hiding/Showing metric columns</h3>
+<a name="hideshowcolumn"><h3>Hiding/Showing metric columns</h3></a>
+
 <p>In order to help users to focus on some metrics, hpcviewer provide a functionality to hide/show some metric columns. 
 By clicking on the icon <b>Show/hide metrics</b>, a dialog box will appear as shown below. 
 </p>

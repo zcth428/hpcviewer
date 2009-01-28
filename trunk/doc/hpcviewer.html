@@ -12,14 +12,47 @@
  <li><a href="#panes">Panes</a></li>
  <li><a href="#understandingmetrics">Understanding Metrics</a></li>
  <li><a href="#derivedmetrics">Derived Metrics</a></li>
- <li><a href="#metriccolumns">Metric Columns Functionalities</a></li>
+ <li><a href="#metriccolumns">For Convenience Sake</a></li>
  </ol>
 
 <a name="introduction"><h2>Introduction</h2></a>
 
 <p>
-HPCToolkit provides the hpcviewer browser for interactive examination of 
-performance databases. Figure 1 shows a screenshot of a brower window with 
+HPCToolkit provides the <b>hpcviewer</b> browser for interactive examination of 
+performance databases. The viewer can be launched from a command line (Linux/Unix platform) or by clicking 
+the hpcviewer icon (for Windows, Mac OS X and Linux/Unix platform). The command line syntax is as follows:
+<blockquote>
+ <pre>hpcviewer [&lt;database-directory&gt;]
+ </pre>
+</blockquote>
+<code>&lt;database-directory&gt;</code> is an optional argument to load a database automatically. 
+Without this option, the viewer will prompt the location of a database.
+</p>
+
+<h3>Menus</h3>
+hpcviewer provides three main menus:
+<ul>
+  <li><b>File</B>: to organize different activities concerning the database and the program, which consists of several sub-menus:
+    <ul>
+      <li><b>New window</b>: to create a new hpcviewer independently from the existing hpcviewer. </li>
+      <li><b>Open database ...</b>: to load a database on the current hpcviewer.</li>
+      <li><b>Preferences ...</b>: to display the setting dialog box.</li>
+      <li><b>Exit</b>: to quite hpcviewer.</li>
+    </ul>
+  </li>
+  <li><b>Debug</b>: to display the raw XML file of the database.</li>
+  <li><b>Help</b>: to display an information about the viewer. The menu is comprised of three items:
+    <ul>
+      <li><b>About</b>: to display the brief information about the viewer. </li>
+      <li><b>hpcviewer help</b>: this help. If the platform support a browser plug-in, this help will be shown inside the viewer.
+      	Otherwise an external browser will be used if exists.</li>
+      <li><b>Key assists ...</b>: to display the list of shortcuts available.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>
+Figure 1 shows a screenshot of a brower window with 
 panes and key controls labeled. The browser supports three different views 
 of performance data. The browser window is divided into three panes. We 
 first explain the views of performance data and then the role of the different 
@@ -31,6 +64,7 @@ panes.
 <br/>
 Figure 1: A snapshot of hpcviewer
 </center>
+
 
 <a name="views"><h2>Views</h2></a>
 <p> hpcviewer supports three principal views of an application's performance data: a top-down calling context view, a bottom-up caller's view, 
@@ -337,20 +371,32 @@ The window is comprised of two main parts:
 </p>
 
 
-<a name="metriccolumns"><h2>Metric Columns Functionalities</h2></a>
+<a name="metriccolumns"><h2>For Convenience Sake</h2></a>
+<p>In this section we describe some functionalities that are not critical but they are important for improving productivity and convenience.
+</p>
+
+<h3>Editor pane</h3>
 <p>
-hpcviewer provides some functionalities for user convenience:
+The editor pane is used to display source codes or XML database. 
+Sometimes it is important for user to look for a specific location or specific keyword. For this, hpcviewer provides (thanks to Eclipse) some functionalities:
+</p>
+<ul>
+  <li><b>Go to line</b>: to allow user to scroll the view into a specific line number. This functionality can be invoked using <code>&lt;ctrl&gt;-l</code> shortcut.</li>
+  <li><b>Find</b>: to allow user to find a specific keyword inside the current file. This function is invoked using <code>&lt;ctr&gt;-f</code> shortcut.</li> 
+  <li><b>Changing font</b>: to allow user to change the font of the editor. A user needs to access the menu File-Preference to show the Preference dialog box.</li>
+</ul>
+
+<a name="metricpane"><h3>Metric pane</h3></a>
+<p>
+For the metric pane, hpcviewer provides some functionalities for user convenience:
 </p>
 <ul>
  <li><b>Sorting column</b>. In order to sort a column, one has to click the header of the column. 
  The first click will sort the column in descending order, and the second column will sort in ascending order.</li>
  <li><b>Changing column width</b>. One can change the width of the column by dragging the cursor from the border of the column header into the desired width.</li>
  <li><b>Changing column order</b>. It is possible to switch the column order by dragging the column header into the desired position.</li>
- <li><b>Hiding or showing metric columns</b>. This functionality is useful to help user to focus on certain metrics. 
- See the <a href="#hideshowcolumn">next section</a> for more details.</li> 
+ <li><b>Hiding or showing metric columns</b>. This functionality is useful to help user to focus on certain metrics.</li> 
 </ul>
-
-<a name="hideshowcolumn"><h3>Hiding/Showing metric columns</h3></a>
 
 <p>In order to help users to focus on some metrics, hpcviewer provide a functionality to hide/show some metric columns. 
 By clicking on the icon <b>Show/hide metrics</b>, a dialog box will appear as shown below. 
@@ -365,5 +411,7 @@ In order to display all metric columns, user can click the <b><Check all </b> bu
 Finally, an option <b>Apply to all views</b> will set the configuration into all views when checked. 
 Otherwise, the configuration will be applied only on the current view. 
 </p>
+
+
 </body>
 </html>

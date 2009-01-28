@@ -71,13 +71,6 @@
              </separator>
          	</menu>
          <action
-               class="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               id="edu.rice.cs.hpc.viewer.actions.MergeExperiment"
-               label="&amp;Augment database view..."
-               menubarPath="FileMenu/databaseGroup"
-               tooltip="Add an experiment&apos;s data to the open view">
-         </action>
-         <action
                class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
                id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
                label="&amp;Display a database&apos;s raw XML"

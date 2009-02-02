@@ -377,13 +377,15 @@ The window is comprised of two main parts:
 
 <h3>Editor pane</h3>
 <p>
-The editor pane is used to display source codes or XML database. 
+The editor pane can be used to display source codes or XML database.
+Since its main purpose is to display source codes, the editor is not editable. User needs to open an editor (vim, emacs, etc. ) in order to edit the file. 
 Sometimes it is important for user to look for a specific location or specific keyword. For this, hpcviewer provides (thanks to Eclipse) some functionalities:
 </p>
 <ul>
   <li><b>Go to line</b>: to allow user to scroll the view into a specific line number. This functionality can be invoked using <code>&lt;ctrl&gt;-l</code> shortcut.</li>
   <li><b>Find</b>: to allow user to find a specific keyword inside the current file. This function is invoked using <code>&lt;ctr&gt;-f</code> shortcut.</li> 
   <li><b>Changing font</b>: to allow user to change the font of the editor. A user needs to access the menu File-Preference to show the Preference dialog box.</li>
+  <li><b><img src="images/Maximize.png"> Maximizing/<img src="images/Minimize.png">Minimizing</b>: to maximize or minimize the editor. These icon are on the right side of the editor.</li>
 </ul>
 
 <a name="metricpane"><h3>Metric pane</h3></a>
@@ -391,6 +393,10 @@ Sometimes it is important for user to look for a specific location or specific k
 For the metric pane, hpcviewer provides some functionalities for user convenience:
 </p>
 <ul>
+ <li><b>Maximizing view</b>. Maximizing a view can be done by double-clicking the title of the view or clicking the <i>maximize</i> icon <img src="images/Maximize.png"/> 
+ (located on the right side of the pane). 
+ 	To return the original view size, user can double click the title again.<br/>
+ 	</li>
  <li><b>Sorting column</b>. In order to sort a column, one has to click the header of the column. 
  The first click will sort the column in descending order, and the second column will sort in ascending order.</li>
  <li><b>Changing column width</b>. One can change the width of the column by dragging the cursor from the border of the column header into the desired width.</li>

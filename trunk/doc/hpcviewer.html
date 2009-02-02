@@ -13,6 +13,7 @@
  <li><a href="#understandingmetrics">Understanding Metrics</a></li>
  <li><a href="#derivedmetrics">Derived Metrics</a></li>
  <li><a href="#metriccolumns">For Convenience Sake</a></li>
+ <li><a href="#limitation">Limitation</a></li>
  </ol>
 
 <a name="introduction"><h2>Introduction</h2></a>
@@ -418,6 +419,29 @@ Finally, an option <b>Apply to all views</b> will set the configuration into all
 Otherwise, the configuration will be applied only on the current view. 
 </p>
 
+<h2><a name="limitation">Limitation</a></h2>
+<p>
+As this document is writing, hpcviewer has some limitations:
+</p>
+ <ul>
+   <li><b>Limited number of metrics</b>. Although most hpctoolkit components such as <i>hpcrun</i> and <i>hpcstruct</i> support large number of metrics, 
+   it is not recommended to have more than 100 metrics (including exclusive and inclusive metrics) to display with <i>hpcviewer</i>.
+   Not only having huge metrics will be impractical to analyze the data, but also it will require huge memory.
+   If a profiled application has more than 50 processes and each process has its own metrics, we recommend to use the <i>scalability analysis using expectation</i> approach
+   described by the paper written by <a href="http://doi.acm.org/10.1145/1274971.1274976">Chritian Coarfa et al</a>.</li>
+
+   <li><b>No functionalities to print or copy the metrics</b>. At the moment, we these functionalities are not supported. 
+   We intend to support these features in the future.</li>
+ </ul> 
+
+<h2>References</h2>
+ <ol>
+   <li>http://www.hpctoolkit.org</li>
+   <li><a name="scalability">Coarfa, C., Mellor-Crummey, J., Froyd, N., and Dotsenko, Y. 2007.</a> 
+   	<a href="http://doi.acm.org/10.1145/1274971.1274976">Scalability analysis of SPMD codes using expectations.</a> 
+   	In Proceedings of the 21st Annual international Conference on Supercomputing (Seattle, Washington, June 17 - 21, 2007). 
+   	ICS '07. ACM, New York, NY, 13-22.</li>
+ </ol>
 
 </body>
 </html>

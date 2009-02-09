@@ -516,7 +516,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		if (this.csviewer) {
 			// set the exclusive metric
 			String sSelfName = "" + iSelf;
-			String sSelfDisplayName = sDisplayName + " (E)";
+			// Laks 2009.02.09: bug fix for not reusing the existing inclusive display name
+			String sSelfDisplayName = values[nName] + " (E)";
 			Metric metricExc = new Metric(this.experiment,
 					sSelfName,			// short name
 					sSelfDisplayName,	// native name

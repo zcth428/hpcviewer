@@ -21,6 +21,8 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.ui.part.FileEditorInput;
 
+import com.onpositive.richtexteditor.viewer.RichTextViewer;
+
 
 /**
  * @author laksonoadhianto
@@ -28,6 +30,10 @@ import org.eclipse.ui.part.FileEditorInput;
  */
 public class HTMLEditor extends EditorPart {
 	public static String ID = "edu.rice.cs.hpc.viewer.util.HTMLEditor";
+
+	
+	private RichTextViewer richTextViewer;
+	
 	/**
 	 * SWT Browser 
 	 */
@@ -35,7 +41,9 @@ public class HTMLEditor extends EditorPart {
 	/**
 	 * The address of URL document ot display
 	 */
-	protected String sURI;
+	private String sURI;
+	private String sFilePath;
+	
 	/**
 	 * Default constructor
 	 */
@@ -61,11 +69,6 @@ public class HTMLEditor extends EditorPart {
 
 	}
 
-	/**
-	 * a constant to set the default external browser. This variable should be set
-	 * during the initialization of hpctoolkit/hpcviewer
-	 */
-	private final String sDEFAULT_BROWSER = "HPCTOOLKIT_BROWSER";
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
@@ -84,9 +87,10 @@ public class HTMLEditor extends EditorPart {
 					IPath objPath = file.getFullPath();
 					Path objAbsPath = new Path(getAbsolutePath(this));
 					//IFileStore objFileStore = EFS.getLocalFileSystem().getStore(objPath);
-					sURI = "file:///"+objAbsPath.removeLastSegments(1)+"/"+objPath.toString();
+					this.sFilePath = objAbsPath.removeLastSegments(1)+"/"+objPath.toString();
+					sURI = "file:///"+sFilePath;
 				}
-				//browser.setUrl(sURI);
+//				browser.setUrl(sURI);
 			//}
 		}
 	}
@@ -124,10 +128,22 @@ public class HTMLEditor extends EditorPart {
 		try {
 			// attempt to instantiate browser widget
 			browser = new Browser(parent, SWT.BORDER);
+			// set the property
+			browser.setData(HTMLEditor.ID, this);
+			// display the URL
+			browser.setUrl(sURI);
+			GridDataFactory.fillDefaults().grab(true, true).applyTo(browser);
+			GridLayoutFactory.fillDefaults().numColumns(1).applyTo(browser);
+
 		} catch (SWTError e) {
 			// if the platform doesn't support pluggable browser,
-			//   then we launch an external browser
-			
+			//   then we launch an internal SWT browser
+			richTextViewer = new SimpleViewerHTML(parent, SWT.BORDER);
+			this.richTextViewer.setData(HTMLEditor.ID, this);
+			this.richTextViewer.setEditable(false);
+			this.richTextViewer.getLayerManager().openHTMLFile(sFilePath);
+
+			/*
 			org.eclipse.swt.widgets.Shell objShell = this.getSite().getShell();
 			// find the default external browser
 			String sBrowser = System.getenv(this.sDEFAULT_BROWSER);
@@ -145,19 +161,14 @@ public class HTMLEditor extends EditorPart {
 			}
 			this.getEditorSite().getPage().closeEditor(this, false);
 			return;
+			*/
 		}
-		// set the property
-		browser.setData(HTMLEditor.ID, this);
-		// display the URL
-		browser.setUrl(sURI);
 		// display the original source of the HTML file (debugging purpose)
 		this.setContentDescription(sURI);
 		// set the title of the editor
 		this.setPartName(this.getEditorInput().getName());
 		
 		// set the layout: the browser has to be expanded as much as possible
-		GridDataFactory.fillDefaults().grab(true, true).applyTo(browser);
-		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(browser);
 		GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(parent);
 	}
 
@@ -167,8 +178,8 @@ public class HTMLEditor extends EditorPart {
 	@Override
 	public void setFocus() {
 		// TODO Auto-generated method stub
-		if(browser != null)
-			browser.setFocus();
+		//if(browser != null)
+		//	browser.setFocus();
 	}
 	
 	/**

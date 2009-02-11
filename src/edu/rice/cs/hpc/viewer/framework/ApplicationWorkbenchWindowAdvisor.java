@@ -11,6 +11,10 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchListener;
 
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
@@ -169,5 +173,30 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				// do nothing
 			}
 		});
+	}
+	
+	/**
+	 * Laksono 2009.02.11: removing unwanted menus
+	 */
+	public void postWindowCreate()
+	{
+	  IContributionItem[] mItems, mSubItems;
+	  IMenuManager mm = getWindowConfigurer ().getActionBarConfigurer ().getMenuManager ();
+	  mItems = mm.getItems ();
+	  for (int i = 0; i < mItems.length; i++)
+	  {
+	    if (mItems[i] instanceof MenuManager)
+	    {
+	      mSubItems = ((MenuManager) mItems[i]).getItems ();
+	      for (int j = 0; j < mSubItems.length; j++)
+	      {
+	    	  if (mItems[i].getId ().equals ("help"))
+	        {
+	    		  // John doesn't like some of the key assist tooltips. Let's remove all for once
+	          ((MenuManager) mItems[i]).remove ("org.eclipse.ui.actions.showKeyAssistHandler");
+	        }
+	      }
+	    }
+	  }
 	}
 }

@@ -8,6 +8,7 @@
 <h2>Table of Contents</h2>
 <ol>
  <li><a href="#introduction">Introduction</a></li>
+ <li><a href="#menus">Menus</a></li>
  <li><a href="#views">Views</a></li>
  <li><a href="#panes">Panes</a></li>
  <li><a href="#understandingmetrics">Understanding Metrics</a></li>
@@ -22,35 +23,38 @@
 HPCToolkit provides the <b>hpcviewer</b> browser for interactive examination of 
 performance databases. The viewer can be launched from a command line (Linux/Unix platform) or by clicking 
 the hpcviewer icon (for Windows, Mac OS X and Linux/Unix platform). The command line syntax is as follows:
-<blockquote>
- <pre>hpcviewer [&lt;database-directory&gt;]
+
+ <pre>
+ hpcviewer [&lt;database-directory&gt;]
  </pre>
-</blockquote>
+
 <code>&lt;database-directory&gt;</code> is an optional argument to load a database automatically. 
 Without this option, the viewer will prompt the location of a database.
 </p>
 
-<h3>Menus</h3>
+<a name="menus"><h2>Menus</h2></a>
 hpcviewer provides three main menus:
-<ul>
-  <li><b>File</B>: to organize different activities concerning the database and the program, which consists of several sub-menus:
+
+  <h3>File</h3>
+  This menu provides functionalities to organize different activities concerning the database and the program, which consists of several sub-menus:
     <ul>
       <li><b>New window</b>: to create a new hpcviewer independently from the existing hpcviewer. </li>
       <li><b>Open database ...</b>: to load a database on the current hpcviewer.</li>
       <li><b>Preferences ...</b>: to display the setting dialog box.</li>
-      <li><b>Exit</b>: to quite hpcviewer.</li>
+      <li><b>Exit</b>: to quit hpcviewer.</li>
     </ul>
-  </li>
-  <li><b>Debug</b>: to display the raw XML file of the database.</li>
-  <li><b>Help</b>: to display an information about the viewer. The menu is comprised of three items:
+  
+  <h3>Debug</h3>
+  This menu provides a functionality to display the raw XML file of the database.
+ 
+  <h3>Help</h3>
+  This menu displays information about the viewer. The menu is comprised of three items:
     <ul>
-      <li><b>About</b>: to display the brief information about the viewer. </li>
-      <li><b>hpcviewer help</b>: this help. If the platform support a browser plug-in, this help will be shown inside the viewer.
-      	Otherwise an external browser will be used if exists.</li>
+      <li><b>About</b>: to display the brief information about the viewer, including used plug-ins and error log. </li>
+      <li><b>hpcviewer help</b>: this document. </li>
       <li><b>Key assists ...</b>: to display the list of shortcuts available.</li>
     </ul>
-  </li>
-</ul>
+
 
 <p>
 Figure 1 shows a screenshot of a brower window with 
@@ -73,13 +77,15 @@ and a flat view. One selects the desired view by clicking on the corresponding
 view control tab. We briefly describe the three views and their corresponding 
 purposes. 
 </p>
+
 <ul>
  <li> <b>Calling context view</b>. This top-down view represents the dynamic calling contexts (call paths) in which costs were incurred. Using this view, 
 one can explore performance measurements of an application in a top- 
-down fashion to understand the costs (We use the term cost rather than simply time since hpcviewer can present a multiplicity 
-of measured (e.g. cycles, or cache misses) or derived metrics (e.g. cache miss rates or 
-bandwidth consumed) that that are other indicators of execution cost.) incurred by calls to a procedure 
-in a particular calling context. <br/>
+down fashion to understand the costs  incurred by calls to a procedure 
+in a particular calling context. We use the term "cost" rather than simply "time" since hpcviewer can present a multiplicity 
+of measured such as cycles, or cache misses) or derived metrics (e.g. cache miss rates or 
+bandwidth consumed) that that are other indicators of execution cost.<br/>
+
 A calling context for a procedure <b><code>f</code></b> consists of the stack of procedure frames active when the call was made to 
 <b><code>f</code></b>. Using this view, one can readily see how much of the application's 
 cost was incurred by <b><code>f</code></b> when called from a particular calling context. If 
@@ -90,6 +96,7 @@ user interface distinguish calling context precisely by individual call
 sites; this means that if a procedure <b><code>g</code></b> contains calls to procedure <b><code>f</code></b> in 
 different places, these represent separate calling contexts.
 </li> 
+
 <li> <b>Callers view</b>. This bottom up view enables one to look upward along 
 call paths. This view is particularly useful for understanding the performance of software components or procedures that are used in more 
 than one context. For instance, a message-passing program may call 
@@ -100,8 +107,8 @@ in some calling contexts while other parts of the program may have
 short waits because computation is balanced and communication is 
 overlapped with computation. 
 </li>
-<li><b>Flat view</b>. This view organizes performance measurement data accord- 
-ing to the static structure of an application. All costs incurred in any 
+
+<li><b>Flat view</b>. This view organizes performance measurement data according to the static structure of an application. All costs incurred in any 
 calling context by a procedure are aggregated together in the flat view. 
 This complements the calling context view, in which the costs incurred 
 by a particular procedure are represented separately for each call to 
@@ -113,29 +120,32 @@ the procedure from a different calling context.
 <p>The browser window is divided into three panes: the <b>navigation</b> 
 pane, the <b>source</b> pane, and the <b>metrics</b> pane. We briefly describe the role of 
 each pane. </p>
-<ul>
-<li> <b>Source pane</b>. The source pane displays the source code associated with 
+
+<h3>Source pane</h3>
+ The source pane displays the source code associated with 
 the current entity selected in the navigation pane. When a performance 
 database is first opened with hpcviewer, the source pane is initially 
-blank because no entity is selected in the navigation pane. Selecting 
+blank because no entity has been selected in the navigation pane. Selecting 
 any entity in the navigation pane will cause the source pane to load the 
 corresponding file, scroll to and highlight the line corresponding to the 
 selection. Switching the source pane to view to a different source file 
 is accomplished by making another selection in the navigation pane. 
-</li>
-<li> <b>Navigation pane</b>. The navigation pane presents a hierarchical tree- 
-based structure that is used to organize the presentation of an applications's 
+
+<h3>Navigation pane</h3>
+The navigation pane presents a hierarchical tree-based structure that is used to organize the presentation of an applications's 
  performance data. Entities that occur in the navigation pane's 
 tree include load modules, files, procedures, procedure activations, inlined code, loops, and source lines. Selecting any of these entities will 
 cause its corresponding source code (if any) to be displayed in the 
 source pane. One can reveal or conceal children in this hierarchy by 
 "opening" or "closing" any non-leaf (i.e., individual source line) entry 
 in this view. 
+
 <p>
 The nature of the entities in the navigation pane's tree structure depends
  upon whether one is exploring the calling context view, the 
 callers view, or the flat view of the performance data. 
 </p>
+
 <ul>
 <li> In the <b>calling context view</b>, entities in the navigation tree represent 
 procedure activations, inlined code, loops, and source lines. While 
@@ -153,18 +163,21 @@ files, procedure call sites (which are rendered the same way as
 procedure activations), loops, and source lines. 
 </li>
 </ul>
+
+<p></p>
+
 <p>
 The header above the navigation pane contains some controls for the 
 navigation and metric view. In Figure 1, they are labeled as "navigation/metric control". 
 <ul>
- <li><img src="images/Flatten.gif"/> <b>Flatten / <img src="images/Unflatten.gif"/> unflatten</b>: These buttons are only available for flat view. They enable one to flatten and unflatten 
+ <li><img src="images/Flatten.gif"/> <b>Flatten / <img src="images/Unflatten.gif"/> unflatten</b> (available for the flat view): Enabling to flatten and unflatten 
 the navigation hierarchy. Clicking on the flatten button (the icon that 
 shows a tree node with a slash through it) will replace each top-level 
 scope shown with its children. If a scope has no children (i.e., it is a 
 leaf ), the node will remain in the view. This flattening operation is 
 useful for relaxing the strict hierarchical view so that peers at the same 
 level in the tree can be viewed and ranked together. For instance, this 
-can be used to hide procedures in the flat view so that outermost loops 
+can be used to hide procedures in the flat view so that outer loops 
 can be ranked and compared to one another. The inverse of the flatten 
 operation is the unflatten operation, which causes an elided node in 
 the tree to be made visible once again. 
@@ -173,24 +186,23 @@ the tree to be made visible once again.
 for the selected line and its descendants. One can zoom out 
 (reversing a prior zoom operation) by depressing the down arrow button</li>
 
- <li><img src="images/flameIcon.gif"/> <b>Hot call path</b>: This accounts for cost of performance hot-spots, and is used to show the chain of responsibility for costs.
+ <li><img src="images/flameIcon.gif"/> <b>Hot call path</b>: Finding for the cost of performance hot-spots, and is used to show the chain of responsibility for costs.
  The "hot spot" is computed by comparing parent and child values, and show the chain where the difference is greater that a threshold 
  (by default is <code>50%</code>). It is also possible to change the threshold value by clicking the menu "File-Preference".</li>
  
- <li><img src="images/FnMetric.gif"/> <b>Derived metric</b>: Creating a new metric based on mathematics expression formula. 
+ <li><img src="images/FnMetric.gif"/> <b>Derived metric</b>: Creating a new metric based on mathematical formula. 
  See <a href="#derivedmetrics">Derived metrics</a> section for more details.</li>
  <li><img src="images/checkColumns.gif"/> <b>Show/hide metrics</b>: Showing and hiding metric columns. 
  A dialog box will appear, and user can select which columns to show or hide. See <a href="#hideshowcolumn">hide/show column</a> section for more details </li>
 </ul>
 </p>
-</li>
 
-<li> <b>Metric pane</b>. The metric pane displays one or more performance metrics associated with entities to the left in the navigation pane. Entities 
+<h3>Metric pane</h3>
+The metric pane displays one or more performance metrics associated with entities to the left in the navigation pane. Entities 
 in the tree view of the navigation pane are sorted at each level of the 
 hierarchy by the metric in the selected column. When <i>hpcviewer</i> is 
 launched, the leftmost metric column is the default selection and the 
-navigation pane is sorted according to the values of that metric in de- 
-scending order. One can change the selected metric by clicking on a 
+navigation pane is sorted according to the values of that metric in descending order. One can change the selected metric by clicking on a 
 column header. Clicking on the header of the selected column toggles 
 the sort order between descending and ascending. 
 <p>
@@ -203,14 +215,12 @@ includes scroll bars for horizontal scrolling (to reveal other metrics)
 and vertical scrolling (to reveal other scopes). Vertical scrolling of the 
 metric and navigation panes is synchronized. 
 </p>
-</li>
-</ul>
 
 <a name="understandingmetrics"><h2>Understanding Metrics</h2></a>
 <p>
-The data gathered by profiler attributes the cost for each scope (a file, procedure, loop, or inlined function) exclusively. 
+The data gathered by the profiler attributes the cost for each scope (a file, procedure, loop, or inlined function) exclusively. 
 <i>hpcviewer</i> presents inclusive values for each cost metric associated with a program scope as well. 
-Exclusive costs are those incurred by scope itself; whereas inclusive costs for a scope include costs incurred by 
+Exclusive costs are those incurred by scope itself; whereas inclusive costs include costs incurred by 
 any calls it makes. 
 </p>
 
@@ -275,13 +285,17 @@ h () {
 
 </center>
 <p>
-Figure 2 (a and b) shows an example of a recursive program separated into two files: <code>file1.c</code> and <code>file2.c</code> .
+Figure 2 (a and b) shows an example of a recursive program separated into two files: <code>file1.c</code> and <code>file2.c</code>. 
+In this figure, we use numerical subscripts to distinguish between different instances of the same procedure. In the other parts of this figure, we use alphabetic subscripts. 
+We use different labels because there is no natural one-to-one correspondence between the instances in the different views.
+
+<p>
 Routine <code>g</code> (Figure 2b) can behave as a recursive function depending on the value of the condition branch (Line 3-4).
 Figure 3 shows an example of the call chain execution of the program annotated with both inclusive and exclusive costs. Computation of inclusive costs from exclusive costs in the calling context view involves simply summing up all of the costs in the subtree below.
 </p>
 <p>
 In this figure, we can see that on the right path of the routine <code>m</code>, routine <code>g</code>
-(instantiated in the diagram as <code>g<sub>1</sub></code>) performed a recursive call (<code>g<sub>2</sub></code>) before calling routine <code>h</code> (in this figure, we use numerical subscripts to distinguish between different instances of the same procedure. In the other parts of this figure, we use alphabetic subscripts. We use different labels because there is no natural one-to-one correspondence between the instances in the different views.) 
+(instantiated in the diagram as <code>g<sub>1</sub></code>) performed a recursive call (<code>g<sub>2</sub></code>) before calling routine <code>h</code>.
 Although <code>g<sub>1</sub></code>, <code>g<sub>2</sub></code> and <code>g<sub>3</sub></code> are all instances from the same routine (i.e., <code>g</code>), we attribute  a different cost for each instance.
 This separation of cost can be critical to identify which instance has a performance problem. 
 </p>
@@ -293,8 +307,8 @@ We do not attribute the cost of <code>g<sub>2</sub></code> here since it is a de
 </p>
 <p>
 Inclusive costs need to be computed similarly in the flat view. The inclusive cost of a recursive routine is the sum of the highest cost for each branch in calling context tree.
-For instance, in Figure 5, The inclusive cost of <code>g<sub>x</sub></code>, defined as the total cost of all instances of <code>g</code>, is <code>9</code> and this is consistently the same as the cost in caller tree.
-The advantage of attributing different cost for each instance of <code>g</code> is that it enables user to identify which instance is the responsible for performance losses.
+For instance, in Figure 5, The inclusive cost of <code>g<sub>x</sub></code>, defined as the total cost of all instances of <code>g</code>, is <code>9</code>, and this is consistently the same as the cost in caller tree.
+The advantage of attributing different costs for each instance of <code>g</code> is that it enables a user to identify which instance of the call to <code>g</code> is responsible for performance losses.
 
 </p>
 
@@ -305,7 +319,8 @@ Frequently, the data become useful only when combined with other information suc
 the total number of cache accesses. 
 While users don't mind a bit of mental arithmetic and frequently compare values in different 
 columns to see how they relate for a scope, doing this for many scopes is exhausting. 
-To address this problem, <i>hpcviewer</i> provides a mechanism for defining derived metrics. 
+To address this problem, <i>hpcviewer</i> provides a mechanism for defining metrics. 
+A user-defined metric is called a "derived metric".
 A derived metric is defined by specifying a spreadsheet-like mathematical formula that 
 refers to data in other columns in the metric table by using <code>$n</code> to refer to the value in the <code>n</code><sup>th</sup> column.
 </p>
@@ -325,13 +340,13 @@ The syntax is very simple:
 
 <h4>Intrinsic Functions</h4>
 The list of intrinsic functions supported can be found in <a href="functions.html">here</a>.
-In order to create a new intrinsic function, user can access to the source code, or by sending email to laksono@rice.edu.
+In order to create a new intrinsic function, the user can access to the source code, or by sending email to hpc@rice.edu.
 
 <h3>Examples</h3>
 Assuming the database contains the information of 5 processes, each has two metrics: 
 <ol>
 	<li>Metric 0, 2, 4, 6 and 8: total number of cycles</li>
-	<li>Metric 1, 3, 5, 7 and 9: total number of floating point computation</li>
+	<li>Metric 1, 3, 5, 7 and 9: total number of floating point operations</li>
 </ol>
 In order to compute the average number of cycles of a floating point, we can define a formula as follows:
 <blockquote>
@@ -344,31 +359,36 @@ avg($0, $2, $4. $6. $8) / avg($1, $3, $5, $7, $9)
 <p>
 A derived metric can be created by clicking the  <b>Derived metric</b> tool item in the navigation/control pane. 
 A derived metric window will then appear as shown in Figure 6 below. 
+</p>
+
 <center>
 <img src="images/DerivedMetricDlg.png"/><br/>
 Figure 6: Derived metric dialog box
 </center>
+
 The window is comprised of two main parts:
-<ol>
- <li><b>Derived metric definition</b>, which consists of:
+
+<p>
+<b>Derived metric definition</b>, which consists of:
   <ul>
-    <li><i>Formula definition field</i>. In this field user can define a formula with spreadsheet-like mathematical formula. This field is required to be filled.</li>
-    <li><i>Metric help</i>. This is used to help user to find the <i>ID</i> of a metric. 
+    <li><i>Formula definition field</i>. In this field the user can define a formula with spreadsheet-like mathematical formula. This field is required to be filled.</li>
+    <li><i>Metric help</i>. This is used to help the user to find the <i>ID</i> of a metric. 
     For instance, in this snapshot, the metric <code>PAPI_TOT_CYC</code> has the ID <code>44</code>. 
     By clicking the button <b>Insert metric</b>, the metric ID will be inserted in formula definition field.</li>
-    <li><i>Function help</i>. This help is to guide user to insert a function in the formula definition field. 
+    <li><i>Function help</i>. This help is to guide the user to insert functions in the formula definition field. 
     Some functions require only one metric as the argument, but some can have two or more arguments.
     For instance, the function <code>avg()</code> which computes the average of some metrics, need to have two arguments.</li>
   </ul>
- </li>
- <li><b>Options</b>, which consists of two fields:
+</p>
+
+<p>
+<b>Options</b>, which consists of two fields:
    <ul>
    	<li><i>New name for the derived metric</i>. This field assigns the title of the metric in the table.</li>
    	<li><i>Display the metric percentage</i>. When the field is checked, the percentage of a metric will be computed and displayed. 
-   	To some cases, it is useful to have the percentage displayed. However, for some formula with multiplication, it does not make sense to have the percentage.</li>
+   	In some cases, it is useful to have the percentage displayed. However, for some formulas with multiplication, it does not make sense to display the percentage.</li>
    </ul>
  </li>
-</ol>
 </p>
 
 
@@ -378,14 +398,14 @@ The window is comprised of two main parts:
 
 <h3>Editor pane</h3>
 <p>
-The editor pane can be used to display source codes or XML database.
-Since its main purpose is to display source codes, the editor is not editable. User needs to open an editor (vim, emacs, etc. ) in order to edit the file. 
+The editor pane can be used to display source codes or the XML database and it is not editable. 
+The user needs to open an editor (vim, emacs, etc. ) in order to edit the file. 
 Sometimes it is important for user to look for a specific location or specific keyword. For this, hpcviewer provides (thanks to Eclipse) some functionalities:
 </p>
 <ul>
-  <li><b>Go to line</b>: to allow user to scroll the view into a specific line number. This functionality can be invoked using <code>&lt;ctrl&gt;-l</code> shortcut.</li>
-  <li><b>Find</b>: to allow user to find a specific keyword inside the current file. This function is invoked using <code>&lt;ctr&gt;-f</code> shortcut.</li> 
-  <li><b>Changing font</b>: to allow user to change the font of the editor. A user needs to access the menu File-Preference to show the Preference dialog box.</li>
+  <li><b>Go to line</b>: to allow the user to scroll the view into a specific line number. This functionality can be invoked using <code>&lt;ctrl&gt;-l</code> shortcut.</li>
+  <li><b>Find</b>: to allow the user to find a specific keyword inside the current file. This function is invoked using <code>&lt;ctr&gt;-f</code> shortcut.</li> 
+  <li><b>Changing font</b>: to allow the user to change the font of the editor. A user needs to access the menu File-Preference to show the Preference dialog box.</li>
   <li><b><img src="images/Maximize.png"> Maximizing/<img src="images/Minimize.png">Minimizing</b>: to maximize or minimize the editor. These icon are on the right side of the editor.</li>
 </ul>
 
@@ -396,13 +416,13 @@ For the metric pane, hpcviewer provides some functionalities for user convenienc
 <ul>
  <li><b>Maximizing view</b>. Maximizing a view can be done by double-clicking the title of the view or clicking the <i>maximize</i> icon <img src="images/Maximize.png"/> 
  (located on the right side of the pane). 
- 	To return the original view size, user can double click the title again.<br/>
+ 	To return to the original view size, the user can double click the title again.<br/>
  	</li>
- <li><b>Sorting column</b>. In order to sort a column, one has to click the header of the column. 
+ <li><b>Sorting column</b>. Sorting a column can be done by clicking the header of the column. 
  The first click will sort the column in descending order, and the second column will sort in ascending order.</li>
- <li><b>Changing column width</b>. One can change the width of the column by dragging the cursor from the border of the column header into the desired width.</li>
- <li><b>Changing column order</b>. It is possible to switch the column order by dragging the column header into the desired position.</li>
- <li><b>Hiding or showing metric columns</b>. This functionality is useful to help user to focus on certain metrics.</li> 
+ <li><b>Changing column width</b>. Changing the width of the column can be carried out by dragging the cursor from the border of the column header into the desired width.</li>
+ <li><b>Changing column order</b>. Switching the column order can be performed by dragging the column header into the desired position.</li>
+ <li><b>Hiding or showing metric columns</b>. Disapprearing and reappearing a column is important to help user to focus on certain metrics. </li> 
 </ul>
 
 <p>In order to help users to focus on some metrics, hpcviewer provide a functionality to hide/show some metric columns. 
@@ -412,21 +432,23 @@ By clicking on the icon <b>Show/hide metrics</b>, a dialog box will appear as sh
 Figure 7: Hide/Show columns dialog box
 </center>
 <p>
-The dialog box contains a list of metric columns sorted based on the original structure from hpcprof. 
+The dialog box contains a list of metric columns sorted according to the original structure from hpcprof. 
 Each metric column is prefixed by a check box to indicate if the metric should be <i>displayed</i> (if checked) or <i>hidden</i> (unchecked).
-In order to display all metric columns, user can click the <b><Check all </b> button. A click to <b>Uncheck all</b> will hide all the metric columns.<br/>
+In order to display all metric columns, the user can click the <b>Check all</b> button. A click to <b>Uncheck all</b> will hide all the metric columns.<br/>
 Finally, an option <b>Apply to all views</b> will set the configuration into all views when checked. 
 Otherwise, the configuration will be applied only on the current view. 
 </p>
 
 <h2><a name="limitation">Limitation</a></h2>
 <p>
-As this document is writing, hpcviewer has some limitations:
+As of this writing, hpcviewer has some limitations:
 </p>
  <ul>
    <li><b>Limited number of metrics</b>. Although most hpctoolkit components such as <i>hpcrun</i> and <i>hpcstruct</i> support large number of metrics, 
    it is not recommended to have more than 100 metrics (including exclusive and inclusive metrics) to display with <i>hpcviewer</i>.
-   Not only having huge metrics will be impractical to analyze the data, but also it will require huge memory.
+   Having huge metrics will not only be impractical as far
+                     as analyzing the data, but it will also require huge
+                     memory.
    If a profiled application has more than 50 processes and each process has its own metrics, we recommend to use the <i>scalability analysis using expectation</i> approach
    described by the paper written by <a href="http://doi.acm.org/10.1145/1274971.1274976">Chritian Coarfa et al</a>.</li>
 

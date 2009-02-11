@@ -36,28 +36,33 @@ Without this option, the viewer will prompt the location of a database.
 hpcviewer provides three main menus:
 
   <h3>File</h3>
-  This menu provides functionalities to organize different activities concerning the database and the program, which consists of several sub-menus:
+  This menu includes several menu items for controlling basic viewer
+  operations.
     <ul>
-      <li><b>New window</b>: to create a new hpcviewer independently from the existing hpcviewer. </li>
-      <li><b>Open database ...</b>: to load a database on the current hpcviewer.</li>
-      <li><b>Preferences ...</b>: to display the setting dialog box.</li>
-      <li><b>Exit</b>: to quit hpcviewer.</li>
+      <li><b>New window</b>. Open a new hpcviewer window that is
+  independent from the existing one. </li>
+      <li><b>Open database ...</b>. Load a performance database
+  into the current hpcviewer window.</li>
+      <li><b>Preferences ...</b>. Display the settings dialog box.</li>
+      <li><b>Exit</b>. Quit the hpcviewer application.</li>
     </ul>
   
   <h3>Debug</h3>
-  This menu provides a functionality to display the raw XML file of the database.
+  This menu enables one to request display of HPCToolkit's raw XML
+  representation for performance data. (This operation is intended
+  primarily for tool developer use.)
  
   <h3>Help</h3>
-  This menu displays information about the viewer. The menu is comprised of three items:
+  This menu displays information about the viewer. The menu contains three items:
     <ul>
-      <li><b>About</b>: to display the brief information about the viewer, including used plug-ins and error log. </li>
-      <li><b>hpcviewer help</b>: this document. </li>
-      <li><b>Key assists ...</b>: to display the list of shortcuts available.</li>
+      <li><b>About</b>. Displays brief information about the viewer, including used plug-ins and error log. </li>
+      <li><b>hpcviewer help</b>. This document. </li>
+      <li><b>Key assists ...</b>. Display a list of shortcuts available.</li>
     </ul>
 
 
 <p>
-Figure 1 shows a screenshot of a brower window with 
+Figure 1 shows a screenshot of an hpcviewer brower window with 
 panes and key controls labeled. The browser supports three different views 
 of performance data. The browser window is divided into three panes. We 
 first explain the views of performance data and then the role of the different 
@@ -192,7 +197,7 @@ for the selected line and its descendants. One can zoom out
  
  <li><img src="images/FnMetric.gif"/> <b>Derived metric</b>: Creating a new metric based on mathematical formula. 
  See <a href="#derivedmetrics">Derived metrics</a> section for more details.</li>
- <li><img src="images/checkColumns.gif"/> <b>Show/hide metrics</b>: Showing and hiding metric columns. 
+ <li><img src="images/checkColumns.gif"/> <b>Hide/show metrics</b>: Showing and hiding metric columns. 
  A dialog box will appear, and user can select which columns to show or hide. See <a href="#hideshowcolumn">hide/show column</a> section for more details </li>
 </ul>
 </p>
@@ -224,7 +229,7 @@ Exclusive costs are those incurred by scope itself; whereas inclusive costs incl
 any calls it makes. 
 </p>
 
-<h3>How metrics are computed ?</h3>
+<h3>How metrics are computed?</h3>
 <p>Call path profile measurements collected by <i>hpcrun</i> correspond directly to the calling context view. <i>hpcviewer</i> 
 derives all other views from exclusive metric costs in the calling context view. For the caller view, <i>hpcviewer</i> collects the 
 cost of all samples in each function and attribute that to a top-level entry in the caller view. Under each top-level 
@@ -340,15 +345,20 @@ The syntax is very simple:
 
 <h4>Intrinsic Functions</h4>
 The list of intrinsic functions supported can be found in <a href="functions.html">here</a>.
-In order to create a new intrinsic function, the user can access to the source code, or by sending email to hpc@rice.edu.
+Creating a new intrinsic function requires adjusting the source
+code. If you want to do it yourself, source code for the viewer is
+available at https://outreach.scidac.gov. Otherwise, you can contact
+the HPCToolkit team at hpc@rice.edu.
 
 <h3>Examples</h3>
-Assuming the database contains the information of 5 processes, each has two metrics: 
+Suppose the database contains information about 5 processes, each
+with two metrics: 
 <ol>
 	<li>Metric 0, 2, 4, 6 and 8: total number of cycles</li>
 	<li>Metric 1, 3, 5, 7 and 9: total number of floating point operations</li>
 </ol>
-In order to compute the average number of cycles of a floating point, we can define a formula as follows:
+To compute the average number of cycles per floating point operation
+across all of the processes, we can define a formula as follows:
 <blockquote>
  <pre>
 avg($0, $2, $4. $6. $8) / avg($1, $3, $5, $7, $9)
@@ -366,7 +376,7 @@ A derived metric window will then appear as shown in Figure 6 below.
 Figure 6: Derived metric dialog box
 </center>
 
-The window is comprised of two main parts:
+The window has two main parts:
 
 <p>
 <b>Derived metric definition</b>, which consists of:
@@ -382,78 +392,144 @@ The window is comprised of two main parts:
 </p>
 
 <p>
-<b>Options</b>, which consists of two fields:
+<b>Options</b>, offers two customizations:
    <ul>
-   	<li><i>New name for the derived metric</i>. This field assigns the title of the metric in the table.</li>
-   	<li><i>Display the metric percentage</i>. When the field is checked, the percentage of a metric will be computed and displayed. 
-   	In some cases, it is useful to have the percentage displayed. However, for some formulas with multiplication, it does not make sense to display the percentage.</li>
+   	<li><i>New name for the derived metric</i>. Supply a string
+     that will be used as the column header for the derived
+     metric. If you don't supply one, the metric will have no name.</li>
+   	<li><i>Display the metric percentage</i>. When this box is
+     checked, each scope's derived metric value will be augmented with
+     a percentage value, which for scope <i>s</i> is computed as the
+     100 * (<i>s</i>'s derived metric value) / (the derived metric
+     value computed by
+     applying the metric formula to the aggregate values of the input
+     metrics)
+     the entire execution). Such a computation can lead to nonsensical
+     results for some derived metric formulae. For instance, if the
+     derived metric is computed as a ratio of two other metrics, the
+     aforementioned computation that compares the scope's ratio with
+     the ratio for the entire program won't yield a meaningful result.
+     To avoid a confusing metric display, think before you use this
+     button to annotate a metric with its percent of total.
+     </li>
    </ul>
  </li>
 </p>
 
 
 <a name="metriccolumns"><h2>For Convenience Sake</h2></a>
-<p>In this section we describe some functionalities that are not critical but they are important for improving productivity and convenience.
+<p>In this section we describe some features of hpcviewer that help
+ improve productivity.
 </p>
 
 <h3>Editor pane</h3>
 <p>
-The editor pane can be used to display source codes or the XML database and it is not editable. 
-The user needs to open an editor (vim, emacs, etc. ) in order to edit the file. 
-Sometimes it is important for user to look for a specific location or specific keyword. For this, hpcviewer provides (thanks to Eclipse) some functionalities:
+The editor pane is used to display <i>a copy</i> of your program's
+ source code or HPCToolkit's performance data in XML format; for this
+ reason, it does not support editing of the pane's contents.
+To edit your program, you should use your favorite editor to edit
+ <i>your</i> original copy of the source, not the one stored in HPCToolkit's
+ performance database. Thanks to built-in capabilities in Eclipse,
+ hpcviewer supports some useful shortcuts and customization:  
 </p>
 <ul>
-  <li><b>Go to line</b>: to allow the user to scroll the view into a specific line number. This functionality can be invoked using <code>&lt;ctrl&gt;-l</code> shortcut.</li>
-  <li><b>Find</b>: to allow the user to find a specific keyword inside the current file. This function is invoked using <code>&lt;ctr&gt;-f</code> shortcut.</li> 
-  <li><b>Changing font</b>: to allow the user to change the font of the editor. A user needs to access the menu File-Preference to show the Preference dialog box.</li>
-  <li><b><img src="images/Maximize.png"> Maximizing/<img src="images/Minimize.png">Minimizing</b>: to maximize or minimize the editor. These icon are on the right side of the editor.</li>
+  <li><b>Go to line</b>. To scroll the current source pane to a specific line
+  number, <code>&lt;ctrl&gt;-l</code> (on Linux and Windows) or
+  <code>&lt;command&gt;-l</code> (Mac) will bring up a dialog that
+  enables you to enter the target line number.</li>
+  <li><b>Find</b>. To search for a string in the current source pane,
+  <code>&lt;ctrl&gt;-f</code> (Linux and Windows) or
+  <code>&lt;command&gt;-f</code> (Mac) will bring up a find dialog
+  that enables you to enter the target string.</li> 
+  <li><b>Font</b>. You can change the font used by hpcviewer for the
+  metric table using the Preferences dialog from the File menu. Once
+  you've opened the Preferences dialog, select <i>hpcviewer
+  preferences</i> (the item at the bottom of the list in the column on
+  the left side of the pane). The new font will take effect when you
+  next launch hpcviewer.
+  </li>
+  <li><b>Minimize/Maximize window</b>. Icons in the upper right corner
+  of the window enable you to minimize (<img src="images/Minimize.png">)
+  or maximize (<img src="images/Maximize.png">) the hpcviewer window.
+</li>
 </ul>
 
 <a name="metricpane"><h3>Metric pane</h3></a>
 <p>
-For the metric pane, hpcviewer provides some functionalities for user convenience:
+For the metric pane, hpcviewer has some convenient features:
 </p>
 <ul>
- <li><b>Maximizing view</b>. Maximizing a view can be done by double-clicking the title of the view or clicking the <i>maximize</i> icon <img src="images/Maximize.png"/> 
- (located on the right side of the pane). 
- 	To return to the original view size, the user can double click the title again.<br/>
+ <li><b>Maximizing a view</b>. To expand the source or metric pane to
+  fill the window, one can double click on the tab with the view
+  name. Double clicking again on the view name will restore the view
+  back to its original size.
+ 	<br/>
  	</li>
- <li><b>Sorting column</b>. Sorting a column can be done by clicking the header of the column. 
- The first click will sort the column in descending order, and the second column will sort in ascending order.</li>
- <li><b>Changing column width</b>. Changing the width of the column can be carried out by dragging the cursor from the border of the column header into the desired width.</li>
- <li><b>Changing column order</b>. Switching the column order can be performed by dragging the column header into the desired position.</li>
- <li><b>Hiding or showing metric columns</b>. Disapprearing and reappearing a column is important to help user to focus on certain metrics. </li> 
+ <li><b>Sorting the metric pane contents by a column's
+	values</b>. First, select the column on which you wish to
+	sort. If no triangle appears next to the metric, click again.
+	A downward pointing triangle means that the rows in the metric
+	pane are sorted in descending order according to the column's
+	value. Additional clicks on the header of the selected column
+	will toggle back and forth between ascending and descending.
+</li>
+ <li><b>Changing column width</b>. To increase or decrease the
+width of a column, first put the cursor over the right or left border
+of the column's header field. The cursor will change into a vertical
+bar between a left and right arrow. Depress the mouse and drag the
+column border to the desired position.
+</li>
+ <li><b>Changing column order</b>. If it would be more convenient to
+have columns displayed in a different order, they can be permuted as you wish.
+Depress and hold the mouse button over the header of column
+that you wish to move and drag the column right or left to its new
+position.
+</li>
+ <li><b>Hiding or showing metric columns</b>. Sometimes, it may be
+more convenient to suppress the display of metrics that are not of
+current interest. When there are too many metrics to fit on the screen
+at once, it is often useful to suppress the display of some. The
+icon <img src="images/checkColumns.gif"/> 
+above the metric pane will
+bring up the column selection dialog shown below.</li>
 </ul>
-
-<p>In order to help users to focus on some metrics, hpcviewer provide a functionality to hide/show some metric columns. 
-By clicking on the icon <b>Show/hide metrics</b>, a dialog box will appear as shown below. 
-</p>
 <center><img src="images/HideShowColumns.png" /><br/>
+<br/>
 Figure 7: Hide/Show columns dialog box
 </center>
 <p>
-The dialog box contains a list of metric columns sorted according to the original structure from hpcprof. 
-Each metric column is prefixed by a check box to indicate if the metric should be <i>displayed</i> (if checked) or <i>hidden</i> (unchecked).
-In order to display all metric columns, the user can click the <b>Check all</b> button. A click to <b>Uncheck all</b> will hide all the metric columns.<br/>
+The dialog box contains a list of metric columns sorted according to
+their order in HPCToolkit's performance database for the
+application. Each metric column is prefixed by a check box to indicate if the metric should be <i>displayed</i> (if checked) or <i>hidden</i> (unchecked).
+To display all metric columns, one can click the <b>Check all</b> button. A click to <b>Uncheck all</b> will hide all the metric columns.<br/>
 Finally, an option <b>Apply to all views</b> will set the configuration into all views when checked. 
 Otherwise, the configuration will be applied only on the current view. 
 </p>
 
-<h2><a name="limitation">Limitation</a></h2>
+</li> 
+</ul>
+
+<h2><a name="limitation">Limitations</a></h2>
 <p>
 As of this writing, hpcviewer has some limitations:
 </p>
  <ul>
    <li><b>Limited number of metrics</b>. Although most hpctoolkit components such as <i>hpcrun</i> and <i>hpcstruct</i> support large number of metrics, 
-   it is not recommended to have more than 100 metrics (including exclusive and inclusive metrics) to display with <i>hpcviewer</i>.
-   Having huge metrics will not only be impractical as far
-                     as analyzing the data, but it will also require huge
-                     memory.
-   If a profiled application has more than 50 processes and each process has its own metrics, we recommend to use the <i>scalability analysis using expectation</i> approach
-   described by the paper written by <a href="http://doi.acm.org/10.1145/1274971.1274976">Chritian Coarfa et al</a>.</li>
+   it is not recommended to try to work with more than 100 metrics
+   (including exclusive and inclusive variants) using <i>hpcviewer</i>.
+   Having a huge number of metrics will not only require a large
+   amount of memory, it will also make the viewer interface sluggish.
+   If a profiled application has more than 50 processes and each
+   process has its own metrics, we recommend analyzing only a
+   representative few processes. To pinpoint scalability bottlenecks,
+   we recommend an approach based on differential analysis of
+   a representative process from two
+   executions at different scales as described in reference [2] below.
+   </li>
 
-   <li><b>No functionalities to print or copy the metrics</b>. At the moment, we these functionalities are not supported. 
-   We intend to support these features in the future.</li>
+   <li><b>Copying or printing metrics</b>. hpcviewer does not
+   currently support copying or printing metric values.
+   </li>
  </ul> 
 
 <h2>References</h2>
@@ -461,7 +537,7 @@ As of this writing, hpcviewer has some limitations:
    <li>http://www.hpctoolkit.org</li>
    <li><a name="scalability">Coarfa, C., Mellor-Crummey, J., Froyd, N., and Dotsenko, Y. 2007.</a> 
    	<a href="http://doi.acm.org/10.1145/1274971.1274976">Scalability analysis of SPMD codes using expectations.</a> 
-   	In Proceedings of the 21st Annual international Conference on Supercomputing (Seattle, Washington, June 17 - 21, 2007). 
+   	In Proceedings of the 21st Annual International Conference on Supercomputing (Seattle, Washington, June 17 - 21, 2007). 
    	ICS '07. ACM, New York, NY, 13-22.</li>
  </ol>
 

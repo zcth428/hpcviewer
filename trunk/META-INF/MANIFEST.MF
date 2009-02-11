@@ -14,5 +14,4 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.eclipse.jface.text
 Eclipse-LazyStart: true
-Bundle-ClassPath: hpcviewer.jar,
- externals/
+Bundle-ClassPath: hpcviewer.jar

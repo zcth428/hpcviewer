@@ -469,6 +469,12 @@ public String format(MetricValue value)
 			double number = value.getPercentValue();
 			if (number == 1.0) {    // johnmc
 				formatted.append("100 %");
+				// Laks 2009.02.12: dirty hack to solve the problem when a small negative percentage occurs
+				// instead of displaying -0.0% we force to display 0.0%
+				// a better solution is by defining the proper pattern. But so far I don't see any good solution
+				// 	this hack should be a temporary fix !
+			} else if ( (number > -0.0001) && (number < 0.0) ) {
+				formatted.append(" 0.0%");
 			} else {
 				String string = this.formatDouble(number, this.percentFormatter, this.percentStyle);
 				formatted.append(string);

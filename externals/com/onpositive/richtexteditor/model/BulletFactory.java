@@ -45,7 +45,7 @@ public class BulletFactory
 		bulletStyle.font=Display.getCurrent().getSystemFont();
 		bulletStyle.length=1;
 		bulletStyle.start=0;
-		bulletStyle.metrics=new GlyphMetrics(10,10,10);			
+		bulletStyle.metrics=new GlyphMetrics(10,10,40); // Laks make it 40 to have better distance			
 		listBullets.put(BULLETED_LIST_CONST,new Bullet(bulletStyle));		
 	}
 	

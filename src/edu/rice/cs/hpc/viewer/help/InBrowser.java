@@ -18,7 +18,8 @@ public class InBrowser {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Shell shell = new Shell(SWT.SHELL_TRIM);
-		shell.setLayout(new GridLayout(1, true));
+		GridLayout layout = new GridLayout(1, true);
+		shell.setLayout(layout);
 		final SimpleViewerHTML richTextViewer = new SimpleViewerHTML(shell, SWT.BORDER);
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.horizontalSpan = 1;
@@ -27,6 +28,7 @@ public class InBrowser {
 		richTextViewer.getConfiguration().setCreateToolbar(false);
 		richTextViewer.setEditable(false);
 		richTextViewer.getControl().setLayoutData(gridData);		
+		shell.setLayoutData(gridData);
 		
 		FileDialog objFileDlg = new FileDialog(shell);
 		String sFile = objFileDlg.open();

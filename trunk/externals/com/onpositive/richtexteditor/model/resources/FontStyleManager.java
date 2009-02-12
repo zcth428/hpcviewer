@@ -31,6 +31,10 @@ import com.onpositive.richtexteditor.model.partitions.BasePartition;
  */
 public class FontStyleManager {
 
+	//------------------------------------
+	// Laks 2009.09.13: use a default font that is more readable on linux platform
+	public final static String DEFAULT_FONT = "Sans";
+	
 	protected DisposableFontRegistry fontRegistry;
 
 	protected HashMap<String, FontStyle> styleMap = new HashMap<String, FontStyle>();
@@ -115,14 +119,15 @@ public class FontStyleManager {
 		addFontStyle(h1FontStyle);
 		addFontStyle(h2FontStyle);
 		addFontStyle(h3FontStyle);
+		// Laks 2009.02.12: we need to adjust the font to make it suitable for 4 or more headings
 		fontRegistry.put(FONT_H1_NAME, new FontData[] { new FontData(
-				"Times new Roman", 24, SWT.NORMAL) });
+				FontStyleManager.DEFAULT_FONT, 28, SWT.NORMAL) });
 		fontRegistry.put(FONT_H2_NAME, new FontData[] { new FontData(
-				"Times New Roman", 18, SWT.NORMAL) });
+				FontStyleManager.DEFAULT_FONT, 24, SWT.NORMAL) });
 		fontRegistry.put(FONT_H3_NAME, new FontData[] { new FontData(
-				"Times New Roman", 14, SWT.NORMAL) });
+				FontStyleManager.DEFAULT_FONT, 18, SWT.NORMAL) });
 		fontRegistry.put(NORMAL_FONT_NAME, new FontData[] { new FontData(
-				"Times New Roman", 12, SWT.NORMAL) });
+				FontStyleManager.DEFAULT_FONT, 11, SWT.NORMAL) });
 	}
 
 	/**

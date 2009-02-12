@@ -80,7 +80,7 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 	protected String dialogTitle = "Customize Font Styles";
 	ColorSelector foregroundColorSelector, backgroundColorSelector;
 	Label foregroundColorLabel, backgroundColorLabel, fontFaceLabel;
-	protected Button ñolorCheckbox, backgroundColorCheckbox, fontFaceCheckBox, fontFaceSelectButton;
+	protected Button colorCheckbox, backgroundColorCheckbox, fontFaceCheckBox, fontFaceSelectButton;
 	protected ToolItem addButton, deleteButton, renameButton;
 	protected ImageRegistry toolImageRegistry;
 	StyledText preview;
@@ -176,8 +176,8 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 	    
 	    
 	    createLabel(rightPanel,"Use colors");
-        ñolorCheckbox = createCheckBox(rightPanel);
-        ñolorCheckbox.addSelectionListener(this);
+        colorCheckbox = createCheckBox(rightPanel);
+        colorCheckbox.addSelectionListener(this);
 	    Label stub = new Label(rightPanel, SWT.NONE); //Stub  for correct layout showing	    
 	    stub.setLayoutData(getGridDataForHorizontalSpan(4));
         
@@ -302,10 +302,10 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 			fontFaceSelectButton.setText(fontRegistry.get(selectedName).getFontData()[0].getName());
 			
 			FontStyle selectedStyle = getSelectedStyle();
-			ñolorCheckbox.setSelection(false);
+			colorCheckbox.setSelection(false);
 			if (selectedStyle.getColor() != null)
 			{
-				ñolorCheckbox.setSelection(true);
+				colorCheckbox.setSelection(true);
 				foregroundColorSelector.setColorValue(selectedStyle.getColor());
 				colorManager.getColor(selectedStyle.getColor());
 			}
@@ -313,14 +313,14 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 				foregroundColorSelector.setColorValue(new RGB(0,0,0));
 			if (selectedStyle.getBgColor() != null)
 			{
-				ñolorCheckbox.setSelection(true);
+				colorCheckbox.setSelection(true);
 				backgroundColorSelector.setColorValue(selectedStyle.getBgColor());
 				colorManager.getColor(selectedStyle.getBgColor());
 			}
 			else
 				backgroundColorSelector.setColorValue(new RGB(255,255,255));
-			foregroundColorSelector.setEnabled(ñolorCheckbox.getSelection());
-			backgroundColorSelector.setEnabled(ñolorCheckbox.getSelection());
+			foregroundColorSelector.setEnabled(colorCheckbox.getSelection());
+			backgroundColorSelector.setEnabled(colorCheckbox.getSelection());
 			updatePreview();
 		}
 			
@@ -346,11 +346,11 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 	 */
 	public void widgetSelected(SelectionEvent e)
 	{
-		if (e.getSource() == ñolorCheckbox)
+		if (e.getSource() == colorCheckbox)
 		{
-			foregroundColorSelector.setEnabled(ñolorCheckbox.getSelection());
-			backgroundColorSelector.setEnabled(ñolorCheckbox.getSelection());
-			if (!ñolorCheckbox.getSelection())
+			foregroundColorSelector.setEnabled(colorCheckbox.getSelection());
+			backgroundColorSelector.setEnabled(colorCheckbox.getSelection());
+			if (!colorCheckbox.getSelection())
 			{
 				getSelectedStyle().setColor(null);
 				getSelectedStyle().setBgColor(null);
@@ -372,7 +372,7 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 			}
 			if (dialog.getRGB() != null && !dialog.getRGB().equals(getSelectedStyle().getColor()))
 			{
-				ñolorCheckbox.setSelection(true);
+				colorCheckbox.setSelection(true);
 				foregroundColorSelector.setEnabled(true);
 				foregroundColorSelector.setColorValue(dialog.getRGB());
 				backgroundColorSelector.setEnabled(true);
@@ -430,7 +430,7 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 			&& !foregroundColorSelector.getColorValue().equals(getSelectedStyle().getColor()))
 		{
 			RGB color = foregroundColorSelector.getColorValue();
-			ñolorCheckbox.setSelection(true);
+			colorCheckbox.setSelection(true);
 			getSelectedStyle().setColor(color);
 			data.addChangedStyle(getSelectedStyle());
 			updatePreview();
@@ -439,7 +439,7 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 				&& !backgroundColorSelector.getColorValue().equals(getSelectedStyle().getBgColor()))
 		{
 			RGB color = backgroundColorSelector.getColorValue();
-			ñolorCheckbox.setSelection(true);
+			colorCheckbox.setSelection(true);
 			getSelectedStyle().setBgColor(color);
 			data.addChangedStyle(getSelectedStyle());
 			updatePreview();

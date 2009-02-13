@@ -507,14 +507,17 @@ protected String formatDouble(double d, DecimalFormat formatter, Style style)
 		// laks: if d = 9.999, the formatter will force to round it to 10.00
 		// 	since I don't know how to prevent the rounding, let make a dirty solution here
 		// Laks 2009.02.12: turn it back to the original format. Previously: > 9.5
-		while ( Math.abs(d) >= 10.0 )//Laks 2008.09.03 fix previously ( Math.abs(d) >= 10.0 )
+		// Laks 2009.02.13: bug fix for displaying 9.9 into 1.0e+01 instead of 10.0
+		while ( Math.abs(d) > 9.5 )//Laks 2008.09.03 fix previously ( Math.abs(d) >= 10.0 )
 		{
 			d /= 10.0;
 			exponent += 1;
 		}
 		if (d != 0.0) {
 			// Laks 2009.02.12: turn it back to the original format. Previously: < 9.5
-			while( Math.abs(d) < 1.0 )//laks 2008.09.03 fix, previously ( Math.abs(d) < 1.0 )
+			// Laks 2009.02.13: bug fix for displaying .999x into 1.0e00 and .99x into 9.9x
+			// FIXME this is an ugly bug fix, but since the formatter is handled by jvm, we have to hack from here
+			while( Math.abs(d) <= 0.999 )//laks 2008.09.03 fix, previously ( Math.abs(d) < 1.0 )
 			{
 				d *= 10.0;
 				exponent -= 1;

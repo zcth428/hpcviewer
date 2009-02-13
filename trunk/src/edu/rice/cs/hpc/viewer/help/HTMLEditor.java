@@ -87,7 +87,7 @@ public class HTMLEditor extends EditorPart {
 					IPath objPath = file.getFullPath();
 					Path objAbsPath = new Path(getAbsolutePath(this));
 					//IFileStore objFileStore = EFS.getLocalFileSystem().getStore(objPath);
-					this.sFilePath = objAbsPath.removeLastSegments(1)+"/"+objPath.toString();
+					this.sFilePath = objAbsPath.removeLastSegments(1)+objPath.toString();
 					sURI = "file:///"+sFilePath;
 				}
 //				browser.setUrl(sURI);
@@ -131,9 +131,9 @@ public class HTMLEditor extends EditorPart {
 			// set the property
 			browser.setData(HTMLEditor.ID, this);
 			// display the URL
-			browser.setUrl(sURI);
 			GridDataFactory.fillDefaults().grab(true, true).applyTo(browser);
 			GridLayoutFactory.fillDefaults().numColumns(1).applyTo(browser);
+			browser.setUrl(sURI);
 
 		} catch (SWTError e) {
 			// if the platform doesn't support pluggable browser,

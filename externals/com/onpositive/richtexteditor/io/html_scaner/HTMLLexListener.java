@@ -360,7 +360,7 @@ public class HTMLLexListener implements ILexListener {
 		
 		if (getLineCount(globalBuilder.toString()) + getLineCount(curTextStr.toString()) != lineAligns.size())
 		{
-			Logger.log("(!) unsync");
+			// Logger.log("(!) unsync");
 		}
 	}
 

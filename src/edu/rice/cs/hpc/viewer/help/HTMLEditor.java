@@ -132,7 +132,8 @@ public class HTMLEditor extends EditorPart {
 			browser.setData(HTMLEditor.ID, this);
 			// display the URL
 			GridDataFactory.fillDefaults().grab(true, true).applyTo(browser);
-			GridLayoutFactory.fillDefaults().numColumns(1).applyTo(browser);
+			// Laksono 2009.02.16: on windows the following layout will shrink the browser :-(
+			//GridLayoutFactory.fillDefaults().numColumns(1).applyTo(browser);
 			browser.setUrl(sURI);
 
 		} catch (SWTError e) {

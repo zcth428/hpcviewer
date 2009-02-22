@@ -1025,7 +1025,18 @@ public class ExperimentDatabaseBuilder extends Builder
 			
 			String prd_string =  metric.getSamplePeriod();
 			// get the sample period
-			double prd=Double.valueOf(prd_string).doubleValue();
+			double prd;
+			// get the sample period
+			try {
+				if (  (prd_string != null) && (prd_string.length()>0) )
+					prd=Double.valueOf(prd_string).doubleValue();
+				else
+					prd = 1.0;
+			} catch (java.lang.NumberFormatException e) {
+				prd = 0.0;
+				System.err.println("Error metric number:"+prd_string);
+				e.printStackTrace();
+			}
 			// System.out.println(prd); 
 			// multiple by sample period 
 			actualValue = prd * actualValue;

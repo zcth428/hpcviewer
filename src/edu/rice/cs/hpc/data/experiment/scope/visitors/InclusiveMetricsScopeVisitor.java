@@ -29,17 +29,20 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
  * @author laksonoadhianto
  *
  */
-public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
+public class InclusiveMetricsScopeVisitor extends AbstractInclusiveMetricsVisitor {
 	private int numberOfPrimaryMetrics;
 	MetricValuePropagationFilter filter;
-	private ExclusiveOnlyMetricPropagationFilter filterExclusive;
-	private InclusiveOnlyMetricPropagationFilter filterInclusive;
+	//private ExclusiveOnlyMetricPropagationFilter filterExclusive;
+	//private InclusiveOnlyMetricPropagationFilter filterInclusive;
 
 	public InclusiveMetricsScopeVisitor(BaseMetric []metrics, MetricValuePropagationFilter filter) {
+		super(metrics, filter);
 		this.numberOfPrimaryMetrics = metrics.length;
 		this.filter = filter;
+/*
 		filterExclusive = new ExclusiveOnlyMetricPropagationFilter(metrics);
 		filterInclusive = new InclusiveOnlyMetricPropagationFilter(metrics);
+		*/
 	}
 
 	//----------------------------------------------------
@@ -61,7 +64,7 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 	//----------------------------------------------------
 	// propagate a child's metric values to its parent
 	//----------------------------------------------------
-
+/*
 	protected void up(Scope scope, ScopeVisitType vt) {
 		if (vt == ScopeVisitType.PostVisit) {
 			Scope parent = scope.getParentScope();
@@ -103,13 +106,14 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 			}
 		}
 	}
-	
+	*/
 	/**
 	 * Accumulate the exclusive cost of a scope into its procedure scope.
 	 * Specifically designed for Flat View.
 	 * @param scope
 	 * @param parent
 	 */
+	/*
 	private void accumulateAncestor(Scope scope, Scope parent) {
 		Scope ancestor = parent.getParentScope();
 		while((ancestor != null ) && !(ancestor instanceof RootScope) &&
@@ -124,4 +128,25 @@ public class InclusiveMetricsScopeVisitor implements ScopeVisitor {
 			//	System.err.println("IMSV alien detected for "+scope.getName()+"\t: "+scopeAncestorProc.getName());
 		}
 	}
+	*/
+	/**
+	 * Method to accumulate the metric value from the child to the parent
+	 * @param parent
+	 * @param source
+	 */
+	protected void accumulateToParent(Scope parent, Scope source) {
+		parent.accumulateMetrics(source, this.filter, this.numberOfPrimaryMetrics);
+	}
+	
+	/**
+	 * Method to accumulate the metric value from the child to the parent based on a given filter
+	 * @param parent
+	 * @param source
+	 * @param filter
+	 */
+	protected void accumulateToParent(Scope parent, Scope source, MetricValuePropagationFilter myfilter) {
+		parent.accumulateMetrics(source, myfilter, this.numberOfPrimaryMetrics);
+	}
+
+
 }

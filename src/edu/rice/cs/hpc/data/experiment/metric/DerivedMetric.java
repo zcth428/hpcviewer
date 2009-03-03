@@ -17,7 +17,7 @@ public class DerivedMetric extends BaseMetric {
 	//===================================================================================
 	// DATA
 	//===================================================================================
-	protected RootScope scopeOfTheRoot;
+	//protected RootScope scopeOfTheRoot;
 	// a counter to know the number of derived metrics
 	static public int Counter = 0;
 	// formula expression
@@ -46,7 +46,7 @@ public class DerivedMetric extends BaseMetric {
 		super(sName, true, bPercent, index);
 		DerivedMetric.Counter++;
 		this.expression = e;
-		this.scopeOfTheRoot = scopeRoot;
+		//this.scopeOfTheRoot = scopeRoot;
 		// set up the functions
 		this.fctMap = new ExtFuncMap();
 		BaseMetric []metrics = scopeRoot.getExperiment().getMetrics(); 
@@ -275,6 +275,7 @@ public class DerivedMetric extends BaseMetric {
 	 * @param scope
 	 * @return
 	 */
+	/*
 	public String getTextValue(Scope scope) {
 		MetricValue mv = this.getValue(scope); 
 		if(!mv.isAvailable()) 
@@ -296,5 +297,5 @@ public class DerivedMetric extends BaseMetric {
 		}
 		return this.getDisplayFormat().format(mv);
 	}
-	
+	*/
 }

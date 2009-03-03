@@ -143,8 +143,16 @@ public abstract class BaseMetric {
 	 */
 	public String getMetricTextValue(Scope scope) {
 		MetricValue mv = this.getValue(scope);
-		String sText;
 		// bug fix: if the percent has to be displayed BUT the value is zero, then display nothing
+		return this.getMetricTextValue(mv);
+	}
+
+	/**
+	 * Return the text to display based on the metric value
+	 * @param mv: the value of a metric
+	 */
+	public String getMetricTextValue(MetricValue mv) {
+		String sText;
 		if(mv.value == 0.0 || mv == MetricValue.NONE) sText = "";
 		else{
 				sText = getDisplayFormat().format(mv);

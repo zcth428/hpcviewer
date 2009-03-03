@@ -155,7 +155,8 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     		Object o = this.colMetrics[i].getColumn().getData();
     		if(o instanceof BaseMetric) {
     			BaseMetric metric = (BaseMetric) o;//this.myExperiment.getMetric(i);
-    			sText[i+1] = metric.getMetricTextValue(scope);
+    			sText[i+1] = metric.getMetricTextValue(scope.getMetricValue(metric));
+    			//sText[i+1] = metric.getMetricTextValue(scope);
     		}
     	}
     	

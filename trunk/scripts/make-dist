@@ -12,7 +12,7 @@
 # $Id$
 #
 
-copy_files="README install hpcviewer.sh"
+copy_files="README README.License install hpcviewer.sh"
 
 die()
 {

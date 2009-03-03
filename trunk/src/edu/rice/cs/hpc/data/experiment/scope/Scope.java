@@ -16,6 +16,7 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
@@ -558,7 +559,7 @@ public void setExperiment(Experiment exp) {
  *	Returns the value of a given metric at this scope.
  ************************************************************************/
 	
-public MetricValue getMetricValue(Metric metric)
+public MetricValue getMetricValue(BaseMetric metric)
 {
 	int index = metric.getIndex();
 	MetricValue value;

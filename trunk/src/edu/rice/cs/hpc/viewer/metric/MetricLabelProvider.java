@@ -28,7 +28,9 @@ public class MetricLabelProvider extends ColumnLabelProvider {
 		String text = "-"; // we don't need this
 		if ((metric != null) && (element instanceof Scope.Node)) {
 			Scope.Node node = (Scope.Node) element;
-			text = metric.getMetricTextValue(node.getScope());
+//			text = metric.getMetricTextValue(node.getScope());
+			Scope scope = node.getScope();
+			text = metric.getMetricTextValue(scope.getMetricValue(metric));
 			/*
 			 * if(metric instanceof Metric) {
 				Scope.Node node = (Scope.Node) element;

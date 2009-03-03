@@ -425,6 +425,7 @@ public void postprocess() {
  * @param expFormula
  * @return
  */
+/*
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
 	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
@@ -432,6 +433,50 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 	this.addMetric(objMetric); // add this metric into our list
 	return objMetric;
 }
+*/
+/**
+ * Create a derived metric based on formula expression
+ * @param scopeRoot
+ * @param expFormula
+ * @return
+ */
+public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
+		boolean bPercent, MetricType metricType) {
+	// replace if exist, the exc suffix with inclusive
+	String sNameInc = sName.replaceFirst("(E)", "I");
+	// create inclusive metric (this is the default)
+	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sNameInc, this.getMetricCount(), 
+			bPercent, MetricType.INCLUSIVE);
+	this.addMetric(objMetric); // add this metric into our list
+	int iInclusive = this.getMetricCount() - 1;
+	int iExclusive = -1;
+	
+	InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
+	
+	for (int i=0; i<this.rootScope.getSubscopeCount(); i++) {
+		RootScope rootScope = (RootScope) this.rootScope.getSubscope(i);
+		if (rootScope.getType() == RootScopeType.Flat) {
+			FlatViewInclMetricPropagationFilter objFlatFilter = new FlatViewInclMetricPropagationFilter(this.getMetrics()) ;
+			DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), objFlatFilter, iInclusive, iExclusive );
+			rootScope.dfsVisitScopeTree(csv);
+		} else if (rootScope.getType() == RootScopeType.CallingContextTree) {
+			DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), rootInclProp, iInclusive, iExclusive );
+			rootScope.dfsVisitScopeTree(csv);
+		} else if (rootScope.getType() == RootScopeType.CallerTree) {
+			DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), rootInclProp, iInclusive, iExclusive );
+			rootScope.dfsVisitScopeTree(csv);
+		} else {
+			System.err.println("Error: unknown root scope");
+			continue;
+		}
+		DerivedPercentVisitor psv = new DerivedPercentVisitor(this.getMetrics(), rootScope, iInclusive, iExclusive);
+		rootScope.dfsVisitScopeTree(psv);
+
+	}
+
+	return objMetric;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO CONFIGURATION												//
 //////////////////////////////////////////////////////////////////////////

@@ -123,7 +123,14 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	private void addChildren(Scope.Node node, ArrayOfNodes arrNodes) {
 		int nbChildren = node.getChildCount();
 		for(int i=0;i<nbChildren;i++) {
-			arrNodes.add((Scope.Node)node.getChildAt(i));
+			// Laksono 2009.03.04: do not add call site !
+			Scope.Node nodeKid = ((Scope.Node) node.getChildAt(i));
+			if (nodeKid.getScope() instanceof CallSiteScope) {
+				// the kid is a callsite: do nothing
+			} else {
+				// otherwise add the kid into the list of scopes to display
+				arrNodes.add(nodeKid);
+			}
 		}
 	}
 

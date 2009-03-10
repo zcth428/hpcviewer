@@ -443,7 +443,7 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
 	// replace if exist, the exc suffix with inclusive
-	String sNameInc = sName.replaceFirst("(E)", "I");
+	String sNameInc = sName.replaceFirst("\\(E\\)", "\\(I\\)");
 	// create inclusive metric (this is the default)
 	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sNameInc, this.getMetricCount(), 
 			bPercent, MetricType.INCLUSIVE);

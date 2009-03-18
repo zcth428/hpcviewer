@@ -449,6 +449,10 @@ abstract public class BaseScopeView  extends ViewPart {
         // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
         // so we need to do it here, manually ... sigh
         this.objViewActions.resizeColumns();	// resize the column to fit all metrics
+        
+        // Laks 2009.03.17: select the first scope
+        TreeItem objItem = this.treeViewer.getTree().getItem(1);
+        this.treeViewer.getTree().setSelection(objItem);
    	}
 
     //======================================================

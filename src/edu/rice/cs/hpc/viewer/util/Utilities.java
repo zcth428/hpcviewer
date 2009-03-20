@@ -5,12 +5,13 @@ package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Color;
 
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
@@ -22,13 +23,8 @@ import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 
-//import edu.rice.cs.hpc.viewer.metric.ExtDerivedMetricLabelProvider;
-import edu.rice.cs.hpc.viewer.metric.MetricLabelProvider;
 import edu.rice.cs.hpc.viewer.resources.Icons;
-import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 
 /**
  * Class providing auxiliary utilities methods.
@@ -39,7 +35,10 @@ import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 public class Utilities {
 	//special font for the metric columns. It supposed to be fixed font
 	static public Font fontMetric;
-
+	// special color for the top row
+	static public Color COLOR_TOP;
+	
+	static private Font FNT_TOP_ROW = null;
 	/**
 	 * Set the font for the metric columns (it may be different to other columns)
 	 * @param display
@@ -47,6 +46,7 @@ public class Utilities {
 	static public void setFontMetric(Display display) {
 		int iHeight = display.getSystemFont().getFontData()[0].getHeight();
 		Utilities.fontMetric = new Font(display, "Courier", iHeight, SWT.NONE); // johnmc - was SWT.NONE
+		COLOR_TOP = new Color(display, 255,255,204);
 	}
 	
 	/**
@@ -61,10 +61,18 @@ public class Utilities {
     	TreeItem item = new TreeItem(treeViewer.getTree(), SWT.BOLD, 0);
     	if(imgScope != null)
     		item.setImage(0,imgScope);
-    	Font fntOrig = item.getFont();	// retrieve the original font
+    	// Laksono 2009.03.09: we need to initialize the font for scope on the top row
+    	if (FNT_TOP_ROW == null) {
+        	Font fntOrig = item.getFont();	// retrieve the original font
+        	FontData objFontData = fntOrig.getFontData()[0];
+        	objFontData.setStyle(SWT.BOLD);
+        	Utilities.FNT_TOP_ROW = new Font(treeViewer.getTree().getDisplay(), objFontData);
+    	}
+    	// Laksono 2009.03.09: add background for the top row to distinguish with other scopes
+    	item.setBackground(Utilities.COLOR_TOP);
     	// make monospace font for all metric columns
     	item.setFont(Utilities.fontMetric);
-    	item.setFont(0, fntOrig); // The tree has the original font
+    	item.setFont(0, FNT_TOP_ROW); // The tree has the original font
     	// put the text on the table
     	item.setText(arrText);
     	// set the array of text as the item data 

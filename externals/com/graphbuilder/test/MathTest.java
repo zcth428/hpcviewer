@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.graphbuilder;
+package com.graphbuilder.test;
 
 import com.graphbuilder.math.Expression;
 import com.graphbuilder.math.ExpressionTree;

@@ -247,13 +247,13 @@ abstract public class BaseScopeView  extends ViewPart {
         //treeViewer.setAutoExpandLevel(2);
         
         //----------------- create the column tree
-        TreeViewerColumn colTree;		// column for the calls tree
+        TreeViewerColumn colTree;		// column for the scope tree
         colTree = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
         colTree.getColumn().setText("Scope");
         colTree.getColumn().setWidth(200); //TODO dynamic size
         colTree.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
         sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, colTree.getColumn(), null,0); 
-
+        
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view
         GridData data = new GridData(GridData.FILL_BOTH);
@@ -309,19 +309,6 @@ abstract public class BaseScopeView  extends ViewPart {
     		        }
         		} else {
         			// User click a region other than tree
-        			/*int iCol = getColumnMouseDown(event);
-        			// we treat any click outside tree column (assuming the tree node column is on 0th index)
-        			// TODO: if the user move the tree node column, then this code DOES NOT work
-        			if(iCol > 0) {
-        		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
-        		        Object o = selection.getFirstElement();
-        		        // we will treat this click if the object is Scope.Node
-        		        if(o instanceof Scope.Node) {
-        		        	Scope scope = ((Scope.Node)o).getScope();
-        		        	MetricValue mValue = scope.getMetricValue(iCol - 1);
-        		        	objViewActions.showInfoMessage(scope.getName()+" ("+iCol+") : "+ mValue.getValue());
-        		        }
-        			}*/
         		}
         	}
         }); 

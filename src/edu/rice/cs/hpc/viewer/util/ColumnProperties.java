@@ -2,12 +2,16 @@ package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ViewerFilter;
 
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.TreeColumn;
@@ -18,6 +22,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -25,160 +33,109 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Table;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 
+/**
+ * Class to show the dialog box of columns properties such as show/hidden
+ * @author laksonoadhianto
+ *
+ */
 public class ColumnProperties extends TitleAreaDialog {
-	private CheckboxTableViewer objCheckBoxTable ;
+	private ColumnCheckTableViewer objCheckBoxTable ;
 	private TreeViewerColumn []objColumns;
 	private boolean []results;
 	private Button btnApplyToAllViews;
 	private boolean isAppliedToAllViews = false;
-	
-	//--------------------------------------------------
-	/**
-	 * Data model for the column properties
-	 * Containing two items: the state and the title
-	 * @author laksono
-	 *
-	 */
-	private class PropertiesModel {
-		public boolean isVisible;
-		public String sTitle;
-		public int iIndex;
-		
-		public PropertiesModel(boolean b, String s, int i) {
-			this.isVisible = b;
-			this.sTitle = s;
-			this.iIndex = i;
-		}
-	}
-	
-	//--------------------------------------------------
-	/**
-	 * Label provider for the table
-	 * @author laksono
-	 *
-	 */
-	class CheckLabelProvider implements ILabelProvider {
-		public void addListener(ILabelProviderListener arg0) {
-		    // Throw it away
-		  }
-		public void dispose() {
-		    // Nothing to dispose
-		  }
-		public boolean isLabelProperty(Object arg0, String arg1) {
-		    return false;
-		  }
-		public void removeListener(ILabelProviderListener arg0) {
-		    // Ignore
-		  }
-		public Image getImage(Object arg0) {
-		    return null;
-		  }
-		public String getText(Object arg0) {
-			PropertiesModel prop = (PropertiesModel) arg0;
-		    return prop.sTitle;
-		  }
-	}
-	
-	/**
-	 * Content provider for the table
-	 * @author laksono
-	 *
-	 */
-	private class PropertiesContentProvider implements IStructuredContentProvider {
+	private Text objSearchText;
 
-		/* (non-Javadoc)
-		 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
-		 */
-		public Object[] getElements(Object inputElement) {
-			return (PropertiesModel[])inputElement;
-		}
+	private PropertiesModel arrElements[];
 
-		/* (non-Javadoc)
-		 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
-		 */
-		public void dispose() {
-			
-		}
+	/**
+	 * Creates the dialog's contents
+	 * 
+	 * @param parent the parent composite
+	 * @return Control
+	 */
+	protected Control createContents(Composite parent) {
+		Control contents = super.createContents(parent);
 
-		/* (non-Javadoc)
-		 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-		 */
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			
-		}
-		
+		// Set the title
+		setTitle("Column Selection");
+
+		// Set the message
+		setMessage("Check columns to be shown and uncheck columns to be hidden", IMessageProvider.INFORMATION);
+
+		return contents;
 	}
 
-	 /**
-	   * Creates the dialog's contents
-	   * 
-	   * @param parent the parent composite
-	   * @return Control
-	   */
-	  protected Control createContents(Composite parent) {
-	    Control contents = super.createContents(parent);
+	/**
+	 * Creates the gray area
+	 * 
+	 * @param parent the parent composite
+	 * @return Control
+	 */
+	protected Control createDialogArea(Composite aParent) {
+		Composite composite = new Composite(aParent, SWT.BORDER);//(Composite) super.createDialogArea(aParent);
 
-	    // Set the title
-	    setTitle("Column Selection");
+		GridLayout grid = new GridLayout();
+		grid.numColumns=1;
+		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+		composite.setLayout(grid);
 
-	    // Set the message
-	    setMessage("Check columns to be shown and uncheck columns to be hidden", IMessageProvider.INFORMATION);
+		// prepare the buttons: check and uncheck
+		GridLayout gridButtons = new GridLayout();
+		gridButtons.numColumns=3;
+		Composite groupButtons = new Composite(composite, SWT.BORDER);
+		groupButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		groupButtons.setLayout(gridButtons);
 
-	    return contents;
-	  }
+		// check button
+		Button btnCheckAll = new Button(groupButtons, SWT.NONE);
+		btnCheckAll.setText("Check all");
+		btnCheckAll.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		btnCheckAll.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				objCheckBoxTable.setAllChecked(true);
+			}
+		});
+		// uncheck button
+		Button btnUnCheckAll = new Button(groupButtons, SWT.NONE);
+		btnUnCheckAll.setText("Uncheck all");
+		btnUnCheckAll.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		btnUnCheckAll.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				objCheckBoxTable.setAllChecked(false);
+			}
+		});
 
-	  /**
-	   * Creates the gray area
-	   * 
-	   * @param parent the parent composite
-	   * @return Control
-	   */
-	  protected Control createDialogArea(Composite aParent) {
-	    Composite composite = new Composite(aParent, SWT.BORDER);//(Composite) super.createDialogArea(aParent);
+		btnApplyToAllViews = new Button(groupButtons, SWT.CHECK);
+		btnApplyToAllViews.setText("Apply to all views");
+		// Laks 2009.01.26: by default, we apply for all views
+		btnApplyToAllViews.setSelection(true);
+		btnApplyToAllViews.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
-	    GridLayout grid = new GridLayout();
-	    grid.numColumns=1;
-	    composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-	    composite.setLayout(grid);
-	    
-	    // prepare the buttons: check and uncheck
-	    GridLayout gridButtons = new GridLayout();
-	    gridButtons.numColumns=3;
-	    Composite groupButtons = new Composite(composite, SWT.BORDER);
-	    groupButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-	    groupButtons.setLayout(gridButtons);
-	    
-	    // check button
-	    Button btnCheckAll = new Button(groupButtons, SWT.NONE);
-	    btnCheckAll.setText("Check all");
-	    btnCheckAll.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-	    btnCheckAll.addSelectionListener(new SelectionAdapter() {
-	    	public void widgetSelected(SelectionEvent e) {
-	    		objCheckBoxTable.setAllChecked(true);
-	    	}
-	    });
-	    // uncheck button
-	    Button btnUnCheckAll = new Button(groupButtons, SWT.NONE);
-	    btnUnCheckAll.setText("Uncheck all");
-	    btnUnCheckAll.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-	    btnUnCheckAll.addSelectionListener(new SelectionAdapter() {
-	    	public void widgetSelected(SelectionEvent e) {
-	    		objCheckBoxTable.setAllChecked(false);
-	    	}
-	    });
-	    
-	    btnApplyToAllViews = new Button(groupButtons, SWT.CHECK);
-	    btnApplyToAllViews.setText("Apply to all views");
-	    // Laks 2009.01.26: by default, we apply for all views
-	    btnApplyToAllViews.setSelection(true);
-	    btnApplyToAllViews.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
-	    
-	    // list of columns (we use table for practical purpose)
-	    Table table = new Table(composite, SWT.CHECK | SWT.BORDER);
-	    table.setLayoutData(new GridData(GridData.FILL_BOTH));
-	    this.objCheckBoxTable = new CheckboxTableViewer(table) ;
+		// Laks 2009.03.19: add string to match
+		objSearchText = new Text (composite, SWT.BORDER);
+		GridDataFactory.fillDefaults().applyTo(objSearchText);
+		objSearchText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				// get the filter of the table
+				ColumnFilter objFilter = (ColumnFilter) objCheckBoxTable.getFilters()[0];
+				// reset the filter
+				objFilter.setKey(objSearchText.getText());
+				objCheckBoxTable.refresh();
+				objCheckBoxTable.setCheckedElements(getCheckedItemsFromGlobalVariable());
+			}
+
+		});
+
+
+		// list of columns (we use table for practical purpose)
+		Table table = new Table(composite, SWT.CHECK | SWT.BORDER);
+		table.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+		this.objCheckBoxTable = new ColumnCheckTableViewer(table) ;
 		objCheckBoxTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
 		// setup the content provider
 		objCheckBoxTable.setContentProvider(new IStructuredContentProvider() {
@@ -192,88 +149,256 @@ public class ColumnProperties extends TitleAreaDialog {
 				//throw it away
 			}
 		}); 
+
+		// laks 2009.03.20: check user action when updating the status of the item
+		objCheckBoxTable.addCheckStateListener(new ICheckStateListener() {
+			// status has been changed. we need to reset the global variable too !
+			public void checkStateChanged(CheckStateChangedEvent event) {
+				PropertiesModel objItem = (PropertiesModel) event.getElement();
+				objItem.isVisible = event.getChecked();
+				if (arrElements[objItem.iIndex] != objItem) {
+					arrElements[objItem.iIndex].isVisible = objItem.isVisible;
+				}
+			}
+
+		});
 		this.objCheckBoxTable.setLabelProvider(new CheckLabelProvider());
+		// laksono 2009.03.19: add the filter for this table
+		ColumnFilter objFilter = new ColumnFilter();
+		this.objCheckBoxTable.addFilter(objFilter);
+		//
 		this.updateContent(); // fill the table
-	    return composite;
-	  }
+		return composite;
+	}
 
-		//--------------------------------------------------
-	  /**
-	   * get the information about columns
-	   * Need to call this if the table changes its columns !!
-	   * @param objModels
-	   */
-	  public void setData(TreeViewerColumn []columns) {
-		  this.objColumns = columns;
-	  }
+	/**
+	 * 
+	 * @return
+	 */
+	private Object[] getCheckedItemsFromGlobalVariable () {
+		int nb = this.arrElements.length;
+		ArrayList<PropertiesModel> arrCheckedElements = new ArrayList<PropertiesModel>();
 
-	  /**
-	   * Populate the content of the table with the new information
-	   */
-	  public void updateContent() {
-		  if(this.objColumns == null)
-			  return; // caller of this object need to set up the column first !
-		  int nbColumns = this.objColumns.length;
-		  PropertiesModel objProps[] = new PropertiesModel[nbColumns];
-		  ArrayList<PropertiesModel> arrColumns = new ArrayList<PropertiesModel>();
-		  this.results = new boolean[nbColumns];
-		  for(int i=0;i<nbColumns;i++) {
-			  TreeColumn column = this.objColumns[i].getColumn();
-			  boolean isVisible = column.getWidth() > 1;
-			  String sTitle = column.getText();
-			  objProps[i] = new PropertiesModel(isVisible, sTitle, i);
-			  // we need to find which columns are visible
-			  if(isVisible) {
-				  arrColumns.add(objProps[i]);
-			  }
-			  this.results[i] = false; // initialize with false value
-		  }
-		  this.objCheckBoxTable.setInput(objProps);
-		  this.objCheckBoxTable.setCheckedElements(arrColumns.toArray());
-	  }
+		for (int i=0; i<nb; i++) {
+			if (this.arrElements[i].isVisible)
+				arrCheckedElements.add(this.arrElements[i]);
+		} 
+		return arrCheckedElements.toArray();
 
-	  //--------------------------------------------------
-	  /**
-	   * action when the button OK is pressed
-	   */
-	  protected void okPressed() {
-		  Object oElems[] = this.objCheckBoxTable.getCheckedElements();
-		  if(oElems.length > 0){
-			  if(oElems[0] instanceof PropertiesModel) {
-				  for(int i=0;i<oElems.length;i++) {
-					  PropertiesModel element = (PropertiesModel) oElems[i];
-					  try {
-						  this.results[element.iIndex] = true;
-					  } catch(java.lang.Exception e) {
-						  e.printStackTrace();
-					  }
-				  }
-			  }
-		  }
-		  this.isAppliedToAllViews = this.btnApplyToAllViews.getSelection();
-		  super.okPressed();
-	  }
-	  
-	  /**
-	   * Get the list of checked and unchecked items
-	   * @return the array of true/false
-	   */
-	  public boolean[] getResult() {
-		  return this.results;
-	  }
+	}
+	//--------------------------------------------------
+	/**
+	 * get the information about columns
+	 * Need to call this if the table changes its columns !!
+	 * @param objModels
+	 */
+	public void setData(TreeViewerColumn []columns) {
+		this.objColumns = columns;
+	}
 
-	  /**
-	   * Return the status if the modification is to apply to all views or not
-	   * @return
-	   */
-	  public boolean getStatusApplication() {
-		  return this.isAppliedToAllViews;
-	  }
-		//--------------------------------------------------
-	  /**
-	   * Example for the test unit
-	   */
-	  public void setExample() {
+	/**
+	 * Populate the content of the table with the new information
+	 */
+	public void updateContent() {
+		if(this.objColumns == null)
+			return; // caller of this object need to set up the column first !
+		int nbColumns = this.objColumns.length;
+		// PropertiesModel objProps[] = new PropertiesModel[nbColumns];
+		this.arrElements = new PropertiesModel[nbColumns];
+		ArrayList<PropertiesModel> arrColumns = new ArrayList<PropertiesModel>();
+		this.results = new boolean[nbColumns];
+		for(int i=0;i<nbColumns;i++) {
+			TreeColumn column = this.objColumns[i].getColumn();
+			boolean isVisible = column.getWidth() > 1;
+			String sTitle = column.getText();
+			arrElements[i] = new PropertiesModel(isVisible, sTitle, i);
+			// we need to find which columns are visible
+			if(isVisible) {
+				arrColumns.add(arrElements[i]);
+			}
+			this.results[i] = false; // initialize with false value
+		}
+		this.objCheckBoxTable.setInput(arrElements);
+		this.objCheckBoxTable.setCheckedElements(arrColumns.toArray());
+	}
+
+	//--------------------------------------------------
+	/**
+	 * action when the button OK is pressed
+	 */
+	protected void okPressed() {
+		Object oElems[] = this.objCheckBoxTable.getCheckedElements();
+		if(oElems.length > 0){
+			if(oElems[0] instanceof PropertiesModel) {
+				for(int i=0;i<oElems.length;i++) {
+					PropertiesModel element = (PropertiesModel) oElems[i];
+					try {
+						this.results[element.iIndex] = true;
+					} catch(java.lang.Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		this.isAppliedToAllViews = this.btnApplyToAllViews.getSelection();
+		super.okPressed();
+	}
+
+	/**
+	 * Get the list of checked and unchecked items
+	 * @return the array of true/false
+	 */
+	public boolean[] getResult() {
+		return this.results;
+	}
+
+	/**
+	 * Return the status if the modification is to apply to all views or not
+	 * @return
+	 */
+	public boolean getStatusApplication() {
+		return this.isAppliedToAllViews;
+	}
+
+
+	// ======================================================================================
+	//--------------------------------------------------
+	//	CLASS DEFINITION
+	//--------------------------------------------------
+	/**
+	 * Label provider for the table
+	 * @author laksono
+	 *
+	 */
+	private class CheckLabelProvider implements ILabelProvider {
+		public void addListener(ILabelProviderListener arg0) {
+			// Throw it away
+		}
+		public void dispose() {
+			// Nothing to dispose
+		}
+		public boolean isLabelProperty(Object arg0, String arg1) {
+			return false;
+		}
+		public void removeListener(ILabelProviderListener arg0) {
+			// Ignore
+		}
+		public Image getImage(Object arg0) {
+			return null;
+		}
+		public String getText(Object arg0) {
+			PropertiesModel prop = (PropertiesModel) arg0;
+			return prop.sTitle;
+		}
+	}
+
+	//--------------------------------------------------
+	/**
+	 * Data model for the column properties
+	 * Containing two items: the state and the title
+	 * @author laksono
+	 *
+	 */
+	private class PropertiesModel {
+		public boolean isVisible;
+		public String sTitle;
+		public int iIndex;
+
+		public PropertiesModel(boolean b, String s, int i) {
+			this.isVisible = b;
+			this.sTitle = s;
+			this.iIndex = i;
+		}
+	}
+
+	/**
+	 * Class to filter the content of the table of columns
+	 */
+	private class ColumnFilter extends ViewerFilter {
+		// the key to be matched
+		private String sKeyToMatch;
+		@Override
+		public boolean select(Viewer viewer, Object parentElement,
+				Object element) {
+			// check if the key exist
+			if ( (sKeyToMatch != null) && (sKeyToMatch.length()>0) ){
+				// check if the element is good
+				assert (element instanceof PropertiesModel);
+				PropertiesModel objProperty = (PropertiesModel) element;
+				// simple string matching between the key and the column name
+				boolean bSelect = objProperty.sTitle.contains(sKeyToMatch);
+				return bSelect;
+			}
+			return true;
+		}
+
+		/**
+		 * Method to set the keywords to filter
+		 * @param sKey
+		 */
+		public void setKey ( String sKey ) {
+			sKeyToMatch = sKey;
+		}
+	}
+
+	/**
+	 * Class to mimic CheckboxTableViewer to accept the update of checked items
+	 * @author laksonoadhianto
+	 *
+	 */
+	private class ColumnCheckTableViewer extends CheckboxTableViewer {
+
+		/**
+		 * constructor: link to a table
+		 */
+		public ColumnCheckTableViewer(Table table) {
+			super(table);
+			// TODO Auto-generated constructor stub
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.CheckboxTableViewer#setAllChecked(boolean)
+		 */
+		public void setAllChecked(boolean state) {
+			super.setAllChecked(state);
+			// additional action: update the global variable for the new state !
+			TableItem[] items = getTable().getItems();
+			for (int i=0; i<items.length; i++) {
+				TableItem objItem = items[i];
+				PropertiesModel objModel = (PropertiesModel) objItem.getData();
+				objModel.isVisible = state;
+			}
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.CheckboxTableViewer#setCheckedElements(java.lang.Object[])
+		 */
+		public void setCheckedElements(Object[] elements) { 
+			assertElementsNotNull(elements);
+			TableItem[] items = getTable().getItems();
+			// collect the items from the displayed table
+			Hashtable<Object, TableItem> set = new Hashtable<Object, TableItem>(items.length * 2 + 1);
+			for (int i = 0; i < items.length; ++i) {
+				set.put(items[i].getData(), items[i]);
+			}
+			// change the status of the displayed items based on the "global" variable
+			for (int i=0; i<elements.length; i++) {
+				TableItem objItem = set.get(elements[i]);
+				if (objItem != null) {
+					objItem.setChecked(true);
+				}
+			}
+		}
+
+	}
+	// ======================================================================================
+	// ======================================================================================
+	/**
+	 * Example for the test unit
+	 */
+	public void setExample() {
 		PropertiesModel []objModels = new PropertiesModel[4];
 		objModels[0] = new PropertiesModel(true, "one", 0);
 		objModels[1] = new PropertiesModel(false, "two", 1);
@@ -285,33 +410,33 @@ public class ColumnProperties extends TitleAreaDialog {
 		ch[1] = objModels[2];
 		ch[2] = objModels[3];
 		this.objCheckBoxTable.setCheckedElements(ch);
-	  }
-		//--------------------------------------------------
-		/**
-		 * Constructor column properties dialog
-		 * ATT: need to call setData to setup the column
-		 * @param parentShell
-		 */
-		public ColumnProperties(Shell parentShell) {
-			super(parentShell);
-			// TODO Auto-generated constructor stub
-		}
+	}
+	//--------------------------------------------------
+	/**
+	 * Constructor column properties dialog
+	 * ATT: need to call setData to setup the column
+	 * @param parentShell
+	 */
+	public ColumnProperties(Shell parentShell) {
+		super(parentShell);
+		// TODO Auto-generated constructor stub
+	}
 
-	
-		/**
-		 * Constructor with column
-		 * @param shell
-		 * @param columns
-		 */
-		public ColumnProperties(Shell shell, TreeViewerColumn []columns) {
-			super(shell);
-			this.objColumns = columns;
-		}
-	  //==========================================
-	  /**
-	   * test unit
-	   */
-	  public static void main(String []args) {
+
+	/**
+	 * Constructor with column
+	 * @param shell
+	 * @param columns
+	 */
+	public ColumnProperties(Shell shell, TreeViewerColumn []columns) {
+		super(shell);
+		this.objColumns = columns;
+	}
+	//==========================================
+	/**
+	 * test unit
+	 */
+	public static void main(String []args) {
 		Display display = new Display();
 
 		Shell shell = new Shell(display);
@@ -320,5 +445,5 @@ public class ColumnProperties extends TitleAreaDialog {
 		ColumnProperties objProp = new ColumnProperties(shell);
 		//objProp.setExample();
 		objProp.open();
-	  }
+	}
 }

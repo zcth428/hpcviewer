@@ -466,7 +466,8 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 			DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), rootInclProp, iInclusive, iExclusive );
 			rootScope.dfsVisitScopeTree(csv);
 		} else {
-			System.err.println("Error: unknown root scope");
+			// it is very unlikely to have unknown root scope type, but who knows ?
+			System.err.println("Warning: unknown root scope type !");
 			continue;
 		}
 		DerivedPercentVisitor psv = new DerivedPercentVisitor(this.getMetrics(), rootScope, iInclusive, iExclusive);

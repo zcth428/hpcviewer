@@ -65,7 +65,7 @@ public class Utilities {
     	if (FNT_TOP_ROW == null) {
         	Font fntOrig = item.getFont();	// retrieve the original font
         	FontData objFontData = fntOrig.getFontData()[0];
-        	objFontData.setStyle(SWT.BOLD);
+        	//objFontData.setStyle(SWT.BOLD);
         	Utilities.FNT_TOP_ROW = new Font(treeViewer.getTree().getDisplay(), objFontData);
     	}
     	// Laksono 2009.03.09: add background for the top row to distinguish with other scopes

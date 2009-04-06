@@ -344,6 +344,7 @@ abstract public class BaseScopeView  extends ViewPart {
 			        }
 		        } else {
 		        	// selection on wrong node
+		        	objViewActions.disableButtons();
 		        }
 		      }
 		}); 
@@ -440,6 +441,8 @@ abstract public class BaseScopeView  extends ViewPart {
         // Laks 2009.03.17: select the first scope
         TreeItem objItem = this.treeViewer.getTree().getItem(1);
         this.treeViewer.getTree().setSelection(objItem);
+        // reset the button
+        this.objViewActions.checkNodeButtons();
    	}
 
     //======================================================

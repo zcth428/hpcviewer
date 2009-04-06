@@ -518,6 +518,8 @@ public class ScopeViewActions extends ScopeActions {
     	Scope.Node node = this.getSelectedNode();
     	if(node == null)
     		this.objActionsGUI.disableNodeButtons();
+    	else
+    		checkButtons(node);
     }
     /**
      * Update the content of tree viewer
@@ -528,6 +530,12 @@ public class ScopeViewActions extends ScopeActions {
     	this.objActionsGUI.setTreeViewer(tree);
     }
     
+    /**
+     * Disable buttons
+     */
+    public void disableButtons () {
+    	objActionsGUI.disableNodeButtons();
+    }
     //===========================================================================
     //------------------- ADDITIONAL CLASSES ------------------------------------
     //===========================================================================

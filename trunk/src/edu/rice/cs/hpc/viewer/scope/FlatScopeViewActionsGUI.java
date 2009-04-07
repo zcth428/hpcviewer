@@ -110,8 +110,8 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
      * Check if flatten/unflatten buttons need to be disable or not.
      */
     public void checkFlattenButtons() {
-    	tiFlatten.setEnabled(shouldFlattenBeEnabled());
-    	tiUnFlatten.setEnabled(shouldUnflattenBeEnabled());
+    	tiFlatten.setEnabled( shouldFlattenBeEnabled() );
+    	tiUnFlatten.setEnabled( shouldUnflattenBeEnabled() );
     }
 
 	/**
@@ -130,7 +130,11 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 * Check if it is possible to flatten the tree
 	 * @return
 	 */
-    private boolean shouldFlattenBeEnabled() {
+    public boolean shouldFlattenBeEnabled() {
+    	// https://outreach.scidac.gov/tracker/index.php?func=detail&aid=342&group_id=22&atid=169
+    	// BUGS #342: we need to disable flatten buttons when the tree has been zoomed
+    	if ( objFlatAction.getScopeZoom().canZoomOut() )
+    		return false;
     	// DO NOT flatten if we reach to the point where there is no children 
     	return this.myRootScope.getTreeNode().getDepth()>this.myRootScope.getFlattenLevel() + 1;
     }
@@ -139,7 +143,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
      * Verify if unflatten can be done
      * @return
      */
-    private boolean shouldUnflattenBeEnabled() {
+    public boolean shouldUnflattenBeEnabled() {
     	// DO NOT unflatten if we reach to root scope level
     	return (this.myRootScope.getFlattenLevel()>0);
     }

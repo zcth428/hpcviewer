@@ -21,7 +21,7 @@ public class CallerScopeView extends BaseScopeView {
 	@Override
 	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
-        return new ScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
+        return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
 	}
 
 }

@@ -75,8 +75,11 @@ public interface IScopeActionsGUI {
      * Check zoom buttons (zoom out and zoom in)
      * @param node: the current selected node
      */
-    public void checkZoomButtons(Scope.Node node);
-    
+    //public void checkZoomButtons(Scope.Node node);
+	//public void updateButtons (boolean bZoomIn, boolean bZoomOut );
+	public void enableZoomIn (boolean enabled);
+	public void enableZoomOut (boolean enabled);
+	public void enableHotCallPath (boolean enabled);
     /**
      * Disable actions that need a selected node
      */

@@ -62,7 +62,7 @@ public abstract class  ScopeActions {
      * Check if the buttons in the toolbar should be enable/disable
      * @param node
      */
-    public abstract void checkButtons(Scope.Node node);
+    //public abstract void checkButtons(Scope.Node node);
     
     /**
      * Check if zooms and hot-path button need to be disabled or not

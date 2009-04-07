@@ -220,7 +220,6 @@ abstract public class BaseScopeView  extends ViewPart {
     //===================================================================
     // ---------- VIEW CREATION -----------------------------------------
     //===================================================================
-    abstract protected ScopeViewActions createActions(Composite parent, CoolBar coolbar);
     //	return new ScopeViewActions(this.getViewSite().getShell(), objCompositeParent, objCoolbar); 
     
     /**
@@ -340,7 +339,8 @@ abstract public class BaseScopeView  extends ViewPart {
 			        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
 			        if(nodeSelected != null) {
 			        	// update the state of the toolbar items
-			        	objViewActions.checkButtons(nodeSelected);
+			        	//objViewActions.checkButtons(nodeSelected);
+			        	objViewActions.checkStates(nodeSelected);
 			        }
 		        } else {
 		        	// selection on wrong node
@@ -469,6 +469,17 @@ abstract public class BaseScopeView  extends ViewPart {
     public ScopeTreeViewer getTreeViewer() {
     	return this.treeViewer;
     }
+
+    //======================================================
+    // ................ ABSTRACT...........................
+    //======================================================
+    /**
+     * 
+     * @param parent
+     * @param coolbar
+     * @return
+     */
+    abstract protected ScopeViewActions createActions(Composite parent, CoolBar coolbar);
 
     /**
      * Find which column the user has clicked. Return the index of the column if exist,

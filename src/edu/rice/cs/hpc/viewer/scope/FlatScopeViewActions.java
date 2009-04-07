@@ -12,13 +12,14 @@ import org.eclipse.swt.widgets.CoolBar;
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
 
 /**
  * @author laksonoadhianto
  *
  */
 public class FlatScopeViewActions extends ScopeViewActions {
-	private FlatScopeViewActionsGUI objFlatActionsGUI;
+	//private FlatScopeViewActionsGUI objFlatActionsGUI;
 	
 	/**
 	 * @param viewSite
@@ -36,19 +37,20 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * @return
 	 */
 	protected Composite createGUI(Composite parent, CoolBar coolbar) {
-		objFlatActionsGUI = new FlatScopeViewActionsGUI(this.objShell, this.objWindow, parent, this);
-		this.objActionsGUI = this.objFlatActionsGUI;
-		this.objFlatActionsGUI.buildGUI(parent, coolbar);
+		this.objActionsGUI = new FlatScopeViewActionsGUI(this.objShell, this.objWindow, parent, this);
+		//this.objActionsGUI = this.objFlatActionsGUI;
+		this.objActionsGUI.buildGUI(parent, coolbar);
 		return parent;
 	}
 	   /**
      * Check if the buttons in the toolbar should be enable/disable
      * @param node
      */
+	/*
     public void checkButtons(Scope.Node node) {
     	this.objFlatActionsGUI.checkFlattenButtons();
     	super.checkButtons(node);
-    }
+    } */
     
 	/**
 	 * Flatten the tree one level more
@@ -62,7 +64,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 			// refreshing the table to take into account a new data
 			this.treeViewer.refresh();
 			// post processing: inserting the "aggregate metric" into the top row of the table
-			this.objFlatActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(this.myRootScope.getFlattenLevel(), true);
 			this.treeViewer.getTree().setRedraw(true);
 		} else {
 			// either there is something wrong or we cannot flatten anymore
@@ -78,8 +80,24 @@ public class FlatScopeViewActions extends ScopeViewActions {
 		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getUnflatten();
 		if(arrNodes != null) {
 			this.treeViewer.setInput(arrNodes);
-			this.objFlatActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(this.myRootScope.getFlattenLevel(), true);
 		}
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.scope.IToolbarManager#checkStates(edu.rice.cs.hpc.data.experiment.scope.Scope.Node)
+	 */
+	public void checkStates(Node nodeSelected) {
+    	boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
+		objActionsGUI.enableHotCallPath( bCanZoomIn );
+		if (bCanZoomIn) {
+			bCanZoomIn = !( (FlatScopeViewActionsGUI) objActionsGUI ).shouldUnflattenBeEnabled();
+		}
+		objActionsGUI.enableZoomIn( bCanZoomIn );
+		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );
+		((FlatScopeViewActionsGUI) objActionsGUI).checkFlattenButtons();
+	}
+	
 
 }

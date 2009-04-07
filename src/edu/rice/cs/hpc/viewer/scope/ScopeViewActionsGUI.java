@@ -343,13 +343,20 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * Check zoom buttons (zoom out and zoom in)
      * @param node: the current selected node
      */
+    /*
     public void checkZoomButtons(Scope.Node node) {
     	tiZoomout.setEnabled(this.shouldZoomOutBeEnabled());
     	boolean b = shouldZoomInBeEnabled(node);
     	tiZoomin.setEnabled(b);
     	this.tiHotCallPath.setEnabled(b);
+    } */
+    /*
+    public void updateButtons (boolean bZoomIn, boolean bZoomOut ) {
+    	tiZoomin.setEnabled(bZoomIn);
+    	tiZoomout.setEnabled(bZoomOut);
+    	tiHotCallPath.setEnabled(bZoomIn);
     }
-
+    */
     /**
      * Disable actions that need a selected node
      */
@@ -367,22 +374,25 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * @param node
      * @return
      */
-    static public boolean shouldZoomInBeEnabled(Scope.Node node) {
+    /*
+    public boolean shouldZoomInBeEnabled(Scope.Node node) {
     	if(node != null)
     		return (node.getChildCount()>0);
     	else
     		return false;
     }
-    
+    */
     /**
      * Check if the button zoom-out should be enable 
      * @return
      */
+    /*
     public boolean shouldZoomOutBeEnabled() {
     	// FIXME: this is a spaghetti code: need to call the user object
     	// 		  in order to see if the zoom out can be enabled :-(
     	return this.objViewActions.shouldZoomOutBeEnabled();   	
     }
+    */
     //======================================================
     // ................ CREATION ............................
     //======================================================
@@ -484,5 +494,17 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 
     	return toolbar;
     }
+
+	public void enableHotCallPath(boolean enabled) {
+		this.tiHotCallPath.setEnabled(enabled);
+	}
+
+	public void enableZoomIn(boolean enabled) {
+		this.tiZoomin.setEnabled(enabled);
+	}
+
+	public void enableZoomOut(boolean enabled) {
+		this.tiZoomout.setEnabled(enabled);
+	}
     
 }

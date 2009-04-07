@@ -19,6 +19,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
@@ -38,14 +39,13 @@ import com.graphbuilder.math.*;
  * @author laksono
  *
  */
-public class ScopeViewActions extends ScopeActions {
+public abstract class ScopeViewActions extends ScopeActions /* implements IToolbarManager*/ {
     //-------------- DATA
     protected ScopeTreeViewer 	treeViewer;		  	// tree 
     protected RootScope 		myRootScope;		// the root scope of this view
 
-    // stack to store the position of the zoom, tree state, ...
-    private java.util.Stack<Scope.Node> stackRootTree = new java.util.Stack<Scope.Node>();
-	private java.util.Stack<Object[]> stackTreeStates = new java.util.Stack<Object[]>();
+    // laksono 2009.04.07
+    protected ScopeZoom objZoom = null;
 	
 	protected IWorkbenchWindow objWindow;
     /**
@@ -56,7 +56,9 @@ public class ScopeViewActions extends ScopeActions {
     public ScopeViewActions(Shell shell, IWorkbenchWindow window, Composite parent, CoolBar coolbar) {
     	super(shell, parent, coolbar);
     	this.objWindow  = window;
-    	createGUI(parent, coolbar);
+		createGUI(parent, coolbar);
+		// need to instantiate the zoom class after the creation of GUIs
+		objZoom = new ScopeZoom(treeViewer, (ScopeViewActionsGUI) this.objActionsGUI);
     }
 
     /**
@@ -80,7 +82,17 @@ public class ScopeViewActions extends ScopeActions {
     	this.objActionsGUI.updateContent(exp, scope, columns);
     }
 	
-	/**
+    /**
+     * Update the content of tree viewer
+     * @param tree
+     */
+    public void setTreeViewer(ScopeTreeViewer tree) {
+    	this.treeViewer = tree;
+    	this.objActionsGUI.setTreeViewer(tree);
+    	this.objZoom.setViewer(tree);
+    }
+
+    /**
 	 * find the hot call path
 	 * @param pathItem
 	 * @param item
@@ -180,46 +192,8 @@ public class ScopeViewActions extends ScopeActions {
 	//====================================================================================
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
-	public void copyTable() {
-		final Clipboard cb = new Clipboard(this.objShell.getDisplay());
-		TextTransfer textTransfer = TextTransfer.getInstance();
-		Object []arrObjects = this.treeViewer.getExpandedElements();
-		//this.treeViewer.getTree().getColumn(0).get
-		// arrObjects can be either array of Scopes or ArrayOfNodes
-		if(arrObjects != null) {
-			int nbElements = arrObjects.length;
-			if(nbElements>0) {
-				StringBuilder strText = new StringBuilder();
-				if(arrObjects[0] instanceof Scope.Node) {
-					for (int i=0; i<nbElements; i++) {
-						Scope.Node objNode = (Scope.Node) arrObjects[i];
-						strText.append(objNode.getScope().getName());
-						
-					}
-				} else if(arrObjects[0] instanceof ArrayOfNodes) {
-					
-				} else {
-					System.err.println("SVA error: data is unknown type: "+arrObjects[0].getClass());
-				}
-			}
-		}
-	}
-	
-	private String getMetricText(Scope.Node objNode) {
-		TreeColumn []arrVisibleColumns = this.treeViewer.getTree().getColumns();
-		StringBuilder strText = new StringBuilder();
-		for (int i=0; i<arrVisibleColumns.length; i++) {
-			TreeColumn objColumn = arrVisibleColumns[i];
-			if(objColumn.getWidth()>0) {
-				BaseMetric metric = (BaseMetric)objColumn.getData();
-				//strText.append(objNode.getScope().getMetricValue(metric));
-			}
-		}
-		return strText.toString();
-	}
-	/**
-	 * 
-	 */
+
+	/*
 	public void showProcessingMessage() {
 		this.objShell.getDisplay().asyncExec(new Runnable(){
 			public void run() {
@@ -227,14 +201,14 @@ public class ScopeViewActions extends ScopeActions {
 			}
 		});
 	}
-	
+	*/
 	/**
 	 * Class to restoring the background of the message bar by waiting for 5 seconds
 	 * TODO: we need to parameterize the timing for the wait
 	 * @author la5
 	 *
 	 */
-	class RestoreMessageThread extends Thread {	
+	private class RestoreMessageThread extends Thread {	
 		RestoreMessageThread() {
 			super();
 		}
@@ -365,58 +339,31 @@ public class ScopeViewActions extends ScopeActions {
 		
 		// ---------------------- save the current view
 		Scope.Node objInputNode = this.getInputNode();
-		this.stackRootTree.push(objInputNode); // save the node for future zoom-out
-		Object treeStates[] = this.treeViewer.getExpandedElements();
-		this.stackTreeStates.push(treeStates);
-		// ---------------------- 
-
-		treeViewer.setInput(current);
-		// we need to insert the selected node on the top of the table
-		// FIXME: this approach is not elegant, but we don't have any choice
-		// 			at the moment
-		this.objActionsGUI.insertParentNode(current);
-		this.objActionsGUI.checkZoomButtons(current);
+		objZoom.zoomIn(current, objInputNode);
+		Scope.Node nodeSelected = this.getSelectedNode();
+		this.checkStates(nodeSelected);
+		//this.checkButtons(nodeSelected);
 	}
 	
 	/**
 	 * Zoom-out the node
 	 */
-	public void zoomOut() {
-		Scope.Node parent; 
-		if(this.stackRootTree.size()>0) {
-			// the tree has been zoomed
-			parent = this.stackRootTree.pop();
-		} else {
-			// case where the tree hasn't been zoomed
-			// FIXME: there must be a bug if the code comes to here !
-			parent = (Scope.Node)treeViewer.getInput();
-			throw( new java.lang.RuntimeException("ScopeViewActions - illegal zoomout"+parent));
-		}
-		if (parent == null)
-			return;
-		Object userObject = parent.getUserObject();
-		if( (parent.getParent() == null) || 
-				((userObject != null) && (userObject instanceof RootScope))  ){
-			// in this case, the parent is the aggregate metrics
-			// we will not show the node, but instead we will insert manually
-			treeViewer.setInput( parent );			
-	    	Scope.Node  node = (Scope.Node) this.myRootScope.getTreeNode();
-	    	this.objActionsGUI.insertParentNode(node);
-		} else {
-			treeViewer.setInput( parent );
-			// Bug fix: we need to insert the parent on the top of the table
-	    	this.objActionsGUI.insertParentNode(parent);
-		}
-
-		// return the previous expanded tree items
-		if(this.stackTreeStates.size()>0) {
-			Object o[] = this.stackTreeStates.pop();
-			this.treeViewer.setExpandedElements(o);
-		}
+	public void zoomOut() {		
+		objZoom.zoomOut();
 		// funny behavior on Windows: they still keep the track of the previously selected item !!
 		// therefore we need to check again the state of the buttons
 		Scope.Node nodeSelected = this.getSelectedNode();
-		this.objActionsGUI.checkZoomButtons(nodeSelected); // no node has been selected ?
+		this.checkStates(nodeSelected);
+		//this.checkButtons(nodeSelected);
+		//this.objActionsGUI.checkZoomButtons(nodeSelected); // no node has been selected ?
+	}
+	
+	/**
+	 * retrieve the class scope zoom of this object
+	 * @return
+	 */
+	public ScopeZoom getScopeZoom () {
+		return this.objZoom;
 	}
 	
 	/**
@@ -445,13 +392,7 @@ public class ScopeViewActions extends ScopeActions {
 			Expression expFormula = dlg.getExpression();
 			String sName = dlg.getName();					// metric name
 			boolean bPercent = dlg.getPercentDisplay();		// display the percentage ?
-			/*
-			MetricType objMetricType;			
-			if(dlg.isExclusive())
-				objMetricType = MetricType.EXCLUSIVE;
-			else
-				objMetricType = MetricType.INCLUSIVE;
-			*/
+
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
 			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
@@ -483,13 +424,18 @@ public class ScopeViewActions extends ScopeActions {
 	public void resizeColumns() {
 		this.objActionsGUI.resizeTableColumns();
 	}
+	
+	//--------------------------------------------------------------------------
+	// BUTTONS CHECK
+	//--------------------------------------------------------------------------
 	/**
 	 * Check if zoom-in button should be enabled
 	 * @param node
 	 * @return
 	 */
     public boolean shouldZoomInBeEnabled(Scope.Node node) {
-    	return (ScopeViewActionsGUI.shouldZoomInBeEnabled(node));
+    	return this.objZoom.canZoomIn(node);
+    	//return (objActionsGUI.shouldZoomInBeEnabled(node));
     }
     
     /**
@@ -498,16 +444,24 @@ public class ScopeViewActions extends ScopeActions {
      * @return
      */
     public boolean shouldZoomOutBeEnabled() {
-    	return this.stackRootTree.size()>0;
+    	if (objZoom == null )
+    		return false;
+    	else
+    		return objZoom.canZoomOut();
+    	//return this.stackRootTree.size()>0;
     }
     
     /**
      * Check if the buttons in the toolbar should be enable/disable
      * @param node
      */
+    /*
     public void checkButtons(Scope.Node node) {
-    	this.objActionsGUI.checkZoomButtons(node);
-    }
+    	boolean bCanZoomIn = objZoom.canZoomIn(node);
+		objActionsGUI.enableZoomIn( bCanZoomIn );
+		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );
+		objActionsGUI.enableHotCallPath( bCanZoomIn );
+    } */
 
     /**
      * Check if zooms and hot-path button need to be disabled or not
@@ -515,19 +469,12 @@ public class ScopeViewActions extends ScopeActions {
      * https://outreach.scidac.gov/tracker/index.php?func=detail&aid=132&group_id=22&atid=169
      */
     public void checkNodeButtons() {
-    	Scope.Node node = this.getSelectedNode();
-    	if(node == null)
+    	Scope.Node nodeSelected = this.getSelectedNode();
+    	if(nodeSelected == null)
     		this.objActionsGUI.disableNodeButtons();
     	else
-    		checkButtons(node);
-    }
-    /**
-     * Update the content of tree viewer
-     * @param tree
-     */
-    public void setTreeViewer(ScopeTreeViewer tree) {
-    	this.treeViewer = tree;
-    	this.objActionsGUI.setTreeViewer(tree);
+    		this.checkStates(nodeSelected);
+    		//checkButtons(node);
     }
     
     /**
@@ -536,6 +483,15 @@ public class ScopeViewActions extends ScopeActions {
     public void disableButtons () {
     	objActionsGUI.disableNodeButtons();
     }
+    
+    /**
+     * An abstract method to be implemented: check the state of buttons for the selected node
+     * Each action (either caller view, calling context view or flat view) may have different
+     * implementation for this verification
+     * 
+     * @param nodeSelected
+     */
+    public abstract void checkStates ( Scope.Node nodeSelected );
     //===========================================================================
     //------------------- ADDITIONAL CLASSES ------------------------------------
     //===========================================================================
@@ -552,4 +508,5 @@ public class ScopeViewActions extends ScopeActions {
     	// the node associated
     	public Scope.Node node;
     }
+
 }

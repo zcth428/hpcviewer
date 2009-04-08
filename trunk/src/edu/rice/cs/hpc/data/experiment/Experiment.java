@@ -442,10 +442,12 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
  */
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
+	// laksono 2009.03.08: this (I) and (E) are intended to be used for the next release 
+	//	(automatic verification for inclusive and exclusive )
 	// replace if exist, the exc suffix with inclusive
-	String sNameInc = sName.replaceFirst("\\(E\\)", "\\(I\\)");
+	//String sNameInc = sName.replaceFirst("\\(E\\)", "\\(I\\)");
 	// create inclusive metric (this is the default)
-	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sNameInc, this.getMetricCount(), 
+	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
 			bPercent, MetricType.INCLUSIVE);
 	this.addMetric(objMetric); // add this metric into our list
 	int iInclusive = this.getMetricCount() - 1;

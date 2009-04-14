@@ -60,10 +60,11 @@ public class MetricVarMap extends VarMap {
 	 * @param iMetricID: the index of the metric
 	 * @param metric: pointer to the metric
 	 */
+	/*
 	public void setMetrics(BaseMetric []arrMetrics) {
 		this.metrics = arrMetrics;
 	}
-
+	*/
 	/**
 	 * set the current scope which contains metric values
 	 * @param s: the scope of node
@@ -83,20 +84,27 @@ public class MetricVarMap extends VarMap {
 			String sIndex = varName.substring(1);
 			try {
 				int index = Integer.parseInt(sIndex);
-				if(index<this.metrics.length) {
+				if (index<this.metrics.length) {
 					BaseMetric metric = this.metrics[index];
-					MetricValue value = metric.getValue(scope);
-					if(value.isAvailable())
-						return value.getValue();
-					// Laks 2008.07.03: if the value is not available, we just assume it equals to zero
-					else
-						return 0;
-					//throw new RuntimeException(varName);
+					if (scope != null) {
+						MetricValue value = metric.getValue(scope);
+						if(value.isAvailable())
+							return value.getValue();
+						// Laks 2008.07.03: if the value is not available, we just assume it equals to zero
+						//throw new RuntimeException(varName);
+					} else {
+						// scope is null, which means we just want to test
+						// TODO: in the future, we need to do different thing to distinguish between
+						// 		 testing and real expression valuation
+					}
+					return 0;
 					
-				} else
-					throw new RuntimeException("metric index is not valid: " + varName);
+				} else {
+					RuntimeException e = new RuntimeException("metric index is not valid: " + varName);
+					throw e;
+				}
 			} catch (java.lang.NumberFormatException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 				return 0;
 			}
 		} else if (varName.startsWith("&")) {
@@ -108,7 +116,10 @@ public class MetricVarMap extends VarMap {
 			}
 			try{
 				int index = Integer.parseInt(sIndex);
-				return index;
+				if ( index< this.metrics.length )
+					return index;
+				else 
+					throw new RuntimeException("metric index is out of range: " + index);
 			} catch (java.lang.NumberFormatException e) {
 				e.printStackTrace();
 				throw new RuntimeException(varName);

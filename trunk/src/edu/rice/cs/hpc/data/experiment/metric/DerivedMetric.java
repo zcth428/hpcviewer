@@ -213,8 +213,14 @@ public class DerivedMetric extends BaseMetric {
 	 * @return the aggregate value
 	 */
 	private double getAggregateMetrics(RootScope scopeRoot) {
-		double dSum = this.getDoubleValue(scopeRoot).doubleValue();
-		return dSum;
+		try {
+			Double objSum = this.getDoubleValue(scopeRoot);
+			if (objSum != null)
+				return objSum.doubleValue();
+		} catch (Exception e) {
+			// invalid metric ?
+		}
+		return Double.MIN_VALUE;
 		/*
 		if(scopeRoot.getType() == RootScopeType.CallerTree) {
 			return computeAggregateValueCT(scopeRoot);

@@ -41,7 +41,13 @@ public class AggregateFunction implements Function {
 		if(index > this.arrMetrics.length || index<0)
 			throw new java.lang.ArrayIndexOutOfBoundsException("Aggregate(x): the value of x is out of range.");
 		BaseMetric metric = this.arrMetrics[index];
-		return metric.getValue(this.rootscope).getValue();
+		// laksono 2009.04.11: fix bug when rootscope is null. 
+		// If the scope is null, it means we are in verification mode 
+		if (this.rootscope != null)
+			return metric.getValue(this.rootscope).getValue();
+		else
+			// the rootscope is null, it is not important what value is returned.
+			return 0.0;
 	}
 
 	public String toString() {

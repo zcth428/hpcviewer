@@ -44,8 +44,9 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	private String []arrStrMetrics;
 	private Text txtExpression;
 	private Expression expFormula;
-	final ExtFuncMap fctMap;
-
+	private final ExtFuncMap fctMap;
+	private final MetricVarMap varMap;
+	
 	// ------------- Others
 	private String sMetricName;
 	private boolean bPercent;
@@ -63,12 +64,14 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		super(parentShell);
 		this.setMetrics(listOfMetrics);
 		this.fctMap = new ExtFuncMap(listOfMetrics, null);
+		this.varMap = new MetricVarMap ( null, listOfMetrics );
 	}
 	
 	public ExtDerivedMetricDlg(Shell parent, BaseMetric []listOfMetrics, Scope s) {
 		super(parent);
 		this.setMetrics(listOfMetrics);
 		this.fctMap = new ExtFuncMap(listOfMetrics, null);
+		this.varMap = new MetricVarMap ( s, listOfMetrics );
 	}
 	
 	  //==========================================================
@@ -282,7 +285,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			if(sExpression.length() > 0) {
 				try {
 					this.expFormula = ExpressionTree.parse(sExpression);
-					bResult = true;
+					bResult = evaluateExpression ( this.expFormula );
 				} catch (ExpressionParseException e) {
 					MessageDialog.openError(this.getShell(), "Invalid expression", e.getDescription());
 				}
@@ -293,6 +296,26 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  return bResult;
 	  }
 	  
+	  /**
+	   * Run the evaluation 
+	   * @param objExpression
+	   * @return
+	   */
+	  private boolean evaluateExpression ( Expression objExpression ) {
+			//MetricVarMap vm = new MetricVarMap(false /* case sensitive */);
+
+			// vm.setScope(null);
+			try {
+				double dValue = objExpression.eval( varMap, fctMap);
+				return (dValue == 0);
+			} catch(java.lang.Exception e) {
+				// should throw an exception
+				MessageDialog.openError( this.getShell(), "Error: incorrect expression", e.getMessage());
+			}
+
+			return false;
+		}
+
 	  //==========================================================
 	  // ---- PUBLIC METHODS
 	  //==========================================================

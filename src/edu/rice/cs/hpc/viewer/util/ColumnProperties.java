@@ -51,6 +51,34 @@ public class ColumnProperties extends TitleAreaDialog {
 
 	private PropertiesModel arrElements[];
 
+	//--------------------------------------------------
+	// CONSTRUCTOR
+	//--------------------------------------------------
+	/**
+	 * Constructor column properties dialog
+	 * ATT: need to call setData to setup the column
+	 * @param parentShell
+	 */
+	public ColumnProperties(Shell parentShell) {
+		super(parentShell);
+		// TODO Auto-generated constructor stub
+	}
+
+
+	/**
+	 * Constructor with column
+	 * @param shell
+	 * @param columns
+	 */
+	public ColumnProperties(Shell shell, TreeViewerColumn []columns) {
+		super(shell);
+		this.objColumns = columns;
+	}
+	
+	//--------------------------------------------------
+	//	GUI
+	//--------------------------------------------------
+
 	/**
 	 * Creates the dialog's contents
 	 * 
@@ -171,6 +199,9 @@ public class ColumnProperties extends TitleAreaDialog {
 		return composite;
 	}
 
+	//--------------------------------------------------
+	//	PRIVATE & PROTECTED METHODS
+	//--------------------------------------------------
 	/**
 	 * 
 	 * @return
@@ -186,6 +217,23 @@ public class ColumnProperties extends TitleAreaDialog {
 		return arrCheckedElements.toArray();
 
 	}
+	
+	/*
+	 * derived from the parent
+	 */
+	protected void okPressed() {
+		// laksono 2009.04.14: bug fix, retrieving all checked elements into the results
+		for (int i=0; i<arrElements.length; i++) {
+			 this.results[i] = (this.arrElements[i].isVisible);
+		} 
+
+		this.isAppliedToAllViews = this.btnApplyToAllViews.getSelection();
+		super.okPressed();	// this will shut down the window
+	}
+
+	
+	//--------------------------------------------------
+	//	PUBLIC
 	//--------------------------------------------------
 	/**
 	 * get the information about columns
@@ -220,28 +268,6 @@ public class ColumnProperties extends TitleAreaDialog {
 		}
 		this.objCheckBoxTable.setInput(arrElements);
 		this.objCheckBoxTable.setCheckedElements(arrColumns.toArray());
-	}
-
-	//--------------------------------------------------
-	/**
-	 * action when the button OK is pressed
-	 */
-	protected void okPressed() {
-		Object oElems[] = this.objCheckBoxTable.getCheckedElements();
-		if(oElems.length > 0){
-			if(oElems[0] instanceof PropertiesModel) {
-				for(int i=0;i<oElems.length;i++) {
-					PropertiesModel element = (PropertiesModel) oElems[i];
-					try {
-						this.results[element.iIndex] = true;
-					} catch(java.lang.Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		this.isAppliedToAllViews = this.btnApplyToAllViews.getSelection();
-		super.okPressed();
 	}
 
 	/**
@@ -393,7 +419,10 @@ public class ColumnProperties extends TitleAreaDialog {
 		}
 
 	}
+	
+	
 	// ======================================================================================
+	//		UNIT TEST
 	// ======================================================================================
 	/**
 	 * Example for the test unit
@@ -410,27 +439,6 @@ public class ColumnProperties extends TitleAreaDialog {
 		ch[1] = objModels[2];
 		ch[2] = objModels[3];
 		this.objCheckBoxTable.setCheckedElements(ch);
-	}
-	//--------------------------------------------------
-	/**
-	 * Constructor column properties dialog
-	 * ATT: need to call setData to setup the column
-	 * @param parentShell
-	 */
-	public ColumnProperties(Shell parentShell) {
-		super(parentShell);
-		// TODO Auto-generated constructor stub
-	}
-
-
-	/**
-	 * Constructor with column
-	 * @param shell
-	 * @param columns
-	 */
-	public ColumnProperties(Shell shell, TreeViewerColumn []columns) {
-		super(shell);
-		this.objColumns = columns;
 	}
 	//==========================================
 	/**

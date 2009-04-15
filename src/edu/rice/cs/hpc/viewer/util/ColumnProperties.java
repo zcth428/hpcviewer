@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.viewer.util;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -21,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
@@ -143,9 +145,18 @@ public class ColumnProperties extends TitleAreaDialog {
 		btnApplyToAllViews.setSelection(true);
 		btnApplyToAllViews.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
+		// set the layout for group filter
+		Composite groupFilter = new Composite(composite, SWT.BORDER);
+		groupFilter.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(groupFilter);
+		
 		// Laks 2009.03.19: add string to match
-		objSearchText = new Text (composite, SWT.BORDER);
-		GridDataFactory.fillDefaults().applyTo(objSearchText);
+		Label lblFilter = new Label (groupFilter, SWT.BORDER);
+		lblFilter.setText("Filter:");
+		
+		objSearchText = new Text (groupFilter, SWT.BORDER);
+		// expand the filter field as much as possible horizontally
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(objSearchText);
 		objSearchText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				// get the filter of the table
@@ -155,9 +166,8 @@ public class ColumnProperties extends TitleAreaDialog {
 				objCheckBoxTable.refresh();
 				objCheckBoxTable.setCheckedElements(getCheckedItemsFromGlobalVariable());
 			}
-
 		});
-
+		
 
 		// list of columns (we use table for practical purpose)
 		Table table = new Table(composite, SWT.CHECK | SWT.BORDER);

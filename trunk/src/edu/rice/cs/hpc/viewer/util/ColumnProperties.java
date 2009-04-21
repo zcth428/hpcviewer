@@ -151,7 +151,7 @@ public class ColumnProperties extends TitleAreaDialog {
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(groupFilter);
 		
 		// Laks 2009.03.19: add string to match
-		Label lblFilter = new Label (groupFilter, SWT.BORDER);
+		Label lblFilter = new Label (groupFilter, SWT.FLAT);
 		lblFilter.setText("Filter:");
 		
 		objSearchText = new Text (groupFilter, SWT.BORDER);

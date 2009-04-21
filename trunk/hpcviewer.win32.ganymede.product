@@ -31,7 +31,10 @@ Software and the Performance Engineering Research Institute.
    <launcher name="hpcviewer">
       <solaris/>
       <win useIco="false">
-         <bmp/>
+         <bmp
+            winSmallHigh="/edu.rice.cs.hpc-03-06/hpcviewer-icon-16x16-32bit.bmp"
+            winMediumHigh="/edu.rice.cs.hpc-03-06/hpcviewer-icon-32x32-32bit.bmp"
+            winLargeHigh="/edu.rice.cs.hpc-03-06/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
 

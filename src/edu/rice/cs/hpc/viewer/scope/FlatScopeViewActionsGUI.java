@@ -98,6 +98,10 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
       	  		objFlatAction.unflatten();
       	  	}    		
     	});
+    	
+    	// 2009.04.21: temporary solution for windowz: add space to show unflatten buttons
+    	new ToolItem(toolbar, SWT.SEPARATOR);
+    	
     	this.createCoolItem(parent, toolbar);
 
     	// we need to add the parent's default actions

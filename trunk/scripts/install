@@ -32,9 +32,10 @@ EOF
 hpctk_dir="$1"
 test "x$hpctk_dir" != x || usage
 
-if test ! -x "${hpctk_dir}/bin/hpcrun" \
-    || test ! -d "${hpctk_dir}/libexec/hpctoolkit"
-then
+if test -x "${hpctk_dir}/bin/hpcrun" -o -x "${hpctk_dir}/bin/hpclink" \
+    && test -d "${hpctk_dir}/libexec/hpctoolkit"
+then :
+else
     cat <<EOF
 
 Warning: possible bad directory: $hpctk_dir

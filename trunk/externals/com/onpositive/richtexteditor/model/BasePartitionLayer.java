@@ -323,7 +323,7 @@ public class BasePartitionLayer extends AbstractModel implements IPartitionLayer
 	}
 
 	/**
-	 * Проверка целостности партиций
+	 * 
 	 */
 	public void checkConsistency() {
 		
@@ -509,7 +509,7 @@ public class BasePartitionLayer extends AbstractModel implements IPartitionLayer
 			checkConsistency();
 		} catch (RuntimeException e) {
 			System.out
-					.println("//---------------------------Ошибка!-------------------------------");
+					.println("//----------------------------------------------------------");
 		}
 		printPartitions();
 		}
@@ -719,14 +719,14 @@ public class BasePartitionLayer extends AbstractModel implements IPartitionLayer
 	 * @param length interval's length
 	 */
 	public void changeFontCommand(FontStyle style, int offset, int length) {
-		boolean apply = true; // Применять или убирать маску?
+		boolean apply = true; // 
 		CompositeChange change = new CompositeChange(this.storage);
 		List<IPartition> newPartitions = change.extractChangedRegion(offset,
 				length);
 		String sumFontDataName = defineSumFontName(newPartitions);
 		if (style.getFontDataName().equals(sumFontDataName))
-			apply = false; // Снимем, тока если все партиции в списке имеюд
-		// заданный шрифт
+			apply = false; // 
+		// 
 		for (Iterator<IPartition> iterator = newPartitions.iterator(); iterator
 				.hasNext();) {
 			BasePartition curPartition = (BasePartition) iterator.next();

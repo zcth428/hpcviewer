@@ -156,9 +156,9 @@ public class BasePartition implements IPartition
 		else
 			mask = mask & ~FontStyle.BOLD;
 		if (refreshVisibleState)
-			layer.handlePartitionEvent(new BasePartitionEvent(this)); // TODO Не
-																		// медленно
-																		// ?
+			layer.handlePartitionEvent(new BasePartitionEvent(this)); // TODO 
+																		
+																		
 	}
 
 	
@@ -569,3 +569,4 @@ public class BasePartition implements IPartition
 	}
 
 }
+

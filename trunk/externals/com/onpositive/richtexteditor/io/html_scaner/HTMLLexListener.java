@@ -52,13 +52,7 @@ public class HTMLLexListener implements ILexListener {
 	protected Stack<Boolean> underlinedStack = new Stack<Boolean>();
 	protected Stack<Boolean> strikethroughStack = new Stack<Boolean>();
 	protected Stack<HashMap<String, String>> styleAttrsStack = new Stack<HashMap<String, String>>();
-	protected Stack<Integer> tagsStack = new Stack<Integer>(); // Необходим для
-																// корректной
-																// обработки
-																// не-xhtml,
-																// отсл.
-																// вложенность
-																// тегов
+	protected Stack<Integer> tagsStack = new Stack<Integer>(); // 
 
 	protected String fontFaceString = "font-family";
 	protected String fontSizeString = "font-size";
@@ -70,8 +64,7 @@ public class HTMLLexListener implements ILexListener {
 	protected String h3StyleString = "font-family:Times New Roman; font-size:14pt";
 	protected String h4StyleString = "font-family:Times New Roman; font-size:12pt";
 
-	protected boolean isParagraphAttr = false; // Обозначает, что данный атрибут
-												// явл. атрибутом параграфа
+	protected boolean isParagraphAttr = false; // 
 
 	protected StringBuilder curTextStr = new StringBuilder();
 	protected ArrayList<BasePartition> partitions = new ArrayList<BasePartition>();
@@ -84,24 +77,18 @@ public class HTMLLexListener implements ILexListener {
 
 	// protected boolean isBulletedList = false;
 	// protected boolean isNumberedList = false;
-	protected boolean wasLI = false; // Определяет, что в начале строки был тег
-										// LI
-	protected boolean wasFontTag = false; // Определяет, что был тег font
-	protected boolean wasSpanTag = false; // Определяет, что был тег span
-	protected boolean appendText = true; // Добавлять ли текущиё текс к
-											// итоговому
-	protected boolean trimWhiteSpaces = true; // Добавлять ли текущиё текс к
-											  // итоговому
-	// Необходим, чтобы не добавлять текст из служебных тагов типа style и т.д.
+	protected boolean wasLI = false; // 
+	protected boolean wasFontTag = false; // 
+	protected boolean wasSpanTag = false; //
+	protected boolean appendText = true; // 
+	protected boolean trimWhiteSpaces = true; // 
 
 	protected int bulletedListLevel = 0; // Used to manage multi-level list (not
 											// really supported yet)
 	protected int numberedListLevel = 0;
 
-	protected int currentNumberedListValue = 1; // Чтобы знать, какие баллеты
+	protected int currentNumberedListValue = 1; //
 	protected boolean isHR = false;
-												// получать для текущей строки
-												// списка
 	
 	// LAks 2009.02.10: parent path of the HTML file
 	private String sParentPath;
@@ -197,7 +184,7 @@ public class HTMLLexListener implements ILexListener {
 					|| type == Scanner.TYPE_TITLE) {
 				appendText = !tagEvent.isOpen();
 			} 
-			else if (appendText) // Текст не в служ теге.
+			else if (appendText) // 
 			{
 				if (type == Scanner.TYPE_IMG && tagEvent.isOpen()) 
 				{
@@ -314,8 +301,7 @@ public class HTMLLexListener implements ILexListener {
 						curSrc = convertImageSrc(event2.l);
 				}
 			}
-		} else if (event instanceof TagEndEvent) // Здесь сбросить все
-													// состояния, отн. к тегу
+		} else if (event instanceof TagEndEvent) 
 		{
 			wasFontTag = false;
 			wasSpanTag = false;
@@ -354,9 +340,6 @@ public class HTMLLexListener implements ILexListener {
 			}
 		} else if (appendText)
 			curTextStr.append(event.l);
-		// Переводы строки зачищаем заранее, т.к. позже нам надо вставить
-		// "значащие" переводы строки
-		
 		
 		if (getLineCount(globalBuilder.toString()) + getLineCount(curTextStr.toString()) != lineAligns.size())
 		{
@@ -645,10 +628,7 @@ public class HTMLLexListener implements ILexListener {
 		else
 			newPartition = new BasePartition(layer, newOffset, curTextStr
 					.length());
-		newPartition.setRefreshVisibleState(false); // Не обновлять, т.к.
-													// партиция и текст всё ещё
-													// в процессе сборки
-
+		newPartition.setRefreshVisibleState(false); // 
 		newPartition.setBold(boldStack.size() > 0);
 		newPartition.setItalic(italicStack.size() > 0);
 		newPartition.setUnderlined(underlinedStack.size() > 0);

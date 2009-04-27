@@ -29,7 +29,7 @@ import java.util.Iterator;
 import com.onpositive.richtexteditor.model.Logger;
 
 /**
- * Предназначен для сканирования различных искусственных текстов.
+ * 
  * @author root
  * 
  */
@@ -86,7 +86,7 @@ public class Scanner
 		
 		char[] nonTagNameSymbols = new char[]{'"', '\'', '<', '>', '/', '\\', '='};
 
-		protected int uk; //Начало и указатель читающей головки
+		protected int uk; //
 		protected char[] t;
 		protected HashMap<String, Integer> tagKeywords = new HashMap<String,Integer>();
 		protected HashMap<String, Integer> attrKeywords = new HashMap<String,Integer>();
@@ -105,7 +105,7 @@ public class Scanner
 		{
 			if ((c>='a') && (c<='z') || 
 					   (c>='A') && (c<='Z')
-					   || (c == '_')) //Префикс дельта-функции
+					   || (c == '_')) //
 				return true;
 			return false;
 		}
@@ -197,7 +197,7 @@ public class Scanner
 		 */
 		protected boolean checkForIndentSymbol(char c)
 		{
-			if (checkForIdentBeginning(c)) return true; //Может быть или начальный символ, или цифра
+			if (checkForIdentBeginning(c)) return true; //
 			if ((t[uk]<='9') && (t[uk]>='0')) return true;
 			return false;
 		}
@@ -207,12 +207,12 @@ public class Scanner
 
 		void LogError(FileWriter LogFile, String msg) throws IOException
 		  {
-			if (LogFile != null) LogFile.write("Ошибка! " + msg);
+			if (LogFile != null) LogFile.write("! " + msg);
 		  }
 
 		
 		/**
-		 * Основная функция, возвращает отсканированую лексемму
+		 * 
 		 * @throws Exception
 		 */
 		void scaner()
@@ -349,7 +349,7 @@ public class Scanner
 				if (t[uk] == '\\' && t[uk+1] == c) uk++;
 				uk++;
 			}
-			//uk++; //Пропуск кавычки
+			//uk++; 
 		}
 
 		protected void neutrilzeUpTo(char[] symbols)
@@ -386,7 +386,7 @@ public class Scanner
 		}
 		
 		/**
-		 * Пропускает все незначащие символы		 
+		 * 
 		 */
 		protected void pass()
 		{		  
@@ -411,7 +411,7 @@ public class Scanner
 			} 
 			catch (FileNotFoundException e) 
 			{
-	          Logger.log("CoНе могу открыть файл - " + input.getName() + "!");
+	          Logger.log("- " + input.getName() + "!");
 	          System.exit(-1);
 			}
 			try 

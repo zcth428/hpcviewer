@@ -92,7 +92,7 @@ public class BulletFactory
 	public static Bullet getBulletForNum(int num)
 	{
 		if (num == NONE_LIST_CONST) return null;
-		if (!listBullets.containsKey(num)) //Если для такого числа ещё не  было, создадим новый
+		if (!listBullets.containsKey(num)) //
 			listBullets.put(num, getNewNumberedListBulletInstance());
 		return listBullets.get(num);
 	}

@@ -115,7 +115,7 @@ public abstract class TextSerializer
 				{
 					 if (editor.getLineBullet(i) == curBullet) j = i;
 				}
-				i = j + 1; //Возврат
+				i = j + 1; //
 				numberedListsEnds.put(j,curBullet);
 			}
 		}

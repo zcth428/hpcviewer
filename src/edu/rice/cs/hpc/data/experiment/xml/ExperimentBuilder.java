@@ -100,6 +100,8 @@ public class ExperimentBuilder extends Builder
     We use the maxNumberOfMetrics value to generate short names for the self metrics*/
 	protected int maxNumberOfMetrics;
 
+	// laks 2009.05.04: to keep compatibility
+	protected Hashtable<Integer, SourceFile> hashSourceFileTable = new Hashtable<Integer, SourceFile>();
 
 //	INITIALIZATION							//
 
@@ -207,7 +209,9 @@ public class ExperimentBuilder extends Builder
 
 			// ignored elements
 		case Token.HPCVIEWER:
+			// Flat profile
 			this.csviewer = false;
+			this.initExperiment();
 			break;
 		case Token.CONFIG:
 		case Token.METRICS:
@@ -580,7 +584,7 @@ public class ExperimentBuilder extends Builder
 	{
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		
-		this.experiment.setMetrics(this.metricList);
+		//this.experiment.setMetrics(this.metricList);
 
 		// make the root scope
 		this.rootScope = new RootScope(this.experiment, name,"Invisible Outer Root Scope", RootScopeType.Invisible);
@@ -595,9 +599,17 @@ public class ExperimentBuilder extends Builder
 			this.flatViewRootScope = new RootScope(this.experiment, name, "Flat View", RootScopeType.Flat);
 			this.beginScope(this.flatViewRootScope);	
 		}
+		// laks: since we will simulate of using dictionary for this old xml format, we need to set the hash table of the files
+		//this.experiment.setFileTable(this.hashSourceFileTable);
+		this.initExperiment();
 	}
 
 
+	private void initExperiment() 
+	{
+		this.experiment.setMetrics(metricList);
+		this.experiment.setFileTable(this.hashSourceFileTable);
+	}
 
 
 	/*************************************************************************
@@ -607,6 +619,7 @@ public class ExperimentBuilder extends Builder
 	private void end_PGM()
 	{
 		this.endScope();
+		this.experiment.setFileTable(this.hashSourceFileTable);
 	}
 
 
@@ -621,7 +634,7 @@ public class ExperimentBuilder extends Builder
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		
 		// make a new load module scope object
-		Scope lmScope = new LoadModuleScope(this.experiment, name);
+		Scope lmScope = new LoadModuleScope(this.experiment, name, this.hashSourceFileTable.size());
 		this.beginScope(lmScope);
 	}
 
@@ -673,19 +686,26 @@ public class ExperimentBuilder extends Builder
 		// F n="filename"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 
-		// make a new source file object
-		File filename = new File(name);
-		SourceFile sourceFile = new FileSystemSourceFile(experiment, filename);
-		this.fileList.add(sourceFile);
-		this.srcFileStack.push(sourceFile);
-
+		int index = this.createSourceFile(this.experiment, name);
 		// make a new file scope object
-		Scope fileScope = new FileScope(this.experiment, sourceFile);
+		Scope fileScope = new FileScope(this.experiment, index);
 
 		this.beginScope(fileScope);
 	}
 
 
+	private int createSourceFile(Experiment exp, String sFilename) {
+		// make a new source file object
+		File filename = new File(sFilename);
+		int index = this.hashSourceFileTable.size()+1;
+		SourceFile sourceFile = new FileSystemSourceFile(experiment, filename, index);
+		sourceFile.setIsText(true);
+		this.fileList.add(sourceFile);
+		this.srcFileStack.push(sourceFile);
+
+		this.hashSourceFileTable.put(Integer.valueOf(index), sourceFile);
+		return index;
+	}
 
 
 	/*************************************************************************
@@ -776,7 +796,7 @@ public class ExperimentBuilder extends Builder
 
 			int firstLn = Integer.parseInt(val_line[0]);
 			int lastLn  = Integer.parseInt(val_line[1]);
-			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
+			Scope procScope  = new ProcedureScope(this.experiment, srcFile.getFileID(), 
 					firstLn-1, lastLn-1, 
 					val_function[0], attr_sid, isalien);
 
@@ -818,7 +838,8 @@ public class ExperimentBuilder extends Builder
 			int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
 
 			boolean isalien = false;
-			Scope procScope     = new ProcedureScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1, lastLn-1, name, isalien);
+			Scope procScope     = new ProcedureScope(this.experiment, ((SourceFile)this.srcFileStack.peek()).getFileID(), 
+					firstLn-1, lastLn-1, name, isalien);
 
 			this.beginScope(procScope);
 		}
@@ -850,13 +871,8 @@ public class ExperimentBuilder extends Builder
 		int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
 		int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
 
-		File file = new File(filenm);
-		SourceFile sourceFile = new FileSystemSourceFile(experiment, file);
-		sourceFile.setIsText(true);
-		this.fileList.add(sourceFile);
-		this.srcFileStack.push(sourceFile);
-
-		Scope alienScope = new AlienScope(this.experiment, sourceFile, filenm, procnm, firstLn-1, lastLn-1);
+		int index = this.createSourceFile(this.experiment, filenm);
+		Scope alienScope = new AlienScope(this.experiment, index, filenm, procnm, firstLn-1, lastLn-1);
 
 		this.beginScope(alienScope);
 	}
@@ -895,7 +911,7 @@ public class ExperimentBuilder extends Builder
 			//}
 			sourceFile = frameScope.getSourceFile();
 		}
-		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
+		Scope loopScope = new LoopScope(this.experiment, sourceFile.getFileID(), firstLn-1, lastLn-1);
 
 		this.beginScope(loopScope);
 	}
@@ -977,9 +993,9 @@ public class ExperimentBuilder extends Builder
 
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile, firstLn-1);
+				scope = new LineScope(this.experiment, srcFile.getFileID(), firstLn-1);
 			else
-				scope = new StatementRangeScope(this.experiment, srcFile, 
+				scope = new StatementRangeScope(this.experiment, srcFile.getFileID(), 
 						firstLn-1, lastLn-1);
 
 			if (isCallSite) {
@@ -999,9 +1015,9 @@ public class ExperimentBuilder extends Builder
 
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1);
+				scope = new LineScope(this.experiment, ((SourceFile)this.srcFileStack.peek()).getFileID(), firstLn-1);
 			else
-				scope = new StatementRangeScope(this.experiment, (SourceFile)this.srcFileStack.peek(), firstLn-1, lastLn-1);
+				scope = new StatementRangeScope(this.experiment, ((SourceFile)this.srcFileStack.peek()).getFileID(), firstLn-1, lastLn-1);
 
 			this.beginScope(scope);
 		}
@@ -1117,9 +1133,11 @@ public class ExperimentBuilder extends Builder
 	{
 		SourceFile sourceFile=(SourceFile)FileHashTable.get(fileLine);
 		if (sourceFile == null) {
+			int index = this.hashSourceFileTable.size();
 			File filename = new File(fileLine);
-			sourceFile = new FileSystemSourceFile(experiment, filename);
+			sourceFile = new FileSystemSourceFile(experiment, filename, index);
 			FileHashTable.put(fileLine,sourceFile);
+			this.hashSourceFileTable.put(Integer.valueOf(index), sourceFile);
 		}  
 		this.fileList.add(sourceFile);
 		return sourceFile;

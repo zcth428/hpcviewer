@@ -21,12 +21,16 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     	if(parentElement instanceof Scope.Node) {
     		// normal mode
         	Scope.Node parent = ((Scope.Node) parentElement);
+        	Object arrChildren[] = parent.getChildren();
+        	if (arrChildren.length>0)
+        		return arrChildren;
+        	/*
         	int iChildren = parent.getChildCount();
         	Scope.Node []children = new Scope.Node[iChildren];
         	for(int i=0;i<iChildren;i++) {
         		children[i] = (Scope.Node)parent.getChildAt(i);
         	}
-        	return children;
+        	return children; */
     	} else if(parentElement instanceof ArrayOfNodes) {
     		// flat-tree node
     		ArrayOfNodes listNodes = (ArrayOfNodes) parentElement;

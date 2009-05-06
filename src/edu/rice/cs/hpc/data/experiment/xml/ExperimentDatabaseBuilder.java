@@ -53,6 +53,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	private final static String NAME_ATTRIBUTE 			= "n";
 	private final static String FILENAME_ATTRIBUTE 		= "f";
 	private final static String VALUE_ATTRIBUTE 		= "v";
+	private final static String ID_ATTRIBUTE 		= "i";
 	
 
 	/** The experiment to own parsed objects. */
@@ -67,15 +68,8 @@ public class ExperimentDatabaseBuilder extends Builder
 	/** The parsed search paths. */
 	protected List/*<File>*/ pathList;
 
-	/** The parsed source file objects. */
-	// Laks 2009.01.06: get rid off unused methods and attributes
-//	protected List/*<SourceFile>*/ fileList;
-
 	/** The parsed metric objects. */
 	protected List/*<Metric>*/ metricList;
-
-	/** The parsed scope objects. */
-	//protected List/*<Scope>*/ scopeList;
 
 	/** The parsed root scope object. */
 	protected Scope rootScope;
@@ -84,14 +78,13 @@ public class ExperimentDatabaseBuilder extends Builder
 	protected Scope flatViewRootScope;
 
 	/** A stack to keep track of scope nesting while parsing. */
-	//protected StackScope/*<Scope>*/ stack;
 	protected Stack/*<Scope>*/ stack;
 
 	/** The current source file while parsing. */
 	protected Stack/*<SourceFile>*/ srcFileStack;
 
-//	johnmc
-	protected Hashtable/*<String, SourceFile>*/ FileHashTable = new Hashtable();
+	// Laks 2009.05.04: we need to use a hash table to preserve the file dictionary
+	protected Hashtable <Integer, SourceFile> hashSourceFileTable = new Hashtable<Integer, SourceFile>();
 
 	/** Number of metrics provided by the experiment file.
     For each metric we will define one inclusive and one exclusive metric.*/
@@ -99,14 +92,15 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	/** Maximum number of metrics provided by the experiment file.
     We use the maxNumberOfMetrics value to generate short names for the self metrics*/
-	protected int maxNumberOfMetrics;
+	final protected int maxNumberOfMetrics = 100;
 
 	// Laks
 	private DatabaseToken.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	private DatabaseToken.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
-	private java.util.Hashtable<Integer, String> hashProcedureTable = new Hashtable<Integer, String>();
-	private java.util.Hashtable<Integer, String> hashLoadModuleTable = new Hashtable<Integer, String>();
-	private java.util.Hashtable<Integer, String> hashFileTable = new Hashtable<Integer, String> ();
+	//--------------------------------------------------------------------------------------
+	private java.util.Hashtable<Integer, String> hashProcedureTable;
+	private java.util.Hashtable<Integer, String> hashLoadModuleTable;
+	//private java.util.Hashtable<Integer, String> hashFileTable;
 	private boolean csviewer;
 
 //	INITIALIZATION							//
@@ -144,19 +138,23 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.csviewer = false;
 		// temporary storage for parsed objects
 		this.pathList   = new ArrayList/*<File>*/();
-		//  Laks 2009.01.06: get rid off unused methods and attributes
-		// this.fileList   = new ArrayList/*<SourceFile>*/();
 		this.metricList = new ArrayList/*<Metric>*/();
-		//this.scopeList  = new ArrayList/*<Scope>*/();
 
 		// parse action data structures
 		this.stack = new Stack/*<Scope>*/();
-		//this.stack = new StackScope/*<Scope>*/();
 		this.srcFileStack = new Stack/*<SourceFile>*/();
 		this.srcFileStack.push(null); // mimic old behavior
 
+		hashProcedureTable = new Hashtable<Integer, String>();
+		hashLoadModuleTable = new Hashtable<Integer, String>();
+		//hashFileTable = new Hashtable<Integer, String> ();
+		
 		numberOfPrimaryMetrics = 0;
-		maxNumberOfMetrics = 100;
+		
+		// laks hack: somehow, a scope object may want to know its source file.
+		//			However, the source file is stored in hashSourceFileTable, so we 
+		//			need to set this dummy table to the experiment for temporary usage
+		this.experiment.setFileTable(this.hashSourceFileTable);
 	}
 
 
@@ -220,18 +218,21 @@ public class ExperimentDatabaseBuilder extends Builder
 		case T_SEC_CALLPATH_PROFILE_DATA:
 			this.begin_SecData(attributes, values);	break;
 
+			// load module dictionary
 		case T_LOAD_MODULE:
 			this.do_LoadModule(attributes, values);
 			break;
-			
+			// file dictionary
 		case T_FILE:
 			this.do_File(attributes, values); break;
-
+			
+			// flat profiles
 		case T_LM:
 			this.begin_LM (attributes, values);	break;
 		case T_F:
 			this.begin_F  (attributes, values);	break;
 		case T_P:
+			
 		case T_PR:
 		case T_PF:
 			this.begin_PF  (attributes, values);	break;
@@ -254,6 +255,7 @@ public class ExperimentDatabaseBuilder extends Builder
 
 			// old token from old XML
 		case T_CSPROFILE:
+		case T_HPCVIEWER:
 			throw new java.lang.RuntimeException(new OldXMLFormatException());
 			// unknown elements
 
@@ -377,26 +379,10 @@ public class ExperimentDatabaseBuilder extends Builder
 			this.error();
 		}
 
-		// check semantic constraints
-		// Laks 2009.01.06: get rid off unused methods and attributes
-		/*
-		if( this.fileList.size() == 0 ) {
-			System.out.println("Warning: no source files found!");
-			// bug no 189: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=189&group_id=22&atid=169
-			//this.error();
-		}*/
-
-		/* Laks 2009.01.06: get rid off unused methods and attributes
-		if( this.scopeList.size() == 0 ) {
-			System.out.println("Warning: scope tree is empty!");
-			this.error();
-		} */
-
 		// copy parse results into configuration
 		this.configuration.setSearchPaths(this.pathList);
 		this.experiment.setConfiguration(this.configuration);
-		//  Laks 2009.01.06: get rid off unused methods and attributes
-		// this.experiment.setSourceFiles(this.fileList);
+
 		//this.experiment.setScopes(this.scopeList, this.rootScope);
 		this.experiment.setScopes(null, this.rootScope);
 		
@@ -415,10 +401,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	}
 
 
-
-
-
-//	BUILDING															//
+//	------------------------------- BUILDING		---------------------------//
 
 	/*************************************************************************
 	 *	Processes a TITLE element.
@@ -450,18 +433,40 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.configuration.setName(values[0]);
 	}
 
+	/*************************************************************************
+	 *      Processes a FILE.
+	 *          <!ELEMENT File (Info?)>
+    <!ATTLIST File
+              i CDATA #REQUIRED
+              n CDATA #REQUIRED>
+	 ************************************************************************/
 	private void do_File(String[] attributes, String[] values) {
 		if(values.length < 2)
 			return;
-		String sID = values[0];
-		String sFile = values[1];
-		
+		String sID = values[0];		
 		try {
-			Integer objID = Integer.parseInt(sID);
-			this.hashFileTable.put(objID, sFile);
-		} catch (java.lang.NumberFormatException e) {
+			Integer objFileID = Integer.parseInt(sID);
+			// just in case if there is a duplicate key in the dictionary, we need to make a test
+			SourceFile sourceFile=(SourceFile) this.hashSourceFileTable.get(objFileID);
+			if (sourceFile == null) {
+				// theoretically, this condition is always true (unless a bug occurred in the hpcprof)
+				String sFile = values[1];
+				File filename = new File(sFile);
+				int iID = objFileID.intValue();
+				sourceFile = new FileSystemSourceFile(experiment, filename, iID);
+				this.hashSourceFileTable.put(objFileID, sourceFile);
+			}  
+		} catch (Exception e) {
 			
 		}
+
+		/*
+		try {
+			Integer objID = Integer.parseInt(sID);
+			//this.hashFileTable.put(objID, sFile);
+		} catch (java.lang.NumberFormatException e) {
+			
+		} */
 	}
 
 	/*************************************************************************
@@ -590,6 +595,8 @@ public class ExperimentDatabaseBuilder extends Builder
 	private void end_PGM()
 	{
 		this.endScope();
+		// laks: tell the experiment that we have finished with the dictionary
+		this.experiment.setFileTable(this.hashSourceFileTable);
 	}
 
 
@@ -605,10 +612,20 @@ public class ExperimentDatabaseBuilder extends Builder
 	{
 		// LM n="load module name"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
+		String sIndex = getAttributeByName(ID_ATTRIBUTE, attributes, values);
 		
-		// make a new load module scope object
-		Scope lmScope = new LoadModuleScope(this.experiment, name);
-		this.beginScope(lmScope);
+		try {
+			Integer objIndex = Integer.parseInt(sIndex);
+			// make a new load module scope object
+			Scope lmScope = new LoadModuleScope(this.experiment, name, objIndex.intValue());
+			File filename = new File(name);
+			SourceFile sourceFile = new FileSystemSourceFile(experiment, filename, objIndex);
+
+			this.hashSourceFileTable.put(objIndex, sourceFile);
+			this.beginScope(lmScope);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 
@@ -631,19 +648,27 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	{
 		// F n="filename"
-		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
+		String inode = getAttributeByName(ID_ATTRIBUTE, attributes, values);
+		try {
+			Integer objFileKey = Integer.parseInt(inode);
+			// make a new file scope object
+			Scope fileScope = new FileScope(this.experiment, objFileKey);
+			SourceFile sourceFile  = (SourceFile) this.hashSourceFileTable.get(objFileKey);
+			if (sourceFile == null ) {
+				// make a new source file object
+				String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
+				File filename = new File(name);
+				sourceFile = new FileSystemSourceFile(experiment, filename, objFileKey.intValue());
+				this.hashSourceFileTable.put(objFileKey, sourceFile);
+			}
+			this.srcFileStack.push(sourceFile);
 
-		// make a new source file object
-		File filename = new File(name);
-		SourceFile sourceFile = new FileSystemSourceFile(experiment, filename);
-		// Laks 2009.01.06: get rid off unused methods and attributes
-		// this.fileList.add(sourceFile);
-		this.srcFileStack.push(sourceFile);
+			this.beginScope(fileScope);
 
-		// make a new file scope object
-		Scope fileScope = new FileScope(this.experiment, sourceFile);
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
 
-		this.beginScope(fileScope);
 	}
 
 
@@ -676,7 +701,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			Integer objID = Integer.parseInt(sID);
 			this.hashProcedureTable.put(objID, sData);
 		} catch (java.lang.NumberFormatException e) {
-			
+			e.printStackTrace();
 		}
 	}
 	
@@ -699,12 +724,13 @@ public class ExperimentDatabaseBuilder extends Builder
 			boolean hashtableExist = (this.hashProcedureTable.size()>0);
 			int      attr_sid      = 0;
 			int firstLn = 0, lastLn = 0;
+			int keyFile = 0;	// the index key of the procedure to the dictionary
+			SourceFile srcFile = null; // file location of this procedure
 			
 			String[] attr_file     = new String[1];
-			String fileLine = null;
+			//String fileLine = null;
 			String[] attr_function = new String[3];
 			String sProcName = "unknown procedure";
-			//String[] val_function  = new String[3];
 			String[] attr_line     = new String[2];
 
 			attr_file[0]= "n";
@@ -712,10 +738,6 @@ public class ExperimentDatabaseBuilder extends Builder
 			attr_function[0]="n";
 			attr_function[1]="b";
 			attr_function[2]="e";
-
-//			val_function[0]="unknown procedure";
-//			val_function[1]="0";
-//			val_function[2]="0";
 
 			attr_line[0]="b";
 			attr_line[1]="e";
@@ -734,30 +756,41 @@ public class ExperimentDatabaseBuilder extends Builder
 				else if(attributes[i].equals("f")) {
 					// file
 					istext = true;
-					fileLine = values[i];
+					//fileLine = values[i];
 					try {
-						Integer objFileKey = Integer.parseInt(fileLine);
-						String sValue = this.hashFileTable.get(objFileKey);
+						int indexFile = Integer.parseInt(values[i]);
+						keyFile = indexFile;
+						srcFile = this.hashSourceFileTable.get(keyFile);
+						/*
+						String sValue = this.hashFileTable.get(Integer.valueOf(keyFile));
 						if(sValue != null)
-							fileLine = sValue;
+							fileLine = sValue;*/
 					} catch (java.lang.NumberFormatException e) {
-						
+						// in this case, either the value of "f" is invalid or it is the name of the file
+						keyFile = this.hashSourceFileTable.size()+1;
+						System.out.println("Warning: the XML file has unsupported format for attribute 'f':"+values[i]+
+								" replaced by the index: "+keyFile); 
+						// e.printStackTrace();
 					}
 					
 				}
 				else if(attributes[i].equals("lm")) { 
 					// load module
-					istext = false;
-					fileLine = values[i]; 
-					try {
-						// let see if the value of ln is an ID or a simple load module name
-						int idLM = Integer.parseInt(fileLine);
-						// look at the dictionary for the name of the load module
-						String sValue = this.hashLoadModuleTable.get(new Integer(idLM));
-						if(sValue != null)
-							fileLine = sValue;
-					} catch (java.lang.NumberFormatException e) {
-						// this error means that the lm is not based on dictionary
+					if (!istext) {
+						istext = false;
+						//fileLine = values[i]; 
+						try {
+							// let see if the value of ln is an ID or a simple load module name
+							int indexFile = Integer.parseInt(values[i]);
+							keyFile = indexFile;
+							// look at the dictionary for the name of the load module
+							String sValue = this.hashLoadModuleTable.get(Integer.valueOf(keyFile));
+							//if(sValue != null)
+							//	fileLine = sValue;
+						} catch (java.lang.NumberFormatException e) {
+							keyFile = this.hashSourceFileTable.size()+1;
+							// this error means that the lm is not based on dictionary
+						}
 					}
 				}
 				else if (attributes[i].equals("p") ) {
@@ -801,17 +834,17 @@ public class ExperimentDatabaseBuilder extends Builder
 //					}
 				}
 			}
-			SourceFile srcFile;
-			if(fileLine == null) {
+			if(srcFile == null) {
 				srcFile = (SourceFile) this.srcFileStack.peek();
-			} else {
-				srcFile = this.getFileForCallsite(fileLine);
-			}
+				keyFile = srcFile.getFileID();
+			} /*else {
+				srcFile = this.hashSourceFileTable.get(keyFile); //this.getFileForCallsite(fileLine, keyFile);
+			} */
 			 
 			srcFile.setIsText(istext);
 			this.srcFileStack.add(srcFile);
 
-			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
+			Scope procScope  = new ProcedureScope(this.experiment, keyFile, 
 					firstLn-1, lastLn-1, 
 					sProcName, attr_sid, isalien);
 
@@ -833,7 +866,6 @@ public class ExperimentDatabaseBuilder extends Builder
 				CallSiteScope csn2 = (CallSiteScope) this.stack.pop();
 				this.stack.push(ls);
 				this.stack.push(csn2);
-				//System.out.println("begin_PF-Linescope:"+parser.getLineNumber()+"\t"+this.stack.size());
 
 			} else {
 				this.beginScope(procScope);
@@ -856,38 +888,47 @@ public class ExperimentDatabaseBuilder extends Builder
 	
 	/*************************************************************************
 	 *	Begins processing a A (alien) element.
-	 ************************************************************************/
-
-	private void begin_A(String[] attributes, String[] values)
-	{
-		/*
-		 *   <!ELEMENT A (A|L|S|C|M)*>
-      		<!ATTLIST A
+      <!ELEMENT A (A|L|S|C|M)*>      <!ATTLIST A
                 i CDATA #IMPLIED
                 f CDATA #IMPLIED
                 n CDATA #IMPLIED
                 l CDATA #IMPLIED
                 v CDATA #IMPLIED>
-		 */
+	 ************************************************************************/
+
+	private void begin_A(String[] attributes, String[] values)
+	{
 		// make a new alien scope object
-		String filenm = getAttributeByName(FILENAME_ATTRIBUTE, attributes, values);
-		String procnm = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-		String sLine = getAttributeByName(LINE_ATTRIBUTE, attributes, values);
-		int firstLn, lastLn;
-		StatementRange objRange = new StatementRange(sLine);
-		firstLn = objRange.getFirstLine();
-		lastLn = objRange.getLastLine();
+		String sIndex = getAttributeByName(ID_ATTRIBUTE, attributes, values);
+		
+		try {
+			Integer objIndex = Integer.parseInt(sIndex);
 
-		File file = new File(filenm);
-		SourceFile sourceFile = new FileSystemSourceFile(experiment, file);
-		sourceFile.setIsText(true);
-		// Laks 2009.01.06: get rid off unused methods and attributes
-		// this.fileList.add(sourceFile);
-		this.srcFileStack.push(sourceFile);
+			String filenm = getAttributeByName(FILENAME_ATTRIBUTE, attributes, values);
+			String procnm = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
+			String sLine = getAttributeByName(LINE_ATTRIBUTE, attributes, values);
+			int firstLn, lastLn;
+			StatementRange objRange = new StatementRange(sLine);
+			firstLn = objRange.getFirstLine();
+			lastLn = objRange.getLastLine();
 
-		Scope alienScope = new AlienScope(this.experiment, sourceFile, filenm, procnm, firstLn-1, lastLn-1);
+			SourceFile sourceFile = this.hashSourceFileTable.get(objIndex);
+			if (sourceFile == null) {
+				File file = new File(filenm);
+				sourceFile = new FileSystemSourceFile(experiment, file, objIndex.intValue());
+				sourceFile.setIsText(true);
+				this.hashSourceFileTable.put(objIndex, sourceFile);
+			}
+			this.srcFileStack.push(sourceFile);
 
-		this.beginScope(alienScope);
+			Scope alienScope = new AlienScope(this.experiment, objIndex.intValue(), filenm, procnm, firstLn-1, lastLn-1);
+
+			this.beginScope(alienScope);
+
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 
@@ -904,11 +945,18 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	/*************************************************************************
 	 *	Begins processing an L (loop) element.
+	 *	<!ELEMENT L (A|L|S|C|M)*>
+      <!ATTLIST L
+                i CDATA #IMPLIED
+                s CDATA #IMPLIED
+                l CDATA #IMPLIED
+                v CDATA #IMPLIED>
 	 ************************************************************************/
 
 	private void begin_L(String[] attributes, String[] values)
 	{
 		String sID;
+		int iID = 0;
 		int firstLn = 0;
 		int lastLn = 0;
 		for(int i=0; i<attributes.length; i++) {
@@ -919,6 +967,14 @@ public class ExperimentDatabaseBuilder extends Builder
 				StatementRange objRange = new StatementRange( sLine );
 				firstLn = objRange.getFirstLine();
 				lastLn = objRange.getLastLine();				
+			} else if(attributes[i].equals("i")) {
+				sID = values[i];
+				try {
+					iID = Integer.parseInt(sID);
+				} catch (NumberFormatException e) {
+					e.printStackTrace();
+				}
+				
 			}
 		}
 
@@ -935,7 +991,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			//}
 			sourceFile = frameScope.getSourceFile();
 		}
-		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
+		Scope loopScope = new LoopScope(this.experiment, sourceFile.getFileID(), firstLn-1, lastLn-1);
 
 		this.beginScope(loopScope);
 	}
@@ -966,7 +1022,8 @@ public class ExperimentDatabaseBuilder extends Builder
 
 		{
 			String[] val_line      = new String[2];
-
+			int id = 0;
+			
 			val_line[0]="0";
 			val_line[1]="0";
 
@@ -974,7 +1031,9 @@ public class ExperimentDatabaseBuilder extends Builder
 				if(attributes[i].equals("l")) {
 					val_line[0] = values[i];
 					val_line[1] = values[i];	 
-				} 
+				} else if(attributes[i].equals("i"))  {
+					id = Integer.parseInt(values[i]);
+				}
 			}
 
 			SourceFile srcFile = (SourceFile)this.srcFileStack.peek();
@@ -985,9 +1044,9 @@ public class ExperimentDatabaseBuilder extends Builder
 
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile, firstLn-1);
+				scope = new LineScope(this.experiment, srcFile.getFileID(), firstLn-1);
 			else
-				scope = new StatementRangeScope(this.experiment, srcFile, 
+				scope = new StatementRangeScope(this.experiment, srcFile.getFileID(), 
 						firstLn-1, lastLn-1);
 
 			if (isCallSite) {
@@ -1037,7 +1096,7 @@ public class ExperimentDatabaseBuilder extends Builder
 				System.err.println("Error metric number:"+prd_string);
 				e.printStackTrace();
 			}
-			// System.out.println(prd); 
+
 			// multiple by sample period 
 			actualValue = prd * actualValue;
 			MetricValue metricValue = new MetricValue(actualValue);
@@ -1081,9 +1140,6 @@ public class ExperimentDatabaseBuilder extends Builder
 			scope.setParentScope(top);
 		}
 		this.stack.push(scope);
-
-		// Laks 2009.01.06: get rid off unused methods and attributes
-		//if (addToTree) recordOuterScope(scope);
 	}
 
 
@@ -1118,16 +1174,15 @@ public class ExperimentDatabaseBuilder extends Builder
 	 *   Using Hashtable to store the "FileSystemSourceFile" object 
 	 *   for the callsite's file attribute.
 	 ************************************************************************/
-	protected SourceFile getFileForCallsite(String fileLine)
+	protected SourceFile getFileForCallsite(String fileLine, int keyFile)
 	{
-		SourceFile sourceFile=(SourceFile)FileHashTable.get(fileLine);
+		SourceFile sourceFile=(SourceFile) this.hashSourceFileTable.get(keyFile);
 		if (sourceFile == null) {
 			File filename = new File(fileLine);
-			sourceFile = new FileSystemSourceFile(experiment, filename);
-			FileHashTable.put(fileLine,sourceFile);
+			sourceFile = new FileSystemSourceFile(experiment, filename, keyFile);
+			this.hashSourceFileTable.put(Integer.valueOf(keyFile), sourceFile);
 		}  
-		// Laks 2009.01.06: get rid off unused methods and attributes
-		// this.fileList.add(sourceFile);
+
 		return sourceFile;
 	}
 
@@ -1177,18 +1232,6 @@ public class ExperimentDatabaseBuilder extends Builder
 	private Scope getCurrentScope()
 	{
 		return (Scope) this.stack.peek();
-	}
-
-	/* Laks 2009.01.06: get rid off unused methods and attributes
-	private void recordOuterScope(Scope scope) {
-		this.scopeList.add(scope);
-	}*/
-
-	protected void myDebug( boolean debugFlag,
-			String msg) {
-		if (debugFlag) {
-			System.out.println(msg);
-		}
 	}
 
 	// treat XML attributes like a named property list; this is an alternative to a brittle

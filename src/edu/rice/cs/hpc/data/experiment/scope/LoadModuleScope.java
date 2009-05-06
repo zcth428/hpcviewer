@@ -53,15 +53,15 @@ protected String loadModuleName;
  *	Creates a LoadModuleScope.
  ************************************************************************/
 	
-public LoadModuleScope(Experiment experiment, String lmname)
+public LoadModuleScope(Experiment experiment, String lmname, int index)
 {
-	super(experiment);
+	super(experiment, index);
 	this.loadModuleName = lmname;
-	this.id = "LoadModuleScope";
+//	this.id = "LoadModuleScope";
 }
 
 public Scope duplicate() {
-    return new LoadModuleScope(this.experiment, this.loadModuleName);
+    return new LoadModuleScope(this.experiment, this.loadModuleName, this.idSourceFile);
 }
 
 public int hashCode() {

@@ -58,18 +58,18 @@ protected ScopeList[] lineMap;
  *
  ************************************************************************/
 	
-public FileScope(Experiment experiment, SourceFile sourceFile)
+public FileScope(Experiment experiment, int sourceFile)
 {
 	super(experiment, sourceFile);
-	this.id = "FileScope";
+//	this.id = "FileScope";
 }
 
 public Scope duplicate() {
-    return new FileScope(this.experiment, this.sourceFile);
+    return new FileScope(this.experiment, this.idSourceFile);
 }
 
 public int hashCode() {
-	return this.sourceFile.getName().hashCode();
+	return this.getSourceFile().getName().hashCode();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ public String getName()
 	
 public String getToolTip()
 {
-	boolean available = this.sourceFile.isAvailable();
+	boolean available = this.getSourceFile().isAvailable();
 	return (available ? Strings.SOURCE_FILE_AVAILABLE : Strings.SOURCE_FILE_UNAVAILABLE);
 }
 
@@ -134,7 +134,7 @@ public ScopeList[] getLineMap()
 	
 protected void computeLineMap()
 {
-	int lineCount = this.sourceFile.getLineCount();
+	int lineCount = this.getSourceFile().getLineCount();
 	ScopeList[] map = new ScopeList[lineCount];
 
 	int subscopeCount = this.getSubscopeCount();

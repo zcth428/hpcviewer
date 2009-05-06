@@ -49,7 +49,7 @@ public class StatementRangeScope extends Scope
  *	Creates a StatementRangeScope.
  ************************************************************************/
 	
-public StatementRangeScope(Experiment experiment, SourceFile file, int first, int last)
+public StatementRangeScope(Experiment experiment, int file, int first, int last)
 {
 	super(experiment, file, first, last);
 }
@@ -100,7 +100,7 @@ public String getShortName()
 public Scope duplicate() {
     StatementRangeScope duplicatedScope = 
 	new StatementRangeScope(this.experiment, 
-				this.sourceFile, 
+				this.idSourceFile, 
 				this.firstLineNumber,
 				this.lastLineNumber);
     // copy metrics

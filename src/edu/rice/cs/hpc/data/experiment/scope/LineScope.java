@@ -49,10 +49,10 @@ public class LineScope extends Scope
  *	Creates a LineScope.
  ************************************************************************/
 	
-public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber)
+public LineScope(Experiment experiment, int sourceFile, int lineNumber)
 {
 	super(experiment, sourceFile, lineNumber, lineNumber);
-	this.id = "LineScope";
+//	this.id = "LineScope";
 }
 
 
@@ -100,7 +100,7 @@ public boolean isequal(LineScope ls)
 {
 	return ((this.firstLineNumber == ls.firstLineNumber) &&
 		(this.lastLineNumber == ls.lastLineNumber) &&
-		(this.sourceFile == ls.sourceFile));
+		(this.idSourceFile == ls.idSourceFile));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ public int getLineNumber()
 public Scope duplicate() {
 	LineScope duplicatedScope = 
 		new LineScope(this.experiment, 
-				this.sourceFile, 
+				this.idSourceFile, 
 				this.firstLineNumber);
 
 	return duplicatedScope;

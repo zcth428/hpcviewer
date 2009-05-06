@@ -51,6 +51,7 @@ public static final SourceFile NONE = new EmptySourceFile();
 //	ACCESS TO CONTENTS													//
 //////////////////////////////////////////////////////////////////////////
 
+public abstract int getFileID();
 
 
 

@@ -123,7 +123,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 						if(scopeProc.isAlien()) {
 							// FIXME two dummies instance creation. we hope this doesn't make significant 
 							//			performance degradation !
-							LineScope scopeLine = new LineScope(scopeProc.getExperiment(), scopeProc.getSourceFile(), 
+							LineScope scopeLine = new LineScope(scopeProc.getExperiment(), scopeProc.getFileIndex(), 
 									scopeProc.getFirstLineNumber());
 							enclosingCS = new CallSiteScope(scopeLine, scopeProc, CallSiteScopeType.CALL_FROM_PROCEDURE);
 						}

@@ -136,18 +136,20 @@ public class Utilities {
     	// check if the source code availability is already computed
     	if(scope.iSourceCodeAvailability == Scope.SOURCE_CODE_UNKNOWN) {
     		SourceFile newFile = ((SourceFile)scope.getSourceFile());
-    		if((newFile != null && (newFile != SourceFile.NONE)
-    			|| (newFile.isAvailable()))  ) {
-    			if (newFile instanceof FileSystemSourceFile) {
-    				FileSystemSourceFile objFile = (FileSystemSourceFile) newFile;
-    				if(objFile != null) {
-    					// find the availability of the source code
-    					if (objFile.isAvailable()) {
-    						scope.iSourceCodeAvailability = Scope.SOURCE_CODE_AVAILABLE;
-    						return true;
-    					} 
-    				}
-    			}
+    		if (newFile != null) {
+        		if( (newFile != SourceFile.NONE)
+            			|| ( newFile.isAvailable() )  ) {
+            			if (newFile instanceof FileSystemSourceFile) {
+            				FileSystemSourceFile objFile = (FileSystemSourceFile) newFile;
+            				if(objFile != null) {
+            					// find the availability of the source code
+            					if (objFile.isAvailable()) {
+            						scope.iSourceCodeAvailability = Scope.SOURCE_CODE_AVAILABLE;
+            						return true;
+            					} 
+            				}
+            			}
+            		}
     		}
     	} else
     		// the source code availability is already computed, we just reuse it

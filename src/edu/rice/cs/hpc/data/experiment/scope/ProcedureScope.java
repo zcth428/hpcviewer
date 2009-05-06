@@ -58,12 +58,12 @@ protected int iScopeID;
  *	Creates a ProcedureScope.
  ************************************************************************/
 	
-public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien)
+public ProcedureScope(Experiment experiment, int file, int first, int last, String proc, boolean _isalien)
 {
 	super(experiment, file, first, last);
 	this.isalien = _isalien;
 	this.procedureName = proc;
-	this.id = "ProcedureScope";
+//	this.id = "ProcedureScope";
 }
 
 /**
@@ -76,7 +76,7 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
  * @param sid
  * @param _isalien
  */
-public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, int sid, boolean _isalien)
+public ProcedureScope(Experiment experiment, int file, int first, int last, String proc, int sid, boolean _isalien)
 {
 	this(experiment, file, first, last,proc,_isalien);
 	this.iScopeID = sid;
@@ -86,7 +86,7 @@ public int hashCode() {
 	int val = isalien ? 1 : 0;
 	// Laks 2008.12.17: it is possible that routines with the same name are defined in different files.
 	//		TODO: routine the same name with different modules in the same file
-	String sHashName = this.sourceFile.getName() + "/" + this.procedureName;
+	String sHashName = this.getSourceFile().getName() + "/" + this.procedureName;
 	int iCode = sHashName.hashCode() ^ val;
 	return iCode;
 	//return this.procedureName.hashCode() ^ val;
@@ -126,7 +126,7 @@ public String getName()
 
 public Scope duplicate() {
 	return new ProcedureScope(this.experiment, 
-			this.sourceFile, 
+			this.idSourceFile, 
 			this.firstLineNumber, 
 			this.lastLineNumber,
 			this.procedureName,

@@ -57,7 +57,7 @@ public GroupScope(Experiment experiment, String groupname)
 {
 	super(experiment);
 	this.groupName = groupname;
-	this.id = "GroupScope";
+//	this.id = "GroupScope";
 }
 
 

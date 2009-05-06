@@ -60,7 +60,7 @@ public RootScope(Experiment experiment, String prog, String name, RootScopeType 
 	super(experiment);	
 	this.programName = prog;
 	this.rootScopeName = name;
-	this.id = "RootScope";
+//	this.id = "RootScope";
 	this.rootScopeType = rst;
 	
 }

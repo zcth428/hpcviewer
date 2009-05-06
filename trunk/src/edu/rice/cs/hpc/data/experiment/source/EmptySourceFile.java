@@ -159,6 +159,14 @@ public boolean isText()
         return true;
 }
 
+
+
+
+public int getFileID() {
+	// TODO Auto-generated method stub
+	return 0;
+}
+
 }
 
 

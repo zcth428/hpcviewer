@@ -35,7 +35,7 @@ public class DatabaseToken {
     	T_LM, T_F, T_A, T_P,
     	
     	// token for old XML file
-    	T_CSPROFILE;
+    	T_CSPROFILE, T_HPCVIEWER;
     }
     
     private static Map<String, TokenXML> tokenMap;
@@ -82,6 +82,7 @@ public class DatabaseToken {
         
         // token for old XML
         tokenMap.put("CSPROFILE", TokenXML.T_CSPROFILE);
+        tokenMap.put("HPCVIEWER", TokenXML.T_HPCVIEWER);
     }
 
     public static TokenXML map(String element) {

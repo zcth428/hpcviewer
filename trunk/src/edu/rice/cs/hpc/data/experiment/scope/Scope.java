@@ -27,6 +27,8 @@ import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derive
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.eclipse.jface.viewers.TreeNode;
+
 
  
 //////////////////////////////////////////////////////////////////////////
@@ -51,7 +53,8 @@ public abstract class Scope
 protected Experiment experiment;
 
 /** The source file containing this scope. */
-protected SourceFile sourceFile;
+//protected SourceFile sourceFile;
+protected int idSourceFile;
 
 /** The first line number of this scope. */
 protected int firstLineNumber;
@@ -66,7 +69,9 @@ protected Scope.Node treeNode;
 protected MetricValue[] metrics;
 
 /** The the type of scope this is. */
-protected String id;
+// Laks 2009.05.05: why I commented this var: I believe this id var is useless and we
+//				still can identify the class type by using instanceof or by adaptor method 
+//protected String id;
 
 /** source citation */
 protected String srcCitation;
@@ -94,8 +99,6 @@ public int iSourceCodeAvailability = Scope.SOURCE_CODE_UNKNOWN;
 public static final int NO_LINE_NUMBER = -169; // any negative number other than -1
 
 
-
-
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
@@ -107,17 +110,17 @@ public static final int NO_LINE_NUMBER = -169; // any negative number other than
  *	Creates a Scope object with associated source line range.
  ************************************************************************/
 	
-public Scope(Experiment experiment, SourceFile file, int first, int last)
+public Scope(Experiment experiment, int file, int first, int last)
 {
 	// creation arguments
 	this.experiment = experiment;
-	this.sourceFile = file;
+	this.idSourceFile = file;
 	this.firstLineNumber = first;
 	this.lastLineNumber = last;
 
 	// scope tree representation
-	this.treeNode = new Scope.Node();
-	this.treeNode.setUserObject(this);
+	this.treeNode = new Scope.Node(this);
+	//this.treeNode.setUserObject(this);
 	this.stop = false;
 	this.srcCitation = null;
 }
@@ -129,7 +132,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last)
  *	Creates a Scope object with associated source file.
  ************************************************************************/
 	
-public Scope(Experiment experiment, SourceFile file)
+public Scope(Experiment experiment, int file)
 {
 	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
 }
@@ -143,16 +146,18 @@ public Scope(Experiment experiment, SourceFile file)
 	
 public Scope(Experiment experiment)
 {
-	this(experiment, SourceFile.NONE, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
+	this(experiment, 0, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
 }
-/*
-public void flatten()
-{
-	this.treeNode.setFlattenThis(true);
-}
-*/
+
 public int hashCode() {
-	return this.sourceFile.getName().hashCode() ^ this.firstLineNumber;
+	SourceFile objFile = this.getSourceFile();
+	if (objFile != null) {
+		return objFile.getName().hashCode()  ^ this.firstLineNumber;
+	} else {
+		System.err.println("ERROR Scope hashcode: "+this.getName());
+		return 0;
+	}
+	//return this.sourceFile.getName().hashCode() ^ this.firstLineNumber;
 }
 
 
@@ -251,11 +256,11 @@ protected String getSourceCitation()
 		int last1 = 1 + this.lastLineNumber;
 
 		if(this.firstLineNumber == Scope.NO_LINE_NUMBER)
-			cite = this.sourceFile.getName();
+			cite = this.getSourceFile().getName();
 		else if(this.firstLineNumber == this.lastLineNumber)
-			cite = this.sourceFile.getName() + ": " + first1;
+			cite = this.getSourceFile().getName() + ": " + first1;
 		else
-			cite = this.sourceFile.getName() + ": " + first1 + "-" + last1;
+			cite = this.getSourceFile().getName() + ": " + first1 + "-" + last1;
 		
 		srcCitation = cite.intern();
 	}
@@ -309,9 +314,14 @@ protected String getLineNumberCitation()
 	
 public SourceFile getSourceFile()
 {
-	return this.sourceFile;
+	return this.experiment.getSourceFile(this.idSourceFile);
 }
 
+
+public int getFileIndex() 
+{
+	return this.idSourceFile;
+}
 
 
 
@@ -366,12 +376,13 @@ public Scope getParentScope()
 	return ((parent != null) ? parent.getScope() : null);
 }
 
-
+// Laks 2009.05.05: remove unused methods
+/*
 public String getScopeType()
 {
 	return id;
 }
-
+*/
 
 /*************************************************************************
  *	Sets the parent scope of this scope.
@@ -408,34 +419,6 @@ public Scope getSubscope(int index)
 }
 
 
-
-
-/*************************************************************************
- *	Returns a scope list of all subscopes within this scope.
- ************************************************************************/
-// TODO Laks 03.18.2008: it seems nobody use this method
-	/*
-public ScopeList getSubscopeList()
-{
-	return new ArrayScopeList(this.experiment, this);
-}
-
-*/
-
-
-/*************************************************************************
- *	Returns a scope list of all descendent scopes of this scope.
- ************************************************************************/
-//TODO Laks 03.18.2008: it seems nobody use this method
-	/*
-public ScopeList getDescendentScopeList()
-{
-	return new ArrayScopeList(this.experiment, this);
-}
-
-*/
-
-
 /*************************************************************************
  *	Adds a subscope to the scope.
  ************************************************************************/
@@ -448,17 +431,17 @@ public void addSubscope(Scope subscope)
 /*************************************************************************
  *	Removes a subscope of the current subscope based on index.
  ************************************************************************/
-	
+	/*
 public void removeSubscope(int index)
 {
 	 this.treeNode.remove(index);
 }
-
+*/
 
 /*************************************************************************
  *	Removes a subscope of the current subscope based on subscope.
  ************************************************************************/
-	
+	/*
 public boolean removeSubscope(Scope subscope)
 {
     int numberOfSubscopes = this.getSubscopeCount();
@@ -471,39 +454,7 @@ public boolean removeSubscope(Scope subscope)
     }
     return false;
 }
-
-
-
-/*************************************************************************
- *	Returns the number of source file lines <code>(LineScope</code>s)
- *	within this scope.
- ************************************************************************/
-//TODO Laks 03.18.2008: it seems nobody use this method
-	/*
-public int getLineScopeCount()
-{
-	Dialogs.notCalled("Scope.getLineScopeCount");
-
-	return 50;
-}
-
 */
-
-
-/*************************************************************************
- *	Returns the line scope at a given index.
- ************************************************************************/
-//TODO Laks 03.18.2008: it seems nobody use this method
-	/*
-public LineScope getLineScope(int index)
-{
-	Dialogs.notCalled("Scope.getLineScope");
-
-	return new LineScope(this.experiment, this.experiment.getSourceFile(0), index * 10);
-}
-*/
-
-
 
 /*************************************************************************
  *	Returns the <code>Scope.Node</code> associated with this scope.
@@ -796,7 +747,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
  ************************************************************************/
 
 	// @SuppressWarnings("serial")
-	public static class Node extends DefaultMutableTreeNode
+	public static class Node extends DefaultMutableTreeNode //TreeNode
 	{
 		/**
 		 * This public variable indicates if the node contains information about the source code file.
@@ -804,15 +755,8 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 		 * @author laksono
 		 */
 		public boolean hasSourceCodeFile;
-		
+ 		
 		/** Constructs a new scope node. */
-		public Node()
-		{
-			super();
-			
-			//this.flattenThis  = false;
-			this.hasSourceCodeFile = false;
-		};
 		
 		/**
 		 * Copy the scope into this node
@@ -820,25 +764,20 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 		 */
 		public Node(Object child)
 		{
-			//super(child);
-			this.userObject = (Scope)child;
+			super(child);
+			this.hasSourceCodeFile = false;
 		}
 
 
 		/** Returns the scope associated with this node. */
 		public Scope getScope()
 		{
-			return (Scope) this.userObject;
+			return (Scope) this.getUserObject();
 		};
 
-		/**
-		 * Update the scope of the node
-		 * @param o
-		 */
-		public void setUserObject(Scope o) {
-			this.userObject = o;
+		public Object[] getChildren() {
+			return this.children.toArray();
 		}
-				
 	};
 	
 }

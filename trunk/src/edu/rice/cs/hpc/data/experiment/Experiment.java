@@ -60,24 +60,19 @@ protected File fileExperiment;
 /** The experiment's configuration. */
 protected ExperimentConfiguration configuration;
 
-/** The experiment's source files. */
-//  Laks 2009.01.06: get rid off unused methods and attributes
-// protected SourceFile[] files;
+/** ----------------- DICTIONARIES -----------------  **/
+protected Hashtable<Integer, SourceFile> hashLoadModuleTable;
+protected Hashtable<Integer, SourceFile> hashFileTable;
+protected Hashtable<Integer, SourceFile> hashProcedureTable;
 
 /** The experiment's metrics. */
 protected Vector<BaseMetric> metricList;
-
-/** The experiment's scopes. */
-//  Laks 2009.01.06: get rid off unused methods and attributes
-// protected ScopeList scopes;
 
 /** The experiment's root scope. */
 protected Scope rootScope;
 
 /** A mapping from internal name strings to metric objects. */
 protected HashMap metricMap;
-
-//private ICheckProcess objTask;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -186,22 +181,6 @@ public void setConfiguration(ExperimentConfiguration configuration)
 {
 	this.configuration = configuration;
 }
-
-
-
-
-/*************************************************************************
- *	Sets the experiment's source file list.
- *
- *	This method is to be called only once, during <code>Experiment.open</code>.
- *
- ************************************************************************/
-	/*  Laks 2009.01.06: get rid off unused methods and attributes
-public void setSourceFiles(List sourceFileList)
-{
-	this.files = (SourceFile[]) sourceFileList.toArray(new SourceFile[0]);
-}
-*/
 
 
 
@@ -325,16 +304,7 @@ protected void normalizeLineScopes(Scope scope, MetricValuePropagationFilter fil
 	NormalizeLineScopesVisitor nls = new NormalizeLineScopesVisitor(this.getMetricCount(), filter);
 	scope.dfsVisitScopeTree(nls);
 }
-// Laks 03.18.2008: nobody uses this method
-/*
-void report(RootScope scope)
-{
-	ReportScopeVisitor rsv = new ReportScopeVisitor();
-	scope.dfsVisitScopeTree(rsv);
-	System.out.print("report view total for scope " + scope.getRootName() + " = ");
-	System.out.println(rsv.total);
-}
-*/
+
 protected void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter filter)
 {
 	InclusiveMetricsScopeVisitor isv = new InclusiveMetricsScopeVisitor(this.getMetrics(), filter);
@@ -419,21 +389,6 @@ public void postprocess() {
 //Compute Derived Metrics												//
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * Create a derived metric based on formula expression
- * @param scopeRoot
- * @param expFormula
- * @return
- */
-/*
-public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
-		boolean bPercent, MetricType metricType) {
-	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
-			bPercent, metricType);
-	this.addMetric(objMetric); // add this metric into our list
-	return objMetric;
-}
-*/
 /**
  * Create a derived metric based on formula expression
  * @param scopeRoot
@@ -535,38 +490,6 @@ public File getSearchPath(int index)
 
 
 
-
-//////////////////////////////////////////////////////////////////////////
-//	ACCESS TO SOURCE FILES												//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-
-/*************************************************************************
- *	Returns the number of source files in the experiment.
- ************************************************************************/
-/* Laks 2009.01.06: get rid off unused methods and attributes	
-public int getSourceFileCount()
-{
-	return this.files.length;
-}
-*/
-
-
-
-/*************************************************************************
- *	Returns the source file with a given index.
- ************************************************************************/
-/*  Laks 2009.01.06: get rid off unused methods and attributes	
-public SourceFile getSourceFile(int index)
-{
-	return this.files[index];
-}
-*/
-
-
-
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO METRICS													//
 //////////////////////////////////////////////////////////////////////////
@@ -655,18 +578,16 @@ public ArrayList getRootScopeChildren()
 }
 
 
-
-
-/*************************************************************************
- *	Returns a list of all the scopes in the experiment.
- ************************************************************************/
-/*  Laks 2009.01.06: get rid off unused methods and attributes	
-public ScopeList getScopeList()
-{
-	return this.scopes;
+//============================================================================
+// DICTIONARY
+//============================================================================
+public void setFileTable(Hashtable<Integer, SourceFile> fileTable) {
+	this.hashFileTable = fileTable;
 }
-*/
 
+public SourceFile getSourceFile(int key) {
+	return this.hashFileTable.get(key);
+}
 
 
 /*************************************************************************
@@ -699,7 +620,14 @@ public File getXMLExperimentFile() {
 	return this.fileExperiment;
 }
 
+//======================================================================================
+//	UNIT TEST
+//======================================================================================
 
+/**
+ * unit test for this class
+ * @param argv
+ */
 	static public void main(String argv[]) {
        Experiment experiment;
 	   String sFilename = argv[0];

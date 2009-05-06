@@ -64,6 +64,10 @@ protected boolean istext;
 
 protected String longName;
 
+/**
+ * The ID of the file, to be looked in the experiment's hashtable
+ */
+protected int id;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -76,7 +80,7 @@ protected String longName;
  *	Creates a SourceFile.
  ************************************************************************/
 	
-public FileSystemSourceFile(Experiment experiment, File filename)
+public FileSystemSourceFile(Experiment experiment, File filename, int idFile)
 {
 	super();
 
@@ -93,6 +97,7 @@ public FileSystemSourceFile(Experiment experiment, File filename)
 	this.istext = true;
 	// Note: 'this.resolvedPath' and 'this.lineCount' should not be accessed
 	//       unless 'this.contentsAvailable'.
+	this.id = idFile;
 }
 
 
@@ -104,6 +109,9 @@ public FileSystemSourceFile(Experiment experiment, File filename)
 
 
 
+public int getFileID () {
+	return this.id;
+}
 
 /*************************************************************************
  *	Returns the source file's user visible name.

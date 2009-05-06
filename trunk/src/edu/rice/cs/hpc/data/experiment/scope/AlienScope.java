@@ -52,14 +52,14 @@ protected String procedureName;
  *	Creates a AlienScope.
  ************************************************************************/
 	
-public AlienScope(Experiment experiment, SourceFile file, 
+public AlienScope(Experiment experiment, int file, 
 		  String fileName, String procName, 
 		  int first, int last)
 {
 	super(experiment, file, first, last);
 	this.fileName = fileName;
 	this.procedureName = procName;
-	this.id = "AlienScope";
+//	this.id = "AlienScope";
 }
 
 
@@ -88,7 +88,7 @@ public String getName()
 
 public Scope duplicate() {
 	return new AlienScope(this.experiment, 
-			      this.sourceFile, 
+			      this.idSourceFile, 
 			      this.fileName,
 			      this.procedureName,
 			      this.firstLineNumber, 

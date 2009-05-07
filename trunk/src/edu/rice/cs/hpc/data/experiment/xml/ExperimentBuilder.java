@@ -36,7 +36,7 @@ import java.util.EmptyStackException;
 
 
 //CLASS EXPERIMENT-BUILDER					//
-
+// Laksono: we keep this class for backward compatibilty with old XML format
 
 /**
  *

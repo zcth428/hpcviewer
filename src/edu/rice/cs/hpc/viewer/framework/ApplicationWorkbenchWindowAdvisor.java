@@ -56,6 +56,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		configurer.setShowCoolBar(false);	// remove toolbar/coolbar
 		configurer.setShowStatusLine(true);	// show status bar
+        configurer.setShowProgressIndicator(true);
 		configurer.setTitle("hpcviewer");	// default title (to be updated)
 	}
 

@@ -496,7 +496,7 @@ public boolean stopHere()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// MORE ACCESSORS	 													//
+// EXPERIMENT DATABASE 													//
 //////////////////////////////////////////////////////////////////////////
 public Experiment getExperiment() {
 	return experiment;
@@ -505,6 +505,11 @@ public Experiment getExperiment() {
 public void setExperiment(Experiment exp) {
 	this.experiment = exp;
 }
+
+
+//===================================================================
+//						METRICS
+//===================================================================
 
 /*************************************************************************
  *	Returns the value of a given metric at this scope.
@@ -561,7 +566,6 @@ public MetricValue getMetricValue(int index)
 }
 
 
-
 /*************************************************************************
  *	Sets the value of a given metric at this scope.
  ************************************************************************/
@@ -571,20 +575,6 @@ public void setMetricValue(int index, MetricValue value)
 	ensureMetricStorage();
 	this.metrics[index] = value;
 }
-
-//===================================================================
-
-/**
- * Get the percentage of this scope
- * @param metric
- * @return
- */
-/* Laks 2009.01.06: remove unused codes
-public double getMetricPercentValue(Metric metric) {
-	MetricValue mv = this.getMetricValue(metric);
-	return mv.getPercentValue();
-}
-*/
 
 public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter, int nMetrics) {
 	for (int i = 0; i< nMetrics; i++) {
@@ -696,6 +686,7 @@ public void mergeMetric(Scope scope, MetricValuePropagationFilter filter) {
 			MetricValue mMine = this.metrics[i];
 			if(mTarget.isAvailable()) {
 				if( mMine.isAvailable() ) {
+					// both are available, we need to find which one is bigger
 					if(mMine.getValue() < mTarget.getValue()) {
 						this.metrics[i] = new MetricValue(mTarget.getValue());
 					}

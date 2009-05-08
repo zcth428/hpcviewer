@@ -54,7 +54,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	private int numberOfPrimaryMetrics;
 	private MetricValuePropagationFilter filter;
 
-	private FileScope EMPTY_FILE_SCOPE = new FileScope(null, 0);
+	private FileScope EMPTY_FILE_SCOPE = new FileScope(null, null);
 	//----------------------------------------------------
 	// constructor for FlatViewScopeVisitor
 	//----------------------------------------------------
@@ -146,7 +146,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 				if(scope instanceof ProcedureScope) {
 					proc = (ProcedureScope) scope;
 					// create a new scope into flat tree
-					FlatFileProcedure objFlat = retrieveProcedureScope(proc.getFileIndex(), proc, scope);
+					FlatFileProcedure objFlat = retrieveProcedureScope(proc.getSourceFile(), proc, scope);
 					ProcedureScope flat_encl_proc = objFlat.objProc;
 					// assign the cost to this scope
 					flat_encl_proc.mergeMetric(scope, this.inclusiveOnly);
@@ -239,7 +239,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * @param sfile
 	 * @return
 	 */
-	protected FileScope getFileScope(int sfile, Scope scopeCCT) {
+	protected FileScope getFileScope(SourceFile sfile, Scope scopeCCT) {
 		FileScope file = (FileScope) fileht.get(sfile);
 		if (file == null) {
 			file  = new FileScope(exp, sfile);
@@ -262,7 +262,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * @param objScopeCCT: the current scope from CCT
 	 * @return FT's procedure scope
 	 */
-	protected FlatFileProcedure retrieveProcedureScope(int sfile, Scope procScope, Scope scopeCCT) {
+	protected FlatFileProcedure retrieveProcedureScope(SourceFile sfile, Scope procScope, Scope scopeCCT) {
 		// find the file
 		FileScope file = null;
 		/*if(sfile == 0) {
@@ -347,7 +347,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * @return
 	 */
 	protected ProcedureScope  augmentFlatView(Scope s, Scope encl_context, ProcedureScope encl_proc) {
-		FlatFileProcedure objFlat = retrieveProcedureScope(encl_proc.getFileIndex(), encl_proc, s);
+		FlatFileProcedure objFlat = retrieveProcedureScope(encl_proc.getSourceFile(), encl_proc, s);
 		ProcedureScope flat_encl_proc = objFlat.objProc;
 		
 		Hashtable ht = getProcContentsHashtable(flat_encl_proc);
@@ -372,7 +372,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		// Exclusive cost attribution by copying from CCT to FT
 		if (s instanceof CallSiteScope) {
 			ProcedureScope scopeProc = ( (CallSiteScope) s).getProcedureScope();
-			FlatFileProcedure objFlatProc = retrieveProcedureScope(scopeProc.getFileIndex(), scopeProc, s);
+			FlatFileProcedure objFlatProc = retrieveProcedureScope(scopeProc.getSourceFile(), scopeProc, s);
 			// attribute the cost of this call site into procedure level (inclusively)
 			this.attributeCostToFlatProc(objFlatProc.objProc, s);
 			// attribute the cost to flat scope 

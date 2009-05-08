@@ -49,7 +49,7 @@ public class LineScope extends Scope
  *	Creates a LineScope.
  ************************************************************************/
 	
-public LineScope(Experiment experiment, int sourceFile, int lineNumber)
+public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber)
 {
 	super(experiment, sourceFile, lineNumber, lineNumber);
 //	this.id = "LineScope";
@@ -74,11 +74,11 @@ public String getName()
 {
 	return this.getSourceCitation();
 }
-
+/*
 public int hashCode() {
 	return this.getName().hashCode();
 }
-
+*/
 
 /*************************************************************************
  *	Returns the short user visible name for this scope.
@@ -100,7 +100,7 @@ public boolean isequal(LineScope ls)
 {
 	return ((this.firstLineNumber == ls.firstLineNumber) &&
 		(this.lastLineNumber == ls.lastLineNumber) &&
-		(this.idSourceFile == ls.idSourceFile));
+		(this.sourceFile == ls.sourceFile));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ public int getLineNumber()
 public Scope duplicate() {
 	LineScope duplicatedScope = 
 		new LineScope(this.experiment, 
-				this.idSourceFile, 
+				this.sourceFile, 
 				this.firstLineNumber);
 
 	return duplicatedScope;

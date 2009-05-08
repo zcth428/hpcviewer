@@ -447,6 +447,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		try {
 			Integer objFileID = Integer.parseInt(sID);
 			// just in case if there is a duplicate key in the dictionary, we need to make a test
+			SourceFile sourceFile = this.getOrCreateSourceFile(values[1], objFileID.intValue());
+			/*
 			SourceFile sourceFile=(SourceFile) this.hashSourceFileTable.get(objFileID);
 			if (sourceFile == null) {
 				// theoretically, this condition is always true (unless a bug occurred in the hpcprof)
@@ -455,7 +457,7 @@ public class ExperimentDatabaseBuilder extends Builder
 				int iID = objFileID.intValue();
 				sourceFile = new FileSystemSourceFile(experiment, filename, iID);
 				this.hashSourceFileTable.put(objFileID, sourceFile);
-			}  
+			}  */
 		} catch (Exception e) {
 			
 		}
@@ -616,12 +618,16 @@ public class ExperimentDatabaseBuilder extends Builder
 		
 		try {
 			Integer objIndex = Integer.parseInt(sIndex);
+			SourceFile sourceFile = this.getOrCreateSourceFile(name, objIndex.intValue());
+			Scope lmScope = new LoadModuleScope(this.experiment, name, sourceFile);
 			// make a new load module scope object
-			Scope lmScope = new LoadModuleScope(this.experiment, name, objIndex.intValue());
+			/*
 			File filename = new File(name);
 			SourceFile sourceFile = new FileSystemSourceFile(experiment, filename, objIndex);
+			Scope lmScope = new LoadModuleScope(this.experiment, name, sourceFile);
 
 			this.hashSourceFileTable.put(objIndex, sourceFile);
+			*/
 			this.beginScope(lmScope);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -652,7 +658,9 @@ public class ExperimentDatabaseBuilder extends Builder
 		try {
 			Integer objFileKey = Integer.parseInt(inode);
 			// make a new file scope object
-			Scope fileScope = new FileScope(this.experiment, objFileKey);
+			SourceFile sourceFile  = this.getOrCreateSourceFile(getAttributeByName(NAME_ATTRIBUTE, attributes, values), 
+					objFileKey.intValue());
+			/*
 			SourceFile sourceFile  = (SourceFile) this.hashSourceFileTable.get(objFileKey);
 			if (sourceFile == null ) {
 				// make a new source file object
@@ -660,8 +668,9 @@ public class ExperimentDatabaseBuilder extends Builder
 				File filename = new File(name);
 				sourceFile = new FileSystemSourceFile(experiment, filename, objFileKey.intValue());
 				this.hashSourceFileTable.put(objFileKey, sourceFile);
-			}
+			} */
 			this.srcFileStack.push(sourceFile);
+			Scope fileScope = new FileScope(this.experiment, sourceFile);
 
 			this.beginScope(fileScope);
 
@@ -724,7 +733,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			boolean hashtableExist = (this.hashProcedureTable.size()>0);
 			int      attr_sid      = 0;
 			int firstLn = 0, lastLn = 0;
-			int keyFile = 0;	// the index key of the procedure to the dictionary
+			//int keyFile = 0;	// the index key of the procedure to the dictionary
 			SourceFile srcFile = null; // file location of this procedure
 			
 			String[] attr_file     = new String[1];
@@ -758,19 +767,19 @@ public class ExperimentDatabaseBuilder extends Builder
 					istext = true;
 					//fileLine = values[i];
 					try {
-						int indexFile = Integer.parseInt(values[i]);
-						keyFile = indexFile;
-						srcFile = this.hashSourceFileTable.get(keyFile);
+						Integer indexFile = Integer.parseInt(values[i]);
+						//keyFile = indexFile;
+						srcFile = this.hashSourceFileTable.get(indexFile);
 						/*
 						String sValue = this.hashFileTable.get(Integer.valueOf(keyFile));
 						if(sValue != null)
 							fileLine = sValue;*/
 					} catch (java.lang.NumberFormatException e) {
 						// in this case, either the value of "f" is invalid or it is the name of the file
-						keyFile = this.hashSourceFileTable.size()+1;
+						/*keyFile = this.hashSourceFileTable.size()+1;
 						System.out.println("Warning: the XML file has unsupported format for attribute 'f':"+values[i]+
-								" replaced by the index: "+keyFile); 
-						// e.printStackTrace();
+								" replaced by the index: "+keyFile); */
+						 e.printStackTrace();
 					}
 					
 				}
@@ -781,14 +790,14 @@ public class ExperimentDatabaseBuilder extends Builder
 						//fileLine = values[i]; 
 						try {
 							// let see if the value of ln is an ID or a simple load module name
-							int indexFile = Integer.parseInt(values[i]);
-							keyFile = indexFile;
+							Integer indexFile = Integer.parseInt(values[i]);
+							//keyFile = indexFile;
 							// look at the dictionary for the name of the load module
-							String sValue = this.hashLoadModuleTable.get(Integer.valueOf(keyFile));
+							String sValue = this.hashLoadModuleTable.get(indexFile);
 							//if(sValue != null)
 							//	fileLine = sValue;
 						} catch (java.lang.NumberFormatException e) {
-							keyFile = this.hashSourceFileTable.size()+1;
+							//keyFile = this.hashSourceFileTable.size()+1;
 							// this error means that the lm is not based on dictionary
 						}
 					}
@@ -836,7 +845,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			}
 			if(srcFile == null) {
 				srcFile = (SourceFile) this.srcFileStack.peek();
-				keyFile = srcFile.getFileID();
+				//keyFile = srcFile.getFileID();
 			} /*else {
 				srcFile = this.hashSourceFileTable.get(keyFile); //this.getFileForCallsite(fileLine, keyFile);
 			} */
@@ -844,7 +853,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			srcFile.setIsText(istext);
 			this.srcFileStack.add(srcFile);
 
-			Scope procScope  = new ProcedureScope(this.experiment, keyFile, 
+			Scope procScope  = new ProcedureScope(this.experiment, srcFile, 
 					firstLn-1, lastLn-1, 
 					sProcName, attr_sid, isalien);
 
@@ -912,16 +921,18 @@ public class ExperimentDatabaseBuilder extends Builder
 			firstLn = objRange.getFirstLine();
 			lastLn = objRange.getLastLine();
 
+			SourceFile sourceFile = this.getOrCreateSourceFile(filenm, objIndex.intValue());
+			/*
 			SourceFile sourceFile = this.hashSourceFileTable.get(objIndex);
 			if (sourceFile == null) {
 				File file = new File(filenm);
 				sourceFile = new FileSystemSourceFile(experiment, file, objIndex.intValue());
 				sourceFile.setIsText(true);
 				this.hashSourceFileTable.put(objIndex, sourceFile);
-			}
+			} */
 			this.srcFileStack.push(sourceFile);
 
-			Scope alienScope = new AlienScope(this.experiment, objIndex.intValue(), filenm, procnm, firstLn-1, lastLn-1);
+			Scope alienScope = new AlienScope(this.experiment, sourceFile, filenm, procnm, firstLn-1, lastLn-1);
 
 			this.beginScope(alienScope);
 
@@ -991,7 +1002,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			//}
 			sourceFile = frameScope.getSourceFile();
 		}
-		Scope loopScope = new LoopScope(this.experiment, sourceFile.getFileID(), firstLn-1, lastLn-1);
+		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
 
 		this.beginScope(loopScope);
 	}
@@ -1044,9 +1055,9 @@ public class ExperimentDatabaseBuilder extends Builder
 
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile.getFileID(), firstLn-1);
+				scope = new LineScope(this.experiment, srcFile, firstLn-1);
 			else
-				scope = new StatementRangeScope(this.experiment, srcFile.getFileID(), 
+				scope = new StatementRangeScope(this.experiment, srcFile, 
 						firstLn-1, lastLn-1);
 
 			if (isCallSite) {
@@ -1174,7 +1185,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	 *   Using Hashtable to store the "FileSystemSourceFile" object 
 	 *   for the callsite's file attribute.
 	 ************************************************************************/
-	protected SourceFile getFileForCallsite(String fileLine, int keyFile)
+	protected SourceFile getOrCreateSourceFile(String fileLine, int keyFile)
 	{
 		SourceFile sourceFile=(SourceFile) this.hashSourceFileTable.get(keyFile);
 		if (sourceFile == null) {
@@ -1228,15 +1239,16 @@ public class ExperimentDatabaseBuilder extends Builder
 	/*************************************************************************
 	 *	Returns the current scope.
 	 ************************************************************************/
-
 	private Scope getCurrentScope()
 	{
 		return (Scope) this.stack.peek();
 	}
 
-	// treat XML attributes like a named property list; this is an alternative to a brittle
-	// position-based approach for recognizing attributes
-	String getAttributeByName(String name, String[] attributes, String[] values)
+	/************************************************************************* 
+	 * treat XML attributes like a named property list; this is an alternative to a brittle
+	 * position-based approach for recognizing attributes
+	 *************************************************************************/
+	private String getAttributeByName(String name, String[] attributes, String[] values)
 	{
 		for (int i = 0; i < attributes.length; i++) if (name == attributes[i]) return values[i];
 		return null;

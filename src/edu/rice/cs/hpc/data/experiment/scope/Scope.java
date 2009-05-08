@@ -53,8 +53,8 @@ public abstract class Scope
 protected Experiment experiment;
 
 /** The source file containing this scope. */
-//protected SourceFile sourceFile;
-protected int idSourceFile;
+protected SourceFile sourceFile;
+//protected int idSourceFile;
 
 /** The first line number of this scope. */
 protected int firstLineNumber;
@@ -110,11 +110,11 @@ public static final int NO_LINE_NUMBER = -169; // any negative number other than
  *	Creates a Scope object with associated source line range.
  ************************************************************************/
 	
-public Scope(Experiment experiment, int file, int first, int last)
+public Scope(Experiment experiment, SourceFile file, int first, int last)
 {
 	// creation arguments
 	this.experiment = experiment;
-	this.idSourceFile = file;
+	this.sourceFile = file;
 	this.firstLineNumber = first;
 	this.lastLineNumber = last;
 
@@ -132,7 +132,7 @@ public Scope(Experiment experiment, int file, int first, int last)
  *	Creates a Scope object with associated source file.
  ************************************************************************/
 	
-public Scope(Experiment experiment, int file)
+public Scope(Experiment experiment, SourceFile file)
 {
 	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
 }
@@ -146,13 +146,14 @@ public Scope(Experiment experiment, int file)
 	
 public Scope(Experiment experiment)
 {
-	this(experiment, 0, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
+	this(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
 }
 
 public int hashCode() {
 	SourceFile objFile = this.getSourceFile();
 	if (objFile != null) {
-		return objFile.getName().hashCode()  ^ this.firstLineNumber;
+		return objFile.getFileID();
+		//return objFile.getName().hashCode()  ^ this.firstLineNumber;
 	} else {
 		System.err.println("ERROR Scope hashcode: "+this.getName());
 		return 0;
@@ -314,15 +315,16 @@ protected String getLineNumberCitation()
 	
 public SourceFile getSourceFile()
 {
-	return this.experiment.getSourceFile(this.idSourceFile);
+	return this.sourceFile;
+	//return this.experiment.getSourceFile(this.idSourceFile);
 }
 
-
+/*
 public int getFileIndex() 
 {
 	return this.idSourceFile;
 }
-
+*/
 
 
 /*************************************************************************

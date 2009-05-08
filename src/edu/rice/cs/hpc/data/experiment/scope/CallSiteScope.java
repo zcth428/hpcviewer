@@ -59,7 +59,7 @@ protected CallSiteScopeType type;
 public CallSiteScope(LineScope scope, ProcedureScope scope2, 
 		CallSiteScopeType csst) 
 {
-	super(scope2.experiment,scope2.idSourceFile,scope2.firstLineNumber,scope2.lastLineNumber);
+	super(scope2.experiment,scope2.sourceFile,scope2.firstLineNumber,scope2.lastLineNumber);
 	this.lineScope = scope;
 	this.procScope = scope2;
 	this.type = csst;

@@ -61,9 +61,10 @@ protected File fileExperiment;
 protected ExperimentConfiguration configuration;
 
 /** ----------------- DICTIONARIES -----------------  **/
-protected Hashtable<Integer, SourceFile> hashLoadModuleTable;
+//protected Hashtable<Integer, SourceFile> hashLoadModuleTable;
 protected Hashtable<Integer, SourceFile> hashFileTable;
-protected Hashtable<Integer, SourceFile> hashProcedureTable;
+//protected Hashtable<Integer, SourceFile> hashProcedureTable;
+//private SourceFile []arrSourceFiles;
 
 /** The experiment's metrics. */
 protected Vector<BaseMetric> metricList;
@@ -581,14 +582,15 @@ public ArrayList getRootScopeChildren()
 //============================================================================
 // DICTIONARY
 //============================================================================
-public void setFileTable(Hashtable<Integer, SourceFile> fileTable) {
+public void setFileTable( Hashtable<Integer, SourceFile> fileTable) {
 	this.hashFileTable = fileTable;
+	//arrSourceFiles = fileTable;
 }
-
+/*
 public SourceFile getSourceFile(int key) {
 	return this.hashFileTable.get(key);
 }
-
+*/
 
 /*************************************************************************
  *	Returns the number of file scopes in the experiment.

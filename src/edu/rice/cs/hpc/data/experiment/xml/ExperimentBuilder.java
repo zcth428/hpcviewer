@@ -632,9 +632,10 @@ public class ExperimentBuilder extends Builder
 	{
 		// LM n="load module name"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-		
+		//SourceFile objFile = new SourceFile();
 		// make a new load module scope object
-		Scope lmScope = new LoadModuleScope(this.experiment, name, this.hashSourceFileTable.size());
+		Scope lmScope = new LoadModuleScope(this.experiment, name, SourceFile.NONE);
+		//Scope lmScope = new LoadModuleScope(this.experiment, name, this.hashSourceFileTable.size());
 		this.beginScope(lmScope);
 	}
 
@@ -686,15 +687,15 @@ public class ExperimentBuilder extends Builder
 		// F n="filename"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 
-		int index = this.createSourceFile(this.experiment, name);
+		SourceFile file = this.createSourceFile(this.experiment, name);
 		// make a new file scope object
-		Scope fileScope = new FileScope(this.experiment, index);
+		Scope fileScope = new FileScope(this.experiment, file);
 
 		this.beginScope(fileScope);
 	}
 
 
-	private int createSourceFile(Experiment exp, String sFilename) {
+	private SourceFile createSourceFile(Experiment exp, String sFilename) {
 		// make a new source file object
 		File filename = new File(sFilename);
 		int index = this.hashSourceFileTable.size()+1;
@@ -704,7 +705,7 @@ public class ExperimentBuilder extends Builder
 		this.srcFileStack.push(sourceFile);
 
 		this.hashSourceFileTable.put(Integer.valueOf(index), sourceFile);
-		return index;
+		return sourceFile;
 	}
 
 
@@ -796,7 +797,7 @@ public class ExperimentBuilder extends Builder
 
 			int firstLn = Integer.parseInt(val_line[0]);
 			int lastLn  = Integer.parseInt(val_line[1]);
-			Scope procScope  = new ProcedureScope(this.experiment, srcFile.getFileID(), 
+			Scope procScope  = new ProcedureScope(this.experiment, srcFile, 
 					firstLn-1, lastLn-1, 
 					val_function[0], attr_sid, isalien);
 
@@ -838,7 +839,7 @@ public class ExperimentBuilder extends Builder
 			int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
 
 			boolean isalien = false;
-			Scope procScope     = new ProcedureScope(this.experiment, ((SourceFile)this.srcFileStack.peek()).getFileID(), 
+			Scope procScope     = new ProcedureScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), 
 					firstLn-1, lastLn-1, name, isalien);
 
 			this.beginScope(procScope);
@@ -871,7 +872,7 @@ public class ExperimentBuilder extends Builder
 		int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
 		int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
 
-		int index = this.createSourceFile(this.experiment, filenm);
+		SourceFile index = this.createSourceFile(this.experiment, filenm);
 		Scope alienScope = new AlienScope(this.experiment, index, filenm, procnm, firstLn-1, lastLn-1);
 
 		this.beginScope(alienScope);
@@ -911,7 +912,7 @@ public class ExperimentBuilder extends Builder
 			//}
 			sourceFile = frameScope.getSourceFile();
 		}
-		Scope loopScope = new LoopScope(this.experiment, sourceFile.getFileID(), firstLn-1, lastLn-1);
+		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
 
 		this.beginScope(loopScope);
 	}
@@ -993,9 +994,9 @@ public class ExperimentBuilder extends Builder
 
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile.getFileID(), firstLn-1);
+				scope = new LineScope(this.experiment, srcFile, firstLn-1);
 			else
-				scope = new StatementRangeScope(this.experiment, srcFile.getFileID(), 
+				scope = new StatementRangeScope(this.experiment, srcFile, 
 						firstLn-1, lastLn-1);
 
 			if (isCallSite) {
@@ -1015,9 +1016,9 @@ public class ExperimentBuilder extends Builder
 
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, ((SourceFile)this.srcFileStack.peek()).getFileID(), firstLn-1);
+				scope = new LineScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), firstLn-1);
 			else
-				scope = new StatementRangeScope(this.experiment, ((SourceFile)this.srcFileStack.peek()).getFileID(), firstLn-1, lastLn-1);
+				scope = new StatementRangeScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), firstLn-1, lastLn-1);
 
 			this.beginScope(scope);
 		}

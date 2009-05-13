@@ -54,14 +54,20 @@ protected String procedureName;
 	
 public AlienScope(Experiment experiment, SourceFile file, 
 		  String fileName, String procName, 
-		  int first, int last)
+		  int first, int last, int id)
 {
-	super(experiment, file, first, last);
+	super(experiment, file, first, last, id);
 	this.fileName = fileName;
 	this.procedureName = procName;
 //	this.id = "AlienScope";
 }
 
+public AlienScope(Experiment experiment, SourceFile file, 
+		  String fileName, String procName, 
+		  int first, int last)
+{
+	this(experiment, file, fileName, procName, first, last, Scope.idMax++);
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,7 +98,8 @@ public Scope duplicate() {
 			      this.fileName,
 			      this.procedureName,
 			      this.firstLineNumber, 
-			      this.lastLineNumber);
+			      this.lastLineNumber,
+			      this.id);
 
 }
 

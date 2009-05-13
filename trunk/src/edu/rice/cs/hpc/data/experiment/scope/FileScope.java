@@ -58,18 +58,24 @@ protected ScopeList[] lineMap;
  *
  ************************************************************************/
 	
+public FileScope(Experiment experiment, SourceFile sourceFile, int idFile)
+{
+	super(experiment, sourceFile, idFile);
+//	this.id = "FileScope";
+}
+
 public FileScope(Experiment experiment, SourceFile sourceFile)
 {
-	super(experiment, sourceFile);
+	super(experiment, sourceFile, Scope.idMax++);
 //	this.id = "FileScope";
 }
 
 public Scope duplicate() {
-    return new FileScope(this.experiment, sourceFile);
+    return new FileScope(this.experiment, sourceFile, this.id);
 }
 
 public int hashCode() {
-	return this.sourceFile.getFileID(); //this.getSourceFile().getName().hashCode();
+	return this.id; //this.sourceFile.getFileID(); //this.getSourceFile().getName().hashCode();
 }
 
 //////////////////////////////////////////////////////////////////////////

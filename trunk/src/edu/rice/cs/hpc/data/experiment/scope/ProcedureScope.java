@@ -41,11 +41,13 @@ public class ProcedureScope extends Scope
 /** The name of the procedure. */
 protected String procedureName;
 protected boolean isalien;
+// we assume that all procedure scope has the information on load module it resides
+protected LoadModuleScope objLoadModule;
 
 /**
  * scope ID of the procedure frame. The ID is given by hpcstruct and hpcprof
  */
-protected int iScopeID;
+//protected int iScopeID;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION	
@@ -58,12 +60,17 @@ protected int iScopeID;
  *	Creates a ProcedureScope.
  ************************************************************************/
 	
-public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien)
+public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien, int id)
 {
-	super(experiment, file, first, last);
+	super(experiment, file, first, last, id);
 	this.isalien = _isalien;
 	this.procedureName = proc;
-//	this.id = "ProcedureScope";
+	this.objLoadModule = null;
+}
+
+public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien)
+{
+	this(experiment, file, first, last, proc, _isalien, Scope.idMax++);
 }
 
 /**
@@ -76,10 +83,12 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
  * @param sid
  * @param _isalien
  */
-public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, int sid, boolean _isalien)
+public ProcedureScope(Experiment experiment, LoadModuleScope loadModule, SourceFile file, 
+		int first, int last, String proc, int sid, boolean _isalien)
 {
-	this(experiment, file, first, last,proc,_isalien);
-	this.iScopeID = sid;
+	this(experiment, file, first, last,proc,_isalien, sid);
+	//this.iScopeID = sid;
+	this.objLoadModule = loadModule;
 }
 
 public int hashCode() {
@@ -87,7 +96,7 @@ public int hashCode() {
 	// Laks 2008.12.17: it is possible that routines with the same name are defined in different files.
 	//		TODO: routine the same name with different modules in the same file
 	//String sHashName = this.getSourceFile().getName() + "/" + this.procedureName;
-	int iCode = this.iScopeID ^ val; //sHashName.hashCode() ^ val;
+	int iCode = this.id ^ val; //sHashName.hashCode() ^ val;
 	return iCode;
 	//return this.procedureName.hashCode() ^ val;
 }
@@ -125,12 +134,13 @@ public String getName()
  ************************************************************************/
 
 public Scope duplicate() {
-	return new ProcedureScope(this.experiment, 
+	return new ProcedureScope(this.experiment,
+			this.objLoadModule,
 			this.sourceFile, 
 			this.firstLineNumber, 
 			this.lastLineNumber,
 			this.procedureName,
-			this.iScopeID, // Laks 2008.08.26: add the sequence ID
+			this.id, // Laks 2008.08.26: add the sequence ID
 			this.isalien);
 
 }
@@ -147,9 +157,17 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 
+//////////////////////////////////////////////////////////////////////////
+//support for Flat visitors												//
+//////////////////////////////////////////////////////////////////////////
+
+public LoadModuleScope getLoadModule() {
+	return this.objLoadModule;
+}
+/*
 public int getSID() {
 	return this.iScopeID;
-}
+} */
 
 
 }

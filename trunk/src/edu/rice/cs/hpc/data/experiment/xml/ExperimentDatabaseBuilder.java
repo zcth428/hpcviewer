@@ -99,7 +99,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	private DatabaseToken.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
 	//--------------------------------------------------------------------------------------
 	private java.util.Hashtable<Integer, String> hashProcedureTable;
-	private java.util.Hashtable<Integer, String> hashLoadModuleTable;
+	private java.util.Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 	//private java.util.Hashtable<Integer, String> hashFileTable;
 	private boolean csviewer;
 
@@ -146,7 +146,7 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.srcFileStack.push(null); // mimic old behavior
 
 		hashProcedureTable = new Hashtable<Integer, String>();
-		hashLoadModuleTable = new Hashtable<Integer, String>();
+		hashLoadModuleTable = new Hashtable<Integer, LoadModuleScope>();
 		//hashFileTable = new Hashtable<Integer, String> ();
 		
 		numberOfPrimaryMetrics = 0;
@@ -215,6 +215,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			this.do_METRIC(attributes, values);	break;
 			// PGM elements
 		case T_SEC_FLAT_PROFILE_DATA:
+		case T_CALLPATH_PROFILE_DATA:	// semi old format. some data has this kind of tag
 		case T_SEC_CALLPATH_PROFILE_DATA:
 			this.begin_SecData(attributes, values);	break;
 
@@ -305,6 +306,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			break;
 
 		// Data elements
+		case T_CALLPATH_PROFILE_DATA:	// @deprecated: semi old format. some data has this kind of tag
 		case T_SEC_FLAT_PROFILE_DATA:
 		case T_SEC_CALLPATH_PROFILE_DATA:
 			this.end_PGM();
@@ -555,7 +557,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		String sID = values[0];
 		try {
 			Integer objID = new Integer(sID);
-			this.hashLoadModuleTable.put(objID, sValue);
+			LoadModuleScope lmScope = new LoadModuleScope(this.experiment, sValue, null, objID.intValue());
+			this.hashLoadModuleTable.put(objID, lmScope);
 		} catch (java.lang.NumberFormatException e) {
 			System.err.println("Incorrect load module ID: "+sID);
 		} catch (java.lang.NullPointerException e) {
@@ -619,7 +622,7 @@ public class ExperimentDatabaseBuilder extends Builder
 		try {
 			Integer objIndex = Integer.parseInt(sIndex);
 			SourceFile sourceFile = this.getOrCreateSourceFile(name, objIndex.intValue());
-			Scope lmScope = new LoadModuleScope(this.experiment, name, sourceFile);
+			Scope lmScope = new LoadModuleScope(this.experiment, name, sourceFile, objIndex.intValue());
 			// make a new load module scope object
 			/*
 			File filename = new File(name);
@@ -670,7 +673,7 @@ public class ExperimentDatabaseBuilder extends Builder
 				this.hashSourceFileTable.put(objFileKey, sourceFile);
 			} */
 			this.srcFileStack.push(sourceFile);
-			Scope fileScope = new FileScope(this.experiment, sourceFile);
+			Scope fileScope = new FileScope(this.experiment, sourceFile, objFileKey.intValue());
 
 			this.beginScope(fileScope);
 
@@ -733,11 +736,10 @@ public class ExperimentDatabaseBuilder extends Builder
 			boolean hashtableExist = (this.hashProcedureTable.size()>0);
 			int      attr_sid      = 0;
 			int firstLn = 0, lastLn = 0;
-			//int keyFile = 0;	// the index key of the procedure to the dictionary
 			SourceFile srcFile = null; // file location of this procedure
 			
+			LoadModuleScope objLoadModule = null;
 			String[] attr_file     = new String[1];
-			//String fileLine = null;
 			String[] attr_function = new String[3];
 			String sProcName = "unknown procedure";
 			String[] attr_line     = new String[2];
@@ -754,7 +756,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			for(int i=0; i<attributes.length; i++) {
 				if (attributes[i].equals("s")) { 
 					attr_sid = Integer.parseInt(values[i]); 
-				} else if (attributes[i].equals("i")) {
+				} else if (attributes[i].equals(ID_ATTRIBUTE)) {
 					// id of the proc frame. needs to cross ref
 					String sID = values[i];
 					String sData = this.hashProcedureTable.get(sID);
@@ -762,45 +764,42 @@ public class ExperimentDatabaseBuilder extends Builder
 						// found the key, get the data from the database
 					}
 				}
-				else if(attributes[i].equals("f")) {
+				else if(attributes[i].equals(FILENAME_ATTRIBUTE)) {
 					// file
 					istext = true;
-					//fileLine = values[i];
 					try {
 						Integer indexFile = Integer.parseInt(values[i]);
-						//keyFile = indexFile;
 						srcFile = this.hashSourceFileTable.get(indexFile);
-						/*
-						String sValue = this.hashFileTable.get(Integer.valueOf(keyFile));
-						if(sValue != null)
-							fileLine = sValue;*/
 					} catch (java.lang.NumberFormatException e) {
 						// in this case, either the value of "f" is invalid or it is the name of the file
-						/*keyFile = this.hashSourceFileTable.size()+1;
-						System.out.println("Warning: the XML file has unsupported format for attribute 'f':"+values[i]+
-								" replaced by the index: "+keyFile); */
-						 e.printStackTrace();
+						// In some old format the attribute f contains the file not in the dictionary. So 
+						// 	we need to create it from here
+						if (this.srcFileStack.size()==1) {
+							// the first stack is null, so let start from number 1
+							srcFile = this.getOrCreateSourceFile(values[i], this.srcFileStack.size()+1);
+						}
+						//e.printStackTrace();
 					}
 					
 				}
 				else if(attributes[i].equals("lm")) { 
 					// load module
-					if (!istext) {
-						istext = false;
-						//fileLine = values[i]; 
-						try {
-							// let see if the value of ln is an ID or a simple load module name
-							Integer indexFile = Integer.parseInt(values[i]);
-							//keyFile = indexFile;
-							// look at the dictionary for the name of the load module
-							String sValue = this.hashLoadModuleTable.get(indexFile);
-							//if(sValue != null)
-							//	fileLine = sValue;
-						} catch (java.lang.NumberFormatException e) {
-							//keyFile = this.hashSourceFileTable.size()+1;
-							// this error means that the lm is not based on dictionary
+					//if (!istext) {
+						//istext = false;
+					try {
+						// let see if the value of ln is an ID or a simple load module name
+						Integer indexFile = Integer.parseInt(values[i]);
+						// look at the dictionary for the name of the load module
+						objLoadModule = this.hashLoadModuleTable.get(indexFile);
+						if (objLoadModule == null) {
+							objLoadModule = new LoadModuleScope(this.experiment, values[i], null, indexFile.intValue());
+							this.hashLoadModuleTable.put(indexFile, objLoadModule);
 						}
+					} catch (java.lang.NumberFormatException e) {
+						// this error means that the lm is not based on dictionary
+						objLoadModule = new LoadModuleScope(this.experiment, values[i], null, values[i].hashCode());
 					}
+					//}
 				}
 				else if (attributes[i].equals("p") ) {
 					// obsolete format: p is the name of the procedure
@@ -843,17 +842,15 @@ public class ExperimentDatabaseBuilder extends Builder
 //					}
 				}
 			}
+			// FLAT PROFILE: we retrieve the source file from the previous tag
 			if(srcFile == null) {
-				srcFile = (SourceFile) this.srcFileStack.peek();
-				//keyFile = srcFile.getFileID();
-			} /*else {
-				srcFile = this.hashSourceFileTable.get(keyFile); //this.getFileForCallsite(fileLine, keyFile);
-			} */
+					srcFile = (SourceFile) this.srcFileStack.peek();
+			} 
 			 
 			srcFile.setIsText(istext);
 			this.srcFileStack.add(srcFile);
 
-			Scope procScope  = new ProcedureScope(this.experiment, srcFile, 
+			Scope procScope  = new ProcedureScope(this.experiment, objLoadModule, srcFile, 
 					firstLn-1, lastLn-1, 
 					sProcName, attr_sid, isalien);
 
@@ -862,10 +859,11 @@ public class ExperimentDatabaseBuilder extends Builder
 					firstLn-1, lastLn-1, 
 					val_function[0], isalien);
 			 */
-			if (this.stack.peek() instanceof LineScope) {
+			if ( (this.stack.size()>1) && ( this.stack.peek() instanceof LineScope)  ) {
 
 				LineScope ls = (LineScope)this.stack.pop();
-				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, CallSiteScopeType.CALL_TO_PROCEDURE);
+				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, 
+						CallSiteScopeType.CALL_TO_PROCEDURE, ls.hashCode());
 
 				// beginScope pushes csn onto the node stack and connects it with its parent
 				// this is done while the ls is off the stack so the parent of csn is ls's parent. 
@@ -907,32 +905,36 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	private void begin_A(String[] attributes, String[] values)
 	{
+		String sIndex = null;
+		String filenm = null;
+		String procnm = null;
+		String sLine = null;
+		
 		// make a new alien scope object
-		String sIndex = getAttributeByName(ID_ATTRIBUTE, attributes, values);
+		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i].equals(ID_ATTRIBUTE)) {
+				sIndex = values[i];
+			} else if (attributes[i].equals(FILENAME_ATTRIBUTE)) {
+				filenm = values[i];
+			} else if (attributes[i].equals(NAME_ATTRIBUTE)) {
+				procnm = values[i];
+			} else if (attributes[i].equals(LINE_ATTRIBUTE)) {
+				sLine = values[i];
+			}
+		}
 		
 		try {
 			Integer objIndex = Integer.parseInt(sIndex);
 
-			String filenm = getAttributeByName(FILENAME_ATTRIBUTE, attributes, values);
-			String procnm = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-			String sLine = getAttributeByName(LINE_ATTRIBUTE, attributes, values);
 			int firstLn, lastLn;
 			StatementRange objRange = new StatementRange(sLine);
 			firstLn = objRange.getFirstLine();
 			lastLn = objRange.getLastLine();
 
 			SourceFile sourceFile = this.getOrCreateSourceFile(filenm, objIndex.intValue());
-			/*
-			SourceFile sourceFile = this.hashSourceFileTable.get(objIndex);
-			if (sourceFile == null) {
-				File file = new File(filenm);
-				sourceFile = new FileSystemSourceFile(experiment, file, objIndex.intValue());
-				sourceFile.setIsText(true);
-				this.hashSourceFileTable.put(objIndex, sourceFile);
-			} */
 			this.srcFileStack.push(sourceFile);
 
-			Scope alienScope = new AlienScope(this.experiment, sourceFile, filenm, procnm, firstLn-1, lastLn-1);
+			Scope alienScope = new AlienScope(this.experiment, sourceFile, filenm, procnm, firstLn-1, lastLn-1, objIndex.intValue());
 
 			this.beginScope(alienScope);
 
@@ -966,7 +968,7 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	private void begin_L(String[] attributes, String[] values)
 	{
-		String sID;
+		String sID = "0";
 		int iID = 0;
 		int firstLn = 0;
 		int lastLn = 0;
@@ -980,13 +982,13 @@ public class ExperimentDatabaseBuilder extends Builder
 				lastLn = objRange.getLastLine();				
 			} else if(attributes[i].equals("i")) {
 				sID = values[i];
-				try {
-					iID = Integer.parseInt(sID);
-				} catch (NumberFormatException e) {
-					e.printStackTrace();
-				}
 				
 			}
+		}
+		try {
+			iID = Integer.parseInt(sID);
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
 		}
 
 		SourceFile sourceFile = (SourceFile)this.srcFileStack.peek();
@@ -1002,7 +1004,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			//}
 			sourceFile = frameScope.getSourceFile();
 		}
-		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
+		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1, iID);
 
 		this.beginScope(loopScope);
 	}
@@ -1042,6 +1044,8 @@ public class ExperimentDatabaseBuilder extends Builder
 				if(attributes[i].equals("l")) {
 					val_line[0] = values[i];
 					val_line[1] = values[i];	 
+				} else if(attributes[i].equals("s"))  {
+					id = Integer.parseInt(values[i]);
 				} else if(attributes[i].equals("i"))  {
 					id = Integer.parseInt(values[i]);
 				}
@@ -1055,10 +1059,10 @@ public class ExperimentDatabaseBuilder extends Builder
 
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile, firstLn-1);
+				scope = new LineScope(this.experiment, srcFile, firstLn-1, id);
 			else
 				scope = new StatementRangeScope(this.experiment, srcFile, 
-						firstLn-1, lastLn-1);
+						firstLn-1, lastLn-1, id);
 
 			if (isCallSite) {
 				this.beginScope_internal(scope, false);

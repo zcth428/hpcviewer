@@ -54,15 +54,21 @@ protected String loadModuleName;
  *	Creates a LoadModuleScope.
  ************************************************************************/
 	
-public LoadModuleScope(Experiment experiment, String lmname, SourceFile file)
+public LoadModuleScope(Experiment experiment, String lmname, SourceFile file, int id)
 {
-	super(experiment, file);
+	super(experiment, file, id);
 	this.loadModuleName = lmname;
-//	this.id = "LoadModuleScope";
 }
 
+public LoadModuleScope(Experiment experiment, String lmname, SourceFile file)
+{
+	super(experiment, file, Scope.idMax++);
+	this.loadModuleName = lmname;
+}
+
+
 public Scope duplicate() {
-    return new LoadModuleScope(this.experiment, this.loadModuleName, this.sourceFile);
+    return new LoadModuleScope(this.experiment, this.loadModuleName, this.sourceFile, this.id);
 }
 
 public int hashCode() {
@@ -93,5 +99,21 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 
+/**
+ * retrieve the original name of the module
+ * @return
+ */
+public String getModuleName() {
+	return this.loadModuleName;
+}
+
+/**
+ * Load module doesn't have source file, so it needs to return its name for the citation
+ * @return the citation
+ */
+protected String getSourceCitation()
+{
+	return getName();  
+}
 
 }

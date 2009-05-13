@@ -32,29 +32,28 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	//----------------------------------------------------
 	protected boolean isdebug = false; // true;
 
-	protected Hashtable/*<SourceFile, FileScope>*/ fileht = new Hashtable/*<SourceFile, FileScope>*/();
+	protected Hashtable/*<SourceFile, FileScope>*/ fileht;
 
-	protected Hashtable/*<FileScope, Hashtable<String, ProcedureScope>>*/ fileprocht = 
-		new Hashtable/*<FileScope, Hashtable<String, ProcedureScope>>*/();
+	protected Hashtable/*<FileScope, Hashtable<String, ProcedureScope>>*/ fileprocht;
 
-	protected Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/ proc_to_proc_contents_ht = 
-		new Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/();
+	protected Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/ proc_to_proc_contents_ht;
+	Hashtable<String, LoadModuleScope> htLoadModuleTable;
 
 	/**
 	 * Stack to store the flat procedure scope of a cct's callsite scope
 	 */
-	private Stack<ProcedureScope> stackProcScope  = new Stack<ProcedureScope>();
+	private Stack<ProcedureScope> stackProcScope;
 	/**
 	 * Stack to store flat file scope 
 	 */
-	private Stack<FileScope> stackFileScope  = new Stack<FileScope>();
+	private Stack<FileScope> stackFileScope;
 	
 	private Experiment exp;
 	private Scope flatViewRootScope;
 	private int numberOfPrimaryMetrics;
 	private MetricValuePropagationFilter filter;
 
-	private FileScope EMPTY_FILE_SCOPE = new FileScope(null, null);
+	static private FileScope EMPTY_FILE_SCOPE = new FileScope(null, null, -1);
 	//----------------------------------------------------
 	// constructor for FlatViewScopeVisitor
 	//----------------------------------------------------
@@ -71,6 +70,15 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 		noFilter = new EmptyMetricValuePropagationFilter();
+		
+		htLoadModuleTable = new Hashtable<String, LoadModuleScope>();
+		stackFileScope  = new Stack<FileScope>();
+		stackProcScope  = new Stack<ProcedureScope>();
+		proc_to_proc_contents_ht = 
+			new Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/();
+		fileprocht = 
+			new Hashtable/*<FileScope, Hashtable<String, ProcedureScope>>*/();
+		fileht = new Hashtable/*<SourceFile, FileScope>*/();
 	}
 
 
@@ -242,12 +250,33 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	protected FileScope getFileScope(SourceFile sfile, Scope scopeCCT) {
 		FileScope file = (FileScope) fileht.get(sfile);
 		if (file == null) {
-			file  = new FileScope(exp, sfile);
+			file  = new FileScope(exp, sfile, sfile.getFileID());
 			// the first time a routine in this file has been called
 			file.iCounter = 0;
 			fileht.put(sfile, file);
-			flatViewRootScope.addSubscope(file);
-			file.setParentScope(this.flatViewRootScope);
+			
+			// -------------------------------------------------------
+			// laks 2009.05.11: add load module layer in the flat view
+			// -------------------------------------------------------
+			ProcedureScope scopeProcCCT = (ProcedureScope) scopeCCT;
+			LoadModuleScope scopeModule = scopeProcCCT.getLoadModule();
+			Scope parent = flatViewRootScope;
+			//LoadModuleScope objFlatModule = null;
+			// if the scope doesn't have the load module (such as the old format), then we don't add
+			// 	the load module layer
+			if (scopeModule != null) {
+				/*
+				String sModuleName = scopeModule.getModuleName();
+				objFlatModule = this.htLoadModuleTable.get(sModuleName);
+				if (objFlatModule == null) {
+					objFlatModule = (LoadModuleScope) scopeModule.duplicate();
+					this.htLoadModuleTable.put(sModuleName, objFlatModule);
+				}*/
+				flatViewRootScope.addSubscope(scopeModule);
+				parent = scopeModule;
+			}
+			parent.addSubscope(file);
+			file.setParentScope(parent);
 			//exp.getScopeList().addScope(file);
 			trace("added file " + file.getName() + " in flat view.");
 		}
@@ -264,13 +293,8 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 */
 	protected FlatFileProcedure retrieveProcedureScope(SourceFile sfile, Scope procScope, Scope scopeCCT) {
 		// find the file
-		FileScope file = null;
-		/*if(sfile == 0) {
-			trace("--- ERROR: "+procScope.getName()+" file is null");
-			return null;
-		} else { */
-			file = getFileScope(sfile, procScope);
-		//}
+		FileScope file = getFileScope(sfile, procScope);
+
 		// get the list of procedures in this file scope
 		Hashtable<String, ProcedureScope> htProcCounter = getFileProcHashtable(file);
 		String procName = procScope.getName();
@@ -334,6 +358,11 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 			objFile.iCounter++;
 			if(objFile.iCounter == 1) {
 				objFile.accumulateMetrics(scopeCCT, this.inclusiveOnly, this.numberOfPrimaryMetrics);
+				Scope objModule = objFile.getParentScope();
+				if (objModule instanceof LoadModuleScope) {
+					objModule.mergeMetric(objFile, this.inclusiveOnly);
+					//objModule.accumulateMetrics(scopeCCT, this.inclusiveOnly, this.numberOfPrimaryMetrics);
+				}
 			}
 			this.stackFileScope.push(objFile);
 		}
@@ -400,6 +429,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 * @param s
 	 * @return
 	 */
+	/*
 	protected int getCode(Scope s) {
         int code = s.hashCode(); 
 		Scope unique = s;
@@ -409,7 +439,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		    unique = parent;
 		}
 		return code;
-	}
+	}*/
 
 	/**
 	 * Construct a flat tree.
@@ -427,7 +457,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 	 */
 	protected Scope getFlatCounterpart(Scope s, Scope flat_parent, Hashtable ht) {
 		//	new test code
-		int code = getCode(s);
+		int code = s.hashCode(); // getCode(s);
 		Scope flat_s = (Scope) ht.get(new Integer(code));
 		// -- this line is the problem -- returns scopes with and without isAlien set; multiple distinct instantiations of a callsite within a scope
 		if (s instanceof LoopScope && flat_s != null && !(flat_s instanceof LoopScope)) {

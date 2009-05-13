@@ -124,8 +124,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 							// FIXME two dummies instance creation. we hope this doesn't make significant 
 							//			performance degradation !
 							LineScope scopeLine = new LineScope(scopeProc.getExperiment(), scopeProc.getSourceFile(), 
-									scopeProc.getFirstLineNumber());
-							enclosingCS = new CallSiteScope(scopeLine, scopeProc, CallSiteScopeType.CALL_FROM_PROCEDURE);
+									scopeProc.getFirstLineNumber(), 0);
+							enclosingCS = new CallSiteScope(scopeLine, scopeProc, CallSiteScopeType.CALL_FROM_PROCEDURE, 0);
 						}
 					}
 					else if (next instanceof CallSiteScope) {
@@ -137,7 +137,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 						CallSiteScope callerScope =
 							new CallSiteScope((LineScope) lineScope.duplicate(), 
 									mycaller,
-									CallSiteScopeType.CALL_FROM_PROCEDURE);
+									CallSiteScopeType.CALL_FROM_PROCEDURE, 0);
 						callerScope.accumulateMetrics(scopeCall, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 						callPathList.addLast(callerScope);
 						innerCS = enclosingCS;

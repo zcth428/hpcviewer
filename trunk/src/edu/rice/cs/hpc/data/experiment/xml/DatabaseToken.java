@@ -20,6 +20,7 @@ public class DatabaseToken {
     	T_SEC_CALLPATH_PROFILE, T_SEC_HEADER,
     	// data
     	T_SEC_CALLPATH_PROFILE_DATA, 
+    	T_CALLPATH_PROFILE_DATA,// @deprecated
     	T_PR, T_PF, T_L, T_C, T_S,
     	// metrics
     	T_METRIC_TABLE, T_METRIC, T_METRIC_FORMULA, T_M,
@@ -67,6 +68,7 @@ public class DatabaseToken {
         tokenMap.put("Procedure", TokenXML.T_PROCEDURE);
         
         tokenMap.put("SecCallPathProfileData", TokenXML.T_SEC_CALLPATH_PROFILE_DATA);
+        tokenMap.put("CallPathProfileData", TokenXML.T_CALLPATH_PROFILE_DATA);	// @deprecated
         tokenMap.put("Pr", TokenXML.T_PR);
         tokenMap.put("PF", TokenXML.T_PF);
         tokenMap.put("L", TokenXML.T_L);

@@ -47,14 +47,16 @@ import org.eclipse.jface.viewers.TreeNode;
 
 public abstract class Scope
 {
-
+static protected int idMax = 0;
 
 /** The experiment owning this scope. */
 protected Experiment experiment;
 
 /** The source file containing this scope. */
 protected SourceFile sourceFile;
-//protected int idSourceFile;
+
+/** the scope identifier */
+protected int id;
 
 /** The first line number of this scope. */
 protected int firstLineNumber;
@@ -110,7 +112,7 @@ public static final int NO_LINE_NUMBER = -169; // any negative number other than
  *	Creates a Scope object with associated source line range.
  ************************************************************************/
 	
-public Scope(Experiment experiment, SourceFile file, int first, int last)
+public Scope(Experiment experiment, SourceFile file, int first, int last, int scopeID)
 {
 	// creation arguments
 	this.experiment = experiment;
@@ -123,6 +125,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last)
 	//this.treeNode.setUserObject(this);
 	this.stop = false;
 	this.srcCitation = null;
+	this.id = scopeID;
 }
 
 
@@ -132,9 +135,9 @@ public Scope(Experiment experiment, SourceFile file, int first, int last)
  *	Creates a Scope object with associated source file.
  ************************************************************************/
 	
-public Scope(Experiment experiment, SourceFile file)
+public Scope(Experiment experiment, SourceFile file, int scopeID)
 {
-	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
+	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, scopeID);
 }
 
 
@@ -146,10 +149,12 @@ public Scope(Experiment experiment, SourceFile file)
 	
 public Scope(Experiment experiment)
 {
-	this(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER);
+	this(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, idMax);
+	idMax++;
 }
 
 public int hashCode() {
+	/*
 	SourceFile objFile = this.getSourceFile();
 	if (objFile != null) {
 		return objFile.getFileID();
@@ -157,7 +162,8 @@ public int hashCode() {
 	} else {
 		System.err.println("ERROR Scope hashcode: "+this.getName());
 		return 0;
-	}
+	} */
+	return this.id;
 	//return this.sourceFile.getName().hashCode() ^ this.firstLineNumber;
 }
 
@@ -249,7 +255,11 @@ public String toString()
 protected String getSourceCitation()
 {
 	if (this.srcCitation == null)  {
-
+		// some scopes such as load module, doesn't have a source code file (they are binaries !!)
+		// this hack will return the name of the scope instead of the citation file
+		if (this.sourceFile == null) {
+			return this.getName();
+		}
 		String cite;
 
 		// we must display one-based line numbers

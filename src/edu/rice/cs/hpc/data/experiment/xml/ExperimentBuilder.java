@@ -68,9 +68,6 @@ public class ExperimentBuilder extends Builder
 	/** The parsed search paths. */
 	protected List/*<File>*/ pathList;
 
-	/** The parsed source file objects. */
-	protected List/*<SourceFile>*/ fileList;
-
 	/** The parsed metric objects. */
 	protected List/*<Metric>*/ metricList;
 
@@ -84,13 +81,15 @@ public class ExperimentBuilder extends Builder
 	protected Scope flatViewRootScope;
 
 	/** A stack to keep track of scope nesting while parsing. */
-	protected Stack/*<Scope>*/ stack;
+	protected Stack/*<Scope>*/ scopeStack;
 
 	/** The current source file while parsing. */
 	protected Stack/*<SourceFile>*/ srcFileStack;
 
 //	johnmc
-	protected Hashtable/*<String, SourceFile>*/ FileHashTable = new Hashtable();
+	protected Hashtable<String, SourceFile> hashSourceFileFromName;
+	// laks 2009.05.04: to keep compatibility
+	protected Hashtable<Integer, SourceFile> hashSourceFileFromKey;
 
 	/** Number of metrics provided by the experiment file.
     For each metric we will define one inclusive and one exclusive metric.*/
@@ -100,12 +99,7 @@ public class ExperimentBuilder extends Builder
     We use the maxNumberOfMetrics value to generate short names for the self metrics*/
 	protected int maxNumberOfMetrics;
 
-	// laks 2009.05.04: to keep compatibility
-	protected Hashtable<Integer, SourceFile> hashSourceFileTable = new Hashtable<Integer, SourceFile>();
-
-//	INITIALIZATION							//
-
-
+	public boolean csviewer;
 
 
 	/*************************************************************************
@@ -139,15 +133,17 @@ public class ExperimentBuilder extends Builder
 		this.csviewer = false;
 		// temporary storage for parsed objects
 		this.pathList   = new ArrayList/*<File>*/();
-		this.fileList   = new ArrayList/*<SourceFile>*/();
+		//this.fileList   = new ArrayList/*<SourceFile>*/();
 		this.metricList = new ArrayList/*<Metric>*/();
 		this.scopeList  = new ArrayList/*<Scope>*/();
 
 		// parse action data structures
-		this.stack = new Stack/*<Scope>*/();
+		this.scopeStack = new Stack/*<Scope>*/();
 		this.srcFileStack = new Stack/*<SourceFile>*/();
 		this.srcFileStack.push(null); // mimic old behavior
 
+		hashSourceFileFromKey = new Hashtable<Integer, SourceFile>();
+		hashSourceFileFromName = new Hashtable<String, SourceFile>();
 		numberOfPrimaryMetrics = 0;
 		maxNumberOfMetrics = 100;
 	}
@@ -211,7 +207,7 @@ public class ExperimentBuilder extends Builder
 		case Token.HPCVIEWER:
 			// Flat profile
 			this.csviewer = false;
-			this.initExperiment();
+			//this.initExperiment();
 			break;
 		case Token.CONFIG:
 		case Token.METRICS:
@@ -226,7 +222,6 @@ public class ExperimentBuilder extends Builder
 			this.do_TARGET(attributes,values);	
 			break;
 		case Token.CALLSITE:
-			//System.out.println("callSite...");
 			this.begin_CALLSITE(attributes,values); 
 			break;
 		case Token.PROCEDURE_FRAME:	
@@ -351,24 +346,24 @@ public class ExperimentBuilder extends Builder
 		// bugs no 224: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=224&group_id=22&atid=169
 		try {
 			// pop out root scope
-			this.stack.pop();
+			this.scopeStack.pop();
 		} catch (EmptyStackException e) {
 			System.err.println("ExperimentBuilder: no root scope !");
 		}
 		
 		// check that input was properly nested
-		if (!this.stack.empty()) {
-			Scope topScope = (Scope) this.stack.peek();
+		if (!this.scopeStack.empty()) {
+			Scope topScope = (Scope) this.scopeStack.peek();
 			System.out.println("Stack is not empty; remaining top scope = " + topScope.getName());
 			this.error();
 		}
 
 		// check semantic constraints
-		if( this.fileList.size() == 0 ) {
+		if( this.hashSourceFileFromKey.size() == 0 ) {
 			System.out.println("Warning: no source files found!");
 			// bug no 189: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=189&group_id=22&atid=169
 			//this.error();
-		}
+		} 
 
 		if( this.scopeList.size() == 0 ) {
 			System.out.println("Warning: scope tree is empty!");
@@ -445,10 +440,6 @@ public class ExperimentBuilder extends Builder
 	/*************************************************************************
 	 *	Processes a METRIC element.
 	 ************************************************************************/
-
-	//public double prd;
-
-	public boolean csviewer;
 
 	private void do_METRIC(String[] attributes, String[] values)
 	{
@@ -588,7 +579,7 @@ public class ExperimentBuilder extends Builder
 
 		// make the root scope
 		this.rootScope = new RootScope(this.experiment, name,"Invisible Outer Root Scope", RootScopeType.Invisible);
-		this.stack.push(this.rootScope);	// don't use 'beginScope'
+		this.scopeStack.push(this.rootScope);	// don't use 'beginScope'
 		
 		if (this.csviewer) {
 			// create Calling Context Tree scope
@@ -599,16 +590,16 @@ public class ExperimentBuilder extends Builder
 			this.flatViewRootScope = new RootScope(this.experiment, name, "Flat View", RootScopeType.Flat);
 			this.beginScope(this.flatViewRootScope);	
 		}
-		// laks: since we will simulate of using dictionary for this old xml format, we need to set the hash table of the files
-		//this.experiment.setFileTable(this.hashSourceFileTable);
 		this.initExperiment();
 	}
 
-
+	/************************************************************************
+	 * Initialize the experiment database
+	 ************************************************************************/
 	private void initExperiment() 
 	{
 		this.experiment.setMetrics(metricList);
-		this.experiment.setFileTable(this.hashSourceFileTable);
+		this.experiment.setFileTable(this.hashSourceFileFromKey);
 	}
 
 
@@ -619,7 +610,7 @@ public class ExperimentBuilder extends Builder
 	private void end_PGM()
 	{
 		this.endScope();
-		this.experiment.setFileTable(this.hashSourceFileTable);
+		this.experiment.setFileTable(this.hashSourceFileFromKey);
 	}
 
 
@@ -632,10 +623,8 @@ public class ExperimentBuilder extends Builder
 	{
 		// LM n="load module name"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-		//SourceFile objFile = new SourceFile();
 		// make a new load module scope object
 		Scope lmScope = new LoadModuleScope(this.experiment, name, SourceFile.NONE);
-		//Scope lmScope = new LoadModuleScope(this.experiment, name, this.hashSourceFileTable.size());
 		this.beginScope(lmScope);
 	}
 
@@ -687,7 +676,8 @@ public class ExperimentBuilder extends Builder
 		// F n="filename"
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 
-		SourceFile file = this.createSourceFile(this.experiment, name);
+		SourceFile file = this.getOrCreateSourceFile(name);
+		this.srcFileStack.push(file);
 		// make a new file scope object
 		Scope fileScope = new FileScope(this.experiment, file);
 
@@ -695,16 +685,22 @@ public class ExperimentBuilder extends Builder
 	}
 
 
-	private SourceFile createSourceFile(Experiment exp, String sFilename) {
-		// make a new source file object
-		File filename = new File(sFilename);
-		int index = this.hashSourceFileTable.size()+1;
-		SourceFile sourceFile = new FileSystemSourceFile(experiment, filename, index);
-		sourceFile.setIsText(true);
-		this.fileList.add(sourceFile);
-		this.srcFileStack.push(sourceFile);
+	/*************************************************************************
+	 * Create source file and then add it into the dictionary database if necessary
+	 * @param sFilename
+	 * @return the source file
+	 *************************************************************************/
+	private SourceFile getOrCreateSourceFile(String sFilename) {
+		SourceFile sourceFile=(SourceFile)hashSourceFileFromName.get(sFilename);
+		if (sourceFile == null) {
+			// make a new source file object
+			File filename = new File(sFilename);
+			int index = this.hashSourceFileFromKey.size()+1;
+			sourceFile = new FileSystemSourceFile(experiment, filename, index);
+			sourceFile.setIsText(true);
 
-		this.hashSourceFileTable.put(Integer.valueOf(index), sourceFile);
+			this.hashSourceFileFromKey.put(Integer.valueOf(index), sourceFile);
+		}
 		return sourceFile;
 	}
 
@@ -797,7 +793,7 @@ public class ExperimentBuilder extends Builder
 
 			int firstLn = Integer.parseInt(val_line[0]);
 			int lastLn  = Integer.parseInt(val_line[1]);
-			Scope procScope  = new ProcedureScope(this.experiment, srcFile, 
+			Scope procScope  = new ProcedureScope(this.experiment, null, srcFile, 
 					firstLn-1, lastLn-1, 
 					val_function[0], attr_sid, isalien);
 
@@ -806,21 +802,21 @@ public class ExperimentBuilder extends Builder
 					firstLn-1, lastLn-1, 
 					val_function[0], isalien);
 			 */
-			if (this.stack.peek() instanceof LineScope) {
+			if (this.scopeStack.peek() instanceof LineScope) {
 
 				//System.out.println("CallSiteScope Building..."+((Scope) this.stack.peek()).getName());
 
-				LineScope ls = (LineScope)this.stack.pop();
-				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, CallSiteScopeType.CALL_TO_PROCEDURE);
+				LineScope ls = (LineScope)this.scopeStack.pop();
+				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, CallSiteScopeType.CALL_TO_PROCEDURE,attr_sid);
 
 				// beginScope pushes csn onto the node stack and connects it with its parent
 				// this is done while the ls is off the stack so the parent of csn is ls's parent. 
 				// afterward, we rearrange the top of stack to tuck ls back underneath csn in case it is 
 				// needed for a subsequent procedure frame that is a sibling of csn in the tree.
 				this.beginScope(csn);
-				CallSiteScope csn2 = (CallSiteScope) this.stack.pop();
-				this.stack.push(ls);
-				this.stack.push(csn2);
+				CallSiteScope csn2 = (CallSiteScope) this.scopeStack.pop();
+				this.scopeStack.push(ls);
+				this.scopeStack.push(csn2);
 
 			} else {
 				this.beginScope(procScope);
@@ -872,7 +868,7 @@ public class ExperimentBuilder extends Builder
 		int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
 		int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
 
-		SourceFile index = this.createSourceFile(this.experiment, filenm);
+		SourceFile index = this.getOrCreateSourceFile(filenm);
 		Scope alienScope = new AlienScope(this.experiment, index, filenm, procnm, firstLn-1, lastLn-1);
 
 		this.beginScope(alienScope);
@@ -1098,7 +1094,7 @@ public class ExperimentBuilder extends Builder
 			top.addSubscope(scope);
 			scope.setParentScope(top);
 		}
-		this.stack.push(scope);
+		this.scopeStack.push(scope);
 
 		if (addToTree) recordOuterScope(scope);
 	}
@@ -1111,7 +1107,7 @@ public class ExperimentBuilder extends Builder
 
 	private void endScope()
 	{
-		this.stack.pop();
+		this.scopeStack.pop();
 		// System.out.println("pop scope ");
 	}
 
@@ -1132,15 +1128,15 @@ public class ExperimentBuilder extends Builder
 	 ************************************************************************/
 	protected SourceFile getFileForCallsite(String fileLine)
 	{
-		SourceFile sourceFile=(SourceFile)FileHashTable.get(fileLine);
+		SourceFile sourceFile=(SourceFile)hashSourceFileFromName.get(fileLine);
 		if (sourceFile == null) {
-			int index = this.hashSourceFileTable.size();
+			int index = this.hashSourceFileFromKey.size();
 			File filename = new File(fileLine);
 			sourceFile = new FileSystemSourceFile(experiment, filename, index);
-			FileHashTable.put(fileLine,sourceFile);
-			this.hashSourceFileTable.put(Integer.valueOf(index), sourceFile);
+			hashSourceFileFromName.put(fileLine,sourceFile);
+			this.hashSourceFileFromKey.put(Integer.valueOf(index), sourceFile);
 		}  
-		this.fileList.add(sourceFile);
+		//this.fileList.add(sourceFile);
 		return sourceFile;
 	}
 
@@ -1159,7 +1155,7 @@ public class ExperimentBuilder extends Builder
 
 	private Scope getCurrentScope()
 	{
-		return (Scope) this.stack.peek();
+		return (Scope) this.scopeStack.peek();
 	}
 
 	private void recordOuterScope(Scope scope) {

@@ -61,7 +61,7 @@ protected File fileExperiment;
 protected ExperimentConfiguration configuration;
 
 /** ----------------- DICTIONARIES -----------------  **/
-//protected Hashtable<Integer, SourceFile> hashLoadModuleTable;
+protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 protected Hashtable<Integer, SourceFile> hashFileTable;
 //protected Hashtable<Integer, SourceFile> hashProcedureTable;
 //private SourceFile []arrSourceFiles;

@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.data.experiment.scope.filters;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
+import edu.rice.cs.hpc.data.experiment.scope.LoadModuleScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -21,7 +22,8 @@ public class FlatViewInclMetricPropagationFilter implements MetricValuePropagati
 		// For file scope: we don't need the inclusive cost (this is debatable)
 		// For procedure scope: the cost is already computed by FlatViewScopeVisitor class
 		// ----------------------------------------
-		if ( ((target instanceof ProcedureScope) && !((ProcedureScope)target).isAlien()) || target instanceof FileScope) { //target instanceof FileScope || 
+		if ( ((target instanceof ProcedureScope) && !((ProcedureScope)target).isAlien()) 
+				|| (target instanceof FileScope) || (target instanceof LoadModuleScope) ) { //target instanceof FileScope || 
 			return ( metrics[src_idx].getMetricType() == MetricType.EXCLUSIVE);
 		}
 		// Laks 2008.10.21: since inclusive cost of file scope has been computed in the 

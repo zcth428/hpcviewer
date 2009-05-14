@@ -48,7 +48,7 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
 
     public boolean hasChildren(Object element) {
     	if(element instanceof Scope.Node)
-            return !((Scope.Node) element).isLeaf();
+            return ((Scope.Node) element).hasChildren(); // !((Scope.Node) element).isLeaf();
     	else
     		return false;
     }

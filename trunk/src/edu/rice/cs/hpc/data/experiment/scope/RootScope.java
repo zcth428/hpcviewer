@@ -192,11 +192,12 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	 * Return the maximum depth of the tree
 	 * @return
 	 */
+	/*
 	public int getMaxLevel() {
 		// the method getDepth is computed based on 1 as the root, while in
 		// our case, we prefer based on 0, so let decrease the value by 1
 		return this.getTreeNode().getDepth() - 1;
-	}
+	} */
 	
 	/**
 	 * Return the list of flattened nodes

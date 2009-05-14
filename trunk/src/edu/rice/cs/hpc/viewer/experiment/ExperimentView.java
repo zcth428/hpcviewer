@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.viewer.experiment;
 import java.util.ArrayList;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.TreeNode;
 
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
@@ -165,14 +166,15 @@ public class ExperimentView {
 		// remove the old-irrelevant editors
 		this.closeAllEditors();
 		// next, we retrieve all children of the scope and display them in separate views
-		ArrayList<RootScope> rootChildren = (ArrayList<RootScope>)experiment.getRootScopeChildren();
-		int nbChildren = rootChildren.size();
+		//ArrayList<RootScope> rootChildren = (ArrayList<RootScope>)experiment.getRootScopeChildren();
+		TreeNode []rootChildren = experiment.getRootScopeChildren();
+		int nbChildren = rootChildren.length;
 		BaseScopeView objCCView = null;
 		arrScopeViews = new BaseScopeView[nbChildren];
 		//this.listOfViews = new ScopeView[nbChildren];
 		for(int k=0;nbChildren>k;k++)
 		{
-			RootScope child = (RootScope) rootChildren.get(k);
+			RootScope child = (RootScope) rootChildren[k].getValue();
 			try {
 				BaseScopeView objView; 
 

@@ -47,6 +47,7 @@ import org.eclipse.jface.viewers.TreeNode;
 
 public abstract class Scope
 {
+	/** The current maximum number of ID for all scopes	 */
 static protected int idMax = 0;
 
 /** The experiment owning this scope. */
@@ -326,15 +327,7 @@ protected String getLineNumberCitation()
 public SourceFile getSourceFile()
 {
 	return this.sourceFile;
-	//return this.experiment.getSourceFile(this.idSourceFile);
 }
-
-/*
-public int getFileIndex() 
-{
-	return this.idSourceFile;
-}
-*/
 
 
 /*************************************************************************
@@ -581,19 +574,24 @@ public MetricValue getMetricValue(int index)
 /*************************************************************************
  *	Sets the value of a given metric at this scope.
  ************************************************************************/
-	
 public void setMetricValue(int index, MetricValue value)
 {
 	ensureMetricStorage();
 	this.metrics[index] = value;
 }
 
+/*************************************************************************
+ *	Add the metric cost from a source with a certain filter for all metrics
+ ************************************************************************/
 public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter, int nMetrics) {
 	for (int i = 0; i< nMetrics; i++) {
 		this.accumulateMetric(source, i, i, filter);
 	}
 }
 
+/*************************************************************************
+ *	Add the metric cost from a source with a certain filter for a certain metric
+ ************************************************************************/
 public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, this, src_i, targ_i)) {
 		MetricValue m = source.getMetricValue(src_i);
@@ -684,7 +682,8 @@ public void copyMetrics(Scope targetScope) {
 }
 
 /*************************************************************************
- * Merge two metrics by setting the higher metrics into account
+ * Merge two metrics by setting the biggest metrics into account
+ * This method is useful to find the cost of a recursive function
  * @param scope
  * @param filter
  *************************************************************************/
@@ -750,8 +749,10 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
  ************************************************************************/
 
 	// @SuppressWarnings("serial")
-	public static class Node extends DefaultMutableTreeNode //TreeNode
+	public static class Node extends TreeNode //TreeNode
 	{
+		private int nbChildren;
+		
 		/**
 		 * This public variable indicates if the node contains information about the source code file.
 		 * If the boolean is true, then the filename can be retrieved from its scope
@@ -763,24 +764,59 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 		
 		/**
 		 * Copy the scope into this node
-		 * @param child
+		 * @param value: the value of this node
 		 */
-		public Node(Object child)
+		public Node(Object value)
 		{
-			super(child);
+			super(value);
 			this.hasSourceCodeFile = false;
+			nbChildren = 0;
+		}
+
+		public void add(Node treeNode) {
+			// TODO Auto-generated method stub
+			if ( (treeNode != null) && (treeNode.getParent() != this)) {
+				int nbChildren = this.getChildCount();
+				TreeNode []myChildren = new TreeNode[nbChildren+1];
+				if (nbChildren == 0) {
+					
+				} else {
+					System.arraycopy(this.getChildren(), 0, myChildren, 0, nbChildren);
+				}
+				treeNode.setParent(this);
+				myChildren[nbChildren] = treeNode;
+				this.setChildren(myChildren);
+			}
+		}
+
+		public TreeNode getChildAt(int index) {
+			// TODO Auto-generated method stub
+			return this.getChildren()[index];
+		}
+
+		/**
+		 * Simulate DefaultMutableTreeNode
+		 * @return
+		 */
+		public int getChildCount() {
+			// TODO Auto-generated method stub
+			if (this.getChildren() == null)
+				return 0;
+			return this.getChildren().length;
 		}
 
 
 		/** Returns the scope associated with this node. */
 		public Scope getScope()
 		{
-			return (Scope) this.getUserObject();
-		};
-
-		public Object[] getChildren() {
-			return this.children.toArray();
+			return (Scope) this.value;
+			//return (Scope) this.getUserObject();
 		}
+
+		/*
+		public TreeNode[] getChildren() {
+			return this.children.toArray();
+		} */
 	};
 	
 }

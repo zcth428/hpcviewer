@@ -52,7 +52,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	// ------ DATA ----------------------------------------
     //======================================================
 	// GUI STUFFs
-    private TreeViewer 	treeViewer;		  	// tree for the caller and callees
+    protected TreeViewer 	treeViewer;		  	// tree for the caller and callees
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;

@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import org.eclipse.jface.viewers.TreeNode;
+
 //math expression
 import com.graphbuilder.math.*;
 
@@ -568,6 +570,7 @@ public Scope getRootScope()
 	return this.rootScope;
 }
 
+/*
 public ArrayList getRootScopeChildren()
 {
 	ArrayList rootScopeChildren = new ArrayList();
@@ -576,8 +579,10 @@ public ArrayList getRootScopeChildren()
 		rootScopeChildren.add(((Node)e.nextElement()).getScope());
 	}
 	return rootScopeChildren;
+} */
+public TreeNode[] getRootScopeChildren() {
+	return this.rootScope.getTreeNode().getChildren();
 }
-
 
 //============================================================================
 // DICTIONARY

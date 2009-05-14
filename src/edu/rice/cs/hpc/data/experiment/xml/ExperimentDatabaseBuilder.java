@@ -78,7 +78,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	protected Scope flatViewRootScope;
 
 	/** A stack to keep track of scope nesting while parsing. */
-	protected Stack/*<Scope>*/ stack;
+	protected Stack/*<Scope>*/ scopeStack;
 
 	/** The current source file while parsing. */
 	protected Stack/*<SourceFile>*/ srcFileStack;
@@ -100,7 +100,6 @@ public class ExperimentDatabaseBuilder extends Builder
 	//--------------------------------------------------------------------------------------
 	private java.util.Hashtable<Integer, String> hashProcedureTable;
 	private java.util.Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
-	//private java.util.Hashtable<Integer, String> hashFileTable;
 	private boolean csviewer;
 
 //	INITIALIZATION							//
@@ -141,13 +140,12 @@ public class ExperimentDatabaseBuilder extends Builder
 		this.metricList = new ArrayList/*<Metric>*/();
 
 		// parse action data structures
-		this.stack = new Stack/*<Scope>*/();
+		this.scopeStack = new Stack/*<Scope>*/();
 		this.srcFileStack = new Stack/*<SourceFile>*/();
 		this.srcFileStack.push(null); // mimic old behavior
 
 		hashProcedureTable = new Hashtable<Integer, String>();
 		hashLoadModuleTable = new Hashtable<Integer, LoadModuleScope>();
-		//hashFileTable = new Hashtable<Integer, String> ();
 		
 		numberOfPrimaryMetrics = 0;
 		
@@ -369,14 +367,14 @@ public class ExperimentDatabaseBuilder extends Builder
 		// bugs no 224: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=224&group_id=22&atid=169
 		try {
 			// pop out root scope
-			this.stack.pop();
+			this.scopeStack.pop();
 		} catch (EmptyStackException e) {
 			System.err.println("ExperimentBuilder: no root scope !");
 		}
 		
 		// check that input was properly nested
-		if (!this.stack.empty()) {
-			Scope topScope = (Scope) this.stack.peek();
+		if (!this.scopeStack.empty()) {
+			Scope topScope = (Scope) this.scopeStack.peek();
 			System.out.println("Stack is not empty; remaining top scope = " + topScope.getName());
 			this.error();
 		}
@@ -577,7 +575,7 @@ public class ExperimentDatabaseBuilder extends Builder
 
 		// make the root scope
 		this.rootScope = new RootScope(this.experiment, name,"Invisible Outer Root Scope", RootScopeType.Invisible);
-		this.stack.push(this.rootScope);	// don't use 'beginScope'
+		this.scopeStack.push(this.rootScope);	// don't use 'beginScope'
 
 		if (this.csviewer) {
 			// create Calling Context Tree scope
@@ -859,9 +857,9 @@ public class ExperimentDatabaseBuilder extends Builder
 					firstLn-1, lastLn-1, 
 					val_function[0], isalien);
 			 */
-			if ( (this.stack.size()>1) && ( this.stack.peek() instanceof LineScope)  ) {
+			if ( (this.scopeStack.size()>1) && ( this.scopeStack.peek() instanceof LineScope)  ) {
 
-				LineScope ls = (LineScope)this.stack.pop();
+				LineScope ls = (LineScope)this.scopeStack.pop();
 				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, 
 						CallSiteScopeType.CALL_TO_PROCEDURE, ls.hashCode());
 
@@ -870,9 +868,9 @@ public class ExperimentDatabaseBuilder extends Builder
 				// afterward, we rearrange the top of stack to tuck ls back underneath csn in case it is 
 				// needed for a subsequent procedure frame that is a sibling of csn in the tree.
 				this.beginScope(csn);
-				CallSiteScope csn2 = (CallSiteScope) this.stack.pop();
-				this.stack.push(ls);
-				this.stack.push(csn2);
+				CallSiteScope csn2 = (CallSiteScope) this.scopeStack.pop();
+				this.scopeStack.push(ls);
+				this.scopeStack.push(csn2);
 
 			} else {
 				this.beginScope(procScope);
@@ -1154,7 +1152,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			top.addSubscope(scope);
 			scope.setParentScope(top);
 		}
-		this.stack.push(scope);
+		this.scopeStack.push(scope);
 	}
 
 
@@ -1165,7 +1163,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	private void endScope()
 	{
 		try {
-			this.stack.pop();
+			this.scopeStack.pop();
 		} catch (java.util.EmptyStackException e) {
 			System.out.println("End of stack:"+this.parser.getLineNumber());
 		}
@@ -1245,7 +1243,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	 ************************************************************************/
 	private Scope getCurrentScope()
 	{
-		return (Scope) this.stack.peek();
+		return (Scope) this.scopeStack.peek();
 	}
 
 	/************************************************************************* 

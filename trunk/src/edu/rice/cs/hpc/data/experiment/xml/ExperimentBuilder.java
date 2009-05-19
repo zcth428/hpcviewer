@@ -54,6 +54,7 @@ public class ExperimentBuilder extends Builder
 	final static String FILENAME_ATTRIBUTE 		= "f";
 	final static String VALUE_ATTRIBUTE 		= "v";
 	final static String PATHNAME_ATTRIBUTE 		= "name";
+	final static String SID_ATTRIBUTE 		= "sid";
 	
 
 	/** The experiment to own parsed objects. */
@@ -793,6 +794,9 @@ public class ExperimentBuilder extends Builder
 
 			int firstLn = Integer.parseInt(val_line[0]);
 			int lastLn  = Integer.parseInt(val_line[1]);
+			if (attr_sid == 0) {
+				attr_sid = this.getProcHashcode(srcFile.getName(), val_function[0]);
+			}
 			Scope procScope  = new ProcedureScope(this.experiment, null, srcFile, 
 					firstLn-1, lastLn-1, 
 					val_function[0], attr_sid, isalien);
@@ -842,6 +846,18 @@ public class ExperimentBuilder extends Builder
 		}
 	}
 
+	/**
+	 * Simulate hascode for ProcedureScope
+	 * @param sFilename
+	 * @param firstLn
+	 * @param lastLn
+	 * @return
+	 */
+	private int getProcHashcode (String sFilename, String sProc) {
+		String sHashcode = sFilename + "/" + sProc;
+		int sid = sHashcode.hashCode();
+		return sid;
+	}
 
 	/*************************************************************************
 	 *	Finishes processing a P (procedure) element.
@@ -892,9 +908,23 @@ public class ExperimentBuilder extends Builder
 
 	private void begin_L(String[] attributes, String[] values)
 	{
-		int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
-		int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
-
+		int firstLn = 0; // = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
+		int lastLn = 0; //  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
+		int sid = 0;
+		for (int i=0; i<attributes.length; i++) {
+			// some old xml database format contains 'sid' attribute for loops
+			if (attributes[i].equals(SID_ATTRIBUTE)) {
+				try {
+					sid = Integer.parseInt(values[i]);
+				} catch (Exception e) {
+					//sid = -1; // sid is not a recognized format
+				}
+			} else if (attributes[i].equals(BEGIN_LINE_ATTRIBUTE)) {
+				firstLn = Integer.parseInt(values[i]);
+			} else if (attributes[i].equals(END_LINE_ATTRIBUTE)) {
+				lastLn = Integer.parseInt(values[i]);
+			}
+		}
 		SourceFile sourceFile = (SourceFile)this.srcFileStack.peek();
 		if (this.csviewer) {
 			// Use the source file of the Procedure Frame
@@ -908,8 +938,12 @@ public class ExperimentBuilder extends Builder
 			//}
 			sourceFile = frameScope.getSourceFile();
 		}
-		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
-
+		
+		Scope loopScope; // = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
+		if (sid == 0) 
+			loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
+		else
+			loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1, sid);
 		this.beginScope(loopScope);
 	}
 
@@ -987,13 +1021,14 @@ public class ExperimentBuilder extends Builder
 			// make a new statement-range scope object
 			int firstLn = Integer.parseInt(val_line[0]);
 			int lastLn  = Integer.parseInt(val_line[1]);
-
+			int sid = this.getLineHashcode(fileLine, firstLn, lastLn);
+			
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile, firstLn-1);
+				scope = new LineScope(this.experiment, srcFile, firstLn-1, sid);
 			else
 				scope = new StatementRangeScope(this.experiment, srcFile, 
-						firstLn-1, lastLn-1);
+						firstLn-1, lastLn-1, sid);
 
 			if (isCallSite) {
 				this.beginScope_internal(scope, false);
@@ -1009,17 +1044,31 @@ public class ExperimentBuilder extends Builder
 
 			int firstLn = Integer.parseInt(getAttributeByName(BEGIN_LINE_ATTRIBUTE, attributes, values));
 			int lastLn  = Integer.parseInt(getAttributeByName(END_LINE_ATTRIBUTE, attributes, values));
-
+			int sid = this.getLineHashcode(topSrcFile.getName(), firstLn, lastLn);
+			
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), firstLn-1);
+				scope = new LineScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), firstLn-1, sid);
 			else
-				scope = new StatementRangeScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), firstLn-1, lastLn-1);
+				scope = new StatementRangeScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), 
+						firstLn-1, lastLn-1, sid);
 
 			this.beginScope(scope);
 		}
 	}
 
+	/**
+	 * Simulate hascode for LineScope and StatementRangeScope
+	 * @param sFilename
+	 * @param firstLn
+	 * @param lastLn
+	 * @return
+	 */
+	private int getLineHashcode (String sFilename, int firstLn, int lastLn) {
+		String sHashcode = sFilename + ":" + firstLn + "-" + lastLn;
+		int sid = sHashcode.hashCode();
+		return sid;
+	}
 	/*************************************************************************
 	 *	Finishes processing an S (line) element.
 	 ************************************************************************/

@@ -54,12 +54,12 @@ public StatementRangeScope(Experiment experiment, SourceFile file, int first, in
 	super(experiment, file, first, last, id);
 }
 
-
+/*
 public StatementRangeScope(Experiment experiment, SourceFile file, int first, int last)
 {
 	super(experiment, file, first, last, Scope.idMax++);
 }
-
+*/
 
 //////////////////////////////////////////////////////////////////////////
 //	SCOPE DISPLAY														//

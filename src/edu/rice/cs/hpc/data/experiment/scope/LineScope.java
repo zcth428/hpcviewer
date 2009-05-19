@@ -55,11 +55,12 @@ public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber, i
 //	this.id = "LineScope";
 }
 
+/*
 public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber)
 {
 	super(experiment, sourceFile, lineNumber, lineNumber, Scope.idMax++);
 //	this.id = "LineScope";
-}
+}*/
 
 
 

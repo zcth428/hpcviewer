@@ -15,6 +15,8 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
+import java.util.ArrayList;
+
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
@@ -28,6 +30,8 @@ import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derive
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.eclipse.jface.viewers.TreeNode;
+
+import sun.tools.tree.ThisExpression;
 
 
  
@@ -123,7 +127,6 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int sc
 
 	// scope tree representation
 	this.treeNode = new Scope.Node(this);
-	//this.treeNode.setUserObject(this);
 	this.stop = false;
 	this.srcCitation = null;
 	this.id = scopeID;
@@ -154,18 +157,12 @@ public Scope(Experiment experiment)
 	idMax++;
 }
 
+/**
+ * Return the unique identifier of this scope
+ */
 public int hashCode() {
-	/*
-	SourceFile objFile = this.getSourceFile();
-	if (objFile != null) {
-		return objFile.getFileID();
-		//return objFile.getName().hashCode()  ^ this.firstLineNumber;
-	} else {
-		System.err.println("ERROR Scope hashcode: "+this.getName());
-		return 0;
-	} */
+	// the id is theoretically unique (for flat view). it is NOT unique for cct or caller view
 	return this.id;
-	//return this.sourceFile.getName().hashCode() ^ this.firstLineNumber;
 }
 
 
@@ -381,13 +378,6 @@ public Scope getParentScope()
 	return ((parent != null) ? parent.getScope() : null);
 }
 
-// Laks 2009.05.05: remove unused methods
-/*
-public String getScopeType()
-{
-	return id;
-}
-*/
 
 /*************************************************************************
  *	Sets the parent scope of this scope.
@@ -433,33 +423,6 @@ public void addSubscope(Scope subscope)
 	this.treeNode.add(subscope.treeNode);
 }
 
-/*************************************************************************
- *	Removes a subscope of the current subscope based on index.
- ************************************************************************/
-	/*
-public void removeSubscope(int index)
-{
-	 this.treeNode.remove(index);
-}
-*/
-
-/*************************************************************************
- *	Removes a subscope of the current subscope based on subscope.
- ************************************************************************/
-	/*
-public boolean removeSubscope(Scope subscope)
-{
-    int numberOfSubscopes = this.getSubscopeCount();
-    int i;
-    for (i=0; i< numberOfSubscopes; i++) {
-	if (subscope == this.getSubscope(i)) {
-	    this.treeNode.remove(i);
-	    return true;
-	}
-    }
-    return false;
-}
-*/
 
 /*************************************************************************
  *	Returns the <code>Scope.Node</code> associated with this scope.
@@ -749,16 +712,15 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
  ************************************************************************/
 
 	// @SuppressWarnings("serial")
-	public static class Node extends TreeNode //TreeNode
+	public static class Node extends TreeNode //TreeNode is a lightweight implementation of DefaultMutableTreeNode
 	{
-		private int nbChildren;
-		
 		/**
 		 * This public variable indicates if the node contains information about the source code file.
 		 * If the boolean is true, then the filename can be retrieved from its scope
 		 * @author laksono
 		 */
 		public boolean hasSourceCodeFile;
+		int nSize;
  		
 		/** Constructs a new scope node. */
 		
@@ -770,39 +732,63 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 		{
 			super(value);
 			this.hasSourceCodeFile = false;
-			nbChildren = 0;
+			nSize = 0;
 		}
 
+		/**
+		 * Simulate DefaultMutableTreeNode's add()
+		 * @param treeNode
+		 */
+		/*
 		public void add(Node treeNode) {
-			// TODO Auto-generated method stub
+			// DO NOT insert a new node if the child is null or already in the tree
 			if ( (treeNode != null) && (treeNode.getParent() != this)) {
+				// child is not in the tree. Let's add it
 				int nbChildren = this.getChildCount();
 				TreeNode []myChildren = new TreeNode[nbChildren+1];
 				if (nbChildren == 0) {
-					
+					// this tree has no child, no action needed
 				} else {
+					// In some platform, arraycopy is fast
 					System.arraycopy(this.getChildren(), 0, myChildren, 0, nbChildren);
 				}
-				treeNode.setParent(this);
-				myChildren[nbChildren] = treeNode;
+				treeNode.setParent(this);			// set the parent
+				myChildren[nbChildren] = treeNode;	// add at the end 
+				// update the children of this tree
 				this.setChildren(myChildren);
 			}
+		} */
+		
+		public void add (Node treeNode) {
+			if ( (treeNode != null) && (treeNode.getParent() != this) ) {
+				TreeNode [] data = this.ensureCapacity(this.nSize + 1);
+				data[this.nSize++] = treeNode;
+				treeNode.setParent(this);	// we need to make sure it will not be added twice
+				this.setChildren(data);
+			}
+			
 		}
 
+		/**
+		 * Simulate DefaultMutableTreeNode's getChildAt
+		 * @param index
+		 * @return
+		 */
 		public TreeNode getChildAt(int index) {
-			// TODO Auto-generated method stub
 			return this.getChildren()[index];
 		}
 
 		/**
-		 * Simulate DefaultMutableTreeNode
+		 * Simulate DefaultMutableTreeNode's getChildCount
 		 * @return
 		 */
 		public int getChildCount() {
 			// TODO Auto-generated method stub
+			return this.nSize;
+			/*
 			if (this.getChildren() == null)
 				return 0;
-			return this.getChildren().length;
+			return this.getChildren().length; */
 		}
 
 
@@ -810,13 +796,65 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 		public Scope getScope()
 		{
 			return (Scope) this.value;
-			//return (Scope) this.getUserObject();
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.TreeNode#getChildren()
+		 */
+		public TreeNode[] getChildren() {
+			if (this.nSize == 0) {
+				return null;
+			} else {
+				TreeNode []oldChildren = super.getChildren();
+				if (oldChildren.length == this.nSize)
+					return oldChildren;
+				else {
+					TreeNode []children = new TreeNode[this.nSize];
+					System.arraycopy(oldChildren, 0, children, 0, this.nSize);
+					return children;
+				}
+			}
 		}
 
-		/*
-		public TreeNode[] getChildren() {
-			return this.children.toArray();
-		} */
+		//////////////////////////////////////////////////////////////////////////////
+		//// 	PRIVATE METHODS
+		//////////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * Make sure the size of the children is big enough. If not, we increment it. 
+		 * @param minCapacity
+		 * @return
+		 */
+	    private TreeNode [] ensureCapacity(int minCapacity) {
+	    	TreeNode []oldData = super.getChildren();
+	    	int oldCapacity = 0; // = getArraySize();
+	    	if (oldData != null)
+	    		oldCapacity = oldData.length;
+	    	if (minCapacity > oldCapacity) {
+	    	    int newCapacity = (oldCapacity * 3)/2 + 1;
+	        	if (newCapacity < minCapacity)
+	        		newCapacity = minCapacity;
+	    	    TreeNode []newData = new TreeNode[newCapacity];
+	    	    if (oldCapacity > 0)
+	    	    	System.arraycopy(oldData, 0, newData, 0, this.nSize);
+	    	    return newData;
+	    	} else 
+	    		return oldData;
+	    }
+	    
+	    /**
+	     * Retrieve the real size of the array (including empty space)
+	     * @return
+	     */
+	    /*
+	    private int getArraySize() {
+	    	TreeNode []children = this.getChildren();
+	    	if (children != null)
+	    		return children.length;
+	    	else
+	    		return 0;
+	    } */
 	};
 	
 }

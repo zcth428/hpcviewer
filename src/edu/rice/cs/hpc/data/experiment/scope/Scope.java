@@ -15,23 +15,23 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
+//import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
-import edu.rice.cs.hpc.data.util.*;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
+//import edu.rice.cs.hpc.data.util.*;
+//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
 
-import javax.swing.tree.DefaultMutableTreeNode;
+//import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.eclipse.jface.viewers.TreeNode;
 
-import sun.tools.tree.ThisExpression;
+//import sun.tools.tree.ThisExpression;
 
 
  

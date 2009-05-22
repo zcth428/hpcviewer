@@ -11,7 +11,6 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
@@ -26,11 +25,9 @@ import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ITreeViewerListener;
-import org.eclipse.jface.viewers.ViewerCell;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -428,21 +425,28 @@ abstract public class BaseScopeView  extends ViewPart {
         }
         
         // Update root scope
-        treeViewer.setInput(myRootScope.getTreeNode());
-        // update the window title
-        this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
-        
-        // update the root scope of the actions !
-        this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, colMetrics);
-        // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
-        // so we need to do it here, manually ... sigh
-        this.objViewActions.resizeColumns();	// resize the column to fit all metrics
-    	
-        // Laks 2009.03.17: select the first scope
-        TreeItem objItem = this.treeViewer.getTree().getItem(1);
-        this.treeViewer.getTree().setSelection(objItem);
-        // reset the button
-        this.objViewActions.checkNodeButtons();
+        Scope.Node nodeRootScope = myRootScope.getTreeNode();
+        if (nodeRootScope.getChildCount() > 0) {
+            treeViewer.setInput(myRootScope.getTreeNode());
+            // update the window title
+            this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
+            
+            // update the root scope of the actions !
+            this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, colMetrics);
+            // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
+            // so we need to do it here, manually ... sigh
+            this.objViewActions.resizeColumns();	// resize the column to fit all metrics
+        	
+            // Laks 2009.03.17: select the first scope
+            TreeItem objItem = this.treeViewer.getTree().getItem(1);
+            this.treeViewer.getTree().setSelection(objItem);
+            // reset the button
+            this.objViewActions.checkNodeButtons();
+        } else {
+        	// empty experiment data
+        	org.eclipse.jface.dialogs.MessageDialog.openError(this.getSite().getShell(), "Error: empty database", 
+        			"The database contains no data");
+        }
    	}
 
     //======================================================

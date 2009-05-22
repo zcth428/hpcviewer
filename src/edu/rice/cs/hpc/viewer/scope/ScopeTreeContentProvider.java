@@ -22,8 +22,10 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     		// normal mode
         	Scope.Node parent = ((Scope.Node) parentElement);
         	Object arrChildren[] = parent.getChildren();
-        	if (arrChildren.length>0)
-        		return arrChildren;
+        	// if the database has empty data, the children is null
+        	if (arrChildren != null)
+        		if (arrChildren.length>0)
+        			return arrChildren;
         	/*
         	int iChildren = parent.getChildCount();
         	Scope.Node []children = new Scope.Node[iChildren];

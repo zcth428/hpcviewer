@@ -26,13 +26,6 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
         	if (arrChildren != null)
         		if (arrChildren.length>0)
         			return arrChildren;
-        	/*
-        	int iChildren = parent.getChildCount();
-        	Scope.Node []children = new Scope.Node[iChildren];
-        	for(int i=0;i<iChildren;i++) {
-        		children[i] = (Scope.Node)parent.getChildAt(i);
-        	}
-        	return children; */
     	} else if(parentElement instanceof ArrayOfNodes) {
     		// flat-tree node
     		ArrayOfNodes listNodes = (ArrayOfNodes) parentElement;

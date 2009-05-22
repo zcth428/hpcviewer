@@ -443,9 +443,10 @@ abstract public class BaseScopeView  extends ViewPart {
             // reset the button
             this.objViewActions.checkNodeButtons();
         } else {
-        	// empty experiment data
-        	org.eclipse.jface.dialogs.MessageDialog.openError(this.getSite().getShell(), "Error: empty database", 
-        			"The database contains no data");
+        	// empty experiment data (it should be a warning instead of an error. The error should be on the profile side).
+        	org.eclipse.jface.dialogs.MessageDialog.openWarning(this.getSite().getShell(), "Warning: empty database", 
+        			"The database contains no data.");
+        	this.objViewActions.showErrorMessage("Warning: empty database.");
         }
    	}
 

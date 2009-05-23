@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -63,5 +64,13 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 			}
 		}
 		return null;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ColumnLabelProvider#getFont(java.lang.Object)
+	 */
+	public Font getFont(Object element) {
+		return Utilities.fontGeneral;
 	}
 }

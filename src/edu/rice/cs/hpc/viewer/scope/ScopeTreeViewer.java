@@ -74,7 +74,7 @@ public class ScopeTreeViewer extends TreeViewer {
 	public TreeViewerColumn addTreeColumn(BaseMetric objMetric, boolean bSorted) {
 		// laks: addendum for column  
     	TreeViewerColumn colMetric = addTreeColumn(objMetric, bSorted, false);
-		colMetric.setLabelProvider(new MetricLabelProvider(objMetric, Utilities.fontMetric));
+		colMetric.setLabelProvider(new MetricLabelProvider(objMetric /*, Utilities.fontMetric*/) );
 		return colMetric;
     }
     

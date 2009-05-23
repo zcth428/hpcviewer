@@ -50,12 +50,7 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
 	public void run(IAction action) {
-		/*String str = objPref.getDefaultString(PreferenceConstants.P_FONT_VIEW);
-		if(str.length() == 0) {
-			objPref.setValue(PreferenceConstants.P_FONT_VIEW, Utilities.fontMetric.toString());
-			// for unknown reason, the above approach does not work, we need to use the default one
-			objPref.setDefault(PreferenceConstants.P_FONT_VIEW, Utilities.fontMetric.toString());
-		}*/
+
 		//Show the preference for hpcviewer
 		PreferenceDialog objDialog = PreferencesUtil.createPreferenceDialogOn(this.objWindow.getShell(), 
 				"edu.rice.cs.hpc.viewer.util.PreferencePage", null, null);
@@ -68,9 +63,10 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 				double fThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
 				ScopeActions.fTHRESHOLD = fThreshold;
 				// get the font for metrics columns
-				FontData objFont = PreferenceConverter.getFontData(objPref, PreferenceConstants.P_FONT_VIEW);
-				//System.out.println("Preference-update:"+objFont.toString());
-				Utilities.fontMetric = new Font(null, objFont);
+				FontData []objFontsMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
+				FontData []objFontsGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
+				Utilities.setFontMetric(this.objWindow, objFontsMetric, objFontsGeneric);
+
 				ExperimentManager.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
 			}
 		}

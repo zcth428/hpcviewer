@@ -9,5 +9,8 @@ public class PreferenceConstants {
 
 	public static final String P_THRESHOLD = "ThresholdPreference";
 	
-	public static final String P_FONT_VIEW = "fontMetricViewPreference";
+	public static final String P_FONT_METRIC = "fontMetricViewPreference";
+
+	public static final String P_FONT_GENERIC = "fontGenericViewPreference";
+
 }

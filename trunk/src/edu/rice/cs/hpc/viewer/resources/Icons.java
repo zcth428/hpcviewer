@@ -25,6 +25,8 @@ public class Icons {
 	public Image imgColumns;
 	public Image imgFlame;
 	public Image imgExtAddMetric;
+	public Image imgFontBigger;
+	public Image imgFontSmaller;
 	
 	//-------------------------- image descriptor
 	public ImageDescriptor imdCallFrom;
@@ -39,6 +41,8 @@ public class Icons {
 	public ImageDescriptor imdColumns;
 	public ImageDescriptor imdFlame;
 	public ImageDescriptor imdExtAddMetric;
+	public ImageDescriptor imdFontBigger;
+	public ImageDescriptor imdFontSmaller;
 	
 	static private Icons __singleton=null;
 	
@@ -55,6 +59,8 @@ public class Icons {
 		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
 		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"flameIcon.gif");
 		this.imdExtAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FnMetric.gif");
+		this.imdFontBigger = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FontBigger.gif");
+		this.imdFontSmaller = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FontSmaller.gif");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();
@@ -68,6 +74,8 @@ public class Icons {
 		imgColumns = this.imdColumns.createImage();
 		this.imgFlame = this.imdFlame.createImage();
 		this.imgExtAddMetric = this.imdExtAddMetric.createImage();
+		this.imgFontBigger = this.imdFontBigger.createImage();
+		this.imgFontSmaller = this.imdFontSmaller.createImage();
 	}
 	
 	public void disposeIcon() {
@@ -83,6 +91,9 @@ public class Icons {
 			imgAddMetric.dispose();
 			this.imgColumns.dispose();
 			this.imgFlame.dispose();
+			this.imgExtAddMetric.dispose();
+			this.imgFontBigger.dispose();
+			this.imgFontSmaller.dispose();
 		} catch (java.lang.Exception e) {
 			e.printStackTrace();
 		}

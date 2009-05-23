@@ -29,12 +29,15 @@ public class PreferencePage
 
 	private DirectoryFieldEditor objDirectory;
 	private StringFieldEditor objThreshold;
-	private FontFieldEditor objFont;
+	private FontFieldEditor objFontMetric;
+	private FontFieldEditor objFontGeneric;
 	
+	/**
+	 * 
+	 */
 	public PreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-		//setDescription("hpcviewer Preferences");
 	}
 	
 	/**
@@ -57,13 +60,20 @@ public class PreferencePage
 		objThreshold.setStringValue(String.valueOf(ScopeActions.fTHRESHOLD));
 		addField(objThreshold);
 		
-		this.objFont = new FontFieldEditor(PreferenceConstants.P_FONT_VIEW,
+		this.objFontMetric = new FontFieldEditor(PreferenceConstants.P_FONT_METRIC,
 				"Font for metric columns", getFieldEditorParent());
+		addField(this.objFontMetric);
+		this.objFontGeneric = new FontFieldEditor(PreferenceConstants.P_FONT_GENERIC,
+				"Font for view/editor", getFieldEditorParent());
 		
-		addField(this.objFont);
+		addField(this.objFontGeneric);
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.preference.FieldEditorPreferencePage#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+	 */
 	public void propertyChange(PropertyChangeEvent event) {
 		Object o = event.getSource();
 		System.out.println("PP: "+o.getClass() + " " + event.getNewValue());

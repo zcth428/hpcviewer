@@ -34,6 +34,10 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     	return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
+     */
     public Object getParent(Object element) {
     	if(element instanceof Scope.Node)
             return ((Scope.Node) element).getParent();
@@ -41,6 +45,10 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
     		return null;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
+     */
     public boolean hasChildren(Object element) {
     	if(element instanceof Scope.Node)
             return ((Scope.Node) element).hasChildren(); // !((Scope.Node) element).isLeaf();
@@ -63,5 +71,9 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
             this.viewer = (TreeViewer)viewer;
     }
  
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IContentProvider#dispose()
+     */
     public void dispose() {}
 }

@@ -230,7 +230,7 @@ abstract public class BaseScopeView  extends ViewPart {
 		
 		// prepare the font for metric columns: it is supposed to be fixed font
 		Display display = Display.getCurrent();
-		Utilities.setFontMetric(display);
+		//Utilities.setFontMetric(display);
 		
 		// ----- 03.21.2008 Laks: add virtual library for better memory consumption
     	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL);

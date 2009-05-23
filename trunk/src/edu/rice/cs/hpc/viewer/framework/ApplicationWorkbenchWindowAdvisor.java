@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Shell;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private ExperimentData dataEx ;
@@ -68,7 +69,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
+
 		// -------------------
+		Utilities.setFontMetric(windowCurrent.getShell().getDisplay());
+
 		// see if the argument provides the database to load
 		if(this.dataEx != null) {
 			// possibly we have express the experiment file in the command line

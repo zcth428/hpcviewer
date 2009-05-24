@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
@@ -50,11 +51,11 @@ public class Utilities {
 	static public Color COLOR_TOP;
 	
 	static private Display objDisplay;	
-	//static private Font FNT_TOP_ROW = null;
 	static private int iFontHeight = 0;
 	
 	/**
 	 * Set the font for the metric columns (it may be different to other columns)
+	 * This method has to be called first before others
 	 * @param display
 	 */
 	static public void setFontMetric(Display display) {
@@ -68,7 +69,6 @@ public class Utilities {
 			objFontMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
 			objFontGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
 		} else {
-			//int iHeight = display.getSystemFont().getFontData()[0].getHeight();
 			objFontMetric = display.getSystemFont().getFontData();
 			objFontGeneric = objFontMetric;
 		}
@@ -105,7 +105,7 @@ public class Utilities {
 		}
 		if (isFontChanged) {
 			// a font has been changed. we need to refresh the view
-			resetView (window);
+			resetAllViews (window);
 		}
 	}
 	
@@ -113,24 +113,54 @@ public class Utilities {
 	 * Refresh all the views 
 	 * @param window: the target window
 	 */
-	static private void resetView(IWorkbenchWindow window) {
+	static private void resetAllViews(IWorkbenchWindow window) {
 		ExperimentManager objManager = ExperimentData.getInstance(window).getExperimentManager();
 		if(objManager != null) {
 			ExperimentView objView = objManager.getExperimentView();
-			BaseScopeView arrViews[] = objView.getViews();
-			TreeItemManager objItemManager = new TreeItemManager();
-			// refresh all the views
-			for(int i=0;i<arrViews.length;i++) {
-				TreeViewer tree = arrViews[i].getTreeViewer();
-				// save the context first
-				objItemManager.saveContext(tree);
-				// refresh
-				tree.refresh();
-				// restore the context
-				objItemManager.restoreContext(tree);
+			final BaseScopeView arrViews[] = objView.getViews();
+			final TreeItemManager objItemManager = new TreeItemManager();
+			IWorkbenchPart part = window.getPartService().getActivePart();
+
+			if (part instanceof BaseScopeView) {
+				// let refresh the active view first, then we refresh other views via helper thread
+				final BaseScopeView objActiveView = (BaseScopeView) part;
+				resetView  (objItemManager, objActiveView.getTreeViewer() );
+				
+				// using helper thread to refresh other views
+				window.getShell().getDisplay().asyncExec( new Runnable() {
+					public void run() {
+						// refresh all the views
+						for(int i=0;i<arrViews.length;i++) {
+							if (objActiveView != arrViews[i]) {
+								TreeViewer tree = arrViews[i].getTreeViewer();
+								// reset the view
+								Utilities.resetView(objItemManager, tree);
+							} else {
+								//System.out.println("view "+objActiveView.getTitle()+" has been reset ");
+							}
+						}
+					}
+				});
+			} else {
+				System.err.println("Error while changing font: the active view is not an instance of BaseScopeView ! " + part);
 			}
 		}
 
+	}
+	
+	/**
+	 * refresh a particular view
+	 * To save memory allocation, we ask an instance of TreeItemManager
+	 * @param objItemManager
+	 * @param tree
+	 */
+	static private void resetView ( TreeItemManager objItemManager, TreeViewer tree) {
+		// save the context first
+		objItemManager.saveContext(tree);
+		// refresh
+		tree.refresh();
+		// restore the context
+		objItemManager.restoreContext(tree);
 	}
 	
 	/**
@@ -188,13 +218,7 @@ public class Utilities {
     	TreeItem item = new TreeItem(treeViewer.getTree(), SWT.BOLD, 0);
     	if(imgScope != null)
     		item.setImage(0,imgScope);
-    	// Laksono 2009.03.09: we need to initialize the font for scope on the top row
-    	/*if (FNT_TOP_ROW == null) {
-        	Font fntOrig = item.getFont();	// retrieve the original font
-        	FontData objFontData = fntOrig.getFontData()[0];
-        	//objFontData.setStyle(SWT.BOLD);
-        	Utilities.FNT_TOP_ROW = new Font(treeViewer.getTree().getDisplay(), objFontData);
-    	} */
+
     	// Laksono 2009.03.09: add background for the top row to distinguish with other scopes
     	item.setBackground(Utilities.COLOR_TOP);
     	// make monospace font for all metric columns

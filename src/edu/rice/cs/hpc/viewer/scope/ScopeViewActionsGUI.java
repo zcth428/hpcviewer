@@ -454,19 +454,21 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
         	});
     	new ToolItem(toolbar, SWT.SEPARATOR);
     	
-    	// Text fonts
+    	// ------------ Text fonts
+    	// bigger font
     	ToolItem tiFontBigger = new ToolItem (toolbar, SWT.PUSH);
     	tiFontBigger.setImage(iconsCollection.imgFontBigger);
-    	tiFontBigger.setToolTipText("Change the font size: bigger");
+    	tiFontBigger.setToolTipText("Bigger font");
     	tiFontBigger.addSelectionListener( new SelectionAdapter() {
       	  public void widgetSelected(SelectionEvent e) {
       		  Utilities.increaseFont(objWindow);
     	  }
     	});
 
+    	// smaller font
     	ToolItem tiFontSmaller = new ToolItem (toolbar, SWT.PUSH);
     	tiFontSmaller.setImage(iconsCollection.imgFontSmaller);
-    	tiFontSmaller.setToolTipText("Change the font size: smaller");
+    	tiFontSmaller.setToolTipText("Smaller font");
     	tiFontSmaller.addSelectionListener( new SelectionAdapter() {
       	  public void widgetSelected(SelectionEvent e) {
       		  Utilities.DecreaseFont(objWindow);

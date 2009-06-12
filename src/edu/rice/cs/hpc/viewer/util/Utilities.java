@@ -10,6 +10,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Color;
@@ -167,7 +168,7 @@ public class Utilities {
 	 * Update the font for metric pane with one single font (just take the size)
 	 * @param objFontData
 	 */
-	static public void setFontMetric(IWorkbenchWindow window, int iFontSize /*FontData objFontData[]*/) {
+	static private void setFontMetric(IWorkbenchWindow window, int iFontSize) {
 		if (iFontSize != Utilities.iFontHeight) {
 			Utilities.iFontHeight = iFontSize;
 			FontData []myFontGeneric = Utilities.fontGeneral.getFontData();
@@ -176,18 +177,17 @@ public class Utilities {
 			myFontMetric[0].setHeight(iFontSize);
 			
 			setFontMetric(window, myFontMetric, myFontGeneric);
+			
+			ExperimentManager objManager = ExperimentData.getInstance(window).getExperimentManager();
+			if(objManager != null) {
+				ExperimentView objView = objManager.getExperimentView();
+				final BaseScopeView arrViews[] = objView.getViews();
+				for (int i=0; i<arrViews.length; i++) {
+					//arrViews[i].getTreeViewer().getTree()
+				}
+			}
 		}
 		
-		// Usually font data has only 1 element (on X it can multiple )
-		/* int nbFontData = myFontData.length;
-		
-		if(!myFontData[0].equals(objFontData[0])) {
-			Utilities.fontMetric = new Font(Utilities.objDisplay, objFontData);
-			objFontData[0].setName( myFontData[0].getName() );	// do not change the name
-			Utilities.fontGeneral = new Font(Utilities.objDisplay, objFontData);
-			
-			resetView( window );
-		} */
 	}
 	
 	/**
@@ -196,6 +196,9 @@ public class Utilities {
 	 */
 	static public void increaseFont(IWorkbenchWindow window) {
 		Utilities.setFontMetric(window, Utilities.iFontHeight+1);
+		FontData []objFontData = JFaceResources.getHeaderFontDescriptor().increaseHeight(+1).getFontData();
+		JFaceResources.getFontRegistry().put(JFaceResources.HEADER_FONT, objFontData);
+
 	}
 
 	/**
@@ -204,6 +207,8 @@ public class Utilities {
 	 */
 	static public void DecreaseFont(IWorkbenchWindow window) {
 		Utilities.setFontMetric(window, Utilities.iFontHeight-1);
+		FontData []objFontData = JFaceResources.getHeaderFontDescriptor().increaseHeight(-1).getFontData();
+		JFaceResources.getFontRegistry().put(JFaceResources.HEADER_FONT, objFontData);
 	}
 
 	/**	

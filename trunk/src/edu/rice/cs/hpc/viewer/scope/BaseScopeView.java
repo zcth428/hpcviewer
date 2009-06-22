@@ -11,6 +11,9 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
@@ -28,6 +31,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -45,7 +49,8 @@ abstract public class BaseScopeView  extends ViewPart {
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
 	private ScopeViewActions objViewActions;	// actions for this scope view
-    
+	private Clipboard cb;
+	private TreeViewerColumn []colMetrics;
 	/**
 	 * bar composite for placing toolbar and tool items
 	 */
@@ -124,11 +129,19 @@ abstract public class BaseScopeView  extends ViewPart {
      */
     private void fillContextMenu(IMenuManager mgr) {
     	Scope.Node node = this.getSelectedItem();
+        final Action acCopy = new Action("Copy") {
+        	public void run() {
+        		copyToClipboard();
+        	}
+        }; 
     	/**
     	 * Fix bug which appears when the user wants to see the context menu of
     	 * the top row of the table (the aggregate metrics)
     	 */
-    	if(node == null) return;
+    	if(node == null) {
+    		mgr.add(acCopy);
+    		return;
+    	}
     	// ---- zoomin
         mgr.add(acZoomin);
         acZoomin.setEnabled(this.objViewActions.shouldZoomInBeEnabled(node));
@@ -144,36 +157,52 @@ abstract public class BaseScopeView  extends ViewPart {
         // ---------- show the source code
         
         // show the editor source code
-        	String sMenuTitle ;
-        	if(scope instanceof FileScope) {
-        		sMenuTitle = "Show " + scope.getSourceFile().getName();
-        	} else
-        		sMenuTitle= "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
-        	ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, scope){
-            	public void run() {
-            		displayFileEditor(this.scope);
-            	}
-        	};
-        	acShowCode.setEnabled(node.hasSourceCodeFile);
-            mgr.add(acShowCode);
+        String sMenuTitle ;
+        if(scope instanceof FileScope) {
+        	sMenuTitle = "Show " + scope.getSourceFile().getName();
+        } else
+        	sMenuTitle= "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
+        ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, scope){
+        	public void run() {
+        		displayFileEditor(this.scope);
+        	}
+        };
+        acShowCode.setEnabled(node.hasSourceCodeFile);
+        mgr.add(acShowCode);
 
-        
+
         // show the call site in case this one exists
         if(scope instanceof CallSiteScope) {
         	// get the call site scope
         	CallSiteScope callSiteScope = (CallSiteScope) scope;
         	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
         	// setup the menu
-            	sMenuTitle = "Callsite "+lineScope.getToolTip();
-            	ScopeViewTreeAction acShowCallsite = new ScopeViewTreeAction(sMenuTitle, lineScope){
-                	public void run() {
-                		displayFileEditor(this.scope);
-                	}
-                }; 
-            	// do not show up in the menu context if the callsite does not exist
-                acShowCallsite.setEnabled(Utilities.isFileReadable(lineScope));
-                mgr.add(acShowCallsite);
+        	sMenuTitle = "Callsite "+lineScope.getToolTip();
+        	ScopeViewTreeAction acShowCallsite = new ScopeViewTreeAction(sMenuTitle, lineScope){
+        		public void run() {
+        			displayFileEditor(this.scope);
+        		}
+        	}; 
+        	// do not show up in the menu context if the callsite does not exist
+        	acShowCallsite.setEnabled(Utilities.isFileReadable(lineScope));
+        	mgr.add(acShowCallsite);
         }
+
+        // Laks 2009.06.22: add new feature to copy selected line to the clipboard
+        mgr.add(acCopy);
+    }
+    
+    /**
+     * Procedure to copy the selected items into string clipboard
+     */
+    private void copyToClipboard() {
+    	// only selected items that are copied into clipboard
+    	TreeItem []itemsSelected = this.treeViewer.getTree().getSelection();
+    	// convert the table into a string
+    	String sText = this.objViewActions.getContent(itemsSelected, colMetrics, "\t");
+    	// send the string into clipboard
+    	TextTransfer textTransfer = TextTransfer.getInstance();
+		cb.setContents(new Object[]{sText}, new Transfer[]{textTransfer});
     }
     
     /**
@@ -233,7 +262,8 @@ abstract public class BaseScopeView  extends ViewPart {
 		//Utilities.setFontMetric(display);
 		
 		// ----- 03.21.2008 Laks: add virtual library for better memory consumption
-    	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL);
+		// Laks 2009.06.22: add multi-selection for enabling copying into clipboard 
+    	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.MULTI);
     	// set the attributes
     	ScopeTreeContentProvider treeContentProvider;
     	treeContentProvider = new ScopeTreeContentProvider(); 
@@ -346,6 +376,7 @@ abstract public class BaseScopeView  extends ViewPart {
 		      }
 		}); 
 		
+		this.cb = new Clipboard(this.getSite().getShell().getDisplay());
 	}
     
     /**
@@ -409,8 +440,10 @@ abstract public class BaseScopeView  extends ViewPart {
         // prepare the data for the sorter class for tree
         this.sorterTreeColummn.setMetric(myExperiment.getMetric(0));
 
+        // force garbage collector to remove the old data
+        this.colMetrics = null;
         // dirty solution to update titles
-        TreeViewerColumn []colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
+        this.colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
         {
             // Update metric title labels
             String[] titles = new String[myExperiment.getMetricCount()+1];

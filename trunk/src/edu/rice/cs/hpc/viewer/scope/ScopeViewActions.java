@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -193,15 +194,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	// ----------------------------- ACTIONS ---------------------------------------------
 	//====================================================================================
 
-	/*
-	public void showProcessingMessage() {
-		this.objShell.getDisplay().asyncExec(new Runnable(){
-			public void run() {
-				objActionsGUI.showWarningMessagge("... Processing .... Please wait ...");
-			}
-		});
-	}
-	*/
 	/**
 	 * Class to restoring the background of the message bar by waiting for 5 seconds
 	 * TODO: we need to parameterize the timing for the wait
@@ -263,8 +255,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * show the hot path below the selected node in the tree
 	 */
 	public void showHotCallPath() {
-		// preparing the message
-		//this.showProcessingMessage();
 		// find the selected node
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection)) {
@@ -342,7 +332,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		objZoom.zoomIn(current, objInputNode);
 		Scope.Node nodeSelected = this.getSelectedNode();
 		this.checkStates(nodeSelected);
-		//this.checkButtons(nodeSelected);
 	}
 	
 	/**
@@ -354,8 +343,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		// therefore we need to check again the state of the buttons
 		Scope.Node nodeSelected = this.getSelectedNode();
 		this.checkStates(nodeSelected);
-		//this.checkButtons(nodeSelected);
-		//this.objActionsGUI.checkZoomButtons(nodeSelected); // no node has been selected ?
 	}
 	
 	/**
@@ -424,7 +411,83 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	public void resizeColumns() {
 		this.objActionsGUI.resizeTableColumns();
 	}
+
+	/**
+	 * Retrieve the content of the table into a string
+	 * @param items (list of items to be exported)
+	 * @param colMetrics (hidden column not included)
+	 * @param sSeparator (separator)
+	 * @return String: content of the table
+	 */
+	public String getContent(TreeItem []items, TreeViewerColumn colMetrics[], String sSeparator) {
+    	StringBuffer sbText = new StringBuffer();
+    	
+    	// get all selected items
+    	for (int i=0; i< items.length; i++) {
+    		TreeItem objItem = items[i];
+    		Object o = objItem.getData();
+    		// let get the metrics if the selected item is a scope node
+    		if (o instanceof Scope.Node) {
+    			Scope.Node objNode = (Scope.Node) o;
+    			Scope objScope = objNode.getScope();
+    			this.getContent(objScope, colMetrics, sSeparator, sbText);
+    		} else {
+    			// in case user click the first row, we need a special treatment
+    			// first row of the table is supposed to be a sub-header, but at the moment we allow user
+    			//		to do anything s/he wants.
+    			ISelection objSelect = treeViewer.getSelection();
+    			TreeSelection objTreeSelect = (TreeSelection) objSelect;
+    			String sElements[] = (String []) objTreeSelect.getFirstElement();
+    			sbText.append(sElements[0]);
+    			for (int j=0; j<colMetrics.length; j++ ) {
+    				// do not copy hidden columns
+    				if (colMetrics[j].getColumn().getWidth()>0) {
+    					sbText.append(sSeparator + sElements[j+1]);
+    				}
+    			}
+    		}
+    		sbText.append("\n");
+    	}
+    	return sbText.toString();
+	}
 	
+	/**
+	 * private function to copy a scope node into a buffer string
+	 * @param objScope
+	 * @param colMetrics
+	 * @param sSeparator
+	 * @param sbText
+	 */
+	private void getContent( Scope objScope, TreeViewerColumn colMetrics[], String sSeparator, StringBuffer sbText ) {
+    	sbText.append( objScope.getName() );
+		for(int j=0; j<colMetrics.length; j++) {
+			if (colMetrics[j].getColumn().getWidth()>0) {
+				// the column is not hidden
+				BaseMetric metric = objScope.getExperiment().getMetric(j);
+				sbText.append(sSeparator + metric.getMetricTextValue(objScope));
+			}
+		}
+	}
+	
+	/**
+	 * Function to copy all visible nodes into a buffer string
+	 * @param elements
+	 * @param colMetrics
+	 * @param sSeparator
+	 * @return
+	 */
+	public String getContent(Object []elements, TreeViewerColumn colMetrics[], String sSeparator) {
+    	StringBuffer sbText = new StringBuffer();
+		for (int i=0; i<elements.length; i++ ) {
+			Object o = elements[i];
+			if (o instanceof Scope.Node) {
+				Scope.Node objNode = (Scope.Node) o;
+				this.getContent(objNode.getScope(), colMetrics, sSeparator, sbText);
+			}
+			sbText.append("\n");
+		}
+		return sbText.toString();
+	}
 	//--------------------------------------------------------------------------
 	// BUTTONS CHECK
 	//--------------------------------------------------------------------------
@@ -448,20 +511,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     		return false;
     	else
     		return objZoom.canZoomOut();
-    	//return this.stackRootTree.size()>0;
     }
     
-    /**
-     * Check if the buttons in the toolbar should be enable/disable
-     * @param node
-     */
-    /*
-    public void checkButtons(Scope.Node node) {
-    	boolean bCanZoomIn = objZoom.canZoomIn(node);
-		objActionsGUI.enableZoomIn( bCanZoomIn );
-		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );
-		objActionsGUI.enableHotCallPath( bCanZoomIn );
-    } */
 
     /**
      * Check if zooms and hot-path button need to be disabled or not
@@ -474,7 +525,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     		this.objActionsGUI.disableNodeButtons();
     	else
     		this.checkStates(nodeSelected);
-    		//checkButtons(node);
     }
     
     /**

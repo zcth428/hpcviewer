@@ -3,15 +3,17 @@
  */
 package edu.rice.cs.hpc.viewer.scope;
 
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.layout.*;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.CoolItem;
@@ -21,11 +23,9 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.graphics.Color;
-//import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.IViewSite;
+
 import org.eclipse.ui.IWorkbenchWindow;
-//import org.eclipse.jface.action.IStatusLineManager;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -35,8 +35,6 @@ import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
-//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 
 /**
@@ -65,6 +63,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	private ToolItem tiHotCallPath;
 	private ToolItem tiAddExtMetric;
 	private Label lblMessage;
+	private Clipboard cb;
 	
 	//------------------------------------DATA
 	protected Scope.Node nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
@@ -94,6 +93,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 		this.clrYELLOW = new Color(shell.getDisplay(),255,255,0);
 		this.clrRED = new Color(shell.getDisplay(), 250,128,114);
 		this.clrGreen = new Color(shell.getDisplay(), 153,255,153);
+		this.cb = new Clipboard( objShell.getDisplay() );
 	}
 
 	/**
@@ -474,7 +474,17 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
       		  Utilities.DecreaseFont(objWindow);
     	  }
     	});
-        // set the coolitem
+    	/*
+    	ToolItem tiCSV = new ToolItem(toolbar, SWT.PUSH);
+    	tiCSV.setImage( iconsCollection.imgExportCSV );
+    	tiCSV.setToolTipText( "Export the current view into a comma separated value file" );
+    	tiCSV.addSelectionListener( new SelectionAdapter() {
+    		public void widgetSelected(SelectionEvent e) {
+    			exportCSV();
+    		}
+    	});
+    	*/
+    	// set the coolitem
     	this.createCoolItem(coolbar, toolbar);
     	
 
@@ -493,4 +503,11 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 		this.tiZoomout.setEnabled(enabled);
 	}
     
+	private void exportCSV() {
+		Object elements[] = treeViewer.getVisibleExpandedElements();
+		String sText = objViewActions.getContent(elements, colMetrics, ",");
+    	TextTransfer textTransfer = TextTransfer.getInstance();
+		cb.setContents(new Object[]{sText}, new Transfer[]{textTransfer});
+		
+	}
 }

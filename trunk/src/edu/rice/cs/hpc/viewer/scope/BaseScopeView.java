@@ -49,7 +49,7 @@ abstract public class BaseScopeView  extends ViewPart {
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
 	private ScopeViewActions objViewActions;	// actions for this scope view
-	private Clipboard cb;
+	private Clipboard cb = null;
 	private TreeViewerColumn []colMetrics;
 	/**
 	 * bar composite for placing toolbar and tool items
@@ -202,6 +202,8 @@ abstract public class BaseScopeView  extends ViewPart {
     	String sText = this.objViewActions.getContent(itemsSelected, colMetrics, "\t");
     	// send the string into clipboard
     	TextTransfer textTransfer = TextTransfer.getInstance();
+    	if (this.cb == null)
+    		this.cb = new Clipboard(this.getSite().getShell().getDisplay());
 		cb.setContents(new Object[]{sText}, new Transfer[]{textTransfer});
     }
     
@@ -376,7 +378,6 @@ abstract public class BaseScopeView  extends ViewPart {
 		      }
 		}); 
 		
-		this.cb = new Clipboard(this.getSite().getShell().getDisplay());
 	}
     
     /**

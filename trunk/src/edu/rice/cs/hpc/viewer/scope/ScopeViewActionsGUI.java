@@ -443,8 +443,6 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	  }
     	});
     	
-    	new ToolItem(toolbar, SWT.SEPARATOR);
-    	
     	this.tiAddExtMetric = new ToolItem(toolbar, SWT.PUSH);
     	tiAddExtMetric.setImage(iconsCollection.imgExtAddMetric);
     	tiAddExtMetric.setToolTipText("Add a new derived metric");
@@ -454,6 +452,8 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     		}
     	});
 
+    	new ToolItem(toolbar, SWT.SEPARATOR);
+    	
     	this.tiColumns = new ToolItem(toolbar, SWT.PUSH);
     	tiColumns.setImage(iconsCollection.imgColumns);
     	tiColumns.setToolTipText("Hide/show columns");
@@ -463,6 +463,16 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
         	  }
         	});
     	new ToolItem(toolbar, SWT.SEPARATOR);
+    	
+    	// ------------------------------- export CSV ------
+    	ToolItem tiCSV = new ToolItem(toolbar, SWT.PUSH);
+    	tiCSV.setImage( iconsCollection.imgExportCSV );
+    	tiCSV.setToolTipText( "Export the current view into a comma separated value file" );
+    	tiCSV.addSelectionListener( new SelectionAdapter() {
+    		public void widgetSelected(SelectionEvent e) {
+    			exportCSV();
+    		}
+    	});
     	
     	// ------------ Text fonts
     	// bigger font
@@ -483,16 +493,6 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
       	  public void widgetSelected(SelectionEvent e) {
       		  Utilities.DecreaseFont(objWindow);
     	  }
-    	});
-    	
-    	// ------------------------------- export CSV ------
-    	ToolItem tiCSV = new ToolItem(toolbar, SWT.PUSH);
-    	tiCSV.setImage( iconsCollection.imgExportCSV );
-    	tiCSV.setToolTipText( "Export the current view into a comma separated value file" );
-    	tiCSV.addSelectionListener( new SelectionAdapter() {
-    		public void widgetSelected(SelectionEvent e) {
-    			exportCSV();
-    		}
     	});
     	
     	// set the coolitem

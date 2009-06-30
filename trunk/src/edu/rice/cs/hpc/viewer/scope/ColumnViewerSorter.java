@@ -57,20 +57,8 @@ public class ColumnViewerSorter extends ViewerComparator {
 				// before sorting, we need to check if the first row is an element header 
 				// something like "aggregate metrics" or zoom-in item
 				TreeItem item = ColumnViewerSorter.this.viewer.getTree().getItem(0);
-				String []sText= null; // have to do this to avoid error in compilation;
 				Image imgItem = item.getImage(0);
-				if(item.getData() instanceof Scope.Node) {
-					// the table has been zoomed-out
-				} else {
-					// the table is in original form or flattened or zoom-in
-					Object o = item.getData();
-					if(o != null) {
-						Object []arrObj = (Object []) o;
-						if(arrObj[0] instanceof String) {
-							sText = (String[]) item.getData(); 
-						}
-					}
-				}
+				String []sText = Utilities.getTopRowItems(ColumnViewerSorter.this.viewer);
 				if( ColumnViewerSorter.this.viewer.getComparator() != null ) {
 					if( ColumnViewerSorter.this.viewer.getComparator() == ColumnViewerSorter.this ) {
 						int tdirection = ColumnViewerSorter.this.direction;

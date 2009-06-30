@@ -27,6 +27,7 @@ public class Icons {
 	public Image imgExtAddMetric;
 	public Image imgFontBigger;
 	public Image imgFontSmaller;
+	public Image imgExportCSV;
 	
 	//-------------------------- image descriptor
 	public ImageDescriptor imdCallFrom;
@@ -43,6 +44,7 @@ public class Icons {
 	public ImageDescriptor imdExtAddMetric;
 	public ImageDescriptor imdFontBigger;
 	public ImageDescriptor imdFontSmaller;
+	public ImageDescriptor imdExportCSV;
 	
 	static private Icons __singleton=null;
 	
@@ -61,6 +63,7 @@ public class Icons {
 		this.imdExtAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FnMetric.gif");
 		this.imdFontBigger = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FontBigger.gif");
 		this.imdFontSmaller = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FontSmaller.gif");
+		this.imdExportCSV = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "savecsv.gif");
 		
 		imgCallFrom = this.imdCallFrom.createImage();
 		imgCallTo = this.imdCallTo.createImage();
@@ -76,6 +79,7 @@ public class Icons {
 		this.imgExtAddMetric = this.imdExtAddMetric.createImage();
 		this.imgFontBigger = this.imdFontBigger.createImage();
 		this.imgFontSmaller = this.imdFontSmaller.createImage();
+		this.imgExportCSV = this.imdExportCSV.createImage();
 	}
 	
 	public void disposeIcon() {
@@ -94,6 +98,8 @@ public class Icons {
 			this.imgExtAddMetric.dispose();
 			this.imgFontBigger.dispose();
 			this.imgFontSmaller.dispose();
+			this.imgExportCSV.dispose();
+			
 		} catch (java.lang.Exception e) {
 			e.printStackTrace();
 		}

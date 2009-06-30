@@ -35,6 +35,7 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
+import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 
 /**
  * Class providing auxiliary utilities methods.
@@ -236,6 +237,28 @@ public class Utilities {
     	item.setData(arrText);
 	}
 
+	/**
+	 * Retrieve the top row items into a list of string
+	 * @param treeViewer
+	 * @return
+	 */
+	public static String[] getTopRowItems( TreeViewer treeViewer ) {
+		TreeItem item = treeViewer.getTree().getItem(0);
+		String []sText= null; // have to do this to avoid error in compilation;
+		if(item.getData() instanceof Scope.Node) {
+			// the table has been zoomed-out
+		} else {
+			// the table is in original form or flattened or zoom-in
+			Object o = item.getData();
+			if(o != null) {
+				Object []arrObj = (Object []) o;
+				if(arrObj[0] instanceof String) {
+					sText = (String[]) item.getData(); 
+				}
+			}
+		}
+		return sText;
+	}
 	/**
 	 * Return an image depending on the scope of the node.
 	 * The criteria is based on ScopeTreeCellRenderer.getScopeNavButton()

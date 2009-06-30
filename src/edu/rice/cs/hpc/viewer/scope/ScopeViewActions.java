@@ -221,7 +221,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      }
 	
 	public void showInfoMessage(String sMsg) {
-		this.objActionsGUI.showInfoMessgae(sMsg);
+		this.objActionsGUI.showInfoMessage(sMsg);
 		// remove the msg in 5 secs
 		RestoreMessageThread thrRestoreMessage = new RestoreMessageThread();
 		thrRestoreMessage.start();
@@ -435,16 +435,9 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     			// in case user click the first row, we need a special treatment
     			// first row of the table is supposed to be a sub-header, but at the moment we allow user
     			//		to do anything s/he wants.
-    			ISelection objSelect = treeViewer.getSelection();
-    			TreeSelection objTreeSelect = (TreeSelection) objSelect;
-    			String sElements[] = (String []) objTreeSelect.getFirstElement();
+    			String sElements[] = (String []) o; 
     			sbText.append(sElements[0]);
-    			for (int j=0; j<colMetrics.length; j++ ) {
-    				// do not copy hidden columns
-    				if (colMetrics[j].getColumn().getWidth()>0) {
-    					sbText.append(sSeparator + sElements[j+1]);
-    				}
-    			}
+    			sbText.append( this.treeViewer.getTextBasedOnColumnStatus(sElements, sSeparator, 1, 0) );
     		}
     		sbText.append("\n");
     	}
@@ -476,18 +469,23 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * @param sSeparator
 	 * @return
 	 */
-	public String getContent(Object []elements, TreeViewerColumn colMetrics[], String sSeparator) {
+	public String getContent(TreePath []elements, TreeViewerColumn colMetrics[], String sSeparator) {
     	StringBuffer sbText = new StringBuffer();
 		for (int i=0; i<elements.length; i++ ) {
-			Object o = elements[i];
-			if (o instanceof Scope.Node) {
-				Scope.Node objNode = (Scope.Node) o;
-				this.getContent(objNode.getScope(), colMetrics, sSeparator, sbText);
+			TreePath item = elements[i];
+			int nbSegments = item.getSegmentCount();
+			for ( int j=0; j<nbSegments; j++ ) {
+				Object o = item.getSegment(j);
+				if (o instanceof Scope.Node) {
+					Scope.Node objNode = (Scope.Node) o;
+					this.getContent(objNode.getScope(), colMetrics, sSeparator, sbText);
+				}
 			}
 			sbText.append("\n");
 		}
 		return sbText.toString();
 	}
+	
 	//--------------------------------------------------------------------------
 	// BUTTONS CHECK
 	//--------------------------------------------------------------------------
@@ -498,7 +496,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 */
     public boolean shouldZoomInBeEnabled(Scope.Node node) {
     	return this.objZoom.canZoomIn(node);
-    	//return (objActionsGUI.shouldZoomInBeEnabled(node));
     }
     
     /**
@@ -542,6 +539,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      * @param nodeSelected
      */
     public abstract void checkStates ( Scope.Node nodeSelected );
+    
+    
     //===========================================================================
     //------------------- ADDITIONAL CLASSES ------------------------------------
     //===========================================================================

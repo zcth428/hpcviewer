@@ -3,6 +3,11 @@
  */
 package edu.rice.cs.hpc.viewer.scope;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -17,11 +22,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.CoolItem;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Label;
 
@@ -50,7 +59,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	// ------ DATA ----------------------------------------
     //======================================================
 	// GUI STUFFs
-    protected TreeViewer 	treeViewer;		  	// tree for the caller and callees
+    protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private ScopeViewActions objViewActions;
     private TreeViewerColumn []colMetrics;	// metric columns
     private Shell shell;
@@ -63,7 +72,6 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	private ToolItem tiHotCallPath;
 	private ToolItem tiAddExtMetric;
 	private Label lblMessage;
-	private Clipboard cb;
 	
 	//------------------------------------DATA
 	protected Scope.Node nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
@@ -71,7 +79,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	protected RootScope 		myRootScope;		// the root scope of this view
 
     // ----------------------------------- CONSTANTS
-    private Color clrGreen, clrYELLOW, clrRED, clrNORMAL;
+    private Color clrGREEN, clrYELLOW, clrRED, clrNORMAL;
     
     /**
      * Constructor initializing the data
@@ -84,16 +92,13 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 			ScopeViewActions objActions) {
 
 		this.objViewActions = objActions;
-		shell = objShell;
+		this.shell = objShell;
 		this.objWindow = window;
-		//Shell shell = window.getShell();
-		//this.statusLine = viewSite.getActionBars().getStatusLineManager();
 		
 		this.clrNORMAL = shell.getBackground();
 		this.clrYELLOW = new Color(shell.getDisplay(),255,255,0);
 		this.clrRED = new Color(shell.getDisplay(), 250,128,114);
-		this.clrGreen = new Color(shell.getDisplay(), 153,255,153);
-		this.cb = new Clipboard( objShell.getDisplay() );
+		this.clrGREEN = new Color(shell.getDisplay(), 153,255,153);
 	}
 
 	/**
@@ -102,7 +107,6 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 * @return
 	 */
 	public Composite buildGUI(Composite parent, CoolBar coolbar) {
-		//CoolBar coolbar = this.initToolbar(parent);
 		Composite newParent = this.addTooBarAction(coolbar);
 		this.finalizeToolBar(parent, coolbar);
 		return newParent;
@@ -131,7 +135,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	}
 	
     //======================================================
-    public void setTreeViewer(TreeViewer tree) {
+    public void setTreeViewer(ScopeTreeViewer tree) {
     	this.treeViewer = tree;
     }
 
@@ -203,8 +207,8 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	/**
 	 * Show a message with information style (with green background)
 	 */
-	public void showInfoMessgae(String sMsg) {
-		this.lblMessage.setBackground(this.clrGreen);
+	public void showInfoMessage(String sMsg) {
+		this.lblMessage.setBackground(this.clrGREEN);
 		this.lblMessage.setText(sMsg);
 	}
 	
@@ -268,6 +272,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
        			this.colMetrics[iColumnPosition].getColumn().setWidth(0);
    			}
 	}
+	
     /**
      * Show column properties (hidden, visible ...)
      */
@@ -336,6 +341,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	// and this means we have to recompute again the top row of the table
     	this.restoreParentNode();
     }
+    
     //======================================================
     // ................ BUTTON ............................
     //======================================================
@@ -348,15 +354,19 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	this.tiZoomout.setEnabled(false);
     	this.tiHotCallPath.setEnabled(false);
     }
-    //======================================================
-    // ................ ZOOM ............................
-    //======================================================
-    /**
-     * Check if the button Zoom-in should be available given node as 
-     * the main node to zoom
-     * @param node
-     * @return
-     */
+
+	public void enableHotCallPath(boolean enabled) {
+		this.tiHotCallPath.setEnabled(enabled);
+	}
+
+	public void enableZoomIn(boolean enabled) {
+		this.tiZoomin.setEnabled(enabled);
+	}
+
+	public void enableZoomOut(boolean enabled) {
+		this.tiZoomout.setEnabled(enabled);
+	}
+    
 
     //======================================================
     // ................ CREATION ............................
@@ -474,7 +484,8 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
       		  Utilities.DecreaseFont(objWindow);
     	  }
     	});
-    	/*
+    	
+    	// ------------------------------- export CSV ------
     	ToolItem tiCSV = new ToolItem(toolbar, SWT.PUSH);
     	tiCSV.setImage( iconsCollection.imgExportCSV );
     	tiCSV.setToolTipText( "Export the current view into a comma separated value file" );
@@ -483,7 +494,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     			exportCSV();
     		}
     	});
-    	*/
+    	
     	// set the coolitem
     	this.createCoolItem(coolbar, toolbar);
     	
@@ -491,23 +502,53 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	return toolbar;
     }
 
-	public void enableHotCallPath(boolean enabled) {
-		this.tiHotCallPath.setEnabled(enabled);
-	}
-
-	public void enableZoomIn(boolean enabled) {
-		this.tiZoomin.setEnabled(enabled);
-	}
-
-	public void enableZoomOut(boolean enabled) {
-		this.tiZoomout.setEnabled(enabled);
-	}
+    /**
+     * Constant comma separator
+     */
+    final private String COMMA_SEPARATOR = ",";
     
+    /**
+     * Method to export the displayed items in the current view into a CSV format file
+     */
 	private void exportCSV() {
-		Object elements[] = treeViewer.getVisibleExpandedElements();
-		String sText = objViewActions.getContent(elements, colMetrics, ",");
-    	TextTransfer textTransfer = TextTransfer.getInstance();
-		cb.setContents(new Object[]{sText}, new Transfer[]{textTransfer});
-		
+		ArrayList<TreeItem> items = new ArrayList<TreeItem>();
+		internalCollectExpandedItems(items, treeViewer.getTree().getItems());
+		String sText = objViewActions.getContent( items.toArray(new TreeItem[items.size()]), 
+				colMetrics, COMMA_SEPARATOR);
+		FileDialog fileDlg = new FileDialog(this.shell, SWT.SAVE);
+		fileDlg.setFileName(this.myExperiment.getName() + ".csv");
+		fileDlg.setFilterExtensions(new String [] {"*.csv", "*.*"});
+		fileDlg.setText("Save the data in the table to a file (CSV format)");
+		String sFilename = fileDlg.open();
+		if ( (sFilename != null) && (sFilename.length()>0) ) {
+			try {
+				FileWriter objWriter = new FileWriter(sFilename);
+				BufferedWriter objBuffer = new BufferedWriter (objWriter);
+				// write the title
+				String sTitle = this.treeViewer.getColumnTitle(0, COMMA_SEPARATOR);
+				objBuffer.write(sTitle + "\n");
+				// write the top row items
+				String sTopRow[] = Utilities.getTopRowItems(this.treeViewer);
+				sTitle = this.treeViewer.getTextBasedOnColumnStatus(sTopRow, COMMA_SEPARATOR, 0, 0);
+				objBuffer.write(sTitle + "\n");
+				// write the content text
+				objBuffer.write(sText);
+				objBuffer.close();
+			} catch ( Exception e ) {
+				e.printStackTrace();
+			}
+		}
 	}
+	
+	private void internalCollectExpandedItems(List<TreeItem> result, TreeItem []items) {
+		if (items != null)
+			for (int i = 0; i < items.length; i++) {
+				TreeItem itemChild = items[i];
+				if (itemChild.getData() instanceof Scope.Node)
+					result.add(itemChild);
+				if (itemChild.getExpanded())
+					internalCollectExpandedItems(result, itemChild.getItems());
+			}
+	}
+
 }

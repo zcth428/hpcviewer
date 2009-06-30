@@ -78,6 +78,36 @@ public class ScopeTreeViewer extends TreeViewer {
 		return colMetric;
     }
     
+	/**
+	 * Return the canocalized text from the list of elements 
+	 * @param sListOfTexts
+	 * @param sSeparator
+	 * @return
+	 */
+	public String getTextBasedOnColumnStatus(String []sListOfTexts, String sSeparator, 
+			int startColIndex, int startTextIndex) {
+		StringBuffer sBuf = new StringBuffer();
+		TreeColumn columns[] = this.getTree().getColumns();
+		for ( int i=startColIndex; i<columns.length; i++ ) {
+			if ( columns[i].getWidth()>0 ) {
+				if (sBuf.length()>0)
+					sBuf.append(sSeparator);
+				sBuf.append( sListOfTexts[i+startTextIndex] );
+			}
+		}
+		return sBuf.toString();
+	}
+	
+	public String getColumnTitle(int iStartColIndex, String sSeparator) {
+		// get the column title first
+		TreeColumn columns[] = this.getTree().getColumns();
+		String sTitles[] = new String[columns.length];
+		for ( int i=0; i<columns.length; i++ ) {
+			sTitles[i] = columns[i].getText();
+		}
+		// then get the string based on the column status
+		return this.getTextBasedOnColumnStatus(sTitles, sSeparator, iStartColIndex, 0);
+	}
     /**
      * Add new tree column for derived metric
      * @param treeViewer

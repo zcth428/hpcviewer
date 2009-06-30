@@ -45,7 +45,7 @@ public interface IScopeActionsGUI {
 	 * Set the new tree viewer
 	 * @param tree
 	 */
-	public void setTreeViewer(TreeViewer tree);
+	public void setTreeViewer(ScopeTreeViewer tree);
 
 	/**
 	 * Show a warning message (with yellow background).
@@ -70,7 +70,7 @@ public interface IScopeActionsGUI {
 	 * Show the information on the message bar
 	 * @param sMsg
 	 */
-	public void showInfoMessgae(String sMsg);
+	public void showInfoMessage(String sMsg);
 	/**
      * Check zoom buttons (zoom out and zoom in)
      * @param node: the current selected node

@@ -132,7 +132,6 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 		if(showAggregate)
 			this.displayRootExperiment();	// display the aggregate metrics
 		this.checkFlattenButtons();
-		//this.updateFlattenView(iLevel);
 	}
 
 	/**

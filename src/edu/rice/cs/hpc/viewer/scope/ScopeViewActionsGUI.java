@@ -5,6 +5,7 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.layout.*;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -318,9 +320,8 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
        			// display the hidden column
        			// Laks: bug no 131: we need to have special key for storing the column width
         		Object o = this.colMetrics[i].getColumn().getData(COLUMN_DATA_WIDTH);
-       			int iWidth = 120;
        			if((o != null) && (o instanceof Integer) ) {
-       				iWidth = ((Integer)o).intValue();
+       				int iWidth = ((Integer)o).intValue();
            			this.colMetrics[i].getColumn().setWidth(iWidth);
        			}
        		}
@@ -355,14 +356,26 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	this.tiHotCallPath.setEnabled(false);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see edu.rice.cs.hpc.viewer.scope.IScopeActionsGUI#enableHotCallPath(boolean)
+     */
 	public void enableHotCallPath(boolean enabled) {
 		this.tiHotCallPath.setEnabled(enabled);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.scope.IScopeActionsGUI#enableZoomIn(boolean)
+	 */
 	public void enableZoomIn(boolean enabled) {
 		this.tiZoomin.setEnabled(enabled);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.scope.IScopeActionsGUI#enableZoomOut(boolean)
+	 */
 	public void enableZoomOut(boolean enabled) {
 		this.tiZoomout.setEnabled(enabled);
 	}
@@ -386,6 +399,9 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	coolItem.setSize(coolSize);    	
     }
     
+    /*
+     * 
+     */
     protected void finalizeToolBar(Composite parent, CoolBar coolBar) {
     	// message text
     	lblMessage = new Label(parent, SWT.NONE);
@@ -511,35 +527,54 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * Method to export the displayed items in the current view into a CSV format file
      */
 	private void exportCSV() {
-		ArrayList<TreeItem> items = new ArrayList<TreeItem>();
-		internalCollectExpandedItems(items, treeViewer.getTree().getItems());
-		String sText = objViewActions.getContent( items.toArray(new TreeItem[items.size()]), 
-				colMetrics, COMMA_SEPARATOR);
 		FileDialog fileDlg = new FileDialog(this.shell, SWT.SAVE);
 		fileDlg.setFileName(this.myExperiment.getName() + ".csv");
 		fileDlg.setFilterExtensions(new String [] {"*.csv", "*.*"});
 		fileDlg.setText("Save the data in the table to a file (CSV format)");
-		String sFilename = fileDlg.open();
+		final String sFilename = fileDlg.open();
 		if ( (sFilename != null) && (sFilename.length()>0) ) {
 			try {
-				FileWriter objWriter = new FileWriter(sFilename);
-				BufferedWriter objBuffer = new BufferedWriter (objWriter);
-				// write the title
-				String sTitle = this.treeViewer.getColumnTitle(0, COMMA_SEPARATOR);
-				objBuffer.write(sTitle + "\n");
-				// write the top row items
-				String sTopRow[] = Utilities.getTopRowItems(this.treeViewer);
-				sTitle = this.treeViewer.getTextBasedOnColumnStatus(sTopRow, COMMA_SEPARATOR, 0, 0);
-				objBuffer.write(sTitle + "\n");
-				// write the content text
-				objBuffer.write(sText);
-				objBuffer.close();
-			} catch ( Exception e ) {
+				this.shell.getDisplay().asyncExec( new Runnable() {
+
+					public void run() {
+						try {
+							showInfoMessage( "Writing to file: "+sFilename);
+							FileWriter objWriter = new FileWriter(sFilename);
+							BufferedWriter objBuffer = new BufferedWriter (objWriter);
+							// write the title
+							String sTitle = treeViewer.getColumnTitle(0, COMMA_SEPARATOR);
+							objBuffer.write(sTitle + "\n");
+
+							// write the top row items
+							String sTopRow[] = Utilities.getTopRowItems(treeViewer);
+							sTitle = treeViewer.getTextBasedOnColumnStatus(sTopRow, COMMA_SEPARATOR, 0, 0);
+							objBuffer.write(sTitle + "\n");
+
+							// write the content text
+							ArrayList<TreeItem> items = new ArrayList<TreeItem>();
+							internalCollectExpandedItems(items, treeViewer.getTree().getItems());
+							String sText = objViewActions.getContent( items.toArray(new TreeItem[items.size()]), 
+									colMetrics, COMMA_SEPARATOR);
+							objBuffer.write(sText);
+							objBuffer.close();
+							restoreMessage();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					
+				});
+			} catch ( SWTException e ) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
+	/**
+	 * This method is a modified version of AbstractViewer.internalCollectExpandedItems()
+	 * @param result
+	 * @param items
+	 */
 	private void internalCollectExpandedItems(List<TreeItem> result, TreeItem []items) {
 		if (items != null)
 			for (int i = 0; i < items.length; i++) {

@@ -259,10 +259,6 @@ abstract public class BaseScopeView  extends ViewPart {
     	this.objCoolbar = this.initToolbar(objCompositeParent);
 		this.objViewActions =  createActions(objCompositeParent, this.objCoolbar); //actions of the tree
 		
-		// prepare the font for metric columns: it is supposed to be fixed font
-		Display display = Display.getCurrent();
-		//Utilities.setFontMetric(display);
-		
 		// ----- 03.21.2008 Laks: add virtual library for better memory consumption
 		// Laks 2009.06.22: add multi-selection for enabling copying into clipboard 
     	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.MULTI);
@@ -425,14 +421,14 @@ abstract public class BaseScopeView  extends ViewPart {
     }
     
 	/**
-	 * Update the content of the tree view
+	 * Update the content of the tree view when a new experiment is loaded
 	 */
 	private void updateDisplay() {
         if (myExperiment == null)
         	return;
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
-        	// remove the columns blindly
+        	// remove the metric columns blindly
         	// TODO we need to have a more elegant solution here
         	for(int i=1;i<iColCount;i++) {
         		this.treeViewer.getTree().getColumn(1).dispose();
@@ -513,7 +509,9 @@ abstract public class BaseScopeView  extends ViewPart {
     // ................ ABSTRACT...........................
     //======================================================
     /**
-     * 
+     * The derived class has to implement this method to create its own actions
+     * For instance, caller view and cct view has the same actions but flat view
+     * 	may have additional actions (flattening ...)
      * @param parent
      * @param coolbar
      * @return

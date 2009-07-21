@@ -383,6 +383,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
 			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
+			
+			// add a new column in the table
 			ExperimentData objExpData = ExperimentData.getInstance(this.objWindow);
 			ExperimentManager objExpManager = objExpData.getExperimentManager();
 			BaseScopeView arrScopeViews[] = objExpManager.getExperimentView().getViews();
@@ -419,7 +421,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * @param sSeparator (separator)
 	 * @return String: content of the table
 	 */
-	public String getContent(TreeItem []items, TreeViewerColumn colMetrics[], String sSeparator) {
+	public String getContent(TreeItem []items, String sSeparator) {
     	StringBuffer sbText = new StringBuffer();
     	
     	// get all selected items
@@ -430,13 +432,14 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     		if (o instanceof Scope.Node) {
     			Scope.Node objNode = (Scope.Node) o;
     			Scope objScope = objNode.getScope();
-    			this.getContent(objScope, colMetrics, sSeparator, sbText);
+    			this.getContent(objScope, this.objActionsGUI.getMetricColumns(), sSeparator, sbText);
     		} else {
     			// in case user click the first row, we need a special treatment
     			// first row of the table is supposed to be a sub-header, but at the moment we allow user
     			//		to do anything s/he wants.
     			String sElements[] = (String []) o; 
-    			sbText.append(sElements[0]);
+    			sbText.append( sElements[0] );
+    			sbText.append( sSeparator ); // separate the node title and the metrics
     			sbText.append( this.treeViewer.getTextBasedOnColumnStatus(sElements, sSeparator, 1, 0) );
     		}
     		sbText.append("\n");

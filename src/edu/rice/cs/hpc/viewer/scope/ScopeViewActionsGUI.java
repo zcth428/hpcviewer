@@ -343,6 +343,9 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	this.restoreParentNode();
     }
     
+    public TreeViewerColumn[] getMetricColumns() {
+    	return this.colMetrics;
+    }
     //======================================================
     // ................ BUTTON ............................
     //======================================================
@@ -554,7 +557,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 							ArrayList<TreeItem> items = new ArrayList<TreeItem>();
 							internalCollectExpandedItems(items, treeViewer.getTree().getItems());
 							String sText = objViewActions.getContent( items.toArray(new TreeItem[items.size()]), 
-									colMetrics, COMMA_SEPARATOR);
+									COMMA_SEPARATOR);
 							objBuffer.write(sText);
 							objBuffer.close();
 							restoreMessage();

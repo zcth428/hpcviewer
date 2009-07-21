@@ -116,4 +116,6 @@ public interface IScopeActionsGUI {
 	public void resizeTableColumns();
 	
 	public void setColumnsStatus(boolean []status);
+	
+    public TreeViewerColumn[] getMetricColumns();
 }

@@ -98,12 +98,18 @@ public class ScopeTreeViewer extends TreeViewer {
 		return sBuf.toString();
 	}
 	
+	/**
+	 * retrieve the title of the columns
+	 * @param iStartColIndex
+	 * @param sSeparator
+	 * @return
+	 */
 	public String getColumnTitle(int iStartColIndex, String sSeparator) {
 		// get the column title first
 		TreeColumn columns[] = this.getTree().getColumns();
 		String sTitles[] = new String[columns.length];
 		for ( int i=0; i<columns.length; i++ ) {
-			sTitles[i] = columns[i].getText();
+			sTitles[i] = "\"" + columns[i].getText().trim() + "\"";
 		}
 		// then get the string based on the column status
 		return this.getTextBasedOnColumnStatus(sTitles, sSeparator, iStartColIndex, 0);

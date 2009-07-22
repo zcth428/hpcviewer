@@ -4,6 +4,7 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.*;
 
 import org.eclipse.swt.SWT;
@@ -541,15 +543,40 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 
 					public void run() {
 						try {
+							// -----------------------------------------------------------------------
+							// Check if the status of the file
+							// -----------------------------------------------------------------------
+							File objFile = new File( sFilename );
+							if ( objFile.exists() ) {
+								if ( !MessageDialog.openConfirm( shell, "File already exists" , 
+									sFilename + ": file already exist. Do you want to replace it ?") )
+									return;
+							}
+							if ( !objFile.canWrite() ) {
+								MessageDialog.openError( shell, "Error: Unable to write the file", 
+										sFilename + ": File is not writable ! Please check if you have right to write in the directory." );
+								return;
+							}
+
+							// -----------------------------------------------------------------------
+							// prepare the file
+							// -----------------------------------------------------------------------
 							showInfoMessage( "Writing to file: "+sFilename);
-							FileWriter objWriter = new FileWriter(sFilename);
+							FileWriter objWriter = new FileWriter( objFile );
 							BufferedWriter objBuffer = new BufferedWriter (objWriter);
+							
+							// -----------------------------------------------------------------------
+							// writing to the file
+							// -----------------------------------------------------------------------
+							
 							// write the title
 							String sTitle = treeViewer.getColumnTitle(0, COMMA_SEPARATOR);
 							objBuffer.write(sTitle + "\n");
 
 							// write the top row items
 							String sTopRow[] = Utilities.getTopRowItems(treeViewer);
+							// tricky: add '"' for uniting the text in the spreadsheet
+							sTopRow[0] = "\"" + sTopRow[0] + "\"";	
 							sTitle = treeViewer.getTextBasedOnColumnStatus(sTopRow, COMMA_SEPARATOR, 0, 0);
 							objBuffer.write(sTitle + "\n");
 
@@ -559,6 +586,10 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 							String sText = objViewActions.getContent( items.toArray(new TreeItem[items.size()]), 
 									COMMA_SEPARATOR);
 							objBuffer.write(sText);
+							
+							// -----------------------------------------------------------------------
+							// End of the process
+							// -----------------------------------------------------------------------							
 							objBuffer.close();
 							restoreMessage();
 						} catch (IOException e) {

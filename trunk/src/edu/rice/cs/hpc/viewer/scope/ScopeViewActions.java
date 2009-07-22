@@ -438,7 +438,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     			// first row of the table is supposed to be a sub-header, but at the moment we allow user
     			//		to do anything s/he wants.
     			String sElements[] = (String []) o; 
-    			sbText.append( sElements[0] );
+    			sbText.append( "\"" + sElements[0] + "\"" );
     			sbText.append( sSeparator ); // separate the node title and the metrics
     			sbText.append( this.treeViewer.getTextBasedOnColumnStatus(sElements, sSeparator, 1, 0) );
     		}
@@ -455,7 +455,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * @param sbText
 	 */
 	private void getContent( Scope objScope, TreeViewerColumn colMetrics[], String sSeparator, StringBuffer sbText ) {
-    	sbText.append( objScope.getName() );
+    	sbText.append( "\"" + objScope.getName() + "\"" );
 		for(int j=0; j<colMetrics.length; j++) {
 			if (colMetrics[j].getColumn().getWidth()>0) {
 				// the column is not hidden

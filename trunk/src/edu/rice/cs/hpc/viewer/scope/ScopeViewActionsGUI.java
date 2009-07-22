@@ -552,11 +552,13 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 									sFilename + ": file already exist. Do you want to replace it ?") )
 									return;
 							}
+							// WARNING: java.io.File seems always fail to verify writable status on Linux !
+							/*
 							if ( !objFile.canWrite() ) {
 								MessageDialog.openError( shell, "Error: Unable to write the file", 
 										sFilename + ": File is not writable ! Please check if you have right to write in the directory." );
 								return;
-							}
+							} */
 
 							// -----------------------------------------------------------------------
 							// prepare the file

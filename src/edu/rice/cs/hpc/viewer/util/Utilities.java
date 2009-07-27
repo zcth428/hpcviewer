@@ -52,6 +52,7 @@ public class Utilities {
 	// special color for the top row
 	static public Color COLOR_TOP;
 	
+	static public String NEW_LINE = System.getProperty("line.separator");
 	static private Display objDisplay;	
 	static private int iFontHeight = 0;
 	

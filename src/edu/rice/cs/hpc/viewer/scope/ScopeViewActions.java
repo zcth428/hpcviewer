@@ -27,6 +27,7 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.metric.*;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 //math expression
 import com.graphbuilder.math.*;
 /**
@@ -442,7 +443,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     			sbText.append( sSeparator ); // separate the node title and the metrics
     			sbText.append( this.treeViewer.getTextBasedOnColumnStatus(sElements, sSeparator, 1, 0) );
     		}
-    		sbText.append("\n");
+    		sbText.append(Utilities.NEW_LINE);
     	}
     	return sbText.toString();
 	}
@@ -484,7 +485,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 					this.getContent(objNode.getScope(), colMetrics, sSeparator, sbText);
 				}
 			}
-			sbText.append("\n");
+			sbText.append(Utilities.NEW_LINE);
 		}
 		return sbText.toString();
 	}

@@ -65,22 +65,24 @@ public class Utilities {
 		COLOR_TOP = new Color(display, 255,255,204);
 		
 		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-		FontData []objFontMetric;
-		FontData []objFontGeneric;
+		FontData []objFontMetric = display.getSystemFont().getFontData();;
+		FontData []objFontGeneric = objFontMetric;
 		// get the font for metrics columns
-		if(objPref != null) {
-			objFontMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
-			objFontGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
+		if (objPref != null) {
+			// bug fix: for unknown reason, the second instance of hpcviewer cannot find the key
+			//	solution: check if the key exist or not
+			if ( objPref.getString (PreferenceConstants.P_FONT_METRIC) != null )
+				objFontMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
+			if ( objPref.getString (PreferenceConstants.P_FONT_GENERIC) != null )
+				objFontGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
 		} else {
-			objFontMetric = display.getSystemFont().getFontData();
-			objFontGeneric = objFontMetric;
+			// create font for metric view (should be plain text)
+			objFontMetric[0].setName("Courier");
 		}
 		// create font for general purpose (view, editor, ...)
 		Utilities.fontGeneral = new Font (display, objFontGeneric);
 		iFontHeight = objFontGeneric[0].getHeight();
 		
-		// create font for metric view (should be plain text)
-		objFontMetric[0].setName("Courier");
 		Utilities.fontMetric = new Font(display, objFontMetric);
 		// save the display
 		Utilities.objDisplay = display;

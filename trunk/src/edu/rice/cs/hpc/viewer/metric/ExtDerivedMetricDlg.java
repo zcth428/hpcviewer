@@ -36,13 +36,14 @@ import com.graphbuilder.math.func.*;
 public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	//------------- GUI variables
 	private Text txtName;
+	private Combo txtExpression;
+	//private Text txtExpression;
 	private Button btnPercent;
 	//private Button btnExclusive;
 	//private Button btnInclusive;
 
 	// ------------ Metric and math variables
 	private String []arrStrMetrics;
-	private Text txtExpression;
 	private Expression expFormula;
 	private final ExtFuncMap fctMap;
 	private final MetricVarMap varMap;
@@ -109,7 +110,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	Group grpExpression = new Group(expressionArea, SWT.NONE);
 	    	Label lbl = new Label(grpExpression, SWT.NONE);
 	    	lbl.setText("Type the formula for the derived metric. Example: $0+(avg($1,$2,$3)/max($1,$2,$3))");
-	    	this.txtExpression = new Text(grpExpression, SWT.NONE);
+	    	this.txtExpression = new Combo(grpExpression, SWT.NONE);
 	    	txtExpression.setToolTipText("Write a simple arithmetic expression");
 	    	GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(grpExpression);
 	    	
@@ -128,7 +129,13 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	btnMetric.setText("Insert metric");
 	    	btnMetric.addSelectionListener(new SelectionListener() {
 	   			public void widgetSelected(SelectionEvent e) {
-	   				txtExpression.insert("$"+cbMetric.getSelectionIndex());
+	   				final String sText = txtExpression.getText();
+	   				final int iSelIndex = txtExpression.getSelection().x;
+	   				StringBuffer sBuff = new StringBuffer(sText);
+	   				sBuff.insert(iSelIndex, "$");
+	   				sBuff.insert(iSelIndex+1, cbMetric.getSelectionIndex() );
+	   				txtExpression.setText(sBuff.toString());
+	   				//txtExpression.insert("$"+cbMetric.getSelectionIndex());
 	   			}
 	   			public void widgetDefaultSelected(SelectionEvent e) {
 	   				
@@ -159,12 +166,21 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	btnFunc.setText("Insert function");
 	    	btnFunc.addSelectionListener(new SelectionListener() {
 	    		 // action to insert the name of the function into the formula text
-	   			public void widgetSelected(SelectionEvent e) {
+	   			public void widgetSelected(SelectionEvent e) {/*
 	   				int iPos = txtExpression.getCaretPosition();
 	   				String sFunc = arrFuncNames[cbFunc.getSelectionIndex()];
 	   				txtExpression.insert( sFunc + "()");
 	   				// put the caret inside the parentheses
-	   				txtExpression.setSelection(iPos+sFunc.length()+1);
+	   				txtExpression.setSelection(iPos+sFunc.length()+1); */
+	   				Point p = txtExpression.getSelection();
+	   				String sFunc = arrFuncNames[cbFunc.getSelectionIndex()];
+	   				StringBuffer sb = new StringBuffer( txtExpression.getText() );
+	   				int iLen = sFunc.length();
+	   				sb.insert( p.x, sFunc );
+	   				sb.insert( p.x + iLen, "()" );
+	   				p.x = p.x + iLen + 1;
+	   				txtExpression.setText( sb.toString() );
+	   				txtExpression.setSelection( p );
 	   			}
 	   			public void widgetDefaultSelected(SelectionEvent e) {
 	   				

@@ -170,8 +170,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		workbench.addWorkbenchListener(new IWorkbenchListener(){
 			public boolean preShutdown(IWorkbench workbench,
                     boolean forced) {
-				// somehow, closeEditors method works better than closeAllEditors.
-				pageCurrent.closeEditors(pageCurrent.getEditorReferences(), false);
+				// bug on Mac OS: Mac will allow user to close via menu system while hpcviewer is still displaying 
+				// 	a modal dialog box (such as  open file dialog). This will create infinite loop in the SWT events
+				//  and has to be killed 
+				if (pageCurrent != null)
+					// somehow, closeEditors method works better than closeAllEditors.
+					pageCurrent.closeEditors(pageCurrent.getEditorReferences(), false);
 				return true;
 			}
 			public void postShutdown(IWorkbench workbench) {

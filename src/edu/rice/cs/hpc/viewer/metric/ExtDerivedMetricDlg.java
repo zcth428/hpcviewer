@@ -179,6 +179,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   				sb.insert( p.x, sFunc );
 	   				sb.insert( p.x + iLen, "()" );
 	   				p.x = p.x + iLen + 1;
+	   				p.y = p.x;
 	   				txtExpression.setText( sb.toString() );
 	   				txtExpression.setSelection( p );
 	   			}

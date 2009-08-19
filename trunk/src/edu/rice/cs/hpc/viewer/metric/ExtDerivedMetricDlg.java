@@ -17,14 +17,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.SelectionEvent;
 // hpcviewer
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.viewer.util.UserInputHistory;
 // math expression
 import com.graphbuilder.math.*;
 import com.graphbuilder.math.func.*;
@@ -35,8 +34,8 @@ import com.graphbuilder.math.func.*;
  */
 public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	//------------- GUI variables
-	private Text txtName;
-	private Combo txtExpression;
+	private Combo cbName;
+	private Combo cbExpression;
 	//private Text txtExpression;
 	private Button btnPercent;
 	//private Button btnExclusive;
@@ -49,8 +48,14 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	private final MetricVarMap varMap;
 	
 	// ------------- Others
+	static private final String HISTORY_FORMULA = "formula";			//$NON-NLS-1$
+	static private final String HISTORY_METRIC_NAME = "metric_name";	//$NON-NLS-1$
 	private String sMetricName;
 	private boolean bPercent;
+	
+	// ------------- object for storing history of formula and metric names
+	private UserInputHistory objHistoryFormula;
+	private UserInputHistory objHistoryName;
 	//private boolean bExclusive = false;
 
 	//==========================================================
@@ -108,10 +113,14 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    Composite expressionArea = new Composite(grpBase, SWT.NONE);
 	    {
 	    	Group grpExpression = new Group(expressionArea, SWT.NONE);
+	    	
 	    	Label lbl = new Label(grpExpression, SWT.NONE);
 	    	lbl.setText("Type the formula for the derived metric. Example: $0+(avg($1,$2,$3)/max($1,$2,$3))");
-	    	this.txtExpression = new Combo(grpExpression, SWT.NONE);
-	    	txtExpression.setToolTipText("Write a simple arithmetic expression");
+	    	
+	    	this.cbExpression = new Combo(grpExpression, SWT.NONE);
+	    	objHistoryFormula = new UserInputHistory(HISTORY_FORMULA);
+	    	this.cbExpression.setItems( objHistoryFormula.getHistory() );
+	    	cbExpression.setToolTipText("Write a simple arithmetic expression");
 	    	GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(grpExpression);
 	    	
 	    	//--------------- inserting metric
@@ -120,22 +129,29 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 
 	    	Label lblMetric = new Label(grpInsertion, SWT.NONE);
 	    	lblMetric.setText("Metric:");
+	    	
 	    	// combo box that lists the metrics
 	    	final Combo cbMetric = new Combo(grpInsertion, SWT.READ_ONLY);
 	    	cbMetric.setItems(this.arrStrMetrics);
 	    	cbMetric.setText(this.arrStrMetrics[0]);
+	    	
 	    	// button to insert the metric code into the expression field
 	    	Button btnMetric = new Button(grpInsertion, SWT.PUSH);
 	    	btnMetric.setText("Insert metric");
 	    	btnMetric.addSelectionListener(new SelectionListener() {
 	   			public void widgetSelected(SelectionEvent e) {
-	   				final String sText = txtExpression.getText();
-	   				final int iSelIndex = txtExpression.getSelection().x;
+	   				final String sText = cbExpression.getText();
+	   				final int iSelIndex = cbExpression.getSelection().x;
 	   				StringBuffer sBuff = new StringBuffer(sText);
-	   				sBuff.insert(iSelIndex, "$");
-	   				sBuff.insert(iSelIndex+1, cbMetric.getSelectionIndex() );
-	   				txtExpression.setText(sBuff.toString());
-	   				//txtExpression.insert("$"+cbMetric.getSelectionIndex());
+	   				
+	   				// insert the metric variable ( i.e.: $ + metric index)
+	   				final String sMetricIndex = "$" + cbMetric.getSelectionIndex() ; 
+	   				sBuff.insert(iSelIndex, sMetricIndex );
+	   				cbExpression.setText(sBuff.toString());
+
+	   				// put cursor after the metric variable
+	   				Point p = new Point(iSelIndex + sMetricIndex.length(), iSelIndex + sMetricIndex.length());
+	   				cbExpression.setSelection( p );
 	   			}
 	   			public void widgetDefaultSelected(SelectionEvent e) {
 	   				
@@ -145,9 +161,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	//---------------- inserting function
 	    	Label lblFunc = new Label(grpInsertion, SWT.NONE);
 	    	lblFunc.setText("Function:");
+	    	
 	    	final Combo cbFunc = new Combo(grpInsertion, SWT.READ_ONLY);
 	    	fctMap.loadDefaultFunctions();
 	    	Function arrFct[] = fctMap.getFunctions();
+	    	
 	    	// create the list of the name of the function
 	    	// list of the name  of the function and its arguments
 	    	final String []arrFunctions = new String[arrFct.length];
@@ -162,26 +180,22 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    		// by default insert the toplist function
 	    		cbFunc.setText(arrFunctions[0]);
 	    	}
+	    	
 	    	final Button btnFunc = new Button(grpInsertion, SWT.PUSH);
 	    	btnFunc.setText("Insert function");
 	    	btnFunc.addSelectionListener(new SelectionListener() {
 	    		 // action to insert the name of the function into the formula text
-	   			public void widgetSelected(SelectionEvent e) {/*
-	   				int iPos = txtExpression.getCaretPosition();
+	   			public void widgetSelected(SelectionEvent e) {
+	   				Point p = cbExpression.getSelection();
 	   				String sFunc = arrFuncNames[cbFunc.getSelectionIndex()];
-	   				txtExpression.insert( sFunc + "()");
-	   				// put the caret inside the parentheses
-	   				txtExpression.setSelection(iPos+sFunc.length()+1); */
-	   				Point p = txtExpression.getSelection();
-	   				String sFunc = arrFuncNames[cbFunc.getSelectionIndex()];
-	   				StringBuffer sb = new StringBuffer( txtExpression.getText() );
+	   				StringBuffer sb = new StringBuffer( cbExpression.getText() );
 	   				int iLen = sFunc.length();
 	   				sb.insert( p.x, sFunc );
 	   				sb.insert( p.x + iLen, "()" );
 	   				p.x = p.x + iLen + 1;
 	   				p.y = p.x;
-	   				txtExpression.setText( sb.toString() );
-	   				txtExpression.setSelection( p );
+	   				cbExpression.setText( sb.toString() );
+	   				cbExpression.setSelection( p );
 	   			}
 	   			public void widgetDefaultSelected(SelectionEvent e) {
 	   				
@@ -232,8 +246,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			Composite nameArea = new Composite(grpOptions, SWT.NONE);
 			Label lblName = new Label(nameArea, SWT.LEFT);
 			lblName.setText("New name for the derived metric:");
-			this.txtName = new Text(nameArea, SWT.NONE);
-			this.txtName.setToolTipText("Enter the new name of the derived metric");
+			this.cbName = new Combo(nameArea, SWT.NONE);
+			this.cbName.setToolTipText("Enter the new name of the derived metric");
+			objHistoryName = new UserInputHistory( ExtDerivedMetricDlg.HISTORY_METRIC_NAME );
+			this.cbName.setItems( this.objHistoryName.getHistory() );
+			
 			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
 			
 			// percent option
@@ -298,7 +315,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   */
 	  private boolean checkExpression() {
 		  boolean bResult = false;
-			String sExpression = this.txtExpression.getText();
+			String sExpression = this.cbExpression.getText();
 			if(sExpression.length() > 0) {
 				try {
 					this.expFormula = ExpressionTree.parse(sExpression);
@@ -384,7 +401,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		if(this.checkExpression()) {
 			// save the options for further usage (required by the caller)
 			this.bPercent = this.btnPercent.getSelection();
-			this.sMetricName = this.txtName.getText();
+			this.sMetricName = this.cbName.getText();
+			
+			// save user history
+			this.objHistoryFormula.addLine( this.cbExpression.getText() );
+			this.objHistoryName.addLine( this.cbName.getText() );
 			//this.bExclusive = this.btnExclusive.getSelection();
 			super.okPressed();
 		}
@@ -403,6 +424,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	/**
 	 * @param args
 	 */
+	  /*
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Metric []metrics = new Metric[4];
@@ -417,5 +439,5 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		//dlg.setScope(scope);
 		dlg.open();
 	}
-
+*/
 }

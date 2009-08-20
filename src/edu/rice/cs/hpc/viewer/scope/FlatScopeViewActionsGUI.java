@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeViewActions;
@@ -146,13 +145,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
     	// DO NOT flatten if we reach to the point where there is no children 
     	//return this.myRootScope.getTreeNode().getDepth()>this.myRootScope.getFlattenLevel() + 1;
     	Object o = this.treeViewer.getInput();
-    	if (o instanceof ArrayOfNodes) {
-    		ArrayOfNodes objFlatNodes = (ArrayOfNodes) o;
-    		for (int i=0; i<objFlatNodes.size(); i++) {
-    			if (objFlatNodes.get(i).hasChildren())
-    				return true;
-    		}
-    	} else if (o instanceof Scope.Node) {
+    	if (o instanceof Scope.Node) {
     		Scope.Node objNode = (Scope.Node) o;
     		for( int i=0; i<objNode.getChildCount(); i++ ) {
     			if (objNode.getChildAt(i).hasChildren())

@@ -117,10 +117,10 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	 * Table of list of flattened node. We need to keep it in memory to avoid
 	 * recomputation of the flattening nodes
 	 */
-	private java.util.Hashtable<Integer, ArrayOfNodes> tableNodes;
+	private java.util.Hashtable<Integer, Scope.Node> tableNodes;
 	
 	//=====================================
-	private void addChildren(Scope.Node node, ArrayOfNodes arrNodes) {
+	private void addChildren(Scope.Node node, Scope.Node arrNodes) {
 		int nbChildren = node.getChildCount();
 		for(int i=0;i<nbChildren;i++) {
 			// Laksono 2009.03.04: do not add call site !
@@ -142,42 +142,42 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	 * @param iLevel: level of flattened nodes, 0 is the root
 	 * @return
 	 */
-	private ArrayOfNodes getFlatten(int iLevel) {
+	private Scope.Node getFlatten(int iLevel) {
 		if (iLevel<0)
 			return null; // TODO: should return an exception instead
-		ArrayOfNodes arrNodes;
+		Scope.Node objFlattenedNode;
 		Integer objLevel = Integer.valueOf(iLevel);
 		if(iLevel == 0) {
 			if(this.tableNodes == null) {
-				this.tableNodes = new java.util.Hashtable<Integer, ArrayOfNodes>();
-				arrNodes = new ArrayOfNodes(iLevel);
-				this.addChildren(this.getTreeNode(), arrNodes);
-				this.tableNodes.put(objLevel, arrNodes);
+				this.tableNodes = new java.util.Hashtable<Integer, Scope.Node>();
+				objFlattenedNode = new Scope.Node(this);
+				this.addChildren(this.getTreeNode(), objFlattenedNode);
+				this.tableNodes.put(objLevel, objFlattenedNode);
 			} else {
-				arrNodes = this.tableNodes.get(objLevel);
+				objFlattenedNode = this.tableNodes.get(objLevel);
 			}
 		}  else  {
 			// check if the flattened node already exist in our database
 			if(this.tableNodes.containsKey(objLevel)) {
-				arrNodes = this.tableNodes.get(objLevel);
+				objFlattenedNode = this.tableNodes.get(objLevel);
  			} else {
  				// create the list of flattened node
- 				ArrayOfNodes arrParentNodes = this.tableNodes.get(Integer.valueOf(iLevel - 1));
- 				arrNodes = new ArrayOfNodes(iLevel);
+ 				Scope.Node arrParentNodes = this.tableNodes.get(Integer.valueOf(iLevel - 1));
+ 				objFlattenedNode = new Scope.Node(arrParentNodes.getValue());
  				boolean hasKids = false;
- 				for (int i=0;i<arrParentNodes.size();i++) {
- 					Scope.Node node = arrParentNodes.get(i);
+ 				for (int i=0;i<arrParentNodes.getChildCount();i++) {
+ 					Scope.Node node = (Node) arrParentNodes.getChildAt(i);
  					if(node.getChildCount()>0) {
  						// this node has children, add the children
- 						this.addChildren(node, arrNodes);
+ 						this.addChildren(node, objFlattenedNode);
  						hasKids = true;
  					} else {
  						// no children: add the node itself !
- 						arrNodes.add(node);
+ 						objFlattenedNode.add(node);
  					}
  				}
  				if(hasKids)
- 					this.tableNodes.put(objLevel, arrNodes);
+ 					this.tableNodes.put(objLevel, objFlattenedNode);
  				else {
  					// no more kids !
  					return null;
@@ -185,7 +185,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
  			}
 		}
 		this.iFlattenLevel = iLevel;
-		return arrNodes;
+		return objFlattenedNode;
 	}
 	//=====================================
 	/**
@@ -204,7 +204,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	 * We will flatten the current node by one level
 	 * @return
 	 */
-	public ArrayOfNodes getFlatten() {
+	public Scope.Node getFlatten() {
 		if(this.iFlattenLevel<0)
 			this.getFlatten(0);
 		return this.getFlatten(this.iFlattenLevel + 1);
@@ -215,7 +215,7 @@ public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
 	 * The tree has to be flattened, otherwise it return null
 	 * @return
 	 */
-	public ArrayOfNodes getUnflatten() {
+	public Scope.Node getUnflatten() {
 		return this.getFlatten(this.iFlattenLevel - 1);
 	}
 	

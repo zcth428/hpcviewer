@@ -335,13 +335,24 @@ protected void addPercents(Scope scope, RootScope totalScope)
 }
 
 /**
+ * generic post-processing: by default we show all views
+ */
+public void postprocess()  {
+	this.postprocess(true);
+}
+
+/**
  * Post-processing for CCT:
+ * @param:
+ * 	callerView: compute caller view if true.
+ * 
  * Step 1: normalizing CCT view
  *  - normalize line scope, which means to add the cost of line scope into call site scope
  *  - compute inclusive metrics for I
  *  - compute inclusive metrics for X
+ *  Step 2: create call view (if enabled) and flat view
  */
-public void postprocess() {
+public void postprocess(boolean callerView) {
 	if (this.rootScope.getSubscopeCount() <= 0) return;
 	// Get first scope subtree: CCT or Flat
 	Scope firstSubTree = this.rootScope.getSubscope(0);
@@ -364,9 +375,12 @@ public void postprocess() {
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
 
 		// Callers View
-		Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
-		copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
-
+		if (callerView) {
+			Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
+			copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
+			addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
+		}
+		
 		// Flat View
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
@@ -378,7 +392,6 @@ public void postprocess() {
 
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
-		addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
 
 	} else if (firstRootType.equals(RootScopeType.Flat)) {

@@ -6,14 +6,17 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TreeNode;
 
 import edu.rice.cs.hpc.data.experiment.*; 
+import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
+import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 /**
  * Class to be used as an interface between the GUI and the data experiment
  * This class should be called from an eclipse view !
@@ -94,7 +97,9 @@ public class ExperimentView {
 	public boolean loadExperimentAndProcess(String sFilename) {
 		Experiment experiment = this.loadExperiment(sFilename);
 		if(experiment != null) {
-	        experiment.postprocess();
+			ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+			boolean bCallerView = objPref.getBoolean(PreferenceConstants.P_CALLER_VIEW);
+	        experiment.postprocess(bCallerView);
 	        this.generateView(experiment);
 	        return true;
 		}

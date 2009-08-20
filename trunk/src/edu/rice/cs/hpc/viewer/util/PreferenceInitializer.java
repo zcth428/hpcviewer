@@ -20,6 +20,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		//store.setDefault(PreferenceConstants.P_FONT_VIEW, Utilities.fontMetric.toString());
 		store.setDefault(PreferenceConstants.P_PATH,"");
 		store.setDefault(PreferenceConstants.P_THRESHOLD,"0.5");
+		store.setDefault(PreferenceConstants.P_CALLER_VIEW, true);
 	}
 
 }

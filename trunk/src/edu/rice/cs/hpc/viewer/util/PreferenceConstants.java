@@ -5,6 +5,8 @@ package edu.rice.cs.hpc.viewer.util;
  */
 public class PreferenceConstants {
 
+	public static final String P_CALLER_VIEW = "callerViewPreference";
+	
 	public static final String P_PATH = "pathPreference";
 
 	public static final String P_THRESHOLD = "ThresholdPreference";

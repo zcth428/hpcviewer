@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.CoolBar;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
@@ -167,7 +166,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		Object o = treeViewer.getInput();
 		Scope.Node child;
 		if (!(o instanceof Scope.Node)) {
-			if(o instanceof ArrayOfNodes) {
 				TreeItem []tiObjects = this.treeViewer.getTree().getItems();
 				o = tiObjects[0];
 				if(o instanceof Scope.Node)
@@ -181,10 +179,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 				// tricky solution when zoom-out the flattened node
 				if(child != null)
 					child = (Scope.Node)child.getParent();
-			} else {
-				// there is something wrong here ...
-				throw(new java.lang.RuntimeException("ScopeViewAction: unknown input or the input is null" + o));
-			}
 		} else 
 			child = (Scope.Node) o;
 		return child;
@@ -369,10 +363,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		// prepare the dialog box
 		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objShell, 
 				this.myRootScope.getExperiment().getMetrics());
-		// prepare the scope node for the preview of the expression
-		Scope.Node node = this.getSelectedNode();
-		if(node == null)
-			node = (Scope.Node) this.getInputNode();
 
 		// display the dialog box
 		if(dlg.open() == Dialog.OK) {

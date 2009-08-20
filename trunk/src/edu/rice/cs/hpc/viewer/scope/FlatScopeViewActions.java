@@ -9,7 +9,6 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.widgets.CoolBar;
 
-import edu.rice.cs.hpc.data.experiment.scope.ArrayOfNodes;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
@@ -56,11 +55,11 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * Flatten the tree one level more
 	 */
 	public void flatten() {
-		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getFlatten();
-		if(arrNodes != null) {
+		Scope.Node objFlattenedNode = ((RootScope)this.myRootScope).getFlatten();
+		if(objFlattenedNode != null) {
 			this.treeViewer.getTree().setRedraw(false);
 			// we update the data of the table
-			this.treeViewer.setInput(arrNodes);
+			this.treeViewer.setInput(objFlattenedNode);
 			// refreshing the table to take into account a new data
 			this.treeViewer.refresh();
 			// post processing: inserting the "aggregate metric" into the top row of the table
@@ -77,9 +76,9 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * Unflatten flattened tree (tree has to be flattened before)
 	 */
 	public void unflatten() {
-		ArrayOfNodes arrNodes = ((RootScope)this.myRootScope).getUnflatten();
-		if(arrNodes != null) {
-			this.treeViewer.setInput(arrNodes);
+		Scope.Node objParentNode = ((RootScope)this.myRootScope).getUnflatten();
+		if(objParentNode != null) {
+			this.treeViewer.setInput(objParentNode);
 			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(this.myRootScope.getFlattenLevel(), true);
 		}
 	}

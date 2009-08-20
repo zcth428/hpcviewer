@@ -3,7 +3,6 @@
  */
 package edu.rice.cs.hpc.viewer.scope;
 
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
@@ -56,8 +55,6 @@ public class ScopeZoom {
 		// FIXME: this approach is not elegant, but we don't have any choice
 		// 			at the moment
 		this.objActionsGUI.insertParentNode(current);
-		//this.objActionsGUI.updateButtons( canZoomIn(current), canZoomOut() );
-		//this.objActionsGUI.checkZoomButtons(current);
 	}
 	
 	/**

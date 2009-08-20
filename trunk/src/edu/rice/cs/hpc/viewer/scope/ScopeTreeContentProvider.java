@@ -26,10 +26,6 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
         	if (arrChildren != null)
         		if (arrChildren.length>0)
         			return arrChildren;
-    	} else if(parentElement instanceof ArrayOfNodes) {
-    		// flat-tree node
-    		ArrayOfNodes listNodes = (ArrayOfNodes) parentElement;
-    		return listNodes.toArray();
     	}
     	return null;
     }

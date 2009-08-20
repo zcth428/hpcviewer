@@ -47,6 +47,9 @@ public class PreferencePage
 	 * restore itself.
 	 */
 	public void createFieldEditors() {
+		BooleanFieldEditor objCallerViewFlag = new BooleanFieldEditor(PreferenceConstants.P_CALLER_VIEW,
+				"Show caller view", getFieldEditorParent());
+		addField(objCallerViewFlag);
 		
 		objDirectory = new DirectoryFieldEditor(PreferenceConstants.P_PATH, 
 				"&Default database directory:", getFieldEditorParent()); 

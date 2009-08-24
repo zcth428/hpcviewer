@@ -1,7 +1,5 @@
 package edu.rice.cs.hpc.viewer.experiment;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TreeNode;
 
@@ -49,36 +47,7 @@ public class ExperimentView {
 		}
 	}
 	
-	/**
-	 * DO NOT CALL THIS CONSTRUCTOR if possible
-	 * This will try to find the ScopeView manually and not portable
-	 */
-	/*
-	public ExperimentView(){
-		objPage = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		this.init();
-	}*/
-	/*
-	class ThrLoadProcessingThread extends Thread {
-		String sFilename;
-		public ThrLoadProcessingThread(String file) {
-			this.sFilename = file;
-		}
-		public void run() {
-			objPage.getWorkbenchWindow().getShell().getDisplay().syncExec(new Runnable() {
-				public void run() {
-					try {
-						final ScopeView viewScope = (ScopeView) objPage.showView(ScopeView.ID);
-						//viewScope.setFocus();
-						viewScope.showProcessingMessage();
-					} catch(org.eclipse.ui.PartInitException e) {
-						e.printStackTrace();
-					}
-				}
-			});
-		}
-	}
-	*/
+
 	/**
 	 * Asynchronously showing a processing message in the message bar and opening a database 
 	 * @param sFilename: the name of XML database file
@@ -90,21 +59,34 @@ public class ExperimentView {
 		loadExperimentAndProcess(sFilename);
 	}
 	*/
+	
 	/**
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
 	 * @param sFilename
+	 * @param bCallerView: flag to indicate if the caller view can be displayed
 	 */
-	public boolean loadExperimentAndProcess(String sFilename) {
+	public boolean loadExperimentAndProcess(String sFilename, boolean bCallerView) {
 		Experiment experiment = this.loadExperiment(sFilename);
 		if(experiment != null) {
-			ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-			boolean bCallerView = objPref.getBoolean(PreferenceConstants.P_CALLER_VIEW);
 	        experiment.postprocess(bCallerView);
 	        this.generateView(experiment);
 	        return true;
 		}
 		return false;
 	}
+	
+	/**
+	 * A wrapper of loadExperiment() by adding some processing and generate the views
+	 * The routine will first look at the user preference for displaying caller view 
+	 * Then call the normal loadExperimentAndProcess routine.
+	 * @param sFilename
+	 */
+	public boolean loadExperimentAndProcess(String sFilename) {
+		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+		boolean bCallerView = objPref.getBoolean(PreferenceConstants.P_CALLER_VIEW);
+		return this.loadExperimentAndProcess(sFilename, bCallerView);
+	}
+	
 	/**
 	 * Load an XML experiment file based on the filename (uncheck for its inexistence)
 	 * This method will display errors whenever encountered.
@@ -170,13 +152,13 @@ public class ExperimentView {
 		this.removeViews();
 		// remove the old-irrelevant editors
 		this.closeAllEditors();
+		
 		// next, we retrieve all children of the scope and display them in separate views
-		//ArrayList<RootScope> rootChildren = (ArrayList<RootScope>)experiment.getRootScopeChildren();
 		TreeNode []rootChildren = experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.length;
 		BaseScopeView objCCView = null;
 		arrScopeViews = new BaseScopeView[nbChildren];
-		//this.listOfViews = new ScopeView[nbChildren];
+
 		for(int k=0;nbChildren>k;k++)
 		{
 			RootScope child = (RootScope) rootChildren[k].getValue();

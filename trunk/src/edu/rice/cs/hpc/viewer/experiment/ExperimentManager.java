@@ -26,6 +26,10 @@ import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
  *
  */
 public class ExperimentManager {
+	final static public int FLAG_DEFAULT = 0;
+	final static public int FLAG_WITH_CALLER_VIEW = 1;
+	final static public int FLAG_WITHOUT_CALLER_VIEW = 2;
+
 	/**
 	 * Last path of the opened directory
 	 */
@@ -36,6 +40,12 @@ public class ExperimentManager {
 	private IWorkbenchWindow window;
 	
 	private ExperimentView expViewer;
+	
+	/**
+	 * flag to indicate if a caller view needs to display or not
+	 */
+	private boolean flagCallerView = true;
+	
 	/**
 	 * Constructor to instantiate experiment file
 	 * @param win: the current workbench window
@@ -97,10 +107,10 @@ public class ExperimentManager {
 	 * @param sPath
 	 * @return
 	 */
-	public boolean openDatabaseFromDirectory(String sPath) {
+	public boolean openDatabaseFromDirectory(String sPath, int flag) {
 		File []fileXML = this.getListOfXMLFiles(sPath);
 		if(fileXML != null)
-			return this.openFileExperimentFromFiles(fileXML);
+			return this.openFileExperimentFromFiles(fileXML, flag);
 		return false;
 	}
 	/**
@@ -108,11 +118,11 @@ public class ExperimentManager {
 	 * open the scope view  
 	 * @return true if everything is OK. false otherwise
 	 */
-	public boolean openFileExperiment() {
+	public boolean openFileExperiment(int flag) {
 		File []fileXML = this.getDatabaseFileList(this.window.getShell(), 
 				"Select a directory containing a profiling database.");
 		if(fileXML != null)
-			return this.openFileExperimentFromFiles(fileXML);
+			return this.openFileExperimentFromFiles(fileXML, flag);
 		return false;
 	}
 
@@ -123,6 +133,8 @@ public class ExperimentManager {
 	public ExperimentView getExperimentView() {
 		return this.expViewer;
 	}
+	
+	
 	//==================================================================
 	// ---------- PRIVATE PART-----------------------------------------
 	//==================================================================
@@ -131,7 +143,7 @@ public class ExperimentManager {
 	 * @param filesXML: list of files
 	 * @return true if the opening is successful
 	 */
-	private boolean openFileExperimentFromFiles(File []filesXML) {
+	private boolean openFileExperimentFromFiles(File []filesXML, int flag) {
 		if((filesXML != null) && (filesXML.length>0)) {
 			boolean bContinue = true;
 			// let's make it complicated: assuming there are more than 1 XML file in this directory,
@@ -143,7 +155,7 @@ public class ExperimentManager {
 				// we will continue to verify the content of the list of XML files
 				// until we fine the good one.
 				if(!objFile.getName().startsWith("config"))
-					bContinue = (this.setExperiment(sFile) == false);
+					bContinue = (this.setExperiment(sFile, flag) == false);
 			}
 	   		if(bContinue) {
 	   		} else
@@ -159,18 +171,25 @@ public class ExperimentManager {
 	 * @param sFilename
 	 * @return
 	 */
-	private boolean setExperiment(String sFilename) {
+	private boolean setExperiment(String sFilename, int flag) {
+
 		IWorkbenchPage objPage= this.window.getActivePage();
 		// read the XML experiment file
 		this.expViewer = new ExperimentView(objPage);
 	    if(expViewer != null) {
 	    	// data looks OK
-	    	if (expViewer.loadExperimentAndProcess(sFilename)) {
-	    	} else
-		    	 return false; //TODO we need to throw an exception instead
+	    	boolean bResult;
+	    	if (flag == FLAG_WITHOUT_CALLER_VIEW)  {
+	    		flagCallerView = false;
+	    		bResult = expViewer.loadExperimentAndProcess(sFilename, flagCallerView);
+	    	} else if (flag == FLAG_DEFAULT && !flagCallerView )
+	    		// use the initial flag (set by command line or preference page)
+	    		bResult = expViewer.loadExperimentAndProcess(sFilename, flagCallerView );
+	    	else
+	    		bResult = expViewer.loadExperimentAndProcess(sFilename);
+	    	return bResult; 
 	     } else
 	    	 return false; //TODO we need to throw an exception instead
-		return true;
 	}
 	
 	/**

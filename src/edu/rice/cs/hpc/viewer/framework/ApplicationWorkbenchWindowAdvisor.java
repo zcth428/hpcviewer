@@ -65,6 +65,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Action when the window is already opened
 	 */
 	public void postWindowOpen() {
+    	boolean withCallerView = true;
 		// set the status bar
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
@@ -91,28 +92,35 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    	String sPath = null;
 		    	// find the file in the list of arguments
 		    	for(int i=0;i<sArgs.length;i++) {
-		    		if(sArgs[i].charAt(0) != '-') {
+		    		
+		    		if(sArgs[i].charAt(0) == '-') {
+		    			String sOption = sArgs[i].substring(1);
+		    			if (sArgs[i].charAt(1) == 'n' || (sArgs[i].charAt(2)=='-' && sOption.equalsIgnoreCase("nocallerview")) ){
+		    				// user has set the option not to display caller view
+		    				withCallerView = false;
+		    				System.out.println("no caller view");
+		    			}
+		    		} else {
 		    			sPath = sArgs[i];
-		    			break;
 		    		}
 		    	}
 		    	// if a filename exist, try to open it
 		    	if(sPath != null) {
 		    		File file = new File(sPath);
 		    		if(file.isFile())
-		    			expViewer.loadExperimentAndProcess(sPath);
+		    			expViewer.loadExperimentAndProcess(sPath, withCallerView);
 		    		else {
 		    			// bug fix: needs to treat a folder/directory
 		    			// it is a directory
 		    			this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
 		    				ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		    			ExperimentManager objManager = this.dataEx.getExperimentManager();
-		    			objManager.openDatabaseFromDirectory(sPath);
+		    			objManager.openDatabaseFromDirectory(sPath, this.getFlag(withCallerView));
 		    		}
 		    		//expViewer.asyncLoadExperimentAndProcess(sFilename);
 		    	} else 
 		    		// otherwise, show the open folder dialog to choose the database
-		    		this.openDatabase();
+		    		this.openDatabase(withCallerView);
 		     } else {
 		    	 statusline.setMessage("Cannot relocate the viewer. Please open the database manually.");
 		    	 System.err.println("Cannot relocate the viewer. Please open the database manually.");
@@ -122,7 +130,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// there is no information about the database
 			statusline.setMessage(null, "Load a database to start.");
 			// we need load the file ASAP
-			this.openDatabase();
+			this.openDatabase(withCallerView);
 		}
 		this.shutdownEvent(this.workbench, windowCurrent.getActivePage());
 	}
@@ -131,27 +139,22 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Open an experiment database. A database is a folder that contains XML experiment files 
 	 * (only the first one will be taken into account)
 	 */
-	private void openDatabase() {
-		this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
+	private void openDatabase( boolean withCallerView ) {
+		this.dataEx = 
 			ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		ExperimentManager expFile = this.dataEx.getExperimentManager();
-		if(expFile != null) {
-			IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow();
-			if(windowCurrent != null) {
-				Shell objShell = windowCurrent.getShell();
-				if(objShell != null)
-					expFile.openFileExperiment();
-				else
-					System.out.println("AWWA: shell is null. please open the database manually.");
-			} else 
-				System.err.println("AWWA: No active window detected");
-
-		} else {
-			System.out.println("AWWA: exp manager is null. create a new one.");
-			assert(expFile == null);
-		}
+		expFile.openFileExperiment( this.getFlag(withCallerView));
 	}
 
+	/**
+	 * return the flag to indicate if a caller view needs to be displayed or not
+	 * @param withCallerView
+	 * @return
+	 */
+	private int getFlag (boolean withCallerView) {
+		if (withCallerView) return ExperimentManager.FLAG_DEFAULT;
+		else return ExperimentManager.FLAG_WITHOUT_CALLER_VIEW;
+	}
 	/**
 	 * Performs arbitrary actions as the window's shell is being closed directly, and possibly veto the close.
 	 */

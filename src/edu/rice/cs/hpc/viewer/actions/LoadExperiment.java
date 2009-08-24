@@ -25,7 +25,6 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
  */
 public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	private ExperimentManager expFile;
-	private IWorkbenchWindow window;
 	/**
 	 * The constructor.
 	 */
@@ -41,7 +40,7 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 */
 	public void run(IAction action) {
     	// open a file dialog
-			expFile.openFileExperiment();
+			expFile.openFileExperiment(ExperimentManager.FLAG_DEFAULT);
 	}
 
 	/**
@@ -68,7 +67,6 @@ public class LoadExperiment implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#init
 	 */
 	public void init(IWorkbenchWindow window) {
-		this.window = window;
 		//System.out.println("LE: win="+window.toString());
 		//expFile =  new ExperimentManager(window); //E
 		expFile = ExperimentData.getInstance(window).getExperimentManager();

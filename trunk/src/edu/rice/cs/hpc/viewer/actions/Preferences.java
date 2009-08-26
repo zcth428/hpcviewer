@@ -3,7 +3,6 @@
  */
 package edu.rice.cs.hpc.viewer.actions;
 
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 
 import org.eclipse.jface.action.IAction;

@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.FontData;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -65,19 +66,27 @@ public class Utilities {
 		COLOR_TOP = new Color(display, 255,255,204);
 		
 		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-		FontData []objFontMetric = display.getSystemFont().getFontData();;
-		FontData []objFontGeneric = objFontMetric;
-		// get the font for metrics columns
+		FontData []objFontMetric = display.getSystemFont().getFontData();
+		FontData []objFontGeneric = display.getSystemFont().getFontData();
+		objFontMetric[0].setName("Courier"); // default font for metrics
+
+		// get the font for metrics columns based on user preferences
 		if (objPref != null) {
 			// bug fix: for unknown reason, the second instance of hpcviewer cannot find the key
-			//	solution: check if the key exist or not
-			if ( objPref.getString (PreferenceConstants.P_FONT_METRIC) != null )
+			//	solution: check if the key exist or not IPreferenceStore.STRING_DEFAULT_DEFAULT.equals
+			String sValue = objPref.getString (PreferenceConstants.P_FONT_METRIC); 
+			if ( !IPreferenceStore.STRING_DEFAULT_DEFAULT.equals(sValue) )
 				objFontMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
-			if ( objPref.getString (PreferenceConstants.P_FONT_GENERIC) != null )
+			else 
+				// bug fix: if user hasn't set the preference, we set it for him/her
+				PreferenceConverter.setValue(objPref, PreferenceConstants.P_FONT_METRIC, objFontMetric);
+			
+			sValue = objPref.getString (PreferenceConstants.P_FONT_GENERIC);
+			if ( !IPreferenceStore.STRING_DEFAULT_DEFAULT.equals(sValue) )
 				objFontGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
-		} else {
-			// create font for metric view (should be plain text)
-			objFontMetric[0].setName("Courier");
+			else 
+				// bug fix: if user hasn't set the preference, we set it for him/her
+				PreferenceConverter.setValue(objPref, PreferenceConstants.P_FONT_METRIC, objFontMetric);
 		}
 		// create font for general purpose (view, editor, ...)
 		Utilities.fontGeneral = new Font (display, objFontGeneric);

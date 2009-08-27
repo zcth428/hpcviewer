@@ -161,7 +161,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
      */
     public boolean shouldUnflattenBeEnabled() {
     	// DO NOT unflatten if we reach to root scope level
-    	return (this.myRootScope.getFlattenLevel()>0);
+    	return (objFlatAction.getFlattenLevel()>0);
     }
 
 

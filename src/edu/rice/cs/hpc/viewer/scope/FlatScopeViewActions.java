@@ -25,6 +25,13 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 */
 	private java.util.Hashtable<Integer, Scope.Node> tableNodes;
 
+	private java.util.Stack<Object[]> stackStates;
+	
+	
+	//-----------------------------------------------------------------------
+	// 					METHODS
+	//-----------------------------------------------------------------------
+
 	/**
 	 * @param viewSite
 	 * @param parent
@@ -62,7 +69,14 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * Flatten the tree one level more
 	 */
 	public void flatten() {
-		Scope.Node objFlattenedNode = getFlatten();
+		this.pushElementStates();
+		
+		Scope.Node objFlattenedNode;
+		
+		if(this.iFlattenLevel<0)
+			objFlattenedNode = this.getFlatten(0);
+		objFlattenedNode = this.getFlatten(this.iFlattenLevel + 1);
+		
 		if(objFlattenedNode != null) {
 			this.treeViewer.getTree().setRedraw(false);
 			// we update the data of the table
@@ -71,11 +85,16 @@ public class FlatScopeViewActions extends ScopeViewActions {
 			this.treeViewer.refresh();
 			// post processing: inserting the "aggregate metric" into the top row of the table
 			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(getFlattenLevel(), true);
+
+			// bug fix: attempt to expand elements 
+			Object []arrNodes = this.stackStates.peek();
+			this.treeViewer.setExpandedElements(arrNodes);
+
 			this.treeViewer.getTree().setRedraw(true);
+			
 		} else {
 			// either there is something wrong or we cannot flatten anymore
-			//this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
-
+			System.err.println("hpcviewer: cannot flatten the tree");
 		}
 	}
 
@@ -83,10 +102,11 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * Unflatten flattened tree (tree has to be flattened before)
 	 */
 	public void unflatten() {
-		Scope.Node objParentNode = getUnflatten();
+		Scope.Node objParentNode = this.getFlatten(this.iFlattenLevel - 1);
 		if(objParentNode != null) {
 			this.treeViewer.setInput(objParentNode);
 			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(getFlattenLevel(), true);
+			this.popElementStates();
 		}
 	}
 
@@ -111,6 +131,25 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	//-----------------------------------------------------------------------
 
 	/**
+	 * store the current expanded elements into a stack
+	 */
+	private void pushElementStates() {
+		Object []arrNodes = this.treeViewer.getExpandedElements();
+		if (stackStates == null)
+			stackStates = new java.util.Stack<Object[]>();
+
+		stackStates.push(arrNodes);
+	}
+	
+	/**
+	 * recover the latest expanded element into stack
+	 */
+	private void popElementStates() {
+		Object []arrNodes = stackStates.pop();
+		this.treeViewer.setExpandedElements(arrNodes);
+	}
+	
+	/**
 	 * Return the list of flattened node.
 	 * Algo: 
 	 *  - browse the tree. If the tree node has children, then add the children into the table
@@ -129,6 +168,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 				objFlattenedNode = new Scope.Node(this.myRootScope);
 				this.addChildren(this.myRootScope.getTreeNode(), objFlattenedNode);
 				this.tableNodes.put(objLevel, objFlattenedNode);
+				
 			} else {
 				objFlattenedNode = this.tableNodes.get(objLevel);
 			}
@@ -160,28 +200,9 @@ public class FlatScopeViewActions extends ScopeViewActions {
 				}
 			}
 		}
+
 		this.iFlattenLevel = iLevel;
 		return objFlattenedNode;
-	}
-
-	/**
-	 * Return the list of flattened nodes
-	 * We will flatten the current node by one level
-	 * @return
-	 */
-	private Scope.Node getFlatten() {
-		if(this.iFlattenLevel<0)
-			this.getFlatten(0);
-		return this.getFlatten(this.iFlattenLevel + 1);
-	}
-
-	/**
-	 * Return the unflattened list of nodes
-	 * The tree has to be flattened, otherwise it return null
-	 * @return
-	 */
-	private Scope.Node getUnflatten() {
-		return this.getFlatten(this.iFlattenLevel - 1);
 	}
 
 

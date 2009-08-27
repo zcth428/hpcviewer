@@ -5,11 +5,10 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.widgets.CoolBar;
 
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
 
@@ -18,16 +17,20 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
  *
  */
 public class FlatScopeViewActions extends ScopeViewActions {
-	//private FlatScopeViewActionsGUI objFlatActionsGUI;
+	private int iFlattenLevel = -1;
 	
+	/**
+	 * Table of list of flattened node. We need to keep it in memory to avoid
+	 * recomputation of the flattening nodes
+	 */
+	private java.util.Hashtable<Integer, Scope.Node> tableNodes;
+
 	/**
 	 * @param viewSite
 	 * @param parent
 	 */
 	public FlatScopeViewActions(Shell shell, IWorkbenchWindow window, Composite parent, CoolBar coolbar) {
 		super(shell, window, parent, coolbar);
-		//this.createGUI(parent, coolbar);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -37,25 +40,29 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 */
 	protected Composite createGUI(Composite parent, CoolBar coolbar) {
 		this.objActionsGUI = new FlatScopeViewActionsGUI(this.objShell, this.objWindow, parent, this);
-		//this.objActionsGUI = this.objFlatActionsGUI;
 		this.objActionsGUI.buildGUI(parent, coolbar);
 		return parent;
 	}
-	   /**
-     * Check if the buttons in the toolbar should be enable/disable
-     * @param node
-     */
-	/*
-    public void checkButtons(Scope.Node node) {
-    	this.objFlatActionsGUI.checkFlattenButtons();
-    	super.checkButtons(node);
-    } */
-    
+
+	//-----------------------------------------------------------------------
+	// 					FLATTEN: PUBLIC INTERFACES
+	//-----------------------------------------------------------------------
+	
+
+	/**
+	 * Return the current level of flatten node
+	 * @return
+	 */
+	public int getFlattenLevel() {
+		return this.iFlattenLevel;
+	}
+
+
 	/**
 	 * Flatten the tree one level more
 	 */
 	public void flatten() {
-		Scope.Node objFlattenedNode = ((RootScope)this.myRootScope).getFlatten();
+		Scope.Node objFlattenedNode = getFlatten();
 		if(objFlattenedNode != null) {
 			this.treeViewer.getTree().setRedraw(false);
 			// we update the data of the table
@@ -63,12 +70,12 @@ public class FlatScopeViewActions extends ScopeViewActions {
 			// refreshing the table to take into account a new data
 			this.treeViewer.refresh();
 			// post processing: inserting the "aggregate metric" into the top row of the table
-			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(getFlattenLevel(), true);
 			this.treeViewer.getTree().setRedraw(true);
 		} else {
 			// either there is something wrong or we cannot flatten anymore
 			//this.objActionsGUI.updateFlattenView(this.myRootScope.getFlattenLevel());
-			
+
 		}
 	}
 
@@ -76,10 +83,10 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * Unflatten flattened tree (tree has to be flattened before)
 	 */
 	public void unflatten() {
-		Scope.Node objParentNode = ((RootScope)this.myRootScope).getUnflatten();
+		Scope.Node objParentNode = getUnflatten();
 		if(objParentNode != null) {
 			this.treeViewer.setInput(objParentNode);
-			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(this.myRootScope.getFlattenLevel(), true);
+			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(getFlattenLevel(), true);
 		}
 	}
 
@@ -88,7 +95,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * @see edu.rice.cs.hpc.viewer.scope.IToolbarManager#checkStates(edu.rice.cs.hpc.data.experiment.scope.Scope.Node)
 	 */
 	public void checkStates(Node nodeSelected) {
-    	boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
+		boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
 		objActionsGUI.enableHotCallPath( bCanZoomIn );
 		if (bCanZoomIn) {
 			bCanZoomIn = !( (FlatScopeViewActionsGUI) objActionsGUI ).shouldUnflattenBeEnabled();
@@ -97,6 +104,100 @@ public class FlatScopeViewActions extends ScopeViewActions {
 		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );
 		((FlatScopeViewActionsGUI) objActionsGUI).checkFlattenButtons();
 	}
+
 	
+	//-----------------------------------------------------------------------
+	// 					FLATTEN: PRIVATE METHODS
+	//-----------------------------------------------------------------------
+
+	/**
+	 * Return the list of flattened node.
+	 * Algo: 
+	 *  - browse the tree. If the tree node has children, then add the children into the table
+	 *    Otherwise, add the node itself.
+	 * @param iLevel: level of flattened nodes, 0 is the root
+	 * @return
+	 */
+	private Scope.Node getFlatten(int iLevel) {
+		if (iLevel<0)
+			return null; // TODO: should return an exception instead
+		Scope.Node objFlattenedNode;
+		Integer objLevel = Integer.valueOf(iLevel);
+		if(iLevel == 0) {
+			if(this.tableNodes == null) {
+				this.tableNodes = new java.util.Hashtable<Integer, Scope.Node>();
+				objFlattenedNode = new Scope.Node(this.myRootScope);
+				this.addChildren(this.myRootScope.getTreeNode(), objFlattenedNode);
+				this.tableNodes.put(objLevel, objFlattenedNode);
+			} else {
+				objFlattenedNode = this.tableNodes.get(objLevel);
+			}
+		}  else  {
+			// check if the flattened node already exist in our database
+			if(this.tableNodes.containsKey(objLevel)) {
+				objFlattenedNode = this.tableNodes.get(objLevel);
+			} else {
+				// create the list of flattened node
+				Scope.Node objParentNode = this.tableNodes.get(Integer.valueOf(iLevel - 1));
+				objFlattenedNode = new Scope.Node(objParentNode.getValue());
+				boolean hasKids = false;
+				for (int i=0;i<objParentNode.getChildCount();i++) {
+					Scope.Node node = (Node) objParentNode.getChildAt(i);
+					if(node.getChildCount()>0) {
+						// this node has children, add the children
+						this.addChildren(node, objFlattenedNode);
+						hasKids = true;
+					} else {
+						// no children: add the node itself !
+						objFlattenedNode.add(node);
+					}
+				}
+				if(hasKids)
+					this.tableNodes.put(objLevel, objFlattenedNode);
+				else {
+					// no more kids !
+					return null;
+				}
+			}
+		}
+		this.iFlattenLevel = iLevel;
+		return objFlattenedNode;
+	}
+
+	/**
+	 * Return the list of flattened nodes
+	 * We will flatten the current node by one level
+	 * @return
+	 */
+	private Scope.Node getFlatten() {
+		if(this.iFlattenLevel<0)
+			this.getFlatten(0);
+		return this.getFlatten(this.iFlattenLevel + 1);
+	}
+
+	/**
+	 * Return the unflattened list of nodes
+	 * The tree has to be flattened, otherwise it return null
+	 * @return
+	 */
+	private Scope.Node getUnflatten() {
+		return this.getFlatten(this.iFlattenLevel - 1);
+	}
+
+
+	private void addChildren(Scope.Node node, Scope.Node arrNodes) {
+		int nbChildren = node.getChildCount();
+		for(int i=0;i<nbChildren;i++) {
+			// Laksono 2009.03.04: do not add call site !
+			Scope.Node nodeKid = ((Scope.Node) node.getChildAt(i));
+			if (nodeKid.getScope() instanceof CallSiteScope) {
+				// the kid is a callsite: do nothing
+			} else {
+				// otherwise add the kid into the list of scopes to display
+				arrNodes.add(nodeKid);
+			}
+		}
+	}
+
 
 }

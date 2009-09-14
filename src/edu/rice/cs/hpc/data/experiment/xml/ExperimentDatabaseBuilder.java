@@ -1095,10 +1095,11 @@ public class ExperimentDatabaseBuilder extends Builder
 		{
 			Metric metric = this.experiment.getMetric(internalName);
 			
-			String prd_string =  metric.getSamplePeriod();
+			//String prd_string =  metric.getSamplePeriod();
 			// get the sample period
-			double prd;
-			// get the sample period
+			double prd = metric.getSamplePeriod();
+
+			/*
 			try {
 				if (  (prd_string != null) && (prd_string.length()>0) )
 					prd=Double.valueOf(prd_string).doubleValue();
@@ -1108,7 +1109,7 @@ public class ExperimentDatabaseBuilder extends Builder
 				prd = 0.0;
 				System.err.println("Error metric number:"+prd_string);
 				e.printStackTrace();
-			}
+			} */
 
 			// multiple by sample period 
 			actualValue = prd * actualValue;
@@ -1207,6 +1208,7 @@ public class ExperimentDatabaseBuilder extends Builder
 		end_S();
 	}
 
+	private enum InfoState { PERIOD, UNIT, FLAG, NULL };
 	/************************************************************************
 	 * Laks: special treatement when NV is called under INFO
 	 * @param attributes
@@ -1214,19 +1216,58 @@ public class ExperimentDatabaseBuilder extends Builder
 	 ************************************************************************/
 	private void do_NV(String[] attributes, String[] values) {
 		if(this.previousState == TokenXML.T_METRIC) {
-			// previous state is metric. The attribute should be about periodicity or flags
-			if(values[0].startsWith("p")) {
-				// get the sample period of this metric
-				String sPeriod = values[1];
-				int nbMetrics= this.metricList.size();
-				if(nbMetrics > 1) {
-					// get the current metric (inc)
-					Metric metric = (Metric) this.metricList.get(nbMetrics-1);
-					metric.setSamplePeriod(sPeriod);
-					// get the current metric (exc)
-					metric = (Metric) this.metricList.get(nbMetrics-2);
-					metric.setSamplePeriod(sPeriod);
-				}
+			InfoState iState = InfoState.NULL;
+			// previous state is metric. The attribute should be about periodicity or unit
+			for (int i=0; i<attributes.length; i++) {
+				if (attributes[i].charAt(0) == 'n') {
+					// name of the info
+					if ( values[i].charAt(0) == 'p' ) 
+						// period
+						iState = InfoState.PERIOD;
+					else if ( values[i].charAt(0) == 'u' )
+						// unit
+						iState = InfoState.UNIT;
+					else if ( values[i].charAt(0) == 'f' )
+						// flag
+						iState = InfoState.FLAG;
+					
+				} else if ( attributes[i].charAt(0) == 'v' ) {
+					
+					int nbMetrics= this.metricList.size();
+					// value of the info
+					switch (iState) {
+					case PERIOD:
+						String sPeriod = values[i];
+						if(nbMetrics > 1) {
+							// get the current metric (inc)
+							Metric metric = (Metric) this.metricList.get(nbMetrics-1);
+							metric.setSamplePeriod(sPeriod);
+							// get the current metric (exc)
+							metric = (Metric) this.metricList.get(nbMetrics-2);
+							metric.setSamplePeriod(sPeriod);
+						}
+						break;
+					case UNIT:
+						if(nbMetrics > 1) {
+							// get the current metric (inc)
+							Metric metric = (Metric) this.metricList.get(nbMetrics-1);
+							metric.setUnit( values[i] );
+							// get the current metric (exc)
+							metric = (Metric) this.metricList.get(nbMetrics-2);
+							metric.setUnit(values[i]);
+						}
+						break;
+					case FLAG:
+						break;
+					default:
+						System.err.println("Warning: unrecognize info value state: "+iState);
+						
+						break;
+							
+					}
+					
+				} else 
+					System.err.println("Warning: incorrect XML info format: " + attributes[i]+" "+ values[i]);
 			}
 		}
 	}

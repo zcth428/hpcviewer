@@ -1097,8 +1097,8 @@ public class ExperimentBuilder extends Builder
 			Metric metric = this.experiment.getMetric(internalName);
 			
 			// get the sample period
-			String prd_string =  metric.getSamplePeriod();
-			double prd=Double.valueOf(prd_string).doubleValue();
+			//String prd_string =  metric.getSamplePeriod();
+			double prd = metric.getSamplePeriod(); //Double.valueOf(prd_string).doubleValue();
 			// System.out.println(prd); 
 			// multiple by sample period 
 			actualValue = prd * actualValue;

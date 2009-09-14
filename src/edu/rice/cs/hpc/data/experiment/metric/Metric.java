@@ -39,14 +39,13 @@ public class Metric extends BaseMetric
 /** The experiment owning this metric. */
 protected Experiment experiment;
 
-protected String  sampleperiod;
+protected double  sampleperiod;
 
 protected int partnerIndex;
 
 public final static int NO_PARTNER_INDEX = -1;
 
-
-
+private char unit;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -72,19 +71,51 @@ public Metric(Experiment experiment,
 	//this.displayName = displayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle
 	//this.displayed   = displayed;
 	//this.percent     = percent;
-    this.sampleperiod  = sampleperiod;
+    this.sampleperiod  = this.convertSamplePeriode(sampleperiod);
     this.metricType     = metricType;
     this.partnerIndex = partnerIndex;
+    this.unit = '0';
 }
 
+/**
+ * Construct a metric using a predefined sample period
+ * @param experiment
+ * @param shortName
+ * @param nativeName
+ * @param displayName
+ * @param displayed
+ * @param percent
+ * @param sampleperiod
+ * @param metricType
+ * @param partnerIndex
+ */
+public Metric(Experiment experiment,
+        String shortName, String nativeName, String displayName,
+        boolean displayed, boolean percent, double sampleperiod, MetricType metricType, 
+        int partnerIndex)
+{
+super(displayName, displayed, percent, 0);
+// creation arguments
+this.experiment  = experiment;
+this.shortName   = shortName;
+this.nativeName  = nativeName;
+this.sampleperiod  = sampleperiod;
+this.metricType     = metricType;
+this.partnerIndex = partnerIndex;
+this.unit = '0';
+}
+
+public void setUnit (String sUnit) {
+	this.unit = sUnit.charAt(0);
+}
 
 /**
  * Return the sample period
  * @return
  */
-public String getSamplePeriod()
+public double getSamplePeriod()
 {
-    return this.sampleperiod;
+	return this.sampleperiod;
 }
 
 /**
@@ -92,7 +123,7 @@ public String getSamplePeriod()
  * @param s
  */
 public void setSamplePeriod(String s) {
-	this.sampleperiod = s;
+	this.sampleperiod = this.convertSamplePeriode(s);
 }
 /*************************************************************************
  *	Returns the value of this metric at a given scope.
@@ -132,6 +163,39 @@ public void setPartnerIndex(int ei)
 public Scope getRootScope() {
 	return this.experiment.getRootScope();
 }
+
+// =================================================================================
+// 			UTILITY METHODS
+//=================================================================================
+
+/**
+ * Verify if the unit is an event or not
+ * @return
+ */
+private boolean isUnitEvent() {
+	return this.unit == 'e';
+}
+
+/**
+ * convert the input sample period into a double, depending of the unit
+ * @param sPeriod
+ * @return
+ */
+private double convertSamplePeriode( String sPeriod ) {
+	if (this.isUnitEvent())
+		return 1.0;
+	
+	double period = 1.0;
+	if (sPeriod != null && sPeriod.length()>0) {
+		try {
+			period = Double.parseDouble(sPeriod);
+		} catch (java.lang.NumberFormatException e) {
+			System.err.println("The sample period is incorrect :" + this.sampleperiod);
+		}
+	}
+	return period;
+}
+
 }
 
 

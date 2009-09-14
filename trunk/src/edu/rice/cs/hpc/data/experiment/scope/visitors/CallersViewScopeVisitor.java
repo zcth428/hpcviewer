@@ -69,23 +69,25 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			if (callee == null) {
 				callee  = (ProcedureScope)mycallee.duplicate();
 				callee.iCounter = 0;
-				//calleeht.put(objCode, callee);
+
 				callersViewRootScope.addSubscope(callee);
 				callee.setParentScope(this.callersViewRootScope);
-				// Laks 2009.01.06: get rid off unused methods and attributes
-				//exp.getScopeList().addScope(callee);
- 				trace("added top level entry in bottom up tree");
+
+				// 2009.09.03: Laksono: instead of copying metrics from scope, we have to copy from the  "corrected" metrics
+				//	( "corrected" means we exclude the cost of call which usually very small anyway )
+				callee.accumulateMetrics(scopeCall, inclusiveOnly, numberOfPrimaryMetrics);
+
+				trace("added top level entry in bottom up tree");
 			} else {
 					// debugging purpose
 					// to be here, it must be a recursive routine
+				if (procedureName.equals("coalesceDuplicateStmts"))
+				trace("");
 			}
 			
 			callee.iCounter++;
-			if(callee.iCounter == 1) {
-				// add the cost into the procedure "root" if necessary
-				callee.accumulateMetrics(scope, inclusiveOnly, numberOfPrimaryMetrics);
-			}
-			callee.accumulateMetrics(scope, exclusiveOnly, numberOfPrimaryMetrics);
+
+			callee.accumulateMetrics(scopeCall, exclusiveOnly, numberOfPrimaryMetrics);
 			calleeht.put(objCode, callee);
 
 			//-----------------------------------------------------------------------
@@ -131,11 +133,12 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					LineScope lineScope = innerCS.getLineScope();
 					if(lineScope != null) {
 						CallSiteScope callerScope =
-							new CallSiteScope((LineScope) lineScope.duplicate(), 
+							new CallSiteScopeCallerView((LineScope) lineScope.duplicate(), 
 									mycaller,
-									CallSiteScopeType.CALL_FROM_PROCEDURE, 0);
+									CallSiteScopeType.CALL_FROM_PROCEDURE, 0, next);
 						callerScope.accumulateMetrics(scopeCall, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
 						callPathList.addLast(callerScope);
+						
 						innerCS = enclosingCS;
 					}
 				}
@@ -145,7 +148,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList);
+			mergeCallerPath(callee, callPathList, callee.iCounter>1);
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
@@ -194,6 +197,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					// Laks 2009.01.06: get rid off unused methods and attributes
 					//exp.getScopeList().addScope(callee);
 					trace("added top level entry in bottom up tree");
+				} else {
+					System.err.println("Error: procedure "+procedureName+" has been instantiated more than once.");
 				}
 				callee.accumulateMetrics(tmp, emptyFilter, 
 						numberOfPrimaryMetrics);
@@ -219,8 +224,35 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	// helper functions  
 	//----------------------------------------------------
 	
+	private boolean isPartOf( Scope parent, LinkedList list) {
+		int iSize = list.size();
+		int i=0;
+		Scope current = parent;
+		while ( i<iSize && current != null) {
+			CallSiteScope scope = (CallSiteScope) list.get(i);
+			
+			if ( scope.hashCode() == current.hashCode() ) {
+				boolean found = false; 				
+				Scope iter = current.getSubscope(0);
+				int j=i+1;
+				while ( i<iSize && iter != null && !found ) {
+					scope = (CallSiteScope) list.get(j);
+					found = iter.hashCode() == scope.hashCode();
+					
+					iter = iter.getSubscope(0);
+					j++;
+				}
+				if (found) return true;
+			}
+			
+			i++;
+			current = current.getSubscope(0);
+		}
+		
+		return false;
+	}
 
-	protected void mergeCallerPath(Scope callee, LinkedList callerPathList) 
+	protected void mergeCallerPath(Scope callee, LinkedList callerPathList, boolean need_to_be_checked) 
 	{
 		if (callerPathList.size() == 0) return; // merging an empty path is trivial
 
@@ -232,17 +264,27 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		int nCallers = callee.getSubscopeCount();
 		for (int i = 0; i < nCallers; i++) {
 			CallSiteScope existingCaller = (CallSiteScope) callee.getSubscope(i);
+
+			/* original code:
+			 * if (existingCaller.getLineScope().isequal(first.getLineScope()) &&
+					(existingCaller.getName()).equals(first.getName())) { 
+			 */
 			// if first matches an existing caller
-			if (existingCaller.getLineScope().isequal(first.getLineScope()) &&
-					(existingCaller.getName()).equals(first.getName())) {
+			if (existingCaller.hashCode() == first.hashCode() ) {
 
 				// add metric values for first to those of existingCaller.
 				// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
 				//existingCaller.mergeMetric(first, this.inclusiveOnly);
-				existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
+				
+				if (existingCaller.iCounter > 0)
+					existingCaller.mergeMetric(first, this.exclusiveOnly);
+				else
+					existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
+				
+				existingCaller.iCounter++;
 				
 				// merge rest of call path as a child of existingCaller.
-				mergeCallerPath(existingCaller, callerPathList);
+				mergeCallerPath(existingCaller, callerPathList, need_to_be_checked);
 
 				return; // merged with existing child. nothing left to do.
 			}

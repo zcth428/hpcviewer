@@ -1095,21 +1095,8 @@ public class ExperimentDatabaseBuilder extends Builder
 		{
 			Metric metric = this.experiment.getMetric(internalName);
 			
-			//String prd_string =  metric.getSamplePeriod();
 			// get the sample period
 			double prd = metric.getSamplePeriod();
-
-			/*
-			try {
-				if (  (prd_string != null) && (prd_string.length()>0) )
-					prd=Double.valueOf(prd_string).doubleValue();
-				else
-					prd = 1.0;
-			} catch (java.lang.NumberFormatException e) {
-				prd = 0.0;
-				System.err.println("Error metric number:"+prd_string);
-				e.printStackTrace();
-			} */
 
 			// multiple by sample period 
 			actualValue = prd * actualValue;
@@ -1208,6 +1195,11 @@ public class ExperimentDatabaseBuilder extends Builder
 		end_S();
 	}
 
+	/**
+	 * Enumeration of different states of info
+	 * @author laksonoadhianto
+	 *
+	 */
 	private enum InfoState { PERIOD, UNIT, FLAG, NULL };
 	/************************************************************************
 	 * Laks: special treatement when NV is called under INFO
@@ -1219,16 +1211,14 @@ public class ExperimentDatabaseBuilder extends Builder
 			InfoState iState = InfoState.NULL;
 			// previous state is metric. The attribute should be about periodicity or unit
 			for (int i=0; i<attributes.length; i++) {
+				
 				if (attributes[i].charAt(0) == 'n') {
 					// name of the info
-					if ( values[i].charAt(0) == 'p' ) 
-						// period
+					if ( values[i].charAt(0) == 'p' ) // period
 						iState = InfoState.PERIOD;
-					else if ( values[i].charAt(0) == 'u' )
-						// unit
+					else if ( values[i].charAt(0) == 'u' ) // unit
 						iState = InfoState.UNIT;
-					else if ( values[i].charAt(0) == 'f' )
-						// flag
+					else if ( values[i].charAt(0) == 'f' ) // flag
 						iState = InfoState.FLAG;
 					
 				} else if ( attributes[i].charAt(0) == 'v' ) {
@@ -1245,6 +1235,7 @@ public class ExperimentDatabaseBuilder extends Builder
 							// get the current metric (exc)
 							metric = (Metric) this.metricList.get(nbMetrics-2);
 							metric.setSamplePeriod(sPeriod);
+							
 						}
 						break;
 					case UNIT:
@@ -1258,14 +1249,14 @@ public class ExperimentDatabaseBuilder extends Builder
 						}
 						break;
 					case FLAG:
+						// not used ?
 						break;
 					default:
 						System.err.println("Warning: unrecognize info value state: "+iState);
-						
 						break;
-							
 					}
-					
+					// reinitialize the info state
+					iState = InfoState.NULL;
 				} else 
 					System.err.println("Warning: incorrect XML info format: " + attributes[i]+" "+ values[i]);
 			}

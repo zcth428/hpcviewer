@@ -34,8 +34,8 @@ import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 public class CallSiteScope extends Scope
 {
 
-
-private boolean CsprofLeaf=false;
+// Laksono 2009.09.10: get rid off unused methods
+//private boolean CsprofLeaf=false;
 
 protected LineScope lineScope;
 
@@ -63,6 +63,7 @@ public CallSiteScope(LineScope scope, ProcedureScope scope2,
 	this.lineScope = scope;
 	this.procScope = scope2;
 	this.type = csst;
+	this.iCounter = 0;
 //	this.id = "CallSiteScope";
 }
 
@@ -97,7 +98,7 @@ public LineScope getLineScope()
 	return this.lineScope;
 }
 
-
+/* Laksono 2009.09.10: get rid off unused methods
 public boolean getCsprofLeaf()
 {
    return this.CsprofLeaf;
@@ -108,7 +109,7 @@ public void setCsprofLeaf(boolean value)
 {
    this.CsprofLeaf=value;
 } 
-
+*/
 //////////////////////////////////////////////////////////////////////////
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////

@@ -39,4 +39,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		//this.getWorkbenchConfigurer().getWorkbench().getWorkbenchWindows()[0].getActivePage().closeAllEditors(false);
 		return super.preShutdown();
 	}
+	
+	public void postStartup() {
+		super.postStartup();
+	}
 }

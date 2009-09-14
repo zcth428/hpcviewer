@@ -1101,7 +1101,8 @@ public class ExperimentDatabaseBuilder extends Builder
 			// multiple by sample period 
 			actualValue = prd * actualValue;
 			MetricValue metricValue = new MetricValue(actualValue);
-			this.getCurrentScope().setMetricValue(metric.getIndex(), metricValue);
+			Scope objCurrentScope = this.getCurrentScope();
+			objCurrentScope.setMetricValue(metric.getIndex(), metricValue);
 
 			// update also the self metric value for calling context only
 			if (this.csviewer) {
@@ -1111,7 +1112,7 @@ public class ExperimentDatabaseBuilder extends Builder
 
 				Metric selfMetric = this.experiment.getMetric(selfShortName); 
 				MetricValue selfMetricValue = new MetricValue(actualValue);
-				this.getCurrentScope().setMetricValue(selfMetric.getIndex(), selfMetricValue);  
+				objCurrentScope.setMetricValue(selfMetric.getIndex(), selfMetricValue);  
 			}
 		} 
 	}

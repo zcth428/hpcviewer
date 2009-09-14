@@ -26,8 +26,6 @@ public class Perspective implements IPerspectiveFactory {
 		layout.getViewLayout(ScopeView.ID).setCloseable(false);
 		layout.getViewLayout(CallerScopeView.ID).setCloseable(false);
 		layout.getViewLayout(FlatScopeView.ID).setCloseable(false);
-		//layout.addStandaloneView(edu.rice.cs.hpcvision.scope.ScopeView.ID,  false, IPageLayout.BOTTOM, 0.5f, editorArea);
-		//layout.addStandaloneView(View.ID,  false, IPageLayout.BOTTOM, 0.5f, editorArea);
 	}
 
 }

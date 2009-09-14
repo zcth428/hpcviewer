@@ -348,7 +348,7 @@ abstract public class BaseScopeView  extends ViewPart {
         });
 
 		// allow other views to listen for selections in this view (site)
-		//this.getSite().setSelectionProvider(treeViewer);
+		this.getSite().setSelectionProvider(treeViewer);
 		
 		/**
 		 * Add Listener for change of selection so that every change will update
@@ -360,8 +360,9 @@ abstract public class BaseScopeView  extends ViewPart {
 		        TreeSelection selection =
 		          (TreeSelection) event.getSelection();
 
-		        if(selection.getFirstElement() instanceof Scope.Node) {
-			        Scope.Node nodeSelected = (Scope.Node) selection.getFirstElement();
+		        Object objElement = selection.getFirstElement();
+		        if(objElement instanceof Scope.Node) {
+			        Scope.Node nodeSelected = (Scope.Node) objElement;
 			        if(nodeSelected != null) {
 			        	// update the state of the toolbar items
 			        	//objViewActions.checkButtons(nodeSelected);

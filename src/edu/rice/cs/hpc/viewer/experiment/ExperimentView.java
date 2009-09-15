@@ -67,6 +67,7 @@ public class ExperimentView {
 	 */
 	public boolean loadExperimentAndProcess(String sFilename, boolean bCallerView) {
 		Experiment experiment = this.loadExperiment(sFilename);
+
 		if(experiment != null) {
 	        experiment.postprocess(bCallerView);
 	        this.generateView(experiment);
@@ -95,43 +96,41 @@ public class ExperimentView {
 	 */
 	public Experiment loadExperiment(String sFilename) {
 		Experiment experiment;
-			// first view: usually already created by default by the perspective
-      org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
-	       //objTask.run(12, true);
-           // open the experiment if possible
-      try
-      {
-           experiment = new Experiment(new java.io.File(sFilename));
-           experiment.open();
-           
-      } catch(java.io.FileNotFoundException fnf)
-      {
-           System.err.println("File not found:" + sFilename +fnf.getMessage());
-           MessageDialog.openError(objShell, "Error:File not found", "Cannot find the file "+sFilename);
-           experiment = null;
-      }
-      catch(java.io.IOException io)
-      {
-           System.err.println("IO error:" +  sFilename +io.getMessage());
-           MessageDialog.openError(objShell, "Error: Unable to read", "Cannot read the file "+sFilename);
-           experiment = null;
-      }
-      catch(InvalExperimentException ex)
-      {
-           String where = sFilename + " " + " " + ex.getLineNumber();
-           System.err.println("$" +  where);
-           MessageDialog.openError(objShell, "Incorrect Experiment File", "File "+sFilename 
-        		   + " has incorrect tag at line:"+ex.getLineNumber());
-           experiment = null;
-      } 
-      catch(NullPointerException npe)
-      {
-           System.err.println("$" + npe.getMessage() + sFilename);
-           MessageDialog.openError(objShell, "File is invalid", "File has null pointer:"
-        		   +sFilename + ":"+npe.getMessage());
-           experiment = null;
-      }
-      return experiment;
+		// first view: usually already created by default by the perspective
+		org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
+		try
+		{
+			experiment = new Experiment(new java.io.File(sFilename));
+			experiment.open();
+
+		} catch(java.io.FileNotFoundException fnf)
+		{
+			System.err.println("File not found:" + sFilename + "\tException:"+fnf.getMessage());
+			MessageDialog.openError(objShell, "Error:File not found", "Cannot find the file "+sFilename);
+			experiment = null;
+		}
+		catch(java.io.IOException io)
+		{
+			System.err.println("IO error:" +  sFilename + "\tIO msg: " + io.getMessage());
+			MessageDialog.openError(objShell, "Error: Unable to read", "Cannot read the file "+sFilename);
+			experiment = null;
+		}
+		catch(InvalExperimentException ex)
+		{
+			String where = sFilename + " " + " " + ex.getLineNumber();
+			System.err.println("$" +  where);
+			MessageDialog.openError(objShell, "Incorrect Experiment File", "File "+sFilename 
+					+ " has incorrect tag at line:"+ex.getLineNumber());
+			experiment = null;
+		} 
+		catch(NullPointerException npe)
+		{
+			System.err.println("$" + npe.getMessage() + sFilename);
+			MessageDialog.openError(objShell, "File is invalid", "File has null pointer:"
+					+sFilename + ":"+npe.getMessage());
+			experiment = null;
+		}
+		return experiment;
 	}
 	
 	/**

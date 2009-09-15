@@ -1,6 +1,8 @@
 package edu.rice.cs.hpc.viewer.framework;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -11,6 +13,12 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchListener;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.filesystem.IFileSystem;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -66,72 +74,92 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public void postWindowOpen() {
     	boolean withCallerView = true;
-		// set the status bar
+
+		// -------------------
+    	// set the status bar
+		// -------------------
 		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
 
+		assert (windowCurrent != null);
+
+		// -------------------
+		// set the default metric
 		// -------------------
 		Utilities.setFontMetric(windowCurrent.getShell().getDisplay());
 
+		// -------------------
 		// see if the argument provides the database to load
+		// -------------------
 		if(this.dataEx != null) {
 			// possibly we have express the experiment file in the command line
-			if(windowCurrent == null) {
-				System.err.println("Anomaly event occured: active window not found");
-				return;
-			}
 			IWorkbenchPage pageCurrent = windowCurrent.getActivePage();
-			if(pageCurrent == null) {
-				System.err.println("Anomaly event occured: active page not found");
-			}
+			assert (pageCurrent != null);
+			
 			ExperimentView expViewer = new ExperimentView(pageCurrent);
-		    if(expViewer != null) {
-		    	// data looks OK
-		    	String []sArgs = this.dataEx.getArguments();
-		    	String sPath = null;
-		    	// find the file in the list of arguments
-		    	for(int i=0;i<sArgs.length;i++) {
-		    		
-		    		if(sArgs[i].charAt(0) == '-') {
-		    			String sOption = sArgs[i].substring(1);
-		    			if (sArgs[i].charAt(1) == 'n' || (sArgs[i].charAt(2)=='-' && sOption.equalsIgnoreCase("nocallerview")) ){
-		    				// user has set the option not to display caller view
-		    				withCallerView = false;
-		    				System.out.println("no caller view");
-		    			}
-		    		} else {
-		    			sPath = sArgs[i];
+		    assert (expViewer != null); 
+
+		    String []sArgs = this.dataEx.getArguments();
+		    String sPath = null;
+		    // find the file in the list of arguments
+		    for(int i=0;i<sArgs.length;i++) {
+
+		    	if(sArgs[i].charAt(0) == '-') {
+		    		String sOption = sArgs[i].substring(1);
+		    		if (sArgs[i].charAt(1) == 'n' || (sArgs[i].charAt(2)=='-' && sOption.equalsIgnoreCase("nocallerview")) ){
+		    			// user has set the option not to display caller view
+		    			withCallerView = false;
 		    		}
+		    	} else {
+		    		sPath = sArgs[i];
 		    	}
-		    	// if a filename exist, try to open it
-		    	if(sPath != null) {
-		    		File file = new File(sPath);
-		    		if(file.isFile())
-		    			expViewer.loadExperimentAndProcess(sPath, withCallerView);
-		    		else {
+		    }
+		    
+			// -------------------
+		    // if a filename exist, try to open it
+			// -------------------
+		    if(sPath != null) {
+		    	IFileStore fileStore;
+				try {
+					fileStore = EFS.getLocalFileSystem().getStore(new URI(sPath));
+				} catch (URISyntaxException e) {
+					// somehow, URI may throw an exception for certain schemes. 
+					// in this case, let's do it traditional way
+					fileStore = EFS.getLocalFileSystem().getStore(new Path(sPath));
+					e.printStackTrace();
+				}
+		    	IFileInfo objFileInfo = fileStore.fetchInfo();
+		    	
+		    	if( objFileInfo.exists() ) {
+		    		if ( objFileInfo.isDirectory() ) {
+		    			System.out.println("Opening database: " + fileStore.fetchInfo().getName() + " " + withCallerView);
 		    			// bug fix: needs to treat a folder/directory
 		    			// it is a directory
 		    			this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
 		    				ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		    			ExperimentManager objManager = this.dataEx.getExperimentManager();
 		    			objManager.openDatabaseFromDirectory(sPath, this.getFlag(withCallerView));
+		    		} else {
+		    			File objFile = new File(sPath);
+		    			EFS.getLocalFileSystem().fromLocalFile(new File(sPath));
+		    			System.out.println("Opening file: " + objFile.getAbsolutePath() + " " +  fileStore.fetchInfo().getName());
+		    			expViewer.loadExperimentAndProcess( objFile.getAbsolutePath(), withCallerView);
 		    		}
-		    		//expViewer.asyncLoadExperimentAndProcess(sFilename);
-		    	} else 
-		    		// otherwise, show the open folder dialog to choose the database
-		    		this.openDatabase(withCallerView);
-		     } else {
-		    	 statusline.setMessage("Cannot relocate the viewer. Please open the database manually.");
-		    	 System.err.println("Cannot relocate the viewer. Please open the database manually.");
-		    	 
-		     }
-		} else {
-			// there is no information about the database
-			statusline.setMessage(null, "Load a database to start.");
-			// we need load the file ASAP
-			this.openDatabase(withCallerView);
+		    	} else {
+		    		System.err.println("File doesn't exist: " + fileStore.getName() );
+		    	}
+
+				this.shutdownEvent(this.workbench, windowCurrent.getActivePage());
+				return;
+		    } 
 		}
+		
+		// there is no information about the database
+		statusline.setMessage(null, "Load a database to start.");
+		// we need load the file ASAP
+		this.openDatabase(withCallerView);
+
 		this.shutdownEvent(this.workbench, windowCurrent.getActivePage());
 	}
 	

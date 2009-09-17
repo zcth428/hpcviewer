@@ -102,7 +102,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			//-----------------------------------------------------------------------
 			trace("determine call path for " + procedureName);
 			CallSiteScope innerCS = scope;
-			LinkedList callPathList = new LinkedList();
+			LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
 			Scope next = scope.getParentScope();
 			while ( (next != null) && (next instanceof CallSiteScope || next instanceof LoopScope ||
 					next instanceof ProcedureScope) )
@@ -132,7 +132,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					}
 					LineScope lineScope = innerCS.getLineScope();
 					if(lineScope != null) {
-						CallSiteScope callerScope =
+						CallSiteScopeCallerView callerScope =
 							new CallSiteScopeCallerView((LineScope) lineScope.duplicate(), 
 									mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, 0, next);
@@ -148,7 +148,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList, callee.iCounter>1);
+			mergeCallerPath(callee, callPathList);
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
@@ -220,43 +220,17 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	public void visit(LineScope scope, ScopeVisitType vt) {  }
 	public void visit(GroupScope scope, ScopeVisitType vt) { }
 
+	
 	//----------------------------------------------------
 	// helper functions  
 	//----------------------------------------------------
 	
-	private boolean isPartOf( Scope parent, LinkedList list) {
-		int iSize = list.size();
-		int i=0;
-		Scope current = parent;
-		while ( i<iSize && current != null) {
-			CallSiteScope scope = (CallSiteScope) list.get(i);
-			
-			if ( scope.hashCode() == current.hashCode() ) {
-				boolean found = false; 				
-				Scope iter = current.getSubscope(0);
-				int j=i+1;
-				while ( i<iSize && iter != null && !found ) {
-					scope = (CallSiteScope) list.get(j);
-					found = iter.hashCode() == scope.hashCode();
-					
-					iter = iter.getSubscope(0);
-					j++;
-				}
-				if (found) return true;
-			}
-			
-			i++;
-			current = current.getSubscope(0);
-		}
-		
-		return false;
-	}
-
-	protected void mergeCallerPath(Scope callee, LinkedList callerPathList, boolean need_to_be_checked) 
+	protected void mergeCallerPath(Scope callee, 
+			LinkedList<CallSiteScopeCallerView> callerPathList) 
 	{
 		if (callerPathList.size() == 0) return; // merging an empty path is trivial
 
-		CallSiteScope first = (CallSiteScope) callerPathList.removeFirst();
+		CallSiteScopeCallerView first = callerPathList.removeFirst();
 
 		// -------------------------------------------------------------------------
 		// attempt to merge first node on caller path with existing caller of callee  
@@ -265,26 +239,40 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		for (int i = 0; i < nCallers; i++) {
 			CallSiteScope existingCaller = (CallSiteScope) callee.getSubscope(i);
 
-			/* original code:
-			 * if (existingCaller.getLineScope().isequal(first.getLineScope()) &&
-					(existingCaller.getName()).equals(first.getName())) { 
-			 */
-			// if first matches an existing caller
+			//------------------------------------------------------------------------
+			// we check if the flat ID (or static ID) of the scope in caller view is
+			// the same with the flat ID in cct. If this is the case, we can merge it.
+			// ATTENTION: this will give incorrect representation for mutual recursives,
+			// 	since the same callsites can be called within the same tree (since 
+			//	they have the same flat ID).
+			//	A correct way is to use isMyCCT() method, BUT this will create a huge
+			//	branches and consume enormous memory (it's so enormous that even the
+			//	JVM gives up).
+			//------------------------------------------------------------------------
 			if (existingCaller.hashCode() == first.hashCode() ) {
 
+				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.
-				// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
-				//existingCaller.mergeMetric(first, this.inclusiveOnly);
-				
+				//------------------------------------------------------------------------
 				if (existingCaller.iCounter > 0)
+					//------------------------------------------------------------------------
+					// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
+					//------------------------------------------------------------------------
 					existingCaller.mergeMetric(first, this.exclusiveOnly);
 				else
-					existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
+					//------------------------------------------------------------------------
+					// temporary fix for mutual recursive: 
+					//	if the scope in caller view has the same flat id with the scope in cct,
+					//	we allowed to merge it. However, we only accumulate the metric if
+					//	the scope in caller view is EXACTLY the duplicate of the scope in cct.
+					//------------------------------------------------------------------------
+					if (first.isMyCCT( existingCaller )) 
+						existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
 				
 				existingCaller.iCounter++;
 				
 				// merge rest of call path as a child of existingCaller.
-				mergeCallerPath(existingCaller, callerPathList, need_to_be_checked);
+				mergeCallerPath(existingCaller, callerPathList);
 
 				return; // merged with existing child. nothing left to do.
 			}

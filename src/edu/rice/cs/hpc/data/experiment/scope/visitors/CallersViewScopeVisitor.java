@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
@@ -52,7 +51,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		if (vt == ScopeVisitType.PreVisit) { // && !mycallee.isAlien()) {
 			String procedureName = mycallee.getName();
 			CallSiteScope scopeCall = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
-			scopeCall.accumulateMetrics(scope, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+			scopeCall.accumulateMetrics(scope, this.filter, numberOfPrimaryMetrics);
 			// Remove linescope-normalization from CS-scope
 			for (int i=0; i<numberOfPrimaryMetrics; i++) {
 				double lsval = scope.getLineScope().getMetricValue(i).getValue();
@@ -79,10 +78,12 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 
 				trace("added top level entry in bottom up tree");
 			} else {
+				// Laksono 2009.09.18: bug fix: accumulate inclusive metrics when the counter becomes 0
+				if (callee.iCounter == 0) {
+					callee.accumulateMetrics(scopeCall, inclusiveOnly, numberOfPrimaryMetrics);
+				}
 					// debugging purpose
 					// to be here, it must be a recursive routine
-				if (procedureName.equals("coalesceDuplicateStmts"))
-				trace("");
 			}
 			
 			callee.iCounter++;
@@ -136,7 +137,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 							new CallSiteScopeCallerView((LineScope) lineScope.duplicate(), 
 									mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, 0, next);
-						callerScope.accumulateMetrics(scopeCall, new EmptyMetricValuePropagationFilter(), numberOfPrimaryMetrics);
+						callerScope.accumulateMetrics(scopeCall, this.filter, numberOfPrimaryMetrics);
 						callPathList.addLast(callerScope);
 						
 						innerCS = enclosingCS;
@@ -179,8 +180,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				trace("handling scope " + procedureName);
 
 				ProcedureScope tmp = (ProcedureScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
-				EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter(); 
-				tmp.accumulateMetrics(scope, emptyFilter, numberOfPrimaryMetrics);
+				tmp.accumulateMetrics(scope, this.filter, numberOfPrimaryMetrics);
 
 				// if there are no exclusive costs to attribute from this context, we are done here
 				if (!tmp.hasNonzeroMetrics()) return; 
@@ -200,7 +200,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				} else {
 					System.err.println("Error: procedure "+procedureName+" has been instantiated more than once.");
 				}
-				callee.accumulateMetrics(tmp, emptyFilter, 
+				callee.accumulateMetrics(tmp, this.filter, 
 						numberOfPrimaryMetrics);
 			} else {
 				
@@ -259,7 +259,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
 					//------------------------------------------------------------------------
 					existingCaller.mergeMetric(first, this.exclusiveOnly);
-				else
+				else {
 					//------------------------------------------------------------------------
 					// temporary fix for mutual recursive: 
 					//	if the scope in caller view has the same flat id with the scope in cct,
@@ -267,8 +267,11 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					//	the scope in caller view is EXACTLY the duplicate of the scope in cct.
 					//------------------------------------------------------------------------
 					if (first.isMyCCT( existingCaller )) 
-						existingCaller.accumulateMetrics(first, filter, numberOfPrimaryMetrics);
-				
+						existingCaller.accumulateMetrics(first, this.filter, numberOfPrimaryMetrics);
+					else {
+						// recursive functions: the same call site, but different scope in CCT
+					}
+				}
 				existingCaller.iCounter++;
 				
 				// merge rest of call path as a child of existingCaller.

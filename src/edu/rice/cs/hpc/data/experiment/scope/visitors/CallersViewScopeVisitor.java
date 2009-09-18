@@ -60,7 +60,12 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			}
 
 			// if there are no exclusive costs to attribute from this context, we are done here
-			if (!scopeCall.hasNonzeroMetrics()) return; 
+			if (!scopeCall.hasNonzeroMetrics()) {
+				// laksono 2009.09.18 bug fix: set a flag to indicate that we don't need this scope
+				//	this flag will be used later for post-visit
+				mycallee.iCounter = -1;
+				return; 
+			}
 
 			// Find (or add) callee in top-level hashtable
 			// TODO: we should use a fully qualified procedure name (including file, module)
@@ -152,6 +157,13 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			mergeCallerPath(callee, callPathList);
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
+			// laksono 2009.09.18 bug fix: if this scope isn't taken into account in the caller view, we return 
+			//		and reset the "flag" 
+			if (mycallee.iCounter < 0) {
+			 mycallee.iCounter = 0;
+			 return;
+			}
+			
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
 			// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
 			//		a bug or a very strange call path
@@ -162,7 +174,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				if(callee.iCounter>0)
 					callee.iCounter--;
 				else
-					trace("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
+					System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
 			}
 		}
 	}

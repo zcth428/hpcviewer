@@ -22,6 +22,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
@@ -31,7 +32,6 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -55,10 +55,12 @@ abstract public class BaseScopeView  extends ViewPart {
 	 * bar composite for placing toolbar and tool items
 	 */
 	protected CoolBar objCoolbar;
+	
     //======================================================
     // ................ HELPER ............................
     //======================================================
     
+	abstract protected CellLabelProvider getLabelProvider(); 
     
     /**
      * Display the source code of the node in the editor area
@@ -275,7 +277,7 @@ abstract public class BaseScopeView  extends ViewPart {
         colTree = new TreeViewerColumn(treeViewer,SWT.LEFT, 0);
         colTree.getColumn().setText("Scope");
         colTree.getColumn().setWidth(200); //TODO dynamic size
-        colTree.setLabelProvider(new ScopeLabelProvider(this.getSite().getWorkbenchWindow())); // laks addendum
+        colTree.setLabelProvider( getLabelProvider() ); // laks addendum
         sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, colTree.getColumn(), null,0); 
         
         //-----------------

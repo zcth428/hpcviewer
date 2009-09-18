@@ -48,6 +48,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	public void visit(CallSiteScope scope, ScopeVisitType vt) {
 		ProcedureScope mycallee  = scope.getProcedureScope();
 		Integer objCode = new Integer(mycallee.hashCode());
+		
 		if (vt == ScopeVisitType.PreVisit) { // && !mycallee.isAlien()) {
 			String procedureName = mycallee.getName();
 			CallSiteScope scopeCall = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to

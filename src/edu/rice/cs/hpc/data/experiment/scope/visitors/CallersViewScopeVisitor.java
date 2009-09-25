@@ -283,6 +283,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 						existingCaller.accumulateMetrics(first, this.filter, numberOfPrimaryMetrics);
 					else {
 						// recursive functions: the same call site, but different scope in CCT
+						// we set the metric value for whoever has the bigger one
+						existingCaller.mergeMetric(first, this.filter);
 					}
 				}
 				existingCaller.iCounter++;

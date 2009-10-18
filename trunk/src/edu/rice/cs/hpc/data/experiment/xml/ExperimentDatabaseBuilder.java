@@ -258,6 +258,9 @@ public class ExperimentDatabaseBuilder extends Builder
 			throw new java.lang.RuntimeException(new OldXMLFormatException());
 			// unknown elements
 
+		case T_METRIC_TABLE:
+			break;
+
 		// ---------------------
 		// Tokens to be ignored 
 		// ---------------------
@@ -266,7 +269,6 @@ public class ExperimentDatabaseBuilder extends Builder
 		case T_LOAD_MODULE_TABLE:
 		case T_SEC_HEADER:
 		case T_METRIC_FORMULA:
-		case T_METRIC_TABLE:
 			break;
 		
 		default:
@@ -482,37 +484,57 @@ public class ExperimentDatabaseBuilder extends Builder
 	 ************************************************************************/
 	private void do_METRIC(String[] attributes, String[] values)
 	{
-		int nID = 0;	// 1st index of values = metric ID
-		int nName = 1;	// 2nd index of values = metric name
 		int nbMetrics = this.metricList.size();
-		String sID = values[nID];
-		int iSelf ;
-		
-		// somehow, the ID of the metric is not number, but asterisk
-		if(sID.charAt(0)=='*') {
-			// parsing an asterisk can throw an exception, which is annoying
-			// so we make an artificial ID for this particular case
-			iSelf = this.maxNumberOfMetrics;
-			sID = "0";
-		} else {
-			iSelf = Integer.parseInt(values[nID]) + this.maxNumberOfMetrics;
-		}
-		// laks 2009.01.14: add variable to switch from callpath to flatpath
-		String sDisplayName = values[nName];
+		String sID = null;// = values[nID];
+		int iSelf = this.maxNumberOfMetrics;
+		String sDisplayName = null;
+		String sNativeName = null;
+		boolean toShow = true;
 		MetricType objType = MetricType.EXCLUSIVE;
+		boolean isInclusiveCCT = this.csviewer;
+		
+		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i].charAt(0) == 'i') {
+				// id ?
+				sID = values[i];
+				// somehow, the ID of the metric is not number, but asterisk
+				if (sID.charAt(0) == '*') {
+					// parsing an asterisk can throw an exception, which is annoying
+					// so we make an artificial ID for this particular case
+					iSelf = this.maxNumberOfMetrics;
+				} else
+					iSelf = Integer.parseInt(sID) + this.maxNumberOfMetrics;
+			} else if (attributes[i].charAt(0) == 'n') {
+				// name ?
+				sNativeName = values[i];
+			} else if (attributes[i].charAt(0) == 's') {
+				// show or not ? 1=yes, 0=no
+				toShow = (values[i].charAt(0) == '1');
+			} else if (attributes[i].charAt(0) == 'a') {
+				// aggregate or accumulate: 1=yes, 0=no
+				if (values[i].charAt(0) == '0')
+					objType = MetricType.PREAGGREGATE;
+				// we set the flag to indicate that we don't need inclusive CCT
+				isInclusiveCCT = false;
+			} 
+		}
 		
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
-		if(this.csviewer) {
-			sDisplayName = sDisplayName + " (I)";
+		if(isInclusiveCCT) {
+			sDisplayName = sNativeName + " (I)";
 			objType = MetricType.INCLUSIVE;
+		} else {
+			// this metric is not for inclusive, the display name should be the same as the native one
+			sDisplayName = sNativeName;
 		}
-		// set the inclusive metric
+		
+		// set the metric
 		Metric metricInc = new Metric(this.experiment,
 				sID,			// short name
-				values[nName],			// native name
+				sNativeName,			// native name
 				sDisplayName, 	// display name
-				true, true, 			// displayed ? percent ?
+				toShow, true, 			// displayed ? percent ?
 				"",						// period (not defined at the moment)
 				objType, nbMetrics+1);
 		this.metricList.add(metricInc);
@@ -520,16 +542,16 @@ public class ExperimentDatabaseBuilder extends Builder
 		// Laks 2009.01.14: only for call path profile
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
-		if (this.csviewer) {
+		if (isInclusiveCCT) {
 			// set the exclusive metric
 			String sSelfName = "" + iSelf;
 			// Laks 2009.02.09: bug fix for not reusing the existing inclusive display name
-			String sSelfDisplayName = values[nName] + " (E)";
+			String sSelfDisplayName = sNativeName + " (E)";
 			Metric metricExc = new Metric(this.experiment,
 					sSelfName,			// short name
 					sSelfDisplayName,	// native name
 					sSelfDisplayName, 	// display name
-					true, true, 		// displayed ? percent ?
+					toShow, true, 		// displayed ? percent ?
 					"",					// period (not defined at the moment)
 					MetricType.EXCLUSIVE, nbMetrics);
 			this.metricList.add(metricExc);
@@ -1105,7 +1127,8 @@ public class ExperimentDatabaseBuilder extends Builder
 			objCurrentScope.setMetricValue(metric.getIndex(), metricValue);
 
 			// update also the self metric value for calling context only
-			if (this.csviewer) {
+			if (metric.getMetricType() == MetricType.INCLUSIVE) {
+			//if (this.csviewer) {
 				int intShortName = Integer.parseInt(internalName);
 				int newShortName = intShortName + this.maxNumberOfMetrics;
 				String selfShortName = "" + newShortName;
@@ -1201,7 +1224,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	 * @author laksonoadhianto
 	 *
 	 */
-	private enum InfoState { PERIOD, UNIT, FLAG, NULL };
+	private enum InfoState { PERIOD, UNIT, FLAG, AGGREGATE, NULL };
 	/************************************************************************
 	 * Laks: special treatement when NV is called under INFO
 	 * @param attributes
@@ -1221,6 +1244,10 @@ public class ExperimentDatabaseBuilder extends Builder
 						iState = InfoState.UNIT;
 					else if ( values[i].charAt(0) == 'f' ) // flag
 						iState = InfoState.FLAG;
+					else if ( values[i].charAt(0) == 'a' || values[i].charAt(0) == 'c') // aggregate
+						iState = InfoState.AGGREGATE;
+					else
+						throw new RuntimeException("Unrecognize name info tag: "+values[i]);
 					
 				} else if ( attributes[i].charAt(0) == 'v' ) {
 					
@@ -1247,6 +1274,14 @@ public class ExperimentDatabaseBuilder extends Builder
 							// get the current metric (exc)
 							metric = (Metric) this.metricList.get(nbMetrics-2);
 							metric.setUnit(values[i]);
+						}
+						break;
+					case AGGREGATE:
+						if (values[i].charAt(0) == '0' || values[i].charAt(0) == 'N') {
+							Metric metric = (Metric) this.metricList.get(nbMetrics-1);
+							metric.setMetricType( MetricType.PREAGGREGATE);
+						} else {
+							
 						}
 						break;
 					case FLAG:

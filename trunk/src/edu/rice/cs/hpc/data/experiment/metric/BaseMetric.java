@@ -183,5 +183,10 @@ public abstract class BaseMetric {
 	{
 		return this.metricType;
 	}
+	
+	public void setMetricType( MetricType objType ) 
+	{
+		this.metricType = objType;
+	}
 
 }

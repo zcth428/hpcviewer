@@ -9,6 +9,7 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
+import edu.rice.cs.hpc.data.experiment.scope.filters.RemoveCallsiteCostPropagationFilter;
 
 public class CallersViewScopeVisitor implements ScopeVisitor {
 
@@ -24,6 +25,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	protected int numberOfPrimaryMetrics;
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
+	private final RemoveCallsiteCostPropagationFilter objRemoveFilter;
+
 
 	//----------------------------------------------------
 	// constructor for CallerViewScopeVisitor
@@ -39,6 +42,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		BaseMetric []metrics = experiment.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+		objRemoveFilter = new RemoveCallsiteCostPropagationFilter(metrics);
 	}
 
 	//----------------------------------------------------
@@ -53,11 +57,15 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 			String procedureName = mycallee.getName();
 			CallSiteScope scopeCall = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
 			scopeCall.accumulateMetrics(scope, this.filter, numberOfPrimaryMetrics);
+			
 			// Remove linescope-normalization from CS-scope
 			for (int i=0; i<numberOfPrimaryMetrics; i++) {
-				double lsval = scope.getLineScope().getMetricValue(i).getValue();
-				// LA: This statement means removing the cost of line scope from the call site.
-				scopeCall.accumulateMetricValue(i, (lsval<0.0) ? 0.0 : (-1*lsval) );
+				// remove the cost of the line scope if it is an inclusive or exclusive metric
+				if (this.objRemoveFilter.doPropagation(scope, scopeCall, i, i)) {
+					double lsval = scope.getLineScope().getMetricValue(i).getValue();
+					// LA: This statement means removing the cost of line scope from the call site.
+					scopeCall.accumulateMetricValue(i, (lsval<0.0) ? 0.0 : (-1*lsval) );
+				}
 			}
 
 			// if there are no exclusive costs to attribute from this context, we are done here
@@ -267,12 +275,13 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
-				if (existingCaller.iCounter > 0)
+				
+				if (existingCaller.iCounter > 0) {
 					//------------------------------------------------------------------------
 					// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
 					//------------------------------------------------------------------------
 					existingCaller.mergeMetric(first, this.exclusiveOnly);
-				else {
+				} else {
 					//------------------------------------------------------------------------
 					// temporary fix for mutual recursive: 
 					//	if the scope in caller view has the same flat id with the scope in cct,
@@ -286,7 +295,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 						// we set the metric value for whoever has the bigger one
 						existingCaller.mergeMetric(first, this.filter);
 					}
-				}
+				} 
 				existingCaller.iCounter++;
 				
 				// merge rest of call path as a child of existingCaller.

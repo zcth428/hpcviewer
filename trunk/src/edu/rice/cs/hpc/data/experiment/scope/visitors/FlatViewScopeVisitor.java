@@ -17,6 +17,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
+import edu.rice.cs.hpc.data.experiment.scope.filters.AggregatePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
@@ -68,7 +69,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 		
 		BaseMetric[] metrics = exp.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+		inclusiveOnly = new AggregatePropagationFilter(metrics);
 		noFilter = new EmptyMetricValuePropagationFilter();
 		
 		htLoadModuleTable = new Hashtable<String, LoadModuleScope>();

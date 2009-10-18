@@ -365,10 +365,12 @@ public void postprocess(boolean callerView) {
 
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
-		normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 
-		addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
-		this.computeExclusiveMetrics(callingContextViewRootScope);
+		if (this.inclusiveNeeded()) {
+			normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
+			addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
+			this.computeExclusiveMetrics(callingContextViewRootScope);
+		}
 		//addInclusiveMetrics(callingContextViewRootScope, 
 		//  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
 
@@ -401,6 +403,13 @@ public void postprocess(boolean callerView) {
 	}
 }
 
+private boolean inclusiveNeeded() {
+	boolean isNeeded = false;
+	for (int i=0; !isNeeded && i<this.getMetricCount(); i++) {
+		isNeeded = this.getMetric(i).getMetricType() != MetricType.PREAGGREGATE;
+	}
+	return isNeeded;
+}
 //////////////////////////////////////////////////////////////////////////
 //Compute Derived Metrics												//
 //////////////////////////////////////////////////////////////////////////

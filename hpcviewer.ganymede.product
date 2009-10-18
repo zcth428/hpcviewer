@@ -22,7 +22,8 @@ Software and the Performance Engineering Research Institute.
    </configIni>
 
    <launcherArgs>
-      <programArgs>-vmargs-Xmx400m</programArgs>
+      <programArgs>-vmargs
+-Xmx800m</programArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
@@ -31,7 +32,7 @@ Software and the Performance Engineering Research Institute.
    <splash
       startupProgressRect="1,273,245,7" />
    <launcher name="hpcviewer">
-      <macosx icon="/edu.rice.cs.hpc-09-09/icons/hpcviewer.icns"/>
+      <macosx icon="/edu.rice.cs.hpc-03-06/icons/hpcviewer.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp
@@ -40,6 +41,7 @@ Software and the Performance Engineering Research Institute.
             winLargeHigh="/edu.rice.cs.hpc-09-09/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

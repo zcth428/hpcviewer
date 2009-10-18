@@ -159,11 +159,12 @@ public void setPartnerIndex(int ei)
 {
 	this.partnerIndex = ei;
 }
-
+// 2009.10.08: unused routine
+/*
 public Scope getRootScope() {
 	return this.experiment.getRootScope();
 }
-
+*/
 // =================================================================================
 // 			UTILITY METHODS
 //=================================================================================

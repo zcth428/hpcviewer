@@ -512,10 +512,11 @@ public class ExperimentDatabaseBuilder extends Builder
 				toShow = (values[i].charAt(0) == '1');
 			} else if (attributes[i].charAt(0) == 'a') {
 				// aggregate or accumulate: 1=yes, 0=no
-				if (values[i].charAt(0) == '0')
+				if (values[i].charAt(0) == '0') {
 					objType = MetricType.PREAGGREGATE;
-				// we set the flag to indicate that we don't need inclusive CCT
-				isInclusiveCCT = false;
+					// we set the flag to indicate that we don't need inclusive CCT
+					isInclusiveCCT = false;
+				}
 			} 
 		}
 		

@@ -403,6 +403,11 @@ public void postprocess(boolean callerView) {
 	}
 }
 
+
+/**
+ * Check if an inclusive computation is needed or not
+ * @return
+ */
 private boolean inclusiveNeeded() {
 	boolean isNeeded = false;
 	for (int i=0; !isNeeded && i<this.getMetricCount(); i++) {
@@ -592,16 +597,7 @@ public Scope getRootScope()
 	return this.rootScope;
 }
 
-/*
-public ArrayList getRootScopeChildren()
-{
-	ArrayList rootScopeChildren = new ArrayList();
-	for(Enumeration e =this.rootScope.getTreeNode().children();e.hasMoreElements();)
-	{
-		rootScopeChildren.add(((Node)e.nextElement()).getScope());
-	}
-	return rootScopeChildren;
-} */
+
 public TreeNode[] getRootScopeChildren() {
 	return this.rootScope.getTreeNode().getChildren();
 }
@@ -613,11 +609,7 @@ public void setFileTable( Hashtable<Integer, SourceFile> fileTable) {
 	this.hashFileTable = fileTable;
 	//arrSourceFiles = fileTable;
 }
-/*
-public SourceFile getSourceFile(int key) {
-	return this.hashFileTable.get(key);
-}
-*/
+
 
 /*************************************************************************
  *	Returns the number of file scopes in the experiment.

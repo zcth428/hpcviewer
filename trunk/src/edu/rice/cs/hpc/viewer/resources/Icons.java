@@ -53,8 +53,8 @@ public class Icons {
 		imdCallTo = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallTo.gif");
 		imdCallFromDisabled = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallFromDisabled.gif");
 		imdCallToDisabled = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallToDisabled.gif");
-		imdZoomIn = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom in large.gif");
-		imdZoomOut = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Zoom out large.gif");
+		imdZoomIn = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"ZoomIn.gif");
+		imdZoomOut = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"ZoomOut.gif");
 		imdFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
 		imdUnFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
 		this.imdAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"AddMetric.gif");

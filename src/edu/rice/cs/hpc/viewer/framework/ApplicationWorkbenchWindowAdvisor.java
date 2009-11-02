@@ -25,6 +25,8 @@ import org.eclipse.jface.action.MenuManager;
 
 import org.eclipse.swt.widgets.Shell;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
@@ -207,6 +209,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				if (pageCurrent != null)
 					// somehow, closeEditors method works better than closeAllEditors.
 					pageCurrent.closeEditors(pageCurrent.getEditorReferences(), false);
+				Experiment exp = dataEx.getExperiment();
+				Scope rootScope = exp.getRootScope();
+				rootScope = null;
+				exp = null;
 				return true;
 			}
 			public void postShutdown(IWorkbench workbench) {

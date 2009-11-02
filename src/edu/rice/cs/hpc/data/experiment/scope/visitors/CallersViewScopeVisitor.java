@@ -280,7 +280,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 					//------------------------------------------------------------------------
 					// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
 					//------------------------------------------------------------------------
-					existingCaller.mergeMetric(first, this.exclusiveOnly);
+					existingCaller.mergeMetric(first, this.inclusiveOnly);
+					existingCaller.accumulateMetrics(first, this.exclusiveOnly, numberOfPrimaryMetrics);
 				} else {
 					//------------------------------------------------------------------------
 					// temporary fix for mutual recursive: 

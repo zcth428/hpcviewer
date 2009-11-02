@@ -69,7 +69,12 @@ public class ExperimentView {
 		Experiment experiment = this.loadExperiment(sFilename);
 
 		if(experiment != null) {
-	        experiment.postprocess(bCallerView);
+			try {
+				experiment.postprocess(bCallerView);
+			} catch (java.lang.OutOfMemoryError e) {
+				MessageDialog.openError(this.objPage.getWorkbenchWindow().getShell(), "Out of memory", 
+						"hpcviewer requires more heap memory allocation.\nJava heap size can be increased by modifying \"-Xmx\" parameter in hpcivewer.ini file.");
+			}
 	        this.generateView(experiment);
 	        return true;
 		}

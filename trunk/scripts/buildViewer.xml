@@ -1,0 +1,43 @@
+<project default="buildviewer">
+	<!--
+	This ant script contains these targets;
+	    compile     - compiles java source
+	    jar         - build hpcviewer.jar (depends on compile)
+	    buildviewer - (default) does all targets
+	-->
+	<target name="expandDependencies" >
+	    <untar src="../archive/rcpDependencies.gz"
+	         dest="../hpcviewer"
+	    	 compression="gzip"
+         />
+         <chmod file="../hpcviewer/hpcviewer" perm="+x" />
+	</target>
+	
+  	<target name="compile" depends="expandDependencies" >
+  		<delete>
+			<fileset dir=".." includes="**/*.class" />
+  		</delete>
+	    <mkdir dir="../bin" />
+    	<javac srcdir="../src;../externals" 
+           	   destdir="../bin" >
+			<classpath>
+				<fileset dir="../hpcviewer/plugins" includes="**/*.jar" />
+			</classpath>
+    	</javac>
+  	</target>
+  
+  	<target name="jar" depends="compile">
+  		<delete file="../hpcviewer/plugins/edu.rice.cs.hpc_1.0.1/hpcviewer.jar" />
+    	<jar destfile="../hpcviewer/plugins/edu.rice.cs.hpc_1.0.1/hpcviewer.jar" >
+       	     <fileset dir="../bin" includes="**/*.class" />
+      	     <fileset dir="../src" includes="**/*.gif" />
+      	     <fileset dir="../externals" includes="**/*.gif" />
+      	     <fileset dir="../externals" includes="**/*.png" />
+      	     <fileset dir="../externals" includes="**/*.properties" />
+        </jar>
+  	</target>
+  
+	<target name="buildviewer" depends="compile,jar" />
+
+</project>
+

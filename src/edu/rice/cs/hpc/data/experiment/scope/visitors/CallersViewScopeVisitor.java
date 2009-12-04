@@ -196,7 +196,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 	public void visit(ProcedureScope scope, ScopeVisitType vt) { 
 		ProcedureScope mycallee  = scope;
 		if (vt == ScopeVisitType.PreVisit) {
-			if(!mycallee.isAlien()) {
+			if (!mycallee.isAlien()) {
 				String procedureName = mycallee.getName();
 				trace("handling scope " + procedureName);
 
@@ -221,8 +221,7 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				} else {
 					System.err.println("Error: procedure "+procedureName+" has been instantiated more than once.");
 				}
-				callee.accumulateMetrics(tmp, this.filter, 
-						numberOfPrimaryMetrics);
+				callee.accumulateMetrics(tmp, this.filter, numberOfPrimaryMetrics);
 			} else {
 				
 			}

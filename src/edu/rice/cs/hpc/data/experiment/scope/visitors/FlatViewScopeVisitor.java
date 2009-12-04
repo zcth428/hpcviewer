@@ -167,7 +167,7 @@ public class FlatViewScopeVisitor implements ScopeVisitor {
 
 			Scope context = scope.getParentScope();
 			// -------------------------------------------------------
-			// When the scope is a call site, we will assign the cost of the call site into its "inclosing" procedure
+			// When the scope is a call site, we will assign the cost of the call site into its "enclosing" procedure
 			// By doing so, (1) we avoid to recompute the total of the procedure; and (2) we have a consistent cost 
 			//		compared to the caller tree view
 			// -------------------------------------------------------

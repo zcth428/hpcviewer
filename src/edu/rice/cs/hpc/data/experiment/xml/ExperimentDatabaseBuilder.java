@@ -475,12 +475,14 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	/*************************************************************************
 	 *	Processes a METRIC element.
-	 *    <!ELEMENT Metric (MetricFormula?, Info?) >
-    	  <!ATTLIST Metric
-              i    CDATA #REQUIRED
-              n    CDATA #REQUIRED
-              fmt  CDATA #IMPLIED
-              show (1|0) "1">
+	 *  <!ELEMENT Metric (MetricFormula?, Info?)>
+        <!ATTLIST Metric
+	      i    CDATA #REQUIRED
+	      n    CDATA #REQUIRED
+	      v    (raw|final|derived-incr|derived) "raw"
+	      t    (inclusive|exclusive|nil) "nil"
+	      fmt  CDATA #IMPLIED
+	      show (1|0) "1">
 	 ************************************************************************/
 	private void do_METRIC(String[] attributes, String[] values)
 	{
@@ -502,27 +504,36 @@ public class ExperimentDatabaseBuilder extends Builder
 					// parsing an asterisk can throw an exception, which is annoying
 					// so we make an artificial ID for this particular case
 					iSelf = this.maxNumberOfMetrics;
-				} else
+				} else {
 					iSelf = Integer.parseInt(sID) + this.maxNumberOfMetrics;
+				}
 			} else if (attributes[i].charAt(0) == 'n') {
 				// name ?
 				sNativeName = values[i];
+			} else if (attributes[i].charAt(0) == 'v') {
+				// value: raw|final|derived-incr|derived
+				if (values[i] == "raw") {
+					// default behavior
+					// TODO: recognize 't' attribute as a directive
+				}
+				else if (values[i] == "final" || values[i] == "derived-incr") {
+					// TODO: must distinguish between 'raw', 'cct-aggregated' and 'final'
+					//   (in this context, PREAGGREGATE may be a little confusing) 
+					objType = MetricType.PREAGGREGATE;
+					// TODO: use 't' attribute to set to I or E
+					isInclusiveCCT = false;
+				}
+			} else if (attributes[i].charAt(0) == 't') {
+				// type: inclusive|exclusive|nil
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
-			} else if (attributes[i].charAt(0) == 'a') {
-				// aggregate or accumulate: 1=yes, 0=no
-				if (values[i].charAt(0) == '0') {
-					objType = MetricType.PREAGGREGATE;
-					// we set the flag to indicate that we don't need inclusive CCT
-					isInclusiveCCT = false;
-				}
 			} 
 		}
 		
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
-		if(isInclusiveCCT) {
+		if (isInclusiveCCT) {
 			sDisplayName = sNativeName + " (I)";
 			objType = MetricType.INCLUSIVE;
 		} else {

@@ -512,11 +512,11 @@ public class ExperimentDatabaseBuilder extends Builder
 				sNativeName = values[i];
 			} else if (attributes[i].charAt(0) == 'v') {
 				// value: raw|final|derived-incr|derived
-				if (values[i] == "raw") {
+				if (values[i].equals("raw")) {
 					// default behavior
 					// TODO: recognize 't' attribute as a directive
 				}
-				else if (values[i] == "final" || values[i] == "derived-incr") {
+				else if (values[i].equals("final") || values[i].equals("derived-incr")) {
 					// TODO: must distinguish between 'raw', 'cct-aggregated' and 'final'
 					//   (in this context, PREAGGREGATE may be a little confusing) 
 					objType = MetricType.PREAGGREGATE;
@@ -528,7 +528,7 @@ public class ExperimentDatabaseBuilder extends Builder
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
-			} 
+			}
 		}
 		
 		// Laks 2009.01.14: if the database is call path database, then we need

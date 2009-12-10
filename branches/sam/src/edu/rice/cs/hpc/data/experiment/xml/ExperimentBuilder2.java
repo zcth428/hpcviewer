@@ -20,7 +20,7 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
-import edu.rice.cs.hpc.data.experiment.xml.DatabaseToken.TokenXML;
+import edu.rice.cs.hpc.data.experiment.xml.Token2.TokenXML;
 import edu.rice.cs.hpc.data.util.*;
 
 import java.io.*;
@@ -46,7 +46,7 @@ import java.util.EmptyStackException;
  */
 
 
-public class ExperimentDatabaseBuilder extends Builder
+public class ExperimentBuilder2 extends Builder
 {
 
 	private final static String LINE_ATTRIBUTE			= "l";
@@ -95,8 +95,8 @@ public class ExperimentDatabaseBuilder extends Builder
 	final protected int maxNumberOfMetrics = 100;
 
 	// Laks
-	private DatabaseToken.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
-	private DatabaseToken.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
+	private Token2.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
+	private Token2.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
 	//--------------------------------------------------------------------------------------
 	private java.util.Hashtable<Integer, String> hashProcedureTable;
 	private java.util.Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
@@ -126,7 +126,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	 *
 	 ************************************************************************/
 
-	public ExperimentDatabaseBuilder(Experiment experiment, String defaultName)
+	public ExperimentBuilder2(Experiment experiment, String defaultName)
 	{
 		super();
 
@@ -181,7 +181,7 @@ public class ExperimentDatabaseBuilder extends Builder
 
 	public void beginElement(String element, String[] attributes, String[] values) 
 	{
-		TokenXML current = DatabaseToken.map(element);
+		TokenXML current = Token2.map(element);
 
 		switch(current)
 		{
@@ -298,7 +298,7 @@ public class ExperimentDatabaseBuilder extends Builder
 	 ************************************************************************/
 	public void endElement(String element)
 	{
-		TokenXML current = DatabaseToken.map(element);
+		TokenXML current = Token2.map(element);
 		switch(current)
 		{
 		case T_SEC_FLAT_PROFILE:

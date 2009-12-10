@@ -3,7 +3,7 @@ package edu.rice.cs.hpc.data.experiment.xml;
 import java.util.Map;
 import java.util.HashMap;
 
-public class DatabaseToken {
+public class Token2 {
     // to add a new token, declare a new element in the enum TokenXML
     // and add an appropriate `put' invocation in the static constructor,
     // which you may find below.  a benefit of doing it this way is that

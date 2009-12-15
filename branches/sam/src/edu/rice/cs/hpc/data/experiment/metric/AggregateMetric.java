@@ -4,6 +4,7 @@ import com.graphbuilder.math.Expression;
 import com.graphbuilder.math.ExpressionParseException;
 import com.graphbuilder.math.ExpressionTree;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.metric.MetricVarMap;
 import com.graphbuilder.math.FuncMap;
@@ -68,8 +69,8 @@ public class AggregateMetric extends BaseMetric {
 	}
 	
 	
-	public void init(char type, BaseMetric []metrics) {
-		this.varMap.setMetrics(metrics);
+	public void init(char type, Experiment exp) {
+		this.varMap.setxperiment(exp);
 	}
 	
 	public void setScopeValue(char type, Scope scope) {

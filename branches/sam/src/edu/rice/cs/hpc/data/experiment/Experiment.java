@@ -339,7 +339,10 @@ protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricVa
 		// Laksono 2009.12.11: aggregate metrc doesn't have partner
 		if (metric instanceof Metric)
 			if (metric.getMetricType() == sourceType) {
-				copyMetric(scope, scope, i, ((Metric)metric).getPartnerIndex(), filter);
+				int partner = ((Metric)metric).getPartnerIndex();
+				if(partner>=this.getMetricCount())
+					partner = metric.getIndex()+1;
+				copyMetric(scope, scope, i, partner, filter);
 			}
 	}
 }
@@ -427,7 +430,7 @@ public void postprocess(boolean callerView) {
 private boolean checkExistenceOfDerivedIncr() {
 	boolean isAggregate = false;
 	for (int i=0; !isAggregate && i<this.getMetricCount(); i++) {
-		isAggregate = this.getMetric(i).getMetricType() != MetricType.DERIVED_INCR;
+		isAggregate = this.getMetric(i).getMetricType() == MetricType.DERIVED_INCR;
 	}
 	return isAggregate;
 }

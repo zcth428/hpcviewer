@@ -362,7 +362,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	public void addExtNewMetric() {
 		// prepare the dialog box
 		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objShell, 
-				this.myRootScope.getExperiment().getMetrics());
+				this.myRootScope.getExperiment() );
 
 		// display the dialog box
 		if(dlg.open() == Dialog.OK) {

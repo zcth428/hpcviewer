@@ -50,7 +50,7 @@ public class DerivedMetric extends BaseMetric {
 		this.fctMap.init(metrics, scopeRoot);
 
 		// set up the variables
-		this.varMap = new MetricVarMap(metrics);
+		this.varMap = new MetricVarMap(scopeRoot.getExperiment());
 		this.metricType = objType;//either inclusive OR exclusive;
 		// Bug fix: always compute the aggregate value 
 		this.dRootValue = this.getAggregateMetrics(scopeRoot);

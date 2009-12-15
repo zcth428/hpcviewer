@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.SelectionEvent;
 // hpcviewer
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.util.UserInputHistory;
@@ -52,6 +53,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	static private final String HISTORY_METRIC_NAME = "metric_name";	//$NON-NLS-1$
 	private String sMetricName;
 	private boolean bPercent;
+	private Experiment experiment;
 	
 	// ------------- object for storing history of formula and metric names
 	private UserInputHistory objHistoryFormula;
@@ -66,18 +68,16 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	 * @param parentShell
 	 * @param listOfMetrics
 	 */
-	public ExtDerivedMetricDlg(Shell parentShell, BaseMetric []listOfMetrics) {
-		super(parentShell);
-		this.setMetrics(listOfMetrics);
-		this.fctMap = new ExtFuncMap(listOfMetrics, null);
-		this.varMap = new MetricVarMap ( null, listOfMetrics );
+	public ExtDerivedMetricDlg(Shell parentShell, Experiment exp) {
+		this(parentShell, exp, null);
 	}
 	
-	public ExtDerivedMetricDlg(Shell parent, BaseMetric []listOfMetrics, Scope s) {
+	public ExtDerivedMetricDlg(Shell parent, Experiment exp, Scope s) {
 		super(parent);
-		this.setMetrics(listOfMetrics);
-		this.fctMap = new ExtFuncMap(listOfMetrics, null);
-		this.varMap = new MetricVarMap ( s, listOfMetrics );
+		experiment = exp;
+		this.setMetrics(exp.getMetrics());
+		this.fctMap = new ExtFuncMap(exp.getMetrics(), null);
+		this.varMap = new MetricVarMap ( s, exp );
 	}
 	
 	  //==========================================================
@@ -145,7 +145,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   				StringBuffer sBuff = new StringBuffer(sText);
 	   				
 	   				// insert the metric variable ( i.e.: $ + metric index)
-	   				final String sMetricIndex = "$" + cbMetric.getSelectionIndex() ; 
+	   				final String sMetricIndex = "$" + experiment.getMetric(cbMetric.getSelectionIndex()).getShortName() ; 
 	   				sBuff.insert(iSelIndex, sMetricIndex );
 	   				cbExpression.setText(sBuff.toString());
 
@@ -359,7 +359,9 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  //this.arrMetrics = listOfMetrics;
 		  this.arrStrMetrics = new String[nbMetrics];
 		  for(int i=0;i<nbMetrics;i++) {
-			  this.arrStrMetrics[i]="$"+i + ": "+ listOfMetrics[i].getDisplayName();
+			  BaseMetric metric = listOfMetrics[i];
+			  // laksono 2009.12.15: we need to use the shortname instead of the index
+			  this.arrStrMetrics[i]="$"+metric.getShortName() + ": "+ metric.getDisplayName();
 		  }
 	  }
 	  /**

@@ -9,6 +9,7 @@ import com.graphbuilder.math.FuncMap;
 import com.graphbuilder.math.VarMap;
 import com.graphbuilder.math.func.Function;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
@@ -20,7 +21,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
  */
 public class MetricVarMap extends VarMap {
 
-	private BaseMetric metrics[];// = new BaseMetric[2];
+	private Experiment experiment;// = new BaseMetric[2];
 	private Scope scope;
 	/**
 	 * 
@@ -34,15 +35,15 @@ public class MetricVarMap extends VarMap {
 		this.scope = s;
 	}
 	
-	public MetricVarMap(BaseMetric m[]) {
+	public MetricVarMap(Experiment exp) {
 		super(false);
-		this.metrics = m;
+		this.experiment = exp;
 	}
 	
-	public MetricVarMap(Scope s, BaseMetric m[]) {
+	public MetricVarMap(Scope s, Experiment exp) {
 		super(false);
 		this.scope = s;
-		this.metrics = m;
+		this.experiment = exp;
 	}
 	/**
 	 * @param caseSensitive
@@ -55,14 +56,8 @@ public class MetricVarMap extends VarMap {
 	//===========================
 	
 
-	/**
-	 * set the value for a metric variable (identified as $x) where x is the metric index
-	 * @param iMetricID: the index of the metric
-	 * @param metric: pointer to the metric
-	 */
-	
-	public void setMetrics(BaseMetric []arrMetrics) {
-		this.metrics = arrMetrics;
+	public void setxperiment(Experiment exp) {
+		this.experiment = exp;
 	}
 	
 	/**
@@ -78,35 +73,20 @@ public class MetricVarMap extends VarMap {
 	 * If the variable is a normal variable, it will call the parent method.		
 	 */
 	public double getValue(String varName) {
-		//this.hasValidValue = true;
+		assert(experiment != null);
+		
 		if(varName.startsWith("$")) {
 			// Metric variable
 			String sIndex = varName.substring(1);
-			try {
-				int index = Integer.parseInt(sIndex);
-				if (index<this.metrics.length) {
-					BaseMetric metric = this.metrics[index];
-					if (scope != null) {
-						MetricValue value = metric.getValue(scope);
-						if(value.isAvailable())
-							return value.getValue();
-						// Laks 2008.07.03: if the value is not available, we just assume it equals to zero
-						//throw new RuntimeException(varName);
-					} else {
-						// scope is null, which means we just want to test
-						// TODO: in the future, we need to do different thing to distinguish between
-						// 		 testing and real expression valuation
-					}
-					return 0;
-					
-				} else {
-					RuntimeException e = new RuntimeException("metric index is not valid: " + varName);
-					throw e;
-				}
-			} catch (java.lang.NumberFormatException e) {
-				//e.printStackTrace();
-				return 0;
+			BaseMetric metric = this.experiment.getMetric(sIndex);
+			
+			if (scope != null) {
+				MetricValue value = metric.getValue(scope);
+				if(value.isAvailable())
+					return value.getValue();
 			}
+			return 0.0;
+			
 		} else if (varName.startsWith("&")) {
 			// pointer to metric variable
 			String sIndex = varName.substring(1);
@@ -115,12 +95,9 @@ public class MetricVarMap extends VarMap {
 				sIndex = sIndex.substring(1);
 			}
 			try{
-				int index = Integer.parseInt(sIndex);
-				if ( index< this.metrics.length )
-					return index;
-				else 
-					throw new RuntimeException("metric index is out of range: " + index);
-			} catch (java.lang.NumberFormatException e) {
+				int index = this.experiment.getMetric(sIndex).getIndex();
+				return index;
+			} catch (java.lang.Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(varName);
 			}
@@ -128,20 +105,6 @@ public class MetricVarMap extends VarMap {
 			return super.getValue(varName);
 	}
 	
-	// Laks: instead of having a valid value flag, we just throw an exception. 
-	//		 this is simpler and less bugs (but the caller needs to intercept it)
-	//private boolean hasValidValue;
-	
-	/**
-	 * check if the expression, the scope and the metric have a valid value.
-	 * To some cases, a metric has no value, and any arithmetric operation for
-	 * void value is invalid.
-	 * @return true if the value of the expression is valid.
-	 */
-	/*
-	public boolean isValueValid() {
-		return this.hasValidValue;
-	}*/
 	
 	/**
 	 * Unit test for MetricVarMap

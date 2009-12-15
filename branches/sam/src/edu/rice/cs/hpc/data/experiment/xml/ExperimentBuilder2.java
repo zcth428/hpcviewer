@@ -533,11 +533,9 @@ public class ExperimentBuilder2 extends Builder
 				if (sID.charAt(0) == '*') {
 					// parsing an asterisk can throw an exception, which is annoying
 					// so we make an artificial ID for this particular case
-					iSelf = this.maxNumberOfMetrics;
+					iSelf = nbMetrics + this.maxNumberOfMetrics;
 				} else {
 					iSelf = Integer.parseInt(sID) + this.maxNumberOfMetrics;
-					if (iSelf == 26)
-						System.out.println();
 				}
 			} else if (attributes[i].charAt(0) == 'n') {
 				// name ?
@@ -566,11 +564,13 @@ public class ExperimentBuilder2 extends Builder
 			}
 		}
 		
+		int partner = nbMetrics;
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
 		if (isInclusiveCCT) {
 			sDisplayName = sNativeName + " (I)";
 			objType = MetricType.INCLUSIVE;
+			partner = this.maxNumberOfMetrics + nbMetrics;
 		} else {
 			// this metric is not for inclusive, the display name should be the same as the native one
 			sDisplayName = sNativeName;
@@ -579,15 +579,15 @@ public class ExperimentBuilder2 extends Builder
 		// set the metric
 		BaseMetric metricInc;
 		if (objType == MetricType.DERIVED_INCR) {
-			metricInc = new AggregateMetric(sID, sDisplayName, toShow, false, nbMetrics+1);
+			metricInc = new AggregateMetric(sID, sDisplayName, toShow, false, nbMetrics);
 		} else {
 			metricInc = new Metric(this.experiment,
-					sID,			// short name
+					String.valueOf(nbMetrics),			// short name
 					sNativeName,			// native name
 					sDisplayName, 	// display name
 					toShow, true, 			// displayed ? percent ?
 					"",						// period (not defined at the moment)
-					objType, nbMetrics+1);
+					objType, partner);
 		}
 		this.metricList.add(metricInc);
 
@@ -596,7 +596,7 @@ public class ExperimentBuilder2 extends Builder
 		//	to distinguish between exclusive and inclusive
 		if (isInclusiveCCT) {
 			// set the exclusive metric
-			String sSelfName = "" + iSelf;
+			String sSelfName = String.valueOf(partner);	// I am the partner of the inclusive metric
 			// Laks 2009.02.09: bug fix for not reusing the existing inclusive display name
 			String sSelfDisplayName = sNativeName + " (E)";
 			Metric metricExc = new Metric(this.experiment,
@@ -1158,13 +1158,12 @@ public class ExperimentBuilder2 extends Builder
 	 *************************************************************************/
 	private void end_MetricTable() {
 		int nbMetrics = this.metricList.size();
-		BaseMetric [] metrics = this.getMetricList();
 		
 		for (int i=0; i<nbMetrics; i++) {
 			BaseMetric objMetric = (BaseMetric) this.metricList.get(i);
 			if (objMetric instanceof AggregateMetric) {
 				AggregateMetric aggMetric = (AggregateMetric) objMetric;
-				aggMetric.init(AggregateMetric.FORMULA_COMBINE, metrics);
+				aggMetric.init(AggregateMetric.FORMULA_COMBINE, this.experiment);
 			}
 		}
 	}

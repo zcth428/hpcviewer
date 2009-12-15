@@ -1094,7 +1094,7 @@ public class ExperimentBuilder extends Builder
 		double actualValue  = Double.valueOf(value).doubleValue();
 		
 		if (this.csviewer) {
-			Metric metric = this.experiment.getMetric(internalName);
+			BaseMetric metric = this.experiment.getMetric(internalName);
 			
 			// get the sample period
 			//String prd_string =  metric.getSamplePeriod();
@@ -1110,11 +1110,11 @@ public class ExperimentBuilder extends Builder
 			int newShortName = intShortName + this.maxNumberOfMetrics;
 			String selfShortName = "" + newShortName;
 
-			Metric selfMetric = this.experiment.getMetric(selfShortName); 
+			BaseMetric selfMetric = this.experiment.getMetric(selfShortName); 
 			MetricValue selfMetricValue = new MetricValue(actualValue);
 			this.getCurrentScope().setMetricValue(selfMetric.getIndex(), selfMetricValue);  
 		} else {
-			Metric metric = this.experiment.getMetric(internalName);
+			BaseMetric metric = this.experiment.getMetric(internalName);
 			MetricValue metricValue = new MetricValue(actualValue);
 			this.getCurrentScope().setMetricValue(metric.getIndex(), metricValue);
 		}

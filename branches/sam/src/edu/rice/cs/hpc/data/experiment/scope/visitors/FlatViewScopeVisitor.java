@@ -15,7 +15,6 @@ import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 import edu.rice.cs.hpc.data.experiment.scope.filters.AggregatePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
@@ -24,7 +23,7 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagat
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
-public class FlatViewScopeVisitor implements ScopeVisitor {
+public class FlatViewScopeVisitor implements IScopeVisitor {
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	private final EmptyMetricValuePropagationFilter noFilter;

@@ -15,7 +15,7 @@ import java.util.Stack;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
-public class MergeScopeTreesVisitor implements ScopeVisitor {
+public class MergeScopeTreesVisitor implements IScopeVisitor {
 	private Stack scopeStack;
 	private int metricOffset;
 	private MetricValuePropagationFilter filter;

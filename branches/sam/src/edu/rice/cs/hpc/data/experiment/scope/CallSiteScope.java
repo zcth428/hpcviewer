@@ -15,7 +15,7 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 
 
 
@@ -114,7 +114,7 @@ public void setCsprofLeaf(boolean value)
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////
 
-public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
+public void accept(IScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 

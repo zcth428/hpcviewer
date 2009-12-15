@@ -11,7 +11,6 @@ import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.FlatViewInclMetricPropagationFilter;

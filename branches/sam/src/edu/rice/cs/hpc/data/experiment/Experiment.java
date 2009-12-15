@@ -62,6 +62,9 @@ protected File fileExperiment;
 /** The experiment's configuration. */
 protected ExperimentConfiguration configuration;
 
+/** version of the database **/
+protected String version;
+
 /** ----------------- DICTIONARIES -----------------  **/
 protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 protected Hashtable<Integer, SourceFile> hashFileTable;
@@ -203,7 +206,7 @@ public void setMetrics(List metricList)
 	this.metricMap = new HashMap(count);
 	for( int k = 0;  k < count;  k++ )
 	{	
-		Metric m = (Metric)this.metricList.get(k);
+		BaseMetric m = (BaseMetric)this.metricList.get(k);
 		m.setIndex(k);
 		this.metricMap.put(m.getShortName(), m);
 	}
@@ -226,7 +229,18 @@ public void setScopes(List scopeList, Scope rootScope)
 }
 
 
+public void setVersion (String v) 
+{
+	this.version = v;
+}
 
+public int getMajorVersion()
+{
+	if (this.version == null)
+		return 1;
+	int ip = this.version.indexOf('.');
+	return Integer.parseInt(this.version.substring(0, ip));
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Experiment Merging													//
@@ -321,10 +335,12 @@ private void computeExclusiveMetrics(Scope scope) {
 
 protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropagationFilter filter) {
 	for (int i = 0; i< this.getMetricCount(); i++) {
-		Metric metric = (Metric)this.getMetric(i);
-		if (metric.getMetricType() == sourceType) {
-			copyMetric(scope, scope, i, metric.getPartnerIndex(), filter);
-		}
+		BaseMetric metric = (BaseMetric)this.getMetric(i);
+		// Laksono 2009.12.11: aggregate metrc doesn't have partner
+		if (metric instanceof Metric)
+			if (metric.getMetricType() == sourceType) {
+				copyMetric(scope, scope, i, ((Metric)metric).getPartnerIndex(), filter);
+			}
 	}
 }
 
@@ -366,6 +382,7 @@ public void postprocess(boolean callerView) {
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
 
+		this.initAggregateMetrics(callingContextViewRootScope);
 		if (this.inclusiveNeeded()) {
 			normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 			addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
@@ -403,6 +420,24 @@ public void postprocess(boolean callerView) {
 	}
 }
 
+/**
+ * check the existence of an aggregate metric  
+ * @return
+ */
+private boolean checkExistenceOfDerivedIncr() {
+	boolean isAggregate = false;
+	for (int i=0; !isAggregate && i<this.getMetricCount(); i++) {
+		isAggregate = this.getMetric(i).getMetricType() != MetricType.DERIVED_INCR;
+	}
+	return isAggregate;
+}
+
+private void initAggregateMetrics(Scope root) {
+	if (! checkExistenceOfDerivedIncr())
+		return;
+	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics());
+	root.dfsVisitScopeTree(diVisitor);
+}
 
 /**
  * Check if an inclusive computation is needed or not
@@ -427,11 +462,7 @@ private boolean inclusiveNeeded() {
  */
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
-	// laksono 2009.03.08: this (I) and (E) are intended to be used for the next release 
-	//	(automatic verification for inclusive and exclusive )
-	// replace if exist, the exc suffix with inclusive
-	//String sNameInc = sName.replaceFirst("\\(E\\)", "\\(I\\)");
-	// create inclusive metric (this is the default)
+
 	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
 			bPercent, MetricType.INCLUSIVE);
 	this.addMetric(objMetric); // add this metric into our list
@@ -564,9 +595,9 @@ public BaseMetric getMetric(int index)
  *	Returns the metric with a given internal name.
  ************************************************************************/
 	
-public Metric getMetric(String name)
+public BaseMetric getMetric(String name)
 {
-	Metric metric = (Metric) this.metricMap.get(name);
+	BaseMetric metric = (BaseMetric) this.metricMap.get(name);
 	Dialogs.Assert(metric != null, " Null in getMetric");
 	return metric;
 }

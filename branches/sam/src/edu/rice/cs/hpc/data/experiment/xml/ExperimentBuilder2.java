@@ -69,7 +69,7 @@ public class ExperimentBuilder2 extends Builder
 	protected List/*<File>*/ pathList;
 
 	/** The parsed metric objects. */
-	protected List/*<Metric>*/ metricList;
+	protected List<BaseMetric> metricList;
 
 	/** The parsed root scope object. */
 	protected Scope rootScope;
@@ -137,7 +137,7 @@ public class ExperimentBuilder2 extends Builder
 		this.csviewer = false;
 		// temporary storage for parsed objects
 		this.pathList   = new ArrayList/*<File>*/();
-		this.metricList = new ArrayList/*<Metric>*/();
+		this.metricList = new ArrayList<BaseMetric>();
 
 		// parse action data structures
 		this.scopeStack = new Stack/*<Scope>*/();
@@ -186,6 +186,7 @@ public class ExperimentBuilder2 extends Builder
 		switch(current)
 		{
 		case T_HPCTOOLKIT_EXPERIMENT:
+			this.do_HPCTOOLKIT(attributes, values);
 			break;
 		case T_HEADER:
 			this.do_Header(attributes,values);	
@@ -261,6 +262,9 @@ public class ExperimentBuilder2 extends Builder
 		case T_METRIC_TABLE:
 			break;
 
+		case T_METRIC_FORMULA:
+			this.do_MetricFormula(attributes, values);
+			break;
 		// ---------------------
 		// Tokens to be ignored 
 		// ---------------------
@@ -268,7 +272,6 @@ public class ExperimentBuilder2 extends Builder
 		case T_FILE_TABLE:
 		case T_LOAD_MODULE_TABLE:
 		case T_SEC_HEADER:
-		case T_METRIC_FORMULA:
 			break;
 		
 		default:
@@ -336,13 +339,16 @@ public class ExperimentBuilder2 extends Builder
 			this.end_CALLSITE();
 			break;
 
+		case T_METRIC_TABLE:
+			this.end_MetricTable();
+			break;
+			
 			// ignored elements
 		case T_M:
 		case T_HPCTOOLKIT_EXPERIMENT:
 		case T_NAME_VALUE:
 		case T_HEADER:
 		case T_INFO:
-		case T_METRIC_TABLE:
 		case T_METRIC_FORMULA:
 		case T_SEC_HEADER:
 		case T_METRIC:
@@ -406,6 +412,20 @@ public class ExperimentBuilder2 extends Builder
 //	------------------------------- BUILDING		---------------------------//
 
 	/*************************************************************************
+	 * Process a HPCToolkitExperiment
+	 *************************************************************************/
+	private void do_HPCTOOLKIT(String[] attributes, String[] values) {
+		String version = null;
+		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i].charAt(0) == 'v') {
+				//version of the database
+				version = values[i];
+			}
+		}
+		this.experiment.setVersion(version);
+	}
+	
+	/*************************************************************************
 	 *	Processes a TITLE element.
 	 ************************************************************************/
 
@@ -450,29 +470,39 @@ public class ExperimentBuilder2 extends Builder
 			Integer objFileID = Integer.parseInt(sID);
 			// just in case if there is a duplicate key in the dictionary, we need to make a test
 			SourceFile sourceFile = this.getOrCreateSourceFile(values[1], objFileID.intValue());
-			/*
-			SourceFile sourceFile=(SourceFile) this.hashSourceFileTable.get(objFileID);
-			if (sourceFile == null) {
-				// theoretically, this condition is always true (unless a bug occurred in the hpcprof)
-				String sFile = values[1];
-				File filename = new File(sFile);
-				int iID = objFileID.intValue();
-				sourceFile = new FileSystemSourceFile(experiment, filename, iID);
-				this.hashSourceFileTable.put(objFileID, sourceFile);
-			}  */
 		} catch (Exception e) {
 			
 		}
-
-		/*
-		try {
-			Integer objID = Integer.parseInt(sID);
-			//this.hashFileTable.put(objID, sFile);
-		} catch (java.lang.NumberFormatException e) {
-			
-		} */
 	}
 
+
+	/*************************************************************************
+	 *	Processes a METRICFORMULA element.
+	 *     <!-- MetricFormula represents derived metrics: (t)ype; (frm): formula -->
+    <!ELEMENT MetricFormula (Info?)>
+    <!ATTLIST MetricFormula
+              t   (combine|finalize) "finalize"
+              frm CDATA #REQUIRED>
+	 ************************************************************************/
+	private void do_MetricFormula(String[] attributes, String[] values) 
+	{
+		char formula_type = '\0';
+		int nbMetrics= this.metricList.size();
+		
+		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i].charAt(0) == 't') {
+				// type of formala
+				formula_type = values[i].charAt(0);
+			} else if (attributes[i].charAt(0) == 'f') {
+				// formula
+				assert (formula_type != '\0');
+				AggregateMetric objMetric = (AggregateMetric) this.metricList.get(nbMetrics-1);
+				objMetric.setFormula(formula_type, values[i]);
+			}
+		}
+	}
+	
+	
 	/*************************************************************************
 	 *	Processes a METRIC element.
 	 *  <!ELEMENT Metric (MetricFormula?, Info?)>
@@ -506,6 +536,8 @@ public class ExperimentBuilder2 extends Builder
 					iSelf = this.maxNumberOfMetrics;
 				} else {
 					iSelf = Integer.parseInt(sID) + this.maxNumberOfMetrics;
+					if (iSelf == 26)
+						System.out.println();
 				}
 			} else if (attributes[i].charAt(0) == 'n') {
 				// name ?
@@ -516,11 +548,14 @@ public class ExperimentBuilder2 extends Builder
 					// default behavior
 					// TODO: recognize 't' attribute as a directive
 				}
-				else if (values[i].equals("final") || values[i].equals("derived-incr")) {
+				else if (values[i].equals("final")) {
 					// TODO: must distinguish between 'raw', 'cct-aggregated' and 'final'
 					//   (in this context, PREAGGREGATE may be a little confusing) 
 					objType = MetricType.PREAGGREGATE;
 					// TODO: use 't' attribute to set to I or E
+					isInclusiveCCT = false;
+				} else if (values[i].equals("derived-incr")) {
+					objType = MetricType.DERIVED_INCR;
 					isInclusiveCCT = false;
 				}
 			} else if (attributes[i].charAt(0) == 't') {
@@ -542,13 +577,18 @@ public class ExperimentBuilder2 extends Builder
 		}
 		
 		// set the metric
-		Metric metricInc = new Metric(this.experiment,
-				sID,			// short name
-				sNativeName,			// native name
-				sDisplayName, 	// display name
-				toShow, true, 			// displayed ? percent ?
-				"",						// period (not defined at the moment)
-				objType, nbMetrics+1);
+		BaseMetric metricInc;
+		if (objType == MetricType.DERIVED_INCR) {
+			metricInc = new AggregateMetric(sID, sDisplayName, toShow, false, nbMetrics+1);
+		} else {
+			metricInc = new Metric(this.experiment,
+					sID,			// short name
+					sNativeName,			// native name
+					sDisplayName, 	// display name
+					toShow, true, 			// displayed ? percent ?
+					"",						// period (not defined at the moment)
+					objType, nbMetrics+1);
+		}
 		this.metricList.add(metricInc);
 
 		// Laks 2009.01.14: only for call path profile
@@ -1113,6 +1153,21 @@ public class ExperimentBuilder2 extends Builder
 		this.endScope(); 
 	}
 
+	/*************************************************************************
+	 * finishes processing metric table
+	 *************************************************************************/
+	private void end_MetricTable() {
+		int nbMetrics = this.metricList.size();
+		BaseMetric [] metrics = this.getMetricList();
+		
+		for (int i=0; i<nbMetrics; i++) {
+			BaseMetric objMetric = (BaseMetric) this.metricList.get(i);
+			if (objMetric instanceof AggregateMetric) {
+				AggregateMetric aggMetric = (AggregateMetric) objMetric;
+				aggMetric.init(AggregateMetric.FORMULA_COMBINE, metrics);
+			}
+		}
+	}
 
 	/*************************************************************************
 	 *	Processes an M (metric value) element.
@@ -1127,8 +1182,7 @@ public class ExperimentBuilder2 extends Builder
 		double actualValue  = Double.valueOf(value).doubleValue();
 		
 		{
-			Metric metric = this.experiment.getMetric(internalName);
-			
+			BaseMetric metric = this.experiment.getMetric(internalName);
 			// get the sample period
 			double prd = metric.getSamplePeriod();
 
@@ -1145,7 +1199,7 @@ public class ExperimentBuilder2 extends Builder
 				int newShortName = intShortName + this.maxNumberOfMetrics;
 				String selfShortName = "" + newShortName;
 
-				Metric selfMetric = this.experiment.getMetric(selfShortName); 
+				BaseMetric selfMetric = this.experiment.getMetric(selfShortName); 
 				MetricValue selfMetricValue = new MetricValue(actualValue);
 				objCurrentScope.setMetricValue(selfMetric.getIndex(), selfMetricValue);  
 			}
@@ -1243,7 +1297,7 @@ public class ExperimentBuilder2 extends Builder
 	 * @param values
 	 ************************************************************************/
 	private void do_NV(String[] attributes, String[] values) {
-		if(this.previousState == TokenXML.T_METRIC) {
+		if ( (this.previousState == TokenXML.T_METRIC) || (this.previousState == TokenXML.T_METRIC_FORMULA)){
 			InfoState iState = InfoState.NULL;
 			// previous state is metric. The attribute should be about periodicity or unit
 			for (int i=0; i<attributes.length; i++) {
@@ -1270,27 +1324,29 @@ public class ExperimentBuilder2 extends Builder
 						String sPeriod = values[i];
 						if(nbMetrics > 1) {
 							// get the current metric (inc)
-							Metric metric = (Metric) this.metricList.get(nbMetrics-1);
+							BaseMetric metric = this.metricList.get(nbMetrics-1);
 							metric.setSamplePeriod(sPeriod);
 							// get the current metric (exc)
-							metric = (Metric) this.metricList.get(nbMetrics-2);
+							metric = this.metricList.get(nbMetrics-2);
 							metric.setSamplePeriod(sPeriod);
 							
 						}
 						break;
 					case UNIT:
-						if(nbMetrics > 1) {
+						if(nbMetrics > 0) {
 							// get the current metric (inc)
-							Metric metric = (Metric) this.metricList.get(nbMetrics-1);
+							BaseMetric metric = this.metricList.get(nbMetrics-1);
 							metric.setUnit( values[i] );
-							// get the current metric (exc)
-							metric = (Metric) this.metricList.get(nbMetrics-2);
-							metric.setUnit(values[i]);
+							if (!(metric instanceof AggregateMetric) && (nbMetrics>1)) {
+								// get partner metric if the current metric is not aggregate metric
+								metric = this.metricList.get(nbMetrics-2);
+								metric.setUnit(values[i]);
+							}
 						}
 						break;
 					case AGGREGATE:
 						if (values[i].charAt(0) == '0' || values[i].charAt(0) == 'N') {
-							Metric metric = (Metric) this.metricList.get(nbMetrics-1);
+							BaseMetric metric = this.metricList.get(nbMetrics-1);
 							metric.setMetricType( MetricType.PREAGGREGATE);
 						} else {
 							
@@ -1336,6 +1392,17 @@ public class ExperimentBuilder2 extends Builder
 		return null;
 	}
 	
+	private BaseMetric[] getMetricList() 
+	{
+		assert (this.metricList != null);
+		int nbMetrics = this.metricList.size();
+		BaseMetric []metrics = new BaseMetric[nbMetrics];
+		
+		for (int i=0; i<nbMetrics; i++) {
+			metrics[i] = this.metricList.get(i);
+		}
+		return metrics;
+	}
 	/*************************************************************************
 	 * Class to treat a string of line or range of lines into two lines: first line and last line 
 	 * @author laksonoadhianto

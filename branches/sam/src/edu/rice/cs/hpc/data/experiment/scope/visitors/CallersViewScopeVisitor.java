@@ -11,7 +11,7 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagat
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.RemoveCallsiteCostPropagationFilter;
 
-public class CallersViewScopeVisitor implements ScopeVisitor {
+public class CallersViewScopeVisitor implements IScopeVisitor {
 
 
 	//----------------------------------------------------

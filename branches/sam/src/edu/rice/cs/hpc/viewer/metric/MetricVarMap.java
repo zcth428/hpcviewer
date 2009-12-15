@@ -60,11 +60,11 @@ public class MetricVarMap extends VarMap {
 	 * @param iMetricID: the index of the metric
 	 * @param metric: pointer to the metric
 	 */
-	/*
+	
 	public void setMetrics(BaseMetric []arrMetrics) {
 		this.metrics = arrMetrics;
 	}
-	*/
+	
 	/**
 	 * set the current scope which contains metric values
 	 * @param s: the scope of node

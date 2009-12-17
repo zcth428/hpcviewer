@@ -182,8 +182,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				// Here we make a temporary fix by not decrementing to negative value.
 				if(callee.iCounter>0)
 					callee.iCounter--;
-				else
-					System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
+				//else
+				//	System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
 			}
 		}
 	}

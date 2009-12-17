@@ -31,9 +31,14 @@ Software and the Performance Engineering Research Institute.
    <splash
       startupProgressRect="1,273,245,7" />
    <launcher name="hpcviewer">
+      <linux icon="/hpciewer-bsam/icons/hpcviewer-icon-32x32-32bit.xpm"/>
+      <macosx icon="/hpciewer-bsam/icons/hpcviewer.icns"/>
       <solaris/>
       <win useIco="false">
-         <bmp/>
+         <bmp
+            winSmallHigh="/hpciewer-bsam/icons/hpcviewer-icon-16x16-32bit.bmp"
+            winMediumHigh="/hpciewer-bsam/icons/hpcviewer-icon-32x32-32bit.bmp"
+            winLargeHigh="/hpciewer-bsam/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
 

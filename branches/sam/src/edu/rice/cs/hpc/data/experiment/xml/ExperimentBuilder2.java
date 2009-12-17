@@ -518,7 +518,7 @@ public class ExperimentBuilder2 extends Builder
 	{
 		int nbMetrics = this.metricList.size();
 		String sID = null;// = values[nID];
-		int iSelf = this.maxNumberOfMetrics;
+		int iSelf = -1;
 		String sDisplayName = null;
 		String sNativeName = null;
 		boolean toShow = true;
@@ -533,9 +533,11 @@ public class ExperimentBuilder2 extends Builder
 				if (sID.charAt(0) == '*') {
 					// parsing an asterisk can throw an exception, which is annoying
 					// so we make an artificial ID for this particular case
-					iSelf = nbMetrics + this.maxNumberOfMetrics;
+					iSelf = nbMetrics;
+					if (this.csviewer) 
+						iSelf = nbMetrics/2;
 				} else {
-					iSelf = Integer.parseInt(sID) + this.maxNumberOfMetrics;
+					iSelf = Integer.parseInt(sID);
 				}
 			} else if (attributes[i].charAt(0) == 'n') {
 				// name ?
@@ -564,13 +566,13 @@ public class ExperimentBuilder2 extends Builder
 			}
 		}
 		
-		int partner = nbMetrics;
+		int partner = iSelf;
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
 		if (isInclusiveCCT) {
 			sDisplayName = sNativeName + " (I)";
 			objType = MetricType.INCLUSIVE;
-			partner = this.maxNumberOfMetrics + nbMetrics;
+			partner = this.maxNumberOfMetrics + iSelf;
 		} else {
 			// this metric is not for inclusive, the display name should be the same as the native one
 			sDisplayName = sNativeName;
@@ -582,7 +584,7 @@ public class ExperimentBuilder2 extends Builder
 			metricInc = new AggregateMetric(sID, sDisplayName, toShow, false, nbMetrics);
 		} else {
 			metricInc = new Metric(this.experiment,
-					String.valueOf(nbMetrics),			// short name
+					String.valueOf(iSelf),			// short name
 					sNativeName,			// native name
 					sDisplayName, 	// display name
 					toShow, true, 			// displayed ? percent ?
@@ -1194,13 +1196,16 @@ public class ExperimentBuilder2 extends Builder
 			// update also the self metric value for calling context only
 			if (metric.getMetricType() == MetricType.INCLUSIVE) {
 			//if (this.csviewer) {
-				int intShortName = Integer.parseInt(internalName);
-				int newShortName = intShortName + this.maxNumberOfMetrics;
-				String selfShortName = "" + newShortName;
+				//int intShortName = Integer.parseInt(internalName);
+				//int newShortName = intShortName + this.maxNumberOfMetrics;
+				if (metric instanceof Metric) {
+					int partner = ( (Metric) metric).getPartnerIndex();
+ 					String selfShortName = String.valueOf(partner);//"" + newShortName;
 
-				BaseMetric selfMetric = this.experiment.getMetric(selfShortName); 
-				MetricValue selfMetricValue = new MetricValue(actualValue);
-				objCurrentScope.setMetricValue(selfMetric.getIndex(), selfMetricValue);  
+					BaseMetric selfMetric = this.experiment.getMetric(selfShortName); 
+					MetricValue selfMetricValue = new MetricValue(actualValue);
+					objCurrentScope.setMetricValue(selfMetric.getIndex(), selfMetricValue);  
+				}
 			}
 		} 
 	}

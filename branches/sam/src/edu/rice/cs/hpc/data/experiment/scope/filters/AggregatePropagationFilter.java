@@ -21,8 +21,11 @@ public class AggregatePropagationFilter extends InclusiveOnlyMetricPropagationFi
 	public boolean doPropagation(Scope source, Scope target, int src_idx,
 			int targ_idx) {
 		boolean bParentResult = super.doPropagation(source, target, src_idx, targ_idx);
-		if (!bParentResult)
-			bParentResult = bParentResult || ( metrics[src_idx].getMetricType() == MetricType.PREAGGREGATE );
+		if (!bParentResult) {
+			MetricType mType = metrics[src_idx].getMetricType();
+			bParentResult = bParentResult 	|| ( mType == MetricType.PREAGGREGATE )
+											|| ( mType == MetricType.DERIVED_INCR );
+		}
 		return bParentResult;
 	}
 

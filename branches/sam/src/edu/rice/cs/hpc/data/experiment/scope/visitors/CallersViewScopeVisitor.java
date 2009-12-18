@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.data.experiment.scope.filters.AggregatePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
@@ -41,7 +42,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		this.filter = filter;
 		BaseMetric []metrics = experiment.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+		inclusiveOnly = new AggregatePropagationFilter(metrics);
+		//inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 		objRemoveFilter = new RemoveCallsiteCostPropagationFilter(metrics);
 	}
 

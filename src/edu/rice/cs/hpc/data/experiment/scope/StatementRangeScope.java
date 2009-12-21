@@ -16,6 +16,7 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
 
@@ -118,7 +119,7 @@ public Scope duplicate() {
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////
 
-public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
+public void accept(IScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 

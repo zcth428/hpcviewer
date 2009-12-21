@@ -12,10 +12,9 @@ import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
-public class PercentScopeVisitor implements ScopeVisitor {
+public class PercentScopeVisitor implements IScopeVisitor {
 	MetricValue[] metricCosts;
 	int nMetrics;
 

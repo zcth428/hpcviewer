@@ -124,7 +124,7 @@ throws
     
 	// parse the stream
 	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
-        Builder builder = new ExperimentDatabaseBuilder(experiment, name);
+        Builder builder = new ExperimentBuilder2(experiment, name);
         Parser parser = new Parser(name, stream, builder);
         try {
             parser.parse();

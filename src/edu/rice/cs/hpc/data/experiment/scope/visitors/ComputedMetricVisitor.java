@@ -13,7 +13,7 @@ package edu.rice.cs.hpc.data.experiment.scope.visitors;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 
-public class ComputedMetricVisitor implements ScopeVisitor {
+public class ComputedMetricVisitor implements IScopeVisitor {
 	private int n;
 	private double scaling;
 	private MetricValue[] totals;

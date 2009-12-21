@@ -442,17 +442,20 @@ abstract public class BaseScopeView  extends ViewPart {
 
         // force garbage collector to remove the old data
         this.colMetrics = null;
+        int nbMetrics = myExperiment.getMetricCount();
+        boolean status[] = new boolean[nbMetrics];
         // dirty solution to update titles
-        this.colMetrics = new TreeViewerColumn[myExperiment.getMetricCount()];
+        this.colMetrics = new TreeViewerColumn[nbMetrics];
         {
             // Update metric title labels
-            String[] titles = new String[myExperiment.getMetricCount()+1];
+            String[] titles = new String[nbMetrics+1];
             titles[0] = "Scope";	// unused element. Already defined
             // add table column for each metric
-        	for (int i=0; i<myExperiment.getMetricCount(); i++)
+        	for (int i=0; i<nbMetrics; i++)
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
         		colMetrics[i] = this.treeViewer.addTreeColumn(myExperiment.getMetric(i), (i==0));
+        		status[i] = myExperiment.getMetric(i).getDisplayed();
         	}
             treeViewer.setColumnProperties(titles); // do we need this ??
         }
@@ -469,6 +472,7 @@ abstract public class BaseScopeView  extends ViewPart {
             // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
             // so we need to do it here, manually ... sigh
             this.objViewActions.resizeColumns();	// resize the column to fit all metrics
+        	this.objViewActions.objActionsGUI.setColumnsStatus(status);
         	
             // Laks 2009.03.17: select the first scope
             TreeItem objItem = this.treeViewer.getTree().getItem(1);

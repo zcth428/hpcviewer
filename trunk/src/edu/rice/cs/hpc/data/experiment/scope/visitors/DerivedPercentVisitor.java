@@ -13,10 +13,9 @@ import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
-public class DerivedPercentVisitor implements ScopeVisitor {
+public class DerivedPercentVisitor implements IScopeVisitor {
 	private int iExclusive;
 	private int iInclusive;
 	private MetricValue objIncAggValue;

@@ -1,8 +1,11 @@
-package edu.rice.cs.hpc.data.experiment.scope;
+package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
+import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
+import edu.rice.cs.hpc.data.experiment.scope.GroupScope;
 import edu.rice.cs.hpc.data.experiment.scope.LineScope;
 import edu.rice.cs.hpc.data.experiment.scope.LoadModuleScope;
+import edu.rice.cs.hpc.data.experiment.scope.LoopScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -11,7 +14,7 @@ import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
 
 
-public interface ScopeVisitor {
+public interface IScopeVisitor {
     void visit(LineScope scope, ScopeVisitType vt);
     void visit(StatementRangeScope scope, ScopeVisitType vt);
     void visit(LoopScope scope, ScopeVisitType vt);

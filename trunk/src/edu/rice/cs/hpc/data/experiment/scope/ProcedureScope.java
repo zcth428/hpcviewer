@@ -16,8 +16,8 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
 
@@ -153,7 +153,7 @@ public boolean isAlien() {
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////
 
-public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
+public void accept(IScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 

@@ -325,6 +325,12 @@ private static void exceptionMessage(String message, String what, Exception e, b
 
 private static void message(String[] lines, boolean error, boolean bad)
 {
+	StringBuffer sb = new StringBuffer();
+	for (int i=0; i<lines.length; i++) {
+		sb.append(lines[i]);
+		sb.append(" ");
+	}
+	System.err.println(sb.toString());
 	// Laks: it is better not to have any "costly" statement here 
 //	String title = Strings.APPNAME + " " + (error ? Strings.ERROR : (bad ? Strings.WARNING : Strings.MESSAGE));
 //	int kind = (error ? JOptionPane.ERROR_MESSAGE : (bad ? JOptionPane.WARNING_MESSAGE : JOptionPane.PLAIN_MESSAGE));

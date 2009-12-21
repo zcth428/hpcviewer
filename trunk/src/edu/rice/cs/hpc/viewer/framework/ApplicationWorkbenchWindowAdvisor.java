@@ -209,10 +209,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				if (pageCurrent != null)
 					// somehow, closeEditors method works better than closeAllEditors.
 					pageCurrent.closeEditors(pageCurrent.getEditorReferences(), false);
-				Experiment exp = dataEx.getExperiment();
-				Scope rootScope = exp.getRootScope();
-				rootScope = null;
-				exp = null;
 				return true;
 			}
 			public void postShutdown(IWorkbench workbench) {

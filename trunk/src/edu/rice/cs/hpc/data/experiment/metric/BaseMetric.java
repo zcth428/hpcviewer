@@ -37,10 +37,20 @@ public abstract class BaseMetric {
 
 	protected MetricType metricType;
 
+	protected double  sampleperiod;
+
+	private char unit;
+
 	//-------------------------------------------------------------------------------
 	// CONSTRUCTOR
 	//-------------------------------------------------------------------------------
 	public BaseMetric(String sDisplayName, boolean displayed, boolean percent, int index) {
+	    // Laks 2009.12.11: hack to make the default short name
+		this(String.valueOf(index), sDisplayName, displayed, percent, index);
+	}
+	
+
+	public BaseMetric(String sID, String sDisplayName, boolean displayed, boolean percent, int index) {
 		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;
 		this.displayed = displayed;
 		this.percent = percent;
@@ -49,8 +59,10 @@ public abstract class BaseMetric {
 		// format
 		this.displayFormat = (this.percent ? MetricValueFormat.DEFAULT_PERCENT
 		                                   : MetricValueFormat.DEFAULT_NOPERCENT);
-
+	    this.unit = '0';
+	    this.shortName = sID;
 	}
+	
 	//-------------------------------------------------------------------------------
 	// METHODS
 	//-------------------------------------------------------------------------------
@@ -188,5 +200,60 @@ public abstract class BaseMetric {
 	{
 		this.metricType = objType;
 	}
+	/**
+	 * Laks: need an interface to update the sample period due to change in DTD
+	 * @param s
+	 */
+	public void setSamplePeriod(String s) {
+		this.sampleperiod = this.convertSamplePeriode(s);
+	}
+
+	public void setUnit (String sUnit) {
+		this.unit = sUnit.charAt(0);
+		if (this.isUnitEvent())
+			this.sampleperiod = 1.0;
+	}
+
+	/**
+	 * Return the sample period
+	 * @return
+	 */
+	public double getSamplePeriod()
+	{
+		return this.sampleperiod;
+	}
+
+
+// =================================================================================
+//		UTILITY METHODS
+//=================================================================================
+
+/**
+* Verify if the unit is an event or not
+* @return
+*/
+private boolean isUnitEvent() {
+return this.unit == 'e';
+}
+
+/**
+* convert the input sample period into a double, depending of the unit
+* @param sPeriod
+* @return
+*/
+protected double convertSamplePeriode( String sPeriod ) {
+if (this.isUnitEvent())
+return 1.0;
+
+double period = 1.0;
+if (sPeriod != null && sPeriod.length()>0) {
+try {
+	period = Double.parseDouble(sPeriod);
+} catch (java.lang.NumberFormatException e) {
+	System.err.println("The sample period is incorrect :" + this.sampleperiod);
+}
+}
+return period;
+}
 
 }

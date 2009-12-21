@@ -21,8 +21,8 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 //import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 //import edu.rice.cs.hpc.data.util.*;
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
@@ -678,7 +678,7 @@ public void mergeMetric(Scope scope, MetricValuePropagationFilter filter) {
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////
 
-public void dfsVisitScopeTree(ScopeVisitor sv) {
+public void dfsVisitScopeTree(IScopeVisitor sv) {
 	accept(sv, ScopeVisitType.PreVisit);
 	int nKids = getSubscopeCount();
 	for (int i=0; i< nKids; i++) {
@@ -688,7 +688,7 @@ public void dfsVisitScopeTree(ScopeVisitor sv) {
 	accept(sv, ScopeVisitType.PostVisit);
 }
 
-public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
+public void accept(IScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 

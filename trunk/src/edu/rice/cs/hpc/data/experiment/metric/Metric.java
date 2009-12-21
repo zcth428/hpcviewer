@@ -39,13 +39,10 @@ public class Metric extends BaseMetric
 /** The experiment owning this metric. */
 protected Experiment experiment;
 
-protected double  sampleperiod;
-
 protected int partnerIndex;
 
 public final static int NO_PARTNER_INDEX = -1;
 
-private char unit;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -74,7 +71,6 @@ public Metric(Experiment experiment,
     this.sampleperiod  = this.convertSamplePeriode(sampleperiod);
     this.metricType     = metricType;
     this.partnerIndex = partnerIndex;
-    this.unit = '0';
 }
 
 /**
@@ -102,29 +98,8 @@ this.nativeName  = nativeName;
 this.sampleperiod  = sampleperiod;
 this.metricType     = metricType;
 this.partnerIndex = partnerIndex;
-this.unit = '0';
 }
 
-public void setUnit (String sUnit) {
-	this.unit = sUnit.charAt(0);
-}
-
-/**
- * Return the sample period
- * @return
- */
-public double getSamplePeriod()
-{
-	return this.sampleperiod;
-}
-
-/**
- * Laks: need an interface to update the sample period due to change in DTD
- * @param s
- */
-public void setSamplePeriod(String s) {
-	this.sampleperiod = this.convertSamplePeriode(s);
-}
 /*************************************************************************
  *	Returns the value of this metric at a given scope.
  ************************************************************************/	
@@ -165,37 +140,6 @@ public Scope getRootScope() {
 	return this.experiment.getRootScope();
 }
 */
-// =================================================================================
-// 			UTILITY METHODS
-//=================================================================================
-
-/**
- * Verify if the unit is an event or not
- * @return
- */
-private boolean isUnitEvent() {
-	return this.unit == 'e';
-}
-
-/**
- * convert the input sample period into a double, depending of the unit
- * @param sPeriod
- * @return
- */
-private double convertSamplePeriode( String sPeriod ) {
-	if (this.isUnitEvent())
-		return 1.0;
-	
-	double period = 1.0;
-	if (sPeriod != null && sPeriod.length()>0) {
-		try {
-			period = Double.parseDouble(sPeriod);
-		} catch (java.lang.NumberFormatException e) {
-			System.err.println("The sample period is incorrect :" + this.sampleperiod);
-		}
-	}
-	return period;
-}
 
 }
 

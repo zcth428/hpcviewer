@@ -6,12 +6,13 @@ import java.util.LinkedList;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.data.experiment.scope.filters.AggregatePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.RemoveCallsiteCostPropagationFilter;
 
-public class CallersViewScopeVisitor implements ScopeVisitor {
+public class CallersViewScopeVisitor implements IScopeVisitor {
 
 
 	//----------------------------------------------------
@@ -41,7 +42,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 		this.filter = filter;
 		BaseMetric []metrics = experiment.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+		inclusiveOnly = new AggregatePropagationFilter(metrics);
+		//inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 		objRemoveFilter = new RemoveCallsiteCostPropagationFilter(metrics);
 	}
 
@@ -182,8 +184,8 @@ public class CallersViewScopeVisitor implements ScopeVisitor {
 				// Here we make a temporary fix by not decrementing to negative value.
 				if(callee.iCounter>0)
 					callee.iCounter--;
-				else
-					System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
+				//else
+				//	System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
 			}
 		}
 	}

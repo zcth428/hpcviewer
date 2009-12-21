@@ -17,7 +17,7 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
-import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 
 
 
@@ -104,7 +104,7 @@ public RootScopeType getType()
 // support for visitors													//
 //////////////////////////////////////////////////////////////////////////
 
-public void accept(ScopeVisitor visitor, ScopeVisitType vt) {
+public void accept(IScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 

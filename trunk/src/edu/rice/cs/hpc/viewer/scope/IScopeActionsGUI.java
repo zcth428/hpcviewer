@@ -3,7 +3,6 @@
  */
 package edu.rice.cs.hpc.viewer.scope;
 
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Composite;

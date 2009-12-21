@@ -62,6 +62,9 @@ protected File fileExperiment;
 /** The experiment's configuration. */
 protected ExperimentConfiguration configuration;
 
+/** version of the database **/
+protected String version;
+
 /** ----------------- DICTIONARIES -----------------  **/
 protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 protected Hashtable<Integer, SourceFile> hashFileTable;
@@ -203,7 +206,7 @@ public void setMetrics(List metricList)
 	this.metricMap = new HashMap(count);
 	for( int k = 0;  k < count;  k++ )
 	{	
-		Metric m = (Metric)this.metricList.get(k);
+		BaseMetric m = (BaseMetric)this.metricList.get(k);
 		m.setIndex(k);
 		this.metricMap.put(m.getShortName(), m);
 	}
@@ -226,7 +229,18 @@ public void setScopes(List scopeList, Scope rootScope)
 }
 
 
+public void setVersion (String v) 
+{
+	this.version = v;
+}
 
+public int getMajorVersion()
+{
+	if (this.version == null)
+		return 1;
+	int ip = this.version.indexOf('.');
+	return Integer.parseInt(this.version.substring(0, ip));
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Experiment Merging													//
@@ -321,10 +335,15 @@ private void computeExclusiveMetrics(Scope scope) {
 
 protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropagationFilter filter) {
 	for (int i = 0; i< this.getMetricCount(); i++) {
-		Metric metric = (Metric)this.getMetric(i);
-		if (metric.getMetricType() == sourceType) {
-			copyMetric(scope, scope, i, metric.getPartnerIndex(), filter);
-		}
+		BaseMetric metric = (BaseMetric)this.getMetric(i);
+		// Laksono 2009.12.11: aggregate metrc doesn't have partner
+		if (metric instanceof Metric)
+			if (metric.getMetricType() == sourceType) {
+				int partner = ((Metric)metric).getPartnerIndex();
+				if(partner>=this.getMetricCount())
+					partner = metric.getIndex()+1;
+				copyMetric(scope, scope, i, partner, filter);
+			}
 	}
 }
 
@@ -366,32 +385,55 @@ public void postprocess(boolean callerView) {
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
 
+		//----------------------------------------------------------------------------------------------
+		// Inclusive metrics
+		//----------------------------------------------------------------------------------------------
 		if (this.inclusiveNeeded()) {
+			// TODO: if the metric is a derived metric then DO NOT do this process !
+			// TODO: we need to make something more elegant and smart instead of using if-then branches everywhere !
 			normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 			addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
 			this.computeExclusiveMetrics(callingContextViewRootScope);
 		}
-		//addInclusiveMetrics(callingContextViewRootScope, 
-		//  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
 
+		//----------------------------------------------------------------------------------------------
 		// Callers View
+		//----------------------------------------------------------------------------------------------
+		Scope callersViewRootScope = null;
 		if (callerView) {
-			Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
+			callersViewRootScope = createCallersView(callingContextViewRootScope);
 			copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
 			addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
 		}
 		
+		//----------------------------------------------------------------------------------------------
 		// Flat View
+		//----------------------------------------------------------------------------------------------
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
 		// compute the inclusive metrics: accumulate the cost of loops and line scopes
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, emptyFilter, this.getMetricCount());
-		//flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
 
+		//----------------------------------------------------------------------------------------------
+		// INITALIZATION
+		//----------------------------------------------------------------------------------------------
+		this.initAggregateMetrics(callingContextViewRootScope);		// cct
+		if (callerView)												// caller view
+			this.initAggregateMetrics(callersViewRootScope);
+		this.initAggregateMetrics(flatViewRootScope);				// flat view
+
+		//----------------------------------------------------------------------------------------------
+		// FINALIZATION
+		//----------------------------------------------------------------------------------------------
+		this.finalizeAggregateMetrics(callingContextViewRootScope);		// cct
+		if (callerView)													// caller view
+			this.finalizeAggregateMetrics(callersViewRootScope);
+		this.finalizeAggregateMetrics(flatViewRootScope);				// flat view
+		
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
@@ -403,6 +445,37 @@ public void postprocess(boolean callerView) {
 	}
 }
 
+/**
+ * check the existence of an aggregate metric  
+ * @return
+ */
+private boolean checkExistenceOfDerivedIncr() {
+	boolean isAggregate = false;
+	for (int i=0; !isAggregate && i<this.getMetricCount(); i++) {
+		BaseMetric metric = this.getMetric(i);
+		isAggregate = (metric instanceof AggregateMetric); 
+	}
+	return isAggregate;
+}
+
+/**
+ * Initialize derived incremental metrics
+ * @param root: the scope root (cct, caller view or flat view)
+ */
+private void initAggregateMetrics(Scope root) {
+	if (! checkExistenceOfDerivedIncr())
+		return;
+	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics(), AggregateMetric.FORMULA_COMBINE);
+	root.dfsVisitScopeTree(diVisitor);
+}
+
+
+private void finalizeAggregateMetrics(Scope root) {
+	if (! checkExistenceOfDerivedIncr())
+		return;
+	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics(), AggregateMetric.FORMULA_FINALIZE);
+	root.dfsVisitScopeTree(diVisitor);
+}
 
 /**
  * Check if an inclusive computation is needed or not
@@ -411,7 +484,8 @@ public void postprocess(boolean callerView) {
 private boolean inclusiveNeeded() {
 	boolean isNeeded = false;
 	for (int i=0; !isNeeded && i<this.getMetricCount(); i++) {
-		isNeeded = this.getMetric(i).getMetricType() != MetricType.PREAGGREGATE;
+		BaseMetric m = this.getMetric(i);
+		isNeeded = !(m instanceof FinalMetric);//.getMetricType() != MetricType.PREAGGREGATE;
 	}
 	return isNeeded;
 }
@@ -427,11 +501,7 @@ private boolean inclusiveNeeded() {
  */
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
-	// laksono 2009.03.08: this (I) and (E) are intended to be used for the next release 
-	//	(automatic verification for inclusive and exclusive )
-	// replace if exist, the exc suffix with inclusive
-	//String sNameInc = sName.replaceFirst("\\(E\\)", "\\(I\\)");
-	// create inclusive metric (this is the default)
+
 	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
 			bPercent, MetricType.INCLUSIVE);
 	this.addMetric(objMetric); // add this metric into our list
@@ -564,9 +634,9 @@ public BaseMetric getMetric(int index)
  *	Returns the metric with a given internal name.
  ************************************************************************/
 	
-public Metric getMetric(String name)
+public BaseMetric getMetric(String name)
 {
-	Metric metric = (Metric) this.metricMap.get(name);
+	BaseMetric metric = (BaseMetric) this.metricMap.get(name);
 	Dialogs.Assert(metric != null, " Null in getMetric");
 	return metric;
 }

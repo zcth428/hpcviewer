@@ -385,33 +385,55 @@ public void postprocess(boolean callerView) {
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
 
-		this.initAggregateMetrics(callingContextViewRootScope);
+		//----------------------------------------------------------------------------------------------
+		// Inclusive metrics
+		//----------------------------------------------------------------------------------------------
 		if (this.inclusiveNeeded()) {
+			// TODO: if the metric is a derived metric then DO NOT do this process !
+			// TODO: we need to make something more elegant and smart instead of using if-then branches everywhere !
 			normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 			addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
 			this.computeExclusiveMetrics(callingContextViewRootScope);
 		}
-		//addInclusiveMetrics(callingContextViewRootScope, 
-		//  new ExclusiveOnlyMetricPropagationFilter(this.getMetrics()));
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
 
+		//----------------------------------------------------------------------------------------------
 		// Callers View
+		//----------------------------------------------------------------------------------------------
+		Scope callersViewRootScope = null;
 		if (callerView) {
-			Scope callersViewRootScope = createCallersView(callingContextViewRootScope);
+			callersViewRootScope = createCallersView(callingContextViewRootScope);
 			copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
 			addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
 		}
 		
+		//----------------------------------------------------------------------------------------------
 		// Flat View
+		//----------------------------------------------------------------------------------------------
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
 		// compute the inclusive metrics: accumulate the cost of loops and line scopes
 		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, emptyFilter, this.getMetricCount());
-		//flatViewRootScope.accumulateMetrics(callingContextViewRootScope, rootInclProp, this.getMetricCount());
 
+		//----------------------------------------------------------------------------------------------
+		// INITALIZATION
+		//----------------------------------------------------------------------------------------------
+		this.initAggregateMetrics(callingContextViewRootScope);		// cct
+		if (callerView)												// caller view
+			this.initAggregateMetrics(callersViewRootScope);
+		this.initAggregateMetrics(flatViewRootScope);				// flat view
+
+		//----------------------------------------------------------------------------------------------
+		// FINALIZATION
+		//----------------------------------------------------------------------------------------------
+		this.finalizeAggregateMetrics(callingContextViewRootScope);		// cct
+		if (callerView)													// caller view
+			this.finalizeAggregateMetrics(callersViewRootScope);
+		this.finalizeAggregateMetrics(flatViewRootScope);				// flat view
+		
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
@@ -430,15 +452,28 @@ public void postprocess(boolean callerView) {
 private boolean checkExistenceOfDerivedIncr() {
 	boolean isAggregate = false;
 	for (int i=0; !isAggregate && i<this.getMetricCount(); i++) {
-		isAggregate = this.getMetric(i).getMetricType() == MetricType.DERIVED_INCR;
+		BaseMetric metric = this.getMetric(i);
+		isAggregate = (metric instanceof AggregateMetric); 
 	}
 	return isAggregate;
 }
 
+/**
+ * Initialize derived incremental metrics
+ * @param root: the scope root (cct, caller view or flat view)
+ */
 private void initAggregateMetrics(Scope root) {
 	if (! checkExistenceOfDerivedIncr())
 		return;
-	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics());
+	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics(), AggregateMetric.FORMULA_COMBINE);
+	root.dfsVisitScopeTree(diVisitor);
+}
+
+
+private void finalizeAggregateMetrics(Scope root) {
+	if (! checkExistenceOfDerivedIncr())
+		return;
+	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics(), AggregateMetric.FORMULA_FINALIZE);
 	root.dfsVisitScopeTree(diVisitor);
 }
 
@@ -449,7 +484,8 @@ private void initAggregateMetrics(Scope root) {
 private boolean inclusiveNeeded() {
 	boolean isNeeded = false;
 	for (int i=0; !isNeeded && i<this.getMetricCount(); i++) {
-		isNeeded = this.getMetric(i).getMetricType() != MetricType.PREAGGREGATE;
+		BaseMetric m = this.getMetric(i);
+		isNeeded = !(m instanceof FinalMetric);//.getMetricType() != MetricType.PREAGGREGATE;
 	}
 	return isNeeded;
 }

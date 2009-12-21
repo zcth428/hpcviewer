@@ -41,7 +41,7 @@ public class AggregateMetric extends BaseMetric {
 		// set up the variables
 		this.varMap = new MetricVarMap();
 		// laksono hack 2009: we force this class of type DERIVED_INCR ... yuck !
-		this.metricType = MetricType.DERIVED_INCR;
+		//this.metricType = MetricType.DERIVED_INCR;
 	}
 
 	@Override

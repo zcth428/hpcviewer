@@ -503,6 +503,8 @@ public class ExperimentBuilder2 extends Builder
 	}
 	
 	
+	private enum MetricValueDesc {Raw, Final, Derived_Incr, Derived}
+	
 	/*************************************************************************
 	 *	Processes a METRIC element.
 	 *  <!ELEMENT Metric (MetricFormula?, Info?)>
@@ -523,7 +525,8 @@ public class ExperimentBuilder2 extends Builder
 		String sNativeName = null;
 		boolean toShow = true;
 		MetricType objType = MetricType.EXCLUSIVE;
-		boolean isInclusiveCCT = this.csviewer;
+		boolean needPartner = this.csviewer;
+		MetricValueDesc mDesc = MetricValueDesc.Raw; // by default is a raw metric
 		
 		for (int i=0; i<attributes.length; i++) {
 			if (attributes[i].charAt(0) == 'i') {
@@ -544,22 +547,24 @@ public class ExperimentBuilder2 extends Builder
 				sNativeName = values[i];
 			} else if (attributes[i].charAt(0) == 'v') {
 				// value: raw|final|derived-incr|derived
-				if (values[i].equals("raw")) {
-					// default behavior
-					// TODO: recognize 't' attribute as a directive
-				}
-				else if (values[i].equals("final")) {
+				if (values[i].equals("final")) {
 					// TODO: must distinguish between 'raw', 'cct-aggregated' and 'final'
 					//   (in this context, PREAGGREGATE may be a little confusing) 
-					objType = MetricType.PREAGGREGATE;
 					// TODO: use 't' attribute to set to I or E
-					isInclusiveCCT = false;
+					mDesc = MetricValueDesc.Final;
+					needPartner = false;
 				} else if (values[i].equals("derived-incr")) {
-					objType = MetricType.DERIVED_INCR;
-					isInclusiveCCT = false;
+					mDesc = MetricValueDesc.Derived_Incr;
+					needPartner = false;
+				} else if (values[i].equals("derived")) {
+					mDesc = MetricValueDesc.Derived;
 				}
 			} else if (attributes[i].charAt(0) == 't') {
 				// type: inclusive|exclusive|nil
+				if (values[i].charAt(0) == 'i')
+					objType = MetricType.INCLUSIVE;
+				else if (values[i].charAt(0) == 'e')
+					objType = MetricType.EXCLUSIVE;
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
@@ -569,7 +574,7 @@ public class ExperimentBuilder2 extends Builder
 		int partner = iSelf;
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
-		if (isInclusiveCCT) {
+		if (needPartner) {
 			sDisplayName = sNativeName + " (I)";
 			objType = MetricType.INCLUSIVE;
 			partner = this.maxNumberOfMetrics + iSelf;
@@ -580,23 +585,38 @@ public class ExperimentBuilder2 extends Builder
 		
 		// set the metric
 		BaseMetric metricInc;
-		if (objType == MetricType.DERIVED_INCR) {
-			metricInc = new AggregateMetric(sID, sDisplayName, toShow, false, nbMetrics);
-		} else {
-			metricInc = new Metric(this.experiment,
-					String.valueOf(iSelf),			// short name
-					sNativeName,			// native name
-					sDisplayName, 	// display name
-					toShow, true, 			// displayed ? percent ?
-					"",						// period (not defined at the moment)
-					objType, partner);
+		switch (mDesc) {
+			case Final:
+				metricInc = new FinalMetric(this.experiment,
+						String.valueOf(iSelf),			// short name
+						sNativeName,			// native name
+						sDisplayName, 	// display name
+						toShow, true, 			// displayed ? percent ?
+						"",						// period (not defined at the moment)
+						objType, partner);
+				break;
+			case Derived_Incr:
+				metricInc = new AggregateMetric(sID, sDisplayName, toShow, false, nbMetrics);
+				break;
+			case Raw:
+			case Derived:
+			default:
+				metricInc = new Metric(this.experiment,
+						String.valueOf(iSelf),			// short name
+						sNativeName,			// native name
+						sDisplayName, 	// display name
+						toShow, true, 			// displayed ? percent ?
+						"",						// period (not defined at the moment)
+						objType, partner);
+				break;
 		}
+
 		this.metricList.add(metricInc);
 
 		// Laks 2009.01.14: only for call path profile
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
-		if (isInclusiveCCT) {
+		if (needPartner) {
 			// set the exclusive metric
 			String sSelfName = String.valueOf(partner);	// I am the partner of the inclusive metric
 			// Laks 2009.02.09: bug fix for not reusing the existing inclusive display name
@@ -1351,7 +1371,7 @@ public class ExperimentBuilder2 extends Builder
 					case AGGREGATE:
 						if (values[i].charAt(0) == '0' || values[i].charAt(0) == 'N') {
 							BaseMetric metric = this.metricList.get(nbMetrics-1);
-							metric.setMetricType( MetricType.PREAGGREGATE);
+							//metric.setMetricType( MetricType.PREAGGREGATE);
 						} else {
 							
 						}

@@ -6,8 +6,8 @@ package edu.rice.cs.hpc.data.experiment.metric;
 public class MetricType {
 	public final static MetricType EXCLUSIVE      = new MetricType("EXCLUSIVE");
 	public final static MetricType INCLUSIVE      = new MetricType("INCLUSIVE");
-	public final static MetricType PREAGGREGATE   = new MetricType("PREAGGREGATE");
-	public final static MetricType DERIVED_INCR   = new MetricType("DERIVED_INCR");
+	//public final static MetricType PREAGGREGATE   = new MetricType("PREAGGREGATE");
+	//public final static MetricType DERIVED_INCR   = new MetricType("DERIVED_INCR");
 	
 	public String toString() { return value; }
 	

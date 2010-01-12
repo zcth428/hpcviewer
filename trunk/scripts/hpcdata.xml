@@ -1,0 +1,39 @@
+<project default="hpcdata">
+	<!--
+	This ant script contains these targets;
+	    compile     - compiles java source
+	    jar         - build hpcviewer.jar (depends on compile)
+	    buildviewer - (default) does all targets
+	-->	
+	<property name="classbase" location="edu/rice/cs/hpc/data"/>
+
+  	<target name="compile" >
+	    <mkdir dir="bin" />
+    	<javac srcdir="../src/edu/rice/cs/hpc/data;../externals/com/graphbuilder" 
+           	   destdir="bin" >
+			<classpath>
+				<fileset dir="../external-jars" includes="**/*.jar" />
+			</classpath>
+    	</javac>
+  	</target>
+  
+  	<target name="jar" depends="compile">
+  		<delete file="hpcdata.jar" />
+    	<jar destfile="hpcdata.jar" >
+       	     <fileset dir="bin" includes="**/*.class" />
+      	     <fileset dir="../external-jars" includes="**/*.jar" />
+             <manifest>
+                <attribute name="Main-Class" value="edu.rice.cs.hpc.data.experiment.Experiment"/>
+             </manifest>
+        </jar>
+  	</target>
+  
+	<target name="hpcdata" depends="compile,jar" />
+
+    <target name="run">
+        <java jar="hpcdata.jar" fork="true"/>
+    </target>
+
+
+</project>
+

@@ -4,7 +4,6 @@
 package edu.rice.cs.hpc.data.experiment.metric;
 
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.viewer.metric.MetricVarMap;
 
 //math expression
 import com.graphbuilder.math.*;

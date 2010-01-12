@@ -6,7 +6,6 @@ import com.graphbuilder.math.ExpressionTree;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.metric.MetricVarMap;
 import com.graphbuilder.math.FuncMap;
 
 public class AggregateMetric extends BaseMetric {

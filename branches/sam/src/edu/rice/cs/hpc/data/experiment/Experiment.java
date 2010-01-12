@@ -68,8 +68,7 @@ protected String version;
 /** ----------------- DICTIONARIES -----------------  **/
 protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 protected Hashtable<Integer, SourceFile> hashFileTable;
-//protected Hashtable<Integer, SourceFile> hashProcedureTable;
-//private SourceFile []arrSourceFiles;
+
 
 /** The experiment's metrics. */
 protected Vector<BaseMetric> metricList;
@@ -107,10 +106,6 @@ public Experiment()
  ************************************************************************/
 	
 public Experiment(File filename)
-// laks: no exception needed
- /* *throws
-	IOException,
-	InvalExperimentException*/
 {
 	this.experimentFile   = ExperimentFile.makeFile(filename);
 	this.fileExperiment = filename;
@@ -129,9 +124,6 @@ public Experiment(Experiment exp)
 	this.defaultDirectory = exp.getDefaultDirectory();
 	this.experimentFile = null;
 	this.fileExperiment = exp.getXMLExperimentFile();
-	// setSourceFiles(files); // union sourcefiles later
-	// setMetrics(metricList);	// sets metrics (w/ index) and metricMap
-	// setScopes(scopes, rootScope); // union scopeLists, and build new scopeTree from rootScope
 }
 
 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.rice.cs.hpc.viewer.metric;
+package edu.rice.cs.hpc.data.experiment.metric;
 
 import com.graphbuilder.math.Expression;
 import com.graphbuilder.math.ExpressionTree;
@@ -10,9 +10,6 @@ import com.graphbuilder.math.VarMap;
 import com.graphbuilder.math.func.Function;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**

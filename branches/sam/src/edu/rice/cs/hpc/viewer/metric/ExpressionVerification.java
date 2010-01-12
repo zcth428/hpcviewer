@@ -5,6 +5,7 @@ package edu.rice.cs.hpc.viewer.metric;
 
 import com.graphbuilder.math.Expression;
 import edu.rice.cs.hpc.data.experiment.metric.ExtFuncMap;
+import edu.rice.cs.hpc.data.experiment.metric.MetricVarMap;
 
 /**
  * @author laksonoadhianto

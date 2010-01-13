@@ -11,10 +11,10 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 
 import java.io.File;
-import java.io.FilenameFilter;
+
+import edu.rice.cs.hpc.data.util.Util.FileXMLFilter;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;
-import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
 /**
@@ -57,23 +57,7 @@ public class ExperimentManager {
 			ExperimentManager.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
 	}
 	
-	/**
-	 * Class to filter the list of files in a directory and return only XML files 
-	 * The filter is basically very simple: if the last 3 letters has "xml" substring
-	 * then we consider it as XML file.
-	 * TODO: we need to have a more sophisticated approach to filter only the real XML files
-	 * @author laksono
-	 *
-	 */
-	static class FileXMLFilter implements FilenameFilter {
-		public boolean accept(File pathname, String sName) {
-			int iLength = sName.length();
-			if (iLength <4) // the file should contain at least four letters: ".xml"
-				return false;
-			String sExtension = (sName.substring(iLength-3, iLength)).toLowerCase();
-			return (pathname.canRead() && sExtension.endsWith("xml"));
-		}
-	}
+
 	
 	/**
 	 * Get the list of database file name

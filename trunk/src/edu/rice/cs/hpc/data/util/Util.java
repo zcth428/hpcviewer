@@ -17,11 +17,14 @@ package edu.rice.cs.hpc.data.util;
 
 //import java.awt.Color;
 //import java.awt.FontMetrics;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
 //import javax.swing.JComponent;
 //import javax.swing.JPanel;
 //import javax.swing.SwingUtilities;
+
 
 
 
@@ -178,6 +181,33 @@ public static String formatDouble(double d, DecimalFormat formatter, int fieldWi
 	return Util.rightJustifiedField(formatter.format(d), fieldWidth);
 }
 
+
+/**
+ * Class to filter the list of files in a directory and return only XML files 
+ * The filter is basically very simple: if the last 3 letters has "xml" substring
+ * then we consider it as XML file.
+ * TODO: we need to have a more sophisticated approach to filter only the real XML files
+ * @author laksono
+ *
+ */
+public static class FileXMLFilter implements FilenameFilter {
+	public boolean accept(File pathname, String sName) {
+		int iLength = sName.length();
+		if (iLength <4) // the file should contain at least four letters: ".xml"
+			return false;
+		String sExtension = (sName.substring(iLength-3, iLength)).toLowerCase();
+		return (pathname.canRead() && sExtension.endsWith("xml"));
+	}
+}
+
+public static File[] getListOfXMLFiles(String sDir) 
+{
+	// find XML files in this directory
+	File files = new File(sDir);
+	// for debugging purpose, let have separate variable
+	File filesXML[] = files.listFiles(new FileXMLFilter());
+	return filesXML;
+}
 
 
 

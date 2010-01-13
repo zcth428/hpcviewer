@@ -724,8 +724,16 @@ public File getXMLExperimentFile() {
 	   String sFilename = argv[0];
 	           // open the experiment if possible
 	    try
-	           {
-	           experiment = new Experiment(new java.io.File(sFilename));
+	        {
+	    	   File objFile = new File(sFilename);
+	    	   if (objFile.isDirectory()) {
+	    		   File files[] = Util.getListOfXMLFiles(sFilename);
+	    		   boolean done = false;
+	    		   for (int i=0; i<files.length && !done; i++) {
+	    			   
+	    		   }
+	    	   }
+	           experiment = new Experiment(objFile);
 	           // laks: try to debug to verify if apache xml is accessible
 	           System.out.print("DataExperiment: Opening file:"+sFilename);
 	           experiment.open();

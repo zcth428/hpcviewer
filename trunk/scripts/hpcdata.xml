@@ -26,6 +26,7 @@
                 <attribute name="Main-Class" value="edu.rice.cs.hpc.data.experiment.Experiment"/>
              </manifest>
         </jar>
+  		<delete dir="bin" />
   	</target>
   
 	<target name="hpcdata" depends="compile,jar" />

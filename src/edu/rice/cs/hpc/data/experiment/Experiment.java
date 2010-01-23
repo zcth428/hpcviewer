@@ -309,9 +309,12 @@ protected Scope createFlatView(Scope callingContextViewRootScope)
 	Scope flatViewRootScope = new RootScope(this, "Flat View", "Flat View", RootScopeType.Flat);
 	beginScope(flatViewRootScope);
 	
+	FlatScopeVisitor fv = new FlatScopeVisitor(this, (RootScope) flatViewRootScope);
+	/*
 	FlatViewScopeVisitor fsv = new FlatViewScopeVisitor(this, flatViewRootScope, 
 			this.getMetricCount(), false, fvf);
-	callingContextViewRootScope.dfsVisitScopeTree(fsv);
+	callingContextViewRootScope.dfsVisitScopeTree(fsv);*/
+	callingContextViewRootScope.dfsVisitScopeTree(fv);
 
 	return flatViewRootScope;
 }
@@ -415,7 +418,7 @@ public void postprocess(boolean callerView) {
 		// One the tree has been created, we compute the inclusive cost for other scopes
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
 		// compute the inclusive metrics: accumulate the cost of loops and line scopes
-		addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
+		//addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, emptyFilter, this.getMetricCount());
 
 		//----------------------------------------------------------------------------------------------
@@ -485,7 +488,7 @@ private boolean inclusiveNeeded() {
 	boolean isNeeded = false;
 	for (int i=0; !isNeeded && i<this.getMetricCount(); i++) {
 		BaseMetric m = this.getMetric(i);
-		isNeeded = !(m instanceof FinalMetric);//.getMetricType() != MetricType.PREAGGREGATE;
+		isNeeded = !( (m instanceof FinalMetric) || (m instanceof AggregateMetric) );//.getMetricType() != MetricType.PREAGGREGATE;
 	}
 	return isNeeded;
 }

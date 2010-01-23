@@ -29,9 +29,10 @@ public class AggregateMetric extends BaseMetric {
 	 * @param displayed: to show or not ?
 	 * @param percent  : to show the percent ?
 	 * @param index    : metric index in the list (unused)
+	 * @param type	   : metric type
 	 */
 	public AggregateMetric(String sID, String sDisplayName, boolean displayed,
-			boolean percent, int index) {
+			boolean percent, int index, MetricType type) {
 		super(sID, sDisplayName, displayed, percent, index);
 
 		this.fctMap = new FuncMap();
@@ -41,6 +42,7 @@ public class AggregateMetric extends BaseMetric {
 		this.varMap = new MetricVarMap();
 		// laksono hack 2009: we force this class of type DERIVED_INCR ... yuck !
 		//this.metricType = MetricType.DERIVED_INCR;
+		this.metricType = type;
 	}
 
 	@Override

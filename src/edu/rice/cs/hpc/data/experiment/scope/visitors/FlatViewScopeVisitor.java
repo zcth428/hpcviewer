@@ -54,6 +54,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private MetricValuePropagationFilter filter;
 
 	static private FileScope EMPTY_FILE_SCOPE = new FileScope(null, null, -1);
+	static private Hashtable<Scope, Scope> lineht;
+	
 	//----------------------------------------------------
 	// constructor for FlatViewScopeVisitor
 	//----------------------------------------------------
@@ -79,6 +81,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		fileprocht = 
 			new Hashtable/*<FileScope, Hashtable<String, ProcedureScope>>*/();
 		fileht = new Hashtable/*<SourceFile, FileScope>*/();
+		lineht = new Hashtable<Scope, Scope>();
 	}
 
 
@@ -189,6 +192,10 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				} catch (java.util.EmptyStackException e) {
 					trace("Empty stack for procedure ! Scope = "+scope.getName()+"\tparent="+scope.getParentScope().getName());
 				}
+			} else if (scope instanceof LineScope) {
+				Scope flat_s = this.lineht.get(scope);
+				assert (flat_s != null);
+				flat_s.iCounter--;
 			}
 			try {
 				FileScope scopeFile = this.stackFileScope.pop();
@@ -393,7 +400,11 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			     flat_encl_context = flat_encl_proc;
 			}
 		}
-		else 
+		else if (encl_context instanceof LineScope)
+			// for call site that has the parent as a line scope, we will not count twice the line scope !
+			flat_encl_context = this.getFlatScope(encl_context, ht);
+		else
+			// this is mostly a loop scope as an enclosing context
 			flat_encl_context = getFlatCounterpart(encl_context, flat_encl_proc, ht);
 		getFlatCounterpart(s, flat_encl_context, ht);
 		
@@ -441,6 +452,17 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		return code;
 	}*/
 
+	
+	private int getScopeID( Scope s ) {
+		return s.hashCode();
+	}
+	
+	private Scope getFlatScope(Scope cct, Hashtable ht) {
+		int code = this.getScopeID(cct);
+		Scope flat_s = (Scope) ht.get(new Integer(code));
+		return flat_s;
+	}
+	
 	/**
 	 * Construct a flat tree.
 	 * Algorithm:
@@ -457,15 +479,16 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 */
 	protected Scope getFlatCounterpart(Scope s, Scope flat_parent, Hashtable ht) {
 		//	new test code
-		int code = s.hashCode(); // getCode(s);
-		Scope flat_s = (Scope) ht.get(new Integer(code));
+		//int code = s.hashCode(); // getCode(s);
+		Scope flat_s = this.getFlatScope(s, ht); //(Scope) ht.get(new Integer(code));
+		
 		// -- this line is the problem -- returns scopes with and without isAlien set; multiple distinct instantiations of a callsite within a scope
 		if (s instanceof LoopScope && flat_s != null && !(flat_s instanceof LoopScope)) {
 			trace("error");
 		}
 		if (flat_s == null) {
 			flat_s  =  s.duplicate();
-			ht.put(new Integer(code), flat_s);
+			ht.put(new Integer( this.getScopeID(s)), flat_s);
 
 			if (flat_parent instanceof CallSiteScope && !((CallSiteScope) flat_parent).getProcedureScope().isAlien()) {
 				trace("getFlatCounterpart error" + flat_s.getName());
@@ -500,7 +523,12 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 
 			}
 		} else {
-			flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
+			// this path can be either loop or line scope
+			flat_s.iCounter++;
+			if (flat_s.iCounter == 1)
+				flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
+			lineht.put(s, flat_s);
+			System.out.println("FVSV getFlatCounterpart: " + s + " \t" + flat_s+ "\t" + flat_s.getMetricValue(0).getValue());
 		}
 		return flat_s;
 	}

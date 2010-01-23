@@ -83,10 +83,10 @@ public String getName()
 {
 	return this.procScope.getName();
 }
-
+/*
 public int hashCode() {
 	return procScope.hashCode() ^ lineScope.hashCode();
-}
+}*/
 
 public ProcedureScope getProcedureScope()
 {

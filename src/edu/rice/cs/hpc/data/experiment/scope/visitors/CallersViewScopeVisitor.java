@@ -42,8 +42,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		this.filter = filter;
 		BaseMetric []metrics = experiment.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-		inclusiveOnly = new AggregatePropagationFilter(metrics);
-		//inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+		//inclusiveOnly = new AggregatePropagationFilter(metrics);
+		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 		objRemoveFilter = new RemoveCallsiteCostPropagationFilter(metrics);
 	}
 
@@ -61,6 +61,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			scopeCall.accumulateMetrics(scope, this.filter, numberOfPrimaryMetrics);
 			
 			// Remove linescope-normalization from CS-scope
+			/*
 			for (int i=0; i<numberOfPrimaryMetrics; i++) {
 				// remove the cost of the line scope if it is an inclusive or exclusive metric
 				if (this.objRemoveFilter.doPropagation(scope, scopeCall, i, i)) {
@@ -68,7 +69,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 					// LA: This statement means removing the cost of line scope from the call site.
 					scopeCall.accumulateMetricValue(i, (lsval<0.0) ? 0.0 : (-1*lsval) );
 				}
-			}
+			} */
 
 			// if there are no exclusive costs to attribute from this context, we are done here
 			if (!scopeCall.hasNonzeroMetrics()) {
@@ -121,10 +122,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			CallSiteScope innerCS = scope;
 			LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
 			Scope next = scope.getParentScope();
-			while ( (next != null) && (next instanceof CallSiteScope || next instanceof LoopScope ||
-					next instanceof ProcedureScope) )
+			while ( (next != null) && !(next instanceof RootScope)) /*(next instanceof CallSiteScope || next instanceof LoopScope ||
+					next instanceof ProcedureScope) ) */
 			{
-				if (!(next instanceof LoopScope) && innerCS != null) {
+				// Laksono 2009.01.14: we only deal with call site OR procedure scope
+				if ( ((next instanceof CallSiteScope) || (next instanceof ProcedureScope))
+						/*!(next instanceof LoopScope) */ && innerCS != null) {
 					CallSiteScope enclosingCS = null;
 					ProcedureScope mycaller = null;
 					if (next instanceof ProcedureScope) {

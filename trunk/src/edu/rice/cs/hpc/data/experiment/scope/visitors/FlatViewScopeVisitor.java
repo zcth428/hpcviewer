@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.data.experiment.scope.visitors;
 import java.util.*;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.AlienScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
@@ -16,79 +15,48 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
-import edu.rice.cs.hpc.data.experiment.scope.filters.AggregatePropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
+
+/**
+ * Class to create Flat tree based on calling context tree
+ * @author laksonoadhianto
+ *
+ */
+
 public class FlatViewScopeVisitor implements IScopeVisitor {
-	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
-	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
-	private final EmptyMetricValuePropagationFilter noFilter;
-	//----------------------------------------------------
-	// private data
-	//----------------------------------------------------
-	protected boolean isdebug = false; // true;
-
-	protected Hashtable/*<SourceFile, FileScope>*/ fileht;
-
-	protected Hashtable/*<FileScope, Hashtable<String, ProcedureScope>>*/ fileprocht;
-
-	protected Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/ proc_to_proc_contents_ht;
-	Hashtable<String, LoadModuleScope> htLoadModuleTable;
-
-	/**
-	 * Stack to store the flat procedure scope of a cct's callsite scope
-	 */
-	private Stack<ProcedureScope> stackProcScope;
-	/**
-	 * Stack to store flat file scope 
-	 */
-	private Stack<FileScope> stackFileScope;
+	private Hashtable<Integer, LoadModuleScope> htFlatLoadModuleScope;
+	private Hashtable<Integer, FileScope> htFlatFileScope;
+	private Hashtable<Integer, ProcedureScope> htFlatProcScope;
+	private Hashtable<Integer, FlatScopeInfo> htFlatScope;
+	private Hashtable<Integer, FlatScopeInfo[]> htFlatCostAdded;
 	
-	private Experiment exp;
-	private Scope flatViewRootScope;
-	private int numberOfPrimaryMetrics;
-	private MetricValuePropagationFilter filter;
-
-	static private FileScope EMPTY_FILE_SCOPE = new FileScope(null, null, -1);
-	static private Hashtable<Scope, Scope> lineht;
+	private Experiment experiment;
+	private RootScope root_ft;
+	private int nbMetrics;
 	
-	//----------------------------------------------------
-	// constructor for FlatViewScopeVisitor
-	//----------------------------------------------------
-
-	public FlatViewScopeVisitor(Experiment experiment, Scope fvrs, int nMetrics, boolean dodebug,
-			MetricValuePropagationFilter filter) {
-		this.flatViewRootScope = fvrs;
-		this.exp = experiment;
-		this.isdebug = dodebug;
-		this.numberOfPrimaryMetrics = nMetrics;
-		this.filter = filter;
+	private InclusiveOnlyMetricPropagationFilter inclusive_filter;
+	private ExclusiveOnlyMetricPropagationFilter exclusive_filter;
+	
+	public FlatViewScopeVisitor( Experiment exp, RootScope root) {
+		this.experiment = exp;
 		
-		BaseMetric[] metrics = exp.getMetrics();
-		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-		inclusiveOnly = new AggregatePropagationFilter(metrics);
-		noFilter = new EmptyMetricValuePropagationFilter();
+		this.htFlatLoadModuleScope = new Hashtable<Integer, LoadModuleScope>();
+		this.htFlatFileScope = new Hashtable<Integer, FileScope>();
+		this.htFlatProcScope = new Hashtable<Integer, ProcedureScope> ();
+		this.htFlatScope     = new Hashtable<Integer, FlatScopeInfo>();
+		this.htFlatCostAdded = new Hashtable<Integer, FlatScopeInfo[]>();
 		
-		htLoadModuleTable = new Hashtable<String, LoadModuleScope>();
-		stackFileScope  = new Stack<FileScope>();
-		stackProcScope  = new Stack<ProcedureScope>();
-		proc_to_proc_contents_ht = 
-			new Hashtable/*<ProcedureScope, Hashtable<Integer, Scope>>*/();
-		fileprocht = 
-			new Hashtable/*<FileScope, Hashtable<String, ProcedureScope>>*/();
-		fileht = new Hashtable/*<SourceFile, FileScope>*/();
-		lineht = new Hashtable<Scope, Scope>();
+		this.root_ft = root;
+		this.nbMetrics = exp.getMetricCount(); 	// we assume the number of metric is static !!
+		
+		this.inclusive_filter = new InclusiveOnlyMetricPropagationFilter( exp.getMetrics() );
+		this.exclusive_filter = new ExclusiveOnlyMetricPropagationFilter( exp.getMetrics() );
 	}
-
-
-	//----------------------------------------------------
-	// visitor pattern instantiations for each Scope type
-	//----------------------------------------------------
-
+	
+	
 	public void visit(Scope scope, ScopeVisitType vt) 				{ }
 	public void visit(RootScope scope, ScopeVisitType vt) 			{ }
 	public void visit(LoadModuleScope scope, ScopeVisitType vt) 	{ }
@@ -102,124 +70,267 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	public void visit(LoopScope scope, ScopeVisitType vt) 			{ add(scope,vt); }
 	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{ add(scope,vt); }
 
-	//----------------------------------------------------
-	// helper functions  
-	//----------------------------------------------------
-
-	/**
-	 * Add a scope into flat view tree
-	 * @param scope: the current scope from the CCT
-	 * @param vt: type of visit: PREVISIT or POSTVISIT
-	 * 
-	 * CCT: 
-	 * 	M - F - X - F - Y - F
-	 * 	  - F	
-	 * FT:
-	 *  File
-	 *   - M
-	 *   - F - Y - F - X - M
-	 *   	 - X - F - M
-	 *   	 - M
-	 *   - Y - F - X - F - M
-	 *   - X - F - M
-	 * 
-	 * Algorithm:
-	 * PreVisit:
-	 * 	- encProc = getEclosingProcedure(scope)
-	 *  - if (encProc is not null)
-	 *  	scopeFile = getFlatFileScope(scope)
-	 *  	if(scopeFile is null) then 
-	 *  		create scopefile, add it into hashtable and the tree
-	 *  	
-	 *  	scopeProc = getFlatProcScope(scopeFile, scope)
-	 *  	if(scopeProc is null) then
-	 *  		create scopeProc, add it into hashtable, and the tree
-	 *  
-	 *  	scopeFlat = getFlatScope(scopeProc, scope)
-	 *  	if scopeFlat is null then
-	 *  		create scopeFlat, add it into hashtable
-	 *   	
-	 *   	if(scope is callsite) then
-	 *   		if(scopeFlat first time appear in the tree)
-	 *   			scopeFlat.cost += scope.cost
-	 *   		if(scopeFlat is callsite)
-	 *   			scopeFlat.lineScope += scope.lineScope.cost
-	 *   	else
-	 *   		scopeFlat.cost += scope.cost
-	 */
-	public void add(Scope scope, ScopeVisitType vt) { 
-		ProcedureScope proc = findEnclosingProcedure(scope);
-		// ------------- PRE VISIT 
-		if (vt == ScopeVisitType.PreVisit) {
-			if(proc == null) {
-				// When the proc is null, it can be either the child of root scope, or an anomaly
-				// for the child of the root scope, we need to include it into Flat tree and assign the cost to the scope
-				if(scope instanceof ProcedureScope) {
-					proc = (ProcedureScope) scope;
-					// create a new scope into flat tree
-					FlatFileProcedure objFlat = retrieveProcedureScope(proc.getSourceFile(), proc, scope);
-					ProcedureScope flat_encl_proc = objFlat.objProc;
-					// assign the cost to this scope
-					flat_encl_proc.mergeMetric(scope, this.inclusiveOnly);
-					flat_encl_proc.iCounter++;
-					this.attributeCostToFlatFile(objFlat.objFile, scope);
-				}
-				return;
+	private void add( Scope scope, ScopeVisitType vt ) {
+		
+		if (vt == ScopeVisitType.PreVisit ) {
+			//--------------------------------------------------------------------------
+			// Pre-visit
+			//--------------------------------------------------------------------------
+			int id = scope.hashCode();
+			Integer objCode = Integer.valueOf(id);
+			FlatScopeInfo flat_info[] = this.htFlatCostAdded.get( objCode );
+			if (flat_info != null) {
+				this.htFlatCostAdded.remove(objCode);
 			}
-
-			Scope context = scope.getParentScope();
-			// -------------------------------------------------------
-			// When the scope is a call site, we will assign the cost of the call site into its "enclosing" procedure
-			// By doing so, (1) we avoid to recompute the total of the procedure; and (2) we have a consistent cost 
-			//		compared to the caller tree view
-			// -------------------------------------------------------
-			// construct the flat tree of this scope
-			augmentFlatView(scope, context, proc);
+			// debugging purpose
+			/*
+			String sName = scope.getName();
+			if (id == 30 || sName.startsWith("monitor_make_thread_node")) {
+				System.out.println("FSV " + scope.getName() + " p: " + scope.getParentScope() );
+			} */ 
+			FlatScopeInfo objFlat = this.getFlatCounterPart(scope);
+			//Scope fs = objFlat.flat_s;
+		} else {
 			
-		} 
-		// ------------- POST VISIT
-		else if(vt == ScopeVisitType.PostVisit) {
-			if(proc == null) 
-				return;
-			if(scope instanceof CallSiteScope) {
-				try {
-					ProcedureScope scopeProc = this.stackProcScope.pop();
-					// we have already computed this scope, so let's decrement the counter
-					scopeProc.iCounter--;
-					if(scopeProc.iCounter<0) {
-						trace("\tError:"+scopeProc.getName()+"\t"+scopeProc.iCounter);
-					}
-				} catch (java.util.EmptyStackException e) {
-					trace("Empty stack for procedure ! Scope = "+scope.getName()+"\tparent="+scope.getParentScope().getName());
-				}
-			} else if (scope instanceof LineScope) {
-				Scope flat_s = this.lineht.get(scope);
-				assert (flat_s != null);
-				flat_s.iCounter--;
-			}
-			try {
-				FileScope scopeFile = this.stackFileScope.pop();
-				if(scopeFile != this.EMPTY_FILE_SCOPE) {
-					if(scopeFile.iCounter>0)
-						scopeFile.iCounter--;
-					else
-						trace("ERROR: scopeFile counter is negative "+scopeFile.getName()+"\tscope:"+scope.getName());
-				}
-			} catch (java.util.EmptyStackException e) {
-				trace("Empty stack for file ! Scope = "+scope.getName());
+			//--------------------------------------------------------------------------
+			// Post visit
+			//--------------------------------------------------------------------------
+			Integer objCode = Integer.valueOf(scope.hashCode());
+			FlatScopeInfo flat_info[] = this.htFlatCostAdded.get( objCode );
+			assert(flat_info != null);
+			for (int i=0; i<flat_info.length; i++) {
+				flat_info[i].decrement();
 			}
 		}
 	}
+	
+	
+	
 
-	/**
-	 * Iteratively finding an enclosing procedure of a CCT scope
-	 * @param s
+	/****---------------------------------------------------------------------------****
+	 * Get the flat counterpart of the scope cct:
+	 * - check if the flat counter part already exist
+	 * -- if not, create a new one
+	 * - get the flat file counter part exists
+	 * 
+	 * @param scopeCCT
 	 * @return
-	 */
-	public ProcedureScope findEnclosingProcedure(Scope s)
+	 ****---------------------------------------------------------------------------****/
+	private FlatScopeInfo getFlatScope( Scope cct_s, boolean addCost ) {
+		//-----------------------------------------------------------------------------
+		// get the flat scope
+		//-----------------------------------------------------------------------------
+		int id = cct_s.hashCode();
+		Integer objCode = Integer.valueOf( id );
+		FlatScopeInfo flat_info_s = this.htFlatScope.get( objCode );
+		
+		if (flat_info_s == null) {
+			//-----------------------------------------------------------------------------
+			// Initialize the flat scope
+			//-----------------------------------------------------------------------------
+			flat_info_s = new FlatScopeInfo();
+			
+			//-----------------------------------------------------------------------------
+			// finding enclosing procedure of this cct scope
+			//-----------------------------------------------------------------------------
+			ProcedureScope proc_cct_s = this.findEnclosingProcedure(cct_s);
+			if (proc_cct_s == null) {
+				assert(cct_s instanceof ProcedureScope);
+				proc_cct_s = (ProcedureScope) cct_s;
+			}
+			
+			//-----------------------------------------------------------------------------
+			// Initialize the load module scope
+			//-----------------------------------------------------------------------------
+			LoadModuleScope lm = proc_cct_s.getLoadModule();
+			// some old database do not provide load module information
+			if (lm != null)  {
+				flat_info_s.flat_lm = this.htFlatLoadModuleScope.get(lm.hashCode());
+				if (flat_info_s.flat_lm == null) {
+					// no load module has been created. we allocate a new one
+					flat_info_s.flat_lm = (LoadModuleScope) lm.duplicate();
+					// attach the load module to the root scope
+					this.addToTree(root_ft, flat_info_s.flat_lm);
+					// store this module into our dictionary
+					this.htFlatLoadModuleScope.put(lm.hashCode(), flat_info_s.flat_lm);
+				}
+			}
+
+
+			//-----------------------------------------------------------------------------
+			// Initialize the flat file scope
+			//-----------------------------------------------------------------------------
+			SourceFile src_file = cct_s.getSourceFile();
+			Integer objFileID   = src_file.getFileID();
+			flat_info_s.flat_file = this.htFlatFileScope.get(objFileID);
+			if (flat_info_s.flat_file == null) {
+				flat_info_s.flat_file = new FileScope( this.experiment, src_file, objFileID );
+				//------------------------------------------------------------------------------
+				// if load module is undefined, then we attach the file scope to the root scope
+				//------------------------------------------------------------------------------
+				if (flat_info_s.flat_lm == null)
+					this.addToTree(root_ft, flat_info_s.flat_file);
+				else
+					this.addToTree(flat_info_s.flat_lm, flat_info_s.flat_file);
+				this.htFlatFileScope.put(objFileID, flat_info_s.flat_file);
+			}
+			
+			//-----------------------------------------------------------------------------
+			// Initialize the flat proc scope
+			//-----------------------------------------------------------------------------
+			flat_info_s.flat_proc = this.htFlatProcScope.get(proc_cct_s.hashCode());
+			if (flat_info_s.flat_proc == null) {
+				// create a new flat procedure scope
+				flat_info_s.flat_proc = (ProcedureScope) proc_cct_s.duplicate();
+				this.addToTree(flat_info_s.flat_file, flat_info_s.flat_proc);
+				this.htFlatProcScope.put(proc_cct_s.hashCode(), flat_info_s.flat_proc);
+			}
+			
+			//-----------------------------------------------------------------------------
+			// Initialize the flat scope
+			//-----------------------------------------------------------------------------
+			if (cct_s instanceof ProcedureScope) {
+				flat_info_s.flat_s = flat_info_s.flat_proc;
+			} else {
+				flat_info_s.flat_s = cct_s.duplicate();
+			}
+			
+			//-----------------------------------------------------------------------------
+			// save the info into hashtable
+			//-----------------------------------------------------------------------------
+			// flat_info_s.initCounter();
+			this.htFlatScope.put(objCode, flat_info_s);
+		}
+
+		if (addCost)
+			flat_info_s.addCost(cct_s);
+		
+		return flat_info_s;
+	}
+
+	
+	/**-----------------------------------------------------------------------------------**
+	 * construct the flat view of a cct scope
+	 * @param cct_s
+	 * @param proc_cct_s
+	 * @return
+	 **-----------------------------------------------------------------------------------**/
+	private FlatScopeInfo getFlatCounterPart( Scope cct_s) {
+		
+		if (cct_s instanceof ProcedureScope) {
+			// -----------------------------------------------------------------------------
+			// in case of procedure scope (like main):
+			//  we create the load module, file scope and proc scope, and that's all
+			// -----------------------------------------------------------------------------
+			FlatScopeInfo objFlat = this.getFlatScope(cct_s, true);
+			return objFlat;
+			
+		} else {
+			// -----------------------------------------------------------------------------
+			// in case of call site, line scope and loop scope:
+			//	
+			// -----------------------------------------------------------------------------
+
+			Scope cct_parent_s = cct_s.getParentScope() ;
+			Scope flat_enc_s = this.htFlatScope.get(cct_parent_s.hashCode()).flat_s;
+			if (flat_enc_s == null) {
+				System.err.println("FSV unlikely enc null: " + cct_s.getName() + " parent: " + cct_parent_s.getName());
+			}
+			if ( cct_parent_s instanceof ProcedureScope ) {
+				// ----------------------------------------------
+				// will be added to the tree directly
+				// ----------------------------------------------
+				assert (flat_enc_s != null);
+
+			} else if ( cct_parent_s instanceof CallSiteScope ) {
+				// ----------------------------------------------
+				// parent is a call site
+				// ----------------------------------------------
+				ProcedureScope proc_cct_s = this.findEnclosingProcedure(cct_s); 
+				CallSiteScope cct_cs  = (CallSiteScope) cct_parent_s;
+				ProcedureScope cct_ps = cct_cs.getProcedureScope();
+				
+				if (cct_ps.isAlien()) {
+					FlatScopeInfo flat_cct_ps = this.getFlatScope(cct_ps, true);
+					this.addToTree(flat_enc_s, flat_cct_ps.flat_s);
+					flat_enc_s = flat_cct_ps.flat_s;
+				} else if (cct_ps == proc_cct_s) {
+					flat_enc_s = this.getFlatScope(proc_cct_s, false).flat_proc;
+				} else {
+					System.err.println( "FSV: unknown callsite parent : " + cct_ps + " scope: " + cct_s);
+				}
+				
+			} else {
+				
+				// ----------------------------------------------
+				// parent is unknown. can be a line scope or loop scope
+				// ----------------------------------------------
+				FlatScopeInfo flat_enc_info = this.getFlatScope(cct_parent_s, false);
+				flat_enc_s = flat_enc_info.flat_s;
+			}
+			FlatScopeInfo objFlat = this.getFlatScope(cct_s, true);
+			this.addToTree(flat_enc_s, objFlat.flat_s);
+			return objFlat;
+		}
+		
+		
+	}
+	
+	
+	/**------------------------------------------------------------------------------**
+	 * Add a child as the subscope of a parent
+	 * @param parent
+	 * @param child
+	 **------------------------------------------------------------------------------**/
+	private void addToTree( Scope parent, Scope child ) {
+		int nkids = parent.getSubscopeCount();
+		
+		//-------------------------------------------------------------------------------
+		// search for the existing kids. If the kid is already added, then we don't need
+		// 	to add it again
+		//-------------------------------------------------------------------------------
+		for (int i=0; i<nkids; i++) {
+			Scope kid = parent.getSubscope(i);
+			if ( this.isTheSameScope(kid, child) )
+				return;
+		}
+		this.addChild(parent, child);
+	}
+	
+
+	/**------------------------------------------------------------------------------**
+	 * 
+	 * @param s1
+	 * @param s2
+	 * @return
+	 **------------------------------------------------------------------------------**/
+	private boolean isTheSameScope(Scope s1, Scope s2) {
+		
+		// are s1 and s2 the same class ?
+		if ( s1.getClass() != s2.getClass() )
+			return false;
+		
+		return (s1.hashCode() == s2.hashCode());
+	}
+	
+	
+	private void addChild(Scope parent, Scope child) {
+		parent.addSubscope(child);
+		child.setParentScope(parent);
+	}
+	
+	
+	/**------------------------------------------------------------------------------**
+	 * Iteratively finding an enclosing procedure of a CCT scope
+	 * @param cct_s
+	 * @return
+	 **------------------------------------------------------------------------------**/
+	private ProcedureScope findEnclosingProcedure(Scope cct_s)
 	{
-		Scope parent = s.getParentScope();
-		while(true) {
+		if (cct_s instanceof ProcedureScope) 
+			return (ProcedureScope) cct_s;
+		Scope parent = cct_s.getParentScope();
+		while(parent != null) {
 			if (parent instanceof CallSiteScope) {
 				ProcedureScope proc = ((CallSiteScope) parent).getProcedureScope();
 				if (!proc.isAlien()) return proc;
@@ -231,323 +342,104 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			if (parent instanceof RootScope) return null;
 			parent = parent.getParentScope();
 		}
+		return null;
 	}
 
-	/**
-	 * Retrieve the hashtable that containing list of procedures within a file scope
-	 * If the file doesn't exist in the database, return a new hashtable
-	 * @param file
-	 * @return
-	 */
-	protected Hashtable<String, ProcedureScope> getFileProcHashtable(FileScope file) {
-		Hashtable<String, ProcedureScope> htProc = (Hashtable) fileprocht.get(file);
-		if(htProc == null) {
-			htProc = new java.util.Hashtable<String, ProcedureScope>();
-			this.fileprocht.put(file, htProc);
+	
+	/*************************************************************************
+	 * Each scope in the flat view has to be linked with 3 enclosing scopes:
+	 * - load module
+	 * - file
+	 * - procedure
+	 * @author laksonoadhianto
+	 *************************************************************************/
+	private class FlatScopeInfo {
+		LoadModuleScope flat_lm;
+		FileScope flat_file;
+		ProcedureScope flat_proc;
+		Scope flat_s;
+		
+
+		/**------------------------------------------------------------------------------**
+		 * check if a scope has been assigned as the outermost instance
+		 * @param scope
+		 * @return
+		 **------------------------------------------------------------------------------**/
+		private boolean isOutermostInstance(Scope scope) {
+			return scope.iCounter == 1;
 		}
-		return htProc;
-	}
-
-	/**
-	 * Retrieve the flat file scope of the CCT source file
-	 * If the flat file scope doesn't exist, create a new one, and attach it to flat tree
-	 * @param sfile
-	 * @return
-	 */
-	protected FileScope getFileScope(SourceFile sfile, Scope scopeCCT) {
-		FileScope file = (FileScope) fileht.get(sfile);
-		if (file == null) {
-			file  = new FileScope(exp, sfile, sfile.getFileID());
-			// the first time a routine in this file has been called
-			file.iCounter = 0;
-			fileht.put(sfile, file);
+		
+		
+		/**------------------------------------------------------------------------------**
+		 * add the cost of the cct into the flat scope if necessary
+		 * @param flat_s
+		 * @param cct_s
+		 **------------------------------------------------------------------------------**/
+		private void addCostIfNecessary( Scope flat_s, Scope cct_s ) {
+			if (flat_s == null)
+				return;
 			
-			// -------------------------------------------------------
-			// laks 2009.05.11: add load module layer in the flat view
-			// -------------------------------------------------------
-			ProcedureScope scopeProcCCT = (ProcedureScope) scopeCCT;
-			LoadModuleScope scopeModule = scopeProcCCT.getLoadModule();
-			Scope parent = flatViewRootScope;
-			//LoadModuleScope objFlatModule = null;
-			// if the scope doesn't have the load module (such as the old format), then we don't add
-			// 	the load module layer
-			if (scopeModule != null) {
-				/*
-				String sModuleName = scopeModule.getModuleName();
-				objFlatModule = this.htLoadModuleTable.get(sModuleName);
-				if (objFlatModule == null) {
-					objFlatModule = (LoadModuleScope) scopeModule.duplicate();
-					this.htLoadModuleTable.put(sModuleName, objFlatModule);
-				}*/
-				flatViewRootScope.addSubscope(scopeModule);
-				parent = scopeModule;
-			}
-			parent.addSubscope(file);
-			file.setParentScope(parent);
-			//exp.getScopeList().addScope(file);
-			trace("added file " + file.getName() + " in flat view.");
-		}
-		return file;
-	}
-
-	/**
-	 * Retrieve the scope of the procedure of FT that encloses a scope (line, loop, callsite, ...)
-	 *  If the procedure scope doesn't exist, it will create a new one and attach it to the file scope
-	 * @param sfile:	file scope
-	 * @param procScope: procedure scope from CCT
-	 * @param objScopeCCT: the current scope from CCT
-	 * @return FT's procedure scope
-	 */
-	protected FlatFileProcedure retrieveProcedureScope(SourceFile sfile, Scope procScope, Scope scopeCCT) {
-		// find the file
-		FileScope file = getFileScope(sfile, procScope);
-
-		// get the list of procedures in this file scope
-		Hashtable<String, ProcedureScope> htProcCounter = getFileProcHashtable(file);
-		String procName = procScope.getName();
-		ProcedureScope objFlatProcScope = htProcCounter.get(procName);
-		
-		// if the procedure has been in our database, then we just increment the "counter"
-		//  	otherwise, we insert it in the database.
-		if(objFlatProcScope == null) {
-			objFlatProcScope = (ProcedureScope)procScope.duplicate();
-			objFlatProcScope.iCounter = 0;
-			// java spec wants us to insert the kid first, then link the kid to the parent
-			// an attempt to do reverse will throw an exception.... strange :-(
-			file.addSubscope(objFlatProcScope);	// add into its file
-			// a double linked list: we need to set the parent as well
-			objFlatProcScope.setParentScope(file);
-			htProcCounter.put(procName, objFlatProcScope);		// save it into our database
-		} else {
-			// must be a recursive routine
-		}
-		FlatFileProcedure objFlat = new FlatFileProcedure(file, objFlatProcScope);
-		return objFlat;
-	}
-
-	/**
-	 * Return the hashtable containing a list of scopes in flat tree indexed by a code (TBD)
-	 * @param proc
-	 * @return
-	 */
-	protected Hashtable/*<Integer, Scope>*/ getProcContentsHashtable(ProcedureScope proc) {
-		Hashtable/*<Integer, Scope>*/ lsht = (Hashtable) proc_to_proc_contents_ht.get(proc);
-		if (lsht == null) {
-			lsht = new Hashtable/*<Integer,LineScope>*/();
-			proc_to_proc_contents_ht.put(proc, lsht);
-		}
-		return lsht;
-	}
-
-	/**
-	 * Assign the inclusive cost of a CCT scope into FT's procedure scope
-	 * @param flat_encl_proc
-	 * @param scopeCCT
-	 */
-	private void attributeCostToFlatProc(ProcedureScope flat_encl_proc, Scope scopeCCT) {
-		flat_encl_proc.iCounter++;
-		// In case of recursive procedure, we don't accumulate the cost of its descendants
-		if(flat_encl_proc.iCounter == 1) {
-			// partially fix bug when the procedure has nested loops.
-			flat_encl_proc.accumulateMetrics(scopeCCT, this.inclusiveOnly, this.numberOfPrimaryMetrics);
-		}
-		// use stack to save the state. This will be used for post visit
-		this.stackProcScope.push(flat_encl_proc);
-	}
-	
-	/**
-	 * Attribute the inclusive cost of a CCT scope into FT's file scope
-	 * @param objFile
-	 * @param scopeCCT
-	 */
-	private void attributeCostToFlatFile(FileScope objFile, Scope scopeCCT) {
-		if(objFile != null) {
-			objFile.iCounter++;
-			if(objFile.iCounter == 1) {
-				objFile.accumulateMetrics(scopeCCT, this.inclusiveOnly, this.numberOfPrimaryMetrics);
-				Scope objModule = objFile.getParentScope();
-				if (objModule instanceof LoadModuleScope) {
-					objModule.mergeMetric(objFile, this.inclusiveOnly);
-					//objModule.accumulateMetrics(scopeCCT, this.inclusiveOnly, this.numberOfPrimaryMetrics);
-				}
-			}
-			this.stackFileScope.push(objFile);
-		}
-	}
-
-	/**
-	 * Prepare the creation of flat tree.
-	 * @param s
-	 * @param encl_context
-	 * @param encl_proc
-	 * @return
-	 */
-	protected ProcedureScope  augmentFlatView(Scope s, Scope encl_context, ProcedureScope encl_proc) {
-		FlatFileProcedure objFlat = retrieveProcedureScope(encl_proc.getSourceFile(), encl_proc, s);
-		ProcedureScope flat_encl_proc = objFlat.objProc;
-		
-		Hashtable ht = getProcContentsHashtable(flat_encl_proc);
-		Scope flat_encl_context;
-		if (encl_context instanceof ProcedureScope && encl_proc == (ProcedureScope) encl_context) {
-			flat_encl_context = flat_encl_proc;
-		} else if (encl_context instanceof CallSiteScope) {
-			CallSiteScope csp = (CallSiteScope) encl_context;
-			ProcedureScope called = csp.getProcedureScope();
-			if (called.isAlien()) flat_encl_context = getFlatCounterpart(encl_context, flat_encl_proc,ht);
-			else if (called == encl_proc) flat_encl_context = flat_encl_proc;
-			else {
-			     trace("error!");
-			     flat_encl_context = flat_encl_proc;
-			}
-		}
-		else if (encl_context instanceof LineScope)
-			// for call site that has the parent as a line scope, we will not count twice the line scope !
-			flat_encl_context = this.getFlatScope(encl_context, ht);
-		else
-			// this is mostly a loop scope as an enclosing context
-			flat_encl_context = getFlatCounterpart(encl_context, flat_encl_proc, ht);
-		getFlatCounterpart(s, flat_encl_context, ht);
-		
-		// ----------------
-		// Exclusive cost attribution by copying from CCT to FT
-		if (s instanceof CallSiteScope) {
-			ProcedureScope scopeProc = ( (CallSiteScope) s).getProcedureScope();
-			FlatFileProcedure objFlatProc = retrieveProcedureScope(scopeProc.getSourceFile(), scopeProc, s);
-			// attribute the cost of this call site into procedure level (inclusively)
-			this.attributeCostToFlatProc(objFlatProc.objProc, s);
-			// attribute the cost to flat scope 
-			this.attributeCostToFlatFile(objFlatProc.objFile, s);
-		} else {
-			FileScope scopeFile = (FileScope) this.fileht.get(s.getSourceFile()); 
-			if(scopeFile == null) {
-				// there is no file scope for this procedure (it may be inlined ?)
-				// so we put an empty object into the stack
-				this.stackFileScope.push(this.EMPTY_FILE_SCOPE);
-				return null;
-			}
-			// add the cost of this scope into the file scope
-			this.attributeCostToFlatFile(scopeFile, s);
-		}
-		// attribute the cost of this scope into its file
-		
-		
-		return flat_encl_proc;
-	}
-
-	/**
-	 * We may need have a standardized hashcode for a scope. Currently, callers view and flat view has different
-	 *  	way to compute the hashcode. For the future, we may use SID instead.
-	 * @param s
-	 * @return
-	 */
-	/*
-	protected int getCode(Scope s) {
-        int code = s.hashCode(); 
-		Scope unique = s;
-		while ((unique instanceof ProcedureScope) && (((ProcedureScope) unique).isAlien())) {
-		    Scope parent = unique.getParentScope();
-		    code ^= parent.hashCode();
-		    unique = parent;
-		}
-		return code;
-	}*/
-
-	
-	private int getScopeID( Scope s ) {
-		return s.hashCode();
-	}
-	
-	private Scope getFlatScope(Scope cct, Hashtable ht) {
-		int code = this.getScopeID(cct);
-		Scope flat_s = (Scope) ht.get(new Integer(code));
-		return flat_s;
-	}
-	
-	/**
-	 * Construct a flat tree.
-	 * Algorithm:
-	 * 	- get the flat tree scope version of the CCT scope. 
-	 * 		* If the scope doesn't exist, create a new one and attach it to the parent
-	 *  - If the CCT scope is a callsite, then:
-	 *  	* inclusive metric: assign the CCT scope's cost into flat scope
-	 *  	* exclusive metric: assign the cost of the call into flat scope
-	 *  - otherwise: assign the cost to flat scope
-	 * @param s
-	 * @param flat_parent
-	 * @param ht
-	 * @return
-	 */
-	protected Scope getFlatCounterpart(Scope s, Scope flat_parent, Hashtable ht) {
-		//	new test code
-		//int code = s.hashCode(); // getCode(s);
-		Scope flat_s = this.getFlatScope(s, ht); //(Scope) ht.get(new Integer(code));
-		
-		// -- this line is the problem -- returns scopes with and without isAlien set; multiple distinct instantiations of a callsite within a scope
-		if (s instanceof LoopScope && flat_s != null && !(flat_s instanceof LoopScope)) {
-			trace("error");
-		}
-		if (flat_s == null) {
-			flat_s  =  s.duplicate();
-			ht.put(new Integer( this.getScopeID(s)), flat_s);
-
-			if (flat_parent instanceof CallSiteScope && !((CallSiteScope) flat_parent).getProcedureScope().isAlien()) {
-				trace("getFlatCounterpart error" + flat_s.getName());
-			}
-
-			flat_parent.addSubscope(flat_s);
-			flat_s.setParentScope(flat_parent);
-			trace("added flat counterpart " + flat_s.getName() + " in flat view.");
-		}
-		if (s instanceof CallSiteScope) {
-			//---------------------------------------------------------------------------------------------------
-			// in the calling context view, exclusive costs are used to show the cost at the callsite and for
-			// the immediate call. for the flat view, we only want to propagate exclusive costs for the call site,
-			// not the cost of the call. thus, don't propagate exclusive costs from the calling context tree to
-			// the flat view; only propagate inclusive costs.
-			// 2008 06 07 - John Mellor-Crummey
-			//---------------------------------------------------------------------------------------------------
-			//flat_s.accumulateMetrics(s, inclusiveOnly, this.numberOfPrimaryMetrics);
-			// Laks 2008.10.21 bug fix: do not add "blindly" the descendant. Instead, we just compare if the kid
-			//							is smaller (which is very likely) or not. If the former is the case, then assign it.
-			flat_s.mergeMetric(s, inclusiveOnly);
-			if (flat_s instanceof CallSiteScope) {
-				//---------------------------------------------------------------------------------------------------
-				// for the flat view, we only want to propagate exclusive costs for the call site,
-				// not the cost of the call. thus, we propagate costs attributed to the line scope inside the 
-				// CallSiteScope, which corresponds to costs attributed to the call site only, not the inclusive
-				// cost of the call. do this only for CallSiteScopes.
-				// 2008 06 07 - John Mellor-Crummey
-				//---------------------------------------------------------------------------------------------------
-				((CallSiteScope) flat_s).getLineScope().accumulateMetrics(
-							((CallSiteScope) s).getLineScope(), exclusiveOnly, this.numberOfPrimaryMetrics);
-
-			}
-		} else {
-			// this path can be either loop or line scope
 			flat_s.iCounter++;
-			if (flat_s.iCounter == 1)
-				flat_s.accumulateMetrics(s, filter, this.numberOfPrimaryMetrics);
-			lineht.put(s, flat_s);
-			System.out.println("FVSV getFlatCounterpart: " + s + " \t" + flat_s+ "\t" + flat_s.getMetricValue(0).getValue());
+			if (isOutermostInstance(flat_s)) {
+				flat_s.accumulateMetrics(cct_s, inclusive_filter, nbMetrics);
+			}
+			flat_s.accumulateMetrics(cct_s, exclusive_filter, nbMetrics);
 		}
-		return flat_s;
-	}
-	
-	//----------------------------------------------------
-	// debugging support 
-	//----------------------------------------------------
-
-	void trace(String msg) {
-		if (isdebug) System.out.println(msg);
-	}
-	
-	private class FlatFileProcedure {
-		public FileScope objFile;
-		public ProcedureScope objProc;
 		
-		public FlatFileProcedure(FileScope file, ProcedureScope proc) {
-			objFile = file;
-			objProc = proc;
+		
+		/**------------------------------------------------------------------------------**
+		 * Add the cost of a CCT node into FT node:
+		 * - load module, file and proc: intrinsic
+		 * @param cct_s
+		 **------------------------------------------------------------------------------**/
+		public void addCost( Scope cct_s ) {
+			this.addCostIfNecessary(flat_lm, cct_s);
+			this.addCostIfNecessary(flat_file, cct_s);
+			this.addCostIfNecessary(flat_proc, cct_s);
+			if (flat_s != null && flat_s != flat_proc)
+				this.addCostIfNecessary(flat_s, cct_s);
+
+			Integer objCode = cct_s.hashCode();
+			FlatScopeInfo arr_new_infos[];
+			FlatScopeInfo arr_flat_infos[] = htFlatCostAdded.get(objCode);
+			if (arr_flat_infos != null) {
+				int nb_infos = arr_flat_infos.length;
+				arr_new_infos = new FlatScopeInfo[nb_infos + 1];
+				System.arraycopy(arr_flat_infos, 0, arr_new_infos, 0, nb_infos);
+				arr_new_infos[nb_infos] = this;
+			} else {
+				arr_new_infos = new FlatScopeInfo[1];
+				arr_new_infos[0] = this;
+			}
+			htFlatCostAdded.put(objCode, arr_new_infos);
+		} 
+		
+		
+		/**------------------------------------------------------------------------------**
+		 * Decrement the counter (should be positive)
+		 * @param scope
+		 **------------------------------------------------------------------------------**/
+		private void decrement_counter(Scope scope) {
+			if (scope == null)
+				return;
+			
+			if (scope.iCounter <= 0) {
+				System.err.println(" FSV Error dec: " + scope.getName() + "\t" + scope.hashCode() + "\t" + scope.iCounter);
+			} else {
+				scope.iCounter--;
+			}
 		}
-	} 
+		
+		
+		/**------------------------------------------------------------------------------**
+		 * Decrement the counter for each flat scope
+		 **------------------------------------------------------------------------------**/
+		public void decrement() {
+			this.decrement_counter(flat_lm);
+			this.decrement_counter(flat_file);
+			this.decrement_counter(flat_proc);
+			if (flat_s != null && flat_s != flat_proc) 
+				this.decrement_counter(flat_s);
+		}
+	}
 }

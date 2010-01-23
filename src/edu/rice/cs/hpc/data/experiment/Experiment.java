@@ -304,16 +304,11 @@ protected Scope createCallersView(Scope callingContextViewRootScope)
 
 protected Scope createFlatView(Scope callingContextViewRootScope)
 {
-	MetricValuePropagationFilter fvf = new FlatViewMetricPropagationFilter();
-
 	Scope flatViewRootScope = new RootScope(this, "Flat View", "Flat View", RootScopeType.Flat);
 	beginScope(flatViewRootScope);
 	
-	FlatScopeVisitor fv = new FlatScopeVisitor(this, (RootScope) flatViewRootScope);
-	/*
-	FlatViewScopeVisitor fsv = new FlatViewScopeVisitor(this, flatViewRootScope, 
-			this.getMetricCount(), false, fvf);
-	callingContextViewRootScope.dfsVisitScopeTree(fsv);*/
+	FlatViewScopeVisitor fv = new FlatViewScopeVisitor(this, (RootScope) flatViewRootScope);
+
 	callingContextViewRootScope.dfsVisitScopeTree(fv);
 
 	return flatViewRootScope;

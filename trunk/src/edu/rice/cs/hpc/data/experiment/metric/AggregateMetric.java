@@ -22,7 +22,7 @@ public class AggregateMetric extends BaseMetric {
 	// map variable 
 	private MetricVarMap varMap;
 
-	/***
+	/***------------------------------------------------------------------------****
 	 * Constructor: create a derived incremental metric
 	 * @param sID: the ID of the metric (HAS TO BE REALLY SHORT !!!)
 	 * @param sDisplayName: the title of the metric
@@ -30,7 +30,7 @@ public class AggregateMetric extends BaseMetric {
 	 * @param percent  : to show the percent ?
 	 * @param index    : metric index in the list (unused)
 	 * @param type	   : metric type
-	 */
+	 ***------------------------------------------------------------------------***/
 	public AggregateMetric(String sID, String sDisplayName, boolean displayed,
 			boolean percent, int index, MetricType type) {
 		super(sID, sDisplayName, displayed, percent, index);
@@ -40,8 +40,7 @@ public class AggregateMetric extends BaseMetric {
 		
 		// set up the variables
 		this.varMap = new MetricVarMap();
-		// laksono hack 2009: we force this class of type DERIVED_INCR ... yuck !
-		//this.metricType = MetricType.DERIVED_INCR;
+
 		this.metricType = type;
 	}
 
@@ -53,11 +52,11 @@ public class AggregateMetric extends BaseMetric {
 	}
 
 
-	/**
+	/****------------------------------------------------------------------------****
 	 * set the math expression
 	 * @param type
 	 * @param sFormula
-	 */
+	 ***------------------------------------------------------------------------****/
 	public void setFormula(char type, String sFormula) {
 		assert (type == FORMULA_COMBINE || type == FORMULA_FINALIZE);
 		
@@ -73,22 +72,28 @@ public class AggregateMetric extends BaseMetric {
 	}
 	
 	
-	/***
+	public void setFormula(char type) {
+		assert (type == FORMULA_COMBINE || type == FORMULA_FINALIZE);
+		
+	}
+	
+	
+	/*****------------------------------------------------------------------------****
 	 * initialize the metric.
 	 * THIS METHOD HAS TO BE CALLED before asking the value
 	 * @param type
 	 * @param exp
-	 */
+	 ***------------------------------------------------------------------------****/
 	public void init(char type, Experiment exp) {
 		this.varMap.setxperiment(exp);
 	}
 	
 	
-	/**
+	/****------------------------------------------------------------------------****
 	 * Assign the value of a scope based on the formula of a given type
 	 * @param type
 	 * @param scope
-	 */
+	 ***------------------------------------------------------------------------****/
 	public void setScopeValue(char type, Scope scope) {
 		Expression exp;
 		

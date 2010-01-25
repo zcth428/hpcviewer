@@ -19,7 +19,8 @@ public class InclusiveOnlyMetricPropagationFilter implements MetricValuePropagat
 		if ((source instanceof LineScope)) {
 		   Scope parent = source.getParentScope();
 		   if ((parent != null) && (parent instanceof CallSiteScope)) {
-                     if ((target != null) && (target == parent.getParentScope())) return false;
+                     if ((target != null) && (target == parent.getParentScope()))
+                    	 return false;
 		   }
 		}
 		return ( metrics[src_idx].getMetricType() == MetricType.INCLUSIVE );

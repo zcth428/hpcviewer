@@ -85,9 +85,9 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			// debugging purpose
 			/*
 			String sName = scope.getName();
-			if (id == 30 || sName.startsWith("monitor_make_thread_node")) {
+			if (id == 1334 || sName.startsWith("inlined from load.f90")) {
 				System.out.println("FSV " + scope.getName() + " p: " + scope.getParentScope() );
-			} */ 
+			}  */
 			FlatScopeInfo objFlat = this.getFlatCounterPart(scope);
 			//Scope fs = objFlat.flat_s;
 		} else {
@@ -123,7 +123,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		int id = cct_s.hashCode();
 		Integer objCode = Integer.valueOf( id );
 		FlatScopeInfo flat_info_s = this.htFlatScope.get( objCode );
-		
+
 		if (flat_info_s == null) {
 			//-----------------------------------------------------------------------------
 			// Initialize the flat scope
@@ -223,6 +223,12 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//  we create the load module, file scope and proc scope, and that's all
 			// -----------------------------------------------------------------------------
 			FlatScopeInfo objFlat = this.getFlatScope(cct_s, true);
+			// -----------------------------------------------------------------------------
+			// Bug in hpcprof: it is possible to have two main procedures in a database !!!
+			// mark that this is a special case: do not aggregate the children into this node.
+			// -----------------------------------------------------------------------------
+			if (!((ProcedureScope) cct_s).isAlien())
+				objFlat.flat_s.iCounter++; 
 			return objFlat;
 			
 		} else {
@@ -241,6 +247,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				// will be added to the tree directly
 				// ----------------------------------------------
 				assert (flat_enc_s != null);
+				// if the cct parent is a procedure (s.a main() ), then do not add the child into the flat
 
 			} else if ( cct_parent_s instanceof CallSiteScope ) {
 				// ----------------------------------------------

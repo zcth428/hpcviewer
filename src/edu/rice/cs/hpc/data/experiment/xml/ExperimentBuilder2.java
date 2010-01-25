@@ -958,8 +958,8 @@ public class ExperimentBuilder2 extends Builder
 			 */
 			if ( (this.scopeStack.size()>1) && ( this.scopeStack.peek() instanceof LineScope)  ) {
 
-				LineScope ls = (LineScope)this.scopeStack.peek();
-				//LineScope ls = (LineScope)this.scopeStack.pop();
+				//LineScope ls = (LineScope)this.scopeStack.peek();
+				LineScope ls = (LineScope)this.scopeStack.pop();
 				
 				//-----------------------------------------------------------------------------------------
 				// In some database (especially the old ones), they have the same ID for different call sites
@@ -977,9 +977,9 @@ public class ExperimentBuilder2 extends Builder
 				// afterward, we rearrange the top of stack to tuck ls back underneath csn in case it is 
 				// needed for a subsequent procedure frame that is a sibling of csn in the tree.
 				this.beginScope(csn);
-				//CallSiteScope csn2 = (CallSiteScope) this.scopeStack.pop();
-				//this.scopeStack.push(ls);
-				//this.scopeStack.push(csn2);
+				CallSiteScope csn2 = (CallSiteScope) this.scopeStack.pop();
+				this.scopeStack.push(ls);
+				this.scopeStack.push(csn2);
 
 			} else {
 				this.beginScope(procScope);
@@ -1267,8 +1267,6 @@ public class ExperimentBuilder2 extends Builder
 			top.addSubscope(scope);
 			scope.setParentScope(top);
 		}
-		if (scope.hashCode() == 1)
-			System.err.println("EB2 Warning: " + scope.getName() + " has hashcode == 1");
 		
 		this.scopeStack.push(scope);
 	}
@@ -1296,7 +1294,7 @@ public class ExperimentBuilder2 extends Builder
                 v CDATA #IMPLIED>
 	 ************************************************************************/
 	private void begin_CALLSITE(String[] attributes, String[] values) {  
-		this.begin_S_internal(attributes, values, true);  
+		this.begin_S_internal(attributes, values, true); // orig: true  
 	}
 
 

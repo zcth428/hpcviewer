@@ -389,7 +389,7 @@ public void postprocess(boolean callerView) {
 		if (this.inclusiveNeeded()) {
 			// TODO: if the metric is a derived metric then DO NOT do this process !
 			// TODO: we need to make something more elegant and smart instead of using if-then branches everywhere !
-			normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
+			//normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 			addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
 			this.computeExclusiveMetrics(callingContextViewRootScope);
 		}

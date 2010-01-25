@@ -1,7 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.filters;
 
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.FinalMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
@@ -18,7 +17,6 @@ public class ExclusiveOnlyMetricPropagationFilter implements MetricValuePropagat
 		BaseMetric m = metrics[src_idx];
 		MetricType objType = m.getMetricType();
 		
-		return ( objType == MetricType.EXCLUSIVE || (m instanceof FinalMetric) ); 
-				// objType == MetricType.PREAGGREGATE);
+		return ( objType == MetricType.EXCLUSIVE ); 
 	}
 }

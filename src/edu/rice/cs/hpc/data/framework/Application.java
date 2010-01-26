@@ -2,9 +2,15 @@ package edu.rice.cs.hpc.data.framework;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+
+import org.eclipse.jface.viewers.TreeNode;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.PrintFlatViewScopeVisitor;
 import edu.rice.cs.hpc.data.util.Util;
 
 /**
@@ -31,6 +37,7 @@ public class Application {
 			experiment = new Experiment(objFile);	// prepare the experiment
 			experiment.open();						// parse the database
 			experiment.postprocess(false);			// create the flat view
+			this.printFlatView(experiment);
 			System.out.println(" .... successfully");
 			return true;
 		} catch (Exception e) {
@@ -40,6 +47,37 @@ public class Application {
 		}
 	}
 	
+	
+	private void printFlatView(Experiment experiment) {
+		TreeNode []rootChildren = experiment.getRootScopeChildren();
+		if (rootChildren != null) {
+			PrintStream objStream = System.out;
+			int nbChildren = rootChildren.length;
+			
+			// flat root must be the last one
+			RootScope flatRoot = (RootScope) rootChildren[nbChildren-1].getValue();
+			
+			//---------------------------------------------------------------------------------
+			// print the title
+			//---------------------------------------------------------------------------------
+			objStream.print("Scope ");
+			
+			// print the metrics
+			int nbMetrics = experiment.getMetricCount();
+			for (int i=0; i<nbMetrics; i++ ) {
+				objStream.print(", " + experiment.getMetric(i).getDisplayName());
+			}
+			objStream.println();
+			
+			//---------------------------------------------------------------------------------
+			// print the content
+			//---------------------------------------------------------------------------------
+			PrintFlatViewScopeVisitor objPrintFlat = new PrintFlatViewScopeVisitor(experiment, objStream);
+			flatRoot.dfsVisitScopeTree(objPrintFlat);
+		} else {
+			System.err.println("The database contains no information");
+		}
+	}
 	
 	/**
 	 * Main application

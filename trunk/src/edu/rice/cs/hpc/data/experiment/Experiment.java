@@ -314,11 +314,13 @@ protected Scope createFlatView(Scope callingContextViewRootScope)
 	return flatViewRootScope;
 }
 
+// Laksono: no need for normalizing line scope now: we separate line scope and call site scope !
+/*
 protected void normalizeLineScopes(Scope scope, MetricValuePropagationFilter filter)
 {
 	NormalizeLineScopesVisitor nls = new NormalizeLineScopesVisitor(this.getMetricCount(), filter);
 	scope.dfsVisitScopeTree(nls);
-}
+}*/
 
 protected void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter filter)
 {

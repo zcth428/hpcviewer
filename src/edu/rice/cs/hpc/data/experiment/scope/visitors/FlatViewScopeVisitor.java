@@ -163,7 +163,11 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			SourceFile src_file = cct_s.getSourceFile();
 			Integer objFileID   = src_file.getFileID();
 			flat_info_s.flat_file = this.htFlatFileScope.get(objFileID);
-			if (flat_info_s.flat_file == null) {
+			//-----------------------------------------------------------------------------
+			// ATTENTION: it is possible that a file can be included into more than one load module
+			//-----------------------------------------------------------------------------
+			if ( (flat_info_s.flat_file == null) ||
+					(flat_info_s.flat_file != null && flat_info_s.flat_file.getParentScope() != flat_info_s.flat_lm) ){
 				flat_info_s.flat_file = new FileScope( this.experiment, src_file, objFileID );
 				//------------------------------------------------------------------------------
 				// if load module is undefined, then we attach the file scope to the root scope

@@ -53,7 +53,7 @@ public class MetricVarMap extends VarMap {
 	//===========================
 	
 
-	public void setxperiment(Experiment exp) {
+	public void setExperiment(Experiment exp) {
 		this.experiment = exp;
 	}
 	

@@ -57,20 +57,9 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		
 		if (vt == ScopeVisitType.PreVisit) { // && !mycallee.isAlien()) {
 			String procedureName = mycallee.getName();
-			CallSiteScope scopeCall = (CallSiteScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
-			scopeCall.accumulateMetrics(scope, this.filter, numberOfPrimaryMetrics);
-			
-			// Remove linescope-normalization from CS-scope
-			/*
-			for (int i=0; i<numberOfPrimaryMetrics; i++) {
-				// remove the cost of the line scope if it is an inclusive or exclusive metric
-				if (this.objRemoveFilter.doPropagation(scope, scopeCall, i, i)) {
-					double lsval = scope.getLineScope().getMetricValue(i).getValue();
-					// LA: This statement means removing the cost of line scope from the call site.
-					scopeCall.accumulateMetricValue(i, (lsval<0.0) ? 0.0 : (-1*lsval) );
-				}
-			} */
 
+			CallSiteScope scopeCall = (CallSiteScope)scope;
+			
 			// if there are no exclusive costs to attribute from this context, we are done here
 			if (!scopeCall.hasNonzeroMetrics()) {
 				// laksono 2009.09.18 bug fix: set a flag to indicate that we don't need this scope
@@ -142,7 +131,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 							// FIXME two dummies instance creation. we hope this doesn't make significant 
 							//			performance degradation !
 							LineScope scopeLine = new LineScope(scopeProc.getExperiment(), scopeProc.getSourceFile(), 
-									scopeProc.getFirstLineNumber(), 0);
+									scopeProc.getFirstLineNumber(), scopeProc.hashCode());
 							enclosingCS = new CallSiteScope(scopeLine, scopeProc, CallSiteScopeType.CALL_FROM_PROCEDURE, 0);
 						}
 					}
@@ -155,7 +144,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 						CallSiteScopeCallerView callerScope =
 							new CallSiteScopeCallerView((LineScope) lineScope.duplicate(), 
 									mycaller,
-									CallSiteScopeType.CALL_FROM_PROCEDURE, 0, next);
+									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
 						callerScope.accumulateMetrics(scopeCall, this.filter, numberOfPrimaryMetrics);
 						callPathList.addLast(callerScope);
 						
@@ -205,9 +194,10 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				String procedureName = mycallee.getName();
 				trace("handling scope " + procedureName);
 
-				ProcedureScope tmp = (ProcedureScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
-				tmp.accumulateMetrics(scope, this.filter, numberOfPrimaryMetrics);
-
+				//ProcedureScope tmp = (ProcedureScope)scope.duplicate(); // create a temporary scope to accumulate metrics to
+				//tmp.accumulateMetrics(scope, this.filter, numberOfPrimaryMetrics);
+				ProcedureScope tmp = (ProcedureScope)scope;
+				
 				// if there are no exclusive costs to attribute from this context, we are done here
 				if (!tmp.hasNonzeroMetrics()) return; 
 

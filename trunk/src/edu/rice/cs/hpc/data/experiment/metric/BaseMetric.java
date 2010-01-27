@@ -44,12 +44,27 @@ public abstract class BaseMetric {
 	//-------------------------------------------------------------------------------
 	// CONSTRUCTOR
 	//-------------------------------------------------------------------------------
+	/*************************************************************************
+	 * 
+	 * @param sDisplayName
+	 * @param displayed
+	 * @param percent
+	 * @param index
+	 ************************************************************************/
 	public BaseMetric(String sDisplayName, boolean displayed, boolean percent, int index) {
 	    // Laks 2009.12.11: hack to make the default short name
 		this(String.valueOf(index), sDisplayName, displayed, percent, index);
 	}
 	
 
+	/*************************************************************************
+	 * 
+	 * @param sID
+	 * @param sDisplayName
+	 * @param displayed
+	 * @param percent
+	 * @param index
+	 *************************************************************************/
 	public BaseMetric(String sID, String sDisplayName, boolean displayed, boolean percent, int index) {
 		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;
 		this.displayed = displayed;
@@ -84,9 +99,10 @@ public abstract class BaseMetric {
 		return this.index;
 	}
 
-//////////////////////////////////////////////////////////////////////////
-//	ACCESS TO METRIC													//
-//////////////////////////////////////////////////////////////////////////
+	//=================================================================================
+	//		ACCESS TO METRIC
+	//=================================================================================
+
 	/*************************************************************************
 	 *	Returns the metric's short (internal) name.
 	 ************************************************************************/
@@ -95,6 +111,10 @@ public abstract class BaseMetric {
 		return this.shortName;
 	}
 
+	/*************************************************************************
+	 * 
+	 * @param newName
+	 *************************************************************************/
 	public void setShortName(String newName)
 	{
 		this.shortName = newName;
@@ -124,10 +144,10 @@ public abstract class BaseMetric {
 		return this.displayed;
 	}
 
-	/**
+	/*************************************************************************
 	 * Set display flag (true=to be displayed)
 	 * @param d, the flag
-	 */
+	 *************************************************************************/
 	public void setDisplayed(boolean d)
 	{
 		this.displayed = d;
@@ -142,13 +162,6 @@ public abstract class BaseMetric {
 	}
 
 	/**
-	 * method to return the value of a given scope. To be implemented by derived class.
-	 * @param s
-	 * @return
-	 */
-	abstract public MetricValue getValue(Scope s);
-	
-	/**
 	 * Return the text to display based on the value of the scope
 	 * @param scope
 	 * @return
@@ -159,10 +172,10 @@ public abstract class BaseMetric {
 		return this.getMetricTextValue(mv);
 	}
 
-	/**
+	/*************************************************************************
 	 * Return the text to display based on the metric value
 	 * @param mv: the value of a metric
-	 */
+	 *************************************************************************/
 	public String getMetricTextValue(MetricValue mv) {
 		String sText;
 		if(mv.value == 0.0 || mv == MetricValue.NONE) sText = "";
@@ -196,37 +209,56 @@ public abstract class BaseMetric {
 		return this.metricType;
 	}
 	
+	/*************************************************************************
+	 * 
+	 * @param objType
+	 *************************************************************************/
 	public void setMetricType( MetricType objType ) 
 	{
 		this.metricType = objType;
 	}
-	/**
+	/*************************************************************************
 	 * Laks: need an interface to update the sample period due to change in DTD
 	 * @param s
-	 */
+	 *************************************************************************/
 	public void setSamplePeriod(String s) {
 		this.sampleperiod = this.convertSamplePeriode(s);
 	}
 
+	/*************************************************************************
+	 * 
+	 * @param sUnit
+	 *************************************************************************/
 	public void setUnit (String sUnit) {
 		this.unit = sUnit.charAt(0);
 		if (this.isUnitEvent())
 			this.sampleperiod = 1.0;
 	}
 
-	/**
+	/*************************************************************************
 	 * Return the sample period
 	 * @return
-	 */
+	 *************************************************************************/
 	public double getSamplePeriod()
 	{
 		return this.sampleperiod;
 	}
 
+	//=================================================================================
+	//		ABSTRACT METHODS
+	//=================================================================================
+	/*************************************************************************
+	 * method to return the value of a given scope. To be implemented by derived class.
+	 * @param s
+	 * @return
+	 *************************************************************************/
+	abstract public MetricValue getValue(Scope s);
+	
 
-// =================================================================================
-//		UTILITY METHODS
-//=================================================================================
+
+	//=================================================================================
+	//		UTILITY METHODS
+	//=================================================================================
 
 /**
 * Verify if the unit is an event or not

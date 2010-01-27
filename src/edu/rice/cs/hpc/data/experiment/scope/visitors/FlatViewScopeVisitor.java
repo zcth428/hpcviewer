@@ -388,9 +388,9 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			
 			flat_s.iCounter++;
 			if (isOutermostInstance(flat_s)) {
-				flat_s.accumulateMetrics(cct_s, inclusive_filter, nbMetrics);
+				flat_s.combine(cct_s, inclusive_filter);
 			}
-			flat_s.accumulateMetrics(cct_s, exclusive_filter, nbMetrics);
+			flat_s.combine(cct_s, exclusive_filter);
 		}
 		
 		

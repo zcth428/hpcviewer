@@ -1198,7 +1198,7 @@ public class ExperimentBuilder2 extends Builder
 			BaseMetric objMetric = (BaseMetric) this.metricList.get(i);
 			if (objMetric instanceof AggregateMetric) {
 				AggregateMetric aggMetric = (AggregateMetric) objMetric;
-				aggMetric.init(AggregateMetric.FORMULA_COMBINE, this.experiment);
+				aggMetric.init(this.experiment);
 			}
 		}
 	}

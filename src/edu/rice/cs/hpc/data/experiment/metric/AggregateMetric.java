@@ -20,7 +20,8 @@ public class AggregateMetric extends BaseMetric {
 	// map function
 	private FuncMap fctMap;
 	// map variable 
-	private MetricVarMap varMap;
+	private MetricVarMap finalizeVarMap;
+	private CombineAggregateMetricVarMap combineVarMap;
 
 	/***------------------------------------------------------------------------****
 	 * Constructor: create a derived incremental metric
@@ -39,7 +40,8 @@ public class AggregateMetric extends BaseMetric {
 		this.fctMap.loadDefaultFunctions();
 		
 		// set up the variables
-		this.varMap = new MetricVarMap();
+		this.finalizeVarMap = new MetricVarMap();
+		this.combineVarMap = new CombineAggregateMetricVarMap();
 
 		this.metricType = type;
 	}
@@ -72,20 +74,15 @@ public class AggregateMetric extends BaseMetric {
 	}
 	
 	
-	public void setFormula(char type) {
-		assert (type == FORMULA_COMBINE || type == FORMULA_FINALIZE);
-		
-	}
-	
-	
 	/*****------------------------------------------------------------------------****
 	 * initialize the metric.
 	 * THIS METHOD HAS TO BE CALLED before asking the value
 	 * @param type
 	 * @param exp
 	 ***------------------------------------------------------------------------****/
-	public void init(char type, Experiment exp) {
-		this.varMap.setxperiment(exp);
+	public void init(Experiment exp) {
+		this.finalizeVarMap.setExperiment(exp);
+		this.combineVarMap.setExperiment(exp);
 	}
 	
 	
@@ -94,22 +91,58 @@ public class AggregateMetric extends BaseMetric {
 	 * @param type
 	 * @param scope
 	 ***------------------------------------------------------------------------****/
-	public void setScopeValue(char type, Scope scope) {
-		Expression exp;
-		
-		if (type == FORMULA_COMBINE) exp = this.formulaCombine;
-		else exp = this.formulaFinalize;
+	public void finalize(Scope scope) {
+		Expression exp = this.formulaFinalize;
 		
 		if (exp != null) {
-			this.varMap.setScope(scope);
-			MetricValue mv;
-			try {
-				double dValue = exp.eval(this.varMap, this.fctMap);
-				mv = new MetricValue(dValue);
-			} catch(java.lang.Exception e) {
-				mv = MetricValue.NONE;
-			}
-			scope.setMetricValue(this.index, mv);
+			this.finalizeVarMap.setScope(scope);
+			this.setScopeValue(exp, this.finalizeVarMap, scope);
 		}
+	}
+	
+	/**------------------------------------------------------------------------****
+	 * combining the metric from another view (typically cct) to this view
+	 * if the target metric is not available (or empty) then we initialize it with
+	 * 	the value of the source
+	 * @param s_source
+	 * @param s_target
+	 **------------------------------------------------------------------------****/
+	public void combine(Scope s_source, Scope s_target) {
+		MetricValue value = s_target.getMetricValue(this); 
+		if (value.isAvailable()) {
+			//--------------------------------------------------------------------------
+			// the target has the metric. we need to "combine" it with the source
+			//--------------------------------------------------------------------------
+			Expression expression = this.formulaCombine;
+			if (expression != null) {
+				this.combineVarMap.setScopes(s_source, s_target);
+				this.setScopeValue(expression, this.combineVarMap, s_target);
+			}
+		} else {
+			//--------------------------------------------------------------------------
+			// the target doesn't have the metric. we need to copy from the source
+			//--------------------------------------------------------------------------
+			MetricValue v_source = s_source.getMetricValue(this);
+			s_target.setMetricValue(index, v_source);
+		}
+	}
+	
+	
+	/**------------------------------------------------------------------------****
+	 * 
+	 * @param expression
+	 * @param var_map
+	 * @param scope
+	 **------------------------------------------------------------------------****/
+	private void setScopeValue(Expression expression, MetricVarMap var_map, Scope scope) {
+		MetricValue mv;
+		try {
+			double dValue = expression.eval(var_map, this.fctMap);
+			mv = new MetricValue(dValue);
+		} catch(java.lang.Exception e) {
+			mv = MetricValue.NONE;
+			e.printStackTrace();
+		}
+		scope.setMetricValue(this.index, mv);
 	}
 }

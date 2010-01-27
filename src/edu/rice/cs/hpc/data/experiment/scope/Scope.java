@@ -18,6 +18,7 @@ package edu.rice.cs.hpc.data.experiment.scope;
 //import java.util.ArrayList;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 //import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
@@ -572,7 +573,9 @@ public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePro
 public void accumulateMetricValue(int index, double value)
 {
 	ensureMetricStorage();
-	if (index >= this.metrics.length) return;
+	if (index >= this.metrics.length) 
+		return;
+
 	MetricValue m = this.metrics[index];
 	if (m == MetricValue.NONE) {
 		this.metrics[index] = new MetricValue(value);
@@ -580,8 +583,32 @@ public void accumulateMetricValue(int index, double value)
 		// TODO Could do non-additive accumulations here?
 		m.setValue(m.getValue() + value);
 	}
+
 }
 
+/**************************************************************************
+ * combining metric from source. use this function to combine metric between
+ * 	different views
+ * @param source
+ * @param filter
+ **************************************************************************/
+public void combine(Scope source, MetricValuePropagationFilter filter) {
+	int nMetrics = this.experiment.getMetricCount();
+	for (int i=0; i<nMetrics; i++) {
+		BaseMetric metric = this.experiment.getMetric(i);
+		if (metric instanceof AggregateMetric) {
+			//--------------------------------------------------------------------
+			// aggregate metric need special treatment when combining two metrics
+			//--------------------------------------------------------------------
+			AggregateMetric aggMetric = (AggregateMetric) metric;
+			if (filter.doPropagation(source, this, i, i)) {
+				aggMetric.combine(source, this);
+			}
+		} else {
+			this.accumulateMetric(source, i, i, filter);
+		}
+	}
+}
 
 /*************************************************************************
  *	Makes sure that the scope object has storage for its metric values.

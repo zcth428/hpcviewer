@@ -390,8 +390,6 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		if (this.inclusiveNeeded()) {
 			// TODO: if the metric is a derived metric then DO NOT do this process !
-			// TODO: we need to make something more elegant and smart instead of using if-then branches everywhere !
-			//normalizeLineScopes(callingContextViewRootScope, emptyFilter); // normalize all
 			addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
 			this.computeExclusiveMetrics(callingContextViewRootScope);
 		}
@@ -414,17 +412,7 @@ public void postprocess(boolean callerView) {
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
 		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
-		// compute the inclusive metrics: accumulate the cost of loops and line scopes
-		//addInclusiveMetrics(flatViewRootScope, new FlatViewInclMetricPropagationFilter(this.getMetrics()));
 		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, emptyFilter, this.getMetricCount());
-
-		//----------------------------------------------------------------------------------------------
-		// INITALIZATION
-		//----------------------------------------------------------------------------------------------
-		this.initAggregateMetrics(callingContextViewRootScope);		// cct
-		if (callerView)												// caller view
-			this.initAggregateMetrics(callersViewRootScope);
-		this.initAggregateMetrics(flatViewRootScope);				// flat view
 
 		//----------------------------------------------------------------------------------------------
 		// FINALIZATION
@@ -441,39 +429,39 @@ public void postprocess(boolean callerView) {
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
 	} else {
-		// ignore; do no postprocessing
+		// ignore; do no nothing
 	}
 }
 
 /**
  * check the existence of an aggregate metric  
+ * If the metric is an aggregate, we need to initialize them !
  * @return
  */
 private boolean checkExistenceOfDerivedIncr() {
 	boolean isAggregate = false;
-	for (int i=0; !isAggregate && i<this.getMetricCount(); i++) {
+	for (int i=0; i<this.getMetricCount(); i++) {
 		BaseMetric metric = this.getMetric(i);
-		isAggregate = (metric instanceof AggregateMetric); 
+		boolean is_aggregate = (metric instanceof AggregateMetric); 
+		if (is_aggregate) {
+			isAggregate &= is_aggregate;
+			AggregateMetric aggMetric = (AggregateMetric) metric;
+			// hack: initialize the metric here
+			aggMetric.init(this);
+		}
 	}
 	return isAggregate;
 }
 
+
 /**
- * Initialize derived incremental metrics
- * @param root: the scope root (cct, caller view or flat view)
+ * finalizing metric values (only for aggregate metric from hpcprof-mpi)
+ * @param root
  */
-private void initAggregateMetrics(Scope root) {
-	if (! checkExistenceOfDerivedIncr())
-		return;
-	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics(), AggregateMetric.FORMULA_COMBINE);
-	root.dfsVisitScopeTree(diVisitor);
-}
-
-
 private void finalizeAggregateMetrics(Scope root) {
 	if (! checkExistenceOfDerivedIncr())
 		return;
-	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics(), AggregateMetric.FORMULA_FINALIZE);
+	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics());
 	root.dfsVisitScopeTree(diVisitor);
 }
 

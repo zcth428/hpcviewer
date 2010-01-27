@@ -17,11 +17,9 @@ import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 public class DerivedIncrementalVisitor implements IScopeVisitor {
 
 	private BaseMetric metrics[];
-	private char functionType;
 	
-	public DerivedIncrementalVisitor( BaseMetric []listOfMetrics, char typeOfFunction) {
+	public DerivedIncrementalVisitor( BaseMetric []listOfMetrics) {
 		this.metrics = listOfMetrics;
-		this.functionType = typeOfFunction;
 	}
 
     public void visit(LineScope scope, ScopeVisitType vt) { process(scope, vt); }
@@ -39,16 +37,16 @@ public class DerivedIncrementalVisitor implements IScopeVisitor {
     
     private void process( Scope scope, ScopeVisitType vt) {
     	if (vt == ScopeVisitType.PreVisit ) {
-    		this.setValue(this.functionType, scope);
+    		this.setValue(scope);
     	}
     }
 
     
-    private void setValue ( char typeFormula, Scope scope) {
+    private void setValue ( Scope scope) {
     	for (int i=0; i<this.metrics.length; i++ ) {
     		if (metrics[i] instanceof AggregateMetric) {
     			AggregateMetric agg = (AggregateMetric) metrics[i];
-    			agg.setScopeValue(typeFormula, scope);
+    			agg.finalize(scope);
     		}
     	}
     }

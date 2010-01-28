@@ -31,11 +31,10 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private Hashtable<Integer, FileScope> htFlatFileScope;
 	private Hashtable<Integer, ProcedureScope> htFlatProcScope;
 	private Hashtable<Integer, FlatScopeInfo> htFlatScope;
-	private Hashtable<Integer, FlatScopeInfo[]> htFlatCostAdded;
+	private Hashtable<Integer, Scope[]> htFlatCostAdded;
 	
 	private Experiment experiment;
 	private RootScope root_ft;
-	private int nbMetrics;
 	
 	private InclusiveOnlyMetricPropagationFilter inclusive_filter;
 	private ExclusiveOnlyMetricPropagationFilter exclusive_filter;
@@ -47,10 +46,9 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		this.htFlatFileScope = new Hashtable<Integer, FileScope>();
 		this.htFlatProcScope = new Hashtable<Integer, ProcedureScope> ();
 		this.htFlatScope     = new Hashtable<Integer, FlatScopeInfo>();
-		this.htFlatCostAdded = new Hashtable<Integer, FlatScopeInfo[]>();
+		this.htFlatCostAdded = new Hashtable<Integer, Scope[]>();
 		
 		this.root_ft = root;
-		this.nbMetrics = exp.getMetricCount(); 	// we assume the number of metric is static !!
 		
 		this.inclusive_filter = new InclusiveOnlyMetricPropagationFilter( exp.getMetrics() );
 		this.exclusive_filter = new ExclusiveOnlyMetricPropagationFilter( exp.getMetrics() );
@@ -65,12 +63,12 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	public void visit(StatementRangeScope scope, ScopeVisitType vt) { }
 	public void visit(GroupScope scope, ScopeVisitType vt) 			{ }
 
-	public void visit(CallSiteScope scope, ScopeVisitType vt) 		{ add(scope,vt); }
-	public void visit(LineScope scope, ScopeVisitType vt) 			{ add(scope,vt); }
-	public void visit(LoopScope scope, ScopeVisitType vt) 			{ add(scope,vt); }
-	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{ add(scope,vt); }
+	public void visit(CallSiteScope scope, ScopeVisitType vt) 		{ add(scope,vt, true, true); }
+	public void visit(LineScope scope, ScopeVisitType vt) 			{ add(scope,vt, true, false); }
+	public void visit(LoopScope scope, ScopeVisitType vt) 			{ add(scope,vt, true, false); }
+	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{ add(scope,vt, true, false); }
 
-	private void add( Scope scope, ScopeVisitType vt ) {
+	private void add( Scope scope, ScopeVisitType vt, boolean add_file_metrics, boolean add_proc_metrics ) {
 		
 		if (vt == ScopeVisitType.PreVisit ) {
 			//--------------------------------------------------------------------------
@@ -78,33 +76,46 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//--------------------------------------------------------------------------
 			int id = scope.hashCode();
 			Integer objCode = Integer.valueOf(id);
-			FlatScopeInfo flat_info[] = this.htFlatCostAdded.get( objCode );
+			Scope flat_info[] = this.htFlatCostAdded.get( objCode );
 			if (flat_info != null) {
 				this.htFlatCostAdded.remove(objCode);
 			}
-			// debugging purpose
-			/*
-			String sName = scope.getName();
-			if (id == 1334 || sName.startsWith("inlined from load.f90")) {
-				System.out.println("FSV " + scope.getName() + " p: " + scope.getParentScope() );
-			}  */
+
 			FlatScopeInfo objFlat = this.getFlatCounterPart(scope);
-			//Scope fs = objFlat.flat_s;
+			if (add_file_metrics) {
+				objFlat.addCostIfNecessary(objFlat.flat_lm, scope);
+				objFlat.addCostIfNecessary(objFlat.flat_file, scope);
+			}
+			if (add_proc_metrics) {
+				objFlat.addCostIfNecessary(objFlat.flat_proc, scope);
+			}
 		} else {
 			
 			//--------------------------------------------------------------------------
 			// Post visit
 			//--------------------------------------------------------------------------
 			Integer objCode = Integer.valueOf(scope.hashCode());
-			FlatScopeInfo flat_info[] = this.htFlatCostAdded.get( objCode );
-			assert(flat_info != null);
-			for (int i=0; i<flat_info.length; i++) {
-				flat_info[i].decrement();
-			}
+			Scope flat_info[] = this.htFlatCostAdded.get( objCode );
+			if (flat_info != null)
+				for (int i=0; i<flat_info.length; i++) {
+					this.decrementCounter(flat_info[i]);
+				}
 		}
 	}
 	
 	
+	/****---------------------------------------------------------------------------****
+	 * decrement scope's counter
+	 * @param flat_s
+	 ****---------------------------------------------------------------------------****/
+	public void decrementCounter(Scope flat_s) {
+		if (flat_s != null) {
+			if (flat_s.iCounter > 0)
+				flat_s.iCounter--;
+			else
+				System.err.println("FVSV dec counter err: " + flat_s.getName()+"\t"+flat_s.iCounter);
+		}
+	}
 	
 
 	/****---------------------------------------------------------------------------****
@@ -226,12 +237,13 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			// in case of procedure scope (like main):
 			//  we create the load module, file scope and proc scope, and that's all
 			// -----------------------------------------------------------------------------
+			boolean is_alien = ((ProcedureScope) cct_s).isAlien(); 
 			FlatScopeInfo objFlat = this.getFlatScope(cct_s, true);
 			// -----------------------------------------------------------------------------
 			// Bug in hpcprof: it is possible to have two main procedures in a database !!!
 			// mark that this is a special case: do not aggregate the children into this node.
 			// -----------------------------------------------------------------------------
-			if (!((ProcedureScope) cct_s).isAlien())
+			if (!is_alien)
 				objFlat.flat_s.iCounter++; 
 			return objFlat;
 			
@@ -262,7 +274,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				ProcedureScope cct_ps = cct_cs.getProcedureScope();
 				
 				if (cct_ps.isAlien()) {
-					FlatScopeInfo flat_cct_ps = this.getFlatScope(cct_ps, true);
+					FlatScopeInfo flat_cct_ps = this.getFlatScope(cct_ps, false);
 					this.addToTree(flat_enc_s, flat_cct_ps.flat_s);
 					flat_enc_s = flat_cct_ps.flat_s;
 				} else if (cct_ps == proc_cct_s) {
@@ -279,7 +291,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				FlatScopeInfo flat_enc_info = this.getFlatScope(cct_parent_s, false);
 				flat_enc_s = flat_enc_info.flat_s;
 			}
-			FlatScopeInfo objFlat = this.getFlatScope(cct_s, true);
+			boolean add_cost = !(cct_s instanceof CallSiteScope);
+			FlatScopeInfo objFlat = this.getFlatScope(cct_s, add_cost);
 			this.addToTree(flat_enc_s, objFlat.flat_s);
 			return objFlat;
 		}
@@ -386,7 +399,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		 * @param flat_s
 		 * @param cct_s
 		 **------------------------------------------------------------------------------**/
-		private void addCostIfNecessary( Scope flat_s, Scope cct_s ) {
+		public void addCostIfNecessary( Scope flat_s, Scope cct_s ) {
 			if (flat_s == null)
 				return;
 			
@@ -395,6 +408,20 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				flat_s.combine(cct_s, inclusive_filter);
 			}
 			flat_s.combine(cct_s, exclusive_filter);
+			
+			Scope arr_new_scopes[]; 
+			Integer objCode = cct_s.hashCode();
+			Scope scope_added[] = htFlatCostAdded.get( objCode );
+			if (scope_added != null) {
+				int nb_scopes = scope_added.length;
+				arr_new_scopes = new Scope[nb_scopes+1];
+				System.arraycopy(scope_added, 0, arr_new_scopes, 0, nb_scopes);
+				arr_new_scopes[nb_scopes] = flat_s;
+			} else {
+				arr_new_scopes = new Scope[1];
+				arr_new_scopes[0] = flat_s;
+			}
+			htFlatCostAdded.put(objCode, arr_new_scopes);
 		}
 		
 		
@@ -404,53 +431,9 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		 * @param cct_s
 		 **------------------------------------------------------------------------------**/
 		public void addCost( Scope cct_s ) {
-			this.addCostIfNecessary(flat_lm, cct_s);
-			this.addCostIfNecessary(flat_file, cct_s);
-			this.addCostIfNecessary(flat_proc, cct_s);
 			if (flat_s != null && flat_s != flat_proc)
 				this.addCostIfNecessary(flat_s, cct_s);
 
-			Integer objCode = cct_s.hashCode();
-			FlatScopeInfo arr_new_infos[];
-			FlatScopeInfo arr_flat_infos[] = htFlatCostAdded.get(objCode);
-			if (arr_flat_infos != null) {
-				int nb_infos = arr_flat_infos.length;
-				arr_new_infos = new FlatScopeInfo[nb_infos + 1];
-				System.arraycopy(arr_flat_infos, 0, arr_new_infos, 0, nb_infos);
-				arr_new_infos[nb_infos] = this;
-			} else {
-				arr_new_infos = new FlatScopeInfo[1];
-				arr_new_infos[0] = this;
-			}
-			htFlatCostAdded.put(objCode, arr_new_infos);
-		} 
-		
-		
-		/**------------------------------------------------------------------------------**
-		 * Decrement the counter (should be positive)
-		 * @param scope
-		 **------------------------------------------------------------------------------**/
-		private void decrement_counter(Scope scope) {
-			if (scope == null)
-				return;
-			
-			if (scope.iCounter <= 0) {
-				System.err.println(" FSV Error dec: " + scope.getName() + "\t" + scope.hashCode() + "\t" + scope.iCounter);
-			} else {
-				scope.iCounter--;
-			}
-		}
-		
-		
-		/**------------------------------------------------------------------------------**
-		 * Decrement the counter for each flat scope
-		 **------------------------------------------------------------------------------**/
-		public void decrement() {
-			this.decrement_counter(flat_lm);
-			this.decrement_counter(flat_file);
-			this.decrement_counter(flat_proc);
-			if (flat_s != null && flat_s != flat_proc) 
-				this.decrement_counter(flat_s);
 		}
 	}
 }

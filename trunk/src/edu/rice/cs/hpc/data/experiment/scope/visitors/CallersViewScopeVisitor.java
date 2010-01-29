@@ -64,7 +64,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			if (!scopeCall.hasNonzeroMetrics()) {
 				// laksono 2009.09.18 bug fix: set a flag to indicate that we don't need this scope
 				//	this flag will be used later for post-visit
-				mycallee.iCounter = -1;
+				// mycallee.iCounter = -1;
 				return; 
 			}
 
@@ -119,7 +119,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 					CallSiteScope enclosingCS = null;
 					ProcedureScope mycaller = null;
 					if (next instanceof ProcedureScope) {
-						mycaller = (ProcedureScope) next.duplicate();
+						mycaller = (ProcedureScope) next; //.duplicate();
 						ProcedureScope scopeProc = (ProcedureScope) next;
 						// Laks 2008.11.11: bug fix for adding alien proc into call chain
 						// ----
@@ -136,7 +136,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 					}
 					else if (next instanceof CallSiteScope) {
 						enclosingCS = (CallSiteScope) next;
-						mycaller = (ProcedureScope) enclosingCS.getProcedureScope().duplicate();
+						mycaller = (ProcedureScope) enclosingCS.getProcedureScope(); //.duplicate();
 					}
 					LineScope lineScope = innerCS.getLineScope();
 					if(lineScope != null) {
@@ -144,7 +144,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 							new CallSiteScopeCallerView((LineScope) lineScope.duplicate(), 
 									mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
-						callerScope.accumulateMetrics(scopeCall, this.filter, numberOfPrimaryMetrics);
+						//callerScope.accumulateMetrics(scopeCall, this.filter, numberOfPrimaryMetrics);
+						this.combine(callerScope, scopeCall);
 						callPathList.addLast(callerScope);
 						
 						innerCS = enclosingCS;
@@ -267,12 +268,13 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			//	branches and consume enormous memory (it's so enormous that even the
 			//	JVM gives up).
 			//------------------------------------------------------------------------
-			if (existingCaller.hashCode() == first.hashCode() ) {
+			if (first.isMyCCT( existingCaller)) {
+			//if (existingCaller.hashCode() == first.hashCode() ) {
 
 				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
-				this.combine(existingCaller, first);
+				this.combine(first, existingCaller);
 				/*
 				if (existingCaller.iCounter > 0) {
 					//------------------------------------------------------------------------

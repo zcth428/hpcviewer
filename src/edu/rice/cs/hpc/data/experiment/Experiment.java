@@ -439,7 +439,7 @@ public void postprocess(boolean callerView) {
  * @return
  */
 private boolean checkExistenceOfDerivedIncr() {
-	boolean isAggregate = false;
+	boolean isAggregate = true;
 	for (int i=0; i<this.getMetricCount(); i++) {
 		BaseMetric metric = this.getMetric(i);
 		boolean is_aggregate = (metric instanceof AggregateMetric); 

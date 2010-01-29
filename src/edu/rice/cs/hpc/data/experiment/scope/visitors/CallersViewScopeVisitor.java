@@ -80,21 +80,21 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 
 				// 2009.09.03: Laksono: instead of copying metrics from scope, we have to copy from the  "corrected" metrics
 				//	( "corrected" means we exclude the cost of call which usually very small anyway )
-				callee.accumulateMetrics(scopeCall, inclusiveOnly, numberOfPrimaryMetrics);
+				//callee.accumulateMetrics(scopeCall, inclusiveOnly, numberOfPrimaryMetrics);
 
 				trace("added top level entry in bottom up tree");
 			} else {
 				// Laksono 2009.09.18: bug fix: accumulate inclusive metrics when the counter becomes 0
-				if (callee.iCounter == 0) {
+				/*if (callee.iCounter == 0) {
 					callee.accumulateMetrics(scopeCall, inclusiveOnly, numberOfPrimaryMetrics);
-				}
+				} */
 					// debugging purpose
 					// to be here, it must be a recursive routine
 			}
 			
-			callee.iCounter++;
-
-			callee.accumulateMetrics(scopeCall, exclusiveOnly, numberOfPrimaryMetrics);
+			//callee.iCounter++;
+			//callee.accumulateMetrics(scopeCall, exclusiveOnly, numberOfPrimaryMetrics);
+			this.combine(callee, scopeCall);
 			calleeht.put(objCode, callee);
 
 			//-----------------------------------------------------------------------
@@ -111,8 +111,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			CallSiteScope innerCS = scope;
 			LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
 			Scope next = scope.getParentScope();
-			while ( (next != null) && !(next instanceof RootScope)) /*(next instanceof CallSiteScope || next instanceof LoopScope ||
-					next instanceof ProcedureScope) ) */
+			while ( (next != null) && !(next instanceof RootScope)) 
 			{
 				// Laksono 2009.01.14: we only deal with call site OR procedure scope
 				if ( ((next instanceof CallSiteScope) || (next instanceof ProcedureScope))
@@ -162,10 +161,10 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			// laksono 2009.09.18 bug fix: if this scope isn't taken into account in the caller view, we return 
 			//		and reset the "flag" 
-			if (mycallee.iCounter < 0) {
+			/*if (mycallee.iCounter < 0) {
 			 mycallee.iCounter = 0;
 			 return;
-			}
+			} */
 			
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
 			// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
@@ -174,10 +173,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				// FIXME BUG ! For unknown reason, it is possible to have multiple post-visit for the same callee hash code !
 				// It seems the hashcode is not suitable in our case. 
 				// Here we make a temporary fix by not decrementing to negative value.
-				if(callee.iCounter>0)
+				this.decrementCounter(callee);
+				/*if(callee.iCounter>0)
 					callee.iCounter--;
-				//else
-				//	System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);
+				else
+					System.err.println("CVSV: "+callee.getName()+" from "+scope.getName()+"\t"+callee.iCounter);*/
 			}
 		}
 	}
@@ -199,14 +199,15 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				ProcedureScope tmp = (ProcedureScope)scope;
 				
 				// if there are no exclusive costs to attribute from this context, we are done here
-				if (!tmp.hasNonzeroMetrics()) return; 
+				if (!tmp.hasNonzeroMetrics()) 
+					return; 
 
 				// Find (or add) callee in top-level hashtable
 				// TODO: we should use a fully qualified procedure name (including file, module)
 				ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
 				if (callee == null) {
 					callee  = (ProcedureScope)mycallee.duplicate();
-					callee.iCounter = 1;
+					callee.iCounter = 0;
 					calleeht.put(new Integer(callee.hashCode()), callee);
 					callersViewRootScope.addSubscope(callee);
 					callee.setParentScope(this.callersViewRootScope);
@@ -216,14 +217,16 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				} else {
 					System.err.println("Error: procedure "+procedureName+" has been instantiated more than once.");
 				}
-				callee.accumulateMetrics(tmp, this.filter, numberOfPrimaryMetrics);
+				this.combine(callee, scope);
+				//callee.accumulateMetrics(tmp, this.filter, numberOfPrimaryMetrics);
 			} else {
 				
 			}
 		} else if (vt == ScopeVisitType.PostVisit){
 			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
 			if  (callee != null) {
-				callee.iCounter--;
+				this.decrementCounter(callee);
+				//callee.iCounter--;
 			}
 		}
 	
@@ -269,7 +272,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
-				
+				this.combine(existingCaller, first);
+				/*
 				if (existingCaller.iCounter > 0) {
 					//------------------------------------------------------------------------
 					// Laks 2008.09.09: a tricky bugfix on setting the cost only if the child has a bigger cost
@@ -291,7 +295,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 						existingCaller.mergeMetric(first, this.filter);
 					}
 				} 
-				existingCaller.iCounter++;
+				existingCaller.iCounter++; */
 				
 				// merge rest of call path as a child of existingCaller.
 				mergeCallerPath(existingCaller, callerPathList);
@@ -310,6 +314,29 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			prev.addSubscope(next);
 			next.setParentScope(prev);
 			prev = next;
+		}
+	}
+	
+	/**
+	 * Integrating cost of caller view and cct
+	 * @param caller_s
+	 * @param cct_s
+	 */
+	private void combine(Scope caller_s, Scope cct_s) {
+		if (caller_s.iCounter == 0) {
+			caller_s.accumulateMetrics(cct_s, inclusiveOnly, numberOfPrimaryMetrics);
+		}
+		caller_s.iCounter++;
+
+		caller_s.accumulateMetrics(cct_s, exclusiveOnly, numberOfPrimaryMetrics);
+
+	}
+	
+	private void decrementCounter(Scope caller_s) {
+		if (caller_s.iCounter>0) {
+			caller_s.iCounter--;
+		} else {
+			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.iCounter);
 		}
 	}
 	//----------------------------------------------------

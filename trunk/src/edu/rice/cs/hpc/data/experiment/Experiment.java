@@ -307,6 +307,7 @@ protected Scope createFlatView(Scope callingContextViewRootScope)
 	Scope flatViewRootScope = new RootScope(this, "Flat View", "Flat View", RootScopeType.Flat);
 	beginScope(flatViewRootScope);
 	
+	//FlatVisitor fv = new FlatVisitor(this, flatViewRootScope, this.getMetricCount(), false);
 	FlatViewScopeVisitor fv = new FlatViewScopeVisitor(this, (RootScope) flatViewRootScope);
 
 	callingContextViewRootScope.dfsVisitScopeTree(fv);

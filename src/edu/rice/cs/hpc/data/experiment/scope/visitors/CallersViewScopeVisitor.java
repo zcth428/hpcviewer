@@ -45,7 +45,6 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		this.filter = filter;
 		BaseMetric []metrics = experiment.getMetrics();
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-		//inclusiveOnly = new AggregatePropagationFilter(metrics);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 		new RemoveCallsiteCostPropagationFilter(metrics);
 	}
@@ -285,12 +284,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 ****--------------------------------------------------------------------------------****/
 	private void combine(Scope caller_s, Scope cct_s) {
 		if (caller_s.iCounter == 0) {
-			caller_s.accumulateMetrics(cct_s, inclusiveOnly, numberOfPrimaryMetrics);
+			caller_s.combine(cct_s, inclusiveOnly);
+			//caller_s.accumulateMetrics(cct_s, inclusiveOnly, numberOfPrimaryMetrics);
 		}
+		caller_s.combine(cct_s, exclusiveOnly);
+		//caller_s.accumulateMetrics(cct_s, exclusiveOnly, numberOfPrimaryMetrics);
 		caller_s.iCounter++;
-
-		caller_s.accumulateMetrics(cct_s, exclusiveOnly, numberOfPrimaryMetrics);
-
 	}
 	
 	

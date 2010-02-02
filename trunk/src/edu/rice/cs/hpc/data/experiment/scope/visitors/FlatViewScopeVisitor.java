@@ -39,6 +39,11 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private InclusiveOnlyMetricPropagationFilter inclusive_filter;
 	private ExclusiveOnlyMetricPropagationFilter exclusive_filter;
 	
+	/****---------------------------------------------------------------------------------------------****
+	 * Constructor
+	 * @param exp: experiment
+	 * @param root: the root of the tree
+	 ****---------------------------------------------------------------------------------------------****/
 	public FlatViewScopeVisitor( Experiment exp, RootScope root) {
 		this.experiment = exp;
 		
@@ -74,20 +79,21 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		boolean add_inclusive = !(scope.getParentScope() instanceof LoopScope);
 		add(scope,vt, add_inclusive, true); 
 	}
-	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{ add(scope,vt, true, true); }
+	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{
+		add(scope,vt, true, true); 
+	}
 
 	
 	/****---------------------------------------------------------------------------------------------****
 	 * Create or add a flat scope based on the scope from CCT
 	 * @param scope
 	 * @param vt
-	 * @param add_inclusive
-	 * @param add_exclusive
+	 * @param add_inclusive: flag if an inclusive cost had to be combined
+	 * @param add_exclusive: flag if an exclusive cost had to be combined
 	 ****---------------------------------------------------------------------------------------------****/
 	private void add( Scope scope, ScopeVisitType vt, boolean add_inclusive, boolean add_exclusive ) {
 		
 		int id = this.getID(scope); 
-		//Integer objCode = Integer.valueOf(id);
 
 		if (vt == ScopeVisitType.PreVisit ) {
 			//--------------------------------------------------------------------------
@@ -124,9 +130,9 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 ****---------------------------------------------------------------------------****/
 	private void decrementCounter(Scope flat_s) {
 		if (flat_s != null) {
-			if (flat_s.iCounter > 0)
+			if (flat_s.iCounter > 0) {
 				flat_s.iCounter--;
-			else
+			} else
 				System.err.println("FVSV dec counter err: " + flat_s.getName()+"\t"+flat_s.iCounter);
 		}
 	}
@@ -147,7 +153,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		//-----------------------------------------------------------------------------
 		int id = this.getID(cct_s);
 
-		//Integer objCode = Integer.valueOf( id );
 		FlatScopeInfo flat_info_s = this.htFlatScope.get( id );
 		
 		if (flat_info_s == null) {
@@ -221,7 +226,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//-----------------------------------------------------------------------------
 			if (cct_s instanceof CallSiteScope)
 				// we need to know which procedure that calls this subroutine
-				proc_cct_s = ((CallSiteScope)cct_s).getProcedureScope();
+				proc_cct_s = this.findEnclosingProcedure(cct_s);
 			
 			flat_info_s.flat_proc = this.htFlatProcScope.get(proc_cct_s.hashCode());
 			if (flat_info_s.flat_proc == null) {
@@ -243,7 +248,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//-----------------------------------------------------------------------------
 			// save the info into hashtable
 			//-----------------------------------------------------------------------------
-			// flat_info_s.initCounter();
 			this.htFlatScope.put(id, flat_info_s);
 		}
 		
@@ -378,6 +382,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 
 		return id;
 	}
+	
 	
 	/**------------------------------------------------------------------------------**
 	 * Add a child as the subscope of a parent

@@ -71,9 +71,10 @@ public Scope duplicate() {
     return new LoadModuleScope(this.experiment, this.loadModuleName, this.sourceFile, this.id);
 }
 
+/*
 public int hashCode() {
 	return this.loadModuleName.hashCode();
-}
+} */
 
 //////////////////////////////////////////////////////////////////////////
 //	SCOPE DISPLAY														//

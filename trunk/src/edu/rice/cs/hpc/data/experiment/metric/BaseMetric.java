@@ -33,7 +33,7 @@ public abstract class BaseMetric {
 	protected int index;
 
 	/** The display format to be used for this metric. */
-	protected MetricValueFormat displayFormat;
+	protected IMetricValueFormat displayFormat;
 
 	protected MetricType metricType;
 
@@ -51,12 +51,24 @@ public abstract class BaseMetric {
 	 * @param percent
 	 * @param index
 	 ************************************************************************/
-	public BaseMetric(String sDisplayName, boolean displayed, boolean percent, int index) {
+	public BaseMetric(String sDisplayName, boolean displayed, String format, boolean percent, int index) {
 	    // Laks 2009.12.11: hack to make the default short name
-		this(String.valueOf(index), sDisplayName, displayed, percent, index);
+		this(String.valueOf(index), sDisplayName, displayed, format, percent, index);
 	}
 	
+	
+	/*************************************************************************
+	 * 
+	 * @param sDisplayName
+	 * @param displayed
+	 * @param format
+	 * @param index
+	 *************************************************************************/
+	public BaseMetric(String sDisplayName, boolean displayed, String format, int index) {
+		this(String.valueOf(index), sDisplayName, displayed, format, false, index);
+	}
 
+	
 	/*************************************************************************
 	 * 
 	 * @param sID
@@ -65,15 +77,20 @@ public abstract class BaseMetric {
 	 * @param percent
 	 * @param index
 	 *************************************************************************/
-	public BaseMetric(String sID, String sDisplayName, boolean displayed, boolean percent, int index) {
+	public BaseMetric(String sID, String sDisplayName, boolean displayed, String format, boolean percent, int index) {
 		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;
 		this.displayed = displayed;
 		this.percent = percent;
 		this.index = index;
 		
 		// format
-		this.displayFormat = (this.percent ? MetricValueFormat.DEFAULT_PERCENT
-		                                   : MetricValueFormat.DEFAULT_NOPERCENT);
+		if (format == null) {
+			this.displayFormat = (this.percent ? MetricValueFormat.DEFAULT_PERCENT
+                    : MetricValueFormat.DEFAULT_NOPERCENT);			
+		} else {
+			this.displayFormat = new MetricValuePredefinedFormat(format);
+		}
+			
 	    this.unit = '0';
 	    this.shortName = sID;
 	}
@@ -196,7 +213,7 @@ public abstract class BaseMetric {
 	/*************************************************************************
 	 *	Returns the metric's display format.
 	 ************************************************************************/
-	public MetricValueFormat getDisplayFormat()
+	public IMetricValueFormat getDisplayFormat()
 	{
 		return this.displayFormat;
 	}

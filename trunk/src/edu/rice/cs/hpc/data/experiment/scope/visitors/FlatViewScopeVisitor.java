@@ -87,15 +87,15 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private void add( Scope scope, ScopeVisitType vt, boolean add_inclusive, boolean add_exclusive ) {
 		
 		int id = this.getID(scope); 
-		Integer objCode = Integer.valueOf(id);
+		//Integer objCode = Integer.valueOf(id);
 
 		if (vt == ScopeVisitType.PreVisit ) {
 			//--------------------------------------------------------------------------
 			// Pre-visit
 			//--------------------------------------------------------------------------
-			Scope flat_info[] = this.htFlatCostAdded.get( objCode );
+			Scope flat_info[] = this.htFlatCostAdded.get( id );
 			if (flat_info != null) {
-				this.htFlatCostAdded.remove(objCode);
+				this.htFlatCostAdded.remove(id);
 			}
 
 			FlatScopeInfo objFlat = this.getFlatCounterPart(scope, id);
@@ -109,7 +109,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//--------------------------------------------------------------------------
 			// Post visit
 			//--------------------------------------------------------------------------
-			Scope flat_info[] = this.htFlatCostAdded.get( objCode );
+			Scope flat_info[] = this.htFlatCostAdded.get( id );
 			if (flat_info != null)
 				for (int i=0; i<flat_info.length; i++) {
 					this.decrementCounter(flat_info[i]);
@@ -147,8 +147,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		//-----------------------------------------------------------------------------
 		int id = this.getID(cct_s);
 
-		Integer objCode = Integer.valueOf( id );
-		FlatScopeInfo flat_info_s = this.htFlatScope.get( objCode );
+		//Integer objCode = Integer.valueOf( id );
+		FlatScopeInfo flat_info_s = this.htFlatScope.get( id );
 		
 		if (flat_info_s == null) {
 			//-----------------------------------------------------------------------------
@@ -157,12 +157,18 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			flat_info_s = new FlatScopeInfo();
 			
 			//-----------------------------------------------------------------------------
-			// finding enclosing procedure of this cct scope
+			// finding enclosing procedure of this cct scope:
+			// if it is a call site, then the file and the module can be found in the scope
+			// for others, we need to find the enclosing procedure iteratively
 			//-----------------------------------------------------------------------------
-			ProcedureScope proc_cct_s = this.findEnclosingProcedure(cct_s);
+			ProcedureScope proc_cct_s;
+			if (cct_s instanceof CallSiteScope) {
+				proc_cct_s = ((CallSiteScope)cct_s).getProcedureScope();
+			} else {
+				proc_cct_s = this.findEnclosingProcedure(cct_s);
+			}
 			if (proc_cct_s == null) {
-				assert(cct_s instanceof ProcedureScope);
-				proc_cct_s = (ProcedureScope) cct_s;
+				throw new RuntimeException("Cannot find the enclosing procedure for " + cct_s);
 			}
 			
 			//-----------------------------------------------------------------------------
@@ -187,14 +193,13 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			// Initialize the flat file scope
 			//-----------------------------------------------------------------------------
 			SourceFile src_file = cct_s.getSourceFile();
-			Integer objFileID   = src_file.getFileID();
-			flat_info_s.flat_file = this.htFlatFileScope.get(objFileID);
+			int fileID   = src_file.getFileID();
+			flat_info_s.flat_file = this.htFlatFileScope.get(fileID);
 			//-----------------------------------------------------------------------------
 			// ATTENTION: it is possible that a file can be included into more than one load module
 			//-----------------------------------------------------------------------------
-			if ( (flat_info_s.flat_file == null) ||
-					(flat_info_s.flat_file != null && flat_info_s.flat_file.getParentScope() != flat_info_s.flat_lm) ){
-				flat_info_s.flat_file = new FileScope( this.experiment, src_file, objFileID );
+			if ( (flat_info_s.flat_file == null) ){
+				flat_info_s.flat_file = new FileScope( this.experiment, src_file, fileID );
 				//------------------------------------------------------------------------------
 				// if load module is undefined, then we attach the file scope to the root scope
 				//------------------------------------------------------------------------------
@@ -202,12 +207,38 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 					this.addToTree(root_ft, flat_info_s.flat_file);
 				else
 					this.addToTree(flat_info_s.flat_lm, flat_info_s.flat_file);
-				this.htFlatFileScope.put(objFileID, flat_info_s.flat_file);
+				this.htFlatFileScope.put(fileID, flat_info_s.flat_file);
+			} else {
+				
+				LoadModuleScope flat_parent_lm = (LoadModuleScope) flat_info_s.flat_file.getParentScope();
+				if (flat_parent_lm == null) {
+					System.err.println("ERROR " + cct_s.hashCode()+"\t"+cct_s+"\t"+flat_info_s.flat_file);
+					//throw new RuntimeException("Flat view creation: " + flat_info_s.flat_file+"\t CCT: " + cct_s);
+					
+				}
+				if (flat_parent_lm.hashCode() != flat_info_s.flat_lm.hashCode() ) {
+					System.err.println(fileID+"\t"+flat_info_s.flat_file + "\t load modules: " + flat_parent_lm+" and " + flat_info_s.flat_lm);
+					
+					flat_info_s.flat_file = new FileScope( this.experiment, src_file, fileID );
+					//------------------------------------------------------------------------------
+					// if load module is undefined, then we attach the file scope to the root scope
+					//------------------------------------------------------------------------------
+					if (flat_info_s.flat_lm == null)
+						this.addToTree(root_ft, flat_info_s.flat_file);
+					else
+						this.addToTree(flat_info_s.flat_lm, flat_info_s.flat_file);
+					this.htFlatFileScope.put(fileID, flat_info_s.flat_file);
+				}
+
 			}
 			
 			//-----------------------------------------------------------------------------
 			// Initialize the flat proc scope
 			//-----------------------------------------------------------------------------
+			if (cct_s instanceof CallSiteScope)
+				// we need to know which procedure that calls this subroutine
+				proc_cct_s = ((CallSiteScope)cct_s).getProcedureScope();
+			
 			flat_info_s.flat_proc = this.htFlatProcScope.get(proc_cct_s.hashCode());
 			if (flat_info_s.flat_proc == null) {
 				// create a new flat procedure scope
@@ -229,7 +260,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			// save the info into hashtable
 			//-----------------------------------------------------------------------------
 			// flat_info_s.initCounter();
-			this.htFlatScope.put(objCode, flat_info_s);
+			this.htFlatScope.put(id, flat_info_s);
 		}
 		
 		return flat_info_s;
@@ -267,7 +298,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 
 			Scope cct_parent_s = cct_s.getParentScope() ;
 			int parent_id = this.getID(cct_parent_s);
-			FlatScopeInfo objInfo = this.htFlatScope.get(Integer.valueOf(parent_id));
+			FlatScopeInfo objInfo = this.htFlatScope.get(parent_id);
 			if (objInfo == null) {
 				throw new RuntimeException("Flat view: unable to find the scope for " + cct_parent_s);
 			}
@@ -387,6 +418,10 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private void addChild(Scope parent, Scope child) {
 		parent.addSubscope(child);
 		child.setParentScope(parent);
+		System.out.println("\t"+"add"+"\t"+parent.hashCode()+"\t"+parent+"\t<--\t "+child.hashCode()+"\t"+child);
+		if (child.hashCode() == 111) {
+			System.out.println("\t\t");
+		}
 	}
 	
 	

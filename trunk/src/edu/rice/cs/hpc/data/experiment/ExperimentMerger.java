@@ -65,7 +65,7 @@ public class ExperimentMerger {
 			String shortName = "" + metricList.size();
 			Metric newM = new Metric(exp, shortName, 
 					m.getNativeName(), m.getDisplayName(),
-					m.getDisplayed(), m.getPercent(), 
+					m.getDisplayed(), null, m.getPercent(), 
 					m.getSamplePeriod(), m.getMetricType(), m.getPartnerIndex());
 			metricList.add(newM);
 		}
@@ -79,7 +79,7 @@ public class ExperimentMerger {
 				partnerIndex = m1.length + partnerIndex;
 			Metric newM = new Metric(exp, shortName, 
 						m.getNativeName(), m.getDisplayName(),
-						m.getDisplayed(), m.getPercent(), 
+						m.getDisplayed(), null, m.getPercent(), 
 						m.getSamplePeriod(), metricType, partnerIndex);
 			metricList.add(newM);
 		}

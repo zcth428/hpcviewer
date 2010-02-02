@@ -32,7 +32,7 @@ import java.text.DecimalFormat;
  */
 
 
-public class MetricValueFormat extends Object
+public class MetricValueFormat implements IMetricValueFormat
 {
 
 	protected static class Style
@@ -431,14 +431,14 @@ public int getFormattedLength()
  * (I guess ---laks).
  * @param value
  * @return <code>String</code> the text format.
- */
+ *//*
 public String format(double value) {
 	StringBuffer formatted = new StringBuffer();
 	String string = this.formatDouble(value, this.valueFormatter, this.valueStyle);
 	formatted.append(string);
 	formatted.append(Util.spaces(this.percentStyle.fieldWidth));
 	return formatted.toString();
-}
+}*/
 /*************************************************************************
  *	Returns a <code>String</code> showing a given <code>MetricValue</code>
  *	according to this format.

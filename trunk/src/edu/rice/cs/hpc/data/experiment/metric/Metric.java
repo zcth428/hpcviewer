@@ -57,10 +57,10 @@ public final static int NO_PARTNER_INDEX = -1;
 	
 public Metric(Experiment experiment,
               String shortName, String nativeName, String displayName,
-              boolean displayed, boolean percent,String sampleperiod, MetricType metricType, 
+              boolean displayed, String format, boolean percent,String sampleperiod, MetricType metricType, 
               int partnerIndex)
 {
-	super(displayName, displayed, percent, 0);
+	super(displayName, displayed, format, percent, 0);
 	// creation arguments
 	this.experiment  = experiment;
 	this.shortName   = shortName;
@@ -87,10 +87,10 @@ public Metric(Experiment experiment,
  */
 public Metric(Experiment experiment,
         String shortName, String nativeName, String displayName,
-        boolean displayed, boolean percent, double sampleperiod, MetricType metricType, 
+        boolean displayed, String format, boolean percent, double sampleperiod, MetricType metricType, 
         int partnerIndex)
 {
-super(displayName, displayed, percent, 0);
+super(displayName, displayed, format, percent, 0);
 // creation arguments
 this.experiment  = experiment;
 this.shortName   = shortName;

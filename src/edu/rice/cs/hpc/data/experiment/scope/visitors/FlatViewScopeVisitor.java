@@ -199,35 +199,19 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			// ATTENTION: it is possible that a file can be included into more than one load module
 			//-----------------------------------------------------------------------------
 			if ( (flat_info_s.flat_file == null) ){
-				flat_info_s.flat_file = new FileScope( this.experiment, src_file, fileID );
-				//------------------------------------------------------------------------------
-				// if load module is undefined, then we attach the file scope to the root scope
-				//------------------------------------------------------------------------------
-				if (flat_info_s.flat_lm == null)
-					this.addToTree(root_ft, flat_info_s.flat_file);
-				else
-					this.addToTree(flat_info_s.flat_lm, flat_info_s.flat_file);
-				this.htFlatFileScope.put(fileID, flat_info_s.flat_file);
+				flat_info_s.flat_file = this.createFileScope(src_file, flat_info_s.flat_lm);
+				
 			} else {
 				
 				LoadModuleScope flat_parent_lm = (LoadModuleScope) flat_info_s.flat_file.getParentScope();
 				if (flat_parent_lm == null) {
-					System.err.println("ERROR " + cct_s.hashCode()+"\t"+cct_s+"\t"+flat_info_s.flat_file);
-					//throw new RuntimeException("Flat view creation: " + flat_info_s.flat_file+"\t CCT: " + cct_s);
-					
+					// this will be very unlikely, unless we have bugs
+					throw new RuntimeException("Flat view creation: " + flat_info_s.flat_file+"\t CCT: " + cct_s);					
 				}
+				// check if the load module the existing file is the same with the scope's load module
 				if (flat_parent_lm.hashCode() != flat_info_s.flat_lm.hashCode() ) {
-					System.err.println(fileID+"\t"+flat_info_s.flat_file + "\t load modules: " + flat_parent_lm+" and " + flat_info_s.flat_lm);
-					
-					flat_info_s.flat_file = new FileScope( this.experiment, src_file, fileID );
-					//------------------------------------------------------------------------------
-					// if load module is undefined, then we attach the file scope to the root scope
-					//------------------------------------------------------------------------------
-					if (flat_info_s.flat_lm == null)
-						this.addToTree(root_ft, flat_info_s.flat_file);
-					else
-						this.addToTree(flat_info_s.flat_lm, flat_info_s.flat_file);
-					this.htFlatFileScope.put(fileID, flat_info_s.flat_file);
+					// the same file in different load module scope !!!
+					flat_info_s.flat_file = this.createFileScope(src_file, flat_info_s.flat_lm);
 				}
 
 			}
@@ -266,6 +250,28 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		return flat_info_s;
 	}
 
+
+	/**-----------------------------------------------------------------------------------**
+	 * Create a new file scope (this procedure will NOT check if the file already exists or not) !
+	 * @param src_file
+	 * @param lm_s
+	 * @return
+	 **-----------------------------------------------------------------------------------**/
+	private FileScope createFileScope(SourceFile src_file, LoadModuleScope lm_s) {
+		int fileID = src_file.getFileID();
+		FileScope file_s =  new FileScope( this.experiment, src_file, fileID );
+		//------------------------------------------------------------------------------
+		// if load module is undefined, then we attach the file scope to the root scope
+		//------------------------------------------------------------------------------
+		if (lm_s == null)
+			this.addToTree(root_ft, file_s);
+		else
+			this.addToTree(lm_s, file_s);
+		this.htFlatFileScope.put(fileID, file_s);
+
+		return file_s;
+	}
+	
 	
 	/**-----------------------------------------------------------------------------------**
 	 * construct the flat view of a cct scope
@@ -418,10 +424,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private void addChild(Scope parent, Scope child) {
 		parent.addSubscope(child);
 		child.setParentScope(parent);
-		System.out.println("\t"+"add"+"\t"+parent.hashCode()+"\t"+parent+"\t<--\t "+child.hashCode()+"\t"+child);
-		if (child.hashCode() == 111) {
-			System.out.println("\t\t");
-		}
 	}
 	
 	

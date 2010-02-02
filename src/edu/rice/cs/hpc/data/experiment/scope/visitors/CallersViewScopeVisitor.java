@@ -59,7 +59,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		
 		if (vt == ScopeVisitType.PreVisit) { 
 			String procedureName = mycallee.getName();
-
+			
 			CallSiteScope scopeCall = (CallSiteScope)scope;
 			
 			// if there are no exclusive costs to attribute from this context, we are done here
@@ -93,18 +93,18 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 					ProcedureScope mycaller = null;
 					if (next instanceof ProcedureScope) {
 						mycaller = (ProcedureScope) next; 
-						ProcedureScope scopeProc = (ProcedureScope) next;
+						//ProcedureScope scopeProc = (ProcedureScope) next;
 						// Laks 2008.11.11: bug fix for adding alien proc into call chain
 						// ----
 						// for alien procedure (such as inlined proc) we need to add it into the call chain.
 						// however, since there is way to convert from Procedure scope into CallSite scope,
 						// 	we are forced to create a new dummy instance of CallSiteScope based on this Procedure 
-						if(scopeProc.isAlien()) {
+						if(mycaller.isAlien()) {
 							// FIXME two dummies instance creation. we hope this doesn't make significant 
 							//			performance degradation !
-							LineScope scopeLine = new LineScope(scopeProc.getExperiment(), scopeProc.getSourceFile(), 
-									scopeProc.getFirstLineNumber(), scopeProc.hashCode());
-							enclosingCS = new CallSiteScope(scopeLine, scopeProc, CallSiteScopeType.CALL_FROM_PROCEDURE, 0);
+							LineScope scopeLine = new LineScope(mycaller.getExperiment(), mycaller.getSourceFile(), 
+									mycaller.getFirstLineNumber(), mycaller.hashCode());
+							enclosingCS = new CallSiteScope(scopeLine, mycaller, CallSiteScopeType.CALL_FROM_PROCEDURE, 0);
 						}
 					}
 					else if (next instanceof CallSiteScope) {
@@ -114,7 +114,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 					LineScope lineScope = innerCS.getLineScope();
 					if(lineScope != null) {
 						CallSiteScopeCallerView callerScope =
-							new CallSiteScopeCallerView((LineScope) lineScope.duplicate(), 
+							new CallSiteScopeCallerView( lineScope /*.duplicate() */, 
 									mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
 

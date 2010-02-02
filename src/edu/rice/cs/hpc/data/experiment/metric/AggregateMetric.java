@@ -32,9 +32,9 @@ public class AggregateMetric extends BaseMetric {
 	 * @param index    : metric index in the list (unused)
 	 * @param type	   : metric type
 	 ***------------------------------------------------------------------------***/
-	public AggregateMetric(String sID, String sDisplayName, boolean displayed,
+	public AggregateMetric(String sID, String sDisplayName, boolean displayed, String format,
 			boolean percent, int index, MetricType type) {
-		super(sID, sDisplayName, displayed, percent, index);
+		super(sID, sDisplayName, displayed, format, percent, index);
 
 		this.fctMap = new FuncMap();
 		this.fctMap.loadDefaultFunctions();

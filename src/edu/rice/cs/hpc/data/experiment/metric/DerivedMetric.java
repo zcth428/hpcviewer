@@ -39,7 +39,7 @@ public class DerivedMetric extends BaseMetric {
 	 * @param bPercent
 	 */
 	public DerivedMetric(RootScope scopeRoot, Expression e, String sName, int index, boolean bPercent, MetricType objType) {
-		super(sName, true, bPercent, index);
+		super(sName, true, null, bPercent, index);
 		//DerivedMetric.Counter++;
 		this.expression = e;
 		//this.scopeOfTheRoot = scopeRoot;

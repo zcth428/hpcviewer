@@ -469,7 +469,7 @@ public class ExperimentBuilder extends Builder
 						values[N_shortName], 
 						values[N_nativeName], 
 						values[N_displayName]+" (total)",
-						Util.booleanValue(values[N_display]), 
+						Util.booleanValue(values[N_display]), null,
 						Util.booleanValue(values[N_percent]),
 						new_values[N_sampleperiod],
 						MetricType.INCLUSIVE, exclusiveIndex);
@@ -487,7 +487,7 @@ public class ExperimentBuilder extends Builder
 						stringNewShortName, 
 						values[N_nativeName], 
 						selfMetricDisplayName,
-						Util.booleanValue(values[N_display]), 
+						Util.booleanValue(values[N_display]), null, 
 						Util.booleanValue(values[N_percent]),
 						new_values[N_sampleperiod],
 						MetricType.EXCLUSIVE, 
@@ -514,7 +514,7 @@ public class ExperimentBuilder extends Builder
 				Metric metric = new Metric(this.experiment,
 						new_values[N_shortName], new_values[N_nativeName], 
 						new_values[N_displayName]+" (I)",
-						Util.booleanValue(new_values[N_display]), 
+						Util.booleanValue(new_values[N_display]), null, 
 						Util.booleanValue(new_values[N_percent]),
 						new_values[N_sampleperiod],
 						MetricType.INCLUSIVE, exclusiveIndex);
@@ -539,7 +539,7 @@ public class ExperimentBuilder extends Builder
 							stringNewShortName, 
 							new_values[N_nativeName], 
 							selfMetricDisplayName,
-							Util.booleanValue(displayValue), 
+							Util.booleanValue(displayValue),  null,
 							Util.booleanValue(displayPercentValue),
 							new_values[N_sampleperiod],	MetricType.EXCLUSIVE, 
 							exclusiveIndex-1);
@@ -556,7 +556,7 @@ public class ExperimentBuilder extends Builder
 			Metric metric = new Metric(this.experiment,
 					values[N_shortName], values[N_nativeName], 
 					values[N_displayName],
-					Util.booleanValue(values[N_display]), Util.booleanValue(values[N_percent]), defaultName,
+					Util.booleanValue(values[N_display]),  null,Util.booleanValue(values[N_percent]), defaultName,
 					MetricType.INCLUSIVE, 
 					Metric.NO_PARTNER_INDEX);
 			this.metricList.add(metric);

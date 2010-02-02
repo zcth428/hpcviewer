@@ -530,6 +530,7 @@ public class ExperimentBuilder2 extends Builder
 		MetricType objType = MetricType.EXCLUSIVE;
 		boolean needPartner = this.csviewer;
 		MetricValueDesc mDesc = MetricValueDesc.Raw; // by default is a raw metric
+		String format = null;
 		
 		for (int i=0; i<attributes.length; i++) {
 			if (attributes[i].charAt(0) == 'i') {
@@ -568,6 +569,9 @@ public class ExperimentBuilder2 extends Builder
 					objType = MetricType.INCLUSIVE;
 				else if (values[i].charAt(0) == 'e')
 					objType = MetricType.EXCLUSIVE;
+			} else if (attributes[i].charAt(0) == 'f') {
+				// format to display
+				format = values[i];
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
@@ -594,12 +598,12 @@ public class ExperimentBuilder2 extends Builder
 						String.valueOf(iSelf),			// short name
 						sNativeName,			// native name
 						sDisplayName, 	// display name
-						toShow, true, 			// displayed ? percent ?
+						toShow, format, true, 			// displayed ? percent ?
 						"",						// period (not defined at the moment)
 						objType, partner);
 				break;
 			case Derived_Incr:
-				metricInc = new AggregateMetric(sID, sDisplayName, toShow, false, nbMetrics, objType);
+				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, false, nbMetrics, objType);
 				break;
 			case Raw:
 			case Derived:
@@ -608,7 +612,7 @@ public class ExperimentBuilder2 extends Builder
 						String.valueOf(iSelf),			// short name
 						sNativeName,			// native name
 						sDisplayName, 	// display name
-						toShow, true, 			// displayed ? percent ?
+						toShow, format, true, 			// displayed ? percent ?
 						"",						// period (not defined at the moment)
 						objType, partner);
 				break;
@@ -628,7 +632,7 @@ public class ExperimentBuilder2 extends Builder
 					sSelfName,			// short name
 					sSelfDisplayName,	// native name
 					sSelfDisplayName, 	// display name
-					toShow, true, 		// displayed ? percent ?
+					toShow, format, true, 		// displayed ? percent ?
 					"",					// period (not defined at the moment)
 					MetricType.EXCLUSIVE, nbMetrics);
 			this.metricList.add(metricExc);

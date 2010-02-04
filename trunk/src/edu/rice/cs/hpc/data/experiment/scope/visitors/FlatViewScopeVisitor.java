@@ -73,14 +73,14 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	}
 	public void visit(LineScope scope, ScopeVisitType vt) 			{ 
 		boolean to_be_added = !(scope.getParentScope() instanceof LoopScope);
-		add(scope,vt, to_be_added, to_be_added); 
+		add(scope,vt, to_be_added, true); 
 	}
 	public void visit(LoopScope scope, ScopeVisitType vt) 			{
 		boolean add_inclusive = !(scope.getParentScope() instanceof LoopScope);
-		add(scope,vt, add_inclusive, true); 
+		add(scope,vt, add_inclusive, false); 
 	}
 	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{
-		add(scope,vt, true, true); 
+		add(scope,vt, true, false); 
 	}
 
 	

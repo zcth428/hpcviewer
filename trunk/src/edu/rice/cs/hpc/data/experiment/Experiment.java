@@ -440,12 +440,12 @@ public void postprocess(boolean callerView) {
  * @return
  */
 private boolean checkExistenceOfDerivedIncr() {
-	boolean isAggregate = true;
+	boolean isAggregate = false;
 	for (int i=0; i<this.getMetricCount(); i++) {
 		BaseMetric metric = this.getMetric(i);
 		boolean is_aggregate = (metric instanceof AggregateMetric); 
 		if (is_aggregate) {
-			isAggregate &= is_aggregate;
+			isAggregate |= is_aggregate;
 			AggregateMetric aggMetric = (AggregateMetric) metric;
 			// hack: initialize the metric here
 			aggMetric.init(this);

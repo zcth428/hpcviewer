@@ -13,7 +13,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PrintFlatViewScopeVisitor;
 import edu.rice.cs.hpc.data.util.Util;
 
-/**
+/******************************************************************************************
  * Class to manage the execution of the light version of hpcviewer
  * This class will require an argument for a database or XML file, then
  * 	output the result into XML file
@@ -21,14 +21,14 @@ import edu.rice.cs.hpc.data.util.Util;
  * No user interaction is needed in this light version
  * @author laksonoadhianto
  *
- */
+ ******************************************************************************************/
 public class Application {
 
-	/**
+	/***---------------------------------------------------------------------**
 	 * Open a XML database file, and return true if everything is OK.
 	 * @param objFile: the XML experiment file
 	 * @return
-	 */
+	 ***---------------------------------------------------------------------**/
 	private boolean openExperiment(File objFile) {
 		Experiment experiment;
 		System.out.print("Opening " + objFile.getAbsolutePath() );
@@ -48,6 +48,10 @@ public class Application {
 	}
 	
 	
+	/***---------------------------------------------------------------------**
+	 * 
+	 * @param experiment
+	 ***---------------------------------------------------------------------**/
 	private void printFlatView(Experiment experiment) {
 		TreeNode []rootChildren = experiment.getRootScopeChildren();
 		if (rootChildren != null) {
@@ -79,13 +83,19 @@ public class Application {
 		}
 	}
 	
-	/**
+
+	
+	/**---------------------------------------------------------------------**
 	 * Main application
 	 * @param args
-	 */
+	 **---------------------------------------------------------------------**/
 	public static void main(String[] args) {
 		Application objApp = new Application();
 		
+		if ( (args == null) || (args.length==0)) {
+			System.out.println("Usage: java -jar hpcdata.jar experiment_datanase");
+			return;
+		}
 		String sFilename = args[0];
 		// open the experiment if possible
 		File objFile = new File(sFilename);

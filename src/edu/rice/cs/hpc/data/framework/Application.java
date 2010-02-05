@@ -93,7 +93,7 @@ public class Application {
 		Application objApp = new Application();
 		
 		if ( (args == null) || (args.length==0)) {
-			System.out.println("Usage: java -jar hpcdata.jar experiment_datanase");
+			System.out.println("Usage: java -jar hpcdata.jar experiment_database");
 			return;
 		}
 		String sFilename = args[0];

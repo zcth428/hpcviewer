@@ -23,8 +23,8 @@
        	     <fileset dir="bin" includes="**/*.class" />
       	     <fileset dir="../external-jars" includes="**/*.jar" />
              <manifest>
-                <attribute name="Main-Class" value="edu.rice.cs.hpc.data.experiment.Experiment"/>
-                <attribute name="Class-Path" value="org.apache.xerces_2.9.0.v200909240008.jar org.eclipse.jface_3.5.1.M20090826-0800.jar"/>
+                <attribute name="Main-Class" value="edu.rice.cs.hpc.data.framework.Application"/>
+                <attribute name="Class-Path" value="org.apache.xerces_2.9.0.v200909240008.jar  org.eclipse.jface_3.5.1.M20090826-0800.jar"/>
              </manifest>
         </jar>
   		<delete dir="bin" />

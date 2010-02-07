@@ -46,16 +46,21 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 	private void print(Scope scope, ScopeVisitType vt) {
 		if (vt == ScopeVisitType.PreVisit) {
 			this.objOutputStream.print(scope.getName());
-			int nbMetrics = objExperiment.getMetricCount();
-			for (int i=0; i<nbMetrics; i++) {
-				MetricValue metric = scope.getMetricValue(i);
-				this.objOutputStream.print(", ");
-				if (metric.isAvailable())
-					this.objOutputStream.print(metric.getValue());
-			}
 			this.objOutputStream.println();
 		} else {
 			
 		}
+	}
+	
+	private void printMetrics(Scope scope) {
+
+		int nbMetrics = objExperiment.getMetricCount();
+		for (int i=0; i<nbMetrics; i++) {
+			MetricValue metric = scope.getMetricValue(i);
+			this.objOutputStream.print(", ");
+			if (metric.isAvailable())
+				this.objOutputStream.print(metric.getValue());
+		}
+
 	}
 }

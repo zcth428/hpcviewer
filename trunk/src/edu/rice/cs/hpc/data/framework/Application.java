@@ -1,15 +1,9 @@
 package edu.rice.cs.hpc.data.framework;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-
-import org.eclipse.jface.viewers.TreeNode;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.PrintFlatViewScopeVisitor;
+import edu.rice.cs.hpc.data.experiment.xml.PrintFileXML;
 import edu.rice.cs.hpc.data.util.Util;
 
 /******************************************************************************************
@@ -23,11 +17,6 @@ import edu.rice.cs.hpc.data.util.Util;
  ******************************************************************************************/
 public class Application {
 
-	//-----------------------------------------------------------------------
-	// Constants
-	//-----------------------------------------------------------------------
-	final private String DTD_FILE_NAME = "/edu/rice/cs/hpc/data/experiment/xml/experiment.dtd";
-	final private int MAX_BUFFER = 1024;
 	
 	/***---------------------------------------------------------------------**
 	 * Open a XML database file, and return true if everything is OK.
@@ -58,74 +47,8 @@ public class Application {
 	 * @param experiment
 	 ***---------------------------------------------------------------------**/
 	private void printFlatView(Experiment experiment) {
-		TreeNode []rootChildren = experiment.getRootScopeChildren();
-		if (rootChildren != null) {
-			PrintStream objStream = System.out;
-			int nbChildren = rootChildren.length;
-			
-			// flat root must be the last one
-			RootScope flatRoot = (RootScope) rootChildren[nbChildren-1].getValue();
-			
-			this.printDTD(objStream);
-			//---------------------------------------------------------------------------------
-			// print the title
-			//---------------------------------------------------------------------------------
-			objStream.print("Scope ");
-			
-			// print the metrics
-			int nbMetrics = experiment.getMetricCount();
-			for (int i=0; i<nbMetrics; i++ ) {
-				objStream.print(", " + experiment.getMetric(i).getDisplayName());
-			}
-			objStream.println();
-			
-			//---------------------------------------------------------------------------------
-			// print the content
-			//---------------------------------------------------------------------------------
-			PrintFlatViewScopeVisitor objPrintFlat = new PrintFlatViewScopeVisitor(experiment, objStream);
-			flatRoot.dfsVisitScopeTree(objPrintFlat);
-		} else {
-			System.err.println("The database contains no information");
-		}
-	}
-	
-
-	/**---------------------------------------------------------------------**
-	 * Printing DTD of an experiment. The sample of DTD is located in edu.rice.cs.hpc.data.experiment.xml package
-	 * This method will first load the file, then print it. 
-	 * This is not the most effecient way to do, but it is the most configurable way I can think. 
-	 * @param objPrint
-	 **---------------------------------------------------------------------**/
-	private void printDTD(PrintStream objPrint) {
-		InputStream objFile = this.getClass().getResourceAsStream(DTD_FILE_NAME);
-		if ( objFile != null ) {
-
-		    byte[] buf=new byte[MAX_BUFFER];
-		    
-            objPrint.println();
-		    //---------------------------------------------------------
-		    // iteratively read DTD file and print partially to the stream
-		    //---------------------------------------------------------
-            while (true) {
-                int numRead = 0;
-				try {
-					numRead = objFile.read(buf, 0, buf.length);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-                if (numRead <= 0) {
-                    break;
-                } else {
-                    String dtd = new String(buf, 0, numRead);
-                    objPrint.print(dtd);
-                }
-
-            }
-		    //---------------------------------------------------------
-            // DTD has been printed, we need a new line to make nice format 
-		    //---------------------------------------------------------
-            objPrint.println();
-		}
+		PrintFileXML objPrint = new PrintFileXML();
+		objPrint.print(System.out, experiment);
 	}
 	
 	

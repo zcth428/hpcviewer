@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.data.framework;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,9 +8,7 @@ import java.io.PrintStream;
 import org.eclipse.jface.viewers.TreeNode;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PrintFlatViewScopeVisitor;
 import edu.rice.cs.hpc.data.util.Util;
 
@@ -26,6 +23,12 @@ import edu.rice.cs.hpc.data.util.Util;
  ******************************************************************************************/
 public class Application {
 
+	//-----------------------------------------------------------------------
+	// Constants
+	//-----------------------------------------------------------------------
+	final private String DTD_FILE_NAME = "/edu/rice/cs/hpc/data/experiment/xml/experiment.dtd";
+	final private int MAX_BUFFER = 1024;
+	
 	/***---------------------------------------------------------------------**
 	 * Open a XML database file, and return true if everything is OK.
 	 * @param objFile: the XML experiment file
@@ -94,26 +97,34 @@ public class Application {
 	 * @param objPrint
 	 **---------------------------------------------------------------------**/
 	private void printDTD(PrintStream objPrint) {
-		InputStream objFile = this.getClass().getResourceAsStream("/edu/rice/cs/hpc/data/experiment/xml/experiment.dtd");
+		InputStream objFile = this.getClass().getResourceAsStream(DTD_FILE_NAME);
 		if ( objFile != null ) {
-		    int total = 0;
-		    byte[] buf=new byte[6000];
+
+		    byte[] buf=new byte[MAX_BUFFER];
+		    
+            objPrint.println();
+		    //---------------------------------------------------------
+		    // iteratively read DTD file and print partially to the stream
+		    //---------------------------------------------------------
             while (true) {
                 int numRead = 0;
 				try {
-					numRead = objFile.read(buf,
-					        total, buf.length-total);
+					numRead = objFile.read(buf, 0, buf.length);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
                 if (numRead <= 0) {
                     break;
+                } else {
+                    String dtd = new String(buf, 0, numRead);
+                    objPrint.print(dtd);
                 }
-                total += numRead;
+
             }
-            String dtd = new String(buf);
-            objPrint.println(dtd);
+		    //---------------------------------------------------------
+            // DTD has been printed, we need a new line to make nice format 
+		    //---------------------------------------------------------
+            objPrint.println();
 		}
 	}
 	

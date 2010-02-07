@@ -25,17 +25,15 @@ public class Application {
 	 ***---------------------------------------------------------------------**/
 	private boolean openExperiment(File objFile) {
 		Experiment experiment;
-		System.out.print("Opening " + objFile.getAbsolutePath() );
+		System.out.println("Opening " + objFile.getAbsolutePath() );
 
 		try {
 			experiment = new Experiment(objFile);	// prepare the experiment
 			experiment.open();						// parse the database
 			experiment.postprocess(false);			// create the flat view
 			this.printFlatView(experiment);
-			System.out.println(" .... successfully");
 			return true;
 		} catch (Exception e) {
-			System.out.println(" .... failed");
 			e.printStackTrace();
 			return false;
 		}

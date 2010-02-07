@@ -56,8 +56,9 @@ public class PrintFileXML {
 			//---------------------------------------------------------------------------------
 			objStream.println("<SecFlatProfileData>");
 			PrintFlatViewScopeVisitor objPrintFlat = new PrintFlatViewScopeVisitor(experiment, objStream);
-			//flatRoot.dfsVisitScopeTree(objPrintFlat);
-			objStream.println("<SecFlatProfileData>");
+			flatRoot.dfsVisitScopeTree(objPrintFlat);
+			
+			objStream.println("</SecFlatProfileData>\n</SecFlatProfile>\n</HPCToolkitExperiment>");
 		} else {
 			System.err.println("The database contains no information");
 		}
@@ -71,18 +72,7 @@ public class PrintFileXML {
 	 * @param attribute
 	 * @param value
 	 **--------------------------------------------------------------------------------**/
-	static public void printAttribute(PrintStream objPrint, String attribute, String value) {
-		objPrint.print(attribute + "=\"" + value + "\" ");
-	}
-
-	
-	/**--------------------------------------------------------------------------------**
-	 * 
-	 * @param objPrint
-	 * @param attribute
-	 * @param value
-	 **--------------------------------------------------------------------------------**/
-	static public void printAttribute(PrintStream objPrint, String attribute, int value) {
+	static public void printAttribute(PrintStream objPrint, String attribute, Object value) {
 		objPrint.print(attribute + "=\"" + value + "\" ");
 	}
 

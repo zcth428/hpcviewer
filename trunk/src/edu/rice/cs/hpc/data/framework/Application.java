@@ -1,7 +1,9 @@
 package edu.rice.cs.hpc.data.framework;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 
 import org.eclipse.jface.viewers.TreeNode;
@@ -61,6 +63,7 @@ public class Application {
 			// flat root must be the last one
 			RootScope flatRoot = (RootScope) rootChildren[nbChildren-1].getValue();
 			
+			this.printDTD(objStream);
 			//---------------------------------------------------------------------------------
 			// print the title
 			//---------------------------------------------------------------------------------
@@ -84,6 +87,36 @@ public class Application {
 	}
 	
 
+	/**---------------------------------------------------------------------**
+	 * Printing DTD of an experiment. The sample of DTD is located in edu.rice.cs.hpc.data.experiment.xml package
+	 * This method will first load the file, then print it. 
+	 * This is not the most effecient way to do, but it is the most configurable way I can think. 
+	 * @param objPrint
+	 **---------------------------------------------------------------------**/
+	private void printDTD(PrintStream objPrint) {
+		InputStream objFile = this.getClass().getResourceAsStream("/edu/rice/cs/hpc/data/experiment/xml/experiment.dtd");
+		if ( objFile != null ) {
+		    int total = 0;
+		    byte[] buf=new byte[6000];
+            while (true) {
+                int numRead = 0;
+				try {
+					numRead = objFile.read(buf,
+					        total, buf.length-total);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                if (numRead <= 0) {
+                    break;
+                }
+                total += numRead;
+            }
+            String dtd = new String(buf);
+            objPrint.println(dtd);
+		}
+	}
+	
 	
 	/**---------------------------------------------------------------------**
 	 * Main application

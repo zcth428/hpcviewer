@@ -21,21 +21,28 @@
   		<delete file="hpcdata.jar" />
     	<jar destfile="hpcdata.jar" >
        	     <fileset dir="bin" includes="**/*.class" />
-      	     <fileset dir="../external-jars" includes="**/*.jar" />
              <manifest>
                 <attribute name="Main-Class" value="edu.rice.cs.hpc.data.framework.Application"/>
-                <attribute name="Class-Path" value="org.apache.xerces_2.9.0.v200909240008.jar  org.eclipse.jface_3.5.1.M20090826-0800.jar"/>
+                <attribute name="Class-Path" value="lib/org.apache.xerces_2.9.0.v200909240008.jar lib/org.eclipse.jface_3.5.1.M20090826-0800.jar"/>
              </manifest>
         </jar>
   		<delete dir="bin" />
   	</target>
   
-	<target name="hpcdata" depends="compile,jar" />
-
-    <target name="run">
-        <java jar="hpcdata.jar" fork="true"/>
-    </target>
+	<target name="hpcdata" depends="compile,jar" >
+		<mkdir dir="lib"/>
+		<copy todir="lib">
+			<fileset dir="../external-jars" >
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+		<move file="hpcdata.jar" todir="lib/" />
+		<chmod perm="ugo+x" file="hpcdata.sh" />
+		<zip destfile="hpcdata.zip">
+			<zipfileset dir="lib" prefix="lib"/>
+			<fileset dir="." includes="hpcdata.sh"/>
+		</zip>
+	</target>
 
 
 </project>
-

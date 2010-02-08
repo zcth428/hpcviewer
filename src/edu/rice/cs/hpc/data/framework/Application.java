@@ -58,17 +58,24 @@ public class Application {
 	public static void main(String[] args) {
 		Application objApp = new Application();
 		PrintStream objPrint = System.out;
-		String sFilename = args[0];
+		String sFilename;
+		boolean std_output = true;
 		
+		//------------------------------------------------------------------------------------
+		// processing the command line argument
+		//------------------------------------------------------------------------------------
 		if ( (args == null) || (args.length==0)) {
 			System.out.println("Usage: hpcdata.sh [-o output_file] experiment_database");
 			return;
 		} else  {
+			sFilename = args[0];
+			
 			for (int i=0; i<args.length; i++) {
 				if (args[i].equals("-o") && (i<args.length-1)) {
 					String sOutput = args[i+1];
 					try {
 						objPrint = new PrintStream( sOutput );
+						std_output = false;
 						i++;
 					} catch (FileNotFoundException e) {
 						System.err.println("Error: cannot create file " + sOutput);
@@ -79,21 +86,33 @@ public class Application {
 				}
 			}
 		}
+		
 		//------------------------------------------------------------------------------------
 		// open the experiment if possible
 		//------------------------------------------------------------------------------------
+		PrintStream print_msg;
+		if (std_output)
+			print_msg = System.err;
+		else
+			print_msg = System.out;
+		
 		File objFile = new File(sFilename);
+		boolean done = false;
+
+		print_msg.println("Opening database " + sFilename);
+		
 		if (objFile.isDirectory()) {
 			File files[] = Util.getListOfXMLFiles(sFilename);
-			boolean done = false;
 			for (int i=0; i<files.length && !done; i++) {
 				done = objApp.openExperiment(objPrint, files[i]);
 			}
 		} else {
-			objApp.openExperiment(objPrint, objFile);
+			done = objApp.openExperiment(objPrint, objFile);
 			
 		}
 
+		if (done)
+			print_msg.println("Flat view has been generated successfully");
 	}
 
 }

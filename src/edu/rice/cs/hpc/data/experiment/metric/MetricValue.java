@@ -118,7 +118,7 @@ public MetricValue(double value)
 	
 public boolean isAvailable()
 {
-	return (this != MetricValue.NONE) && this.available;
+	return ( (this != MetricValue.NONE) && this.available && (this.value != 0.0) );
 }
 
 

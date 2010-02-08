@@ -72,7 +72,7 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 			//--------------------------------------------------
 			// print the scope tag, attributes and values
 			//--------------------------------------------------
-			this.objOutputStream.print(indent + "<" + initial + " ");
+			this.objOutputStream.print(indent + "<" + initial);
 			PrintFileXML.printAttribute(objOutputStream, "i", scope.hashCode());
 			
 			if (name)
@@ -92,7 +92,7 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 				if (objFile != null)
 					PrintFileXML.printAttribute(objOutputStream, "f", objFile.getFilename());
 			}
-			this.objOutputStream.println(" >" );
+			this.objOutputStream.println(">" );
 
 			//--------------------------------------------------
 			// print the metric values of this scope
@@ -124,10 +124,10 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 			MetricValue value = scope.getMetricValue(i);
 			if (value.isAvailable()) {
 				BaseMetric m = objExperiment.getMetric(i);
-				this.objOutputStream.print(indent + "<M ");
+				this.objOutputStream.print(indent + "<M");
 				PrintFileXML.printAttribute(this.objOutputStream, "n", m.getIndex());
 				PrintFileXML.printAttribute(this.objOutputStream, "v", value.getValue());
-				this.objOutputStream.print(" />");
+				this.objOutputStream.print("/>");
 			}
 		}
 		this.objOutputStream.println();

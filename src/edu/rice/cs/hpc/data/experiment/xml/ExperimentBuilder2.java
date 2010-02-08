@@ -987,17 +987,27 @@ public class ExperimentBuilder2 extends Builder
 
 
 	private int current_cs_id = Integer.MAX_VALUE - 1;
+	
+	/*************************************************************************
+	 * Retrieve the ID of a call site.
+	 * In normal case, the ID is the hashcode of its call site (line scope). 
+	 * But, in case of there are multiple calls in one line statement, we need
+	 * to generate different ID for each call sites.
+	 * @param ls
+	 * @param cs
+	 * @return
+	 *************************************************************************/
 	private int getCallSiteID ( LineScope ls, ProcedureScope cs ) {
 		String sName = ls.getName() + "/" + cs.getName();
 		int scope_id = sName.hashCode();
 		Scope s_old = this.hashCallSiteTable.get( Integer.valueOf(scope_id) );
 		if (s_old != null) {
 			if (s_old.getName().equals(cs.getName())) {
-
+				// the same line, the same ID, the same calls
 			} else {
+				// the same line, different calls. We need to create a new ID
 				scope_id = this.current_cs_id;
 				this.hashCallSiteTable.put(Integer.valueOf(scope_id), cs);
-				System.out.println(" Register " +scope_id + "\t"+ cs +" instead of: " + s_old.getName() + "\t" + sName.hashCode() );
 				this.current_cs_id--;
 			}
 		} else {

@@ -42,6 +42,7 @@
 			<zipfileset dir="lib" prefix="lib"/>
 			<fileset dir="." includes="hpcdata.sh"/>
 		</zip>
+  		<delete dir="lib" />
 	</target>
 
 

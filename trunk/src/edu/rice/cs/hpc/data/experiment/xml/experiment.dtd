@@ -180,6 +180,8 @@
 		s CDATA #IMPLIED
 		l CDATA #IMPLIED
 		v CDATA #IMPLIED>
-      <!-- Note 1: Contained Cs may not contain PFs -->
-      <!-- Note 2: The 's' attribute is not used for flat profiles -->
+
+      <!-- Note 1: Contained Cs contain PFs and no M-->      
+      <!-- Note 2: Contained PFs only contain L, S and M -->
+      <!-- Note 3: The 's' attribute is not used for flat profiles -->
 ]>

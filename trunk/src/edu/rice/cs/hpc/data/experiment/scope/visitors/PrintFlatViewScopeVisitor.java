@@ -54,7 +54,7 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 	public void visit(LoopScope scope, ScopeVisitType vt) { print(scope, "L", vt, false, true); }
 	public void visit(LineScope scope, ScopeVisitType vt) { print(scope, "S", vt, false, true); }
 	public void visit(StatementRangeScope scope, ScopeVisitType vt) { print(scope, "S", vt, false, true); }
-	public void visit(CallSiteScope scope, ScopeVisitType vt) { print(scope, "C", vt, true, false); }
+	public void visit(CallSiteScope scope, ScopeVisitType vt) { printCallSite(scope, vt);	}
 	public void visit(GroupScope scope, ScopeVisitType vt) { print(scope, "G", vt, false, true); }
 
 	/**-------------------------------------------------------------------------------**
@@ -72,32 +72,17 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 			//--------------------------------------------------
 			// print the scope tag, attributes and values
 			//--------------------------------------------------
-			this.objOutputStream.print(indent + "<" + initial);
-			PrintFileXML.printAttribute(objOutputStream, "i", scope.hashCode());
+			Scope objScopeToPrint = scope;
+			if ( (scope instanceof CallSiteScope) && initial.equals("PF") ) 
+				objScopeToPrint = ((CallSiteScope) scope).getProcedureScope();
 			
-			if (name)
-				PrintFileXML.printAttribute(objOutputStream, "n", scope.getName());
-			
-			if (line) {
-				int line1 = scope.getFirstLineNumber();
-				int line2 = scope.getLastLineNumber();
-				if (line1 == line2)
-					PrintFileXML.printAttribute(objOutputStream, "l", line1);
-				else 
-					PrintFileXML.printAttribute(objOutputStream, "l", line1 + "-" + line2);
-			}
-			
-			if (scope instanceof AlienScope) {
-				SourceFile objFile = scope.getSourceFile();
-				if (objFile != null)
-					PrintFileXML.printAttribute(objOutputStream, "f", objFile.getFilename());
-			}
-			this.objOutputStream.println(">" );
+			this.printScopeTag(objScopeToPrint, initial, name, line);
 
 			//--------------------------------------------------
-			// print the metric values of this scope
+			// print the metric values of this scope, except callsite
 			//--------------------------------------------------
-			this.printMetrics(scope);
+			if (initial.charAt(0) != 'C')
+				this.printMetrics(scope);
 			
 			//--------------------------------------------------
 			// increment the indentation for future usage
@@ -112,6 +97,60 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 		}
 	}
 	
+	
+	private void printCallSite( CallSiteScope scope, ScopeVisitType vt) {
+		if (vt == ScopeVisitType.PreVisit)  {
+			print(scope, "C", vt, false, true);
+			//-------------------------------------------------------------------
+			// a call site contains information of line scope AND procedure scope.
+			// we need to generate both
+			//-------------------------------------------------------------------
+			print(scope, "PF", vt, true, true); 
+
+		} else {
+			print(scope, "PF", vt, true, false); 
+			print(scope, "C", vt, true, false);
+			
+		}
+	}
+	
+	/**-------------------------------------------------------------------------------**
+	 * Print the tag of the scope, including its attributes
+	 * @param objScopeToPrint
+	 * @param initial
+	 * @param name
+	 * @param line
+	 **-------------------------------------------------------------------------------**/
+	private void printScopeTag(Scope objScopeToPrint, String initial, boolean name, boolean line) {
+		this.objOutputStream.print(indent + "<" + initial);
+		PrintFileXML.printAttribute(objOutputStream, "i", objScopeToPrint.hashCode());
+		
+		if (name)
+			PrintFileXML.printAttribute(objOutputStream, "n", objScopeToPrint.getName());
+		
+		if (line) {
+			Scope linescope = objScopeToPrint;
+			if ( (objScopeToPrint instanceof CallSiteScope) && initial.equals("C")) {
+				// for call site, we just need to get the line number from its line scope
+				linescope = ((CallSiteScope) objScopeToPrint).getLineScope();
+			}
+			// the original data decrement the line number by 1,
+			// 	in return we need to increment again
+			int line1 = linescope.getFirstLineNumber() + 1;
+			int line2 = linescope.getLastLineNumber() + 1;
+			if (line1 == line2)
+				PrintFileXML.printAttribute(objOutputStream, "l", line1);
+			else 
+				PrintFileXML.printAttribute(objOutputStream, "l", line1 + "-" + line2);
+		}
+		
+		if (objScopeToPrint instanceof AlienScope) {
+			SourceFile objFile = objScopeToPrint.getSourceFile();
+			if (objFile != null)
+				PrintFileXML.printAttribute(objOutputStream, "f", objFile.getFilename());
+		}
+		this.objOutputStream.println(">" );
+	}
 	
 	/***-------------------------------------------------------------------------------**
 	 * 

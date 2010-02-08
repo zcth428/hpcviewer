@@ -31,10 +31,10 @@ public class PrintFileXML {
 	 * @param objPrint
 	 * @param experiment
 	 **--------------------------------------------------------------------------------**/
-	public void print(PrintStream objPrint, Experiment experiment) {
+	public void print(PrintStream objStream, Experiment experiment) {
 		TreeNode []rootChildren = experiment.getRootScopeChildren();
 		if (rootChildren != null) {
-			PrintStream objStream = System.out;
+
 			int nbChildren = rootChildren.length;
 			
 			// flat root must be the last one
@@ -50,7 +50,6 @@ public class PrintFileXML {
 			//---------------------------------------------------------------------------------
 			this.printHeader(objStream, experiment);
 			
-			
 			//---------------------------------------------------------------------------------
 			// print the content
 			//---------------------------------------------------------------------------------
@@ -58,6 +57,9 @@ public class PrintFileXML {
 			PrintFlatViewScopeVisitor objPrintFlat = new PrintFlatViewScopeVisitor(experiment, objStream);
 			flatRoot.dfsVisitScopeTree(objPrintFlat);
 			
+			//---------------------------------------------------------------------------------
+			// print the footer
+			//---------------------------------------------------------------------------------
 			objStream.println("</SecFlatProfileData>\n</SecFlatProfile>\n</HPCToolkitExperiment>");
 		} else {
 			System.err.println("The database contains no information");
@@ -73,7 +75,7 @@ public class PrintFileXML {
 	 * @param value
 	 **--------------------------------------------------------------------------------**/
 	static public void printAttribute(PrintStream objPrint, String attribute, Object value) {
-		objPrint.print(attribute + "=\"" + value + "\" ");
+		objPrint.print(" "+ attribute + "=\"" + value + "\"");
 	}
 
 	
@@ -87,7 +89,7 @@ public class PrintFileXML {
 		BaseMetric metrics[] = experiment.getMetrics();
 		for(int i=0; i<metrics.length; i++) {
 			BaseMetric m = metrics[i];
-			objPrint.print("    <Metric "); 
+			objPrint.print("    <Metric"); 
 			{
 				printAttribute(objPrint, "i", m.getIndex());				
 				printAttribute(objPrint, "n", m.getDisplayName().trim());				
@@ -137,9 +139,18 @@ public class PrintFileXML {
 	 **--------------------------------------------------------------------------------**/
 	private void printHeader(PrintStream objPrint, Experiment experiment) {
 		objPrint.println("<HPCToolkitExperiment version=\"" + experiment.getMajorVersion() + "\">");
-		objPrint.println("<Header n=\"" + experiment.getName()+"\">\n  <Info/>\n</Header>");
-		objPrint.println("<SecHeader>");
+
+		objPrint.print("<Header");
+		PrintFileXML.printAttribute( objPrint, "n", experiment.getName() );
+		objPrint.println(">\n  <Info/>\n</Header>");
+		
+		objPrint.print("<SecFlatProfile ");
+		PrintFileXML.printAttribute( objPrint, "i", "0");
+		PrintFileXML.printAttribute( objPrint, "n", experiment.getName() );
+		objPrint.println(">\n<SecHeader>");
+		
 		this.printMetricTable(objPrint, experiment);
+		
 		objPrint.println("</SecHeader>");
 	}
 
@@ -156,7 +167,6 @@ public class PrintFileXML {
 
 		    byte[] buf=new byte[MAX_BUFFER];
 		    
-            objPrint.println();
 		    //---------------------------------------------------------
 		    // iteratively read DTD file and print partially to the stream
 		    //---------------------------------------------------------

@@ -1,6 +1,8 @@
 package edu.rice.cs.hpc.data.framework;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.xml.PrintFileXML;
@@ -23,15 +25,14 @@ public class Application {
 	 * @param objFile: the XML experiment file
 	 * @return
 	 ***---------------------------------------------------------------------**/
-	private boolean openExperiment(File objFile) {
+	private boolean openExperiment(PrintStream objPrint, File objFile) {
 		Experiment experiment;
-		System.out.println("Opening " + objFile.getAbsolutePath() );
 
 		try {
 			experiment = new Experiment(objFile);	// prepare the experiment
 			experiment.open();						// parse the database
 			experiment.postprocess(false);			// create the flat view
-			this.printFlatView(experiment);
+			this.printFlatView(objPrint, experiment);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -44,9 +45,9 @@ public class Application {
 	 * 
 	 * @param experiment
 	 ***---------------------------------------------------------------------**/
-	private void printFlatView(Experiment experiment) {
-		PrintFileXML objPrint = new PrintFileXML();
-		objPrint.print(System.out, experiment);
+	private void printFlatView(PrintStream objPrint, Experiment experiment) {
+		PrintFileXML objPrintXML = new PrintFileXML();
+		objPrintXML.print(objPrint, experiment);
 	}
 	
 	
@@ -56,22 +57,40 @@ public class Application {
 	 **---------------------------------------------------------------------**/
 	public static void main(String[] args) {
 		Application objApp = new Application();
+		PrintStream objPrint = System.out;
+		String sFilename = args[0];
 		
 		if ( (args == null) || (args.length==0)) {
-			System.out.println("Usage: java -jar hpcdata.jar experiment_database");
+			System.out.println("Usage: hpcdata.sh [-o output_file] experiment_database");
 			return;
+		} else  {
+			for (int i=0; i<args.length; i++) {
+				if (args[i].equals("-o") && (i<args.length-1)) {
+					String sOutput = args[i+1];
+					try {
+						objPrint = new PrintStream( sOutput );
+						i++;
+					} catch (FileNotFoundException e) {
+						System.err.println("Error: cannot create file " + sOutput);
+						return;
+					}
+				} else {
+					sFilename = args[i];
+				}
+			}
 		}
-		String sFilename = args[0];
+		//------------------------------------------------------------------------------------
 		// open the experiment if possible
+		//------------------------------------------------------------------------------------
 		File objFile = new File(sFilename);
 		if (objFile.isDirectory()) {
 			File files[] = Util.getListOfXMLFiles(sFilename);
 			boolean done = false;
 			for (int i=0; i<files.length && !done; i++) {
-				done = objApp.openExperiment(files[i]);
+				done = objApp.openExperiment(objPrint, files[i]);
 			}
 		} else {
-			objApp.openExperiment(objFile);
+			objApp.openExperiment(objPrint, objFile);
 			
 		}
 

@@ -16,6 +16,10 @@ public class InclusiveOnlyMetricPropagationFilter implements MetricValuePropagat
 	}
 
 	public boolean doPropagation(Scope source, Scope target, int src_idx, int targ_idx) {
+		//-------------------------------------------------------------------------
+		// This part looks suspicious: the target (flat) will never be the same as the 
+		// 		source (cct). So far there is no proof that there is a path that return false
+		//-------------------------------------------------------------------------
 		if ((source instanceof LineScope)) {
 		   Scope parent = source.getParentScope();
 		   if ((parent != null) && (parent instanceof CallSiteScope)) {

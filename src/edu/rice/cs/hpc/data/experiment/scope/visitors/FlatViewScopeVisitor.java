@@ -104,11 +104,18 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				this.htFlatCostAdded.remove(id);
 			}
 
-			FlatScopeInfo objFlat = this.getFlatCounterPart(scope, id);
+			FlatScopeInfo objFlat = this.getFlatCounterPart(scope, scope, id);
+			if (scope instanceof CallSiteScope) {
+				ProcedureScope proc_cct_s = ((CallSiteScope) scope).getProcedureScope();
+				this.getFlatCounterPart(proc_cct_s, scope, id);
+			}
 			
+			//--------------------------------------------------------------------------
+			// Aggregating metrics to load module and flat scope
+			// Notes: this is not correct for Derived incremental metrics
+			//--------------------------------------------------------------------------
 			addCostIfNecessary(objFlat.flat_lm, scope, add_inclusive, add_exclusive);
 			addCostIfNecessary(objFlat.flat_file, scope, add_inclusive, add_exclusive);
-			addCostIfNecessary(objFlat.flat_proc, scope, add_inclusive, add_exclusive);
 
 		} else {
 			
@@ -208,15 +215,15 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				
 			} else {
 				
-				LoadModuleScope flat_parent_lm = (LoadModuleScope) flat_info_s.flat_file.getParentScope();
-				if (flat_parent_lm == null) {
-					// this will be very unlikely, unless we have bugs
-					throw new RuntimeException("Flat view creation: " + flat_info_s.flat_file+"\t CCT: " + cct_s);					
-				}
-				// check if the load module the existing file is the same with the scope's load module
-				if (flat_parent_lm.hashCode() != flat_info_s.flat_lm.hashCode() ) {
-					// the same file in different load module scope !!!
-					flat_info_s.flat_file = this.createFileScope(src_file, flat_info_s.flat_lm);
+				Scope parent_lm = flat_info_s.flat_file.getParentScope();
+				if (parent_lm instanceof LoadModuleScope) {
+					LoadModuleScope flat_parent_lm = (LoadModuleScope) parent_lm;
+
+					// check if the load module the existing file is the same with the scope's load module
+					if (flat_parent_lm.hashCode() != flat_info_s.flat_lm.hashCode() ) {
+						// the same file in different load module scope !!!
+						flat_info_s.flat_file = this.createFileScope(src_file, flat_info_s.flat_lm);
+					}
 				}
 
 			}
@@ -283,7 +290,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @param proc_cct_s
 	 * @return
 	 **-----------------------------------------------------------------------------------**/
-	private FlatScopeInfo getFlatCounterPart( Scope cct_s, int id) {
+	private FlatScopeInfo getFlatCounterPart( Scope cct_s, Scope cct_s_metrics, int id) {
 		
 		if (cct_s instanceof ProcedureScope) {
 			// -----------------------------------------------------------------------------
@@ -298,6 +305,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			// -----------------------------------------------------------------------------
 			if (is_alien)
 				objFlat.flat_s.iCounter++; 
+			this.addCostIfNecessary(objFlat.flat_s, cct_s_metrics, true, true);
 			return objFlat;
 			
 		} else {
@@ -364,7 +372,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			if ((objFlat.flat_s instanceof CallSiteScope) && (cct_s instanceof CallSiteScope))
 				add_exclusive = false;
 
-			this.addCostIfNecessary(objFlat.flat_s, cct_s, true, add_exclusive);
+			this.addCostIfNecessary(objFlat.flat_s, cct_s_metrics, true, add_exclusive);
 			return objFlat;
 		}
 		
@@ -479,13 +487,22 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			return;
 		
 		flat_s.iCounter++;
+	
+		/*
+		if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
+			System.out.println(flat_s + " <-- " + cct_s + "\t1-before:\t" + cct_s.getMetricValue(7).getValue()+"\t" + cct_s.getMetricValue(8).getValue());
+*/		
+		
 		if (isOutermostInstance(flat_s)) {
 			if (add_inclusive)
 				flat_s.combine(cct_s, inclusive_filter);
 		}
 		if (add_exclusive)
 			flat_s.combine(cct_s, exclusive_filter);
-		
+/*
+		if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
+			System.out.println(flat_s + " <-- " + cct_s + "\t2-after:\t" + cct_s.getMetricValue(7).getValue()+"\t" + cct_s.getMetricValue(8).getValue());
+*/
 		//-----------------------------------------------------------------------
 		// store the flat scopes that have been updated  
 		//-----------------------------------------------------------------------

@@ -13,7 +13,15 @@ public class SqrtFunction implements Function {
 	Returns the square root of the value at index location 0.
 	*/
 	public double of(double[] d, int numParam) {
-		return java.lang.Math.sqrt(d[0]);
+		double root = d[0];
+		//----------------------------------------------------------
+		// hack: if the root is negative, we need to return 0
+		//----------------------------------------------------------
+		if (root< 0.0) {
+			//System.err.println("neg sqrt " + root);
+			return 0.0;
+		}
+		return java.lang.Math.sqrt(root);
 	}
 
 	/**

@@ -2,6 +2,8 @@ package edu.rice.cs.hpc.data.framework;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -73,13 +75,29 @@ public class Application {
 			for (int i=0; i<args.length; i++) {
 				if (args[i].equals("-o") && (i<args.length-1)) {
 					String sOutput = args[i+1];
+					File f = new File(sOutput);
+					if (!f.exists())
+						try {
+							f.createNewFile();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+							return;
+						}
 					try {
-						objPrint = new PrintStream( sOutput );
-						std_output = false;
-						i++;
-					} catch (FileNotFoundException e) {
-						System.err.println("Error: cannot create file " + sOutput);
-						return;
+						FileOutputStream file = new FileOutputStream(sOutput);
+						try {
+							objPrint = new PrintStream( file );
+							std_output = false;
+							i++;
+						} catch (Exception e) {
+							System.err.println("Error: cannot create file " + sOutput + ": " +e.getMessage());
+							return;
+						}
+
+					
+					} catch (FileNotFoundException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
 					}
 				} else {
 					sFilename = args[i];

@@ -71,15 +71,15 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	public void visit(GroupScope scope, ScopeVisitType vt) 			{ }
 
 	public void visit(CallSiteScope scope, ScopeVisitType vt) 		{ 
-		add(scope,vt, true, false); 
+		add(scope,vt, true, true); 
 	}
 	public void visit(LineScope scope, ScopeVisitType vt) 			{ 
 		boolean to_be_added = !(scope.getParentScope() instanceof LoopScope);
-		add(scope,vt, to_be_added, true); 
+		add(scope,vt, true, true); 
 	}
 	public void visit(LoopScope scope, ScopeVisitType vt) 			{
 		boolean add_inclusive = !(scope.getParentScope() instanceof LoopScope);
-		add(scope,vt, add_inclusive, false); 
+		add(scope,vt, true, true); 
 	}
 	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{
 		add(scope,vt, true, false); 
@@ -107,10 +107,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			}
 
 			FlatScopeInfo objFlat = this.getFlatCounterPart(scope, scope, id);
-			if (scope instanceof CallSiteScope) {
-				ProcedureScope proc_cct_s = ((CallSiteScope) scope).getProcedureScope();
-				this.getFlatCounterPart(proc_cct_s, scope, id);
-			}
 			
 			//--------------------------------------------------------------------------
 			// Aggregating metrics to load module and flat scope
@@ -118,6 +114,14 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//--------------------------------------------------------------------------
 			addCostIfNecessary(objFlat.flat_lm, scope, add_inclusive, add_exclusive);
 			addCostIfNecessary(objFlat.flat_file, scope, add_inclusive, add_exclusive);
+
+			//--------------------------------------------------------------------------
+			// For call site, we need also to create its procedure scope
+			//--------------------------------------------------------------------------
+			if (scope instanceof CallSiteScope) {
+				ProcedureScope proc_cct_s = ((CallSiteScope) scope).getProcedureScope();
+				this.getFlatCounterPart(proc_cct_s, scope, id);
+			}
 
 		} else {
 			
@@ -230,29 +234,10 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 
 			}
 			
-			//-----------------------------------------------------------------------------
-			// Initialize the flat proc scope
-			//-----------------------------------------------------------------------------
-			if (cct_s instanceof CallSiteScope)
-				// we need to know which procedure that calls this subroutine
-				proc_cct_s = this.findEnclosingProcedure(cct_s);
+			flat_info_s.flat_s = cct_s.duplicate();
 			
-			flat_info_s.flat_proc = this.htFlatProcScope.get(proc_cct_s.hashCode());
-			if (flat_info_s.flat_proc == null) {
-				// create a new flat procedure scope
-				flat_info_s.flat_proc = (ProcedureScope) proc_cct_s.duplicate();
-				this.addToTree(flat_info_s.flat_file, flat_info_s.flat_proc);
-				this.htFlatProcScope.put(proc_cct_s.hashCode(), flat_info_s.flat_proc);
-			}
-			
-			//-----------------------------------------------------------------------------
-			// Initialize the flat scope
-			//-----------------------------------------------------------------------------
-			if (cct_s instanceof ProcedureScope) {
-				flat_info_s.flat_s = flat_info_s.flat_proc;
-			} else {
-				flat_info_s.flat_s = cct_s.duplicate();
-			}
+			if (cct_s instanceof ProcedureScope)
+				this.addToTree(flat_info_s.flat_file, flat_info_s.flat_s);
 			
 			//-----------------------------------------------------------------------------
 			// save the info into hashtable
@@ -294,90 +279,45 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 **-----------------------------------------------------------------------------------**/
 	private FlatScopeInfo getFlatCounterPart( Scope cct_s, Scope cct_s_metrics, int id) {
 		
-		if (cct_s instanceof ProcedureScope) {
-			// -----------------------------------------------------------------------------
-			// in case of procedure scope (like main):
-			//  we create the load module, file scope and proc scope, and that's all
-			// -----------------------------------------------------------------------------
-			boolean is_alien = ((ProcedureScope) cct_s).isAlien(); 
-			FlatScopeInfo objFlat = this.getFlatScope(cct_s);
-			// -----------------------------------------------------------------------------
-			// Bug in hpcprof: it is possible to have two main procedures in a database !!!
-			// mark that this is a special case: do not aggregate the children into this node.
-			// -----------------------------------------------------------------------------
-			if (is_alien)
-				objFlat.flat_s.iCounter++; 
-			this.addCostIfNecessary(objFlat.flat_s, cct_s_metrics, true, true);
-			return objFlat;
-			
-		} else {
-			// -----------------------------------------------------------------------------
-			// in case of call site, line scope and loop scope:
-			//	
-			// -----------------------------------------------------------------------------
-
-			Scope cct_parent_s = cct_s.getParentScope() ;
-			int parent_id = this.getID(cct_parent_s);
-			FlatScopeInfo objInfo = this.htFlatScope.get(parent_id);
-			if (objInfo == null) {
-				throw new RuntimeException("Flat view: unable to find the scope for " + cct_parent_s);
-			}
-			
-			Scope flat_enc_s = objInfo.flat_s;
-			if (flat_enc_s == null) {
-				throw new RuntimeException("FSV unlikely enc null: " + cct_s.getName() + " parent: " + cct_parent_s.getName());
-			}
-			if ( cct_parent_s instanceof ProcedureScope ) {
+		// -----------------------------------------------------------------------------
+		// Get the flat scope of the parent 	
+		// -----------------------------------------------------------------------------
+		Scope cct_parent_s = cct_s.getParentScope() ;
+		Scope flat_enc_s = null;
+		
+		if (cct_parent_s != null) {
+			if (cct_parent_s instanceof RootScope) {
 				// ----------------------------------------------
-				// will be added to the tree directly
+				// main procedure
 				// ----------------------------------------------
-				assert (flat_enc_s != null);
-				// if the cct parent is a procedure (s.a main() ), then do not add the child into the flat
-
-			} else if ( cct_parent_s instanceof CallSiteScope ) {
-				// ----------------------------------------------
-				// parent is a call site
-				// ----------------------------------------------
-				ProcedureScope proc_cct_s = this.findEnclosingProcedure(cct_s); 
-				CallSiteScope cct_cs  = (CallSiteScope) cct_parent_s;
-				ProcedureScope cct_ps = cct_cs.getProcedureScope();
-				
-				if (cct_ps.isAlien()) {
-					FlatScopeInfo flat_cct_ps = this.getFlatScope(cct_ps);
-					this.addToTree(flat_enc_s, flat_cct_ps.flat_s);
-					flat_enc_s = flat_cct_ps.flat_s;
-				} else if (cct_ps == proc_cct_s) {
-					flat_enc_s = this.getFlatScope(proc_cct_s).flat_proc;
-				} else {
-					System.err.println( "FSV: unknown callsite parent : " + cct_ps + " scope: " + cct_s);
-				}
-				
+				flat_enc_s = null;
 			} else {
-				
-				// ----------------------------------------------
-				// parent is unknown. can be a line scope or loop scope
-				// ----------------------------------------------
-				FlatScopeInfo flat_enc_info = this.getFlatScope(cct_parent_s);
-				flat_enc_s = flat_enc_info.flat_s;
+				if ( cct_parent_s instanceof CallSiteScope ) {
+					// ----------------------------------------------
+					// parent is a call site
+					// ----------------------------------------------
+					ProcedureScope proc_cct_s = this.findEnclosingProcedure(cct_s); 
+					FlatScopeInfo flat_enc_info = this.getFlatScope(proc_cct_s);
+					flat_enc_s = flat_enc_info.flat_s;
+
+				} else {					
+					// ----------------------------------------------
+					// parent is a line scope or loop scope or procedure scope
+					// ----------------------------------------------
+					FlatScopeInfo flat_enc_info = this.getFlatScope(cct_parent_s);
+					flat_enc_s = flat_enc_info.flat_s;
+				}
+
 			}
-			FlatScopeInfo objFlat = this.getFlatScope(cct_s);
+		}
+
+		FlatScopeInfo objFlat = this.getFlatScope(cct_s);
+
+		if (flat_enc_s != null)
 			this.addToTree(flat_enc_s, objFlat.flat_s);
 
-			//---------------------------------------------------------------------------------------------------
-			// in the calling context view, exclusive costs are used to show the cost at the callsite and for
-			// the immediate call. for the flat view, we only want to propagate exclusive costs for the call site,
-			// not the cost of the call. thus, don't propagate exclusive costs from the calling context tree to
-			// the flat view; only propagate inclusive costs.
-			// 2008 06 07 - John Mellor-Crummey
-			//---------------------------------------------------------------------------------------------------
-			boolean add_exclusive = true;
-			if ((objFlat.flat_s instanceof CallSiteScope) && (cct_s instanceof CallSiteScope))
-				add_exclusive = false;
-
-			this.addCostIfNecessary(objFlat.flat_s, cct_s_metrics, true, add_exclusive);
-			return objFlat;
-		}
-		
+		this.addCostIfNecessary(objFlat.flat_s, cct_s_metrics, true, true);
+		return objFlat;
 		
 	}
 	
@@ -535,7 +475,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private class FlatScopeInfo {
 		LoadModuleScope flat_lm;
 		FileScope flat_file;
-		ProcedureScope flat_proc;
 		Scope flat_s;
 	}
 }

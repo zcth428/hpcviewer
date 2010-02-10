@@ -39,6 +39,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private InclusiveOnlyMetricPropagationFilter inclusive_filter;
 	private ExclusiveOnlyMetricPropagationFilter exclusive_filter;
 	
+	private boolean debug = false;
+	
 	/****---------------------------------------------------------------------------------------------****
 	 * Constructor
 	 * @param exp: experiment
@@ -488,8 +490,10 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		
 		flat_s.iCounter++;
 			
-		if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
-			System.out.println(flat_s + " <-- " + cct_s + "\t1-before:\t" + cct_s.getMetricValue(7).getValue()+"\t" + cct_s.getMetricValue(8).getValue());
+		if (debug)
+			if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
+				System.out.println(flat_s.hashCode() + "\t" + flat_s + " <-- " + cct_s.hashCode() + "\t" + cct_s + "\t1-before:\t" + 
+					cct_s.getMetricValue(7).getValue()+"\t" + cct_s.getMetricValue(8).getValue());
 			
 		if (isOutermostInstance(flat_s)) {
 			if (add_inclusive)
@@ -498,8 +502,9 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		if (add_exclusive)
 			flat_s.combine(cct_s, exclusive_filter);
 
-		if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
-			System.out.println(flat_s + " <-- " + cct_s + "\t2-after:\t" + flat_s.getMetricValue(7).getValue()+"\t" + flat_s.getMetricValue(8).getValue());
+		if (debug)
+			if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
+				System.out.println(flat_s + " <-- " + cct_s + "\t2-after:\t" + flat_s.getMetricValue(7).getValue()+"\t" + flat_s.getMetricValue(8).getValue());
 
 		//-----------------------------------------------------------------------
 		// store the flat scopes that have been updated  

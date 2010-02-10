@@ -1202,7 +1202,7 @@ public class ExperimentBuilder2 extends Builder
 						firstLn-1, lastLn-1, id);
 
 			if (isCallSite) {
-				this.beginScope_internal(scope, true);
+				this.beginScope_internal(scope, false);
 			} else {
 				this.beginScope(scope);
 			}

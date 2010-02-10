@@ -22,6 +22,9 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
 /*************************************************************************************************
  * Class to create Flat tree based on calling context tree
+ * 
+ * REMARK: THIS CODE IS NOT COMPATIBLE WITH OLD DATABASE !!!
+ *  
  * @author laksonoadhianto
  *
  *************************************************************************************************/
@@ -29,7 +32,6 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 public class FlatViewScopeVisitor implements IScopeVisitor {
 	private Hashtable<Integer, LoadModuleScope> htFlatLoadModuleScope;
 	private Hashtable<Integer, FileScope> htFlatFileScope;
-	private Hashtable<Integer, ProcedureScope> htFlatProcScope;
 	private Hashtable<Integer, FlatScopeInfo> htFlatScope;
 	private Hashtable<Integer, Scope[]> htFlatCostAdded;
 	
@@ -51,7 +53,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		
 		this.htFlatLoadModuleScope = new Hashtable<Integer, LoadModuleScope>();
 		this.htFlatFileScope = new Hashtable<Integer, FileScope>();
-		this.htFlatProcScope = new Hashtable<Integer, ProcedureScope> ();
 		this.htFlatScope     = new Hashtable<Integer, FlatScopeInfo>();
 		this.htFlatCostAdded = new Hashtable<Integer, Scope[]>();
 		
@@ -74,15 +75,13 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		add(scope,vt, true, true); 
 	}
 	public void visit(LineScope scope, ScopeVisitType vt) 			{ 
-		boolean to_be_added = !(scope.getParentScope() instanceof LoopScope);
 		add(scope,vt, true, true); 
 	}
 	public void visit(LoopScope scope, ScopeVisitType vt) 			{
-		boolean add_inclusive = !(scope.getParentScope() instanceof LoopScope);
 		add(scope,vt, true, true); 
 	}
 	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{
-		add(scope,vt, true, false); 
+		add(scope,vt, true, true); 
 	}
 
 	

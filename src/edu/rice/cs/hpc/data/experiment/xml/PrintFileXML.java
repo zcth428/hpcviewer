@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.data.experiment.xml;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -22,7 +25,7 @@ public class PrintFileXML {
 	//-----------------------------------------------------------------------
 	// Constants
 	//-----------------------------------------------------------------------
-	final private String DTD_FILE_NAME = "/edu/rice/cs/hpc/data/experiment/xml/experiment.dtd";
+	final private String DTD_FILE_NAME = "experiment.dtd";
 	final private int MAX_BUFFER = 1024;
 
 	
@@ -162,34 +165,52 @@ public class PrintFileXML {
 	 * @param objPrint
 	 **---------------------------------------------------------------------**/
 	private void printDTD(PrintStream objPrint) {
-		InputStream objFile = this.getClass().getResourceAsStream(DTD_FILE_NAME);
-		if ( objFile != null ) {
 
-		    byte[] buf=new byte[MAX_BUFFER];
-		    
-		    //---------------------------------------------------------
-		    // iteratively read DTD file and print partially to the stream
-		    //---------------------------------------------------------
-            while (true) {
-                int numRead = 0;
-				try {
-					numRead = objFile.read(buf, 0, buf.length);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-                if (numRead <= 0) {
-                    break;
-                } else {
-                    String dtd = new String(buf, 0, numRead);
-                    objPrint.print(dtd);
-                }
+	    //---------------------------------------------------------
+		// finding and opeing DTD file (quite painful for jar file
+	    //---------------------------------------------------------
 
-            }
-		    //---------------------------------------------------------
-            // DTD has been printed, we need a new line to make nice format 
-		    //---------------------------------------------------------
-            objPrint.println();
+		String hpc_dir = System.getenv("HPCVIEWER_DIR_PATH");
+		if (hpc_dir == null) return;
+		
+		InputStream objFile = null;
+		File file = new File(hpc_dir + DTD_FILE_NAME);
+		if (file == null)
+			return;
+		else {
+			try {
+				objFile = new FileInputStream(file);
+			} catch (FileNotFoundException e) {
+				// we don't need DTD. let's exit silently
+				return;
+			}
 		}
+
+	    byte[] buf=new byte[MAX_BUFFER];
+	    
+	    //---------------------------------------------------------
+	    // iteratively read DTD file and print partially to the stream
+	    //---------------------------------------------------------
+        while (true) {
+            int numRead = 0;
+			try {
+				numRead = objFile.read(buf, 0, buf.length);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+            if (numRead <= 0) {
+                break;
+            } else {
+                String dtd = new String(buf, 0, numRead);
+                objPrint.print(dtd);
+            }
+
+        }
+	    //---------------------------------------------------------
+        // DTD has been printed, we need a new line to make nice format 
+	    //---------------------------------------------------------
+        objPrint.println();
+
 	}
 	
 

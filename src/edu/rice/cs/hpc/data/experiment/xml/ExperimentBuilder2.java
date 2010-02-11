@@ -1245,32 +1245,29 @@ public class ExperimentBuilder2 extends Builder
 		String value = getAttributeByName(VALUE_ATTRIBUTE, attributes, values);
 		double actualValue  = Double.valueOf(value).doubleValue();
 		
-		{
-			BaseMetric metric = this.experiment.getMetric(internalName);
-			// get the sample period
-			double prd = metric.getSamplePeriod();
+		BaseMetric metric = this.experiment.getMetric(internalName);
+		// get the sample period
+		double prd = metric.getSamplePeriod();
 
-			// multiple by sample period 
-			actualValue = prd * actualValue;
-			MetricValue metricValue = new MetricValue(actualValue);
-			Scope objCurrentScope = this.getCurrentScope();
-			objCurrentScope.setMetricValue(metric.getIndex(), metricValue);
+		// multiple by sample period 
+		actualValue = prd * actualValue;
+		MetricValue metricValue = new MetricValue(actualValue);
+		Scope objCurrentScope = this.getCurrentScope();
+		
+		objCurrentScope.setMetricValue(metric.getIndex(), metricValue);
 
-			// update also the self metric value for calling context only
-			if (metric.getMetricType() == MetricType.INCLUSIVE) {
-			//if (this.csviewer) {
-				//int intShortName = Integer.parseInt(internalName);
-				//int newShortName = intShortName + this.maxNumberOfMetrics;
-				if (metric instanceof Metric) {
-					int partner = ( (Metric) metric).getPartnerIndex();
- 					String selfShortName = String.valueOf(partner);//"" + newShortName;
+		// update also the self metric value for calling context only
+		if (metric.getMetricType() == MetricType.INCLUSIVE) {
 
-					BaseMetric selfMetric = this.experiment.getMetric(selfShortName); 
-					MetricValue selfMetricValue = new MetricValue(actualValue);
-					objCurrentScope.setMetricValue(selfMetric.getIndex(), selfMetricValue);  
-				}
+			if (metric instanceof Metric) {
+				int partner = ( (Metric) metric).getPartnerIndex();
+				String selfShortName = String.valueOf(partner);
+
+				BaseMetric selfMetric = this.experiment.getMetric(selfShortName); 
+				MetricValue selfMetricValue = new MetricValue(actualValue);
+				objCurrentScope.setMetricValue(selfMetric.getIndex(), selfMetricValue);  
 			}
-		} 
+		}
 	}
 
 

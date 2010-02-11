@@ -41,6 +41,7 @@
 		<zip destfile="hpcdata.zip">
 			<zipfileset dir="lib" prefix="lib"/>
 			<fileset dir="." includes="hpcdata.sh"/>
+			<fileset dir="../src/edu/rice/cs/hpc/data/experiment/xml/" includes="experiment.dtd" />
 		</zip>
   		<delete dir="lib" />
 	</target>

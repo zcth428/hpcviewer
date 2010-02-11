@@ -89,8 +89,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * Create or add a flat scope based on the scope from CCT
 	 * @param scope
 	 * @param vt
-	 * @param add_inclusive: flag if an inclusive cost had to be combined
-	 * @param add_exclusive: flag if an exclusive cost had to be combined
+	 * @param add_inclusive: flag if an inclusive cost had to be combined in flat/module scope
+	 * @param add_exclusive: flag if an exclusive cost had to be combined in flat/module scope
 	 ****---------------------------------------------------------------------------------------------****/
 	private void add( Scope scope, ScopeVisitType vt, boolean add_inclusive, boolean add_exclusive ) {
 		
@@ -104,7 +104,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			if (flat_info != null) {
 				this.htFlatCostAdded.remove(id);
 			}
-
+			
 			FlatScopeInfo objFlat = this.getFlatCounterPart(scope, scope, id);
 			
 			//--------------------------------------------------------------------------
@@ -391,8 +391,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private void addChild(Scope parent, Scope child) {
 		parent.addSubscope(child);
 		child.setParentScope(parent);
-		if (parent.hashCode() == child.hashCode())
-			System.out.println("add " + parent + " ["+parent.hashCode()+"]" + "\t" + child + " ["+child.hashCode()+"]");
+		
 	}
 	
 	
@@ -444,21 +443,12 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		
 		flat_s.iCounter++;
 			
-		if (debug)
-			if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
-				System.out.println(flat_s.hashCode() + "\t" + flat_s + " <-- " + cct_s.hashCode() + "\t" + cct_s + "\t1-before:\t" + 
-					cct_s.getMetricValue(7).getValue()+"\t" + cct_s.getMetricValue(8).getValue());
-			
 		if (isOutermostInstance(flat_s)) {
 			if (add_inclusive)
 				flat_s.combine(cct_s, inclusive_filter);
 		}
 		if (add_exclusive)
 			flat_s.combine(cct_s, exclusive_filter);
-
-		if (debug)
-			if ( !(flat_s instanceof LoadModuleScope) && !(flat_s instanceof FileScope) )
-				System.out.println(flat_s + " <-- " + cct_s + "\t2-after:\t" + flat_s.getMetricValue(7).getValue()+"\t" + flat_s.getMetricValue(8).getValue());
 
 		//-----------------------------------------------------------------------
 		// store the flat scopes that have been updated  

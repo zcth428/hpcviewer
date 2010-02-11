@@ -54,16 +54,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	//----------------------------------------------------
 
 	public void visit(CallSiteScope scope, ScopeVisitType vt) {
-		ProcedureScope mycallee  = scope.getProcedureScope();
-		Integer objCode = new Integer(mycallee.hashCode());
 		
 		if (vt == ScopeVisitType.PreVisit) { 
-			String procedureName = mycallee.getName();
-			
-			CallSiteScope scopeCall = (CallSiteScope)scope;
-			
+						
 			// if there are no exclusive costs to attribute from this context, we are done here
-			if (!scopeCall.hasNonzeroMetrics()) {
+			if (!scope.hasNonzeroMetrics()) {
 				return; 
 			}
 
@@ -80,45 +75,35 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// tree, the call site is paired with the callee. that's why we
 			// work with a pair of CallSiteScopes at a time (innerCS and enclosingCS)
 			//-----------------------------------------------------------------------
-			trace("determine call path for " + procedureName);
 			CallSiteScope innerCS = scope;
 			LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
 			Scope next = scope.getParentScope();
 			while ( (next != null) && !(next instanceof RootScope)) 
 			{
-				// Laksono 2009.01.14: we only deal with call site OR procedure scope
-				if ( ((next instanceof CallSiteScope) || (next instanceof ProcedureScope))
-						/*!(next instanceof LoopScope) */ && innerCS != null) {
+				// Laksono 2009.01.14: we only deal with call site OR pure procedure scope (no alien)
+				if ( ((next instanceof CallSiteScope) || 
+						(next instanceof ProcedureScope && !((ProcedureScope)next).isAlien()) )
+						 && innerCS != null) {
+
 					CallSiteScope enclosingCS = null;
 					ProcedureScope mycaller = null;
+					
 					if (next instanceof ProcedureScope) {
-						mycaller = (ProcedureScope) next; 
-						//ProcedureScope scopeProc = (ProcedureScope) next;
-						// Laks 2008.11.11: bug fix for adding alien proc into call chain
-						// ----
-						// for alien procedure (such as inlined proc) we need to add it into the call chain.
-						// however, since there is way to convert from Procedure scope into CallSite scope,
-						// 	we are forced to create a new dummy instance of CallSiteScope based on this Procedure 
-						if(mycaller.isAlien()) {
-							// FIXME two dummies instance creation. we hope this doesn't make significant 
-							//			performance degradation !
-							LineScope scopeLine = new LineScope(mycaller.getExperiment(), mycaller.getSourceFile(), 
-									mycaller.getFirstLineNumber(), mycaller.hashCode());
-							enclosingCS = new CallSiteScope(scopeLine, mycaller, CallSiteScopeType.CALL_FROM_PROCEDURE, 0);
-						}
-					}
-					else if (next instanceof CallSiteScope) {
+						mycaller = (ProcedureScope) next;
+						
+					}	else if (next instanceof CallSiteScope) {
 						enclosingCS = (CallSiteScope) next;
 						mycaller = (ProcedureScope) enclosingCS.getProcedureScope(); 
 					}
+					
 					LineScope lineScope = innerCS.getLineScope();
+					
 					if(lineScope != null) {
 						CallSiteScopeCallerView callerScope =
-							new CallSiteScopeCallerView( lineScope /*.duplicate() */, 
-									mycaller,
+							new CallSiteScopeCallerView( lineScope, mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
 
-						this.combine(callerScope, scopeCall);
+						this.combine(callerScope, scope);
 						callPathList.addLast(callerScope);
 						
 						innerCS = enclosingCS;
@@ -133,6 +118,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			mergeCallerPath(callee, callPathList);
 			
 		} else if (vt == ScopeVisitType.PostVisit)  {
+			ProcedureScope mycallee  = scope.getProcedureScope();
+			Integer objCode = new Integer(mycallee.hashCode());
 			
 			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
 			// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
@@ -149,24 +136,18 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	public void visit(FileScope scope, ScopeVisitType vt) { }
 	
 	public void visit(ProcedureScope scope, ScopeVisitType vt) { 
-		ProcedureScope mycallee  = scope;
-		if (vt == ScopeVisitType.PreVisit) {
-			if (!mycallee.isAlien()) {
-				String procedureName = mycallee.getName();
-				trace("handling scope " + procedureName);
 
+		if (vt == ScopeVisitType.PreVisit) {
+			if (!scope.isAlien()) {
 				// if there are no exclusive costs to attribute from this context, we are done here
-				if (!mycallee.hasNonzeroMetrics()) 
+				if (!scope.hasNonzeroMetrics()) 
 					return; 
 
 				// Find (or add) callee in top-level hashtable
-				this.createProcedureIfNecessary(mycallee);
-				
-			} else {
-				
+				this.createProcedureIfNecessary(scope);
 			}
 		} else if (vt == ScopeVisitType.PostVisit){
-			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(mycallee.hashCode()));
+			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(scope.hashCode()));
 			if  (callee != null) {
 				this.decrementCounter(callee);
 
@@ -241,11 +222,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	/****--------------------------------------------------------------------------------****
 	 * Find caller view's procedure of a given scope. 
 	 * If it doesn't exist, create a new one, attach to the tree, and copy the metrics
-	 * @param cct_s
+	 * @param cct_s: either call site or procedure
 	 * @return
 	 ****--------------------------------------------------------------------------------****/
 	private ProcedureScope createProcedureIfNecessary( Scope cct_s ) {
 		ProcedureScope cct_proc_s;
+		
 		if (cct_s instanceof ProcedureScope)
 			cct_proc_s = (ProcedureScope) cct_s;
 		else
@@ -266,13 +248,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			
 			// add to the dictionary
 			calleeht.put(objCode, caller_proc);
-			trace("added top level entry in bottom up tree");
-		} else {
-			//System.err.println("Error: procedure "+cct_s+" has been instantiated more than once.");
 		}
 		
-		// accumulate the metrocs
+		// accumulate the metrics
 		this.combine(caller_proc, cct_s);
+		
 		return caller_proc;
 	}
 	
@@ -283,12 +263,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 * @param cct_s
 	 ****--------------------------------------------------------------------------------****/
 	private void combine(Scope caller_s, Scope cct_s) {
+		
 		if (caller_s.iCounter == 0) {
 			caller_s.combine(cct_s, inclusiveOnly);
-			//caller_s.accumulateMetrics(cct_s, inclusiveOnly, numberOfPrimaryMetrics);
 		}
 		caller_s.combine(cct_s, exclusiveOnly);
-		//caller_s.accumulateMetrics(cct_s, exclusiveOnly, numberOfPrimaryMetrics);
+
 		caller_s.iCounter++;
 	}
 	
@@ -308,12 +288,4 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		}
 	}
 	
-	
-	//----------------------------------------------------
-	// debugging support 
-	//----------------------------------------------------
-
-	void trace(String msg) {
-		if (isdebug) System.out.println(msg);
-	}
 }

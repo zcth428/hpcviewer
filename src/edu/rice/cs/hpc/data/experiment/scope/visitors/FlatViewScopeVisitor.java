@@ -72,16 +72,16 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	public void visit(GroupScope scope, ScopeVisitType vt) 			{ }
 
 	public void visit(CallSiteScope scope, ScopeVisitType vt) 		{ 
-		add(scope,vt, true, true); 
+		add(scope,vt, true, false); 
 	}
 	public void visit(LineScope scope, ScopeVisitType vt) 			{ 
 		add(scope,vt, true, true); 
 	}
 	public void visit(LoopScope scope, ScopeVisitType vt) 			{
-		add(scope,vt, true, true); 
+		add(scope,vt, true, false); 
 	}
 	public void visit(ProcedureScope scope, ScopeVisitType vt) 		{
-		add(scope,vt, true, true); 
+		add(scope,vt, true, false); 
 	}
 
 	
@@ -164,7 +164,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		// get the flat scope
 		//-----------------------------------------------------------------------------
 		int id = this.getID(cct_s);
-
+		
 		FlatScopeInfo flat_info_s = this.htFlatScope.get( id );
 		
 		if (flat_info_s == null) {
@@ -181,6 +181,17 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			ProcedureScope proc_cct_s;
 			if (cct_s instanceof CallSiteScope) {
 				proc_cct_s = ((CallSiteScope)cct_s).getProcedureScope();
+			} else if (cct_s instanceof ProcedureScope) {
+				ProcedureScope cct_proc_s = (ProcedureScope) cct_s;
+				Scope cct_enc_s = cct_s;
+				//---------------------------------------------------------------------------
+				// Old database: if CCT scope is a procedure, and it is an alien, then
+				// 	we need to find the enclosing procedure of its parent
+				//---------------------------------------------------------------------------
+				if (cct_proc_s.isAlien()) {
+					cct_enc_s = cct_proc_s.getParentScope();
+				}
+				proc_cct_s = this.findEnclosingProcedure(cct_enc_s);
 			} else {
 				proc_cct_s = this.findEnclosingProcedure(cct_s);
 			}
@@ -283,7 +294,9 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		// -----------------------------------------------------------------------------
 		Scope cct_parent_s = cct_s.getParentScope() ;
 		Scope flat_enc_s = null;
-		
+		if (id == 2147393731)
+			System.out.println();
+
 		if (cct_parent_s != null) {
 			if (cct_parent_s instanceof RootScope) {
 				// ----------------------------------------------
@@ -295,7 +308,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 					// ----------------------------------------------
 					// parent is a call site
 					// ----------------------------------------------
-					ProcedureScope proc_cct_s = this.findEnclosingProcedure(cct_s); 
+					ProcedureScope proc_cct_s = ((CallSiteScope)cct_parent_s).getProcedureScope(); //this.findEnclosingProcedure(cct_s); 
 					FlatScopeInfo flat_enc_info = this.getFlatScope(proc_cct_s);
 					flat_enc_s = flat_enc_info.flat_s;
 
@@ -378,6 +391,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private void addChild(Scope parent, Scope child) {
 		parent.addSubscope(child);
 		child.setParentScope(parent);
+		if (parent.hashCode() == child.hashCode())
+			System.out.println("add " + parent + " ["+parent.hashCode()+"]" + "\t" + child + " ["+child.hashCode()+"]");
 	}
 	
 	

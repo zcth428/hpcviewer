@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: hpcviewer
+Bundle-SymbolicName: edu.rice.cs.hpc;singleton:=true
+Bundle-Version: 1.0.1
+Bundle-Activator: edu.rice.cs.hpc.viewer.framework.Activator
+Bundle-Vendor: Rice University, Computer Science Department
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.filesystem,
+ org.eclipse.ui.ide,
+ org.eclipse.core.resources,
+ org.apache.xerces,
+ org.eclipse.ui.editors,
+ org.eclipse.jface.text
+Eclipse-LazyStart: true
+Bundle-ClassPath: hpcviewer.jar

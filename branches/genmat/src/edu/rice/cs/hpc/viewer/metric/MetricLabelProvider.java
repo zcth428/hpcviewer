@@ -16,34 +16,25 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
  */
 public class MetricLabelProvider extends ColumnLabelProvider {
 	private BaseMetric metric;	// metric of this column
-	//private Font fontColumn; //$NON-NLS-1$
 
 	public MetricLabelProvider(BaseMetric metricNew /*, Font font*/ ) {
 		super();
-		// TODO Auto-generated constructor stub
+
 		this.metric = metricNew;
-		//this.fontColumn = font;
 	}
 	
 	public String getText(Object element) {
-		String text = "-"; // we don't need this
+		String text = null; // we don't need this
 		if ((metric != null) && (element instanceof Scope.Node)) {
 			Scope.Node node = (Scope.Node) element;
-//			text = metric.getMetricTextValue(node.getScope());
 			Scope scope = node.getScope();
 			text = metric.getMetricTextValue(scope.getMetricValue(metric));
-			/*
-			 * if(metric instanceof Metric) {
-				Scope.Node node = (Scope.Node) element;
-				text = node.getScope().getMetricTextValue(metric);
-			}*/
 		}
 		return text;
 	}
 
 	public Font getFont(Object element) {
 		return Utilities.fontMetric;
-		//return this.fontColumn;
 	}
 
 }

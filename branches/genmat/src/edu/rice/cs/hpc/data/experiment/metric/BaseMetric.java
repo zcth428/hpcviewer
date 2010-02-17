@@ -41,6 +41,9 @@ public abstract class BaseMetric {
 
 	private char unit;
 
+	public enum ValueType {Long, Integer, Double};
+	protected ValueType type;
+	
 	//-------------------------------------------------------------------------------
 	// CONSTRUCTOR
 	//-------------------------------------------------------------------------------
@@ -88,7 +91,7 @@ public abstract class BaseMetric {
 			this.displayFormat = (this.percent ? MetricValueFormat.DEFAULT_PERCENT
                     : MetricValueFormat.DEFAULT_NOPERCENT);			
 		} else {
-			this.displayFormat = new MetricValuePredefinedFormat(format);
+			this.displayFormat = MetricValueFormat.DEFAULT_NOPERCENT;
 		}
 			
 	    this.unit = '0';
@@ -194,10 +197,12 @@ public abstract class BaseMetric {
 	 * @param mv: the value of a metric
 	 *************************************************************************/
 	public String getMetricTextValue(MetricValue mv) {
-		String sText;
-		if(mv.value == 0.0 || mv == MetricValue.NONE || !mv.isAvailable() ) sText = "";
-		else{
-				sText = getDisplayFormat().format(mv);
+		String sText = mv.getHex();
+		if (sText != null) {
+		} else if(mv.value == 0.0 || mv == MetricValue.NONE || !mv.isAvailable() ) {
+			sText = "";
+		} else{
+			sText = getDisplayFormat().format(mv);
 		}
 		return sText;
 	}
@@ -234,6 +239,11 @@ public abstract class BaseMetric {
 	{
 		this.metricType = objType;
 	}
+	
+	public ValueType getValueType() {
+		return this.type;
+	}
+
 	/*************************************************************************
 	 * Laks: need an interface to update the sample period due to change in DTD
 	 * @param s

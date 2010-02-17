@@ -18,6 +18,7 @@ package edu.rice.cs.hpc.data.experiment.metric;
 import edu.rice.cs.hpc.data.util.*;
 
 import java.lang.Comparable;
+import java.math.BigInteger;
 
 
 
@@ -51,6 +52,9 @@ protected boolean percentAvailable;
 /** The actual percentage value if available. */
 protected double percent;
 
+/** store a long long value. Java primitive long only support signed 64 bits.
+ *  we need this class to store the equivalent of C's unsigned long long  **/
+private BigInteger longValue = null;
 
 
 
@@ -104,6 +108,12 @@ public MetricValue(double value)
 
 
 
+public MetricValue(String value)
+{
+	this.setValue(value);
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO VALUE														//
@@ -147,6 +157,13 @@ public void setValue(double value)
 	this.value = value;
 }
 
+
+
+public void setValue(String value)
+{
+	this.available = true;
+	this.longValue = new BigInteger(value);
+}
 
 
 
@@ -204,6 +221,12 @@ public int compareTo(Object other)
 
 	int result;
 	
+	if (this.longValue != null) {
+		if (otherMetricValue.longValue != null) {
+			return this.longValue.compareTo(otherMetricValue.longValue);
+		}
+	}
+	
 	if( this.isAvailable() && otherMetricValue.isAvailable() )
 	{
 		if( this.value > otherMetricValue.value )
@@ -223,7 +246,12 @@ public int compareTo(Object other)
 	return result;
 }
 
-
+public String getHex() 
+{
+	if (this.longValue == null)
+		return null;
+	return this.longValue.toString(16);
+}
 
 
 }

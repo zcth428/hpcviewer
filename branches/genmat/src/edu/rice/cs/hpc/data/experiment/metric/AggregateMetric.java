@@ -145,4 +145,5 @@ public class AggregateMetric extends BaseMetric {
 		}
 		scope.setMetricValue(this.index, mv);
 	}
+	
 }

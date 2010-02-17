@@ -12,7 +12,7 @@ public class MetricValuePredefinedFormat implements IMetricValueFormat {
 	
 	public String format(MetricValue value) {
 		Formatter format_str = new Formatter();
-		format_str = format_str.format(format, value.value);
+//		format_str = format_str.format(format, value.getBigDecimalValue());
 		if (format_str != null) {
 			return format_str.toString();
 		} else {

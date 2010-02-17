@@ -531,6 +531,7 @@ public class ExperimentBuilder2 extends Builder
 		boolean needPartner = this.csviewer;
 		MetricValueDesc mDesc = MetricValueDesc.Raw; // by default is a raw metric
 		String format = null;
+		BaseMetric.ValueType type = BaseMetric.ValueType.Double;
 		
 		for (int i=0; i<attributes.length; i++) {
 			if (attributes[i].charAt(0) == 'i') {
@@ -575,6 +576,10 @@ public class ExperimentBuilder2 extends Builder
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
+			} else if (attributes[i].charAt(0) == 'k') {
+				// type of value
+				if (values[i].charAt(0) != 'n')
+					type = BaseMetric.ValueType.Long;
 			}
 		}
 		
@@ -600,7 +605,7 @@ public class ExperimentBuilder2 extends Builder
 						sDisplayName, 	// display name
 						toShow, format, true, 			// displayed ? percent ?
 						"",						// period (not defined at the moment)
-						objType, partner);
+						objType, partner, type);
 				break;
 			case Derived_Incr:
 				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, false, nbMetrics, objType);
@@ -1250,8 +1255,14 @@ public class ExperimentBuilder2 extends Builder
 		double prd = metric.getSamplePeriod();
 
 		// multiple by sample period 
-		actualValue = prd * actualValue;
-		MetricValue metricValue = new MetricValue(actualValue);
+		MetricValue metricValue;
+		if (metric.getValueType() == BaseMetric.ValueType.Long) {
+			metricValue = new MetricValue(value);
+		} else {
+			actualValue = prd * actualValue;
+			metricValue = new MetricValue(actualValue);			
+		}
+		
 		Scope objCurrentScope = this.getCurrentScope();
 		
 		objCurrentScope.setMetricValue(metric.getIndex(), metricValue);

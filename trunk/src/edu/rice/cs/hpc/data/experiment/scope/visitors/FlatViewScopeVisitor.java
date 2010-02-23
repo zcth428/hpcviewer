@@ -168,6 +168,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		FlatScopeInfo flat_info_s = this.htFlatScope.get( id );
 		
 		if (flat_info_s == null) {
+			boolean need_to_create_file_scope = true;
 			//-----------------------------------------------------------------------------
 			// Initialize the flat scope
 			//-----------------------------------------------------------------------------
@@ -189,66 +190,41 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				// 	we need to find the enclosing procedure of its parent
 				//---------------------------------------------------------------------------
 				if (cct_proc_s.isAlien()) {
-					cct_enc_s = cct_proc_s.getParentScope();
+					need_to_create_file_scope = false;
 				}
 				proc_cct_s = this.findEnclosingProcedure(cct_enc_s);
 			} else {
 				proc_cct_s = this.findEnclosingProcedure(cct_s);
 			}
+
 			if (proc_cct_s == null) {
 				throw new RuntimeException("Cannot find the enclosing procedure for " + cct_s);
 			}
 			
 			//-----------------------------------------------------------------------------
-			// Initialize the load module scope
+			// Initialize the flat scope of this cct
 			//-----------------------------------------------------------------------------
-			LoadModuleScope lm = proc_cct_s.getLoadModule();
-			// some old database do not provide load module information
-			if (lm != null)  {
-				flat_info_s.flat_lm = this.htFlatLoadModuleScope.get(lm.hashCode());
-				if (flat_info_s.flat_lm == null) {
-					// no load module has been created. we allocate a new one
-					flat_info_s.flat_lm = (LoadModuleScope) lm.duplicate();
-					// attach the load module to the root scope
-					this.addToTree(root_ft, flat_info_s.flat_lm);
-					// store this module into our dictionary
-					this.htFlatLoadModuleScope.put(lm.hashCode(), flat_info_s.flat_lm);
-				}
-			}
-
-
-			//-----------------------------------------------------------------------------
-			// Initialize the flat file scope
-			//-----------------------------------------------------------------------------
-			SourceFile src_file = cct_s.getSourceFile();
-			int fileID   = src_file.getFileID();
-			flat_info_s.flat_file = this.htFlatFileScope.get(fileID);
-			//-----------------------------------------------------------------------------
-			// ATTENTION: it is possible that a file can be included into more than one load module
-			//-----------------------------------------------------------------------------
-			if ( (flat_info_s.flat_file == null) ){
-				flat_info_s.flat_file = this.createFileScope(src_file, flat_info_s.flat_lm);
-				
-			} else {
-				
-				Scope parent_lm = flat_info_s.flat_file.getParentScope();
-				if (parent_lm instanceof LoadModuleScope) {
-					LoadModuleScope flat_parent_lm = (LoadModuleScope) parent_lm;
-
-					// check if the load module the existing file is the same with the scope's load module
-					if (flat_parent_lm.hashCode() != flat_info_s.flat_lm.hashCode() ) {
-						// the same file in different load module scope !!!
-						flat_info_s.flat_file = this.createFileScope(src_file, flat_info_s.flat_lm);
-					}
-				}
-
-			}
-			
 			flat_info_s.flat_s = cct_s.duplicate();
 			
-			if (cct_s instanceof ProcedureScope)
-				this.addToTree(flat_info_s.flat_file, flat_info_s.flat_s);
-			
+			if (need_to_create_file_scope) {
+				//-----------------------------------------------------------------------------
+				// Initialize the load module scope
+				//-----------------------------------------------------------------------------
+				flat_info_s.flat_lm = this.createFlatModuleScope(proc_cct_s);
+
+				//-----------------------------------------------------------------------------
+				// Initialize the flat file scope
+				//-----------------------------------------------------------------------------
+				flat_info_s.flat_file = this.createFlatFileScope(proc_cct_s, flat_info_s.flat_lm);
+				
+				//-----------------------------------------------------------------------------
+				// Attach the scope to the file if it is a procedure
+				//-----------------------------------------------------------------------------
+				if (flat_info_s.flat_s instanceof ProcedureScope) {
+					this.addToTree(flat_info_s.flat_file, flat_info_s.flat_s);
+				}
+			}
+
 			//-----------------------------------------------------------------------------
 			// save the info into hashtable
 			//-----------------------------------------------------------------------------
@@ -258,7 +234,66 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		return flat_info_s;
 	}
 
+	
+	/**-----------------------------------------------------------------------------------**
+	 * Create the flat view of a load module
+	 * @param proc_cct_s
+	 * @return
+	 **-----------------------------------------------------------------------------------**/
+	private LoadModuleScope createFlatModuleScope(ProcedureScope proc_cct_s) {
+		LoadModuleScope lm = proc_cct_s.getLoadModule();
+		LoadModuleScope lm_flat_s = null;
+		
+		// some old database do not provide load module information
+		if (lm != null)  {
+			lm_flat_s = this.htFlatLoadModuleScope.get(lm.hashCode());
+			if (lm_flat_s == null) {
+				// no load module has been created. we allocate a new one
+				lm_flat_s = (LoadModuleScope) lm.duplicate();
+				// attach the load module to the root scope
+				this.addToTree(root_ft, lm_flat_s);
+				// store this module into our dictionary
+				this.htFlatLoadModuleScope.put(lm.hashCode(), lm_flat_s);
+			}
+		}
+		return lm_flat_s;
+	}
 
+	/**-----------------------------------------------------------------------------------**
+	 * Create the flat view of a file scope
+	 * @param cct_s
+	 * @param flat_lm
+	 * @return
+	 **-----------------------------------------------------------------------------------**/
+	private FileScope createFlatFileScope(Scope cct_s, LoadModuleScope flat_lm) {
+		SourceFile src_file = cct_s.getSourceFile();
+		int fileID   = src_file.getFileID();
+		FileScope flat_file = this.htFlatFileScope.get(fileID);
+		
+		//-----------------------------------------------------------------------------
+		// ATTENTION: it is possible that a file can be included into more than one load module
+		//-----------------------------------------------------------------------------
+		if ( (flat_file == null) ){
+			flat_file = this.createFileScope(src_file, flat_lm);
+			
+		} else {
+			
+			Scope parent_lm = flat_file.getParentScope();
+			if (parent_lm instanceof LoadModuleScope) {
+				LoadModuleScope flat_parent_lm = (LoadModuleScope) parent_lm;
+
+				// check if the load module the existing file is the same with the scope's load module
+				if (flat_parent_lm.hashCode() != flat_lm.hashCode() ) {
+					// the same file in different load module scope !!!
+					flat_file = this.createFileScope(src_file, flat_lm);
+				}
+			}
+
+		}
+		return flat_file;
+	}
+	
+	
 	/**-----------------------------------------------------------------------------------**
 	 * Create a new file scope (this procedure will NOT check if the file already exists or not) !
 	 * @param src_file
@@ -294,8 +329,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		// -----------------------------------------------------------------------------
 		Scope cct_parent_s = cct_s.getParentScope() ;
 		Scope flat_enc_s = null;
-		if (id == 2147393731)
-			System.out.println();
 
 		if (cct_parent_s != null) {
 			if (cct_parent_s instanceof RootScope) {
@@ -308,7 +341,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 					// ----------------------------------------------
 					// parent is a call site
 					// ----------------------------------------------
-					ProcedureScope proc_cct_s = ((CallSiteScope)cct_parent_s).getProcedureScope(); //this.findEnclosingProcedure(cct_s); 
+					ProcedureScope proc_cct_s = ((CallSiteScope)cct_parent_s).getProcedureScope(); 
 					FlatScopeInfo flat_enc_info = this.getFlatScope(proc_cct_s);
 					flat_enc_s = flat_enc_info.flat_s;
 
@@ -391,7 +424,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private void addChild(Scope parent, Scope child) {
 		parent.addSubscope(child);
 		child.setParentScope(parent);
-		
 	}
 	
 	

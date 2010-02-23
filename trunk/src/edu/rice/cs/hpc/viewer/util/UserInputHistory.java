@@ -17,7 +17,7 @@ public class UserInputHistory {
 
 
     public UserInputHistory(String name) {
-        this(name, 5);
+        this(name, 50);
     }
 
     public UserInputHistory(String name, int depth) {

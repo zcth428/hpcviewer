@@ -37,7 +37,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	//------------- GUI variables
 	private Combo cbName;
 	private Combo cbExpression;
-	//private Text txtExpression;
 	private Button btnPercent;
 	//private Button btnExclusive;
 	//private Button btnInclusive;

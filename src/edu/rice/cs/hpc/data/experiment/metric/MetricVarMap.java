@@ -18,8 +18,9 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
  */
 public class MetricVarMap extends VarMap {
 
-	private Experiment experiment;// = new BaseMetric[2];
+	private Experiment experiment;
 	private Scope scope;
+
 	/**
 	 * 
 	 */
@@ -27,10 +28,6 @@ public class MetricVarMap extends VarMap {
 		super(false);
 	}
 
-	public MetricVarMap(Scope s) {
-		super(false);
-		this.scope = s;
-	}
 	
 	public MetricVarMap(Experiment exp) {
 		super(false);
@@ -42,12 +39,12 @@ public class MetricVarMap extends VarMap {
 		this.scope = s;
 		this.experiment = exp;
 	}
+	
 	/**
 	 * @param caseSensitive
 	 */
 	public MetricVarMap(boolean caseSensitive) {
 		super(caseSensitive);
-		// TODO Auto-generated constructor stub
 	}
 
 	//===========================

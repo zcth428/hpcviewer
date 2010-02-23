@@ -65,9 +65,6 @@ public Metric(Experiment experiment,
 	this.experiment  = experiment;
 	this.shortName   = shortName;
 	this.nativeName  = nativeName;
-	//this.displayName = displayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle
-	//this.displayed   = displayed;
-	//this.percent     = percent;
     this.sampleperiod  = this.convertSamplePeriode(sampleperiod);
     this.metricType     = metricType;
     this.partnerIndex = partnerIndex;
@@ -134,12 +131,6 @@ public void setPartnerIndex(int ei)
 {
 	this.partnerIndex = ei;
 }
-// 2009.10.08: unused routine
-/*
-public Scope getRootScope() {
-	return this.experiment.getRootScope();
-}
-*/
 
 }
 

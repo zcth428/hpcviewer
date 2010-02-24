@@ -333,9 +333,10 @@ protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricVa
 		// Laksono 2009.12.11: aggregate metrc doesn't have partner
 		if (metric instanceof Metric)
 			if (metric.getMetricType() == sourceType) {
-				int partner = ((Metric)metric).getPartnerIndex();
-				if(partner>=this.getMetricCount())
-					partner = metric.getIndex()+1;
+				// laksono hack bug fix: the partner is "always" the next metric
+				int partner = i+1; //((Metric)metric).getPartnerIndex();
+				//if(partner>=this.getMetricCount())
+				//partner = metric.getIndex()+1;
 				copyMetric(scope, scope, i, partner, filter);
 			}
 	}

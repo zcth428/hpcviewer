@@ -92,7 +92,7 @@ public class ExperimentBuilder2 extends Builder
 
 	/** Maximum number of metrics provided by the experiment file.
     We use the maxNumberOfMetrics value to generate short names for the self metrics*/
-	final protected int maxNumberOfMetrics = 100;
+	final protected int maxNumberOfMetrics = 10000;
 
 	// Laks
 	private Token2.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;

@@ -14,6 +14,8 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 public class ScopeLabelProvider extends ColumnLabelProvider {
 	static protected Icons iconCollection = Icons.getInstance();
 	private IWorkbenchWindow windowCurrent;
+	static private boolean debug = false;
+	
 	/**
 	 * Default constructor
 	 */
@@ -40,10 +42,14 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	 * Return the text of the scope tree. By default is the scope name.
 	 */
 	public String getText(Object element) {
-		String text = "-";
+		String text = null;
 		if (element instanceof Scope.Node){
 			Scope.Node node = (Scope.Node) element;
-			text = node.getScope().getName();			
+			if (debug)  {
+				Scope scope = node.getScope();
+				text = "[" + scope.hashCode() + "] " + scope.getName();
+			} else
+				text = node.getScope().getName();			
 		} else
 			text = element.getClass().toString();
 		return text;

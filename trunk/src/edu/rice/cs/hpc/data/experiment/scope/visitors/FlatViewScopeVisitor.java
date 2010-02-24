@@ -145,7 +145,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			if (flat_s.iCounter > 0) {
 				flat_s.iCounter--;
 			} else
-				System.err.println("FVSV dec counter err: " + flat_s.getName()+"\t"+flat_s.iCounter);
+				System.err.println("FVSV dec counter err: [" + flat_s.hashCode() + "] " +  flat_s+"\t"+flat_s.iCounter);
 		}
 	}
 	

@@ -397,7 +397,7 @@ public void postprocess(boolean callerView) {
 		Scope callersViewRootScope = null;
 		if (callerView) {
 			callersViewRootScope = createCallersView(callingContextViewRootScope);
-			copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
+			//copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
 			addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
 		}
 		

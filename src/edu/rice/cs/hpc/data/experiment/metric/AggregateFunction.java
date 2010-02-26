@@ -36,18 +36,20 @@ public class AggregateFunction implements Function {
 	 * @see com.graphbuilder.math.func.Function#of(double[], int)
 	 */
 	public double of(double[] param, int numParam) {
-		// TODO Auto-generated method stub
 		int index = (int) param[0];
-		if(index > this.arrMetrics.length || index<0)
-			throw new java.lang.ArrayIndexOutOfBoundsException("Aggregate(x): the value of x is out of range.");
-		BaseMetric metric = this.arrMetrics[index];
-		// laksono 2009.04.11: fix bug when rootscope is null. 
-		// If the scope is null, it means we are in verification mode 
-		if (this.rootscope != null)
-			return metric.getValue(this.rootscope).getValue();
-		else
-			// the rootscope is null, it is not important what value is returned.
-			return 0.0;
+
+		if (this.rootscope != null) {
+			// laksono 2010.02.26: bug fix: need to access the metric by ID instead of index metric
+			// in this case, the ID is the index given by the formula assuming all ID is integer 
+			String sID = String.valueOf(index); 
+			BaseMetric metric = this.rootscope.getExperiment().getMetric(sID);
+			if (metric != null)
+				return metric.getValue(this.rootscope).getValue();
+		} 
+
+		// the rootscope is null, or the metric doesn't exist 
+		// it is not important what value is returned. (or we send an exception ?)
+		return 0.0;
 	}
 
 	public String toString() {

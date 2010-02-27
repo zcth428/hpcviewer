@@ -60,10 +60,9 @@ public Metric(Experiment experiment,
               boolean displayed, String format, boolean percent,String sampleperiod, MetricType metricType, 
               int partnerIndex)
 {
-	super(displayName, displayed, format, percent, 0);
+	super(shortName, displayName, displayed, format, percent, 0);
 	// creation arguments
 	this.experiment  = experiment;
-	this.shortName   = shortName;
 	this.nativeName  = nativeName;
     this.sampleperiod  = this.convertSamplePeriode(sampleperiod);
     this.metricType     = metricType;
@@ -87,10 +86,9 @@ public Metric(Experiment experiment,
         boolean displayed, String format, boolean percent, double sampleperiod, MetricType metricType, 
         int partnerIndex)
 {
-super(displayName, displayed, format, percent, 0);
+super(shortName, displayName, displayed, format, percent, 0);
 // creation arguments
 this.experiment  = experiment;
-this.shortName   = shortName;
 this.nativeName  = nativeName;
 this.sampleperiod  = sampleperiod;
 this.metricType     = metricType;

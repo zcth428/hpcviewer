@@ -73,7 +73,8 @@ public class MetricVarMap extends VarMap {
 			// Metric variable
 			String sIndex = varName.substring(1);
 			BaseMetric metric = this.experiment.getMetric(sIndex);
-			
+			if (metric == null) 
+				throw new RuntimeException("metric doesn't exist: " + sIndex);
 			if (scope != null) {
 				MetricValue value = metric.getValue(scope);
 				if(value.isAvailable())

@@ -213,6 +213,29 @@ public void setMetrics(List metricList)
 }
 
 
+/*************************************************************************
+ *  finalize the database
+ *  we will reorder the ID of metrics in order to make it more make sense
+ *  	for users (they don't really care the value, as long as it's in 
+ *  	good simple ordered ID)
+ *************************************************************************/
+public void finalizeDatabase()
+{
+	this.metricMap.clear();
+	int nbMetrics = this.metricList.size();
+	for (int i=0; i<nbMetrics; i++) {
+		BaseMetric m = (BaseMetric) this.metricList.get(i);
+		String 	sID;		
+		if (m instanceof AggregateMetric) {
+			// for aggregate metric we don't reorder the ID
+			sID = m.getShortName();
+		} else {
+			sID = String.valueOf(i);
+			m.setShortName(sID);				// rename the ID
+		}
+		this.metricMap.put(sID, m);			// put it back into the map
+	}
+}
 
 
 /*************************************************************************
@@ -484,12 +507,24 @@ private boolean inclusiveNeeded() {
  */
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
-
-	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, this.getMetricCount(), 
+	
+	// laks 2010.02.27: for aggregate metric, we need to know the ID of the last metric, then increment this ID
+	//					for the new metric
+	int metricLastIndex = this.getMetricCount() -1;
+	BaseMetric metricLast = this.getMetric(metricLastIndex);
+	String metricLastID = metricLast.getShortName();
+	metricLastIndex = Integer.valueOf(metricLastID) + 1;
+	metricLastID = String.valueOf(metricLastIndex);
+	
+	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, metricLastID, this.getMetricCount(), 
 			bPercent, MetricType.INCLUSIVE);
-	this.addMetric(objMetric); // add this metric into our list
+	
+	this.metricList.add(objMetric);
+	this.metricMap.put(objMetric.getShortName(), objMetric);
+
+	//this.addMetric(objMetric); // add this metric into our list
 	int iInclusive = this.getMetricCount() - 1;
-	int iExclusive = -1;
+	int iExclusive = -1;		// at the moment we do not support exclusive/inclusive derived metric
 	
 	InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
 	
@@ -624,14 +659,17 @@ public BaseMetric getMetric(String name)
 	return metric;
 }
 
+/* laks: 2010.02.27 we don't need this methos. integrate it with addDerivedMetric()
 public void addMetric(BaseMetric m)
 {
-	m.setIndex(this.getMetricCount());
-	m.setShortName(""+m.getIndex());
+	int index = this.getMetricCount();
+	m.setIndex(index);
+	String sID = String.valueOf(index);
+	//m.setShortName(sID);
 	this.metricList.add(m);
-	this.metricMap.put(m.getShortName(), m);
+	this.metricMap.put(sID, m);
 }
-
+*/
 
 
 //////////////////////////////////////////////////////////////////////////

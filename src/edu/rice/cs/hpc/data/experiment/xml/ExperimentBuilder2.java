@@ -703,6 +703,7 @@ public class ExperimentBuilder2 extends Builder
 		this.endScope();
 		// laks: tell the experiment that we have finished with the dictionary
 		this.experiment.setFileTable(this.hashSourceFileTable);
+		this.experiment.finalizeDatabase();
 	}
 
 

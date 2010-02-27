@@ -51,10 +51,10 @@ public abstract class BaseMetric {
 	 * @param percent
 	 * @param index
 	 ************************************************************************/
-	public BaseMetric(String sDisplayName, boolean displayed, String format, boolean percent, int index) {
+	/*public BaseMetric(String sDisplayName, boolean displayed, String format, boolean percent, int index) {
 	    // Laks 2009.12.11: hack to make the default short name
 		this(String.valueOf(index), sDisplayName, displayed, format, percent, index);
-	}
+	}*/
 	
 	
 	/*************************************************************************

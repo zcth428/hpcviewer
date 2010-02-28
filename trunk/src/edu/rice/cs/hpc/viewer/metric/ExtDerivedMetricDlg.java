@@ -340,7 +340,8 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			// vm.setScope(null);
 			try {
 				double dValue = objExpression.eval( varMap, fctMap);
-				return (dValue == 0);
+				// if there is no exception, we assume everything goes fine
+				return true;
 			} catch(java.lang.Exception e) {
 				// should throw an exception
 				MessageDialog.openError( this.getShell(), "Error: incorrect expression", e.getMessage());

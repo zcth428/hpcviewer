@@ -510,6 +510,7 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 	
 	// laks 2010.02.27: for aggregate metric, we need to know the ID of the last metric, then increment this ID
 	//					for the new metric
+	// if the last metric has index 7 and ID 10, then the new metric has index 8 and ID 11
 	int metricLastIndex = this.getMetricCount() -1;
 	BaseMetric metricLast = this.getMetric(metricLastIndex);
 	String metricLastID = metricLast.getShortName();
@@ -522,7 +523,6 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 	this.metricList.add(objMetric);
 	this.metricMap.put(objMetric.getShortName(), objMetric);
 
-	//this.addMetric(objMetric); // add this metric into our list
 	int iInclusive = this.getMetricCount() - 1;
 	int iExclusive = -1;		// at the moment we do not support exclusive/inclusive derived metric
 	
@@ -530,23 +530,12 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 	
 	for (int i=0; i<this.rootScope.getSubscopeCount(); i++) {
 		RootScope rootScope = (RootScope) this.rootScope.getSubscope(i);
-		if (rootScope.getType() == RootScopeType.Flat) {
-			FlatViewInclMetricPropagationFilter objFlatFilter = new FlatViewInclMetricPropagationFilter(this.getMetrics()) ;
-			DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), objFlatFilter, iInclusive, iExclusive );
-			rootScope.dfsVisitScopeTree(csv);
-		} else if (rootScope.getType() == RootScopeType.CallingContextTree) {
-			DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), rootInclProp, iInclusive, iExclusive );
-			rootScope.dfsVisitScopeTree(csv);
-		} else if (rootScope.getType() == RootScopeType.CallerTree) {
-			DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), rootInclProp, iInclusive, iExclusive );
-			rootScope.dfsVisitScopeTree(csv);
-		} else {
-			// it is very unlikely to have unknown root scope type, but who knows ?
-			System.err.println("Warning: unknown root scope type !");
-			continue;
-		}
-		DerivedPercentVisitor psv = new DerivedPercentVisitor(this.getMetrics(), rootScope, iInclusive, iExclusive);
-		rootScope.dfsVisitScopeTree(psv);
+
+		DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), rootInclProp, iInclusive, iExclusive );
+		rootScope.dfsVisitScopeTree(csv);
+
+		//DerivedPercentVisitor psv = new DerivedPercentVisitor(this.getMetrics(), rootScope, iInclusive, iExclusive);
+		//rootScope.dfsVisitScopeTree(psv);
 
 	}
 

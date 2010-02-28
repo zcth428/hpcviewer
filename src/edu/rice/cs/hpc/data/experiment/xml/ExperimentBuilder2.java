@@ -552,9 +552,6 @@ public class ExperimentBuilder2 extends Builder
 			} else if (attributes[i].charAt(0) == 'v') {
 				// value: raw|final|derived-incr|derived
 				if (values[i].equals("final")) {
-					// TODO: must distinguish between 'raw', 'cct-aggregated' and 'final'
-					//   (in this context, PREAGGREGATE may be a little confusing) 
-					// TODO: use 't' attribute to set to I or E
 					mDesc = MetricValueDesc.Final;
 					needPartner = false;
 				} else if (values[i].equals("derived-incr")) {

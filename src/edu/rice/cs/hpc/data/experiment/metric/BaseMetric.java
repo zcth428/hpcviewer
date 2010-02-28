@@ -44,31 +44,8 @@ public abstract class BaseMetric {
 	//-------------------------------------------------------------------------------
 	// CONSTRUCTOR
 	//-------------------------------------------------------------------------------
-	/*************************************************************************
-	 * 
-	 * @param sDisplayName
-	 * @param displayed
-	 * @param percent
-	 * @param index
-	 ************************************************************************/
-	/*public BaseMetric(String sDisplayName, boolean displayed, String format, boolean percent, int index) {
-	    // Laks 2009.12.11: hack to make the default short name
-		this(String.valueOf(index), sDisplayName, displayed, format, percent, index);
-	}*/
-	
-	
-	/*************************************************************************
-	 * 
-	 * @param sDisplayName
-	 * @param displayed
-	 * @param format
-	 * @param index
-	 *************************************************************************/
-	public BaseMetric(String sDisplayName, boolean displayed, String format, int index) {
-		this(String.valueOf(index), sDisplayName, displayed, format, false, index);
-	}
 
-	
+
 	/*************************************************************************
 	 * 
 	 * @param sID
@@ -82,26 +59,26 @@ public abstract class BaseMetric {
 		this.displayed = displayed;
 		this.percent = percent;
 		this.index = index;
-		
+
 		// format
 		if (format == null) {
 			this.displayFormat = (this.percent ? MetricValueFormat.DEFAULT_PERCENT
-                    : MetricValueFormat.DEFAULT_NOPERCENT);			
+					: MetricValueFormat.DEFAULT_NOPERCENT);			
 		} else {
 			this.displayFormat = new MetricValuePredefinedFormat(format);
 		}
-			
-	    this.unit = '0';
-	    this.shortName = sID;
+
+		this.unit = '0';
+		this.shortName = sID;
 	}
-	
+
 	//-------------------------------------------------------------------------------
 	// METHODS
 	//-------------------------------------------------------------------------------
 	/*************************************************************************
 	 *	Sets the metric's index.
 	 ************************************************************************/
-		
+
 	public void setIndex(int index)
 	{
 		this.index = index;
@@ -110,7 +87,7 @@ public abstract class BaseMetric {
 	/*************************************************************************
 	 *	Returns the metric's index.
 	 ************************************************************************/
-		
+
 	public int getIndex()
 	{
 		return this.index;
@@ -171,8 +148,8 @@ public abstract class BaseMetric {
 	}
 
 	/*************************************************************************
- 	*	Returns whether the metric's display should include a percentage value.
- 	************************************************************************/
+	 *	Returns whether the metric's display should include a percentage value.
+	 ************************************************************************/
 	public boolean getPercent()
 	{
 		return this.percent;
@@ -197,7 +174,7 @@ public abstract class BaseMetric {
 		String sText;
 		if(mv.value == 0.0 || mv == MetricValue.NONE || !mv.isAvailable() ) sText = "";
 		else{
-				sText = getDisplayFormat().format(mv);
+			sText = getDisplayFormat().format(mv);
 		}
 		return sText;
 	}
@@ -225,7 +202,7 @@ public abstract class BaseMetric {
 	{
 		return this.metricType;
 	}
-	
+
 	/*************************************************************************
 	 * 
 	 * @param objType
@@ -270,39 +247,39 @@ public abstract class BaseMetric {
 	 * @return
 	 *************************************************************************/
 	abstract public MetricValue getValue(Scope s);
-	
+
 
 
 	//=================================================================================
 	//		UTILITY METHODS
 	//=================================================================================
 
-/**
-* Verify if the unit is an event or not
-* @return
-*/
-private boolean isUnitEvent() {
-return this.unit == 'e';
-}
+	/**
+	 * Verify if the unit is an event or not
+	 * @return
+	 */
+	private boolean isUnitEvent() {
+		return this.unit == 'e';
+	}
 
-/**
-* convert the input sample period into a double, depending of the unit
-* @param sPeriod
-* @return
-*/
-protected double convertSamplePeriode( String sPeriod ) {
-if (this.isUnitEvent())
-return 1.0;
+	/**
+	 * convert the input sample period into a double, depending of the unit
+	 * @param sPeriod
+	 * @return
+	 */
+	protected double convertSamplePeriode( String sPeriod ) {
+		if (this.isUnitEvent())
+			return 1.0;
 
-double period = 1.0;
-if (sPeriod != null && sPeriod.length()>0) {
-try {
-	period = Double.parseDouble(sPeriod);
-} catch (java.lang.NumberFormatException e) {
-	System.err.println("The sample period is incorrect :" + this.sampleperiod);
-}
-}
-return period;
-}
+		double period = 1.0;
+		if (sPeriod != null && sPeriod.length()>0) {
+			try {
+				period = Double.parseDouble(sPeriod);
+			} catch (java.lang.NumberFormatException e) {
+				System.err.println("The sample period is incorrect :" + this.sampleperiod);
+			}
+		}
+		return period;
+	}
 
 }

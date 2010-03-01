@@ -465,7 +465,7 @@ public class ExperimentBuilder extends Builder
 				int exclusiveIndex = this.metricList.size() + 1;
 
 				new_values[N_sampleperiod]="1";
-				Metric metric = new Metric(this.experiment,
+				Metric metric = new Metric(
 						values[N_shortName], 
 						values[N_nativeName], 
 						values[N_displayName]+" (total)",
@@ -483,7 +483,7 @@ public class ExperimentBuilder extends Builder
 				int newShortName = intShortName + 100;
 				String stringNewShortName = ""+newShortName;
 				String selfMetricDisplayName = values[N_displayName]+" (self)";
-				Metric selfMetric = new Metric(this.experiment,
+				Metric selfMetric = new Metric(
 						stringNewShortName, 
 						values[N_nativeName], 
 						selfMetricDisplayName,
@@ -511,7 +511,7 @@ public class ExperimentBuilder extends Builder
 				new_values[5]=values[2];  //sample period
 
 				int exclusiveIndex = this.metricList.size() + 1;
-				Metric metric = new Metric(this.experiment,
+				Metric metric = new Metric(
 						new_values[N_shortName], new_values[N_nativeName], 
 						new_values[N_displayName]+" (I)",
 						Util.booleanValue(new_values[N_display]), null, 
@@ -535,7 +535,7 @@ public class ExperimentBuilder extends Builder
 				String displayPercentValue = "true";
 
 				Metric selfMetric = 
-					new Metric(this.experiment, 
+					new Metric(
 							stringNewShortName, 
 							new_values[N_nativeName], 
 							selfMetricDisplayName,
@@ -553,7 +553,7 @@ public class ExperimentBuilder extends Builder
 			final int N_shortName = 0, N_nativeName = 1, N_displayName = 2, N_display = 3, N_percent = 4;
 			this.Assert(attributes.length == 5);
 
-			Metric metric = new Metric(this.experiment,
+			Metric metric = new Metric(
 					values[N_shortName], values[N_nativeName], 
 					values[N_displayName],
 					Util.booleanValue(values[N_display]),  null,Util.booleanValue(values[N_percent]), defaultName,

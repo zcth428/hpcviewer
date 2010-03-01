@@ -591,7 +591,7 @@ public class ExperimentBuilder2 extends Builder
 		BaseMetric metricInc;
 		switch (mDesc) {
 			case Final:
-				metricInc = new FinalMetric(this.experiment,
+				metricInc = new FinalMetric(
 						String.valueOf(iSelf),			// short name
 						sNativeName,			// native name
 						sDisplayName, 	// display name
@@ -605,7 +605,7 @@ public class ExperimentBuilder2 extends Builder
 			case Raw:
 			case Derived:
 			default:
-				metricInc = new Metric(this.experiment,
+				metricInc = new Metric(
 						String.valueOf(iSelf),			// short name
 						sNativeName,			// native name
 						sDisplayName, 	// display name
@@ -625,7 +625,7 @@ public class ExperimentBuilder2 extends Builder
 			String sSelfName = String.valueOf(partner);	// I am the partner of the inclusive metric
 			// Laks 2009.02.09: bug fix for not reusing the existing inclusive display name
 			String sSelfDisplayName = sNativeName + " (E)";
-			Metric metricExc = new Metric(this.experiment,
+			Metric metricExc = new Metric(
 					sSelfName,			// short name
 					sSelfDisplayName,	// native name
 					sSelfDisplayName, 	// display name

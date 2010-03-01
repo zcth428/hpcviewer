@@ -35,10 +35,6 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 public class Metric extends BaseMetric
 {
 
-
-/** The experiment owning this metric. */
-protected Experiment experiment;
-
 protected int partnerIndex;
 
 public final static int NO_PARTNER_INDEX = -1;
@@ -55,14 +51,12 @@ public final static int NO_PARTNER_INDEX = -1;
  *	Creates a Metric.
  ************************************************************************/
 	
-public Metric(Experiment experiment,
-              String shortName, String nativeName, String displayName,
+public Metric(String shortName, String nativeName, String displayName,
               boolean displayed, String format, boolean percent,String sampleperiod, MetricType metricType, 
               int partnerIndex)
 {
 	super(shortName, displayName, displayed, format, percent, 0);
 	// creation arguments
-	this.experiment  = experiment;
 	this.nativeName  = nativeName;
     this.sampleperiod  = this.convertSamplePeriode(sampleperiod);
     this.metricType     = metricType;
@@ -81,14 +75,12 @@ public Metric(Experiment experiment,
  * @param metricType
  * @param partnerIndex
  */
-public Metric(Experiment experiment,
-        String shortName, String nativeName, String displayName,
+public Metric( String shortName, String nativeName, String displayName,
         boolean displayed, String format, boolean percent, double sampleperiod, MetricType metricType, 
         int partnerIndex)
 {
 super(shortName, displayName, displayed, format, percent, 0);
 // creation arguments
-this.experiment  = experiment;
 this.nativeName  = nativeName;
 this.sampleperiod  = sampleperiod;
 this.metricType     = metricType;

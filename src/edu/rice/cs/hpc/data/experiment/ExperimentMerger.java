@@ -63,7 +63,7 @@ public class ExperimentMerger {
 			Metric m = (Metric) m1[i];
 			// TODO [me] change (display/native) names (+ Exp#)
 			String shortName = "" + metricList.size();
-			Metric newM = new Metric(exp, shortName, 
+			Metric newM = new Metric(shortName, 
 					m.getNativeName(), m.getDisplayName(),
 					m.getDisplayed(), null, m.getPercent(), 
 					m.getSamplePeriod(), m.getMetricType(), m.getPartnerIndex());
@@ -77,7 +77,7 @@ public class ExperimentMerger {
 			int partnerIndex = m.getPartnerIndex();
 			if (partnerIndex != Metric.NO_PARTNER_INDEX)
 				partnerIndex = m1.length + partnerIndex;
-			Metric newM = new Metric(exp, shortName, 
+			Metric newM = new Metric(shortName, 
 						m.getNativeName(), m.getDisplayName(),
 						m.getDisplayed(), null, m.getPercent(), 
 						m.getSamplePeriod(), metricType, partnerIndex);

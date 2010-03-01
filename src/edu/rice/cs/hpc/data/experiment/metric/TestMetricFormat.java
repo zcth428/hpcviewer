@@ -14,7 +14,7 @@ public class TestMetricFormat {
 	 */
 	public static void main(String[] args) {
 		
-		Metric baseMetric = new Metric(null, "sn", "nn", "dn",
+		Metric baseMetric = new Metric("sn", "nn", "dn",
 				true, null, true, "", MetricType.INCLUSIVE, 1);
 		
 		// test 1: 9.999 should be displayed as 1.0e+01 

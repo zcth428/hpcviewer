@@ -631,7 +631,15 @@ public int getMetricCount()
 	
 public BaseMetric getMetric(int index)
 {
-	return this.metricList.get(index);
+	BaseMetric metric;
+	// laks 2010.03.03: bug fix when the database contains no metrics
+	try {
+		metric = this.metricList.get(index);
+	} catch (Exception e) {
+		// if the metric doesn't exist or the index is out of range, return null
+		metric = null;
+	}
+	return metric;
 }
 
 

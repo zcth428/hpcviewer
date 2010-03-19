@@ -996,7 +996,15 @@ public class ExperimentBuilder2 extends Builder
 	 * @return
 	 *************************************************************************/
 	private int getCallSiteID ( LineScope ls, ProcedureScope cs ) {
+		LoadModuleScope module = cs.getLoadModule();
 		String sName = ls.getName() + "/" + cs.getName();
+		// in case of the same file and the same procedure with different module name
+		// this should fix where we have ~unknown-file~ and ~unknown-procedure~ in 
+		// different modules
+		if (module != null) {
+			sName = module.getModuleName()+ "/" + sName;
+		}
+		
 		int scope_id = sName.hashCode();
 		Scope s_old = this.hashCallSiteTable.get( Integer.valueOf(scope_id) );
 		if (s_old != null) {

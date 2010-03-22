@@ -43,7 +43,7 @@ public class ThreadLevelData {
 			file.seek(position);
 			double metrics[] = new double[num_metrics];
 			for(int i=0; i<num_metrics; i++) {
-				metrics[i] = file.readDouble();
+				metrics[i] = (double)file.readLong();
 				debug_print(i + ": " + metrics[i]);
 			}
 			file.close();

@@ -18,13 +18,13 @@ public class ThreadLevelData {
 	/**---------------------------------------------------------------------------------------**
 	 * get a specific metric for a specific node ID
 	 * @param sFilename
-	 * @param node_index
+	 * @param nodeIndex
 	 * @param metric_index
 	 * @param num_metrics
 	 * @return
 	 **---------------------------------------------------------------------------------------**/
-	public double getMetric(String sFilename, int node_index, int metric_index, int num_metrics) {
-		double []metrics = this.getMetrics(sFilename, node_index, num_metrics);
+	public double getMetric(String sFilename, long nodeIndex, int metric_index, int num_metrics) {
+		double []metrics = this.getMetrics(sFilename, nodeIndex, num_metrics);
 		return metrics[metric_index];
 	}
 	
@@ -32,14 +32,14 @@ public class ThreadLevelData {
 	/**---------------------------------------------------------------------------------------**
 	 * return list of metrics for a specific node 
 	 * @param sFilename
-	 * @param node_index
+	 * @param nodeIndex
 	 * @param num_metrics
 	 * @return
 	 **---------------------------------------------------------------------------------------**/
-	public double[] getMetrics(String sFilename, int node_index, int num_metrics) {
+	public double[] getMetrics(String sFilename, long nodeIndex, int num_metrics) {
 		try {
 			RandomAccessFile file = new RandomAccessFile(sFilename, "r");
-			long position = this.getFilePosition(node_index, num_metrics);
+			long position = this.getFilePosition(nodeIndex, num_metrics);
 			file.seek(position);
 			double metrics[] = new double[num_metrics];
 			for(int i=0; i<num_metrics; i++) {
@@ -59,12 +59,12 @@ public class ThreadLevelData {
 	
 	/**
 	 * get a file position for a given node ID
-	 * @param node_index
+	 * @param nodeIndex
 	 * @param num_metrics
 	 * @return
 	 */
-	private long getFilePosition(int node_index, int num_metrics) {
-		return node_index * num_metrics * DOUBLE_FIELD_SIZE;
+	private long getFilePosition(long nodeIndex, int num_metrics) {
+		return nodeIndex * num_metrics * DOUBLE_FIELD_SIZE;
 	}
 	
 	

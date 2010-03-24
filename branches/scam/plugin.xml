@@ -43,6 +43,13 @@
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
       </view>
+      <view
+            category="hpcviewer"
+            class="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
+            icon="icons/hpcviewerEclipseShadow32.png"
+            id="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
+            name="GraphView">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">

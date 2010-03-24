@@ -4,7 +4,10 @@ import java.io.FileNotFoundException;
 
 //User interface
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 
 //SWT
 import org.eclipse.swt.*;
@@ -14,6 +17,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
@@ -29,10 +33,15 @@ import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ITreeViewerListener;
+import org.eclipse.jface.viewers.ViewerCell;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
@@ -55,6 +64,9 @@ abstract public class BaseScopeView  extends ViewPart {
 	 * bar composite for placing toolbar and tool items
 	 */
 	protected CoolBar objCoolbar;
+	
+	private int selectedColumn = -1;
+	private boolean hasThreadsLevelData = false;
 	
     //======================================================
     // ................ HELPER ............................
@@ -192,6 +204,22 @@ abstract public class BaseScopeView  extends ViewPart {
 
         // Laks 2009.06.22: add new feature to copy selected line to the clipboard
         mgr.add(acCopy);
+        
+        if ( (this.selectedColumn>0) && (this.hasThreadsLevelData) ){
+        	mgr.add( new ScopeViewTreeAction("View Threads data: "+scope.getNodeIndex(), scope) {
+        		public void run() {
+					IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
+					try {
+						BaseMetric metric = myExperiment.getMetric(selectedColumn-1);
+						GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID);
+						objview.setData(myExperiment, scope, metric, myExperiment.getMetricCount());
+					} catch (PartInitException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+        		}
+        	});
+        }
     }
     
     /**
@@ -240,9 +268,6 @@ abstract public class BaseScopeView  extends ViewPart {
     	protected Scope scope;
     	public ScopeViewTreeAction(String sTitle, Scope scopeCurrent) {
     		super(sTitle);
-    		this.scope = scopeCurrent;
-    	}
-    	public void setScopeNode(Scope scopeCurrent) {
     		this.scope = scopeCurrent;
     	}
     }
@@ -295,10 +320,14 @@ abstract public class BaseScopeView  extends ViewPart {
          */
         treeViewer.getTree().addListener(SWT.MouseDown, new Listener(){
         	public void handleEvent(Event event) {
-        		// this doesn't matter on Mac since the OS only one button
-        		// but on other OS, this can make differences
-        		if(event.button != 1) // yes, we only allow the first button 
+
+        		setSelectedColumn(event);
+
+    			if(event.button != 1) {
+        			// yes, we only allow the first button
         			return;
+        		}
+        		
         		// get the item
         		TreeItem []itemsSelected = treeViewer.getTree().getSelection();
         		if(itemsSelected == null || itemsSelected.length==0)
@@ -306,6 +335,7 @@ abstract public class BaseScopeView  extends ViewPart {
         		TreeItem item = itemsSelected[0];
         		Rectangle recImage = item.getImageBounds(0);	// get the image location (if exist)
         		Rectangle recText = item.getTextBounds(0);
+        		
         		// verify if the user click on the icon
         		if(recImage.intersects(event.x, event.y, event.width, event.height)) {
         			// Check the object of the click/select item
@@ -421,6 +451,8 @@ abstract public class BaseScopeView  extends ViewPart {
         this.objViewActions.setTreeViewer(treeViewer);
 
     	updateDisplay();
+
+    	this.hasThreadsLevelData = (myExperiment.getThreadLevelDataManager() != null);
     }
     
 	/**
@@ -512,6 +544,27 @@ abstract public class BaseScopeView  extends ViewPart {
     	return this.treeViewer;
     }
 
+    
+    private void setSelectedColumn(Event event) {
+    	this.selectedColumn = this.getColumnMouseDown(event);
+    }
+
+    /**
+     * Find which column the user has clicked. Return the index of the column if exist,
+     * 		-1 otherwise 
+     * @param event
+     * @return
+     */    
+    private int getColumnMouseDown(Event event) {
+    	Point p = new Point(event.x, event.y);
+    	// the method getCell is only supported in Eclipse 3.4
+    	ViewerCell cell = this.treeViewer.getCell(p); 
+    	if(cell == null)
+    		return -1;
+    	int iPos = cell.getColumnIndex();
+    	return iPos;
+    } 
+
     //======================================================
     // ................ ABSTRACT...........................
     //======================================================
@@ -525,20 +578,4 @@ abstract public class BaseScopeView  extends ViewPart {
      */
     abstract protected ScopeViewActions createActions(Composite parent, CoolBar coolbar);
 
-    /**
-     * Find which column the user has clicked. Return the index of the column if exist,
-     * 		-1 otherwise 
-     * @param event
-     * @return
-     */
-    /*
-    protected int getColumnMouseDown(Event event) {
-    	Point p = new Point(event.x, event.y);
-    	// the method getCell is only supported in Eclipse 3.4
-    	ViewerCell cell = this.treeViewer.getCell(p); 
-    	if(cell == null)
-    		return -1;
-    	int iPos = cell.getColumnIndex();
-    	return iPos;
-    } */
 }

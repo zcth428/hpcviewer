@@ -64,6 +64,8 @@ protected SourceFile sourceFile;
 /** the scope identifier */
 protected int id;
 
+protected long cct_node_index;
+
 /** The first line number of this scope. */
 protected int firstLineNumber;
 
@@ -131,6 +133,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int sc
 	this.stop = false;
 	this.srcCitation = null;
 	this.id = scopeID;
+	
 }
 
 
@@ -435,7 +438,13 @@ public Scope.Node getTreeNode()
 }
 
 
+public void setNodeIndex(long node_index) {
+	this.cct_node_index = node_index;
+}
 
+public long getNodeIndex() {
+	return this.cct_node_index;
+}
 
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO METRICS													//

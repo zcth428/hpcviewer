@@ -104,6 +104,8 @@ public class ExperimentBuilder2 extends Builder
 	
 	private boolean csviewer;
 
+	private long current_node_index = 0;
+	
 //	INITIALIZATION							//
 
 
@@ -1300,11 +1302,16 @@ public class ExperimentBuilder2 extends Builder
 			top.addSubscope(scope);
 			scope.setParentScope(top);
 		}
+		this.setNodeIndex(scope);
 		
 		this.scopeStack.push(scope);
 	}
 
 
+	private void setNodeIndex(Scope scope) {
+		scope.setNodeIndex(current_node_index);
+		this.current_node_index++;
+	}
 
 	/*************************************************************************
 	 *	Ends a newly parsed scope.

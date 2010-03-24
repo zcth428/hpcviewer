@@ -12,6 +12,9 @@ import org.eclipse.swt.widgets.Shell;
 
 import java.io.File;
 
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelData;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.util.Util;
 import edu.rice.cs.hpc.data.util.Util.FileXMLFilter;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;
@@ -40,7 +43,6 @@ public class ExperimentManager {
 	private IWorkbenchWindow window;
 	
 	private ExperimentView expViewer;
-	
 	/**
 	 * flag to indicate if a caller view needs to display or not
 	 */
@@ -171,10 +173,12 @@ public class ExperimentManager {
 	    		bResult = expViewer.loadExperimentAndProcess(sFilename, flagCallerView );
 	    	else
 	    		bResult = expViewer.loadExperimentAndProcess(sFilename);
+	    	
 	    	return bResult; 
 	     } else
 	    	 return false; //TODO we need to throw an exception instead
 	}
+	
 	
 	/**
 	 * Return the list of .xml files in a directory

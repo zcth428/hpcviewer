@@ -15,6 +15,7 @@
 package edu.rice.cs.hpc.data.experiment;
 
 
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
@@ -79,6 +80,8 @@ protected Scope rootScope;
 
 /** A mapping from internal name strings to metric objects. */
 protected HashMap metricMap;
+
+private ThreadLevelDataManager threadsData = null;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -444,6 +447,11 @@ public void postprocess(boolean callerView) {
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
 
+		//----------------------------------------------------------------------------------------------
+		// CCT Thread level data
+		//----------------------------------------------------------------------------------------------
+		this.checkThreadsMetricDataFiles(this.fileExperiment.getPath());
+		
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
 	} else {
@@ -728,6 +736,29 @@ public FileScope getFileScope(int index)
 public File getXMLExperimentFile() {
 	return this.fileExperiment;
 }
+
+
+private void checkThreadsMetricDataFiles(String sPath) {
+	File files = new File(sPath);
+	if (files.isFile())
+		files = new File(files.getParent());
+	
+	File filesThreadsData[] = files.listFiles(new Util.FileThreadsMetricFilter());
+	if (filesThreadsData != null) {
+		if (filesThreadsData.length > 0) {
+			this.threadsData = new ThreadLevelDataManager();
+			this.threadsData.setFiles(filesThreadsData);
+		}
+	} else {
+		this.threadsData = null;
+	}
+}
+
+
+public ThreadLevelDataManager getThreadLevelDataManager() {
+	return this.threadsData;
+}
+
 
 //======================================================================================
 //	UNIT TEST

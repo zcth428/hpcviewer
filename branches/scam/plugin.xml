@@ -44,6 +44,7 @@
             name="CallerView">
       </view>
       <view
+            allowMultiple="true"
             category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
             icon="icons/hpcviewerEclipseShadow32.png"

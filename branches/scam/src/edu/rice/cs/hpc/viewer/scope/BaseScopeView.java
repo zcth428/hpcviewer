@@ -206,12 +206,14 @@ abstract public class BaseScopeView  extends ViewPart {
         mgr.add(acCopy);
         
         if ( (this.selectedColumn>0) && (this.hasThreadsLevelData) ){
-        	mgr.add( new ScopeViewTreeAction("View Threads data: "+scope.getCCTIndex(), scope) {
+			final BaseMetric metric = myExperiment.getMetric(selectedColumn-1);
+        	mgr.add( new ScopeViewTreeAction("View "+scope+": "+metric.getDisplayName(), scope) {
         		public void run() {
 					IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
 					try {
-						BaseMetric metric = myExperiment.getMetric(selectedColumn-1);
-						GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID);
+						GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
+								scope.getCCTIndex()+"_"+selectedColumn, 
+								IWorkbenchPage.VIEW_ACTIVATE);
 						objview.setData(myExperiment, scope, metric, myExperiment.getMetricCount());
 					} catch (PartInitException e) {
 						// TODO Auto-generated catch block

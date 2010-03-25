@@ -50,9 +50,9 @@ public class StatementRangeScope extends Scope
  *	Creates a StatementRangeScope.
  ************************************************************************/
 	
-public StatementRangeScope(Experiment experiment, SourceFile file, int first, int last, int id)
+public StatementRangeScope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
 {
-	super(experiment, file, first, last, id);
+	super(experiment, file, first, last, cct_id, flat_id);
 }
 
 /*
@@ -108,7 +108,7 @@ public Scope duplicate() {
 				this.sourceFile, 
 				this.firstLineNumber,
 				this.lastLineNumber,
-				this.id);
+				this.cct_node_index, this.flat_node_index);
     // copy metrics
     this.copyMetrics(duplicatedScope);
     return duplicatedScope;

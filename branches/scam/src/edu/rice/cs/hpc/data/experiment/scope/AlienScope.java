@@ -56,7 +56,7 @@ public AlienScope(Experiment experiment, SourceFile file,
 		  String fileName, String procName, 
 		  int first, int last, int id)
 {
-	super(experiment, file, first, last, id);
+	super(experiment, file, first, last, id, id);
 	this.fileName = fileName;
 	this.procedureName = procName;
 //	this.id = "AlienScope";
@@ -98,8 +98,8 @@ public Scope duplicate() {
 			      this.fileName,
 			      this.procedureName,
 			      this.firstLineNumber, 
-			      this.lastLineNumber,
-			      this.id);
+			      this.lastLineNumber, 
+			      (int) this.cct_node_index);
 
 }
 

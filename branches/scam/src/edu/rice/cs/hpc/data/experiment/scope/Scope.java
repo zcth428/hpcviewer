@@ -62,9 +62,9 @@ protected Experiment experiment;
 protected SourceFile sourceFile;
 
 /** the scope identifier */
-protected int id;
+protected int flat_node_index;
 
-protected long cct_node_index;
+protected int cct_node_index;
 
 /** The first line number of this scope. */
 protected int firstLineNumber;
@@ -120,7 +120,7 @@ public static final int NO_LINE_NUMBER = -169; // any negative number other than
  *	Creates a Scope object with associated source line range.
  ************************************************************************/
 	
-public Scope(Experiment experiment, SourceFile file, int first, int last, int scopeID)
+public Scope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
 {
 	// creation arguments
 	this.experiment = experiment;
@@ -132,8 +132,8 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int sc
 	this.treeNode = new Scope.Node(this);
 	this.stop = false;
 	this.srcCitation = null;
-	this.id = scopeID;
-	
+	this.flat_node_index = flat_id;
+	this.cct_node_index = cct_id;
 }
 
 
@@ -145,7 +145,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int sc
 	
 public Scope(Experiment experiment, SourceFile file, int scopeID)
 {
-	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, scopeID);
+	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, scopeID, scopeID);
 }
 
 
@@ -154,21 +154,30 @@ public Scope(Experiment experiment, SourceFile file, int scopeID)
 /*************************************************************************
  *	Creates a Scope object with no associated source file.
  ************************************************************************/
-	
+	/*
 public Scope(Experiment experiment)
 {
 	this(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, idMax);
 	idMax++;
 }
-
+*/
 /**
  * Return the unique identifier of this scope
  */
+/*
 public int hashCode() {
 	// the id is theoretically unique (for flat view). it is NOT unique for cct or caller view
 	return this.id;
 }
+*/
 
+public int getFlatIndex() {
+	return this.flat_node_index;
+}
+
+public int getCCTIndex() {
+	return (int) this.cct_node_index;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // DUPLICATION														//
@@ -247,6 +256,10 @@ public String toString()
 	return this.getName();
 }
 
+
+public int hashCode() {
+	return this.flat_node_index;
+}
 
 
 
@@ -437,14 +450,6 @@ public Scope.Node getTreeNode()
 	return this.treeNode;
 }
 
-
-public void setNodeIndex(long node_index) {
-	this.cct_node_index = node_index;
-}
-
-public long getNodeIndex() {
-	return this.cct_node_index;
-}
 
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO METRICS													//

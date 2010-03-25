@@ -50,22 +50,22 @@ public class LoopScope extends Scope
  *	Creates a LoopScope.
  ************************************************************************/
 	
-public LoopScope(Experiment experiment, SourceFile file, int first, int last, int id)
+public LoopScope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
 {
-	super(experiment, file, first, last, id);
+	super(experiment, file, first, last, cct_id, flat_id);
 //	this.id = "LoopScope";
 }
 
 public LoopScope(Experiment experiment, SourceFile file, int first, int last)
 {
-	super(experiment, file, first, last, Scope.idMax);
+	super(experiment, file, first, last, Scope.idMax, Scope.idMax);
 	Scope.idMax++;
 //	this.id = "LoopScope";
 }
 
 public Scope duplicate() {
     return new LoopScope(this.experiment,  this.sourceFile,  
-    		this.firstLineNumber,  this.lastLineNumber, this.id);
+    		this.firstLineNumber,  this.lastLineNumber, this.cct_node_index, this.flat_node_index);
 }
 
 

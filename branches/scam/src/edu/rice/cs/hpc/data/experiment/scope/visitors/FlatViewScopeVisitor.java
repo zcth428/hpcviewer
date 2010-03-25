@@ -376,7 +376,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @return
 	 **------------------------------------------------------------------------------**/
 	private String getID( Scope scope ) {
-		int id = scope.hashCode();
+		int id = scope.getFlatIndex();
 		String hash_id = scope.getClass().getSimpleName();
 		if (hash_id != null) {
 			hash_id = hash_id.substring(0, 2) + id;

@@ -284,7 +284,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		if (caller_s.iCounter>0) {
 			caller_s.iCounter--;
 		} else {
-			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.iCounter);
+			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.hashCode());
 		}
 	}
 	

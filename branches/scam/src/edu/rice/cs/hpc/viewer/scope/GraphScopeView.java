@@ -35,7 +35,7 @@ public class GraphScopeView extends ViewPart {
 	public void setData(Experiment exp, Scope scope, BaseMetric metric, int num_metrics) {
 		String sTitle = scope.getName() + ": "  + metric.getDisplayName();
 		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
-		double y_values[] = objDataManager.getMetrics(scope.getNodeIndex(), metric.getIndex(), num_metrics);
+		double y_values[] = objDataManager.getMetrics(scope.getCCTIndex(), metric.getIndex(), num_metrics);
 		double x_values[] = objDataManager.getProcessIDs();
 		this.setData(sTitle, x_values, y_values);
 	}

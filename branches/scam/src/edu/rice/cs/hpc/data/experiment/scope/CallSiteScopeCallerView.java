@@ -14,7 +14,7 @@ public class CallSiteScopeCallerView extends CallSiteScope {
 	 */
 	public CallSiteScopeCallerView(LineScope scope, ProcedureScope scope2,
 			CallSiteScopeType csst, int id, Scope cct) {
-		super(scope, scope2, csst, id);
+		super(scope, scope2, csst, id, id);
 
 		this.scopeCCT = cct;
 	}

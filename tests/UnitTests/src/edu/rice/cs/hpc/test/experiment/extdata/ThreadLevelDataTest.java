@@ -62,7 +62,7 @@ public class ThreadLevelDataTest extends TestCase {
 		double [] result = new double[NUM_METRICS];
 		for(int i=0; i<NUM_METRICS; i++) {
 			try {
-				result[i] = streamSeq.readDouble();
+				result[i] = (double) streamSeq.readLong();
 			} catch (IOException e) {
 				e.printStackTrace();
 				fail(e.getMessage());

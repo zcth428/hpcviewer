@@ -214,7 +214,7 @@ abstract public class BaseScopeView  extends ViewPart {
 						GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
 								scope.getCCTIndex()+"_"+selectedColumn, 
 								IWorkbenchPage.VIEW_ACTIVATE);
-						objview.setData(myExperiment, scope, metric, myExperiment.getMetricCount());
+						objview.plotData(myExperiment, scope, metric, myExperiment.getMetricCount());
 					} catch (PartInitException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

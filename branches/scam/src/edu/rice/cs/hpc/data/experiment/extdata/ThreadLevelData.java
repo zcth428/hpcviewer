@@ -11,7 +11,7 @@ import java.io.RandomAccessFile;
  **********************************************************************************************/
 public class ThreadLevelData {
 	
-	static private boolean debug = false;
+	static private boolean debug = true;
 	// from java spec: the size of a double is 8 bytes in all jvm
 	static private final int DOUBLE_FIELD_SIZE   = 8;
 
@@ -24,8 +24,20 @@ public class ThreadLevelData {
 	 * @return
 	 **---------------------------------------------------------------------------------------**/
 	public double getMetric(String sFilename, long nodeIndex, int metric_index, int num_metrics) {
-		double []metrics = this.getMetrics(sFilename, nodeIndex, num_metrics);
-		return metrics[metric_index];
+		try {
+			RandomAccessFile file = new RandomAccessFile(sFilename, "r");
+			long position = this.getFilePosition(nodeIndex, metric_index, num_metrics);
+			file.seek(position);
+			double metric = (double)file.readLong();
+			file.close();
+			return metric;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// ERROR ! do we need to return ?
+		return 0.0;
 	}
 	
 	
@@ -64,9 +76,20 @@ public class ThreadLevelData {
 	 * @return
 	 */
 	private long getFilePosition(long nodeIndex, int num_metrics) {
-		return nodeIndex * num_metrics * DOUBLE_FIELD_SIZE;
+		return this.getFilePosition(nodeIndex, 0, num_metrics);
 	}
 	
+	
+	/**
+	 * get a position for a specific node index and metric index
+	 * @param nodeIndex
+	 * @param metricIndex
+	 * @param num_metrics
+	 * @return
+	 */
+	private long getFilePosition(long nodeIndex, int metricIndex, int num_metrics) {
+		return (nodeIndex-1) * num_metrics * DOUBLE_FIELD_SIZE + (metricIndex * DOUBLE_FIELD_SIZE);
+	}
 	
 	private void debug_print(String s) {
 		if (debug)

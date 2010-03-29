@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.DefaultTableXYDataset;
@@ -91,7 +92,9 @@ public class GraphScopeView extends ViewPart {
 		
 		JFreeChart chart = ChartFactory.createXYLineChart(sTitle, "Process.Threads", "Metrics", table,
 				PlotOrientation.VERTICAL, true, false, false); 
-
+		Plot plot = chart.getPlot();
+		plot.setBackgroundPaint(java.awt.Color.WHITE);
+		plot.setOutlinePaint(java.awt.Color.GRAY);
 		chart.setBackgroundPaint(java.awt.Color.WHITE);
 		chartFrame.setChart(chart);
 	}

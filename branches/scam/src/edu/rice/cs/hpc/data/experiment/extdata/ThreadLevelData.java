@@ -39,14 +39,16 @@ public class ThreadLevelData {
 			e.printStackTrace();
 			String msg = "Cannot find file " + sFilename +
 						"\n node_index: " + nodeIndex + "\n Metric: " + metric_index + 
+						" Nb metrics: " + num_metrics + " \n" +
 						e.getMessage();
-			throw new IOException(msg	);
+			throw new IOException(msg);
 		} catch (IOException e) {
 			e.printStackTrace();
 			String msg = "Unable to access file " + sFilename + "\n position: "+ position +
-						"\n node_index: " + nodeIndex + "\n Metric: " + metric_index + 
-						"\n File length: " + file.length() + "\n" + e.getMessage();
-			throw new IOException(msg	);
+						"(bytes)\n node_index: " + nodeIndex + "\n Metric: " + metric_index + 
+						" Nb metrics: " + num_metrics + 
+						"\n File length: " + file.length() + " (bytes)\n" + e.getMessage();
+			throw new IOException(msg);
 		}
 	}
 	
@@ -98,7 +100,7 @@ public class ThreadLevelData {
 	 * @return
 	 */
 	private long getFilePosition(long nodeIndex, int metricIndex, int num_metrics) {
-		return (nodeIndex-1) * num_metrics * DOUBLE_FIELD_SIZE + (metricIndex * DOUBLE_FIELD_SIZE);
+		return (nodeIndex * num_metrics * DOUBLE_FIELD_SIZE) + (metricIndex * DOUBLE_FIELD_SIZE);
 	}
 	
 	private void debug_print(String s) {

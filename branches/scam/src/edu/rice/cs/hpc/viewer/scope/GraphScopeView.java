@@ -60,8 +60,12 @@ public class GraphScopeView extends ViewPart {
 		String sTitle = scope.getName() + ": "  + metric.getDisplayName();
 		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 		
-		int node_index = scope.getCCTIndex() - 1;
+		// adjust the node index: 1=the root, 2=node-0, 3=node-1, .... 
+		int node_index = scope.getCCTIndex() - 2;
+		// adjust the metric index: start from the first metric
 		int metric_index = metric.getIndex() - exp.getMetric(0).getIndex();
+		
+		this.setPartName(scope.getName() + ":" + metric_index);
 		
 		if (!objDataManager.isDataAvailable()) {
 			return;
@@ -79,6 +83,7 @@ public class GraphScopeView extends ViewPart {
 				
 			} catch (IOException e) {
 				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
+				System.err.println(e.getMessage());
 				e.printStackTrace();
 				return;
 			}			

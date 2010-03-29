@@ -47,7 +47,7 @@
             allowMultiple="true"
             category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
-            icon="icons/hpcviewerEclipseShadow32.png"
+            icon="icons/graphview.png"
             id="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
             name="GraphView">
       </view>

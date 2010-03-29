@@ -43,7 +43,14 @@ public class ThreadLevelDataTest extends TestCase {
 		int index = random.nextInt(NUM_METRICS-1)+1;
 		
 		ThreadLevelData file = new ThreadLevelData();
-		double metrics1 = file.getMetric(FILENAME, 1, index, NUM_METRICS);
+		double metrics1;
+		try {
+			metrics1 = file.getMetric(FILENAME, 1, index, NUM_METRICS);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
 		
 		this.fileSeqOpen();
 		double metrics2[] = this.readSeqFile();
@@ -52,7 +59,12 @@ public class ThreadLevelDataTest extends TestCase {
 		assertTrue(metrics1 == metrics2[index]);
 		
 		// test access to second node
-		metrics1 = file.getMetric(FILENAME, 2, index, NUM_METRICS);
+		try {
+			metrics1 = file.getMetric(FILENAME, 2, index, NUM_METRICS);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		metrics2 = this.readSeqFile();
 		// testing first node
 		assertTrue(metrics1 == metrics2[index]);

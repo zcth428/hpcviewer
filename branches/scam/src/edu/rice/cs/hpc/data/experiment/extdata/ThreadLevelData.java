@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -23,21 +24,30 @@ public class ThreadLevelData {
 	 * @param num_metrics
 	 * @return
 	 **---------------------------------------------------------------------------------------**/
-	public double getMetric(String sFilename, long nodeIndex, int metric_index, int num_metrics) {
+	public double getMetric(String sFilename, long nodeIndex, int metric_index, int num_metrics) 
+			throws IOException {
+		long position = 0 ;
+		RandomAccessFile file = null;
 		try {
-			RandomAccessFile file = new RandomAccessFile(sFilename, "r");
-			long position = this.getFilePosition(nodeIndex, metric_index, num_metrics);
+			file = new RandomAccessFile(sFilename, "r");
+			position = this.getFilePosition(nodeIndex, metric_index, num_metrics);
 			file.seek(position);
 			double metric = (double)file.readLong();
 			file.close();
 			return metric;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			String msg = "Cannot find file " + sFilename +
+						"\n node_index: " + nodeIndex + "\n Metric: " + metric_index + 
+						e.getMessage();
+			throw new IOException(msg	);
 		} catch (IOException e) {
 			e.printStackTrace();
+			String msg = "Unable to access file " + sFilename + "\n position: "+ position +
+						"\n node_index: " + nodeIndex + "\n Metric: " + metric_index + 
+						"\n File length: " + file.length() + "\n" + e.getMessage();
+			throw new IOException(msg	);
 		}
-		// ERROR ! do we need to return ?
-		return 0.0;
 	}
 	
 	

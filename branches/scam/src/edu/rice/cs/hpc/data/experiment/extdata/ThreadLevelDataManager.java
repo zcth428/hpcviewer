@@ -1,6 +1,8 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,6 +18,7 @@ import java.util.Map.Entry;
 public class ThreadLevelDataManager {
 
 	private ThreadLevelDataFile data_file;
+	private boolean flag_debug = true;
 	
 	public void setFiles(File f[]) {
 		if (data_file == null)
@@ -105,7 +108,8 @@ public class ThreadLevelDataManager {
 	 * @param num_metrics
 	 * @return
 	 */
-	public double[] getMetrics(String series, long node_index, int metric_index, int num_metrics) {
+	public double[] getMetrics(String series, long node_index, int metric_index, int num_metrics)
+			throws IOException {
 		if (this.data_file == null)
 			return null;
 		
@@ -114,9 +118,25 @@ public class ThreadLevelDataManager {
 		ArrayList<File> files = data_file.files.get(series);
 		double[] metrics = new double[files.size()];
 		
+		debugln(System.out, "Series: " +  series);
 		for(int i=0; i<files.size(); i++) {
 			metrics[i] = objData.getMetric(files.get(i).getAbsolutePath(), node_index, metric_index, num_metrics);
+			debug(System.out, " " + metrics[i] + " ");
 		}
+		debugln(System.out, "\tsize: " + files.size());
 		return metrics;
+	}
+	
+	
+	public void debugln(PrintStream stream, String s) {
+		if (flag_debug) {
+			stream.println(s);
+		}
+	}
+	
+	public void debug(PrintStream stream, String s) {
+		if (flag_debug) {
+			stream.print(s);
+		}
 	}
 } 

@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
@@ -58,8 +60,8 @@ public class GraphScopeView extends ViewPart {
 		String sTitle = scope.getName() + ": "  + metric.getDisplayName();
 		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 		
-		int node_index = scope.getCCTIndex();
-		int metric_index = metric.getIndex();
+		int node_index = scope.getCCTIndex() - 1;
+		int metric_index = metric.getIndex() - exp.getMetric(0).getIndex();
 		
 		if (!objDataManager.isDataAvailable()) {
 			return;
@@ -69,14 +71,21 @@ public class GraphScopeView extends ViewPart {
 		XYSeriesCollection table = new XYSeriesCollection();
 
 		for (int i=0; i<series.length; i++) {
-			double y_values[] = objDataManager.getMetrics(series[i],node_index, metric_index, num_metrics);			
-			ArrayList<String> x_values = objDataManager.getProcessIDs(series[i]);
-			
-			table.addSeries(this.setData(series[i], x_values, y_values));
+			double y_values[];
+			try {
+				y_values = objDataManager.getMetrics(series[i],node_index, metric_index, num_metrics);
+				ArrayList<String> x_values = objDataManager.getProcessIDs(series[i]);				
+				table.addSeries(this.setData(series[i], x_values, y_values));
+				
+			} catch (IOException e) {
+				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
+				e.printStackTrace();
+				return;
+			}			
 		}
 		
 		JFreeChart chart = ChartFactory.createXYLineChart(sTitle, "Process.Threads", "Metrics", table,
-				PlotOrientation.VERTICAL, false, false, false); 
+				PlotOrientation.VERTICAL, true, false, false); 
 
 		chart.setBackgroundPaint(java.awt.Color.WHITE);
 		chartFrame.setChart(chart);

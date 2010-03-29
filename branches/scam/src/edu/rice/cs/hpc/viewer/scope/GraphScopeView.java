@@ -1,15 +1,26 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Map.Entry;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.DefaultTableXYDataset;
 import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -22,13 +33,13 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
  *****************************************************************************************/
 public class GraphScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.viewer.scope.GraphScopeView";
-    private Composite clientArea;
     private ChartComposite chartFrame;
 
+    private boolean debug = true;
+    
 	@Override
 	public void createPartControl(Composite parent) {
-		clientArea = parent;
-		chartFrame = new ChartComposite(parent, SWT.NONE);
+		chartFrame = new ChartComposite(parent, SWT.NONE, null, true, true, false, true, true);
 	}
 
 	@Override
@@ -46,9 +57,29 @@ public class GraphScopeView extends ViewPart {
 	public void plotData(Experiment exp, Scope scope, BaseMetric metric, int num_metrics) {
 		String sTitle = scope.getName() + ": "  + metric.getDisplayName();
 		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
-		double y_values[] = objDataManager.getMetrics(scope.getCCTIndex(), metric.getIndex(), num_metrics);
-		double x_values[] = objDataManager.getProcessIDs();
-		this.setData(sTitle, x_values, y_values);
+		
+		int node_index = scope.getCCTIndex();
+		int metric_index = metric.getIndex();
+		
+		if (!objDataManager.isDataAvailable()) {
+			return;
+		}
+		
+		String series[] = objDataManager.getSeriesName();
+		XYSeriesCollection table = new XYSeriesCollection();
+
+		for (int i=0; i<series.length; i++) {
+			double y_values[] = objDataManager.getMetrics(series[i],node_index, metric_index, num_metrics);			
+			ArrayList<String> x_values = objDataManager.getProcessIDs(series[i]);
+			
+			table.addSeries(this.setData(series[i], x_values, y_values));
+		}
+		
+		JFreeChart chart = ChartFactory.createXYLineChart(sTitle, "Process.Threads", "Metrics", table,
+				PlotOrientation.VERTICAL, false, false, false); 
+
+		chart.setBackgroundPaint(java.awt.Color.WHITE);
+		chartFrame.setChart(chart);
 	}
 	
 	
@@ -58,23 +89,36 @@ public class GraphScopeView extends ViewPart {
 	 * @param x_values
 	 * @param y_values
 	 */
-	private void setData(String title, double x_values[], double y_values[]) {
-		XYSeries dataset = new XYSeries(title, true, false);
-		int num_data = x_values.length;
+	private XYSeries setData(String Series, ArrayList<String> x_values, double y_values[]) {
+		XYSeries dataset = new XYSeries(Series, true, false);
+		int num_data = x_values.size();
+		
 		if (num_data>y_values.length)
 			num_data = y_values.length;
 
 		for (int i=0; i<num_data; i++) {
-			dataset.add(x_values[i], y_values[i]);
+			dataset.add(Double.valueOf(x_values.get(i)).doubleValue(), y_values[i]);
 		}
-		
-		DefaultTableXYDataset table = new DefaultTableXYDataset();
-		table.addSeries(dataset);
-		
-		JFreeChart chart = ChartFactory.createHistogram(title, "Process.Threads", "Metrics", table, 
-				org.jfree.chart.plot.PlotOrientation.VERTICAL, false, false, false);
-		chartFrame.setChart(chart);
+		return dataset;
 	}
-	
 
+	
+	private void print_debug(String s) {
+		if (debug)
+			System.out.println(s);
+	}
+
+	private String print_array(PrintStream out, double o_a[]) {
+		if (( o_a == null) || (o_a.length == 0))
+			return null;
+				
+		out.print("[");
+		for(int i=0; i<o_a.length; i++) {
+			out.print(o_a[i]);
+			if (i<o_a.length-1)
+				out.print(", ");
+		}
+		out.println("]");
+		return null;
+	}
 }

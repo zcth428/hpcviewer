@@ -9,15 +9,15 @@ import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelData;
 import junit.framework.TestCase;
 
 public class ThreadLevelDataTest extends TestCase {
-	static final private String FILENAME = "/Users/laksonoadhianto/work/data/scaled-data/madness/hpctoolkit-database-madness-laks/1.moldft-000000-001-7f0100-29612.hpcrun.hpcprof-metrics";
-	static final private int NUM_METRICS = 64;
+	static final private String FILENAME = "/Users/laksonoadhianto/work/data/scaled-data/hpctoolkit-t1-threads.BLD-lm-lpthread-database/1.t1-threads.BLD-lm-lpthread-000000-010-7f0100-25111.hpcrun.hpcprof-metrics";
+	static final private int NUM_METRICS = 2;
 	
 	private FileInputStream fileSeq;
 	private DataInputStream streamSeq;
 	
 	public void testGetMetric() {
 		ThreadLevelData file = new ThreadLevelData();
-		double metrics1[] = file.getMetrics(FILENAME, 1, NUM_METRICS);
+		double metrics1[] = file.getMetrics(FILENAME, 0, NUM_METRICS);
 		
 		this.fileSeqOpen();
 		double metrics2[] = this.readSeqFile();
@@ -28,7 +28,7 @@ public class ThreadLevelDataTest extends TestCase {
 		}
 		
 		// test access to second node
-		metrics1 = file.getMetrics(FILENAME, 2, NUM_METRICS);
+		metrics1 = file.getMetrics(FILENAME, 1, NUM_METRICS);
 		metrics2 = this.readSeqFile();
 		// testing first node
 		for(int i=0; i<metrics1.length; i++) {
@@ -45,7 +45,7 @@ public class ThreadLevelDataTest extends TestCase {
 		ThreadLevelData file = new ThreadLevelData();
 		double metrics1;
 		try {
-			metrics1 = file.getMetric(FILENAME, 1, index, NUM_METRICS);
+			metrics1 = file.getMetric(FILENAME, 0, index, NUM_METRICS);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -60,7 +60,7 @@ public class ThreadLevelDataTest extends TestCase {
 		
 		// test access to second node
 		try {
-			metrics1 = file.getMetric(FILENAME, 2, index, NUM_METRICS);
+			metrics1 = file.getMetric(FILENAME, 1, index, NUM_METRICS);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

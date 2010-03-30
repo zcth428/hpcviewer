@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -16,14 +15,14 @@ public class ThreadLevelData {
 	// from java spec: the size of a double is 8 bytes in all jvm
 	static private final int DOUBLE_FIELD_SIZE   = 8;
 
-	/**---------------------------------------------------------------------------------------**
+	/****
 	 * get a specific metric for a specific node ID
 	 * @param sFilename
 	 * @param nodeIndex
 	 * @param metric_index
 	 * @param num_metrics
 	 * @return
-	 **---------------------------------------------------------------------------------------**/
+	 ****/
 	public double getMetric(String sFilename, long nodeIndex, int metric_index, int num_metrics) 
 			throws IOException {
 		long position = 0 ;
@@ -53,13 +52,13 @@ public class ThreadLevelData {
 	}
 	
 	
-	/**---------------------------------------------------------------------------------------**
+	/****
 	 * return list of metrics for a specific node 
 	 * @param sFilename
 	 * @param nodeIndex
 	 * @param num_metrics
 	 * @return
-	 **---------------------------------------------------------------------------------------**/
+	 ****/
 	public double[] getMetrics(String sFilename, long nodeIndex, int num_metrics) {
 		try {
 			RandomAccessFile file = new RandomAccessFile(sFilename, "r");

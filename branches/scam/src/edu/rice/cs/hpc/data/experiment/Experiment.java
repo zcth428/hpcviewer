@@ -450,7 +450,7 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		// CCT Thread level data
 		//----------------------------------------------------------------------------------------------
-		this.checkThreadsMetricDataFiles(this.fileExperiment.getPath());
+		this.initThreadsMetricDataFiles(this.fileExperiment.getPath());
 		
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
@@ -738,20 +738,8 @@ public File getXMLExperimentFile() {
 }
 
 
-private void checkThreadsMetricDataFiles(String sPath) {
-	File files = new File(sPath);
-	if (files.isFile())
-		files = new File(files.getParent());
-	
-	File filesThreadsData[] = files.listFiles(new Util.FileThreadsMetricFilter());
-	if (filesThreadsData != null) {
-		if (filesThreadsData.length > 0) {
-			this.threadsData = new ThreadLevelDataManager();
-			this.threadsData.setFiles(filesThreadsData);
-		}
-	} else {
-		this.threadsData = null;
-	}
+private void initThreadsMetricDataFiles(String sPath) {
+	this.threadsData = new ThreadLevelDataManager(sPath, this.getMetrics());
 }
 
 

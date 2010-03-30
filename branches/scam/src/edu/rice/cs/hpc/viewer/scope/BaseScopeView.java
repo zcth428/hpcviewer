@@ -207,12 +207,15 @@ abstract public class BaseScopeView  extends ViewPart {
         
         if ( (this.selectedColumn>0) && (this.hasThreadsLevelData) ){
 			final BaseMetric metric = myExperiment.getMetric(selectedColumn-1);
-        	mgr.add( new ScopeViewTreeAction("View "+scope+": "+metric.getDisplayName(), scope) {
+			final int metric_index = GraphScopeView.getNormalizedMetricIndex( selectedColumn-1);
+			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, metric_index);
+			
+        	mgr.add( new ScopeViewTreeAction("View "+ menu_title, scope) {
         		public void run() {
 					IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
 					try {
 						GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-								scope.getCCTIndex()+"_"+selectedColumn, 
+								scope.getCCTIndex()+"_"+metric_index, 
 								IWorkbenchPage.VIEW_ACTIVATE);
 						objview.plotData(myExperiment, scope, metric, myExperiment.getMetricCount());
 					} catch (PartInitException e) {

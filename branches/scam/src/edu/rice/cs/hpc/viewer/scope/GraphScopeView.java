@@ -36,9 +36,8 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
  *****************************************************************************************/
 public class GraphScopeView extends ViewPart {
     public static final String ID = "edu.rice.cs.hpc.viewer.scope.GraphScopeView";
+    
     private ChartComposite chartFrame;
-
-    private boolean debug = true;
     
 	@Override
 	public void createPartControl(Composite parent) {
@@ -58,15 +57,16 @@ public class GraphScopeView extends ViewPart {
 	 * @param num_metrics
 	 */
 	public void plotData(Experiment exp, Scope scope, BaseMetric metric, int num_metrics) {
-		String sTitle = scope.getName() + ": "  + metric.getDisplayName();
+		
 		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 		
 		// adjust the node index: 1=the root, 2=node-0, 3=node-1, .... 
 		int node_index = scope.getCCTIndex() - 2;
 		// adjust the metric index: start from the first metric
-		int metric_index = metric.getIndex() - exp.getMetric(0).getIndex();
+		int metric_index = GraphScopeView.getNormalizedMetricIndex(metric.getIndex() - exp.getMetric(0).getIndex());
 		
-		this.setPartName(scope.getName() + ":" + metric_index);
+		String sTitle = getGraphTitle(scope, metric, metric_index);
+		this.setPartName(sTitle);
 		
 		if (!objDataManager.isDataAvailable()) {
 			return;
@@ -78,7 +78,7 @@ public class GraphScopeView extends ViewPart {
 		for (int i=0; i<series.length; i++) {
 			double y_values[];
 			try {
-				y_values = objDataManager.getMetrics(series[i],node_index, metric_index, num_metrics);
+				y_values = objDataManager.getMetrics(series[i],node_index, metric_index);
 				ArrayList<String> x_values = objDataManager.getProcessIDs(series[i]);				
 				table.addSeries(this.setData(series[i], x_values, y_values));
 				
@@ -98,7 +98,27 @@ public class GraphScopeView extends ViewPart {
 		chart.setBackgroundPaint(java.awt.Color.WHITE);
 		chartFrame.setChart(chart);
 	}
+
 	
+	/***
+	 * grab the title of the graph
+	 * @param scope 
+	 * @param metric
+	 * @param metric_index (normalized 0-based index)
+	 * @return
+	 */
+	static public String getGraphTitle(Scope scope, BaseMetric metric, int metric_index) {
+		String sTitle = metric.getDisplayName();
+		int pos = sTitle.indexOf('-');
+		String sMetricStatus = (metric_index % 2 == 0? " (I)" : " (E)");
+		return scope.getShortName() + ": " + sTitle.substring(0, pos) + sMetricStatus;
+		
+	}
+
+	
+	static int getNormalizedMetricIndex(int metric_index) {
+		return metric_index >> 3;
+	}
 	
 	/**
 	 * primitive plotting of a set of Xs and Ys
@@ -119,23 +139,4 @@ public class GraphScopeView extends ViewPart {
 		return dataset;
 	}
 
-	
-	private void print_debug(String s) {
-		if (debug)
-			System.out.println(s);
-	}
-
-	private String print_array(PrintStream out, double o_a[]) {
-		if (( o_a == null) || (o_a.length == 0))
-			return null;
-				
-		out.print("[");
-		for(int i=0; i<o_a.length; i++) {
-			out.print(o_a[i]);
-			if (i<o_a.length-1)
-				out.print(", ");
-		}
-		out.println("]");
-		return null;
-	}
 }

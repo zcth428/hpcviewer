@@ -52,7 +52,7 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
  */
 abstract public class BaseScopeView  extends ViewPart {
 
-    private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
+	private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     private Experiment 	myExperiment;		// experiment data	
     private RootScope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
@@ -65,8 +65,7 @@ abstract public class BaseScopeView  extends ViewPart {
 	 */
 	protected CoolBar objCoolbar;
 	
-	private int selectedColumn = -1;
-	private boolean hasThreadsLevelData = false;
+	protected boolean hasThreadsLevelData = false;
 	
     //======================================================
     // ................ HELPER ............................
@@ -162,13 +161,18 @@ abstract public class BaseScopeView  extends ViewPart {
         // ---- zoomout
         mgr.add(acZoomout);
         acZoomout.setEnabled(this.objViewActions.shouldZoomOutBeEnabled());
-        // additional feature
+
+        // ---- additional feature
         mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        // Laks: we don't need additional marker
-        //mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
         Scope scope = node.getScope();
-        
+
+        // Laks 2009.06.22: add new feature to copy selected line to the clipboard
+        mgr.add(acCopy);
+
+        //--------------------------------------------------------------------------
         // ---------- show the source code
+        //--------------------------------------------------------------------------
         
         // show the editor source code
         String sMenuTitle ;
@@ -183,7 +187,6 @@ abstract public class BaseScopeView  extends ViewPart {
         };
         acShowCode.setEnabled(node.hasSourceCodeFile);
         mgr.add(acShowCode);
-
 
         // show the call site in case this one exists
         if(scope instanceof CallSiteScope) {
@@ -201,31 +204,15 @@ abstract public class BaseScopeView  extends ViewPart {
         	acShowCallsite.setEnabled(Utilities.isFileReadable(lineScope));
         	mgr.add(acShowCallsite);
         }
-
-        // Laks 2009.06.22: add new feature to copy selected line to the clipboard
-        mgr.add(acCopy);
         
-        if ( (this.selectedColumn>0) && (this.hasThreadsLevelData) ){
-			final BaseMetric metric = myExperiment.getMetric(selectedColumn-1);
-			final int metric_index = GraphScopeView.getNormalizedMetricIndex( selectedColumn-1);
-			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, metric_index);
-			
-        	mgr.add( new ScopeViewTreeAction("View "+ menu_title, scope) {
-        		public void run() {
-					IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
-					try {
-						GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-								scope.getCCTIndex()+"_"+metric_index, 
-								IWorkbenchPage.VIEW_ACTIVATE);
-						objview.plotData(myExperiment, scope, metric, myExperiment.getMetricCount());
-					} catch (PartInitException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-        		}
-        	});
-        }
+        //--------------------------------------------------------------------------
+        // ---------- additional context menu
+        //--------------------------------------------------------------------------
+        mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+
+        this.createAdditionalContextMenu(mgr, scope);
     }
+    
     
     /**
      * Procedure to copy the selected items into string clipboard
@@ -269,7 +256,7 @@ abstract public class BaseScopeView  extends ViewPart {
      * @author laksono
      *
      */
-    private class ScopeViewTreeAction extends Action {
+    protected class ScopeViewTreeAction extends Action {
     	protected Scope scope;
     	public ScopeViewTreeAction(String sTitle, Scope scopeCurrent) {
     		super(sTitle);
@@ -277,10 +264,10 @@ abstract public class BaseScopeView  extends ViewPart {
     	}
     }
     
+    
     //===================================================================
     // ---------- VIEW CREATION -----------------------------------------
     //===================================================================
-    //	return new ScopeViewActions(this.getViewSite().getShell(), objCompositeParent, objCoolbar); 
     
     /**
      * Create the content of the view
@@ -326,7 +313,7 @@ abstract public class BaseScopeView  extends ViewPart {
         treeViewer.getTree().addListener(SWT.MouseDown, new Listener(){
         	public void handleEvent(Event event) {
 
-        		setSelectedColumn(event);
+        		mouseDownEvent(event);
 
     			if(event.button != 1) {
         			// yes, we only allow the first button
@@ -549,26 +536,10 @@ abstract public class BaseScopeView  extends ViewPart {
     	return this.treeViewer;
     }
 
-    
-    private void setSelectedColumn(Event event) {
-    	this.selectedColumn = this.getColumnMouseDown(event);
-    }
 
-    /**
-     * Find which column the user has clicked. Return the index of the column if exist,
-     * 		-1 otherwise 
-     * @param event
-     * @return
-     */    
-    private int getColumnMouseDown(Event event) {
-    	Point p = new Point(event.x, event.y);
-    	// the method getCell is only supported in Eclipse 3.4
-    	ViewerCell cell = this.treeViewer.getCell(p); 
-    	if(cell == null)
-    		return -1;
-    	int iPos = cell.getColumnIndex();
-    	return iPos;
-    } 
+    protected Experiment getExperiment() {
+    	return this.myExperiment;
+    }
 
     //======================================================
     // ................ ABSTRACT...........................
@@ -582,5 +553,12 @@ abstract public class BaseScopeView  extends ViewPart {
      * @return
      */
     abstract protected ScopeViewActions createActions(Composite parent, CoolBar coolbar);
+    
+    /***
+     * event when a user starts to click
+     * @param event
+     */
+    protected abstract void mouseDownEvent(Event event);
 
+    abstract protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope);
 }

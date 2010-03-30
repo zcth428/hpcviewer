@@ -91,7 +91,7 @@ public class GraphScopeView extends ViewPart {
 		}
 		
 		JFreeChart chart = ChartFactory.createXYLineChart(sTitle, "Process.Threads", "Metrics", table,
-				PlotOrientation.VERTICAL, true, false, false); 
+				PlotOrientation.VERTICAL, series.length>1, false, false); 
 		Plot plot = chart.getPlot();
 		plot.setBackgroundPaint(java.awt.Color.WHITE);
 		plot.setOutlinePaint(java.awt.Color.GRAY);
@@ -118,6 +118,11 @@ public class GraphScopeView extends ViewPart {
 	
 	static int getNormalizedMetricIndex(int metric_index) {
 		return metric_index >> 3;
+	}
+	
+	
+	static int getStandardMetricIndex(int normal_metric_index) {
+		return normal_metric_index << 3;
 	}
 	
 	/**

@@ -59,7 +59,7 @@ public class ScopeView extends BaseScopeView {
 
 	@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
-        if (this.hasThreadsLevelData) {
+        if (scope != null && this.hasThreadsLevelData) {
         	Experiment exp = this.getExperiment();
         	if (this.selectedColumn == 0) {
         		final int num_metrics = GraphScopeView.getNormalizedMetricIndex( exp.getMetricCount() );

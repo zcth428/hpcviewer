@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.scope.filters.AggregatePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
@@ -55,13 +54,15 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 
 	public void visit(CallSiteScope scope, ScopeVisitType vt) {
 		
+		//--------------------------------------------------------------------------------
+		// if there are no exclusive costs to attribute from this context, we are done here
+		//--------------------------------------------------------------------------------
+		if (!scope.hasNonzeroMetrics()) {
+			return; 
+		}
+
 		if (vt == ScopeVisitType.PreVisit) { 
 						
-			// if there are no exclusive costs to attribute from this context, we are done here
-			if (!scope.hasNonzeroMetrics()) {
-				return; 
-			}
-
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 
@@ -116,7 +117,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
 			mergeCallerPath(callee, callPathList);
-			
+
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();
 			Integer objCode = new Integer(mycallee.hashCode());
@@ -280,12 +281,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	private void decrementCounter(Scope caller_s) {
 		if (caller_s == null)
 			return;
-		
+
 		if (caller_s.iCounter>0) {
 			caller_s.iCounter--;
 		} else {
 			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.hashCode());
 		}
 	}
-	
+
 }

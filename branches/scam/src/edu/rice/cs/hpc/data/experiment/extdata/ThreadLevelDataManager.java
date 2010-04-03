@@ -95,7 +95,7 @@ public class ThreadLevelDataManager {
 		ArrayList<File> files = data_file.files.get(series);
 		double[] metrics = new double[files.size()];
 		
-		debugln(System.out, "Series: " +  series);
+		debugln(System.out, "Series: " +  series + " node: " + node_index + " metric: " + metric_index);
 		for(int i=0; i<files.size(); i++) {
 			metrics[i] = objData.getMetric(files.get(i).getAbsolutePath(), node_index, metric_index, num_metrics);
 			debug(System.out, " " + metrics[i] + " ");

@@ -47,7 +47,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 			Scope.Node node = (Scope.Node) element;
 			if (debug)  {
 				Scope scope = node.getScope();
-				text = "[" + scope.hashCode() + "] " + scope.getName();
+				text = "[" + scope.getCCTIndex() + "] " + scope.getName();
 			} else
 				text = node.getScope().getName();			
 		} else

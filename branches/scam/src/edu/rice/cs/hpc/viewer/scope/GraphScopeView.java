@@ -61,7 +61,7 @@ public class GraphScopeView extends ViewPart {
 		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 		
 		// adjust the node index: 1=the root, 2=node-0, 3=node-1, .... 
-		int node_index = scope.getCCTIndex() - 2;
+		int node_index = scope.getCCTIndex() - 1;
 		// adjust the metric index: start from the first metric
 		int metric_index = GraphScopeView.getNormalizedMetricIndex(metric.getIndex() - exp.getMetric(0).getIndex());
 		
@@ -90,8 +90,10 @@ public class GraphScopeView extends ViewPart {
 			}			
 		}
 		
-		JFreeChart chart = ChartFactory.createXYLineChart(sTitle, "Process.Threads", "Metrics", table,
-				PlotOrientation.VERTICAL, series.length>1, false, false); 
+		JFreeChart chart = ChartFactory.createScatterPlot(sTitle, "Process.Threads", "Metrics", table,
+				PlotOrientation.VERTICAL, series.length>1, false, false);
+		//JFreeChart chart = ChartFactory.createXYLineChart(sTitle, "Process.Threads", "Metrics", table,
+		//		PlotOrientation.VERTICAL, series.length>1, false, false); 
 		Plot plot = chart.getPlot();
 		plot.setBackgroundPaint(java.awt.Color.WHITE);
 		plot.setOutlinePaint(java.awt.Color.GRAY);
@@ -109,9 +111,13 @@ public class GraphScopeView extends ViewPart {
 	 */
 	static public String getGraphTitle(Scope scope, BaseMetric metric, int metric_index) {
 		String sTitle = metric.getDisplayName();
-		int pos = sTitle.indexOf('-');
+		int pos = sTitle.lastIndexOf('(');
+
+		if (pos>0) {
+			sTitle = sTitle.substring(0, pos);
+		}
 		String sMetricStatus = (metric_index % 2 == 0? " (I)" : " (E)");
-		return scope.getShortName() + ": " + sTitle.substring(0, pos) + sMetricStatus;
+		return scope.getShortName() + ": " + sTitle + sMetricStatus;
 		
 	}
 

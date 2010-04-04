@@ -55,12 +55,13 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 
 	public void visit(CallSiteScope scope, ScopeVisitType vt) {
 		
+		// bug fix:
+		// if there are no exclusive costs to attribute from this context, we are done here
+		if (!scope.hasNonzeroMetrics()) {
+			return; 
+		}
+		
 		if (vt == ScopeVisitType.PreVisit) { 
-						
-			// if there are no exclusive costs to attribute from this context, we are done here
-			if (!scope.hasNonzeroMetrics()) {
-				return; 
-			}
 
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
@@ -116,7 +117,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
 			mergeCallerPath(callee, callPathList);
-			
+
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();
 			Integer objCode = new Integer(mycallee.hashCode());
@@ -249,7 +250,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// add to the dictionary
 			calleeht.put(objCode, caller_proc);
 		}
-		
+
 		// accumulate the metrics
 		this.combine(caller_proc, cct_s);
 		
@@ -284,7 +285,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		if (caller_s.iCounter>0) {
 			caller_s.iCounter--;
 		} else {
-			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.iCounter);
+			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.hashCode());
 		}
 	}
 	

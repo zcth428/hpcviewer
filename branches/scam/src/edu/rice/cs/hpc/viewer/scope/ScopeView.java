@@ -105,6 +105,18 @@ public class ScopeView extends BaseScopeView {
 						IWorkbenchPage.VIEW_ACTIVATE);
 				objview.plotData(exp, scope, metric, exp.getMetricCount());
 				
+				// sorted data
+				GraphScopeView objSortedview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
+						scope.getCCTIndex()+"_s_"+metric_index, 
+						IWorkbenchPage.VIEW_ACTIVATE);
+				objSortedview.plotSortedData(exp, scope, metric, exp.getMetricCount());
+				
+				// sorted data
+				GraphScopeView objHistoview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
+						scope.getCCTIndex()+"_h_"+metric_index, 
+						IWorkbenchPage.VIEW_ACTIVATE);
+				objHistoview.plotHistogram(exp, scope, metric, exp.getMetricCount());
+				
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}

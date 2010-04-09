@@ -21,13 +21,13 @@ import edu.rice.cs.hpc.data.util.Util;
 public class ThreadLevelDataManager {
 
 	private ThreadLevelDataFile data_file;
-	private boolean flag_debug = true;
+	private boolean flag_debug = false;
 	private int num_metrics = 0;
 
 	
 	public ThreadLevelDataManager(String sPath, BaseMetric metrics[]) {
 		this.checkThreadsMetricDataFiles(sPath);
-		num_metrics = metrics.length >> 3;
+		num_metrics = 2; //metrics.length >> 3;
 	}
 	
 	
@@ -131,7 +131,7 @@ public class ThreadLevelDataManager {
 			String filename = f[i].getName();
 			String parts[] = filename.split("-");
 			if (parts.length > 4) {
-				String key = parts[parts.length - 2];
+				String key = parts[parts.length - 1];
 				
 				//--------------------------------------------------------------------
 				// adding list of files

@@ -118,7 +118,7 @@ public class GraphScopeView extends ViewPart {
 		// adjust the metric index: start from the first metric
 		int metric_index = GraphScopeView.getNormalizedMetricIndex(metric.getIndex() - exp.getMetric(0).getIndex());
 		
-		String sTitle = getGraphTitle(scope, metric, metric_index);
+		String sTitle = "[Sorted] " + getGraphTitle(scope, metric, metric_index);
 		this.setPartName(sTitle);
 		
 		if (!objDataManager.isDataAvailable()) {
@@ -177,7 +177,7 @@ public class GraphScopeView extends ViewPart {
 		// adjust the metric index: start from the first metric
 		int metric_index = GraphScopeView.getNormalizedMetricIndex(metric.getIndex() - exp.getMetric(0).getIndex());
 		
-		String sTitle = getGraphTitle(scope, metric, metric_index);
+		String sTitle = "[Histogram] " + getGraphTitle(scope, metric, metric_index);
 		this.setPartName(sTitle);
 		
 		if (!objDataManager.isDataAvailable()) {
@@ -185,46 +185,15 @@ public class GraphScopeView extends ViewPart {
 		}
 		
 		String series[] = objDataManager.getSeriesName();
-		//XYSeriesCollection table = new XYSeriesCollection();
 		HistogramDataset table = null;
 		
 		for (int i=0; i<series.length; i++) {
 			double y_values[];
 			try {
 				y_values = objDataManager.getMetrics(series[i],node_index, metric_index);
-
-				// ArrayList<String> x_values = objDataManager.getProcessIDs(series[i]);		
 				
 				table = this.setHistoData(sTitle, y_values);
 
-				//table.addSeries(this.setHistoData(series[i], y_values));
-
-				/*
-				Double x_vals[] = new Double[y_values.length];
-				Hashtable<Double, Double> x = new Hashtable<Double, Double>();
-				for(int j=0; j<y_values.length; j++) {
-					Double occ = x.get(y_values[j]);
-					if (occ == null) {
-						occ = Double.valueOf(1.0);
-					} else {
-						occ = occ + 1.0;
-					}
-					x.put(y_values[j], occ);
-					x_vals[j] = occ;
-				}
-				
-				XYSeries dataset = new XYSeries(series[i], true, true);
-				double x_values[] = new double[x_vals.length];
-				for(int j=0; j<x_values.length; j++) {
-					try {
-						dataset.add( y_values[i], x_vals[j].doubleValue() );
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				} 
-				
-				table.addSeries( dataset ); */
-				
 			} catch (IOException e) {
 				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
 				System.err.println(e.getMessage());
@@ -240,6 +209,7 @@ public class GraphScopeView extends ViewPart {
 		Plot plot = chart.getPlot();
 		plot.setBackgroundPaint(java.awt.Color.WHITE);
 		plot.setOutlinePaint(java.awt.Color.GRAY);
+		plot.setForegroundAlpha(0.85F);
 		chart.setBackgroundPaint(java.awt.Color.WHITE);
 		chartFrame.setChart(chart);
 	}
@@ -254,7 +224,7 @@ public class GraphScopeView extends ViewPart {
 	 */
 	static public String getGraphTitle(Scope scope, BaseMetric metric, int metric_index) {
 		String sTitle = metric.getDisplayName();
-		int pos = sTitle.lastIndexOf('(');
+		int pos = sTitle.indexOf(':');
 
 		if (pos>0) {
 			sTitle = sTitle.substring(0, pos);

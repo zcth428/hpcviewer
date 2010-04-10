@@ -66,7 +66,7 @@ public class ScopeView extends BaseScopeView {
         		for (int i=0; i<num_metrics; i++) {
         			final BaseMetric metric = exp.getMetric( GraphScopeView.getStandardMetricIndex(i) );
         			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, i);
-        			mgr.add( new ScopeGraphAction("View "+ menu_title, scope, metric, i));
+        			mgr.add( new ScopeGraphAction("View graph "+ menu_title, scope, metric, i));
         		}
         		
         	} else {
@@ -74,7 +74,7 @@ public class ScopeView extends BaseScopeView {
     			final int metric_index = GraphScopeView.getNormalizedMetricIndex( selectedColumn-1);
     			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, metric_index);
     			
-            	mgr.add( new ScopeGraphAction("View "+ menu_title, scope, metric, metric_index));
+            	mgr.add( new ScopeGraphAction("View graph "+ menu_title, scope, metric, metric_index));
         	}
         }		
 	} 

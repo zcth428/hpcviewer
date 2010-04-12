@@ -62,11 +62,13 @@ public class ScopeView extends BaseScopeView {
         if (scope != null && this.hasThreadsLevelData) {
         	Experiment exp = this.getExperiment();
         	if (this.selectedColumn == 0) {
-        		final int num_metrics = GraphScopeView.getNormalizedMetricIndex( exp.getMetricCount() );
+        		final int num_metrics = exp.getThreadLevelDataManager().getNumMetrics();
+        		//final int num_metrics = GraphScopeView.getNormalizedMetricIndex( exp.getMetricCount() );
         		for (int i=0; i<num_metrics; i++) {
         			final BaseMetric metric = exp.getMetric( GraphScopeView.getStandardMetricIndex(i) );
         			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, i);
-        			mgr.add( new ScopeGraphAction("View graph "+ menu_title, scope, metric, i));
+        			//final String status = (i%2==0? " (I)" : " (E)");
+        			mgr.add( new ScopeGraphAction("Graph "+menu_title, scope, metric, i));
         		}
         		
         	} else {
@@ -74,7 +76,7 @@ public class ScopeView extends BaseScopeView {
     			final int metric_index = GraphScopeView.getNormalizedMetricIndex( selectedColumn-1);
     			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, metric_index);
     			
-            	mgr.add( new ScopeGraphAction("View graph "+ menu_title, scope, metric, metric_index));
+            	mgr.add( new ScopeGraphAction("Graph "+ menu_title, scope, metric, metric_index));
         	}
         }		
 	} 

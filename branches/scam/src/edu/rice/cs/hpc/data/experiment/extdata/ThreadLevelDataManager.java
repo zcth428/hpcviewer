@@ -27,7 +27,7 @@ public class ThreadLevelDataManager {
 	
 	public ThreadLevelDataManager(String sPath, BaseMetric metrics[]) {
 		this.checkThreadsMetricDataFiles(sPath);
-		num_metrics = 2; //metrics.length >> 3;
+		num_metrics = 4; //metrics.length >> 3;
 	}
 	
 	
@@ -45,6 +45,9 @@ public class ThreadLevelDataManager {
 		return false;
 	}
 	
+	public int getNumMetrics() {
+		return this.num_metrics;
+	}
 	
 	/**
 	 * thread level data may contain some experiment instances. 
@@ -131,6 +134,9 @@ public class ThreadLevelDataManager {
 			String filename = f[i].getName();
 			String parts[] = filename.split("-");
 			if (parts.length > 4) {
+				//--------------------------------------------------------------------
+				// get the series name for the key
+				//--------------------------------------------------------------------
 				String key = parts[parts.length - 1];
 				
 				//--------------------------------------------------------------------

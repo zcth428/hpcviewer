@@ -181,15 +181,27 @@ public class GraphScopeView extends ViewPart {
 
 	
 	/**
-	 * get the index metric for data level thread
+	 * get the normalized index metric for data level thread
+	 * The thread level has its own metric index, started from 0 to 2n-1
+	 * 	 where n is the number of events recorded (PAPI_xxx or WALLCLOCK)
 	 * @param metric_index
 	 * @return
 	 */
 	public static int getNormalizedMetricIndex(int metric_index) {
+
+		// ------------------------------------------------------------------------------
+		// temporary solution: we assume that for each event, we need to record 8 metrics
+		// 	
+		// ------------------------------------------------------------------------------
 		return metric_index >> 3;
 	}
 	
 	
+	/**
+	 * get the usual standard metric index defined in experiment.xml
+	 * @param normal_metric_index
+	 * @return
+	 */
 	public static int getStandardMetricIndex(int normal_metric_index) {
 		return normal_metric_index << 3;
 	}
@@ -261,24 +273,37 @@ public class GraphScopeView extends ViewPart {
 		return dataset;
 	}
 
-
+	
+	/*************************************************
+	 * class to manage data for plotting graph
+	 * @author laksonoadhianto
+	 *
+	 *************************************************/
 	private class PlotData {
 		int metric_index;
 		long node_index;
 		String series[];
 		ThreadLevelDataManager objDataManager;
 		
-		public PlotData( Experiment exp, long node, int metric) {
-				objDataManager = exp.getThreadLevelDataManager();
+		/**
+		 * constructor to initialize and normalize data for plotting graph
+		 * @param exp: experiment
+		 * @param node: node index (1-based)
+		 * @param metric: metric index (not normalized)
+		 */
+		public PlotData( Experiment exp, long node, int metric) 
+			throws RuntimeException {
+			
+			objDataManager = exp.getThreadLevelDataManager();
+			
+			if (!objDataManager.isDataAvailable()) {
+				throw new RuntimeException("Experiment has no thread-level data");
+			}
 			
 			// adjust the node index: 1=the root, 2=node-0, 3=node-1, .... 
 			node_index = node - 1;
 			// adjust the metric index: start from the first metric
 			metric_index = GraphScopeView.getNormalizedMetricIndex(metric - exp.getMetric(0).getIndex());
-			
-			if (!objDataManager.isDataAvailable()) {
-				return;
-			}
 			
 			series = objDataManager.getSeriesName();
 

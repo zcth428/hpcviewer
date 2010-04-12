@@ -376,7 +376,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @return
 	 **------------------------------------------------------------------------------**/
 	private String getID( Scope scope ) {
-		int id = scope.getFlatIndex();
+		int id = scope.hashCode();
 		String hash_id = scope.getClass().getSimpleName();
 		if (hash_id != null) {
 			hash_id = hash_id.substring(0, 2) + id;
@@ -507,7 +507,12 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			arr_new_scopes[0] = flat_s;
 		}
 		htFlatCostAdded.put(objCode, arr_new_scopes);
+		/*if (flat_s.getName().equals("free")) {
+			System.out.println(objCode+"\t"+iline+" FVSV "+flat_s+" ("+flat_s.hashCode()+"): "+flat_s.getMetricValue(0).getValue()+"\t<-- " + cct_s + "(" + cct_s.hashCode()+ ")");
+			iline++;
+		}*/
 	}
+	//int iline = 0; 
 
 	
 	/*************************************************************************

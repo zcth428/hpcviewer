@@ -118,7 +118,7 @@ public class GraphScopeView extends ViewPart {
 			}			
 		}
 		
-		JFreeChart chart = ChartFactory.createScatterPlot(sTitle, "Process.Threads", "Metrics", table,
+		JFreeChart chart = ChartFactory.createScatterPlot(sTitle, "Rank sequence", "Metrics", table,
 				PlotOrientation.VERTICAL, data.series.length>1, false, false);
 
 		this.finalizeGraph(chart);

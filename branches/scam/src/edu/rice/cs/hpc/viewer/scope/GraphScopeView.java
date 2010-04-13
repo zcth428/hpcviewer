@@ -168,6 +168,9 @@ public class GraphScopeView extends ViewPart {
 	 * @return
 	 */
 	static public String getGraphTitle(Scope scope, BaseMetric metric, int metric_index) {
+		if (scope == null || metric == null)
+			return null;
+		
 		String sTitle = metric.getDisplayName();
 		int pos = sTitle.indexOf(':');
 

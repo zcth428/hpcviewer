@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView.ScopeViewTreeAction;
@@ -62,8 +63,14 @@ public class ScopeView extends BaseScopeView {
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
         if (scope != null && this.hasThreadsLevelData) {
         	Experiment exp = this.getExperiment();
+        	ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
+        	
+        	// return immediately if the experiment doesn't contain thread level data
+        	if (!objDataManager.isDataAvailable())
+        		return;
+        	
         	if (this.selectedColumn == 0) {
-        		final int num_metrics = exp.getThreadLevelDataManager().getNumMetrics();
+        		final int num_metrics = objDataManager.getNumMetrics();
         		//final int num_metrics = GraphScopeView.getNormalizedMetricIndex( exp.getMetricCount() );
         		for (int i=0; i<num_metrics; i++) {
         			final BaseMetric metric = exp.getMetric( GraphScopeView.getStandardMetricIndex(i) );

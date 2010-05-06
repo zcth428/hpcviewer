@@ -69,8 +69,7 @@ protected String version;
 /** ----------------- DICTIONARIES -----------------  **/
 protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 protected Hashtable<Integer, SourceFile> hashFileTable;
-//protected Hashtable<Integer, SourceFile> hashProcedureTable;
-//private SourceFile []arrSourceFiles;
+
 
 /** The experiment's metrics. */
 protected Vector<BaseMetric> metricList;

@@ -199,5 +199,8 @@ public class ScopeView extends BaseScopeView {
 
     }
 
+
+	@Override
+	protected void updateDatabase(Experiment newDatabase) {}
     
 }

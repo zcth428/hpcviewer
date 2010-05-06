@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
@@ -46,6 +47,12 @@ public class CallerScopeView extends BaseScopeView {
 	@Override
 	protected ScopeTreeContentProvider getScopeContentProvider() {
 		return new CallerViewContentProvider();
+	}
+
+	@Override
+	protected void updateDatabase(Experiment newDatabase) {
+		CallerViewContentProvider objContent = (CallerViewContentProvider) this.treeViewer.getContentProvider();
+		objContent.setDatabase(newDatabase);
 	}
 
 }

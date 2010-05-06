@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import java.util.LinkedList;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
@@ -12,6 +13,8 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
 
 public class CallerViewContentProvider extends ScopeTreeContentProvider {
 
+	private ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
+	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	
     /**
      * get the number of elements (called by jface)
@@ -35,9 +38,6 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         	} else {
         		// dynamically create callers view
         		Scope scope = parent.getScope();
-        		BaseMetric metrics[] = scope.getExperiment().getMetrics();
-        		ExclusiveOnlyMetricPropagationFilter exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-        		InclusiveOnlyMetricPropagationFilter inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
 
         		CallSiteScopeCallerView cc = (CallSiteScopeCallerView) scope;
         		CallSiteScope cct = (CallSiteScope) cc.getScopeCCT();
@@ -78,4 +78,10 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     		return false;
     }
 
+    
+    public void setDatabase(Experiment experiment) {
+    	BaseMetric metrics[] = experiment.getMetrics();
+    	exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
+    	inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+    }
 }

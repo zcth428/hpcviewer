@@ -52,14 +52,16 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
  */
 abstract public class BaseScopeView  extends ViewPart {
 
-	private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
-    private Experiment 	myExperiment;		// experiment data	
+	protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
+    
+	private Experiment 	myExperiment;		// experiment data	
     private RootScope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
 	private ScopeViewActions objViewActions;	// actions for this scope view
 	private Clipboard cb = null;
 	private TreeViewerColumn []colMetrics;
+	
 	/**
 	 * bar composite for placing toolbar and tool items
 	 */
@@ -452,6 +454,10 @@ abstract public class BaseScopeView  extends ViewPart {
 	private void updateDisplay() {
         if (myExperiment == null)
         	return;
+        
+        // refresh the content with new database
+        this.updateDatabase(myExperiment);
+        
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
         	// remove the metric columns blindly
@@ -504,8 +510,6 @@ abstract public class BaseScopeView  extends ViewPart {
             this.objViewActions.checkNodeButtons();
         } else {
         	// empty experiment data (it should be a warning instead of an error. The error should be on the profile side).
-//        	org.eclipse.jface.dialogs.MessageDialog.openWarning(this.getSite().getShell(), "Warning: empty database", 
-//        			"The database contains no data.");
         	this.objViewActions.showErrorMessage("Warning: empty database.");
         }
    	}
@@ -562,4 +566,10 @@ abstract public class BaseScopeView  extends ViewPart {
     abstract protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope);
     
     abstract protected ScopeTreeContentProvider getScopeContentProvider();
+    
+    /**
+     * Tell children to update the content with the new database
+     * @param new_database
+     */
+    abstract protected void updateDatabase(Experiment new_database);
 }

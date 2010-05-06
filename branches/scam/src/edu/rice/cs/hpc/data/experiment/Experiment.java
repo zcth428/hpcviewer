@@ -383,6 +383,19 @@ public void postprocess()  {
 	this.postprocess(true);
 }
 
+
+public RootScope getCallerTreeRoot() {
+	
+	if (this.rootScope.getSubscopeCount()==3) {
+		
+		Scope scope = this.rootScope.getSubscope(1);
+		if (scope instanceof RootScope)
+			return (RootScope) scope;
+		
+	}
+	return null;
+}
+
 /**
  * Post-processing for CCT:
  * @param:

@@ -4,17 +4,21 @@ import java.util.LinkedList;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
 public class CallerViewContentProvider extends ScopeTreeContentProvider {
 
 	private ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
+	private MetricValue root_values[];
 	
     /**
      * get the number of elements (called by jface)
@@ -36,7 +40,10 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         		if (arrChildren.length>0)
         			return arrChildren;
         	} else {
+        		
+        		//-------------------------------------------------------------------------
         		// dynamically create callers view
+        		//-------------------------------------------------------------------------
         		Scope scope = parent.getScope();
 
         		CallSiteScopeCallerView cc = (CallSiteScopeCallerView) scope;
@@ -46,9 +53,21 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         			CallersViewScopeVisitor.createCallChain( cct, cc, cc,
         					inclusiveOnly, exclusiveOnly);
         		
+        		//-------------------------------------------------------------------------
+        		// set the percent
+        		//-------------------------------------------------------------------------
+        		for(int i=0; i<path.size(); i++) {
+        			CallSiteScopeCallerView callsite = path.get(i);
+            		PercentScopeVisitor.setPercentValue(callsite, root_values, root_values.length);
+        		}
+        		
         		CallSiteScopeCallerView first = path.removeFirst();
         		CallersViewScopeVisitor.addNewPathIntoTree(cc, first, path);
         		
+        		//-------------------------------------------------------------------------
+        		// set the new node into the content of the tree view:
+        		//  we assume that the parent node only has ONE child
+        		//-------------------------------------------------------------------------
         		Scope.Node scope_children[] = new Scope.Node[1];
         		scope_children[0] = first.getTreeNode();
         		return scope_children;
@@ -83,5 +102,17 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     	BaseMetric metrics[] = experiment.getMetrics();
     	exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
     	inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+    	
+    	RootScope root = experiment.getCallerTreeRoot();
+    	if (root != null) {
+    		this.root_values = new MetricValue[experiment.getMetricCount()];
+    		
+    		for(int i=0; i<experiment.getMetricCount(); i++) {
+    			this.root_values[i] = root.getMetricValue(i);
+    		}
+    	} else {
+    		
+    		throw new RuntimeException("Unable to retrieve the root of caller view");
+    	}
     }
 }

@@ -38,15 +38,14 @@ public class CallerScopeView extends BaseScopeView {
 	}
 
 	@Override
-	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
-		// TODO Auto-generated method stub
-		
-	}
+	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {}
 
 	@Override
-	protected void mouseDownEvent(Event event) {
-		// TODO Auto-generated method stub
-		
+	protected void mouseDownEvent(Event event) {}
+
+	@Override
+	protected ScopeTreeContentProvider getScopeContentProvider() {
+		return new CallerViewContentProvider();
 	}
 
 }

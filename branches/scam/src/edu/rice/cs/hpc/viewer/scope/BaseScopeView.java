@@ -282,8 +282,7 @@ abstract public class BaseScopeView  extends ViewPart {
 		// Laks 2009.06.22: add multi-selection for enabling copying into clipboard 
     	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.MULTI);
     	// set the attributes
-    	ScopeTreeContentProvider treeContentProvider;
-    	treeContentProvider = new ScopeTreeContentProvider(); 
+    	ScopeTreeContentProvider treeContentProvider = getScopeContentProvider(); 
     	treeViewer.setContentProvider(treeContentProvider);
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
@@ -561,4 +560,6 @@ abstract public class BaseScopeView  extends ViewPart {
     protected abstract void mouseDownEvent(Event event);
 
     abstract protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope);
+    
+    abstract protected ScopeTreeContentProvider getScopeContentProvider();
 }

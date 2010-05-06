@@ -101,6 +101,12 @@ public class ScopeView extends BaseScopeView {
 	} 
 
 
+	@Override
+	protected ScopeTreeContentProvider getScopeContentProvider() {
+		return new ScopeTreeContentProvider();
+	}
+
+	
 	/***
 	 * Create 3 submenus for plotting graph: plot, sorted and histo
 	 * @param menu
@@ -193,4 +199,5 @@ public class ScopeView extends BaseScopeView {
 
     }
 
+    
 }

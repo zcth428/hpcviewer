@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.data.experiment.scope;
 public class CallSiteScopeCallerView extends CallSiteScope {
 
 	private Scope scopeCCT; 
+	public int numChildren;
 	
 	/**
 	 * 
@@ -17,6 +18,7 @@ public class CallSiteScopeCallerView extends CallSiteScope {
 		super(scope, scope2, csst, id, id);
 
 		this.scopeCCT = cct;
+		numChildren = 0;
 	}
 
 

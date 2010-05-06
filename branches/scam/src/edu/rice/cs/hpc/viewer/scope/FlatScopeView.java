@@ -43,5 +43,10 @@ public class FlatScopeView extends BaseScopeView {
 		
 	}
 
+	@Override
+	protected ScopeTreeContentProvider getScopeContentProvider() {
+		return new ScopeTreeContentProvider();
+	}
+
 
 }

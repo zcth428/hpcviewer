@@ -24,6 +24,12 @@ public class CombineAggregateMetricVarMap extends MetricVarMap {
 	 */
 	public double getValue(String varName) {
 		assert(iCounter==0 || iCounter==1);
+		if (iCounter<0 || iCounter>1) {
+			System.err.println("Unable to retrieve value.\n\tscopes=[" + scopes[0] + ", " + scopes[1]+"]\n\tscopes-id=[" +
+					 scopes[0].getCCTIndex() + "," + scopes[1].getCCTIndex()  + "]\n\tcounter=" + iCounter  );
+			throw new RuntimeException();
+		}
+			
 		super.setScope(this.scopes[iCounter]);
 		
 		this.iCounter++;

@@ -47,15 +47,21 @@ public class PercentScopeVisitor implements IScopeVisitor {
 
 	protected void calc(Scope scope, ScopeVisitType vt) {
 		if (vt == ScopeVisitType.PostVisit) {
-			for (int i = 0; i < nMetrics; i++) {
-				MetricValue m = scope.getMetricValue(i);
-				if (m != MetricValue.NONE && metricCosts[i] != MetricValue.NONE) {
-					double myValue = m.getValue();
-					double total = metricCosts[i].getValue();
-					if (total != 0.0) m.setPercentValue(myValue/total);
-				}
-
-			}
+			setPercentValue(scope, this.metricCosts, this.nMetrics);
 		}
+	}
+	
+	
+	static public void setPercentValue(Scope scope, MetricValue root_values[], int num_metrics) {
+		for (int i = 0; i < num_metrics; i++) {
+			MetricValue m = scope.getMetricValue(i);
+			if (m != MetricValue.NONE && root_values[i] != MetricValue.NONE) {
+				double myValue = m.getValue();
+				double total = root_values[i].getValue();
+				if (total != 0.0) m.setPercentValue(myValue/total);
+			}
+
+		}
+
 	}
 }

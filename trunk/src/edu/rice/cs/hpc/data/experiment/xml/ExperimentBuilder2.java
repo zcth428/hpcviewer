@@ -103,7 +103,7 @@ public class ExperimentBuilder2 extends Builder
 	private Hashtable<Integer, Scope> hashCallSiteTable;
 	
 	private boolean csviewer;
-
+	
 //	INITIALIZATION							//
 
 
@@ -816,6 +816,26 @@ public class ExperimentBuilder2 extends Builder
 		}
 	}
 	
+	
+	private String getProcedureName(String sProcIndex) {
+		String sProcName = "unknown procedure";
+		boolean hashtableExist = (this.hashProcedureTable.size()>0);
+		if(hashtableExist) {
+			try {
+				Integer objProcID = Integer.parseInt(sProcIndex); 
+				// get the real name of the procedure from the dictionary
+				String sProc = this.hashProcedureTable.get(objProcID);
+				if(sProc != null) {
+					sProcName = sProc;
+				}
+			} catch (java.lang.NumberFormatException e) {
+				
+			}
+		} 
+		return sProcName;
+	}
+	
+	
 	/*************************************************************************
 	 *	Begins processing a PF (procedure frame) element.
 	 *       <!ATTLIST Pr
@@ -832,38 +852,29 @@ public class ExperimentBuilder2 extends Builder
 	{
 			boolean istext = true; 
 			boolean isalien = false; 
-			boolean hashtableExist = (this.hashProcedureTable.size()>0);
-			int      attr_sid      = 0;
+			boolean new_cct_format = false;
+			int cct_id = 0, flat_id = 0;
 			int firstLn = 0, lastLn = 0;
 			SourceFile srcFile = null; // file location of this procedure
 			
 			LoadModuleScope objLoadModule = null;
-			String[] attr_file     = new String[1];
-			String[] attr_function = new String[3];
 			String sProcName = "unknown procedure";
-			String[] attr_line     = new String[2];
-
-			attr_file[0]= "n";
-
-			attr_function[0]="n";
-			attr_function[1]="b";
-			attr_function[2]="e";
-
-			attr_line[0]="b";
-			attr_line[1]="e";
 
 			for(int i=0; i<attributes.length; i++) {
 				if (attributes[i].equals("s")) { 
-					attr_sid = Integer.parseInt(values[i]); 
+					// new database format: s is the flat ID of the procedure
+					sProcName = this.getProcedureName(values[i]);
+					flat_id = Integer.valueOf(values[i]);
+					if (!new_cct_format)
+						// old format: cct ID = flat ID
+						cct_id = flat_id;
+					
 				} else if (attributes[i].equals(ID_ATTRIBUTE)) {
 					// id of the proc frame. needs to cross ref
-					String sID = values[i];
-					String sData = this.hashProcedureTable.get(sID);
-					if(sData != null) {
-						// found the key, get the data from the database
-					}
-				}
-				else if(attributes[i].equals(FILENAME_ATTRIBUTE)) {
+					cct_id = Integer.parseInt(values[i]); 
+					new_cct_format = true;
+					
+				} else if(attributes[i].equals(FILENAME_ATTRIBUTE)) {
 					// file
 					istext = true;
 					try {
@@ -877,14 +888,10 @@ public class ExperimentBuilder2 extends Builder
 							// the first stack is null, so let start from number 1
 							srcFile = this.getOrCreateSourceFile(values[i], this.srcFileStack.size()+1);
 						}
-						//e.printStackTrace();
 					}
 					
-				}
-				else if(attributes[i].equals("lm")) { 
+				} else if(attributes[i].equals("lm")) { 
 					// load module
-					//if (!istext) {
-						//istext = false;
 					try {
 						// let see if the value of ln is an ID or a simple load module name
 						Integer indexFile = Integer.parseInt(values[i]);
@@ -898,49 +905,29 @@ public class ExperimentBuilder2 extends Builder
 						// this error means that the lm is not based on dictionary
 						objLoadModule = new LoadModuleScope(this.experiment, values[i], null, values[i].hashCode());
 					}
-					//}
-				}
-				else if (attributes[i].equals("p") ) {
+				} else if (attributes[i].equals("p") ) {
 					// obsolete format: p is the name of the procedure
 					sProcName = values[i];
-				}
-				else if(attributes[i].equals("n")) {
+					
+				} else if(attributes[i].equals("n")) {
 					// new database format: n is the flat ID of the procedure
-					sProcName = values[i];
-					if(hashtableExist) {
-						try {
-							Integer objProcID = Integer.parseInt(values[i]); 
-							// get the real name of the procedure from the dictionary
-							String sProc = this.hashProcedureTable.get(objProcID);
-							if(sProc != null) {
-								sProcName = sProc;
-							}
-						} catch (java.lang.NumberFormatException e) {
-							
-						}
-						
-					} 
-					// in case of error, we just refer the ID as the name of the procedure
-				}
-				else if(attributes[i].equals("l")) {
+					sProcName = this.getProcedureName(values[i]);
+					
+				} else if(attributes[i].equals("l")) {
 					// line number (or range)
 					StatementRange objRange = new StatementRange(values[i]);
 					firstLn = objRange.getFirstLine();
 					lastLn = objRange.getLastLine();
+					
 				} else if(attributes[i].equals("a")) { 
 					// alien
 					if (values[i].equals("1")) {
 						isalien = true;
 					}
 				} else if(attributes[i].equals("v")) {
-//					String sV = attributes[i];
-//					int iComma = sV.indexOf(",");
-//					while(iComma>=0) {
-//						val_line[0] = sV.substring(0, iComma-1);
-//						val_line[1] = sV.substring(iComma+1);
-//					}
 				}
 			}
+
 			// FLAT PROFILE: we retrieve the source file from the previous tag
 			if(srcFile == null) {
 					srcFile = (SourceFile) this.srcFileStack.peek();
@@ -950,11 +937,11 @@ public class ExperimentBuilder2 extends Builder
 			this.srcFileStack.add(srcFile);
 
 			if (isalien) {
-				attr_sid = Integer.MAX_VALUE ^ attr_sid;
+				flat_id = Integer.MAX_VALUE ^ flat_id;
 			}
 			ProcedureScope procScope  = new ProcedureScope(this.experiment, objLoadModule, srcFile, 
 					firstLn-1, lastLn-1, 
-					sProcName, attr_sid, isalien);
+					sProcName, isalien, cct_id, flat_id);
 
 			if ( (this.scopeStack.size()>1) && ( this.scopeStack.peek() instanceof LineScope)  ) {
 
@@ -965,9 +952,9 @@ public class ExperimentBuilder2 extends Builder
 				// In order to keep compatibility, we need to generate our own ID hoping it doesn't interfere
 				// with the ID generated by the new hpcprof :-(
 				//-----------------------------------------------------------------------------------------
-				int callsiteID = this.getCallSiteID(ls, procScope); //Integer.MAX_VALUE - ls.hashCode(); 
+				int	callsiteID = this.getCallSiteID(ls, procScope);  
 				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, 
-						CallSiteScopeType.CALL_TO_PROCEDURE, callsiteID);
+						CallSiteScopeType.CALL_TO_PROCEDURE, cct_id, callsiteID);
 
 				// beginScope pushes csn onto the node stack and connects it with its parent
 				// this is done while the ls is off the stack so the parent of csn is ls's parent. 
@@ -1111,27 +1098,25 @@ public class ExperimentBuilder2 extends Builder
 
 	private void begin_L(String[] attributes, String[] values)
 	{
-		String sID = "0";
-		int iID = 0;
+		int cct_id = 0, flat_id = 0;
 		int firstLn = 0;
 		int lastLn = 0;
+		
 		for(int i=0; i<attributes.length; i++) {
 			if(attributes[i].equals("s")) {
-				sID = values[i];
+				flat_id = Integer.valueOf(values[i]);
+				if (cct_id == 0)
+					cct_id = flat_id;
+				
 			} else if(attributes[i].equals("l")) {
 				String sLine = values[i];
 				StatementRange objRange = new StatementRange( sLine );
 				firstLn = objRange.getFirstLine();
-				lastLn = objRange.getLastLine();				
-			} else if(attributes[i].equals("i")) {
-				sID = values[i];
+				lastLn = objRange.getLastLine();	
 				
-			}
-		}
-		try {
-			iID = Integer.parseInt(sID);
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
+			} else if(attributes[i].equals(this.ID_ATTRIBUTE)) {
+				cct_id = Integer.valueOf(values[i]);
+			} 
 		}
 
 		SourceFile sourceFile = (SourceFile)this.srcFileStack.peek();
@@ -1147,7 +1132,7 @@ public class ExperimentBuilder2 extends Builder
 			//}
 			sourceFile = frameScope.getSourceFile();
 		}
-		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1, iID);
+		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1, cct_id, flat_id);
 
 		this.beginScope(loopScope);
 	}
@@ -1175,44 +1160,49 @@ public class ExperimentBuilder2 extends Builder
 	}
 	private void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
 	{
+		String[] val_line      = new String[2];
+		int cct_id = 0, flat_id = 0;
+		// make a new statement-range scope object
+		int firstLn = 0;
+		int lastLn  = 0;
 
-		{
-			String[] val_line      = new String[2];
-			int id = 0;
-			
-			val_line[0]="0";
-			val_line[1]="0";
-
-			for(int i=0; i<attributes.length; i++) {
-				if(attributes[i].equals("l")) {
-					val_line[0] = values[i];
-					val_line[1] = values[i];	 
-				} else if(attributes[i].equals("s"))  {
-					id = Integer.parseInt(values[i]);
-				} else if(attributes[i].equals("i"))  {
-					id = Integer.parseInt(values[i]);
-				}
+		for(int i=0; i<attributes.length; i++) {
+			if(attributes[i].equals(this.LINE_ATTRIBUTE)) {
+				/*String lines[] = values[i].split("-");
+				if (lines.length>1) {
+					firstLn = Integer.valueOf(lines[0]);
+					lastLn = Integer.valueOf(lines[1]);
+					
+				} else { */
+					firstLn = Integer.valueOf(values[i]);
+					lastLn = firstLn;
+				//}
+				
+			} else if(attributes[i].equals("s"))  {
+				flat_id = Integer.valueOf(values[i]);
+				if (cct_id == 0)
+					cct_id = flat_id;
+				
+			} else if(attributes[i].equals(this.ID_ATTRIBUTE))  {
+				cct_id = Integer.valueOf(values[i]);
 			}
+		}
 
-			SourceFile srcFile = (SourceFile)this.srcFileStack.peek();
+		SourceFile srcFile = (SourceFile)this.srcFileStack.peek();
 
-			// make a new statement-range scope object
-			int firstLn = Integer.parseInt(val_line[0]);
-			int lastLn  = Integer.parseInt(val_line[1]);
 
-			Scope scope;
-			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile, firstLn-1, id);
-			else
-				scope = new StatementRangeScope(this.experiment, srcFile, 
-						firstLn-1, lastLn-1, id);
+		Scope scope;
+		if( firstLn == lastLn )
+			scope = new LineScope(this.experiment, srcFile, firstLn-1, cct_id, flat_id);
+		else
+			scope = new StatementRangeScope(this.experiment, srcFile, 
+					firstLn-1, lastLn-1, cct_id, flat_id);
 
-			if (isCallSite) {
-				this.beginScope_internal(scope, false);
-			} else {
-				this.beginScope(scope);
-			}
-		} 
+		if (isCallSite) {
+			this.beginScope_internal(scope, false);
+		} else {
+			this.beginScope(scope);
+		}
 	}
 
 	/*************************************************************************
@@ -1300,11 +1290,8 @@ public class ExperimentBuilder2 extends Builder
 			top.addSubscope(scope);
 			scope.setParentScope(top);
 		}
-		
 		this.scopeStack.push(scope);
 	}
-
-
 
 	/*************************************************************************
 	 *	Ends a newly parsed scope.

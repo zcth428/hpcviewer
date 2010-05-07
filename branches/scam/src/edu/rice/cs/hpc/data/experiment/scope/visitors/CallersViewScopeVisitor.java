@@ -67,7 +67,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 
-			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, callee, scope,
+			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope,
 					this.inclusiveOnly, this.exclusiveOnly);
 
 			//-------------------------------------------------------
@@ -88,8 +88,17 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		}
 	}
 
+
 	
-	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct, Scope scope_ct,
+	/***********
+	 * create a call chain 
+	 * @param scope_cct: scope from cct
+	 * @param scope_cost: where the cost come
+	 * @param inclusiveOnly: filter for inclusive only
+	 * @param exclusiveOnly: filter for exclusive only
+	 * @return
+	 ***********/
+	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct,
 			Scope scope_cost,
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly ) {
 		//-----------------------------------------------------------------------
@@ -280,7 +289,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		}
 		
 		// accumulate the metrics
-		this.combine(caller_proc, cct_s, this.inclusiveOnly, this.exclusiveOnly);
+		combine(caller_proc, cct_s, this.inclusiveOnly, this.exclusiveOnly);
 		
 		return caller_proc;
 	}

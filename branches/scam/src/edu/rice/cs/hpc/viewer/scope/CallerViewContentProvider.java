@@ -50,7 +50,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         		CallSiteScope cct = (CallSiteScope) cc.getScopeCCT();
         		
         		LinkedList<CallSiteScopeCallerView> path =
-        			CallersViewScopeVisitor.createCallChain( cct, cc, cc,
+        			CallersViewScopeVisitor.createCallChain( cct, cc,
         					inclusiveOnly, exclusiveOnly);
         		
         		//-------------------------------------------------------------------------

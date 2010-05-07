@@ -113,6 +113,19 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    {
 	    	Group grpExpression = new Group(expressionArea, SWT.NONE);
 	    	
+			// name of the metric
+			Composite nameArea = new Composite(grpExpression, SWT.NONE);
+			Label lblName = new Label(nameArea, SWT.LEFT);
+			lblName.setText("New name for the derived metric:");
+			
+			this.cbName = new Combo(nameArea, SWT.NONE);
+			this.cbName.setToolTipText("Enter the new name of the derived metric");
+			objHistoryName = new UserInputHistory( ExtDerivedMetricDlg.HISTORY_METRIC_NAME );
+			this.cbName.setItems( this.objHistoryName.getHistory() );
+			
+			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
+			
+			// formula
 	    	Label lbl = new Label(grpExpression, SWT.NONE);
 	    	lbl.setText("Type the formula for the derived metric. Example: $0+(avg($1,$2,$3)/max($1,$2,$3))");
 	    	
@@ -241,17 +254,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			});
 			GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(typeArea);
 			*/
-			// name of the metric
-			Composite nameArea = new Composite(grpOptions, SWT.NONE);
-			Label lblName = new Label(nameArea, SWT.LEFT);
-			lblName.setText("New name for the derived metric:");
-			this.cbName = new Combo(nameArea, SWT.NONE);
-			this.cbName.setToolTipText("Enter the new name of the derived metric");
-			objHistoryName = new UserInputHistory( ExtDerivedMetricDlg.HISTORY_METRIC_NAME );
-			this.cbName.setItems( this.objHistoryName.getHistory() );
-			
-			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
-			
 			// percent option
 			this.btnPercent = new Button(grpOptions, SWT.CHECK);
 			this.btnPercent.setText("Display the metric percentage");

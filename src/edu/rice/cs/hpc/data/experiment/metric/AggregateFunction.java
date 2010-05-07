@@ -12,7 +12,6 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
  */
 public class AggregateFunction implements Function {
 
-	private BaseMetric []arrMetrics;
 	private RootScope rootscope;
 	
 	/**
@@ -20,7 +19,6 @@ public class AggregateFunction implements Function {
 	 * @param metrics: a list of metrics
 	 */
 	public AggregateFunction(BaseMetric []metrics, RootScope scope) {
-		this.arrMetrics = metrics;
 		this.rootscope = scope;
 	}
 

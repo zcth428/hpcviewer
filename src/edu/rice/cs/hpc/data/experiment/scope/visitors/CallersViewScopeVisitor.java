@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.scope.filters.AggregatePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
@@ -27,6 +26,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	
+	static private final int MAX_DESC = 3;
 	
 	/****--------------------------------------------------------------------------------****
 	 * 
@@ -55,63 +55,20 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 
 	public void visit(CallSiteScope scope, ScopeVisitType vt) {
 		
-		// bug fix:
+		//--------------------------------------------------------------------------------
 		// if there are no exclusive costs to attribute from this context, we are done here
+		//--------------------------------------------------------------------------------
 		if (!scope.hasNonzeroMetrics()) {
 			return; 
 		}
-		
-		if (vt == ScopeVisitType.PreVisit) { 
 
+		if (vt == ScopeVisitType.PreVisit) { 
+						
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 
-			//-----------------------------------------------------------------------
-			// compute callPath: a chain of my callers
-			//
-			// we build a chain of callers  by tracing the path from a procedure
-			// up to the root of the calling context tree. notice that 
-			// this isn't simply a reversal of the path. in the chain of callers,
-			// we associate the call site with the caller. in the calling context
-			// tree, the call site is paired with the callee. that's why we
-			// work with a pair of CallSiteScopes at a time (innerCS and enclosingCS)
-			//-----------------------------------------------------------------------
-			CallSiteScope innerCS = scope;
-			LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
-			Scope next = scope.getParentScope();
-			while ( (next != null) && !(next instanceof RootScope)) 
-			{
-				// Laksono 2009.01.14: we only deal with call site OR pure procedure scope (no alien)
-				if ( ((next instanceof CallSiteScope) || 
-						(next instanceof ProcedureScope && !((ProcedureScope)next).isAlien()) )
-						 && innerCS != null) {
-
-					CallSiteScope enclosingCS = null;
-					ProcedureScope mycaller = null;
-					
-					if (next instanceof ProcedureScope) {
-						mycaller = (ProcedureScope) next;
-						
-					}	else if (next instanceof CallSiteScope) {
-						enclosingCS = (CallSiteScope) next;
-						mycaller = (ProcedureScope) enclosingCS.getProcedureScope(); 
-					}
-					
-					LineScope lineScope = innerCS.getLineScope();
-					
-					if(lineScope != null) {
-						CallSiteScopeCallerView callerScope =
-							new CallSiteScopeCallerView( lineScope, mycaller,
-									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
-
-						this.combine(callerScope, scope);
-						callPathList.addLast(callerScope);
-						
-						innerCS = enclosingCS;
-					}
-				}
-				next = next.getParentScope();
-			}
+			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope,
+					this.inclusiveOnly, this.exclusiveOnly);
 
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
@@ -131,6 +88,77 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		}
 	}
 
+
+	
+	/***********
+	 * create a call chain 
+	 * @param scope_cct: scope from cct
+	 * @param scope_cost: where the cost come
+	 * @param inclusiveOnly: filter for inclusive only
+	 * @param exclusiveOnly: filter for exclusive only
+	 * @return
+	 ***********/
+	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct,
+			Scope scope_cost,
+			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly ) {
+		//-----------------------------------------------------------------------
+		// compute callPath: a chain of my callers
+		//
+		// we build a chain of callers  by tracing the path from a procedure
+		// up to the root of the calling context tree. notice that 
+		// this isn't simply a reversal of the path. in the chain of callers,
+		// we associate the call site with the caller. in the calling context
+		// tree, the call site is paired with the callee. that's why we
+		// work with a pair of CallSiteScopes at a time (innerCS and enclosingCS)
+		//-----------------------------------------------------------------------
+		CallSiteScope innerCS = scope_cct;
+		LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
+		Scope next = scope_cct.getParentScope();
+		int numKids = 0;
+		CallSiteScopeCallerView prev_scope = null;
+		while ( (next != null) && !(next instanceof RootScope) && (numKids<MAX_DESC) )  
+		{
+			// Laksono 2009.01.14: we only deal with call site OR pure procedure scope (no alien)
+			if ( ((next instanceof CallSiteScope) || 
+					(next instanceof ProcedureScope && !((ProcedureScope)next).isAlien()) )
+					 && innerCS != null) {
+
+				CallSiteScope enclosingCS = null;
+				ProcedureScope mycaller = null;
+				
+				if (next instanceof ProcedureScope) {
+					mycaller = (ProcedureScope) next;
+					
+				}	else if (next instanceof CallSiteScope) {
+					enclosingCS = (CallSiteScope) next;
+					mycaller = (ProcedureScope) enclosingCS.getProcedureScope(); 
+				}
+				
+				LineScope lineScope = innerCS.getLineScope();
+				
+				if(lineScope != null) {
+					numKids++;
+					if (prev_scope != null)
+						prev_scope.numChildren = 1;
+					if (numKids<MAX_DESC) {
+						CallSiteScopeCallerView callerScope =
+							new CallSiteScopeCallerView( lineScope, mycaller,
+									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
+
+						combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+						callPathList.addLast(callerScope);
+						
+						innerCS = enclosingCS;
+						prev_scope = callerScope;
+					}
+				}
+			}
+			next = next.getParentScope();
+		}
+
+		return callPathList;
+	}
+	
 	public void visit(Scope scope, ScopeVisitType vt) { }
 	public void visit(RootScope scope, ScopeVisitType vt) { }
 	public void visit(LoadModuleScope scope, ScopeVisitType vt) { }
@@ -197,8 +225,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
-				this.combine(first, existingCaller);
-				
+				combine(first, existingCaller, this.inclusiveOnly, this.exclusiveOnly);
+				System.out.println("callee: " + callee + "\t" + first + "\t" + existingCaller +"\t" + first.getMetricValue(0).getValue());
 				// merge rest of call path as a child of existingCaller.
 				mergeCallerPath(existingCaller, callerPathList);
 
@@ -209,6 +237,14 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		//----------------------------------------------
 		// no merge possible. add new path into tree.
 		//----------------------------------------------
+		addNewPathIntoTree(callee, first, callerPathList);
+	}
+	
+	
+	
+	static public void addNewPathIntoTree(Scope callee, CallSiteScopeCallerView first,
+			LinkedList<CallSiteScopeCallerView> callerPathList) {
+		
 		callee.addSubscope(first);
 		first.setParentScope(callee);
 		for (Scope prev = first; callerPathList.size() > 0; ) {
@@ -218,6 +254,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			prev = next;
 		}
 	}
+	
 	
 	
 	/****--------------------------------------------------------------------------------****
@@ -250,9 +287,9 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// add to the dictionary
 			calleeht.put(objCode, caller_proc);
 		}
-
+		
 		// accumulate the metrics
-		this.combine(caller_proc, cct_s);
+		combine(caller_proc, cct_s, this.inclusiveOnly, this.exclusiveOnly);
 		
 		return caller_proc;
 	}
@@ -263,7 +300,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 * @param caller_s
 	 * @param cct_s
 	 ****--------------------------------------------------------------------------------****/
-	private void combine(Scope caller_s, Scope cct_s) {
+	static private void combine(Scope caller_s, Scope cct_s, 
+			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
 		
 		if (caller_s.iCounter == 0) {
 			caller_s.combine(cct_s, inclusiveOnly);
@@ -281,12 +319,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	private void decrementCounter(Scope caller_s) {
 		if (caller_s == null)
 			return;
-		
+
 		if (caller_s.iCounter>0) {
 			caller_s.iCounter--;
 		} else {
 			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.hashCode());
 		}
 	}
-	
+
 }

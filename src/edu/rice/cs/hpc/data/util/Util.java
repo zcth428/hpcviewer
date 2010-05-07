@@ -200,6 +200,20 @@ public static class FileXMLFilter implements FilenameFilter {
 	}
 }
 
+
+/**
+ * 
+ * @author laksonoadhianto
+ *
+ */
+public static class FileThreadsMetricFilter implements FilenameFilter {
+
+	public boolean accept(File dir, String name) {
+		return name.endsWith("hpcprof-metrics");
+	}
+	
+}
+
 public static File[] getListOfXMLFiles(String sDir) 
 {
 	// find XML files in this directory

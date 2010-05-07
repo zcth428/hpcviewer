@@ -3,10 +3,15 @@
  */
 package edu.rice.cs.hpc.viewer.scope;
 
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IWorkbenchWindow;
+
+import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
  * Class for flat view scope. 
@@ -26,6 +31,26 @@ public class FlatScopeView extends BaseScopeView {
 	protected CellLabelProvider getLabelProvider() {
 		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
 	}
+
+	@Override
+	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void mouseDownEvent(Event event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected ScopeTreeContentProvider getScopeContentProvider() {
+		return new ScopeTreeContentProvider();
+	}
+
+	@Override
+	protected void updateDatabase(Experiment newDatabase) {}
 
 
 }

@@ -18,7 +18,7 @@ public class SqrtFunction implements Function {
 		// hack: if the root is negative, we need to return 0
 		//----------------------------------------------------------
 		if (root< 0.0) {
-			System.err.println("neg sqrt " + root);
+			//System.err.println("neg sqrt " + root);
 			return 0.0;
 		}
 		return java.lang.Math.sqrt(root);

@@ -360,6 +360,10 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * create a new metric based on a free expression
 	 */
 	public void addExtNewMetric() {
+		
+		if (this.myRootScope == null)
+			return;
+		
 		// prepare the dialog box
 		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objShell, 
 				this.myRootScope.getExperiment() );

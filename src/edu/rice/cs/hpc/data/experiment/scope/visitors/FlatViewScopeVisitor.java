@@ -507,7 +507,12 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			arr_new_scopes[0] = flat_s;
 		}
 		htFlatCostAdded.put(objCode, arr_new_scopes);
+		/*if (flat_s.getName().equals("free")) {
+			System.out.println(objCode+"\t"+iline+" FVSV "+flat_s+" ("+flat_s.hashCode()+"): "+flat_s.getMetricValue(0).getValue()+"\t<-- " + cct_s + "(" + cct_s.hashCode()+ ")");
+			iline++;
+		}*/
 	}
+	//int iline = 0; 
 
 	
 	/*************************************************************************

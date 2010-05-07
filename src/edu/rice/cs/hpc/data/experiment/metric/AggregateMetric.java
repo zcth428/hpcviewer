@@ -10,8 +10,8 @@ import com.graphbuilder.math.FuncMap;
 
 public class AggregateMetric extends BaseMetric {
  
-	static public char FORMULA_COMBINE = 'c';
-	static public char FORMULA_FINALIZE = 'f';
+	static final public char FORMULA_COMBINE = 'c';
+	static final public char FORMULA_FINALIZE = 'f';
 	
 	// formula expression
 	private Expression formulaCombine, formulaFinalize;

@@ -799,7 +799,7 @@ public class ExperimentBuilder extends Builder
 			}
 			Scope procScope  = new ProcedureScope(this.experiment, null, srcFile, 
 					firstLn-1, lastLn-1, 
-					val_function[0], attr_sid, isalien);
+					val_function[0], isalien, attr_sid, attr_sid);
 
 			/** Laks 2008.08.25: original code
 			 * 			Scope procScope  = new ProcedureScope(this.experiment, (SourceFile)srcFile, 
@@ -811,7 +811,8 @@ public class ExperimentBuilder extends Builder
 				//System.out.println("CallSiteScope Building..."+((Scope) this.stack.peek()).getName());
 
 				LineScope ls = (LineScope)this.scopeStack.pop();
-				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, CallSiteScopeType.CALL_TO_PROCEDURE,attr_sid);
+				CallSiteScope csn = new CallSiteScope((LineScope) ls, (ProcedureScope) procScope, 
+						CallSiteScopeType.CALL_TO_PROCEDURE,attr_sid, attr_sid);
 
 				// beginScope pushes csn onto the node stack and connects it with its parent
 				// this is done while the ls is off the stack so the parent of csn is ls's parent. 
@@ -943,7 +944,7 @@ public class ExperimentBuilder extends Builder
 		if (sid == 0) 
 			loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1);
 		else
-			loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1, sid);
+			loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1, sid, sid);
 		this.beginScope(loopScope);
 	}
 
@@ -1025,10 +1026,10 @@ public class ExperimentBuilder extends Builder
 			
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, srcFile, firstLn-1, sid);
+				scope = new LineScope(this.experiment, srcFile, firstLn-1, sid, sid);
 			else
 				scope = new StatementRangeScope(this.experiment, srcFile, 
-						firstLn-1, lastLn-1, sid);
+						firstLn-1, lastLn-1, sid, sid);
 
 			if (isCallSite) {
 				this.beginScope_internal(scope, false);
@@ -1048,10 +1049,10 @@ public class ExperimentBuilder extends Builder
 			
 			Scope scope;
 			if( firstLn == lastLn )
-				scope = new LineScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), firstLn-1, sid);
+				scope = new LineScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), firstLn-1, sid, sid);
 			else
 				scope = new StatementRangeScope(this.experiment, ((SourceFile)this.srcFileStack.peek()), 
-						firstLn-1, lastLn-1, sid);
+						firstLn-1, lastLn-1, sid, sid);
 
 			this.beginScope(scope);
 		}

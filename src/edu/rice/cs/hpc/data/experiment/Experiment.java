@@ -15,6 +15,7 @@
 package edu.rice.cs.hpc.data.experiment;
 
 
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
@@ -68,8 +69,7 @@ protected String version;
 /** ----------------- DICTIONARIES -----------------  **/
 protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 protected Hashtable<Integer, SourceFile> hashFileTable;
-//protected Hashtable<Integer, SourceFile> hashProcedureTable;
-//private SourceFile []arrSourceFiles;
+
 
 /** The experiment's metrics. */
 protected Vector<BaseMetric> metricList;
@@ -79,6 +79,8 @@ protected Scope rootScope;
 
 /** A mapping from internal name strings to metric objects. */
 protected HashMap metricMap;
+
+private ThreadLevelDataManager threadsData = null;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -307,11 +309,11 @@ public void beginScope(Scope scope)
 	//this.scopes.addScope(scope);
 }
 
-protected Scope createCallersView(Scope callingContextViewRootScope)
+protected RootScope createCallersView(Scope callingContextViewRootScope)
 {
 	EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
 
-	Scope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallerTree);
+	RootScope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallerTree);
 	beginScope(callersViewRootScope);
 	
 	CallersViewScopeVisitor csv = new CallersViewScopeVisitor(this, callersViewRootScope, 
@@ -333,6 +335,9 @@ protected Scope createFlatView(Scope callingContextViewRootScope)
 	FlatViewScopeVisitor fv = new FlatViewScopeVisitor(this, (RootScope) flatViewRootScope);
 
 	callingContextViewRootScope.dfsVisitScopeTree(fv);
+	
+	EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
+	flatViewRootScope.accumulateMetrics(callingContextViewRootScope, filter	, getMetricCount());
 
 	return flatViewRootScope;
 }
@@ -378,6 +383,19 @@ public void postprocess()  {
 	this.postprocess(true);
 }
 
+
+public RootScope getCallerTreeRoot() {
+	
+	if (this.rootScope.getSubscopeCount()==3) {
+		
+		Scope scope = this.rootScope.getSubscope(1);
+		if (scope instanceof RootScope)
+			return (RootScope) scope;
+		
+	}
+	return null;
+}
+
 /**
  * Post-processing for CCT:
  * @param:
@@ -420,30 +438,37 @@ public void postprocess(boolean callerView) {
 		Scope callersViewRootScope = null;
 		if (callerView) {
 			callersViewRootScope = createCallersView(callingContextViewRootScope);
-			//copyMetricsToPartner(callersViewRootScope, MetricType.EXCLUSIVE, emptyFilter);
 			addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
 		}
 		
 		//----------------------------------------------------------------------------------------------
 		// Flat View
 		//----------------------------------------------------------------------------------------------
+		Scope flatViewRootScope = null;
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
-		Scope flatViewRootScope = createFlatView(callingContextViewRootScope);
-		flatViewRootScope.accumulateMetrics(callingContextViewRootScope, emptyFilter, this.getMetricCount());
+		flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);
 
 		//----------------------------------------------------------------------------------------------
 		// FINALIZATION
 		//----------------------------------------------------------------------------------------------
-		this.finalizeAggregateMetrics(callingContextViewRootScope);		// cct
-		if (callerView)													// caller view
-			this.finalizeAggregateMetrics(callersViewRootScope);
+		if (callerView)	{												// caller view
+				this.finalizeAggregateMetrics(callersViewRootScope);
+		}
+		
 		this.finalizeAggregateMetrics(flatViewRootScope);				// flat view
+		
+		this.finalizeAggregateMetrics(callingContextViewRootScope);		// cct
 		
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
 
+		//----------------------------------------------------------------------------------------------
+		// CCT Thread level data
+		//----------------------------------------------------------------------------------------------
+		this.initThreadsMetricDataFiles(this.fileExperiment.getPath());
+		
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
 	} else {
@@ -656,17 +681,6 @@ public BaseMetric getMetric(String name)
 	return metric;
 }
 
-/* laks: 2010.02.27 we don't need this methos. integrate it with addDerivedMetric()
-public void addMetric(BaseMetric m)
-{
-	int index = this.getMetricCount();
-	m.setIndex(index);
-	String sID = String.valueOf(index);
-	//m.setShortName(sID);
-	this.metricList.add(m);
-	this.metricMap.put(sID, m);
-}
-*/
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -727,6 +741,59 @@ public FileScope getFileScope(int index)
 
 public File getXMLExperimentFile() {
 	return this.fileExperiment;
+}
+
+
+private void initThreadsMetricDataFiles(String sPath) {
+	this.threadsData = new ThreadLevelDataManager(sPath, this.getMetrics());
+}
+
+
+public ThreadLevelDataManager getThreadLevelDataManager() {
+	return this.threadsData;
+}
+
+
+private class CreateCallersViewThread extends Thread {
+	private RootScope callersViewRootScope;
+	private RootScope callingContextViewRootScope;
+	
+	public CreateCallersViewThread(RootScope cctRootScope) {
+		super();
+		this.callingContextViewRootScope = cctRootScope;
+	}
+	
+	public void run() {
+		callersViewRootScope = createCallersView(callingContextViewRootScope);
+		addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
+	}
+	
+	public RootScope getRootScope() {
+		return callersViewRootScope;
+	}
+	
+}
+
+
+private class CreateFlatViewThread extends Thread {
+	private RootScope flatViewRootScope;
+	private RootScope callingContextViewRootScope;
+	
+	public CreateFlatViewThread(RootScope cctRootScope) {
+		super();
+		this.callingContextViewRootScope = cctRootScope;
+	}
+	
+	public void run() {
+		// While creating the flat tree, we attribute the cost for procedure scopes
+		// One the tree has been created, we compute the inclusive cost for other scopes
+		flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);
+	}
+	
+	public RootScope getRootScope() {
+		return flatViewRootScope;
+	}
+	
 }
 
 //======================================================================================

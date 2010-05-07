@@ -71,11 +71,7 @@ public FileScope(Experiment experiment, SourceFile sourceFile)
 }
 
 public Scope duplicate() {
-    return new FileScope(this.experiment, sourceFile, this.id);
-}
-
-public int hashCode() {
-	return this.id; //this.sourceFile.getFileID(); //this.getSourceFile().getName().hashCode();
+    return new FileScope(this.experiment, sourceFile, this.flat_node_index);
 }
 
 //////////////////////////////////////////////////////////////////////////

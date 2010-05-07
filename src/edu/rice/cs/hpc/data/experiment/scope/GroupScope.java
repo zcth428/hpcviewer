@@ -55,7 +55,7 @@ protected String groupName;
 	
 public GroupScope(Experiment experiment, String groupname)
 {
-	super(experiment);
+	super(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, Scope.idMax++, Scope.idMax);
 	this.groupName = groupname;
 //	this.id = "GroupScope";
 }
@@ -63,10 +63,6 @@ public GroupScope(Experiment experiment, String groupname)
 
 public Scope duplicate() {
     return new GroupScope(this.experiment, this.groupName);
-}
-
-public int hashCode() {
-	return this.groupName.hashCode();
 }
 
 //////////////////////////////////////////////////////////////////////////

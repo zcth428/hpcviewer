@@ -56,7 +56,7 @@ protected RootScopeType rootScopeType;
 	
 public RootScope(Experiment experiment, String prog, String name, RootScopeType rst)
 {
-	super(experiment);	
+	super(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, 0,0);	
 	this.programName = prog;
 	this.rootScopeName = name;
 //	this.id = "RootScope";
@@ -67,10 +67,6 @@ public RootScope(Experiment experiment, String prog, String name, RootScopeType 
 
 public Scope duplicate() {
     return new RootScope(null, this.programName, this.rootScopeName, this.rootScopeType);
-}
-
-public int hashCode() {
-	return this.rootScopeName.hashCode();
 }
 
 //////////////////////////////////////////////////////////////////////////

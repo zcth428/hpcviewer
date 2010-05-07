@@ -12,7 +12,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.apache.xerces,
  org.eclipse.ui.editors,
- org.eclipse.jface.text,
- org.junit
+ org.eclipse.jface.text
 Eclipse-LazyStart: true
-Bundle-ClassPath: hpcviewer.jar
+Bundle-ClassPath: hpcviewer.jar,
+ external-jars/jcommon-1.0.16.jar,
+ external-jars/jfreechart-1.0.13-experimental.jar,
+ external-jars/jfreechart-1.0.13-swt.jar,
+ external-jars/jfreechart-1.0.13.jar,
+ external-jars/swtgraphics2d.jar

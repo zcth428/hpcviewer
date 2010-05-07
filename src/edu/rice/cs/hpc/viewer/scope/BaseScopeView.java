@@ -4,7 +4,10 @@ import java.io.FileNotFoundException;
 
 //User interface
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 
 //SWT
 import org.eclipse.swt.*;
@@ -14,6 +17,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
@@ -29,10 +33,15 @@ import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ITreeViewerListener;
+import org.eclipse.jface.viewers.ViewerCell;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
@@ -43,18 +52,22 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
  */
 abstract public class BaseScopeView  extends ViewPart {
 
-    private ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
-    private Experiment 	myExperiment;		// experiment data	
+	protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
+    
+	private Experiment 	myExperiment;		// experiment data	
     private RootScope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
 	private ScopeViewActions objViewActions;	// actions for this scope view
 	private Clipboard cb = null;
 	private TreeViewerColumn []colMetrics;
+	
 	/**
 	 * bar composite for placing toolbar and tool items
 	 */
 	protected CoolBar objCoolbar;
+	
+	protected boolean hasThreadsLevelData = false;
 	
     //======================================================
     // ................ HELPER ............................
@@ -150,13 +163,18 @@ abstract public class BaseScopeView  extends ViewPart {
         // ---- zoomout
         mgr.add(acZoomout);
         acZoomout.setEnabled(this.objViewActions.shouldZoomOutBeEnabled());
-        // additional feature
+
+        // ---- additional feature
         mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        // Laks: we don't need additional marker
-        //mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
         Scope scope = node.getScope();
-        
+
+        // Laks 2009.06.22: add new feature to copy selected line to the clipboard
+        mgr.add(acCopy);
+
+        //--------------------------------------------------------------------------
         // ---------- show the source code
+        //--------------------------------------------------------------------------
         
         // show the editor source code
         String sMenuTitle ;
@@ -171,7 +189,6 @@ abstract public class BaseScopeView  extends ViewPart {
         };
         acShowCode.setEnabled(node.hasSourceCodeFile);
         mgr.add(acShowCode);
-
 
         // show the call site in case this one exists
         if(scope instanceof CallSiteScope) {
@@ -189,10 +206,15 @@ abstract public class BaseScopeView  extends ViewPart {
         	acShowCallsite.setEnabled(Utilities.isFileReadable(lineScope));
         	mgr.add(acShowCallsite);
         }
+        
+        //--------------------------------------------------------------------------
+        // ---------- additional context menu
+        //--------------------------------------------------------------------------
+        mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
-        // Laks 2009.06.22: add new feature to copy selected line to the clipboard
-        mgr.add(acCopy);
+        this.createAdditionalContextMenu(mgr, scope);
     }
+    
     
     /**
      * Procedure to copy the selected items into string clipboard
@@ -236,21 +258,18 @@ abstract public class BaseScopeView  extends ViewPart {
      * @author laksono
      *
      */
-    private class ScopeViewTreeAction extends Action {
+    protected class ScopeViewTreeAction extends Action {
     	protected Scope scope;
     	public ScopeViewTreeAction(String sTitle, Scope scopeCurrent) {
     		super(sTitle);
     		this.scope = scopeCurrent;
     	}
-    	public void setScopeNode(Scope scopeCurrent) {
-    		this.scope = scopeCurrent;
-    	}
     }
+    
     
     //===================================================================
     // ---------- VIEW CREATION -----------------------------------------
     //===================================================================
-    //	return new ScopeViewActions(this.getViewSite().getShell(), objCompositeParent, objCoolbar); 
     
     /**
      * Create the content of the view
@@ -265,8 +284,7 @@ abstract public class BaseScopeView  extends ViewPart {
 		// Laks 2009.06.22: add multi-selection for enabling copying into clipboard 
     	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.MULTI);
     	// set the attributes
-    	ScopeTreeContentProvider treeContentProvider;
-    	treeContentProvider = new ScopeTreeContentProvider(); 
+    	ScopeTreeContentProvider treeContentProvider = getScopeContentProvider(); 
     	treeViewer.setContentProvider(treeContentProvider);
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
@@ -295,10 +313,14 @@ abstract public class BaseScopeView  extends ViewPart {
          */
         treeViewer.getTree().addListener(SWT.MouseDown, new Listener(){
         	public void handleEvent(Event event) {
-        		// this doesn't matter on Mac since the OS only one button
-        		// but on other OS, this can make differences
-        		if(event.button != 1) // yes, we only allow the first button 
+
+        		mouseDownEvent(event);
+
+    			if(event.button != 1) {
+        			// yes, we only allow the first button
         			return;
+        		}
+        		
         		// get the item
         		TreeItem []itemsSelected = treeViewer.getTree().getSelection();
         		if(itemsSelected == null || itemsSelected.length==0)
@@ -306,6 +328,7 @@ abstract public class BaseScopeView  extends ViewPart {
         		TreeItem item = itemsSelected[0];
         		Rectangle recImage = item.getImageBounds(0);	// get the image location (if exist)
         		Rectangle recText = item.getTextBounds(0);
+        		
         		// verify if the user click on the icon
         		if(recImage.intersects(event.x, event.y, event.width, event.height)) {
         			// Check the object of the click/select item
@@ -421,6 +444,8 @@ abstract public class BaseScopeView  extends ViewPart {
         this.objViewActions.setTreeViewer(treeViewer);
 
     	updateDisplay();
+
+    	this.hasThreadsLevelData = (myExperiment.getThreadLevelDataManager() != null);
     }
     
 	/**
@@ -429,6 +454,10 @@ abstract public class BaseScopeView  extends ViewPart {
 	private void updateDisplay() {
         if (myExperiment == null)
         	return;
+        
+        // refresh the content with new database
+        this.updateDatabase(myExperiment);
+        
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
         	// remove the metric columns blindly
@@ -481,8 +510,6 @@ abstract public class BaseScopeView  extends ViewPart {
             this.objViewActions.checkNodeButtons();
         } else {
         	// empty experiment data (it should be a warning instead of an error. The error should be on the profile side).
-//        	org.eclipse.jface.dialogs.MessageDialog.openWarning(this.getSite().getShell(), "Warning: empty database", 
-//        			"The database contains no data.");
         	this.objViewActions.showErrorMessage("Warning: empty database.");
         }
    	}
@@ -512,6 +539,11 @@ abstract public class BaseScopeView  extends ViewPart {
     	return this.treeViewer;
     }
 
+
+    protected Experiment getExperiment() {
+    	return this.myExperiment;
+    }
+
     //======================================================
     // ................ ABSTRACT...........................
     //======================================================
@@ -524,21 +556,20 @@ abstract public class BaseScopeView  extends ViewPart {
      * @return
      */
     abstract protected ScopeViewActions createActions(Composite parent, CoolBar coolbar);
-
-    /**
-     * Find which column the user has clicked. Return the index of the column if exist,
-     * 		-1 otherwise 
+    
+    /***
+     * event when a user starts to click
      * @param event
-     * @return
      */
-    /*
-    protected int getColumnMouseDown(Event event) {
-    	Point p = new Point(event.x, event.y);
-    	// the method getCell is only supported in Eclipse 3.4
-    	ViewerCell cell = this.treeViewer.getCell(p); 
-    	if(cell == null)
-    		return -1;
-    	int iPos = cell.getColumnIndex();
-    	return iPos;
-    } */
+    protected abstract void mouseDownEvent(Event event);
+
+    abstract protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope);
+    
+    abstract protected ScopeTreeContentProvider getScopeContentProvider();
+    
+    /**
+     * Tell children to update the content with the new database
+     * @param new_database
+     */
+    abstract protected void updateDatabase(Experiment new_database);
 }

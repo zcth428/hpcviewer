@@ -60,9 +60,10 @@ protected LoadModuleScope objLoadModule;
  *	Creates a ProcedureScope.
  ************************************************************************/
 	
-public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien, int id)
+public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, 
+		String proc, boolean _isalien, int cct_id, int flat_id)
 {
-	super(experiment, file, first, last, id);
+	super(experiment, file, first, last, cct_id, flat_id);
 	this.isalien = _isalien;
 	this.procedureName = proc;
 	this.objLoadModule = null;
@@ -70,7 +71,7 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
 
 public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien)
 {
-	this(experiment, file, first, last, proc, _isalien, Scope.idMax++);
+	this(experiment, file, first, last, proc, _isalien, Scope.idMax++, Scope.idMax);
 }
 
 /**
@@ -84,21 +85,11 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
  * @param _isalien
  */
 public ProcedureScope(Experiment experiment, LoadModuleScope loadModule, SourceFile file, 
-		int first, int last, String proc, int sid, boolean _isalien)
+		int first, int last, String proc, boolean _isalien, int cct_id, int flat_id)
 {
-	this(experiment, file, first, last,proc,_isalien, sid);
+	this(experiment, file, first, last,proc,_isalien, cct_id, flat_id);
 	//this.iScopeID = sid;
 	this.objLoadModule = loadModule;
-}
-
-public int hashCode() {
-	int val = isalien ? 1 : 0;
-	// Laks 2008.12.17: it is possible that routines with the same name are defined in different files.
-	//		TODO: routine the same name with different modules in the same file
-	//String sHashName = this.getSourceFile().getName() + "/" + this.procedureName;
-	int iCode = this.id ^ val; //sHashName.hashCode() ^ val;
-	return iCode;
-	//return this.procedureName.hashCode() ^ val;
 }
 
 public boolean equals(Object obj) {
@@ -140,8 +131,9 @@ public Scope duplicate() {
 			this.firstLineNumber, 
 			this.lastLineNumber,
 			this.procedureName,
-			this.id, // Laks 2008.08.26: add the sequence ID
-			this.isalien);
+			this.isalien,
+			this.cct_node_index, // Laks 2008.08.26: add the sequence ID
+			this.flat_node_index);
 
 }
 

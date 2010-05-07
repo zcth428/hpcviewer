@@ -68,7 +68,7 @@ public LoadModuleScope(Experiment experiment, String lmname, SourceFile file)
 
 
 public Scope duplicate() {
-    return new LoadModuleScope(this.experiment, this.loadModuleName, this.sourceFile, this.id);
+    return new LoadModuleScope(this.experiment, this.loadModuleName, this.sourceFile, this.flat_node_index);
 }
 
 /*

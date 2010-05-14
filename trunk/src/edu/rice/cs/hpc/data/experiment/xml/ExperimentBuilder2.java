@@ -70,6 +70,7 @@ public class ExperimentBuilder2 extends Builder
 
 	/** The parsed metric objects. */
 	protected List<BaseMetric> metricList;
+	protected List<MetricRaw> metricRawList;
 
 	/** The parsed root scope object. */
 	protected Scope rootScope;
@@ -264,6 +265,13 @@ public class ExperimentBuilder2 extends Builder
 
 		case T_METRIC_TABLE:
 			break;
+			
+		case T_METRIC_RAW_TABLE:
+			this.begin_MetricRawTable();
+			break;
+		case T_METRIC_RAW:
+			this.do_MetricRaw(attributes, values);
+			break;
 
 		case T_METRIC_FORMULA:
 			this.do_MetricFormula(attributes, values);
@@ -345,8 +353,13 @@ public class ExperimentBuilder2 extends Builder
 		case T_METRIC_TABLE:
 			this.end_MetricTable();
 			break;
-			
+
+		case T_METRIC_RAW_TABLE:
+			this.end_MetricRawTable();
+			break;
+
 			// ignored elements
+		case T_METRIC_RAW:
 		case T_M:
 		case T_HPCTOOLKIT_EXPERIMENT:
 		case T_NAME_VALUE:
@@ -704,7 +717,8 @@ public class ExperimentBuilder2 extends Builder
 	}
 
 
-
+	
+	
 	/*************************************************************************
 	 *	Begins processing an LM (load module) element.
 	 *	<!ATTLIST LM
@@ -794,6 +808,37 @@ public class ExperimentBuilder2 extends Builder
 	}
 
 
+	/*******
+	 * handling metric db
+	 * @param attributes
+	 * @param values
+	 */
+	private void do_MetricRaw(String[] attributes, String[] values)
+	{
+		int ID = 0;
+		String title = null;
+		String db_glob = null;
+		int db_id = 0;
+		int num_metrics = 0;
+		
+		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i].charAt(0) == 'i') {
+				ID = Integer.valueOf(values[i]);
+			} else if (attributes[i].charAt(0) == 'n') {
+				title = values[i];
+			} else if (attributes[i].equals("db-glob")) {
+				db_glob = values[i];
+			} else if (attributes[i].equals("db-id")) {
+				db_id = Integer.valueOf(values[i]);
+			} else if (attributes[i].equals("db-num-metrics")) {
+				num_metrics = Integer.valueOf(values[i]);
+			}
+		}
+		
+		MetricRaw metric = new MetricRaw(ID, title, db_glob, db_id, num_metrics);
+		this.metricRawList.add(metric);
+	}
+	
 	/*************************************************************************
 	 * 
 	 * @param attributes
@@ -1432,6 +1477,38 @@ public class ExperimentBuilder2 extends Builder
 		this.previousState = this.previousToken;
 	}
 	
+	
+	//--------------------------------------------------------------------------------
+	// raw metric database
+	//--------------------------------------------------------------------------------
+
+	/******
+	 * begin metric database
+	 */
+	private void begin_MetricRawTable() 
+	{
+		this.metricRawList = new ArrayList<MetricRaw>();
+	}
+
+	/***
+	 * end metric database
+	 */
+	private void end_MetricRawTable() 
+	{
+		if (this.metricRawList != null && this.metricRawList.size()>0) {
+			MetricRaw[] metrics = new MetricRaw[metricRawList.size()];
+			this.metricRawList.toArray( metrics );
+			this.experiment.setMetricRaw( metrics );
+		}
+	}
+
+
+	
+	//--------------------------------------------------------------------------------
+	// Utilities
+	//--------------------------------------------------------------------------------
+
+	
 	/*************************************************************************
 	 *	Returns the current scope.
 	 ************************************************************************/
@@ -1450,17 +1527,6 @@ public class ExperimentBuilder2 extends Builder
 		return null;
 	}
 	
-	private BaseMetric[] getMetricList() 
-	{
-		assert (this.metricList != null);
-		int nbMetrics = this.metricList.size();
-		BaseMetric []metrics = new BaseMetric[nbMetrics];
-		
-		for (int i=0; i<nbMetrics; i++) {
-			metrics[i] = this.metricList.get(i);
-		}
-		return metrics;
-	}
 	/*************************************************************************
 	 * Class to treat a string of line or range of lines into two lines: first line and last line 
 	 * @author laksonoadhianto

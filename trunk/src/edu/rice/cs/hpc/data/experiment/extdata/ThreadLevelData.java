@@ -33,6 +33,7 @@ public class ThreadLevelData {
 			file.seek(position);
 			double metric = (double)file.readLong();
 			file.close();
+			debug_print("\tpos: " + position + " , m: " + metric);
 			return metric;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

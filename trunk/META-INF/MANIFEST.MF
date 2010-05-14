@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.ui,
  org.apache.xerces,
  org.eclipse.ui.editors,
  org.eclipse.jface.text
-Eclipse-LazyStart: true
+Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: hpcviewer.jar,
  external-jars/jcommon-1.0.16.jar,
  external-jars/jfreechart-1.0.13-experimental.jar,

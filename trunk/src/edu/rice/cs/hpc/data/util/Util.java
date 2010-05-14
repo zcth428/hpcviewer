@@ -207,9 +207,16 @@ public static class FileXMLFilter implements FilenameFilter {
  *
  */
 public static class FileThreadsMetricFilter implements FilenameFilter {
-
+	private String db_glob;
+	
+	public FileThreadsMetricFilter(String pattern) {
+		db_glob = pattern.replace("*", ".*");
+	}
+	
 	public boolean accept(File dir, String name) {
-		return name.endsWith("hpcprof-metrics");
+		
+		boolean b = name.matches(db_glob);
+		return b;
 	}
 	
 }

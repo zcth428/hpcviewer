@@ -15,6 +15,7 @@ import org.eclipse.ui.PartInitException;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView.ScopeViewTreeAction;
 
@@ -25,9 +26,7 @@ import edu.rice.cs.hpc.viewer.scope.BaseScopeView.ScopeViewTreeAction;
  */
 public class ScopeView extends BaseScopeView {
     public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
-	private int selectedColumn = -1;
-
-    protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
+	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
         return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
     }
@@ -39,7 +38,7 @@ public class ScopeView extends BaseScopeView {
 
 	@Override
 	protected void mouseDownEvent(Event event) {
-    	this.selectedColumn = this.getColumnMouseDown(event);
+    	this.getColumnMouseDown(event);
 		
 	}
 
@@ -61,43 +60,28 @@ public class ScopeView extends BaseScopeView {
 
 	@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
-        if (scope != null && this.hasThreadsLevelData) {
-        	Experiment exp = this.getExperiment();
-        	ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
-        	
-        	// return immediately if the experiment doesn't contain thread level data
-        	if (!objDataManager.isDataAvailable())
-        		return;
-        	
-        	if (this.selectedColumn == 0) {
-        		final int num_metrics = objDataManager.getNumMetrics();
-        		//final int num_metrics = GraphScopeView.getNormalizedMetricIndex( exp.getMetricCount() );
-        		for (int i=0; i<num_metrics; i++) {
-        			final BaseMetric metric = exp.getMetric( GraphScopeView.getStandardMetricIndex(i) );
-        			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, i);
-        			final MenuManager subMenu = new MenuManager("Graph "+menu_title);
-        			
-        			this.createGraphMenus(subMenu, scope, metric, i);
-        			mgr.add(subMenu);
+		if (scope != null && this.hasThreadsLevelData) {
+			Experiment exp = this.getExperiment();
+			ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 
-        			/*
-        			//final String status = (i%2==0? " (I)" : " (E)");
-        			mgr.add( new ScopeGraphAction("Graph "+menu_title, scope, metric, i));
-        			*/
-        			
-        		}
-        		
-        	} else {
-    			final BaseMetric metric = exp.getMetric(selectedColumn-1);
-    			final int metric_index = GraphScopeView.getNormalizedMetricIndex( selectedColumn-1);
-    			final String menu_title = GraphScopeView.getGraphTitle(scope, metric, metric_index);    			
-    			final MenuManager subMenu = new MenuManager("Graph "+menu_title);
-    			
-    			this.createGraphMenus(subMenu, scope, metric, metric_index);
-    			mgr.add(subMenu);
-            	//mgr.add( new ScopeGraphAction("Graph "+ menu_title, scope, metric, metric_index));
-        	}
-        }		
+			// return immediately if the experiment doesn't contain thread level data
+			if (!objDataManager.isDataAvailable())
+				return;
+
+			final MetricRaw []metrics = this.getExperiment().getMetricRaw();
+			if (metrics == null)
+				return;
+			
+			final int num_metrics = metrics.length;
+
+			for (int i=0; i<num_metrics; i++) {
+				MenuManager subMenu = new MenuManager("Graph "+ metrics[i].getTitle());
+				this.createGraphMenus(subMenu, scope, metrics[i]);
+				mgr.add(subMenu);
+
+			}
+
+		}		
 	} 
 
 
@@ -114,10 +98,10 @@ public class ScopeView extends BaseScopeView {
 	 * @param m
 	 * @param index
 	 */
-	private void createGraphMenus(IMenuManager menu, Scope scope, BaseMetric m, int index) {
-		menu.add( this.createGraphMenu(scope, m, index, GraphType.PLOT) );
-		menu.add( this.createGraphMenu(scope, m, index, GraphType.SORTED) );
-		menu.add( this.createGraphMenu(scope, m, index, GraphType.HISTO) );
+	private void createGraphMenus(IMenuManager menu, Scope scope, MetricRaw m) {
+		menu.add( this.createGraphMenu(scope, m, GraphType.PLOT) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.SORTED) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.HISTO) );
 	}
 	
 	/***
@@ -128,13 +112,13 @@ public class ScopeView extends BaseScopeView {
 	 * @param t
 	 * @return
 	 */
-	private ScopeGraphAction createGraphMenu( Scope scope, BaseMetric m, int index, GraphType t) {
+	private ScopeGraphAction createGraphMenu( Scope scope, MetricRaw m, GraphType t) {
 		String sTitle = "Plot graph";
 		if (t == GraphType.HISTO)
 			sTitle = "Histogram graph";
 		else if (t == GraphType.SORTED)
 			sTitle = "Sorted plot graph";
-		return new ScopeGraphAction( sTitle, scope, m, index, t);
+		return new ScopeGraphAction( sTitle, scope, m, t);
 	}
 	
 	
@@ -150,45 +134,42 @@ public class ScopeView extends BaseScopeView {
      *
      ********************************************************************************/
     private class ScopeGraphAction extends ScopeViewTreeAction {
-    	private BaseMetric metric;
-    	private int metric_index;
     	private GraphType graph_type;
+    	private MetricRaw metric;
     	
-		public ScopeGraphAction(String sTitle, Scope scopeCurrent, BaseMetric m, int m_index, 
-				GraphType type) {
+		public ScopeGraphAction(String sTitle, Scope scopeCurrent, MetricRaw m, GraphType type) {
 			
 			super(sTitle, scopeCurrent);
 			this.metric = m;
-			this.metric_index = m_index;
 			this.graph_type = type;
 		}
     	
 		public void run() {
 			IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
         	Experiment exp = getExperiment();
-
+        	System.out.println("SV running " + this.scope + "\t" + this.metric.getRawID() + "\t" + this.metric.getID());
 			try {
 				switch (graph_type) {
 				case PLOT:
 					GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_"+metric_index, 
+						scope.getCCTIndex()+"_p_"+ metric.getID(), 
 						IWorkbenchPage.VIEW_ACTIVATE);
-					objview.plotData(exp, scope, metric, exp.getMetricCount());
+					objview.plotData(exp, scope, metric);
 					break;
 				
 				case SORTED:
 					// sorted data
 					GraphScopeView objSortedview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_s_"+metric_index, 
+						scope.getCCTIndex()+"_s_"+metric.getID(), 
 						IWorkbenchPage.VIEW_ACTIVATE);
-					objSortedview.plotSortedData(exp, scope, metric, exp.getMetricCount());
+					objSortedview.plotSortedData(exp, scope, metric);
 					break;
 					
 				case HISTO:
 					GraphScopeView objHistoview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_h_"+metric_index, 
+						scope.getCCTIndex()+"_h_"+metric.getID(), 
 						IWorkbenchPage.VIEW_ACTIVATE);
-					objHistoview.plotHistogram(exp, scope, metric, exp.getMetricCount());
+					objHistoview.plotHistogram(exp, scope, metric);
 					break;
 				}
 				

@@ -22,7 +22,7 @@ import edu.rice.cs.hpc.data.util.Util;
  */
 public class ThreadLevelDataManager {
 
-	private boolean flag_debug = true;
+	private boolean flag_debug = false;
 
 	private ThreadLevelDataFile data_file[];
 	private Experiment experiment;

@@ -80,6 +80,10 @@ protected Scope rootScope;
 /** A mapping from internal name strings to metric objects. */
 protected HashMap metricMap;
 
+//------------------------------------------------------------
+// thread level database
+//------------------------------------------------------------
+private MetricRaw[] metrics_raw;
 private ThreadLevelDataManager threadsData = null;
 
 //////////////////////////////////////////////////////////////////////////
@@ -463,11 +467,6 @@ public void postprocess(boolean callerView) {
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
 		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
-
-		//----------------------------------------------------------------------------------------------
-		// CCT Thread level data
-		//----------------------------------------------------------------------------------------------
-		this.initThreadsMetricDataFiles(this.fileExperiment.getPath());
 		
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
@@ -743,9 +742,15 @@ public File getXMLExperimentFile() {
 	return this.fileExperiment;
 }
 
+public void setMetricRaw(MetricRaw []metrics) {
+	this.metrics_raw = metrics;
+	if (this.metrics_raw != null)
+		this.threadsData = new ThreadLevelDataManager(this);
+}
 
-private void initThreadsMetricDataFiles(String sPath) {
-	this.threadsData = new ThreadLevelDataManager(sPath, this.getMetrics());
+
+public MetricRaw[] getMetricRaw() {
+	return this.metrics_raw;
 }
 
 

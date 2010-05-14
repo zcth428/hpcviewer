@@ -24,6 +24,7 @@ public class Token2 {
     	T_PR, T_PF, T_L, T_C, T_S,
     	// metrics
     	T_METRIC_TABLE, T_METRIC, T_METRIC_FORMULA, T_M,
+    	T_METRIC_RAW_TABLE, T_METRIC_RAW,
     	
     	// procedures
     	T_PROCEDURE_TABLE, T_PROCEDURE, 
@@ -53,6 +54,8 @@ public class Token2 {
         tokenMap.put("MetricTable", TokenXML.T_METRIC_TABLE);
         tokenMap.put("MetricFormula", TokenXML.T_METRIC_FORMULA);
         tokenMap.put("M", TokenXML.T_M);
+        tokenMap.put("MetricDBTable", TokenXML.T_METRIC_RAW_TABLE);
+        tokenMap.put("MetricDB", TokenXML.T_METRIC_RAW);
         
         // head of xml
         tokenMap.put("HPCToolkitExperiment", TokenXML.T_HPCTOOLKIT_EXPERIMENT);

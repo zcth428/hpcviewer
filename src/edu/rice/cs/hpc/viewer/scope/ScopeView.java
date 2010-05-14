@@ -147,7 +147,7 @@ public class ScopeView extends BaseScopeView {
 		public void run() {
 			IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
         	Experiment exp = getExperiment();
-        	System.out.println("SV running " + this.scope + "\t" + this.metric.getRawID() + "\t" + this.metric.getID());
+
 			try {
 				switch (graph_type) {
 				case PLOT:

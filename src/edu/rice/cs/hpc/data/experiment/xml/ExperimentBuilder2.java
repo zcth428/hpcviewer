@@ -539,7 +539,7 @@ public class ExperimentBuilder2 extends Builder
 		int iSelf = -1;
 		String sDisplayName = null;
 		String sNativeName = null;
-		boolean toShow = true;
+		boolean toShow = true, percent = true;
 		MetricType objType = MetricType.EXCLUSIVE;
 		boolean needPartner = this.csviewer;
 		MetricValueDesc mDesc = MetricValueDesc.Raw; // by default is a raw metric
@@ -582,6 +582,10 @@ public class ExperimentBuilder2 extends Builder
 			} else if (attributes[i].charAt(0) == 'f') {
 				// format to display
 				format = values[i];
+				
+			} else if (attributes[i].equals("show-percent")) {
+				percent = (values[i].charAt(0) == '1');
+				
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
@@ -608,12 +612,12 @@ public class ExperimentBuilder2 extends Builder
 						String.valueOf(iSelf),			// short name
 						sNativeName,			// native name
 						sDisplayName, 	// display name
-						toShow, format, true, 			// displayed ? percent ?
+						toShow, format, percent, 			// displayed ? percent ?
 						"",						// period (not defined at the moment)
 						objType, partner);
 				break;
 			case Derived_Incr:
-				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, false, nbMetrics, objType);
+				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, percent, nbMetrics, objType);
 				break;
 			case Raw:
 			case Derived:
@@ -622,7 +626,7 @@ public class ExperimentBuilder2 extends Builder
 						String.valueOf(iSelf),			// short name
 						sNativeName,			// native name
 						sDisplayName, 	// display name
-						toShow, format, true, 			// displayed ? percent ?
+						toShow, format, percent, 			// displayed ? percent ?
 						"",						// period (not defined at the moment)
 						objType, partner);
 				break;

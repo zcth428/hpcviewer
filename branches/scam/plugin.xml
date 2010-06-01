@@ -43,14 +43,6 @@
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
       </view>
-      <view
-            allowMultiple="true"
-            category="hpcviewer"
-            class="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
-            icon="icons/graphview.png"
-            id="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
-            name="GraphView">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">
@@ -162,7 +154,7 @@
           class="edu.rice.cs.hpc.viewer.scope.GraphEditor"
           default="false"
           extensions="*"
-          icon="icons/hpcviewerEclipseShadow16.png"
+          icon="icons/graphview.png"
           id="edu.rice.cs.hpc.viewer.scope.GraphEditor"
           name="Graph view">
     </editor>

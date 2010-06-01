@@ -25,7 +25,9 @@ import edu.rice.cs.hpc.viewer.scope.BaseScopeView.ScopeViewTreeAction;
  *
  */
 public class ScopeView extends BaseScopeView {
-    public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
+    
+	public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
+    
 	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
         return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
@@ -99,9 +101,9 @@ public class ScopeView extends BaseScopeView {
 	 * @param index
 	 */
 	private void createGraphMenus(IMenuManager menu, Scope scope, MetricRaw m) {
-		menu.add( this.createGraphMenu(scope, m, GraphType.PLOT) );
-		menu.add( this.createGraphMenu(scope, m, GraphType.SORTED) );
-		menu.add( this.createGraphMenu(scope, m, GraphType.HISTO) );
+		menu.add( this.createGraphMenu(scope, m, GraphEditorInput.PlotType.PLOT) );
+		menu.add( this.createGraphMenu(scope, m, GraphEditorInput.PlotType.SORTED) );
+		menu.add( this.createGraphMenu(scope, m, GraphEditorInput.PlotType.HISTO) );
 	}
 	
 	/***
@@ -112,32 +114,25 @@ public class ScopeView extends BaseScopeView {
 	 * @param t
 	 * @return
 	 */
-	private ScopeGraphAction createGraphMenu( Scope scope, MetricRaw m, GraphType t) {
+	private ScopeGraphAction createGraphMenu( Scope scope, MetricRaw m, GraphEditorInput.PlotType t) {
 		String sTitle = "Plot graph";
-		if (t == GraphType.HISTO)
+		if (t == GraphEditorInput.PlotType.HISTO)
 			sTitle = "Histogram graph";
-		else if (t == GraphType.SORTED)
+		else if (t == GraphEditorInput.PlotType.SORTED)
 			sTitle = "Sorted plot graph";
 		return new ScopeGraphAction( sTitle, scope, m, t);
 	}
 	
 	
-	/****
-	 * type of graph:
-	 *	- plot, sorted and histo
-	 */
-	static private enum GraphType {PLOT, SORTED, HISTO} ;
 	
     /********************************************************************************
      * class to initialize an action for displaying a graph
-     * @author laksonoadhianto
-     *
      ********************************************************************************/
     private class ScopeGraphAction extends ScopeViewTreeAction {
-    	private GraphType graph_type;
-    	private MetricRaw metric;
+    	final private GraphEditorInput.PlotType graph_type;
+    	final private MetricRaw metric;
     	
-		public ScopeGraphAction(String sTitle, Scope scopeCurrent, MetricRaw m, GraphType type) {
+		public ScopeGraphAction(String sTitle, Scope scopeCurrent, MetricRaw m, GraphEditorInput.PlotType type) {
 			
 			super(sTitle, scopeCurrent);
 			this.metric = m;
@@ -150,31 +145,8 @@ public class ScopeView extends BaseScopeView {
 
         	
 			try {
-				switch (graph_type) {
-				case PLOT:
-		        	GraphEditorInput objInput = new GraphEditorInput(exp, scope, metric, GraphEditorInput.PlotType.PLOT);
-		        	objPage.openEditor(objInput, GraphEditor.ID);
-//					GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-//						scope.getCCTIndex()+"_p_"+ metric.getID(), 
-//						IWorkbenchPage.VIEW_ACTIVATE);
-//					objview.plotData(exp, scope, metric);
-					break;
-				
-				case SORTED:
-					// sorted data
-					GraphScopeView objSortedview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_s_"+metric.getID(), 
-						IWorkbenchPage.VIEW_ACTIVATE);
-					objSortedview.plotSortedData(exp, scope, metric);
-					break;
-					
-				case HISTO:
-					GraphScopeView objHistoview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_h_"+metric.getID(), 
-						IWorkbenchPage.VIEW_ACTIVATE);
-					objHistoview.plotHistogram(exp, scope, metric);
-					break;
-				}
+	        	GraphEditorInput objInput = new GraphEditorInput(exp, scope, metric, graph_type);
+	        	objPage.openEditor(objInput, GraphEditor.ID);
 				
 			} catch (PartInitException e) {
 				e.printStackTrace();

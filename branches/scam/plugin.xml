@@ -158,6 +158,14 @@
           id="edu.rice.cs.hpc.viewer.util.HTMLEditor"
           name="Web editor">
     </editor>
+    <editor
+          class="edu.rice.cs.hpc.viewer.scope.GraphEditor"
+          default="false"
+          extensions="*"
+          icon="icons/hpcviewerEclipseShadow16.png"
+          id="edu.rice.cs.hpc.viewer.scope.GraphEditor"
+          name="Graph view">
+    </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

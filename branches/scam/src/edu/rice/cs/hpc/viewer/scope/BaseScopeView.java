@@ -50,7 +50,7 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
  * @author laksonoadhianto
  *
  */
-abstract public class BaseScopeView  extends ViewPart {
+abstract public class BaseScopeView  extends AbstractScopeView {
 
 	protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     
@@ -58,7 +58,6 @@ abstract public class BaseScopeView  extends ViewPart {
     private RootScope 		myRootScope;		// the root scope of this view
     private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
     private EditorManager editorSourceCode;	// manager to display the source code
-	private ScopeViewActions objViewActions;	// actions for this scope view
 	private Clipboard cb = null;
 	private TreeViewerColumn []colMetrics;
 	
@@ -275,10 +274,8 @@ abstract public class BaseScopeView  extends ViewPart {
      * Create the content of the view
      */
     public void createPartControl(Composite aParent) {
-    	Composite objCompositeParent;
-    	objCompositeParent = this.createToolBarArea(aParent);
-    	this.objCoolbar = this.initToolbar(objCompositeParent);
-		this.objViewActions =  createActions(objCompositeParent, this.objCoolbar); //actions of the tree
+    	
+    	super.createPartControl(aParent);
 		
 		// ----- 03.21.2008 Laks: add virtual library for better memory consumption
 		// Laks 2009.06.22: add multi-selection for enabling copying into clipboard 
@@ -547,15 +544,6 @@ abstract public class BaseScopeView  extends ViewPart {
     //======================================================
     // ................ ABSTRACT...........................
     //======================================================
-    /**
-     * The derived class has to implement this method to create its own actions
-     * For instance, caller view and cct view has the same actions but flat view
-     * 	may have additional actions (flattening ...)
-     * @param parent
-     * @param coolbar
-     * @return
-     */
-    abstract protected ScopeViewActions createActions(Composite parent, CoolBar coolbar);
     
     /***
      * event when a user starts to click

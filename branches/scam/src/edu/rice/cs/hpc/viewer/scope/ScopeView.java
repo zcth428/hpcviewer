@@ -148,13 +148,16 @@ public class ScopeView extends BaseScopeView {
 			IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
         	Experiment exp = getExperiment();
 
+        	
 			try {
 				switch (graph_type) {
 				case PLOT:
-					GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_p_"+ metric.getID(), 
-						IWorkbenchPage.VIEW_ACTIVATE);
-					objview.plotData(exp, scope, metric);
+		        	GraphEditorInput objInput = new GraphEditorInput(exp, scope, metric, GraphEditorInput.PlotType.PLOT);
+		        	objPage.openEditor(objInput, GraphEditor.ID);
+//					GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
+//						scope.getCCTIndex()+"_p_"+ metric.getID(), 
+//						IWorkbenchPage.VIEW_ACTIVATE);
+//					objview.plotData(exp, scope, metric);
 					break;
 				
 				case SORTED:

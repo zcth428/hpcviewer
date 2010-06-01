@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.util.Util;
 
 /***
@@ -20,14 +22,15 @@ import edu.rice.cs.hpc.data.util.Util;
  */
 public class ThreadLevelDataManager {
 
-	private ThreadLevelDataFile data_file;
 	private boolean flag_debug = false;
-	private int num_metrics = 0;
 
+	private ThreadLevelDataFile data_file[];
+	private Experiment experiment;
 	
-	public ThreadLevelDataManager(String sPath, BaseMetric metrics[]) {
-		this.checkThreadsMetricDataFiles(sPath);
-		num_metrics = 4; //metrics.length >> 3;
+	public ThreadLevelDataManager(Experiment exp) {
+		MetricRaw []metrics = exp.getMetricRaw();
+		data_file = new ThreadLevelDataFile[metrics.length];
+		this.experiment = exp;
 	}
 	
 	
@@ -41,13 +44,11 @@ public class ThreadLevelDataManager {
 	 */
 	public boolean isDataAvailable() {
 		if (data_file != null)
-			return (data_file.files.size()>0);
+			return (data_file.length>0);
 		return false;
 	}
 	
-	public int getNumMetrics() {
-		return this.num_metrics;
-	}
+	
 	
 	/**
 	 * thread level data may contain some experiment instances. 
@@ -55,11 +56,15 @@ public class ThreadLevelDataManager {
 	 * @return
 	 */
 	public String[] getSeriesName() {
-		if (data_file.x_values == null || (data_file.x_values.size()==0))
+		MetricRaw []metrics_raw = experiment.getMetricRaw();
+
+		if (metrics_raw == null)
 			return null;
-		Set<String> set = data_file.x_values.keySet();
-		String[] keys = new String[data_file.x_values.size()];
-		set.toArray(keys);
+		
+		String keys[] = new String[metrics_raw.length];
+		for (int i=0; i<metrics_raw.length; i++)
+			keys[i] = metrics_raw[i].getTitle();
+		
 		return keys;
 	}
 	
@@ -76,8 +81,8 @@ public class ThreadLevelDataManager {
 
 	 * @return
 	 */
-	public ArrayList<String> getProcessIDs(String series) {
-		return data_file.x_values.get(series);
+	public String[] getProcessIDs(int metric_raw_id) {
+		return data_file[metric_raw_id].getValuesX();
 	}
 	
 	
@@ -88,22 +93,31 @@ public class ThreadLevelDataManager {
 	 * @param num_metrics
 	 * @return
 	 */
-	public double[] getMetrics(String series, long node_index, int metric_index)
+	public double[] getMetrics(int metric_raw_id, long node_index, int metric_index)
 			throws IOException {
 		if (this.data_file == null)
 			return null;
 		
+		if (data_file[metric_raw_id] == null) {
+			this.checkThreadsMetricDataFiles(metric_raw_id);
+		}
+		
+		ThreadLevelDataFile data = this.data_file[metric_raw_id];
+		
+		int data_size = data.size();
+		double[] metrics = new double[data_size];
+		
 		ThreadLevelData objData = new ThreadLevelData();
 		
-		ArrayList<File> files = data_file.files.get(series);
-		double[] metrics = new double[files.size()];
-		
-		debugln(System.out, "Series: " +  series + " node: " + node_index + " metric: " + metric_index);
-		for(int i=0; i<files.size(); i++) {
-			metrics[i] = objData.getMetric(files.get(i).getAbsolutePath(), node_index, metric_index, num_metrics);
-			debug(System.out, " " + metrics[i] + " ");
+		debugln(System.out, "Series: " +  metric_raw_id + " node: " + node_index + " metric: " + metric_index);
+		MetricRaw []metrics_raw = experiment.getMetricRaw();
+
+		for(int i=0; i<data_size; i++) {
+			metrics[i] = objData.getMetric(data.getFile(i).getAbsolutePath(), node_index, metric_index, 
+					metrics_raw[metric_raw_id].getSize());
+			//debug(System.out, " " + metrics[i] + " ");
 		}
-		debugln(System.out, "\tsize: " + files.size());
+		debugln(System.out, "\tsize: " + data.size());
 		return metrics;
 	}
 
@@ -112,56 +126,22 @@ public class ThreadLevelDataManager {
 	// PRIVATE METHODS
 	//==============================================================================================
 
-	private void checkThreadsMetricDataFiles(String sPath) {
-		File files = new File(sPath);
+	private void checkThreadsMetricDataFiles(int metric_raw_id) {
+		
+		if (data_file[metric_raw_id] != null)
+			return; // it has been initialized
+		
+		
+		File files = new File(experiment.getXMLExperimentFile().getPath());
 		if (files.isFile())
 			files = new File(files.getParent());
 		
-		File filesThreadsData[] = files.listFiles(new Util.FileThreadsMetricFilter());
-		if (filesThreadsData != null) {
-			if (filesThreadsData.length > 0) {
-				this.setFiles(filesThreadsData);
-			}
-		}
+		MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
+		File filesThreadsData[] = files.listFiles(new Util.FileThreadsMetricFilter( metric.getGlob()));
+		data_file[metric_raw_id] = new ThreadLevelDataFile(filesThreadsData);
+		
 	}
 
-	
-	private void setFiles(File f[]) {
-		if (data_file == null)
-			data_file = new ThreadLevelDataFile();
-		
-		for(int i=0; i<f.length; i++) {
-			String filename = f[i].getName();
-			String parts[] = filename.split("-");
-			if (parts.length > 4) {
-				//--------------------------------------------------------------------
-				// get the series name for the key
-				//--------------------------------------------------------------------
-				String key = parts[parts.length - 1];
-				
-				//--------------------------------------------------------------------
-				// adding list of files
-				//--------------------------------------------------------------------
-				ArrayList<File> file = data_file.files.get(key);
-				if (file == null) {
-					file = new ArrayList<File>();
-				}
-				file.add(f[i]);
-				data_file.files.put(key, file);
-				
-				//--------------------------------------------------------------------
-				// adding list of x-axis 
-				//--------------------------------------------------------------------
-				ArrayList<String> x_value = data_file.x_values.get(key);
-				if (x_value == null) {
-					x_value = new ArrayList<String>();
-				}
-				String x_val = parts[parts.length-5] + "." + parts[parts.length-4];
-				x_value.add(x_val);
-				data_file.x_values.put(key, x_value);
-			}
-		}
-	}
 
 	
 	private void debugln(PrintStream stream, String s) {

@@ -19,6 +19,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 
@@ -47,23 +48,21 @@ public class GraphScopeView extends ViewPart {
 	 * @param exp
 	 * @param scope
 	 * @param metric
-	 * @param num_metrics
 	 */
-	public void plotData(Experiment exp, Scope scope, BaseMetric metric, int num_metrics) {
+	public void plotData(Experiment exp, Scope scope, MetricRaw metric) {
 		
-		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getIndex());
+		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
 		
 		String sTitle = getGraphTitle(scope, metric, data.metric_index);
 		this.setPartName(sTitle);
 
 		XYSeriesCollection table = new XYSeriesCollection();
 
-		for (int i=0; i<data.series.length; i++) {
 			double y_values[];
 			try {
-				y_values = data.objDataManager.getMetrics(data.series[i], data.node_index, data.metric_index);
-				ArrayList<String> x_values = data.objDataManager.getProcessIDs( data.series[i] );				
-				table.addSeries(this.setData( data.series[i], x_values, y_values));
+				y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
+				String[] x_values = data.objDataManager.getProcessIDs( metric.getID() );				
+				table.addSeries(this.setData( metric.getTitle(), x_values, y_values));
 				
 			} catch (IOException e) {
 				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
@@ -71,10 +70,9 @@ public class GraphScopeView extends ViewPart {
 				e.printStackTrace();
 				return;
 			}			
-		}
 		
 		JFreeChart chart = ChartFactory.createScatterPlot(sTitle, "Process.Threads", "Metrics", table,
-				PlotOrientation.VERTICAL, data.series.length>1, false, false);
+				PlotOrientation.VERTICAL, false, false, false);
 
 		this.finalizeGraph(chart);
 	}
@@ -85,30 +83,28 @@ public class GraphScopeView extends ViewPart {
 	 * @param exp
 	 * @param scope
 	 * @param metric
-	 * @param num_metrics
 	 */
-	public void plotSortedData(Experiment exp, Scope scope, BaseMetric metric, int num_metrics) {
+	public void plotSortedData(Experiment exp, Scope scope, MetricRaw metric) {
 		
-		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getIndex());
+		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
 
 		String sTitle = "[Sorted] " + getGraphTitle(scope, metric, data.metric_index);
 		this.setPartName(sTitle);
 		XYSeriesCollection table = new XYSeriesCollection();
 
-		for (int i=0; i<data.series.length; i++) {
 			double y_values[];
 			try {
-				y_values = data.objDataManager.getMetrics(data.series[i], data.node_index, data.metric_index);
+				y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
 				
 				java.util.Arrays.sort(y_values);
 				
-				ArrayList<String> x_values = data.objDataManager.getProcessIDs(data.series[i]);	
-				double x_vals[] = new double[x_values.size()];
-				for(int j=0; j<x_values.size(); j++) {
-					x_vals[j] = Double.valueOf(x_values.get(j));
+				String[] x_values = data.objDataManager.getProcessIDs(metric.getID());	
+				double x_vals[] = new double[x_values.length];
+				for(int j=0; j<x_values.length; j++) {
+					x_vals[j] = Double.valueOf(x_values[j]);
 				}
 				
-				table.addSeries(this.setData(data.series[i], x_vals, y_values));
+				table.addSeries(this.setData(metric.getTitle(), x_vals, y_values));
 				
 			} catch (IOException e) {
 				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
@@ -116,10 +112,9 @@ public class GraphScopeView extends ViewPart {
 				e.printStackTrace();
 				return;
 			}			
-		}
 		
 		JFreeChart chart = ChartFactory.createScatterPlot(sTitle, "Rank sequence", "Metrics", table,
-				PlotOrientation.VERTICAL, data.series.length>1, false, false);
+				PlotOrientation.VERTICAL, false, false, false);
 
 		this.finalizeGraph(chart);
 	}
@@ -129,20 +124,18 @@ public class GraphScopeView extends ViewPart {
 	 * @param exp
 	 * @param scope
 	 * @param metric
-	 * @param num_metrics
 	 */
-	public void plotHistogram(Experiment exp, Scope scope, BaseMetric metric, int num_metrics) {
+	public void plotHistogram(Experiment exp, Scope scope, MetricRaw metric) {
 		
-		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getIndex());
+		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
 		HistogramDataset table = null;
 		
 		String sTitle = "[Histogram] " + getGraphTitle(scope, metric, data.metric_index);
 		this.setPartName(sTitle);
 		
-		for (int i=0; i<data.series.length; i++) {
 			double y_values[];
 			try {
-				y_values = data.objDataManager.getMetrics(data.series[i], data.node_index, data.metric_index);
+				y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
 				
 				table = this.setHistoData(sTitle, y_values);
 
@@ -152,10 +145,9 @@ public class GraphScopeView extends ViewPart {
 				e.printStackTrace();
 				return;
 			}			
-		}
 		
 		JFreeChart chart = ChartFactory.createHistogram(sTitle, "Metrics", "Frequency", table,
-				PlotOrientation.VERTICAL, true, true, false);
+				PlotOrientation.VERTICAL, false, true, false);
 		this.finalizeGraph(chart);
 	}
 
@@ -167,37 +159,21 @@ public class GraphScopeView extends ViewPart {
 	 * @param metric_index (normalized 0-based index)
 	 * @return
 	 */
-	static public String getGraphTitle(Scope scope, BaseMetric metric, int metric_index) {
+	static public String getGraphTitle(Scope scope, MetricRaw metric, int metric_index) {
 		if (scope == null || metric == null)
 			return null;
 		
-		String sTitle = metric.getDisplayName();
+		String sTitle = metric.getTitle();
 		int pos = sTitle.indexOf(':');
 
 		if (pos>0) {
 			sTitle = sTitle.substring(0, pos);
 		}
-		String sMetricStatus = (metric_index % 2 == 0? " (I)" : " (E)");
-		return scope.getShortName() + ": " + sTitle + sMetricStatus;
+
+		return scope.getShortName() + ": " + sTitle;
 		
 	}
 
-	
-	/**
-	 * get the normalized index metric for data level thread
-	 * The thread level has its own metric index, started from 0 to 2n-1
-	 * 	 where n is the number of events recorded (PAPI_xxx or WALLCLOCK)
-	 * @param metric_index
-	 * @return
-	 */
-	public static int getNormalizedMetricIndex(int metric_index) {
-
-		// ------------------------------------------------------------------------------
-		// temporary solution: we assume that for each event, we need to record 8 metrics
-		// 	
-		// ------------------------------------------------------------------------------
-		return metric_index >> 3;
-	}
 	
 	
 	/**
@@ -227,15 +203,15 @@ public class GraphScopeView extends ViewPart {
 	 * @param x_values
 	 * @param y_values
 	 */
-	private XYSeries setData(String Series, ArrayList<String> x_values, double y_values[]) {
+	private XYSeries setData(String Series, String []x_values, double y_values[]) {
 		XYSeries dataset = new XYSeries(Series, true, false);
-		int num_data = x_values.size();
+		int num_data = x_values.length;
 		
 		if (num_data>y_values.length)
 			num_data = y_values.length;
 
 		for (int i=0; i<num_data; i++) {
-			dataset.add(Double.valueOf(x_values.get(i)).doubleValue(), y_values[i]);
+			dataset.add(Double.valueOf(x_values[i]).doubleValue(), y_values[i]);
 		}
 		return dataset;
 	}
@@ -285,7 +261,6 @@ public class GraphScopeView extends ViewPart {
 	private class PlotData {
 		int metric_index;
 		long node_index;
-		String series[];
 		ThreadLevelDataManager objDataManager;
 		
 		/**
@@ -306,10 +281,8 @@ public class GraphScopeView extends ViewPart {
 			// adjust the node index: 1=the root, 2=node-0, 3=node-1, .... 
 			node_index = node - 1;
 			// adjust the metric index: start from the first metric
-			metric_index = GraphScopeView.getNormalizedMetricIndex(metric - exp.getMetric(0).getIndex());
+			metric_index = metric;
 			
-			series = objDataManager.getSeriesName();
-
 		}
 	}
 }

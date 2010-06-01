@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.graph;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
@@ -14,10 +14,9 @@ public class GraphEditorInput implements IEditorInput {
 	private final Scope _scope;
 	private final MetricRaw _metric;
 	
-	public enum PlotType {PLOT, SORTED, HISTO};
-	private final PlotType _type;
+	private final GraphType.PlotType _type;
 	
-	public GraphEditorInput(Experiment experiment, Scope scope, MetricRaw metric, PlotType type) {
+	public GraphEditorInput(Experiment experiment, Scope scope, MetricRaw metric, GraphType.PlotType type) {
 		this._experiment = experiment;
 		this._scope = scope;
 		this._metric = metric;
@@ -64,7 +63,7 @@ public class GraphEditorInput implements IEditorInput {
 		return _experiment.getThreadLevelDataManager();
 	}
 	
-	public PlotType getType() {
+	public GraphType.PlotType getType() {
 		return this._type;
 	}
 

@@ -151,7 +151,7 @@
           name="Web editor">
     </editor>
     <editor
-          class="edu.rice.cs.hpc.viewer.scope.GraphEditor"
+          class="edu.rice.cs.hpc.viewer.graph.GraphEditor"
           default="false"
           extensions="*"
           icon="icons/graphview.png"

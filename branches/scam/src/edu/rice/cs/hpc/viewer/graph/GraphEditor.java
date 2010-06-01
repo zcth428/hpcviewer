@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.graph;
 
 import java.io.IOException;
 

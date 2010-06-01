@@ -14,10 +14,11 @@ import org.eclipse.ui.PartInitException;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.scope.BaseScopeView.ScopeViewTreeAction;
+import edu.rice.cs.hpc.viewer.graph.GraphEditor;
+import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
+import edu.rice.cs.hpc.viewer.graph.GraphType;
 
 /**
  * Basic class for scope views: calling context and caller view
@@ -101,9 +102,9 @@ public class ScopeView extends BaseScopeView {
 	 * @param index
 	 */
 	private void createGraphMenus(IMenuManager menu, Scope scope, MetricRaw m) {
-		menu.add( this.createGraphMenu(scope, m, GraphEditorInput.PlotType.PLOT) );
-		menu.add( this.createGraphMenu(scope, m, GraphEditorInput.PlotType.SORTED) );
-		menu.add( this.createGraphMenu(scope, m, GraphEditorInput.PlotType.HISTO) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.PlotType.PLOT) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.PlotType.SORTED) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.PlotType.HISTO) );
 	}
 	
 	/***
@@ -114,12 +115,8 @@ public class ScopeView extends BaseScopeView {
 	 * @param t
 	 * @return
 	 */
-	private ScopeGraphAction createGraphMenu( Scope scope, MetricRaw m, GraphEditorInput.PlotType t) {
-		String sTitle = "Plot graph";
-		if (t == GraphEditorInput.PlotType.HISTO)
-			sTitle = "Histogram graph";
-		else if (t == GraphEditorInput.PlotType.SORTED)
-			sTitle = "Sorted plot graph";
+	private ScopeGraphAction createGraphMenu( Scope scope, MetricRaw m, GraphType.PlotType t) {
+		final String sTitle = GraphType.toString(t);
 		return new ScopeGraphAction( sTitle, scope, m, t);
 	}
 	
@@ -129,10 +126,10 @@ public class ScopeView extends BaseScopeView {
      * class to initialize an action for displaying a graph
      ********************************************************************************/
     private class ScopeGraphAction extends ScopeViewTreeAction {
-    	final private GraphEditorInput.PlotType graph_type;
+    	final private GraphType.PlotType graph_type;
     	final private MetricRaw metric;
     	
-		public ScopeGraphAction(String sTitle, Scope scopeCurrent, MetricRaw m, GraphEditorInput.PlotType type) {
+		public ScopeGraphAction(String sTitle, Scope scopeCurrent, MetricRaw m, GraphType.PlotType type) {
 			
 			super(sTitle, scopeCurrent);
 			this.metric = m;

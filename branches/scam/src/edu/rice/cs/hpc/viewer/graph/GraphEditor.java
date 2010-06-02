@@ -12,14 +12,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.Plot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.statistics.HistogramDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.experimental.chart.swt.ChartComposite;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
@@ -106,9 +98,9 @@ public class GraphEditor extends EditorPart {
 		//----------------------------------------------
 		IAxisSet axisSet = chart.getAxisSet();
 		IAxisTick xTick = axisSet.getXAxis(0).getTick();
-		xTick.setFormat(new DecimalFormat("0000.####"));
+		xTick.setFormat(new DecimalFormat("######00.00##"));
 		IAxisTick yTick = axisSet.getYAxis(0).getTick();
-		yTick.setFormat(new DecimalFormat("0.###E0##"));
+		yTick.setFormat(new DecimalFormat("0.0##E0##"));
 
 		// turn off the legend
 		chart.getLegend().setVisible(false);
@@ -256,7 +248,7 @@ public class GraphEditor extends EditorPart {
 		xTick.setFormat(new DecimalFormat("0.###E0##"));
 
 		axisSet.getXAxis(0).getTitle().setText("Metrics");
-		axisSet.getXAxis(0).getTitle().setText("Frequency");
+		axisSet.getYAxis(0).getTitle().setText("Frequency");
 		
 		// create scatter series
 		IBarSeries scatterSeries = (IBarSeries) chart.getSeriesSet()

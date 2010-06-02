@@ -37,9 +37,14 @@ public class GraphEditorInput implements IEditorInput {
 
 	@Override
 	public String getName() {
-		return _scope.getName()+": " + _metric.getTitle();
+		return getName(_scope, _metric, _type);
 	}
 
+	static public String getName(Scope scope, MetricRaw metric, GraphType.PlotType type) {
+		return "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getTitle();
+	}
+
+	
 	@Override
 	public IPersistableElement getPersistable() {
 		// TODO Auto-generated method stub

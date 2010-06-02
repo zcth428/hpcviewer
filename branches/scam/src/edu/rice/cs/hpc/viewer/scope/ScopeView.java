@@ -8,6 +8,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -121,6 +123,29 @@ public class ScopeView extends BaseScopeView {
 	}
 	
 	
+	private GraphEditorInput getGraphEditorInput(String id) {
+		IEditorReference editors[] = this.getSite().getWorkbenchWindow().getActivePage().getEditorReferences();
+		if (editors == null)
+			return null;
+		
+		for (int i = 0; i<editors.length; i++) {
+			String name = editors[i].getName();
+			if (name != null) {
+
+				if (id.equals(name)) {
+					try {
+						IEditorInput input = editors[i].getEditorInput();
+						return (GraphEditorInput) input;
+					} catch (PartInitException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
 	
     /********************************************************************************
      * class to initialize an action for displaying a graph
@@ -139,10 +164,14 @@ public class ScopeView extends BaseScopeView {
 		public void run() {
 			IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
         	Experiment exp = getExperiment();
-
         	
 			try {
-	        	GraphEditorInput objInput = new GraphEditorInput(exp, scope, metric, graph_type);
+				String id = GraphEditorInput.getName(scope, metric, graph_type);
+	        	GraphEditorInput objInput = getGraphEditorInput(id);
+	        	
+	        	if (objInput == null)
+	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type);
+	        	
 	        	objPage.openEditor(objInput, GraphEditor.ID);
 				
 			} catch (PartInitException e) {

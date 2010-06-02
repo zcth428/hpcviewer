@@ -155,7 +155,7 @@
           default="false"
           extensions="*"
           icon="icons/graphview.png"
-          id="edu.rice.cs.hpc.viewer.scope.GraphEditor"
+          id="edu.rice.cs.hpc.viewer.graph.GraphEditor"
           name="Graph view">
     </editor>
    </extension>

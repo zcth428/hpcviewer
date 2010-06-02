@@ -1,9 +1,11 @@
 package edu.rice.cs.hpc.viewer.graph;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -24,11 +26,20 @@ import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
+import org.swtchart.Chart;
+import org.swtchart.IAxisSet;
+import org.swtchart.IAxisTick;
+import org.swtchart.IBarSeries;
+import org.swtchart.ILineSeries;
+import org.swtchart.LineStyle;
+import org.swtchart.ISeries.SeriesType;
+
 public class GraphEditor extends EditorPart {
 
-    public static final String ID = "edu.rice.cs.hpc.viewer.scope.GraphEditor";
+    public static final String ID = "edu.rice.cs.hpc.viewer.graph.GraphEditor";
     
-    private ChartComposite chartFrame;
+    private Chart chart;
+    //private ChartComposite chartFrame;
 
 	public GraphEditor() {
 	}
@@ -67,17 +78,56 @@ public class GraphEditor extends EditorPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		chartFrame = new ChartComposite(parent, SWT.NONE, null, true, true, false, true, true);
-		GraphEditorInput editor_input = (GraphEditorInput) this.getEditorInput();
-		setPartName(editor_input.getName());
+
+		IEditorInput input = this.getEditorInput();
+		if (input == null || !(input instanceof GraphEditorInput) )
+			throw new RuntimeException("Invalid input for graph editor");
 		
+		GraphEditorInput editor_input = (GraphEditorInput) input;
+		String title = editor_input.getName();
+		
+		this.setPartName( title );
+
+		//----------------------------------------------
+		// chart creation
+		//----------------------------------------------
+		chart = new Chart(parent, SWT.BORDER);
+		chart.getTitle().setText( title );
+
+		
+		//----------------------------------------------
+		// axis title
+		//----------------------------------------------
+		chart.getAxisSet().getXAxis(0).getTitle().setText("Process.Threads");
+		chart.getAxisSet().getYAxis(0).getTitle().setText("Metrics");
+
+		//----------------------------------------------
+		// formatting axis
+		//----------------------------------------------
+		IAxisSet axisSet = chart.getAxisSet();
+		IAxisTick xTick = axisSet.getXAxis(0).getTick();
+		xTick.setFormat(new DecimalFormat("0000.####"));
+		IAxisTick yTick = axisSet.getYAxis(0).getTick();
+		yTick.setFormat(new DecimalFormat("0.###E0##"));
+
+		// turn off the legend
+		chart.getLegend().setVisible(false);
+		
+		//----------------------------------------------
+		// the chart should occupy all the client area
+		//----------------------------------------------
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(chart);
+		
+		//----------------------------------------------
+		// plot data
+		//----------------------------------------------
 		Experiment exp = editor_input.getExperiment();
 		Scope scope = editor_input.getScope();
 		MetricRaw metric = editor_input.getMetric();
 		
 		switch (editor_input.getType()) {
 		case PLOT:
-			this.plotData(exp, scope, metric, this.getPartName());
+			this.plotData(exp, scope, metric);
 			break;
 		case SORTED:
 			this.plotSortedData(exp, scope, metric, this.getPartName());
@@ -91,43 +141,48 @@ public class GraphEditor extends EditorPart {
 
 	@Override
 	public void setFocus() {
-
-		chartFrame.setFocus();
+		chart.setFocus();
 	}
 
 	
 	//========================================================================
+	
+	
+	
 	/**
 	 * Plot a given metrics for a specific scope
 	 * @param exp
 	 * @param scope
 	 * @param metric
 	 */
-	private void plotData(Experiment exp, Scope scope, MetricRaw metric, String sTitle ) {
+	private void plotData(Experiment exp, Scope scope, MetricRaw metric ) {
 		
 		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
-		
-		this.setPartName(sTitle);
 
-		XYSeriesCollection table = new XYSeriesCollection();
+		double y_values[];
+		double []x_values;
+		try {
+			y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
+			x_values = data.objDataManager.getProcessIDsDouble( metric.getID() );				
+			
+		} catch (IOException e) {
+			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+			return;
+		}
 
-			double y_values[];
-			try {
-				y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
-				String[] x_values = data.objDataManager.getProcessIDs( metric.getID() );				
-				table.addSeries(this.setData( metric.getTitle(), x_values, y_values));
-				
-			} catch (IOException e) {
-				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
-				System.err.println(e.getMessage());
-				e.printStackTrace();
-				return;
-			}			
-		
-		JFreeChart chart = ChartFactory.createScatterPlot(sTitle, "Process.Threads", "Metrics", table,
-				PlotOrientation.VERTICAL, false, false, false);
+		// create scatter series
+		ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()
+				.createSeries(SeriesType.LINE, metric.getTitle());
+		scatterSeries.setLineStyle(LineStyle.NONE);
+		scatterSeries.setXSeries(x_values);
+		scatterSeries.setYSeries(y_values);
 
-		this.finalizeGraph(chart);
+		// adjust the axis range
+		chart.getAxisSet().adjustRange();
+
+
 	}
 
 	
@@ -141,36 +196,37 @@ public class GraphEditor extends EditorPart {
 		
 		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
 
-		this.setPartName(sTitle);
-		XYSeriesCollection table = new XYSeriesCollection();
-
-			double y_values[];
-			try {
-				y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
-				
-				java.util.Arrays.sort(y_values);
-				
-				String[] x_values = data.objDataManager.getProcessIDs(metric.getID());	
-				double x_vals[] = new double[x_values.length];
-				for(int j=0; j<x_values.length; j++) {
-					x_vals[j] = Double.valueOf(x_values[j]);
-				}
-				
-				table.addSeries(this.setData(metric.getTitle(), x_vals, y_values));
-				
-			} catch (IOException e) {
-				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
-				System.err.println(e.getMessage());
-				e.printStackTrace();
-				return;
-			}			
+		double y_values[], x_values[];
+		try {
+			y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
+			
+			java.util.Arrays.sort(y_values);
+			
+			x_values = data.objDataManager.getProcessIDsDouble(metric.getID());	
+			
+		} catch (IOException e) {
+			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+			return;
+		}			
 		
-		JFreeChart chart = ChartFactory.createScatterPlot(sTitle, "Rank sequence", "Metrics", table,
-				PlotOrientation.VERTICAL, false, false, false);
+		chart.getAxisSet().getXAxis(0).getTitle().setText("Rank sequence");
+	
+		// create scatter series
+		ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()
+				.createSeries(SeriesType.LINE, metric.getTitle());
+		scatterSeries.setLineStyle(LineStyle.NONE);
+		scatterSeries.setXSeries(x_values);
+		scatterSeries.setYSeries(y_values);
 
-		this.finalizeGraph(chart);
+		// adjust the axis range
+		chart.getAxisSet().adjustRange();
+
 	}
 
+	
+	
 	/**
 	 * Plot a given metrics for a specific scope
 	 * @param exp
@@ -178,110 +234,42 @@ public class GraphEditor extends EditorPart {
 	 * @param metric
 	 */
 	private void plotHistogram(Experiment exp, Scope scope, MetricRaw metric, String sTitle) {
-		
+		final int bins = 10;
 		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
-		HistogramDataset table = null;
 		
-		this.setPartName(sTitle);
-		
-			double y_values[];
-			try {
-				y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
-				
-				table = this.setHistoData(sTitle, y_values);
+		double y_values[], x_values[];
+		try {
+			y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
+			Histogram histo = new Histogram(bins, y_values);
+			y_values = histo.getAxisY();
+			x_values = histo.getAxisX();
 
-			} catch (IOException e) {
-				MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
-				System.err.println(e.getMessage());
-				e.printStackTrace();
-				return;
-			}			
+		} catch (IOException e) {
+			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+			return;
+		}			
 		
-		JFreeChart chart = ChartFactory.createHistogram(sTitle, "Metrics", "Frequency", table,
-				PlotOrientation.VERTICAL, false, true, false);
-		this.finalizeGraph(chart);
+		IAxisSet axisSet = chart.getAxisSet();
+		IAxisTick xTick = axisSet.getXAxis(0).getTick();
+		xTick.setFormat(new DecimalFormat("0.###E0##"));
+
+		axisSet.getXAxis(0).getTitle().setText("Metrics");
+		axisSet.getXAxis(0).getTitle().setText("Frequency");
+		
+		// create scatter series
+		IBarSeries scatterSeries = (IBarSeries) chart.getSeriesSet()
+				.createSeries(SeriesType.BAR, metric.getTitle());
+		scatterSeries.setXSeries(x_values);
+		scatterSeries.setYSeries(y_values);
+
+		// adjust the axis range
+		chart.getAxisSet().adjustRange();
 	}
 
 
-	
-	
-	/**
-	 * get the usual standard metric index defined in experiment.xml
-	 * @param normal_metric_index
-	 * @return
-	 */
-	public static int getStandardMetricIndex(int normal_metric_index) {
-		return normal_metric_index << 3;
-	}
-	
-	
-	private void finalizeGraph(JFreeChart chart) {
-
-		Plot plot = chart.getPlot();
-		plot.setBackgroundPaint(java.awt.Color.WHITE);
-		plot.setOutlinePaint(java.awt.Color.GRAY);
-		plot.setForegroundAlpha(0.85F);
-		chart.setBackgroundPaint(java.awt.Color.WHITE);
 		
-		chartFrame.setChart(chart);
-	}
-	
-	/**
-	 * primitive plotting of a set of Xs and Ys
-	 * @param title
-	 * @param x_values
-	 * @param y_values
-	 */
-	private XYSeries setData(String Series, String []x_values, double y_values[]) {
-		XYSeries dataset = new XYSeries(Series, true, false);
-		int num_data = x_values.length;
-		
-		if (num_data>y_values.length)
-			num_data = y_values.length;
-
-		for (int i=0; i<num_data; i++) {
-			dataset.add(Double.valueOf(x_values[i]).doubleValue(), y_values[i]);
-		}
-		return dataset;
-	}
-
-	/**
-	 * primitive plotting of a set of Xs and Ys
-	 * @param title
-	 * @param x_values
-	 * @param y_values
-	 */
-	private HistogramDataset setHistoData(String Series, double y_values[]) {
-		HistogramDataset dataset = new HistogramDataset();
-		dataset.addSeries(Series, y_values, 10);
-
-		return dataset;
-	}
-
-	/**
-	 * primitive plotting of a set of Xs and Ys
-	 * @param title
-	 * @param x_values
-	 * @param y_values
-	 */
-	private XYSeries setData(String Series, double x_values[], double y_values[]) {
-		XYSeries dataset = new XYSeries(Series, true, false);
-		int num_data = x_values.length;
-		
-		if (num_data>y_values.length)
-			num_data = y_values.length;
-
-		for (int i=0; i<num_data; i++) {
-			try {
-				dataset.add(x_values[i], y_values[i]);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return dataset;
-	}
-
-	
 	/*************************************************
 	 * class to manage data for plotting graph
 	 * @author laksonoadhianto

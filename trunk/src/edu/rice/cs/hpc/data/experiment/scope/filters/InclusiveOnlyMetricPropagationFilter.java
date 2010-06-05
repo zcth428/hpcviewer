@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.filters;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
@@ -9,10 +10,10 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 //only propagagate inclusive metrics
 public class InclusiveOnlyMetricPropagationFilter implements MetricValuePropagationFilter {
 	/** The parsed metric objects. */
-	protected BaseMetric[] metrics;
+	protected Experiment _experiment;
 
-	public InclusiveOnlyMetricPropagationFilter(BaseMetric[] metricArray) {
-		this.metrics = metricArray;
+	public InclusiveOnlyMetricPropagationFilter(Experiment experiment) {
+		this._experiment = experiment;
 	}
 
 	public boolean doPropagation(Scope source, Scope target, int src_idx, int targ_idx) {
@@ -27,6 +28,6 @@ public class InclusiveOnlyMetricPropagationFilter implements MetricValuePropagat
                     	 return false;
 		   }
 		}
-		return ( metrics[src_idx].getMetricType() == MetricType.INCLUSIVE );
+		return ( _experiment.getMetric(src_idx).getMetricType() == MetricType.INCLUSIVE );
 	}
 }

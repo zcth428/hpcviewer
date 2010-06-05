@@ -100,8 +100,8 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     
     public void setDatabase(Experiment experiment) {
     	BaseMetric metrics[] = experiment.getMetrics();
-    	exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(metrics);
-    	inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(metrics);
+    	exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(experiment);
+    	inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
     	
     	RootScope root = experiment.getCallerTreeRoot();
     	if (root != null) {

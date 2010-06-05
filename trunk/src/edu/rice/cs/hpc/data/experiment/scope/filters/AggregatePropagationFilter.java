@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.filters;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
@@ -15,8 +16,8 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
  */
 public class AggregatePropagationFilter extends InclusiveOnlyMetricPropagationFilter {
 
-	public AggregatePropagationFilter(BaseMetric[] metricArray) {
-		super(metricArray);
+	public AggregatePropagationFilter(Experiment experiment) {
+		super(experiment);
 	}
 
 	/****************
@@ -26,7 +27,7 @@ public class AggregatePropagationFilter extends InclusiveOnlyMetricPropagationFi
 			int targ_idx) {
 		boolean bParentResult = super.doPropagation(source, target, src_idx, targ_idx);
 		if (!bParentResult) {
-			BaseMetric m = metrics[src_idx];// .getMetricType();
+			BaseMetric m = this._experiment.getMetric(src_idx);// .getMetricType();
 			bParentResult = bParentResult 	|| (m instanceof FinalMetric) || (m instanceof AggregateMetric);
 			/*|| ( mType == MetricType.PREAGGREGATE )
 											|| ( mType == MetricType.DERIVED_INCR );

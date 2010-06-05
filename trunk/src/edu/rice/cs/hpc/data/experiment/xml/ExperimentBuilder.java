@@ -23,6 +23,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.*;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
@@ -90,7 +91,7 @@ public class ExperimentBuilder extends Builder
 //	johnmc
 	protected Hashtable<String, SourceFile> hashSourceFileFromName;
 	// laks 2009.05.04: to keep compatibility
-	protected Hashtable<Integer, SourceFile> hashSourceFileFromKey;
+	protected HashMap<Integer, SourceFile> hashSourceFileFromKey;
 
 	/** Number of metrics provided by the experiment file.
     For each metric we will define one inclusive and one exclusive metric.*/
@@ -143,7 +144,7 @@ public class ExperimentBuilder extends Builder
 		this.srcFileStack = new Stack/*<SourceFile>*/();
 		this.srcFileStack.push(null); // mimic old behavior
 
-		hashSourceFileFromKey = new Hashtable<Integer, SourceFile>();
+		hashSourceFileFromKey = new HashMap<Integer, SourceFile>();
 		hashSourceFileFromName = new Hashtable<String, SourceFile>();
 		numberOfPrimaryMetrics = 0;
 		maxNumberOfMetrics = 100;

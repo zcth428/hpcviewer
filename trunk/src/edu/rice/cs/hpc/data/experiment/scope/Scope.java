@@ -624,6 +624,21 @@ public void combine(Scope source, MetricValuePropagationFilter filter) {
 	}
 }
 
+
+/**********************************************************************************
+ * Safely combining metrics from another scope. 
+ * This method checks if the number of metrics is the same as the number of metrics
+ * 	in the experiment. If not, it generates additional metrics
+ * this method is used for dynamic metrics creation such as when computing metrics
+ * 	in caller view (if a new metric is added)
+ * @param source
+ * @param filter
+ **********************************************************************************/
+public void safeCombine(Scope source, MetricValuePropagationFilter filter) {
+	ensureMetricStorage();
+	this.combine(source, filter);
+}
+
 /*************************************************************************
  *	Makes sure that the scope object has storage for its metric values.
  ************************************************************************/

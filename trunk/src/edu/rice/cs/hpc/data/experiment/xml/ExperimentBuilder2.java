@@ -24,6 +24,7 @@ import edu.rice.cs.hpc.data.experiment.xml.Token2.TokenXML;
 import edu.rice.cs.hpc.data.util.*;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
@@ -85,7 +86,7 @@ public class ExperimentBuilder2 extends Builder
 	protected Stack/*<SourceFile>*/ srcFileStack;
 
 	// Laks 2009.05.04: we need to use a hash table to preserve the file dictionary
-	protected Hashtable <Integer, SourceFile> hashSourceFileTable = new Hashtable<Integer, SourceFile>();
+	protected HashMap <Integer, SourceFile> hashSourceFileTable = new HashMap<Integer, SourceFile>();
 
 	/** Number of metrics provided by the experiment file.
     For each metric we will define one inclusive and one exclusive metric.*/
@@ -99,9 +100,9 @@ public class ExperimentBuilder2 extends Builder
 	private Token2.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	private Token2.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
 	//--------------------------------------------------------------------------------------
-	private Hashtable<Integer, String> hashProcedureTable;
-	private Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
-	private Hashtable<Integer, Scope> hashCallSiteTable;
+	private HashMap<Integer, String> hashProcedureTable;
+	private HashMap<Integer, LoadModuleScope> hashLoadModuleTable;
+	private HashMap<Integer, Scope> hashCallSiteTable;
 	
 	private boolean csviewer;
 	
@@ -147,9 +148,9 @@ public class ExperimentBuilder2 extends Builder
 		this.srcFileStack = new Stack/*<SourceFile>*/();
 		this.srcFileStack.push(null); // mimic old behavior
 
-		hashProcedureTable = new Hashtable<Integer, String>();
-		hashLoadModuleTable = new Hashtable<Integer, LoadModuleScope>();
-		hashCallSiteTable = new Hashtable<Integer, Scope>();
+		hashProcedureTable = new HashMap<Integer, String>();
+		hashLoadModuleTable = new HashMap<Integer, LoadModuleScope>();
+		hashCallSiteTable = new HashMap<Integer, Scope>();
 		
 		numberOfPrimaryMetrics = 0;
 		

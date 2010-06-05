@@ -58,8 +58,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		
 		this.root_ft = root;
 		
-		this.inclusive_filter = new InclusiveOnlyMetricPropagationFilter( exp.getMetrics() );
-		this.exclusive_filter = new ExclusiveOnlyMetricPropagationFilter( exp.getMetrics() );
+		this.inclusive_filter = new InclusiveOnlyMetricPropagationFilter( exp );
+		this.exclusive_filter = new ExclusiveOnlyMetricPropagationFilter( exp );
 	}
 	
 	

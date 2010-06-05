@@ -68,7 +68,7 @@ protected String version;
 
 /** ----------------- DICTIONARIES -----------------  **/
 protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
-protected Hashtable<Integer, SourceFile> hashFileTable;
+protected HashMap<Integer,SourceFile> hashFileTable;
 
 
 /** The experiment's metrics. */
@@ -350,12 +350,12 @@ protected Scope createFlatView(Scope callingContextViewRootScope)
 
 protected void addInclusiveMetrics(Scope scope, MetricValuePropagationFilter filter)
 {
-	InclusiveMetricsScopeVisitor isv = new InclusiveMetricsScopeVisitor(this.getMetrics(), filter);
+	InclusiveMetricsScopeVisitor isv = new InclusiveMetricsScopeVisitor(this, filter);
 	scope.dfsVisitScopeTree(isv);
 }
 
 private void computeExclusiveMetrics(Scope scope) {
-	ExclusiveCallingContextVisitor visitor = new ExclusiveCallingContextVisitor(this.getMetrics());
+	ExclusiveCallingContextVisitor visitor = new ExclusiveCallingContextVisitor(this);
 	scope.dfsVisitScopeTree(visitor);
 }
 
@@ -423,7 +423,7 @@ public void postprocess(boolean callerView) {
 		Scope callingContextViewRootScope = firstSubTree;
 
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
-		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
+		InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this);
 
 		//----------------------------------------------------------------------------------------------
 		// Inclusive metrics
@@ -550,12 +550,12 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 	int iInclusive = this.getMetricCount() - 1;
 	int iExclusive = -1;		// at the moment we do not support exclusive/inclusive derived metric
 	
-	InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this.getMetrics());
+	InclusiveOnlyMetricPropagationFilter rootInclProp = new InclusiveOnlyMetricPropagationFilter(this);
 	
 	for (int i=0; i<this.rootScope.getSubscopeCount(); i++) {
 		RootScope rootScope = (RootScope) this.rootScope.getSubscope(i);
 
-		DerivedMetricVisitor csv = new DerivedMetricVisitor(this.getMetrics(), rootInclProp, iInclusive, iExclusive );
+		DerivedMetricVisitor csv = new DerivedMetricVisitor(this, rootInclProp, iInclusive, iExclusive );
 		rootScope.dfsVisitScopeTree(csv);
 
 		//DerivedPercentVisitor psv = new DerivedPercentVisitor(this.getMetrics(), rootScope, iInclusive, iExclusive);
@@ -706,7 +706,7 @@ public TreeNode[] getRootScopeChildren() {
 //============================================================================
 // DICTIONARY
 //============================================================================
-public void setFileTable( Hashtable<Integer, SourceFile> fileTable) {
+public void setFileTable( HashMap<Integer, SourceFile> fileTable) {
 	this.hashFileTable = fileTable;
 	//arrSourceFiles = fileTable;
 }

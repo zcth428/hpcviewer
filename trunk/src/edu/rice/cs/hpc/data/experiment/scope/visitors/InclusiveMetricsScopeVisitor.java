@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.AlienScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
@@ -34,9 +35,9 @@ public class InclusiveMetricsScopeVisitor extends AbstractInclusiveMetricsVisito
 	//private ExclusiveOnlyMetricPropagationFilter filterExclusive;
 	//private InclusiveOnlyMetricPropagationFilter filterInclusive;
 
-	public InclusiveMetricsScopeVisitor(BaseMetric []metrics, MetricValuePropagationFilter filter) {
-		super(metrics, filter);
-		this.numberOfPrimaryMetrics = metrics.length;
+	public InclusiveMetricsScopeVisitor(Experiment experiment, MetricValuePropagationFilter filter) {
+		super(experiment, filter);
+		this.numberOfPrimaryMetrics = experiment.getMetricCount();
 		this.filter = filter;
 /*
 		filterExclusive = new ExclusiveOnlyMetricPropagationFilter(metrics);

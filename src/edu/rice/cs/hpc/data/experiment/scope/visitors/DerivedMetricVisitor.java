@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
@@ -26,8 +27,7 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 	private int iInclusive;
 	private int iBaseMetric;
 	private boolean withExclusiveAndInclusive;
-	private BaseMetric []arrMetrics;
-	//private double excAggregateValue = 0.0;
+	private Experiment _experiment;
 	
 	/**
 	 * Constructor
@@ -36,12 +36,13 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 	 * @param iMetricInc: the index position of the inclusive metric
 	 * @param iMetricExc: the index position of the exclusive metric
 	 */
-	public DerivedMetricVisitor(BaseMetric []metrics, MetricValuePropagationFilter filter, int iMetricInc, int iMetricExc) {
-		super(metrics, filter);
+	public DerivedMetricVisitor(Experiment experiment, MetricValuePropagationFilter filter, int iMetricInc, int iMetricExc) {
+		super(experiment, filter);
 		this.iExclusive = iMetricExc;
 		this.iInclusive = iMetricInc;
 		this.withExclusiveAndInclusive = (iMetricExc > 0);
-		this.arrMetrics = metrics;
+		this._experiment = experiment;
+		
 		iBaseMetric = (withExclusiveAndInclusive? iMetricExc:iInclusive);
 		assert (iMetricInc > 0);
 	}
@@ -51,7 +52,7 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 	//----------------------------------------------------
 	public void visit(RootScope scope, ScopeVisitType vt) { //up(scope, vt);
 		if (vt == ScopeVisitType.PostVisit) {
-			MetricValue mv = this.arrMetrics[this.iInclusive].getValue(scope);
+			MetricValue mv = this._experiment.getMetric(this.iInclusive).getValue(scope);
 			scope.setMetricValue(this.iInclusive, mv);
 		}
 	}
@@ -87,7 +88,7 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 			} */
 		} else if (vt == ScopeVisitType.PreVisit) {
 			// first, create metric exclusive
-			BaseMetric metricExc = this.arrMetrics[iBaseMetric];
+			BaseMetric metricExc = this._experiment.getMetric(iBaseMetric);
 			// compute the derived metric of this scope
 			MetricValue mv = metricExc.getValue(scope);
 			// set the value of the derived metric into the scope

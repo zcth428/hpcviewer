@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.AlienScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
@@ -24,10 +25,10 @@ public abstract class AbstractInclusiveMetricsVisitor implements IScopeVisitor {
 	protected ExclusiveOnlyMetricPropagationFilter filterExclusive ;
 	private InclusiveOnlyMetricPropagationFilter filterInclusive;
 
-	public AbstractInclusiveMetricsVisitor(BaseMetric []metrics, MetricValuePropagationFilter currentFilter) {
+	public AbstractInclusiveMetricsVisitor(Experiment experiment, MetricValuePropagationFilter currentFilter) {
 		this.filter = currentFilter;
-		filterExclusive = new ExclusiveOnlyMetricPropagationFilter(metrics);
-		filterInclusive = new InclusiveOnlyMetricPropagationFilter(metrics);
+		filterExclusive = new ExclusiveOnlyMetricPropagationFilter(experiment);
+		filterInclusive = new InclusiveOnlyMetricPropagationFilter(experiment);
 	}
 	//----------------------------------------------------
 	// visitor pattern instantiations for each Scope type

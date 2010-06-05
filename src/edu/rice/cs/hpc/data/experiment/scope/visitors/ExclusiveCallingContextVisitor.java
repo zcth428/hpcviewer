@@ -3,6 +3,7 @@
  */
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
@@ -29,9 +30,9 @@ public class ExclusiveCallingContextVisitor implements IScopeVisitor {
 	/**
 	 * 
 	 */
-	public ExclusiveCallingContextVisitor(BaseMetric []metrics) {
-		this.numberOfPrimaryMetrics = metrics.length;
-		this.filterExclusive = new ExclusiveOnlyMetricPropagationFilter(metrics);
+	public ExclusiveCallingContextVisitor(Experiment experiment) {
+		this.numberOfPrimaryMetrics = experiment.getMetricCount();
+		this.filterExclusive = new ExclusiveOnlyMetricPropagationFilter(experiment);
 	}
 
 	/* (non-Javadoc)

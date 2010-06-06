@@ -15,15 +15,12 @@ import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
 public class PercentScopeVisitor implements IScopeVisitor {
-	MetricValue[] metricCosts;
+	RootScope root;
 	int nMetrics;
 
 	public PercentScopeVisitor(int metricCount, RootScope r) {
 		nMetrics = metricCount;
-		metricCosts = new MetricValue[nMetrics];
-		for (int i = 0; i < nMetrics; i++) {
-			metricCosts[i] = r.getMetricValue(i);
-		}
+		root = r;
 	}
 	//----------------------------------------------------
 	// visitor pattern instantiations for each Scope type
@@ -47,17 +44,24 @@ public class PercentScopeVisitor implements IScopeVisitor {
 
 	protected void calc(Scope scope, ScopeVisitType vt) {
 		if (vt == ScopeVisitType.PostVisit) {
-			setPercentValue(scope, this.metricCosts, this.nMetrics);
+			setPercentValue(scope, root, this.nMetrics);
 		}
 	}
 	
 	
-	static public void setPercentValue(Scope scope, MetricValue root_values[], int num_metrics) {
+	/***
+	 * Compute and set the percent of a scope
+	 * @param scope: scope in which a percent needs to be counted
+	 * @param root: the root scope
+	 * @param num_metrics: number of metrics
+	 */
+	static public void setPercentValue(Scope scope, RootScope root, int num_metrics) {
 		for (int i = 0; i < num_metrics; i++) {
 			MetricValue m = scope.getMetricValue(i);
-			if (m != MetricValue.NONE && root_values[i] != MetricValue.NONE) {
+			MetricValue root_value = root.getMetricValue(i);
+			if (m != MetricValue.NONE && root_value != MetricValue.NONE) {
 				double myValue = m.getValue();
-				double total = root_values[i].getValue();
+				double total = root_value.getValue();
 				if (total != 0.0) m.setPercentValue(myValue/total);
 			}
 

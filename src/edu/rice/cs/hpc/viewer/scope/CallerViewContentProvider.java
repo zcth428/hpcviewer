@@ -18,7 +18,8 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
 
 	private ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
-	private MetricValue root_values[];
+	private RootScope root;
+	private Experiment experiment;
 	
     /**
      * get the number of elements (called by jface)
@@ -58,7 +59,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         		//-------------------------------------------------------------------------
         		for(int i=0; i<path.size(); i++) {
         			CallSiteScopeCallerView callsite = path.get(i);
-            		PercentScopeVisitor.setPercentValue(callsite, root_values, root_values.length);
+            		PercentScopeVisitor.setPercentValue(callsite, root, this.experiment.getMetricCount());
         		}
         		
         		CallSiteScopeCallerView first = path.removeFirst();
@@ -98,21 +99,15 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     }
 
     
+    /***
+     * Update the database
+     * @param experiment
+     */
     public void setDatabase(Experiment experiment) {
-    	BaseMetric metrics[] = experiment.getMetrics();
     	exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(experiment);
     	inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
     	
-    	RootScope root = experiment.getCallerTreeRoot();
-    	if (root != null) {
-    		this.root_values = new MetricValue[experiment.getMetricCount()];
-    		
-    		for(int i=0; i<experiment.getMetricCount(); i++) {
-    			this.root_values[i] = root.getMetricValue(i);
-    		}
-    	} else {
-    		
-    		throw new RuntimeException("Unable to retrieve the root of caller view");
-    	}
+    	root = experiment.getCallerTreeRoot();
+    	this.experiment = experiment;
     }
 }

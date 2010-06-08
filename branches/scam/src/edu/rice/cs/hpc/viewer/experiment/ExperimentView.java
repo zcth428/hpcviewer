@@ -194,7 +194,6 @@ public class ExperimentView {
 			} catch (PartInitException e ) {
 				
 			}
-			
 		}
 	}
 	

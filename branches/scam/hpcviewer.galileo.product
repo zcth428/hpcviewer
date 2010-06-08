@@ -33,7 +33,7 @@ Software and the Performance Engineering Research Institute.
       startupProgressRect="1,273,245,7" />
    <launcher name="hpcviewer">
       <linux icon="/hpcviewer/icons/hpcviewer-icon-32x32-32bit.xpm"/>
-      <macosx icon="/hpcviewer/icons/hpcviewer.icns"/>
+      <macosx icon="/hpcviewer-scam/icons/hpcviewer.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp
@@ -42,6 +42,7 @@ Software and the Performance Engineering Research Institute.
             winLargeHigh="/hpciewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

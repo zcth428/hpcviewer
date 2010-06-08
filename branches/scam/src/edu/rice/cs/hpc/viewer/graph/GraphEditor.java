@@ -19,11 +19,13 @@ import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 import org.swtchart.Chart;
+import org.swtchart.IAxis;
 import org.swtchart.IAxisSet;
 import org.swtchart.IAxisTick;
 import org.swtchart.IBarSeries;
 import org.swtchart.ILineSeries;
 import org.swtchart.LineStyle;
+import org.swtchart.Range;
 import org.swtchart.ISeries.SeriesType;
 
 public class GraphEditor extends EditorPart {
@@ -83,7 +85,7 @@ public class GraphEditor extends EditorPart {
 		//----------------------------------------------
 		// chart creation
 		//----------------------------------------------
-		chart = new Chart(parent, SWT.BORDER);
+		chart = new Chart(parent, SWT.NONE);
 		chart.getTitle().setText( title );
 
 		
@@ -108,7 +110,7 @@ public class GraphEditor extends EditorPart {
 		//----------------------------------------------
 		// the chart should occupy all the client area
 		//----------------------------------------------
-		GridDataFactory.fillDefaults().grab(true, true).applyTo(chart);
+		//GridDataFactory.fillDefaults().grab(true, true).applyTo(chart);
 		
 		//----------------------------------------------
 		// plot data
@@ -174,6 +176,7 @@ public class GraphEditor extends EditorPart {
 		// adjust the axis range
 		chart.getAxisSet().adjustRange();
 
+		updateRange();
 
 	}
 
@@ -215,6 +218,7 @@ public class GraphEditor extends EditorPart {
 		// adjust the axis range
 		chart.getAxisSet().adjustRange();
 
+		updateRange();
 	}
 
 	
@@ -232,9 +236,6 @@ public class GraphEditor extends EditorPart {
 		double y_values[], x_values[];
 		try {
 			y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
-			Histogram histo = new Histogram(bins, y_values);
-			y_values = histo.getAxisY();
-			x_values = histo.getAxisX();
 
 		} catch (IOException e) {
 			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
@@ -242,12 +243,22 @@ public class GraphEditor extends EditorPart {
 			e.printStackTrace();
 			return;
 		}			
+
+		Histogram histo = new Histogram(bins, y_values);
+		y_values = histo.getAxisY();
+		x_values = histo.getAxisX();
+		double min = histo.min();
+		double max = histo.max();
+		double single = 0.1 * (max-min)/bins;
 		
 		IAxisSet axisSet = chart.getAxisSet();
 		IAxisTick xTick = axisSet.getXAxis(0).getTick();
 		xTick.setFormat(new DecimalFormat("0.###E0##"));
 
-		axisSet.getXAxis(0).getTitle().setText("Metrics");
+		IAxis axis = axisSet.getXAxis(0); 
+		axis.getTitle().setText("Metrics");
+		axis.getRange().lower = min - single;
+		axis.getRange().upper = max + single;
 		axisSet.getYAxis(0).getTitle().setText("Frequency");
 		
 		// create scatter series
@@ -258,10 +269,37 @@ public class GraphEditor extends EditorPart {
 
 		// adjust the axis range
 		chart.getAxisSet().adjustRange();
+		
+		updateRange( histo.getWidth() );
 	}
 
 
-		
+	/***
+	 * temporary SWTChart bug fix 
+	 * add axis padding for scatter graph
+	 */
+	private void updateRange() {
+		IAxis axis = chart.getAxisSet().getXAxis(0);
+		Range range = axis.getRange();
+		Range new_range = new Range(range.lower - 0.1, range.upper + 0.1);
+		axis.setRange(new_range);
+		chart.updateLayout();		
+	}
+	
+	/**
+	 * temporary SWTChart bug fix 
+	 * add padding for histogram
+	 * @param width
+	 */
+	private void updateRange(double width) {
+		IAxis axis = chart.getAxisSet().getXAxis(0);
+		Range range = axis.getRange();
+		double pad = 0.5 * width;
+		Range new_range = new Range(range.lower - pad, range.upper + pad);
+		axis.setRange(new_range);
+		chart.updateLayout();		
+	}
+	
 	/*************************************************
 	 * class to manage data for plotting graph
 	 * @author laksonoadhianto

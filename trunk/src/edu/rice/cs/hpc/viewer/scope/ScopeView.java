@@ -8,16 +8,19 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.scope.BaseScopeView.ScopeViewTreeAction;
+import edu.rice.cs.hpc.viewer.graph.GraphEditor;
+import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
+import edu.rice.cs.hpc.viewer.graph.GraphType;
 
 /**
  * Basic class for scope views: calling context and caller view
@@ -99,9 +102,9 @@ public class ScopeView extends BaseScopeView {
 	 * @param index
 	 */
 	private void createGraphMenus(IMenuManager menu, Scope scope, MetricRaw m) {
-		menu.add( this.createGraphMenu(scope, m, GraphType.PLOT) );
-		menu.add( this.createGraphMenu(scope, m, GraphType.SORTED) );
-		menu.add( this.createGraphMenu(scope, m, GraphType.HISTO) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.PlotType.PLOT) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.PlotType.SORTED) );
+		menu.add( this.createGraphMenu(scope, m, GraphType.PlotType.HISTO) );
 	}
 	
 	/***
@@ -112,32 +115,44 @@ public class ScopeView extends BaseScopeView {
 	 * @param t
 	 * @return
 	 */
-	private ScopeGraphAction createGraphMenu( Scope scope, MetricRaw m, GraphType t) {
-		String sTitle = "Plot graph";
-		if (t == GraphType.HISTO)
-			sTitle = "Histogram graph";
-		else if (t == GraphType.SORTED)
-			sTitle = "Sorted plot graph";
+	private ScopeGraphAction createGraphMenu( Scope scope, MetricRaw m, GraphType.PlotType t) {
+		final String sTitle = GraphType.toString(t);
 		return new ScopeGraphAction( sTitle, scope, m, t);
 	}
 	
 	
-	/****
-	 * type of graph:
-	 *	- plot, sorted and histo
-	 */
-	static private enum GraphType {PLOT, SORTED, HISTO} ;
+	private GraphEditorInput getGraphEditorInput(String id) {
+		IEditorReference editors[] = this.getSite().getWorkbenchWindow().getActivePage().getEditorReferences();
+		if (editors == null)
+			return null;
+		
+		for (int i = 0; i<editors.length; i++) {
+			String name = editors[i].getName();
+			if (name != null) {
+
+				if (id.equals(name)) {
+					try {
+						IEditorInput input = editors[i].getEditorInput();
+						return (GraphEditorInput) input;
+					} catch (PartInitException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
 	
     /********************************************************************************
      * class to initialize an action for displaying a graph
-     * @author laksonoadhianto
-     *
      ********************************************************************************/
     private class ScopeGraphAction extends ScopeViewTreeAction {
-    	private GraphType graph_type;
-    	private MetricRaw metric;
+    	final private GraphType.PlotType graph_type;
+    	final private MetricRaw metric;
     	
-		public ScopeGraphAction(String sTitle, Scope scopeCurrent, MetricRaw m, GraphType type) {
+		public ScopeGraphAction(String sTitle, Scope scopeCurrent, MetricRaw m, GraphType.PlotType type) {
 			
 			super(sTitle, scopeCurrent);
 			this.metric = m;
@@ -147,31 +162,15 @@ public class ScopeView extends BaseScopeView {
 		public void run() {
 			IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
         	Experiment exp = getExperiment();
-
+        	
 			try {
-				switch (graph_type) {
-				case PLOT:
-					GraphScopeView objview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_p_"+ metric.getID(), 
-						IWorkbenchPage.VIEW_ACTIVATE);
-					objview.plotData(exp, scope, metric);
-					break;
-				
-				case SORTED:
-					// sorted data
-					GraphScopeView objSortedview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_s_"+metric.getID(), 
-						IWorkbenchPage.VIEW_ACTIVATE);
-					objSortedview.plotSortedData(exp, scope, metric);
-					break;
-					
-				case HISTO:
-					GraphScopeView objHistoview = (GraphScopeView) objPage.showView(GraphScopeView.ID, 
-						scope.getCCTIndex()+"_h_"+metric.getID(), 
-						IWorkbenchPage.VIEW_ACTIVATE);
-					objHistoview.plotHistogram(exp, scope, metric);
-					break;
-				}
+				String id = GraphEditorInput.getName(scope, metric, graph_type);
+	        	GraphEditorInput objInput = getGraphEditorInput(id);
+	        	
+	        	if (objInput == null)
+	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type);
+	        	
+	        	objPage.openEditor(objInput, GraphEditor.ID);
 				
 			} catch (PartInitException e) {
 				e.printStackTrace();

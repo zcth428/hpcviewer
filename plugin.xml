@@ -43,14 +43,6 @@
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
       </view>
-      <view
-            allowMultiple="true"
-            category="hpcviewer"
-            class="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
-            icon="icons/graphview.png"
-            id="edu.rice.cs.hpc.viewer.scope.GraphScopeView"
-            name="GraphView">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">
@@ -157,6 +149,14 @@
           icon="icons/hpc-merged-16x16.png"
           id="edu.rice.cs.hpc.viewer.util.HTMLEditor"
           name="Web editor">
+    </editor>
+    <editor
+          class="edu.rice.cs.hpc.viewer.graph.GraphEditor"
+          default="false"
+          extensions="*"
+          icon="icons/graphview.png"
+          id="edu.rice.cs.hpc.viewer.graph.GraphEditor"
+          name="Graph view">
     </editor>
    </extension>
    <extension

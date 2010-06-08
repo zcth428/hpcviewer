@@ -86,6 +86,16 @@ public class ThreadLevelDataManager {
 	}
 	
 	
+	public double[] getProcessIDsDouble(int metric_raw_id) {
+		String x[] = data_file[metric_raw_id].getValuesX();
+		double xd[] = new double[x.length];
+		for (int i=0; i<x.length; i++) {
+			xd[i] = Double.valueOf(x[i]);
+		}
+		return xd;
+	}
+
+
 	/**
 	 * 
 	 * @param node_index: normalized node index

@@ -11,7 +11,7 @@ import java.io.RandomAccessFile;
  **********************************************************************************************/
 public class ThreadLevelData {
 	
-	static private boolean debug = false;
+	static private boolean debug = true;
 	// from java spec: the size of a double is 8 bytes in all jvm
 	static private final int DOUBLE_FIELD_SIZE   = 8;
 
@@ -33,7 +33,7 @@ public class ThreadLevelData {
 			file.seek(position);
 			double metric = (double)file.readLong();
 			file.close();
-			debug_print("\tpos: " + position + " , m: " + metric);
+			debug_print("file: "+ sFilename +" \tpos: " + position + " , m: " + metric);
 			return metric;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

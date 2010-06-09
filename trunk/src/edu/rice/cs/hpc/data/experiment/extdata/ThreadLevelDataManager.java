@@ -103,31 +103,32 @@ public class ThreadLevelDataManager {
 	 * @param num_metrics
 	 * @return
 	 */
-	public double[] getMetrics(int metric_raw_id, long node_index, int metric_index)
+	public double[] getMetrics(MetricRaw metric, long node_index)
 			throws IOException {
 		if (this.data_file == null)
 			return null;
 		
-		if (data_file[metric_raw_id] == null) {
-			this.checkThreadsMetricDataFiles(metric_raw_id);
+		int metric_glob_id = metric.getID();
+		
+		if (data_file[metric_glob_id] == null) {
+			this.checkThreadsMetricDataFiles(metric_glob_id);
 		}
 		
-		ThreadLevelDataFile data = this.data_file[metric_raw_id];
+		ThreadLevelDataFile data = this.data_file[metric_glob_id];
 		
 		int data_size = data.size();
 		double[] metrics = new double[data_size];
 		
 		ThreadLevelData objData = new ThreadLevelData();
 		
-		debugln(System.out, "Series: " +  metric_raw_id + " node: " + node_index + " metric: " + metric_index);
-		MetricRaw []metrics_raw = experiment.getMetricRaw();
+		debugln(System.out, "Series: " +  metric_glob_id + " node: " + node_index + " metric: " + metric.getRawID());
 
 		for(int i=0; i<data_size; i++) {
-			metrics[i] = objData.getMetric(data.getFile(i).getAbsolutePath(), node_index, metric_index, 
-					metrics_raw[metric_raw_id].getSize());
-			//debug(System.out, " " + metrics[i] + " ");
+			metrics[i] = objData.getMetric(data.getFile(i).getAbsolutePath(), node_index, metric.getRawID(), 
+					metric.getSize());
+
 		}
-		debugln(System.out, "\tsize: " + data.size());
+		debugln(System.out, "\tsize: " + data_size);
 		return metrics;
 	}
 

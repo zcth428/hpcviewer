@@ -7,7 +7,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -131,6 +135,7 @@ public class GraphEditor extends EditorPart {
 			break;
 		}
 
+		this.createContextMenu();
 	}
 
 	@Override
@@ -140,8 +145,29 @@ public class GraphEditor extends EditorPart {
 
 	
 	//========================================================================
+	// Private method
+	//========================================================================
 	
-	
+	private void createContextMenu() {
+
+		Composite plotArea = chart.getPlotArea();
+		Menu menu = new Menu(plotArea);
+		MenuItem mnuItem = new MenuItem(menu, SWT.PUSH);
+		mnuItem.setText("Show metrics");
+		mnuItem.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+
+			}
+			
+		});
+		plotArea.setMenu(menu);
+	}
 	
 	/**
 	 * Plot a given metrics for a specific scope
@@ -151,13 +177,13 @@ public class GraphEditor extends EditorPart {
 	 */
 	private void plotData(Experiment exp, Scope scope, MetricRaw metric ) {
 		
-		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
+		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(exp);
 
 		double y_values[];
 		double []x_values;
 		try {
-			y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
-			x_values = data.objDataManager.getProcessIDsDouble( metric.getID() );				
+			y_values = objDataManager.getMetrics( metric, scope.getCCTIndex() );
+			x_values = objDataManager.getProcessIDsDouble( metric.getID() );				
 			
 		} catch (IOException e) {
 			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
@@ -176,7 +202,7 @@ public class GraphEditor extends EditorPart {
 		// adjust the axis range
 		chart.getAxisSet().adjustRange();
 
-		updateRange();
+		updateRange(x_values.length);
 
 	}
 
@@ -189,15 +215,15 @@ public class GraphEditor extends EditorPart {
 	 */
 	private void plotSortedData(Experiment exp, Scope scope, MetricRaw metric, String sTitle) {
 		
-		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
+		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(exp);
 
 		double y_values[], x_values[];
 		try {
-			y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
+			y_values = objDataManager.getMetrics( metric, scope.getCCTIndex());
 			
 			java.util.Arrays.sort(y_values);
 			
-			x_values = data.objDataManager.getProcessIDsDouble(metric.getID());	
+			x_values = objDataManager.getProcessIDsDouble(metric.getID());	
 			
 		} catch (IOException e) {
 			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
@@ -218,7 +244,7 @@ public class GraphEditor extends EditorPart {
 		// adjust the axis range
 		chart.getAxisSet().adjustRange();
 
-		updateRange();
+		updateRange(x_values.length);
 	}
 
 	
@@ -231,11 +257,11 @@ public class GraphEditor extends EditorPart {
 	 */
 	private void plotHistogram(Experiment exp, Scope scope, MetricRaw metric, String sTitle) {
 		final int bins = 10;
-		PlotData data = new PlotData(exp, scope.getCCTIndex(), metric.getRawID());
+		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(exp);
 		
 		double y_values[], x_values[];
 		try {
-			y_values = data.objDataManager.getMetrics(metric.getID(), data.node_index, data.metric_index);
+			y_values = objDataManager.getMetrics(metric, scope.getCCTIndex());
 
 		} catch (IOException e) {
 			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
@@ -254,6 +280,8 @@ public class GraphEditor extends EditorPart {
 		IAxisSet axisSet = chart.getAxisSet();
 		IAxisTick xTick = axisSet.getXAxis(0).getTick();
 		xTick.setFormat(new DecimalFormat("0.###E0##"));
+		IAxisTick yTick = axisSet.getYAxis(0).getTick();
+		yTick.setFormat(new DecimalFormat("#######"));
 
 		IAxis axis = axisSet.getXAxis(0); 
 		axis.getTitle().setText("Metrics");
@@ -278,10 +306,11 @@ public class GraphEditor extends EditorPart {
 	 * temporary SWTChart bug fix 
 	 * add axis padding for scatter graph
 	 */
-	private void updateRange() {
+	private void updateRange(int num_items_x) {
 		IAxis axis = chart.getAxisSet().getXAxis(0);
 		Range range = axis.getRange();
-		Range new_range = new Range(range.lower - 0.1, range.upper + 0.1);
+		double delta = 0.1 * (range.upper - range.lower) / num_items_x;
+		Range new_range = new Range(range.lower - delta, range.upper + delta);
 		axis.setRange(new_range);
 		chart.updateLayout();		
 	}
@@ -300,37 +329,5 @@ public class GraphEditor extends EditorPart {
 		chart.updateLayout();		
 	}
 	
-	/*************************************************
-	 * class to manage data for plotting graph
-	 * @author laksonoadhianto
-	 *
-	 *************************************************/
-	private class PlotData {
-		int metric_index;
-		long node_index;
-		ThreadLevelDataManager objDataManager;
-		
-		/**
-		 * constructor to initialize and normalize data for plotting graph
-		 * @param exp: experiment
-		 * @param node: node index (1-based)
-		 * @param metric: metric index (not normalized)
-		 */
-		public PlotData( Experiment exp, long node, int metric) 
-			throws RuntimeException {
-			
-			objDataManager = exp.getThreadLevelDataManager();
-			
-			if (!objDataManager.isDataAvailable()) {
-				throw new RuntimeException("Experiment has no thread-level data");
-			}
-			
-			// adjust the node index: 1=the root, 2=node-0, 3=node-1, .... 
-			node_index = node - 1;
-			// adjust the metric index: start from the first metric
-			metric_index = metric;
-			
-		}
-	}
 
 }

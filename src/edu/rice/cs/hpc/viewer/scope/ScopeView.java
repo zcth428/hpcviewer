@@ -28,8 +28,11 @@ import edu.rice.cs.hpc.viewer.graph.GraphType;
  *
  */
 public class ScopeView extends BaseScopeView {
-    public static final String ID = "edu.rice.cs.hpc.scope.ScopeView";
-	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
+	
+    public static final String ID = "edu.rice.cs.hpc.viewer.scope.ScopeView";
+	
+	@Override
+    protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
         return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
     }

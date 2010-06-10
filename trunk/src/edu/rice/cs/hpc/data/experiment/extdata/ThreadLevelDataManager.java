@@ -97,11 +97,10 @@ public class ThreadLevelDataManager {
 
 
 	/**
-	 * 
+	 * retrive an array of raw metric value of a given node and raw metric
+	 * @param metric: raw metric
 	 * @param node_index: normalized node index
-	 * @param metric_index: normalized metric index
-	 * @param num_metrics
-	 * @return
+	 * @return array of doubles of metric value
 	 */
 	public double[] getMetrics(MetricRaw metric, long node_index)
 			throws IOException {

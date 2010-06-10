@@ -1,12 +1,8 @@
 package edu.rice.cs.hpc.viewer.metric;
 
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.swt.graphics.Font;
-
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.scope.BaseMetricColumnProvider;
 
 /**
  * Label provide class to write text (and image) in the column item
@@ -14,7 +10,7 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
  * @author laksono
  *
  */
-public class MetricLabelProvider extends ColumnLabelProvider {
+public class MetricLabelProvider extends BaseMetricColumnProvider {
 	private BaseMetric metric;	// metric of this column
 
 	public MetricLabelProvider(BaseMetric metricNew) {
@@ -33,8 +29,5 @@ public class MetricLabelProvider extends ColumnLabelProvider {
 		return text;
 	}
 
-	public Font getFont(Object element) {
-		return Utilities.fontMetric;
-	}
 
 }

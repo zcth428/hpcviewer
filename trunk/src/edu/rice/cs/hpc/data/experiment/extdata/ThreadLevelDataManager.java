@@ -132,6 +132,36 @@ public class ThreadLevelDataManager {
 	}
 
 	
+	public double getMetric(int rank_sequence, MetricRaw metric, long node_index)
+	throws IOException {
+		
+		double value;
+		ThreadLevelData objData = new ThreadLevelData();
+
+		ThreadLevelDataFile data = this.data_file[ metric.getID() ];
+		value = objData.getMetric( data.getFile(rank_sequence).getAbsolutePath(), node_index, 
+					metric.getRawID(), metric.getSize() );
+		
+		return value;
+	}
+	
+	
+	public double[] getMetric(int rank_sequence, long node_index) throws IOException {
+		
+		MetricRaw metrics[] = experiment.getMetricRaw();
+		double values[] = new double[metrics.length];
+		ThreadLevelData objData = new ThreadLevelData();
+
+		for (int i=0; i<metrics.length; i++) {
+			MetricRaw metric = metrics[i];
+			ThreadLevelDataFile data = this.data_file[ metric.getID() ];
+			values[i] = objData.getMetric( data.getFile(rank_sequence).getAbsolutePath(), node_index, 
+					metric.getRawID(), metric.getSize() );
+		}
+		
+		return values;
+	}
+	
 	//==============================================================================================
 	// PRIVATE METHODS
 	//==============================================================================================

@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.TreeItem;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
@@ -19,7 +20,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     //======================================================
 	
 	protected boolean hasThreadsLevelData = false;
-	private TreeViewerColumn []colMetrics;
 
     
 
@@ -36,9 +36,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         
         this.hasThreadsLevelData = (myExperiment.getThreadLevelDataManager() != null);
         
-        // refresh the content with new database
-        this.updateDatabase(myExperiment);
-        
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
         	// remove the metric columns blindly
@@ -50,12 +47,10 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         // prepare the data for the sorter class for tree
         sorterTreeColumn.setMetric(myExperiment.getMetric(0));
 
-        // force garbage collector to remove the old data
-        this.colMetrics = null;
         int nbMetrics = myExperiment.getMetricCount();
         boolean status[] = new boolean[nbMetrics];
         // dirty solution to update titles
-        this.colMetrics = new TreeViewerColumn[nbMetrics];
+        TreeViewerColumn []colMetrics = new TreeViewerColumn[nbMetrics];
         {
             // Update metric title labels
             String[] titles = new String[nbMetrics+1];
@@ -93,7 +88,17 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         	// empty experiment data (it should be a warning instead of an error. The error should be on the profile side).
         	this.objViewActions.showErrorMessage("Warning: empty database.");
         }
+        
+        // ------------------------------------------------------------
+        // Tell children to update the content with the new database
+        // ------------------------------------------------------------
+        this.updateDatabase(myExperiment);
    	}
 
+    /**
+     * Tell children to update the content with the new database
+     * @param new_database
+     */
+    abstract protected void updateDatabase(Experiment new_database);
 
 }

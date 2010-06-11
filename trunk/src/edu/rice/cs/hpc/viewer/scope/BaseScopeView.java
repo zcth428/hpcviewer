@@ -34,6 +34,8 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         if (myExperiment == null)
         	return;
         
+        this.hasThreadsLevelData = (myExperiment.getThreadLevelDataManager() != null);
+        
         // refresh the content with new database
         this.updateDatabase(myExperiment);
         

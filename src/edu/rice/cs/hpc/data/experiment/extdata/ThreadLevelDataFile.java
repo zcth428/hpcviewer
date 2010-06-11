@@ -44,8 +44,8 @@ public class ThreadLevelDataFile {
 	
 	/******
 	 * retrieve the file 
-	 * @param id
-	 * @return
+	 * @param rank sequence id (not the process ID)
+	 * @return file descriptor that contains the raw metric
 	 */
 	public File getFile(int id) {
 		if (data != null) {
@@ -55,6 +55,10 @@ public class ThreadLevelDataFile {
 	}
 	
 	
+	/***
+	 * retrieve the array of process IDs
+	 * @return
+	 */
 	public String []getValuesX() {
 		if (data != null) {
 			String []values = new String[size()];
@@ -66,6 +70,11 @@ public class ThreadLevelDataFile {
 		return null;
 	}
 	
+	
+	/***
+	 * assign data
+	 * @param f: array of files
+	 */
 	private void setData(File f[]) {
 		
 		for(int i=0; i<f.length; i++) {

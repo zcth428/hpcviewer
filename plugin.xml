@@ -26,7 +26,7 @@
             category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.ScopeView"
             icon="icons/cct.png"
-            id="edu.rice.cs.hpc.scope.ScopeView"
+            id="edu.rice.cs.hpc.viewer.scope.ScopeView"
             name="ScopeView">
       </view>
       <view
@@ -42,6 +42,24 @@
             icon="icons/caller.png"
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
+      </view>
+      <view
+            allowMultiple="true"
+            category="hpcviewer"
+            class="edu.rice.cs.hpc.viewer.graph.ThreadView"
+            icon="icons/graphview.png"
+            id="edu.rice.cs.hpc.viewer.graph.ThreadView"
+            name="Thread view"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            category="hpcviewer"
+            class="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
+            icon="icons/cct.png"
+            id="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
+            name="Thread scope view"
+            restorable="true">
       </view>
    </extension>
    <extension

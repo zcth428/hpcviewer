@@ -54,13 +54,13 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 
 	protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     
-	private Experiment 	myExperiment;		// experiment data	
-    private RootScope 		myRootScope;		// the root scope of this view
-    private ColumnViewerSorter sorterTreeColummn;	// sorter for the tree
+	protected Experiment 	myExperiment;		// experiment data	
+	protected RootScope 		myRootScope;		// the root scope of this view
+	protected ColumnViewerSorter sorterTreeColumn;	// sorter for the tree
+    protected ScopeViewActions objViewActions;	// actions for this scope view
+	
     private EditorManager editorSourceCode;	// manager to display the source code
-	private ScopeViewActions objViewActions;	// actions for this scope view
 	private Clipboard cb = null;
-	private TreeViewerColumn []colMetrics;
 	
 	/**
 	 * bar composite for placing toolbar and tool items
@@ -296,7 +296,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         colTree.getColumn().setText("Scope");
         colTree.getColumn().setWidth(200); //TODO dynamic size
         colTree.setLabelProvider( getLabelProvider() ); // laks addendum
-        sorterTreeColummn = new ColumnViewerSorter(this.treeViewer, colTree.getColumn(), null,0); 
+        sorterTreeColumn = new ColumnViewerSorter(this.treeViewer, colTree.getColumn(), null,0); 
         
         //-----------------
         // Laks 11.11.07: need this to expand the tree for all view

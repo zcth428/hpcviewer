@@ -159,26 +159,12 @@ public class ColumnViewerSorter extends ViewerComparator {
 			if(this.iColNumber==0) {
 				return this.doCompare(node1, node2);
 			} else {
-				MetricValue mv1 = node1.getScope().getMetricValue(this.metric); //this.metric.getValue(node1.getScope());
-				MetricValue mv2 = node2.getScope().getMetricValue(this.metric); //this.metric.getValue(node2.getScope());
+				MetricValue mv1 = node1.getScope().getMetricValue(this.metric); 
+				MetricValue mv2 = node2.getScope().getMetricValue(this.metric); 
 				int iRet = mv2.compareTo(mv1);
 				if(iRet != 0)
 					return iRet;
-				// different treatment between normal metrics and derived metrics
-				/*
-				if(metric instanceof DerivedMetric) {
-					
-					DerivedMetric edm = (DerivedMetric) metric;
-					int iResult = edm.compare(node1.getScope(), node2.getScope());
-					if(iResult != 0)
-						return iResult;
-				} else {
-					MetricValue mv1 = node1.getScope().getMetricValue(metric);
-					MetricValue mv2 = node2.getScope().getMetricValue(metric);
-					return mv2.compareTo(mv1);
-					//if (mv1.getValue()>mv2.getValue()) return -1;
-					//if (mv1.getValue()<mv2.getValue()) return 1;
-				} */
+
 				// if the two values are equal, look at the text of the tree node
 				return this.doCompare(node1, node2);
 			}

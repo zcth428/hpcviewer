@@ -1,36 +1,37 @@
 package edu.rice.cs.hpc.data.experiment.metric;
 
+import java.io.IOException;
+
+import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.experiment.scope.Scope;
+
 /****************************************
  * Raw metric class
  * @author laksonoadhianto
  *
  ****************************************/
-public class MetricRaw {
+public class MetricRaw  extends BaseMetric {
 
 	private int ID;
-	private String name;
 	private String db_glob;
 	private int db_id;
 	private int num_metrics;
 	
+	public MetricRaw(String sID, String sDisplayName, boolean displayed, String format, boolean percent, int index) {
+		super(sID, sDisplayName, displayed, format, percent, index);
+	}
+	
+	
 	public MetricRaw(int id, String title, String db_pattern, 
 			int db_num, int metrics) {
+		super( String.valueOf(id), title, true, null, false, db_num);
 		this.ID = id;
-		this.name = title;
 		this.db_glob = db_pattern;
 		this.db_id = db_num;
 		this.num_metrics = metrics;
 	}
-	
-	
-	/****
-	 * retrieve the title of raw metric
-	 * @return
-	 */
-	public String getTitle() {
-		return this.name;
-	}
-	
+		
 	
 	/***
 	 * return the glob pattern of files of this raw metric
@@ -67,5 +68,28 @@ public class MetricRaw {
 	 */
 	public int getID() {
 		return this.ID;
+	}
+
+
+	@Override
+	public MetricValue getValue(Scope s) {
+		return null;
+	}
+	
+	public MetricValue getValue(Scope scope, int rank_sequence) {
+		
+		Experiment experiment = scope.getExperiment();
+		ThreadLevelDataManager threadManager = experiment.getThreadLevelDataManager();
+		try {
+			double value = threadManager.getMetric(rank_sequence, this, scope.getCCTIndex());
+			MetricValue mv = new MetricValue(value);
+			return mv;
+			
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+		
+		return MetricValue.NONE;
 	}
 }

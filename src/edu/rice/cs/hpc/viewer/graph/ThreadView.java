@@ -61,7 +61,7 @@ public class ThreadView extends ViewPart {
 		
 		for ( MetricRaw metric: metrics ) {
 			TableViewerColumn column = new TableViewerColumn( table, SWT.RIGHT, metric.getID()+1 );
-			column.getColumn().setText( metric.getTitle() );
+			column.getColumn().setText( metric.getDisplayName() );
 
 			double ids[] = objDataManager.getProcessIDsDouble(metric.getID());
 			DataModel data = new DataModel();

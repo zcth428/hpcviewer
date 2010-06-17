@@ -48,11 +48,12 @@ public abstract class BaseMetric {
 
 	/*************************************************************************
 	 * 
-	 * @param sID
-	 * @param sDisplayName
-	 * @param displayed
-	 * @param percent
-	 * @param index
+	 * @param sID: Unique ID of the metric
+	 * @param sDisplayName: the name of the title
+	 * @param displayed: will metric be displayed ?
+	 * @param format: format of the display
+	 * @param percent: show the percent ?
+	 * @param index: index in the table
 	 *************************************************************************/
 	public BaseMetric(String sID, String sDisplayName, boolean displayed, String format, boolean percent, int index) {
 		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;

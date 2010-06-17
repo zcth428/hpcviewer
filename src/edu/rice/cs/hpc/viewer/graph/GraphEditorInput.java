@@ -41,7 +41,7 @@ public class GraphEditorInput implements IEditorInput {
 	}
 
 	static public String getName(Scope scope, MetricRaw metric, GraphType.PlotType type) {
-		return "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getTitle();
+		return "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName();
 	}
 
 	

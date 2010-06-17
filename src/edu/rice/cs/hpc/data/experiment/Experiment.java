@@ -676,7 +676,10 @@ public BaseMetric getMetric(int index)
 public BaseMetric getMetric(String name)
 {
 	BaseMetric metric = (BaseMetric) this.metricMap.get(name);
-	Dialogs.Assert(metric != null, " Null in getMetric");
+	
+	if (metric == null) {
+		throw new RuntimeException("Unknown Metric " + name );
+	}
 	return metric;
 }
 

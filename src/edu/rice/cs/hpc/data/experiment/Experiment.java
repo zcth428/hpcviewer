@@ -442,7 +442,6 @@ public void postprocess(boolean callerView) {
 		Scope callersViewRootScope = null;
 		if (callerView) {
 			callersViewRootScope = createCallersView(callingContextViewRootScope);
-			addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
 		}
 		
 		//----------------------------------------------------------------------------------------------
@@ -458,6 +457,8 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		if (callerView)	{												// caller view
 				this.finalizeAggregateMetrics(callersViewRootScope);
+				// bug fix 2010.06.17: move the percent after finalization
+				addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
 		}
 		
 		this.finalizeAggregateMetrics(flatViewRootScope);				// flat view

@@ -7,6 +7,7 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
+import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
@@ -54,6 +55,8 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         			CallersViewScopeVisitor.createCallChain( cct, cc,
         					inclusiveOnly, exclusiveOnly);
         		
+        		//CallersViewScopeVisitor.mergeCallerPath(cc, inclusiveOnly, exclusiveOnly, path);
+        		
         		//-------------------------------------------------------------------------
         		// set the percent
         		//-------------------------------------------------------------------------
@@ -67,11 +70,12 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         		
         		//-------------------------------------------------------------------------
         		// set the new node into the content of the tree view:
-        		//  we assume that the parent node only has ONE child
         		//-------------------------------------------------------------------------
-        		Scope.Node scope_children[] = new Scope.Node[1];
+        		/*int num_kids = first.getSubscopeCount();
+        		Scope.Node scope_children[] = new Scope.Node[num_kids];
         		scope_children[0] = first.getTreeNode();
-        		return scope_children;
+        		return scope_children; */
+        		return cc.getTreeNode().getChildren();
         	}
     	}
     	return null;
@@ -90,6 +94,8 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     			if (scope instanceof CallSiteScopeCallerView) {
         			CallSiteScopeCallerView cc = (CallSiteScopeCallerView) scope;
         			has_children = cc.numChildren>0;
+    			} else if ( !(scope instanceof ProcedureScope)){
+    				throw new RuntimeException("Unexpected scope node: " + scope);
     			}
     		}
             return has_children; // !((Scope.Node) element).isLeaf();    		

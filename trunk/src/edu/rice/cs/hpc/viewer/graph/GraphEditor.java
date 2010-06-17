@@ -14,13 +14,16 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.scope.ThreadScopeView;
 
 import org.swtchart.Chart;
 import org.swtchart.IAxis;
@@ -135,7 +138,7 @@ public class GraphEditor extends EditorPart {
 			break;
 		}
 
-		this.createContextMenu();
+		this.createContextMenu(scope, metric);
 	}
 
 	@Override
@@ -148,7 +151,7 @@ public class GraphEditor extends EditorPart {
 	// Private method
 	//========================================================================
 	
-	private void createContextMenu() {
+	private void createContextMenu(final Scope scope, final MetricRaw metric) {
 
 		Composite plotArea = chart.getPlotArea();
 		Menu menu = new Menu(plotArea);
@@ -162,11 +165,24 @@ public class GraphEditor extends EditorPart {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-
+				showThreadView( scope, metric, 0);
 			}
 			
 		});
 		plotArea.setMenu(menu);
+	}
+	
+	
+	private void showThreadView( Scope scope, MetricRaw metric, int rank_sequence ) {
+		final IViewPart view = this.getSite().getWorkbenchWindow().getActivePage().findView(edu.rice.cs.hpc.viewer.scope.ThreadScopeView.ID);
+		if (view != null) {
+			final ThreadScopeView thread_view = (ThreadScopeView) view;
+
+			final Experiment exp = scope.getExperiment();
+			final RootScope root = (RootScope) exp.getRootScope();
+
+			thread_view.setInput( exp, root, metric, rank_sequence);
+		}
 	}
 	
 	/**
@@ -194,7 +210,7 @@ public class GraphEditor extends EditorPart {
 
 		// create scatter series
 		ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()
-				.createSeries(SeriesType.LINE, metric.getTitle());
+				.createSeries(SeriesType.LINE, metric.getDisplayName() );
 		scatterSeries.setLineStyle(LineStyle.NONE);
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
@@ -236,7 +252,7 @@ public class GraphEditor extends EditorPart {
 	
 		// create scatter series
 		ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()
-				.createSeries(SeriesType.LINE, metric.getTitle());
+				.createSeries(SeriesType.LINE, metric.getDisplayName());
 		scatterSeries.setLineStyle(LineStyle.NONE);
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
@@ -291,7 +307,7 @@ public class GraphEditor extends EditorPart {
 		
 		// create scatter series
 		IBarSeries scatterSeries = (IBarSeries) chart.getSeriesSet()
-				.createSeries(SeriesType.BAR, metric.getTitle());
+				.createSeries(SeriesType.BAR, metric.getDisplayName() );
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
 

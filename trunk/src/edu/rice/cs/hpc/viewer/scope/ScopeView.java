@@ -81,7 +81,7 @@ public class ScopeView extends BaseScopeView {
 			final int num_metrics = metrics.length;
 
 			for (int i=0; i<num_metrics; i++) {
-				MenuManager subMenu = new MenuManager("Graph "+ metrics[i].getTitle());
+				MenuManager subMenu = new MenuManager("Graph "+ metrics[i].getDisplayName() );
 				this.createGraphMenus(subMenu, scope, metrics[i]);
 				mgr.add(subMenu);
 

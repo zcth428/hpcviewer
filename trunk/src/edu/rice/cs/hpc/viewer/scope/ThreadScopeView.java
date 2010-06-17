@@ -1,7 +1,10 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Event;
@@ -9,6 +12,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 public class ThreadScopeView extends AbstractBaseScopeView {
@@ -16,7 +20,24 @@ public class ThreadScopeView extends AbstractBaseScopeView {
     public static final String ID = "edu.rice.cs.hpc.viewer.scope.ThreadScopeView";
     
     private int rank_sequence;
+    private ArrayList<MetricRaw> metrics = null;
 
+    public void setInput(Experiment ex, RootScope scope, MetricRaw metric, int rank) {
+    	this.setRankSequence(rank);
+    	
+    	if (metrics == null) {
+    		metrics = new ArrayList<MetricRaw>();
+    	}
+    	
+    	final boolean add_new = metrics.contains(metric); 
+    	if (!add_new) {
+        	metrics.add(metric);    		
+    	}
+
+    	super.setInput(ex, scope);
+    	this.setPartName( ex.getName() + ": " + rank);
+
+    }
     
     public void setRankSequence(int rank) {
     	this.rank_sequence = rank;
@@ -59,10 +80,23 @@ public class ThreadScopeView extends AbstractBaseScopeView {
         	return;
 	
         MetricRaw metrics[] = this.myExperiment.getMetricRaw();
-        
-        for (int i=0; i<metrics.length; i++) {
-        	MetricRaw metric = metrics[i];
+        Object columns[] = this.treeViewer.getColumnProperties();
+        int num_columns = 0;
+        if (columns != null) {
+        	num_columns = columns.length - 1;
+        	
         }
+        
+        // ---------------------------------------------------------------------------------
+        // see if we have additional metric by comparing the existing metric in the table
+        // ---------------------------------------------------------------------------------
+        if (num_columns < metrics.length) {
+        	// we have new metric 
+        	MetricRaw metric = metrics[ metrics.length - 1 ];
+        	TreeViewerColumn colMetric = this.treeViewer.addTreeColumn( metric, num_columns==0 );
+        }
+        
+        
 	}
 
 	

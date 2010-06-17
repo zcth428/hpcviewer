@@ -63,7 +63,7 @@ public class ThreadLevelDataManager {
 		
 		String keys[] = new String[metrics_raw.length];
 		for (int i=0; i<metrics_raw.length; i++)
-			keys[i] = metrics_raw[i].getTitle();
+			keys[i] = metrics_raw[i].getDisplayName();
 		
 		return keys;
 	}

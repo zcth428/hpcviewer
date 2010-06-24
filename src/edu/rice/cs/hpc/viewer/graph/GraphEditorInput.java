@@ -23,19 +23,16 @@ public class GraphEditorInput implements IEditorInput {
 		this._type = type;
 	}
 	
-	@Override
 	public boolean exists() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public ImageDescriptor getImageDescriptor() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public String getName() {
 		return getName(_scope, _metric, _type);
 	}
@@ -45,18 +42,15 @@ public class GraphEditorInput implements IEditorInput {
 	}
 
 	
-	@Override
 	public IPersistableElement getPersistable() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public String getToolTipText() {
 		return getName();
 	}
 
-	@Override
 	public Object getAdapter(Class adapter) {
 		// TODO Auto-generated method stub
 		return null;

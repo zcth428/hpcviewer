@@ -159,11 +159,9 @@ public class GraphEditor extends EditorPart {
 		mnuItem.setText("Show metrics");
 		mnuItem.addSelectionListener(new SelectionListener() {
 
-			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 
-			@Override
 			public void widgetSelected(SelectionEvent e) {
 				showThreadView( scope, metric, 0);
 			}

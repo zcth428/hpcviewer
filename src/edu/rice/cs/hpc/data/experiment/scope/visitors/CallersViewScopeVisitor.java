@@ -220,7 +220,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			//	branches and consume enormous memory (it's so enormous that even the
 			//	JVM gives up).
 			//------------------------------------------------------------------------
-			if (first.getCCTIndex() == existingCaller.getCCTIndex() ) {
+			if (first.isMyCCT(existingCaller) ) {
 
 				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.

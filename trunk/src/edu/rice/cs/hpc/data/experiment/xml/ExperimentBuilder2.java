@@ -538,6 +538,7 @@ public class ExperimentBuilder2 extends Builder
 		int nbMetrics = this.metricList.size();
 		String sID = null;// = values[nID];
 		int iSelf = -1;
+		int partner = 0;	// 2010.06.28: new feature to add partner
 		String sDisplayName = null;
 		String sNativeName = null;
 		boolean toShow = true, percent = true;
@@ -590,10 +591,12 @@ public class ExperimentBuilder2 extends Builder
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
+			} else if (attributes[i].charAt(0) == 'p') {
+				// partner
+				partner = Integer.valueOf( values[i] );
 			}
 		}
 		
-		int partner = iSelf;
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
 		if (needPartner) {
@@ -618,7 +621,7 @@ public class ExperimentBuilder2 extends Builder
 						objType, partner);
 				break;
 			case Derived_Incr:
-				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, percent, nbMetrics, objType);
+				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, percent, nbMetrics, partner, objType);
 				break;
 			case Raw:
 			case Derived:

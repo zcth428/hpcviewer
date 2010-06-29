@@ -55,7 +55,7 @@ public Metric(String shortName, String nativeName, String displayName,
               boolean displayed, String format, boolean percent,String sampleperiod, MetricType metricType, 
               int partnerIndex)
 {
-	super(shortName, displayName, displayed, format, percent, 0);
+	super(shortName, displayName, displayed, format, percent, 0, metricType);
 	// creation arguments
 	this.nativeName  = nativeName;
     this.sampleperiod  = this.convertSamplePeriode(sampleperiod);
@@ -79,7 +79,7 @@ public Metric( String shortName, String nativeName, String displayName,
         boolean displayed, String format, boolean percent, double sampleperiod, MetricType metricType, 
         int partnerIndex)
 {
-super(shortName, displayName, displayed, format, percent, 0);
+super(shortName, displayName, displayed, format, percent, 0, metricType);
 // creation arguments
 this.nativeName  = nativeName;
 this.sampleperiod  = sampleperiod;

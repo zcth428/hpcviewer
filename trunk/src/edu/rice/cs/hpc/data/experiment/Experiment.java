@@ -363,7 +363,7 @@ protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricVa
 	for (int i = 0; i< this.getMetricCount(); i++) {
 		BaseMetric metric = (BaseMetric)this.getMetric(i);
 		// Laksono 2009.12.11: aggregate metrc doesn't have partner
-		if (metric instanceof Metric)
+		if (metric instanceof Metric) {
 			if (metric.getMetricType() == sourceType) {
 				// laksono hack bug fix: the partner is "always" the next metric
 				int partner = i+1; //((Metric)metric).getPartnerIndex();
@@ -371,11 +371,22 @@ protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricVa
 				//partner = metric.getIndex()+1;
 				copyMetric(scope, scope, i, partner, filter);
 			}
+		} else if (metric instanceof AggregateMetric) {
+			if (metric.getMetricType() == MetricType.EXCLUSIVE ) {
+				int partner = ((AggregateMetric)metric).getPartner();
+				String partner_id = String.valueOf(partner);
+				BaseMetric partner_metric = this.getMetric( partner_id );
+				MetricValue partner_value = scope.getMetricValue( partner_metric );
+				scope.setMetricValue( i, partner_value);
+				System.out.println( "metric " + i + ": " + metric.getDisplayName() +" partner: " +
+						partner_id + " " + partner_metric.getDisplayName() + " value: " + partner_value.getValue());
+			}
+		}
 	}
 }
 
 protected void addPercents(Scope scope, RootScope totalScope)
-{
+{	
 	PercentScopeVisitor psv = new PercentScopeVisitor(this.getMetricCount(), totalScope);
 	scope.dfsVisitScopeTree(psv);
 }
@@ -458,7 +469,7 @@ public void postprocess(boolean callerView) {
 		if (callerView)	{												// caller view
 				this.finalizeAggregateMetrics(callersViewRootScope);
 				// bug fix 2010.06.17: move the percent after finalization
-				addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
+				addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
 		}
 		
 		this.finalizeAggregateMetrics(flatViewRootScope);				// flat view

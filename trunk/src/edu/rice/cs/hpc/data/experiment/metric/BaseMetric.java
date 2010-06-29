@@ -55,7 +55,8 @@ public abstract class BaseMetric {
 	 * @param percent: show the percent ?
 	 * @param index: index in the table
 	 *************************************************************************/
-	public BaseMetric(String sID, String sDisplayName, boolean displayed, String format, boolean percent, int index) {
+	public BaseMetric(String sID, String sDisplayName, boolean displayed, String format, 
+			boolean percent, int index, MetricType type) {
 		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;
 		this.displayed = displayed;
 		this.percent = percent;
@@ -71,6 +72,8 @@ public abstract class BaseMetric {
 
 		this.unit = '0';
 		this.shortName = sID;
+
+		this.metricType = type;
 	}
 
 	//-------------------------------------------------------------------------------

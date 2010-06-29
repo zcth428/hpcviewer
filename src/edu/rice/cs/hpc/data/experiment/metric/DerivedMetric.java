@@ -39,7 +39,7 @@ public class DerivedMetric extends BaseMetric {
 	 * @param bPercent
 	 */
 	public DerivedMetric(RootScope scopeRoot, Expression e, String sName, String sID, int index, boolean bPercent, MetricType objType) {
-		super(sID, sName, true, null, bPercent, index);
+		super(sID, sName, true, null, bPercent, index, objType);
 		//DerivedMetric.Counter++;
 		this.expression = e;
 		//this.scopeOfTheRoot = scopeRoot;
@@ -50,7 +50,7 @@ public class DerivedMetric extends BaseMetric {
 
 		// set up the variables
 		this.varMap = new MetricVarMap(scopeRoot.getExperiment());
-		this.metricType = objType;//either inclusive OR exclusive;
+
 		// Bug fix: always compute the aggregate value 
 		this.dRootValue = this.getAggregateMetrics(scopeRoot);
 		if(this.dRootValue == 0.0)

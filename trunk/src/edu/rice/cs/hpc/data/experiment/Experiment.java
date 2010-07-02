@@ -378,8 +378,6 @@ protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricVa
 				BaseMetric partner_metric = this.getMetric( partner_id );
 				MetricValue partner_value = scope.getMetricValue( partner_metric );
 				scope.setMetricValue( i, partner_value);
-				System.out.println( "metric " + i + ": " + metric.getDisplayName() +" partner: " +
-						partner_id + " " + partner_metric.getDisplayName() + " value: " + partner_value.getValue());
 			}
 		}
 	}

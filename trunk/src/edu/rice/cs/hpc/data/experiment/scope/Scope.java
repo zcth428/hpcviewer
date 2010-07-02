@@ -78,11 +78,6 @@ protected Scope.Node treeNode;
 /** The metric values associated with this scope. */
 protected MetricValue[] metrics;
 
-/** The the type of scope this is. */
-// Laks 2009.05.05: why I commented this var: I believe this id var is useless and we
-//				still can identify the class type by using instanceof or by adaptor method 
-//protected String id;
-
 /** source citation */
 protected String srcCitation;
 
@@ -514,13 +509,6 @@ public MetricValue getMetricValue(BaseMetric metric)
 			MetricValue total = root.getMetricValue(metric);
 			if(total.isAvailable())
 				value.setPercentValue(value.getValue()/total.getValue());
-/*****
-	                else {
-                               // Don't now why (total==MetricValue.NONE) but we still have value!!!
-                               // Fix it later !!!! FMZ
-				value.setPercentValue(value.getValue()/total.getValue());
-		}
-******/
 		} 
 
 	}

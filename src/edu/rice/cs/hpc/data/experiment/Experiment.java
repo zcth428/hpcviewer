@@ -18,7 +18,6 @@ package edu.rice.cs.hpc.data.experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.experiment.source.*;
@@ -47,7 +46,10 @@ import com.graphbuilder.math.*;
 public class Experiment
 {
 
-
+static final public int ROOT_CALLING_CONTEXT = 0;
+static final public int ROOT_CALLER = 0;
+static final public int ROOT_FLAT = 0;
+	
 /** The file containing the experiment. */
 protected ExperimentFile experimentFile;
 
@@ -90,15 +92,6 @@ private ThreadLevelDataManager threadsData = null;
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
 
-/*************************************************************************
- *	Creates an empty Experiment.
- ************************************************************************/
-	
-public Experiment()
-{
-	//Dialogs.notImplemented("Experiment() constructor");
-}
-
 
 
 
@@ -113,10 +106,6 @@ public Experiment()
  ************************************************************************/
 	
 public Experiment(File filename)
-// laks: no exception needed
- /* *throws
-	IOException,
-	InvalExperimentException*/
 {
 	this.experimentFile   = ExperimentFile.makeFile(filename);
 	this.fileExperiment = filename;
@@ -135,9 +124,6 @@ public Experiment(Experiment exp)
 	this.defaultDirectory = exp.getDefaultDirectory();
 	this.experimentFile = null;
 	this.fileExperiment = exp.getXMLExperimentFile();
-	// setSourceFiles(files); // union sourcefiles later
-	// setMetrics(metricList);	// sets metrics (w/ index) and metricMap
-	// setScopes(scopes, rootScope); // union scopeLists, and build new scopeTree from rootScope
 }
 
 
@@ -253,7 +239,6 @@ public void finalizeDatabase()
 	
 public void setScopes(List scopeList, Scope rootScope)
 {
-	//this.scopes    = new ArrayScopeList(this, scopeList, Strings.ALL_SCOPES);
 	this.rootScope = rootScope;
 }
 
@@ -310,8 +295,8 @@ public void beginScope(Scope scope)
 	Scope top = this.getRootScope();
 	top.addSubscope(scope);
 	scope.setParentScope(top);
-	//this.scopes.addScope(scope);
 }
+
 
 protected RootScope createCallersView(Scope callingContextViewRootScope)
 {
@@ -323,11 +308,11 @@ protected RootScope createCallersView(Scope callingContextViewRootScope)
 	CallersViewScopeVisitor csv = new CallersViewScopeVisitor(this, callersViewRootScope, 
 			this.getMetricCount(), false, filter);
 	callingContextViewRootScope.dfsVisitScopeTree(csv);
+
 	// compute the aggregate metrics
 	// bug fix 2008.10.21 : we don't need to recompute the aggregate metrics here. Just copy it from the CCT
 	//	This will solve the problem where there is only nested loops in the programs
 	callersViewRootScope.accumulateMetrics(callingContextViewRootScope, filter, this.getMetricCount());
-	//accumulateMetricsFromKids(callersViewRootScope, callersViewRootScope, filter);
 	return callersViewRootScope;
 }
 
@@ -366,9 +351,7 @@ protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricVa
 		if (metric instanceof Metric) {
 			if (metric.getMetricType() == sourceType) {
 				// laksono hack bug fix: the partner is "always" the next metric
-				int partner = i+1; //((Metric)metric).getPartnerIndex();
-				//if(partner>=this.getMetricCount())
-				//partner = metric.getIndex()+1;
+				int partner = i+1; 
 				copyMetric(scope, scope, i, partner, filter);
 			}
 		} else if (metric instanceof AggregateMetric) {
@@ -397,6 +380,10 @@ public void postprocess()  {
 }
 
 
+/*****
+ * return a tree root
+ * @return
+ */
 public RootScope getCallerTreeRoot() {
 	
 	if (this.rootScope.getSubscopeCount()==3) {

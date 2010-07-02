@@ -359,8 +359,11 @@ protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricVa
 				int partner = ((AggregateMetric)metric).getPartner();
 				String partner_id = String.valueOf(partner);
 				BaseMetric partner_metric = this.getMetric( partner_id );
-				MetricValue partner_value = scope.getMetricValue( partner_metric );
-				scope.setMetricValue( i, partner_value);
+				// case for old database: no partner information
+				if (partner_metric != null) {
+					MetricValue partner_value = scope.getMetricValue( partner_metric );
+					scope.setMetricValue( i, partner_value);
+				}
 			}
 		}
 	}
@@ -675,7 +678,10 @@ public BaseMetric getMetric(String name)
 	BaseMetric metric = (BaseMetric) this.metricMap.get(name);
 	
 	if (metric == null) {
-		throw new RuntimeException("Unknown Metric " + name );
+		// backward compatibility: do not throw wn exception ! some old databases 
+		//	have no partner information
+		// throw new RuntimeException("Unknown Metric " + name );
+		System.err.println("Unknown metric: " + name);
 	}
 	return metric;
 }

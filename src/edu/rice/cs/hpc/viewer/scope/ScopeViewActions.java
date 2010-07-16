@@ -110,9 +110,10 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			this.treeViewer.expandToLevel(pathItem, 1);
 		}
 		int iCounts = item.getItemCount();
-		// depth first search
-		for(int i=0;i<iCounts;i++) {
-			TreeItem child = item.getItem(i);
+		// singly depth first search
+		// bug fix: we only drill once !
+		if (iCounts > 0) {
+			TreeItem child = item.getItem(0);
 			Object o = child.getData();
 			if(o instanceof Scope.Node) {
 				// get the child node

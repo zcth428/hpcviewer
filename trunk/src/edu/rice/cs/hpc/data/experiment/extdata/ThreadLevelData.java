@@ -14,6 +14,8 @@ public class ThreadLevelData {
 	static private boolean debug = false;
 	// from java spec: the size of a double is 8 bytes in all jvm
 	static private final int DOUBLE_FIELD_SIZE   = 8;
+	// header bytes to skip
+	static private final int HEADER_LONG	=	32;
 
 	/****
 	 * get a specific metric for a specific node ID
@@ -29,11 +31,8 @@ public class ThreadLevelData {
 		RandomAccessFile file = null;
 		try {
 			file = new RandomAccessFile(sFilename, "r");
-			position = this.getFilePosition(nodeIndex, metric_index, num_metrics);
-			file.seek(position);
-			double metric = (double)file.readLong();
+			double metric = this.readMetric(file, nodeIndex, metric_index, num_metrics);
 			file.close();
-			debug_print("file: "+ sFilename +" \tpos: " + position + " , m: " + metric);
 			return metric;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -63,11 +62,9 @@ public class ThreadLevelData {
 	public double[] getMetrics(String sFilename, long nodeIndex, int num_metrics) {
 		try {
 			RandomAccessFile file = new RandomAccessFile(sFilename, "r");
-			long position = this.getFilePosition(nodeIndex, num_metrics);
-			file.seek(position);
 			double metrics[] = new double[num_metrics];
 			for(int i=0; i<num_metrics; i++) {
-				metrics[i] = (double)file.readLong();
+				metrics[i] = this.readMetric(file, nodeIndex, i, num_metrics);
 				debug_print(i + ": " + metrics[i]);
 			}
 			file.close();
@@ -81,16 +78,28 @@ public class ThreadLevelData {
 	}
 
 	
-	/**
-	 * get a file position for a given node ID
+	/****
+	 * read a raw metric (in double at the moment but can be changed in the future)
+	 * @param file
 	 * @param nodeIndex
+	 * @param metricIndex
 	 * @param num_metrics
 	 * @return
 	 */
-	private long getFilePosition(long nodeIndex, int num_metrics) {
-		return this.getFilePosition(nodeIndex, 0, num_metrics);
+	private double readMetric(RandomAccessFile file, long nodeIndex, int metricIndex, int num_metrics) {
+		
+		long pos = this.getFilePosition(nodeIndex, metricIndex, num_metrics);
+		try {
+			file.seek(pos);						// position the pointer into a certain position
+			long metric_long = file.readLong();	// read the metric with 64 bits (long)
+			debug_print( " \tpos: " + pos + " , m: " + metric_long + "/" + (double) metric_long);
+			return (double) metric_long;		// convert in double
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0.0;
 	}
-	
 	
 	/**
 	 * get a position for a specific node index and metric index
@@ -100,7 +109,9 @@ public class ThreadLevelData {
 	 * @return
 	 */
 	private long getFilePosition(long nodeIndex, int metricIndex, int num_metrics) {
-		return (nodeIndex * num_metrics * DOUBLE_FIELD_SIZE) + (metricIndex * DOUBLE_FIELD_SIZE);
+		return (nodeIndex * num_metrics * DOUBLE_FIELD_SIZE) + (metricIndex * DOUBLE_FIELD_SIZE) +
+			// header to skip
+			HEADER_LONG;
 	}
 	
 	private void debug_print(String s) {

@@ -2,8 +2,12 @@
 HPCViewer Install Notes
 ========================
 
-This is a binary distribution of HPCViewer for Linux using Eclipse,
-Java and GTk.
+Requirements:
+- Java 1.5 (at least)
+- GTk 
+
+
+1. Linux/Unix
 
 To install hpcviewer, unpack the tar file, cd into its directory (the
 directory containing this README file) and run:
@@ -18,3 +22,12 @@ and then install hpcviewer into the same prefix directory.  It is not
 necessary to install hpctoolkit first, but in that case, the hpcviewer
 install script will issue a warning and ask for confirmation.
 
+
+2. Mac OS X
+
+No installation procedures required
+
+
+3. Windows
+
+No installation procedures required

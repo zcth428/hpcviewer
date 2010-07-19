@@ -11,7 +11,7 @@ import java.io.RandomAccessFile;
  **********************************************************************************************/
 public class ThreadLevelData {
 	
-	static private boolean debug = false;
+	static private boolean debug = true;
 	// from java spec: the size of a double is 8 bytes in all jvm
 	static private final int DOUBLE_FIELD_SIZE   = 8;
 	// header bytes to skip
@@ -92,7 +92,8 @@ public class ThreadLevelData {
 		try {
 			file.seek(pos);						// position the pointer into a certain position
 			long metric_long = file.readLong();	// read the metric with 64 bits (long)
-			debug_print( " \tpos: " + pos + " , m: " + metric_long + "/" + (double) metric_long);
+			debug_print( "node: " + nodeIndex + ", metric: " + metricIndex + "num metrics: " + num_metrics  
+					+ " \tpos: " + pos + " , m: " + metric_long + " / " + (double) metric_long);
 			return (double) metric_long;		// convert in double
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -109,7 +110,7 @@ public class ThreadLevelData {
 	 * @return
 	 */
 	private long getFilePosition(long nodeIndex, int metricIndex, int num_metrics) {
-		return (nodeIndex * num_metrics * DOUBLE_FIELD_SIZE) + (metricIndex * DOUBLE_FIELD_SIZE) +
+		return ((nodeIndex-1) * num_metrics * DOUBLE_FIELD_SIZE) + (metricIndex * DOUBLE_FIELD_SIZE) +
 			// header to skip
 			HEADER_LONG;
 	}

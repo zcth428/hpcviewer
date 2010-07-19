@@ -11,7 +11,7 @@ import java.io.RandomAccessFile;
  **********************************************************************************************/
 public class ThreadLevelData {
 	
-	static private boolean debug = true;
+	static private boolean debug = false;
 	// from java spec: the size of a double is 8 bytes in all jvm
 	static private final int DOUBLE_FIELD_SIZE   = 8;
 	// header bytes to skip

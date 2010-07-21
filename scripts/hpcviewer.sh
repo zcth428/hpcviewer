@@ -26,6 +26,20 @@ viewer="${bindir}/../libexec/hpcviewer/hpcviewer"
 test -x "$viewer" || die "unable to find: $viewer"
 
 #
+# Check java version.
+#
+java_version=`java -version 2>&1 | awk '{print $3}'`
+java_version=${java_version:3:1}
+if test $java_version -ge 5
+then
+  echo "java version: $java_version"
+else
+  echo "Java version is not suppported: $java_version"
+  echo "Please use Java 1.5 (at least)"
+  exit
+fi
+
+#
 # Launch the viewer.
 #
 if test -d "$HOME" ; then

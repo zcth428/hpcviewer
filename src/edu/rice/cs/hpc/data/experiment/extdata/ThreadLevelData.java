@@ -91,10 +91,10 @@ public class ThreadLevelData {
 		long pos = this.getFilePosition(nodeIndex, metricIndex, num_metrics);
 		try {
 			file.seek(pos);						// position the pointer into a certain position
-			long metric_long = file.readLong();	// read the metric with 64 bits (long)
+			double metric = file.readDouble();	// read the metric with 64 bits (long)
 			debug_print( "node: " + nodeIndex + ", metric: " + metricIndex + "num metrics: " + num_metrics  
-					+ " \tpos: " + pos + " , m: " + metric_long + " / " + (double) metric_long);
-			return (double) metric_long;		// convert in double
+					+ " \tpos: " + pos + " , m: " + metric + " / " + (double) metric);
+			return (double) metric;		// convert in double
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

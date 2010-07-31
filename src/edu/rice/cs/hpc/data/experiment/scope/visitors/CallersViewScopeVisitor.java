@@ -116,7 +116,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		Scope next = scope_cct.getParentScope();
 		int numKids = 0;
 		CallSiteScopeCallerView prev_scope = null;
-		while ( (next != null) && !(next instanceof RootScope) && (numKids<MAX_DESC) )  
+		while ( (next != null) && !(next instanceof RootScope) && (numKids<MAX_DESC) )
 		{
 			// Laksono 2009.01.14: we only deal with call site OR pure procedure scope (no alien)
 			if ( ((next instanceof CallSiteScope) || 

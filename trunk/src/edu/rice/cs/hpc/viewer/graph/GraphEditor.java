@@ -6,18 +6,11 @@ import java.text.DecimalFormat;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Tracker;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IViewPart;
@@ -32,6 +25,7 @@ import org.swtchart.ILineSeries;
 import org.swtchart.LineStyle;
 import org.swtchart.Range;
 import org.swtchart.ISeries.SeriesType;
+import org.swtchart.ext.InteractiveChart;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
@@ -97,7 +91,7 @@ public class GraphEditor extends EditorPart {
 		//----------------------------------------------
 		// chart creation
 		//----------------------------------------------
-		chart = new Chart(parent, SWT.NONE);
+		chart = new InteractiveChart(parent, SWT.NONE);
 		chart.getTitle().setText( title );
 
 		
@@ -157,51 +151,7 @@ public class GraphEditor extends EditorPart {
 	// Private method
 	//========================================================================
 	
-    private Point point = null;
-
-    
-	private void addEvent() {
-		Composite plot_area = this.chart.getPlotArea();
-		plot_area.addMouseListener( new MouseAdapter(){
-		     
-			public void mouseDown(MouseEvent e) {
-				point = new Point(e.x, e.y);
-			}
-
-			public void mouseUp(MouseEvent e) {
-				point = null;				
-			}
-			
-		});
-		
-		plot_area.addMouseMoveListener( new MouseMoveListener(){
-		    static final int JITTER = 8;
-		      
-			public void mouseMove(MouseEvent event) {
-		          if (point == null)
-		              return;
-		            int deltaX = point.x - event.x,
-		            deltaY = point.y - event.y;
-		            if (Math.abs(deltaX) < JITTER && Math.abs(deltaY) < JITTER) {
-		              return;
-		            }
-		            Shell shell = getShell();
-		            Tracker tracker = new Tracker(shell, SWT.NONE);
-		            Rectangle rect = shell.getDisplay().map(shell, null, shell.getClientArea());
-		            rect.x -= deltaX;
-		            rect.y -= deltaY;
-		            tracker.setRectangles(new Rectangle[] { rect });
-		            tracker.open();
-			}
-			
-		});
-	}
-	
-	private Shell getShell() {
-		return this.getEditorSite().getShell();
-	}
-	
-	private void createContextMenu(final Scope scope, final MetricRaw metric) {
+    private void createContextMenu(final Scope scope, final MetricRaw metric) {
 
 		Composite plotArea = chart.getPlotArea();
 		Menu menu = new Menu(plotArea);

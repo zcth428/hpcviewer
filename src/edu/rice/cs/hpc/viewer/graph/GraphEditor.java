@@ -137,7 +137,6 @@ public class GraphEditor extends EditorPart {
 			break;
 		}
 
-		//this.createContextMenu(scope, metric);
 	}
 
 	@Override

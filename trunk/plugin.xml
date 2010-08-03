@@ -169,12 +169,28 @@
           name="Web editor">
     </editor>
     <editor
-          class="edu.rice.cs.hpc.viewer.graph.GraphEditor"
+          class="edu.rice.cs.hpc.viewer.graph.GraphEditorPlot"
           default="false"
           extensions="*"
           icon="icons/graphview.png"
-          id="edu.rice.cs.hpc.viewer.graph.GraphEditor"
-          name="Graph view">
+          id="edu.rice.cs.hpc.viewer.graph.GraphEditorPlot"
+          name="Plot editor">
+    </editor>
+    <editor
+          class="edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort"
+          default="false"
+          extensions="*"
+          icon="icons/graphview.png"
+          id="edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort"
+          name="Sort editor">
+    </editor>
+    <editor
+          class="edu.rice.cs.hpc.viewer.graph.GraphEditorHisto"
+          default="false"
+          extensions="*"
+          icon="icons/graphview.png"
+          id="edu.rice.cs.hpc.viewer.graph.GraphEditorHisto"
+          name="Histogram editor">
     </editor>
    </extension>
    <extension
@@ -190,5 +206,12 @@
       <initializer
             class="edu.rice.cs.hpc.viewer.util.PreferenceInitializer">
       </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="edu.rice.cs.hpc.viewer.action.graph.threadMetrics"
+            label="label">
+      </actionSet>
    </extension>
 </plugin>

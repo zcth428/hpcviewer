@@ -18,8 +18,10 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.graph.GraphEditor;
+import edu.rice.cs.hpc.viewer.graph.GraphEditorHisto;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
+import edu.rice.cs.hpc.viewer.graph.GraphEditorPlot;
+import edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort;
 import edu.rice.cs.hpc.viewer.graph.GraphType;
 
 /**
@@ -170,10 +172,21 @@ public class ScopeView extends BaseScopeView {
 				String id = GraphEditorInput.getName(scope, metric, graph_type);
 	        	GraphEditorInput objInput = getGraphEditorInput(id);
 	        	
-	        	if (objInput == null)
+	        	if (objInput == null) {
 	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type);
+	        	}
 	        	
-	        	objPage.openEditor(objInput, GraphEditor.ID);
+	        	switch (graph_type) {
+	        	case PLOT:
+		        	objPage.openEditor(objInput, GraphEditorPlot.ID);
+		        	break;
+	        	case SORTED:
+		        	objPage.openEditor(objInput, GraphEditorPlotSort.ID);
+	        		break;
+	        	case HISTO:
+		        	objPage.openEditor(objInput, GraphEditorHisto.ID);
+	        		break;
+	        	}
 				
 			} catch (PartInitException e) {
 				e.printStackTrace();

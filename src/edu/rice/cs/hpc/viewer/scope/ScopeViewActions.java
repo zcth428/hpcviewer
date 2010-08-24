@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.CoolBar;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
@@ -115,10 +114,10 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		if (iCounts > 0) {
 			TreeItem child = item.getItem(0);
 			Object o = child.getData();
-			if(o instanceof Scope.Node) {
+			if(o instanceof Scope) {
 				// get the child node
-				Scope.Node nodeChild = (Scope.Node) o;
-				Scope scopeChild = nodeChild.getScope();
+				Scope scopeChild = (Scope) o;
+
 				// get the values
 				double x1, x2;
 				double dParent, dChild;
@@ -142,7 +141,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 					// we found the hot call path
 					objCallPath.path = pathItem; // this.treeViewer.getTreePath(child);
 					objCallPath.item = item; // child;
-					objCallPath.node = (Scope.Node) item.getData(); // nodeChild;
+					objCallPath.node = (Scope) item.getData(); // nodeChild;
 					return objCallPath;
 				} else {
 					// let move deeper down the tree
@@ -163,25 +162,25 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * Get the current input node
 	 * @return
 	 */
-	private Scope.Node getInputNode() {
+	private Scope getInputNode() {
 		Object o = treeViewer.getInput();
-		Scope.Node child;
-		if (!(o instanceof Scope.Node)) {
+		Scope child;
+		if (!(o instanceof Scope)) {
 				TreeItem []tiObjects = this.treeViewer.getTree().getItems();
 				o = tiObjects[0];
-				if(o instanceof Scope.Node)
-					child = (Scope.Node)tiObjects[0].getData(); //the 0th item can be the aggregate metric
+				if(o instanceof Scope)
+					child = (Scope)tiObjects[0].getData(); //the 0th item can be the aggregate metric
 				else if(tiObjects.length>1)
 					// in case of the top row is not a node, the second one MUST BE a node
-					child = (Scope.Node)tiObjects[1].getData();
+					child = (Scope)tiObjects[1].getData();
 				else
 					// Otherwise there is something wrong with the data and the tree
 					throw (new java.lang.RuntimeException("ScopeViewActions: tree contains unknown objects"));
 				// tricky solution when zoom-out the flattened node
 				if(child != null)
-					child = (Scope.Node)child.getParent();
+					child = (Scope)child.getParent();
 		} else 
-			child = (Scope.Node) o;
+			child = (Scope) o;
 		return child;
 	}
 	
@@ -260,11 +259,11 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		TreeSelection objSel = (TreeSelection) sel;
 		// get the node
 		Object o = objSel.getFirstElement();
-		if (!(o instanceof Scope.Node)) {
+		if (!(o instanceof Scope)) {
 			showErrorMessage("Please select a scope node.");
 			return;
 		}
-		Scope.Node current = (Scope.Node) o;
+		Scope current = (Scope) o;
 		// get the item
 		TreeItem item = this.treeViewer.getTree().getSelection()[0];
 		// get the path
@@ -282,7 +281,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			BaseMetric metric = (BaseMetric) data;
 			// find the hot call path
 			int iLevel = 0;
-			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current.getScope(), metric, iLevel);
+			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current, metric, iLevel);
 			if(objHot != null) {
 				// we found the hot path
 				this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
@@ -304,29 +303,29 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * Retrieve the selected node
 	 * @return null if there is no selected node
 	 */
-	private Scope.Node getSelectedNode() {
+	private Scope getSelectedNode() {
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
 			return null;
 		Object o = ((TreeSelection)sel).getFirstElement();
-		if (!(o instanceof Scope.Node)) {
+		if (!(o instanceof Scope)) {
 			return null;
 		}
-		return (Scope.Node) o;
+		return (Scope) o;
 	}
 	/**
 	 * Zoom-in the children
 	 */
 	public void zoomIn() {
 		// set the new view based on the selected node
-		Scope.Node current = this.getSelectedNode();
+		Scope current = this.getSelectedNode();
 		if(current == null)
 			return;
 		
 		// ---------------------- save the current view
-		Scope.Node objInputNode = this.getInputNode();
+		Scope objInputNode = this.getInputNode();
 		objZoom.zoomIn(current, objInputNode);
-		Scope.Node nodeSelected = this.getSelectedNode();
+		Scope nodeSelected = this.getSelectedNode();
 		this.checkStates(nodeSelected);
 	}
 	
@@ -337,7 +336,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		objZoom.zoomOut();
 		// funny behavior on Windows: they still keep the track of the previously selected item !!
 		// therefore we need to check again the state of the buttons
-		Scope.Node nodeSelected = this.getSelectedNode();
+		Scope nodeSelected = this.getSelectedNode();
 		this.checkStates(nodeSelected);
 	}
 	
@@ -432,9 +431,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     		TreeItem objItem = items[i];
     		Object o = objItem.getData();
     		// let get the metrics if the selected item is a scope node
-    		if (o instanceof Scope.Node) {
-    			Scope.Node objNode = (Scope.Node) o;
-    			Scope objScope = objNode.getScope();
+    		if (o instanceof Scope) {
+    			Scope objScope = (Scope) o;
     			this.getContent(objScope, this.objActionsGUI.getMetricColumns(), sSeparator, sbText);
     		} else {
     			// in case user click the first row, we need a special treatment
@@ -482,9 +480,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			int nbSegments = item.getSegmentCount();
 			for ( int j=0; j<nbSegments; j++ ) {
 				Object o = item.getSegment(j);
-				if (o instanceof Scope.Node) {
-					Scope.Node objNode = (Scope.Node) o;
-					this.getContent(objNode.getScope(), colMetrics, sSeparator, sbText);
+				if (o instanceof Scope) {
+					this.getContent((Scope)o, colMetrics, sSeparator, sbText);
 				}
 			}
 			sbText.append(Utilities.NEW_LINE);
@@ -500,7 +497,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * @param node
 	 * @return
 	 */
-    public boolean shouldZoomInBeEnabled(Scope.Node node) {
+    public boolean shouldZoomInBeEnabled(Scope node) {
     	return this.objZoom.canZoomIn(node);
     }
     
@@ -523,7 +520,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      * https://outreach.scidac.gov/tracker/index.php?func=detail&aid=132&group_id=22&atid=169
      */
     public void checkNodeButtons() {
-    	Scope.Node nodeSelected = this.getSelectedNode();
+    	Scope nodeSelected = this.getSelectedNode();
     	if(nodeSelected == null)
     		this.objActionsGUI.disableNodeButtons();
     	else
@@ -544,7 +541,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      * 
      * @param nodeSelected
      */
-    public abstract void checkStates ( Scope.Node nodeSelected );
+    public abstract void checkStates ( Scope nodeSelected );
     
     
     //===========================================================================
@@ -561,7 +558,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     	// the item
     	public TreeItem item;
     	// the node associated
-    	public Scope.Node node;
+    	public Scope node;
     }
 
 }

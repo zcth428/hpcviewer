@@ -138,9 +138,9 @@ public class ColumnViewerSorter extends ViewerComparator {
 	 * @param node2
 	 * @return
 	 */
-	private int doCompare(Scope.Node node1, Scope.Node node2) {
-		String text1 = node1.getScope().getName();
-		String text2 = node2.getScope().getName();
+	private int doCompare(Scope node1, Scope node2) {
+		String text1 = node1.getName();
+		String text2 = node2.getName();
 		return text1.compareTo(text2);
 	}
 	// laks: lazy comparison
@@ -149,9 +149,9 @@ public class ColumnViewerSorter extends ViewerComparator {
 	 * Please implement this method in the child class if necessary
 	 */
 	protected int doCompare(Viewer viewer, Object e1, Object e2) {
-		if(e1 instanceof Scope.Node && e2 instanceof Scope.Node) {
-			Scope.Node node1 = (Scope.Node) e1;
-			Scope.Node node2 = (Scope.Node) e2;
+		if(e1 instanceof Scope && e2 instanceof Scope) {
+			Scope node1 = (Scope) e1;
+			Scope node2 = (Scope) e2;
 
 			// dirty solution: if the column position is 0 then we sort
 			// according to its element name
@@ -159,8 +159,8 @@ public class ColumnViewerSorter extends ViewerComparator {
 			if(this.iColNumber==0) {
 				return this.doCompare(node1, node2);
 			} else {
-				MetricValue mv1 = node1.getScope().getMetricValue(this.metric); 
-				MetricValue mv2 = node2.getScope().getMetricValue(this.metric); 
+				MetricValue mv1 = node1.getMetricValue(this.metric); 
+				MetricValue mv2 = node2.getMetricValue(this.metric); 
 				int iRet = mv2.compareTo(mv1);
 				if(iRet != 0)
 					return iRet;

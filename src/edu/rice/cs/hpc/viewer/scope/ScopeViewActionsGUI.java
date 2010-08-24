@@ -78,7 +78,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	private Label lblMessage;
 	
 	//------------------------------------DATA
-	protected Scope.Node nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
+	protected Scope nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
 	protected Experiment 	myExperiment;		// experiment data	
 	protected RootScope 		myRootScope;		// the root scope of this view
 
@@ -149,8 +149,8 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * TODO: we need to shift to the left a little bit
      * @param nodeParent
      */
-    public void insertParentNode(Scope.Node nodeParent) {
-    	Scope scope = nodeParent.getScope();
+    public void insertParentNode(Scope nodeParent) {
+    	Scope scope = nodeParent;
     	// Bug fix: avoid using list of columns from the experiment
     	// formerly: .. = this.myExperiment.getMetricCount() + 1;
     	int nbColumns = this.colMetrics.length; 	// coloumns in base metrics
@@ -185,7 +185,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 * Add the aggregate metrics item on the top of the tree
 	 */
     protected void displayRootExperiment() {
-    	Scope.Node  node = (Scope.Node) this.myRootScope.getTreeNode();
+    	Scope  node = (Scope) this.myRootScope;
     	this.insertParentNode(node);
     }
 	
@@ -615,7 +615,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 		if (items != null)
 			for (int i = 0; i < items.length; i++) {
 				TreeItem itemChild = items[i];
-				if (itemChild.getData() instanceof Scope.Node)
+				if (itemChild.getData() instanceof Scope)
 					result.add(itemChild);
 				if (itemChild.getExpanded())
 					internalCollectExpandedItems(result, itemChild.getItems());

@@ -16,7 +16,7 @@ public class ScopeZoom {
 	private ScopeTreeViewer viewer;
 	private ScopeViewActionsGUI objActionsGUI;
 	
-    private java.util.Stack<Scope.Node> stackRootTree;
+    private java.util.Stack<Scope> stackRootTree;
 	private java.util.Stack<Object[]> stackTreeStates;
 
 	// --------------------------------------------------------------------
@@ -30,7 +30,7 @@ public class ScopeZoom {
 	public ScopeZoom ( ScopeTreeViewer treeViewer, ScopeViewActionsGUI objGUI ) {
 		this.viewer = treeViewer;
 		this.objActionsGUI = objGUI;
-		stackRootTree = new java.util.Stack<Scope.Node>();
+		stackRootTree = new java.util.Stack<Scope>();
 		stackTreeStates = new java.util.Stack<Object[]>();
 	}
 	
@@ -43,7 +43,7 @@ public class ScopeZoom {
 	 * @param current
 	 * @param old
 	 */
-	public void zoomIn (Scope.Node current, Scope.Node old) {
+	public void zoomIn (Scope current, Scope old) {
 		// ---------------------- save the current view
 		this.stackRootTree.push(old); // save the node for future zoom-out
 		Object treeStates[] = viewer.getExpandedElements();
@@ -61,14 +61,14 @@ public class ScopeZoom {
 	 * zoom out
 	 */
 	public void zoomOut () {
-		Scope.Node parent; 
+		Scope parent; 
 		if(this.stackRootTree.size()>0) {
 			// the tree has been zoomed
 			parent = this.stackRootTree.pop();
 		} else {
 			// case where the tree hasn't been zoomed
 			// FIXME: there must be a bug if the code comes to here !
-			parent = (Scope.Node)viewer.getInput();
+			parent = (Scope)viewer.getInput();
 			throw( new java.lang.RuntimeException("ScopeViewActions - illegal zoomout"+parent));
 		}
 
@@ -100,7 +100,7 @@ public class ScopeZoom {
 	 * @param node
 	 * @return
 	 */
-	public boolean canZoomIn ( Scope.Node node ) {
+	public boolean canZoomIn ( Scope node ) {
 		if (node == null)
 			return false;
 		return ( node.getChildCount()>0 );

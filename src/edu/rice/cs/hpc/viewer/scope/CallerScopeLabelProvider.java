@@ -28,10 +28,9 @@ public class CallerScopeLabelProvider extends ScopeLabelProvider implements ISty
 	 * @see org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider#getStyledText(java.lang.Object)
 	 */
 	public StyledString getStyledText(Object element) {
-		if (element instanceof Scope.Node) {
+		if (element instanceof Scope) {
 			
-			Scope.Node objNode = (Scope.Node) element; 
-			Scope objScope = (Scope) objNode.getScope();
+			Scope objScope = (Scope) element;
 			StyledString styledString= new StyledString();
 
 			if (objScope.iCounter > 1) {

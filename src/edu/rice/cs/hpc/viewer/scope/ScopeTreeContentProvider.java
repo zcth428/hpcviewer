@@ -18,9 +18,9 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
      * find the list of children
      */
     public Object[] getChildren(Object parentElement) {
-    	if(parentElement instanceof Scope.Node) {
+    	if(parentElement instanceof Scope) {
     		// normal mode
-        	Scope.Node parent = ((Scope.Node) parentElement);
+        	Scope parent = ((Scope) parentElement);
         	Object arrChildren[] = parent.getChildren();
         	// if the database has empty data, the children is null
         	if (arrChildren != null)
@@ -35,8 +35,8 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
      * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
      */
     public Object getParent(Object element) {
-    	if(element instanceof Scope.Node)
-            return ((Scope.Node) element).getParent();
+    	if(element instanceof Scope)
+            return ((Scope) element).getParent();
     	else
     		return null;
     }
@@ -46,8 +46,8 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
      * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
      */
     public boolean hasChildren(Object element) {
-    	if(element instanceof Scope.Node)
-            return ((Scope.Node) element).hasChildren(); // !((Scope.Node) element).isLeaf();
+    	if(element instanceof Scope)
+            return ((Scope) element).hasChildren(); // !((Scope.Node) element).isLeaf();
     	else
     		return false;
     }

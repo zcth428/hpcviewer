@@ -56,7 +56,7 @@ public class TreeItemManager {
 		TreeItem itemTop = tree.getItem(0);
 		Image imgItem = itemTop.getImage(0);
 		String []sText= null;
-		if(itemTop.getData() instanceof Scope.Node) {
+		if(itemTop.getData() instanceof Scope) {
 			// the table has been zoomed-out
 		} else {
 			// the table is in original form or flattened or zoom-in

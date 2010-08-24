@@ -257,7 +257,7 @@ public class Utilities {
 	public static String[] getTopRowItems( TreeViewer treeViewer ) {
 		TreeItem item = treeViewer.getTree().getItem(0);
 		String []sText= null; // have to do this to avoid error in compilation;
-		if(item.getData() instanceof Scope.Node) {
+		if(item.getData() instanceof Scope) {
 			// the table has been zoomed-out
 		} else {
 			// the table is in original form or flattened or zoom-in

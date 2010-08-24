@@ -28,10 +28,6 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 //import edu.rice.cs.hpc.data.util.*;
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
 
-//import javax.swing.tree.DefaultMutableTreeNode;
-
-import org.eclipse.jface.viewers.TreeNode;
-
 //import sun.tools.tree.ThisExpression;
 
 
@@ -50,7 +46,7 @@ import org.eclipse.jface.viewers.TreeNode;
  */
 
 
-public abstract class Scope
+public abstract class Scope extends Node
 {
 	/** The current maximum number of ID for all scopes	 */
 static protected int idMax = 0;
@@ -72,9 +68,6 @@ protected int firstLineNumber;
 /** The last line number of this scope. */
 protected int lastLineNumber;
 
-/** The tree node connecting this scope to its parent and children. */
-protected Scope.Node treeNode;
-
 /** The metric values associated with this scope. */
 protected MetricValue[] metrics;
 
@@ -83,6 +76,14 @@ protected String srcCitation;
 
 /** special marker used for halting during debugging. */
 protected boolean stop;
+
+/**
+ * This public variable indicates if the node contains information about the source code file.
+ * If the boolean is true, then the filename can be retrieved from its scope
+ * @author laksono
+ */
+public boolean hasSourceCodeFile;
+
 /**
  * FIXME: this variable is only used for the creation of callers view to count
  * 			the number of instances. To be removed in the future
@@ -117,18 +118,19 @@ public static final int NO_LINE_NUMBER = -169; // any negative number other than
 	
 public Scope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
 {
+	super(cct_id);
+	
 	// creation arguments
 	this.experiment = experiment;
 	this.sourceFile = file;
 	this.firstLineNumber = first;
 	this.lastLineNumber = last;
 
-	// scope tree representation
-	this.treeNode = new Scope.Node(this);
 	this.stop = false;
 	this.srcCitation = null;
 	this.flat_node_index = flat_id;
 	this.cct_node_index = cct_id;
+	this.hasSourceCodeFile = false;
 }
 
 
@@ -143,28 +145,6 @@ public Scope(Experiment experiment, SourceFile file, int scopeID)
 	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, scopeID, scopeID);
 }
 
-
-
-
-/*************************************************************************
- *	Creates a Scope object with no associated source file.
- ************************************************************************/
-	/*
-public Scope(Experiment experiment)
-{
-	this(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, idMax);
-	idMax++;
-}
-*/
-/**
- * Return the unique identifier of this scope
- */
-/*
-public int hashCode() {
-	// the id is theoretically unique (for flat view). it is NOT unique for cct or caller view
-	return this.id;
-}
-*/
 
 public int getFlatIndex() {
 	return this.flat_node_index;
@@ -265,28 +245,24 @@ public int hashCode() {
 protected String getSourceCitation()
 {
 	if (this.srcCitation == null)  {
-		// some scopes such as load module, doesn't have a source code file (they are binaries !!)
-		// this hack will return the name of the scope instead of the citation file
-		if (this.sourceFile == null) {
-			return this.getName();
-		}
-		String cite;
-
-		// we must display one-based line numbers
-		int first1 = 1 + this.firstLineNumber;
-		int last1 = 1 + this.lastLineNumber;
-
-		if(this.firstLineNumber == Scope.NO_LINE_NUMBER)
-			cite = this.getSourceFile().getName();
-		else if(this.firstLineNumber == this.lastLineNumber)
-			cite = this.getSourceFile().getName() + ": " + first1;
-		else
-			cite = this.getSourceFile().getName() + ": " + first1 + "-" + last1;
 		
-		srcCitation = cite.intern();
+		srcCitation = this.getSourceCitation(sourceFile, firstLineNumber, lastLineNumber);
 	}
 
 	return srcCitation;
+}
+
+
+private String getSourceCitation(SourceFile sourceFile, int line1, int line2)
+{
+
+		// some scopes such as load module, doesn't have a source code file (they are binaries !!)
+		// this hack will return the name of the scope instead of the citation file
+		if (sourceFile == null) {
+			return this.getName();
+		}
+		return sourceFile.getName() + ": " + this.getLineOnlyCitation(line1, line2);
+
 }
 
 
@@ -298,15 +274,21 @@ protected String getSourceCitation()
 	
 protected String getLineNumberCitation()
 {
+	return this.getLineNumberCitation(firstLineNumber, lastLineNumber);
+}
+
+
+private String getLineNumberCitation(int line1, int line2)
+{
 	String cite;
 
 	// we must display one-based line numbers
-	int first1 = 1 + this.firstLineNumber;
-	int last1  = 1 + this.lastLineNumber;
+	int first1 = 1 + line1;
+	int last1  = 1 + line2;
 
-	if(this.firstLineNumber == Scope.NO_LINE_NUMBER)
+	if(line1 == Scope.NO_LINE_NUMBER) {
 		cite = "";	// TEMPORARY: is this the right thing to do?
-	else if(this.firstLineNumber == this.lastLineNumber)
+	} else if(line1 == line2)
 		cite = "line" + " " + first1;
 	else
 		cite = "lines" + " " + first1 + "-" + last1;
@@ -315,7 +297,22 @@ protected String getLineNumberCitation()
 }
 
 
+private String getLineOnlyCitation(int line1, int line2) {
+	String cite;
 
+	// we must display one-based line numbers
+	int first1 = 1 + line1;
+	int last1  = 1 + line2;
+
+	if(line1 == Scope.NO_LINE_NUMBER) {
+		cite = "";	// TEMPORARY: is this the right thing to do?
+	} else if(line1 == line2)
+		cite = String.valueOf(first1);
+	else
+		cite = first1 + "-" + last1;
+
+	return cite;
+}
 
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO SCOPE														//
@@ -386,8 +383,7 @@ public int getLastLineNumber()
 	
 public Scope getParentScope()
 {
-	Scope.Node parent = (Scope.Node) this.treeNode.getParent();
-	return ((parent != null) ? parent.getScope() : null);
+	return (Scope) this.getParent();
 }
 
 
@@ -397,7 +393,7 @@ public Scope getParentScope()
 	
 public void setParentScope(Scope parentScope)
 {
-	this.treeNode.setParent(parentScope.treeNode);
+	this.setParent(parentScope);
 }
 
 
@@ -409,7 +405,7 @@ public void setParentScope(Scope parentScope)
 	
 public int getSubscopeCount()
 {
-	return this.treeNode.getChildCount();
+	return this.getChildCount();
 }
 
 
@@ -421,8 +417,8 @@ public int getSubscopeCount()
 	
 public Scope getSubscope(int index)
 {
-	Scope.Node child = (Scope.Node) this.treeNode.getChildAt(index);
-	return child.getScope();
+	Scope child = (Scope) this.getChildAt(index);
+	return child;
 }
 
 
@@ -432,18 +428,9 @@ public Scope getSubscope(int index)
 	
 public void addSubscope(Scope subscope)
 {
-	this.treeNode.add(subscope.treeNode);
+	this.add(subscope);
 }
 
-
-/*************************************************************************
- *	Returns the <code>Scope.Node</code> associated with this scope.
- ************************************************************************/
-	
-public Scope.Node getTreeNode()
-{
-	return this.treeNode;
-}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -688,34 +675,6 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
-/*************************************************************************
- * Merge two metrics by setting the biggest metrics into account
- * This method is useful to find the cost of a recursive function
- * @param scope
- * @param filter
- *************************************************************************/
-public void mergeMetric(Scope scope, MetricValuePropagationFilter filter) {
-	if(scope == null || scope.metrics == null)
-		return;
-	ensureMetricStorage();
-	for(int i=0;i<scope.metrics.length && i<this.metrics.length;i++) {
-		if(filter.doPropagation(scope, this, i, i)) {
-			MetricValue mTarget = scope.metrics[i];
-			MetricValue mMine = this.metrics[i];
-			if(mTarget.isAvailable()) {
-				if( mMine.isAvailable() ) {
-					// both are available, we need to find which one is bigger
-					if(mMine.getValue() < mTarget.getValue()) {
-						this.metrics[i] = new MetricValue(mTarget.getValue());
-					}
-				} else {
-					this.metrics[i] = new MetricValue(mTarget.getValue());
-				}
-			}
-		}
-	}
-
-}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -736,169 +695,5 @@ public void accept(IScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-//	INNER CLASS SCOPE.NODE												//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-
-/*************************************************************************
- *	Class of nodes used to represent the scope tree.
- *
- *	<code>Scope.Node</code> instances provide typed access to their
- *	associated <code>Scope</code> objects and storage for per-node values
- *	needed by the user interface.
- *
- *	@see edu.rice.cs.hpcviewer.view.scope.ScopeTreeFilter
- *
- ************************************************************************/
-
-	// @SuppressWarnings("serial")
-	public static class Node extends TreeNode //TreeNode is a lightweight implementation of DefaultMutableTreeNode
-	{
-		/**
-		 * This public variable indicates if the node contains information about the source code file.
-		 * If the boolean is true, then the filename can be retrieved from its scope
-		 * @author laksono
-		 */
-		public boolean hasSourceCodeFile;
-		int nSize;
- 		
-		/** Constructs a new scope node. */
-		
-		/**
-		 * Copy the scope into this node
-		 * @param value: the value of this node
-		 */
-		public Node(Object value)
-		{
-			super(value);
-			this.hasSourceCodeFile = false;
-			nSize = 0;
-		}
-
-		/**
-		 * Simulate DefaultMutableTreeNode's add()
-		 * @param treeNode
-		 */
-		/*
-		public void add(Node treeNode) {
-			// DO NOT insert a new node if the child is null or already in the tree
-			if ( (treeNode != null) && (treeNode.getParent() != this)) {
-				// child is not in the tree. Let's add it
-				int nbChildren = this.getChildCount();
-				TreeNode []myChildren = new TreeNode[nbChildren+1];
-				if (nbChildren == 0) {
-					// this tree has no child, no action needed
-				} else {
-					// In some platform, arraycopy is fast
-					System.arraycopy(this.getChildren(), 0, myChildren, 0, nbChildren);
-				}
-				treeNode.setParent(this);			// set the parent
-				myChildren[nbChildren] = treeNode;	// add at the end 
-				// update the children of this tree
-				this.setChildren(myChildren);
-			}
-		} */
-		
-		public void add (Node treeNode) {
-			if ( (treeNode != null) && (treeNode.getParent() != this) ) {
-				TreeNode [] data = this.ensureCapacity(this.nSize + 1);
-				data[this.nSize++] = treeNode;
-				treeNode.setParent(this);	// we need to make sure it will not be added twice
-				this.setChildren(data);
-			}
-			
-		}
-
-		/**
-		 * Simulate DefaultMutableTreeNode's getChildAt
-		 * @param index
-		 * @return
-		 */
-		public TreeNode getChildAt(int index) {
-			return this.getChildren()[index];
-		}
-
-		/**
-		 * Simulate DefaultMutableTreeNode's getChildCount
-		 * @return
-		 */
-		public int getChildCount() {
-			// TODO Auto-generated method stub
-			return this.nSize;
-			/*
-			if (this.getChildren() == null)
-				return 0;
-			return this.getChildren().length; */
-		}
-
-
-		/** Returns the scope associated with this node. */
-		public Scope getScope()
-		{
-			return (Scope) this.value;
-		}
-		
-		/*
-		 * (non-Javadoc)
-		 * @see org.eclipse.jface.viewers.TreeNode#getChildren()
-		 */
-		public TreeNode[] getChildren() {
-			if (this.nSize == 0) {
-				return null;
-			} else {
-				TreeNode []oldChildren = super.getChildren();
-				if (oldChildren.length == this.nSize)
-					return oldChildren;
-				else {
-					TreeNode []children = new TreeNode[this.nSize];
-					System.arraycopy(oldChildren, 0, children, 0, this.nSize);
-					return children;
-				}
-			}
-		}
-
-		//////////////////////////////////////////////////////////////////////////////
-		//// 	PRIVATE METHODS
-		//////////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * Make sure the size of the children is big enough. If not, we increment it. 
-		 * @param minCapacity
-		 * @return
-		 */
-	    private TreeNode [] ensureCapacity(int minCapacity) {
-	    	TreeNode []oldData = super.getChildren();
-	    	int oldCapacity = 0; // = getArraySize();
-	    	if (oldData != null)
-	    		oldCapacity = oldData.length;
-	    	if (minCapacity > oldCapacity) {
-	    	    int newCapacity = (oldCapacity * 3)/2 + 1;
-	        	if (newCapacity < minCapacity)
-	        		newCapacity = minCapacity;
-	    	    TreeNode []newData = new TreeNode[newCapacity];
-	    	    if (oldCapacity > 0)
-	    	    	System.arraycopy(oldData, 0, newData, 0, this.nSize);
-	    	    return newData;
-	    	} else 
-	    		return oldData;
-	    }
-	    
-	    /**
-	     * Retrieve the real size of the array (including empty space)
-	     * @return
-	     */
-	    /*
-	    private int getArraySize() {
-	    	TreeNode []children = this.getChildren();
-	    	if (children != null)
-	    		return children.length;
-	    	else
-	    		return 0;
-	    } */
-	};
 	
 }

@@ -41,7 +41,7 @@ public class PrintFileXML {
 			int nbChildren = rootChildren.length;
 			
 			// flat root must be the last one
-			RootScope flatRoot = (RootScope) rootChildren[nbChildren-1].getValue();
+			RootScope flatRoot = (RootScope) rootChildren[nbChildren-1];
 			
 			//---------------------------------------------------------------------------------
 			// print the DTD

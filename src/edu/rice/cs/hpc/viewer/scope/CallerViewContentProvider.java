@@ -33,9 +33,9 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
      * find the list of children
      */
     public Object[] getChildren(Object parentElement) {
-    	if(parentElement instanceof Scope.Node) {
+    	if(parentElement instanceof Scope) {
     		// normal mode
-        	Scope.Node parent = ((Scope.Node) parentElement);
+        	Scope parent = ((Scope) parentElement);
         	Object arrChildren[] = parent.getChildren();
         	// if the database has empty data, the children is null
         	if (arrChildren != null) {
@@ -46,9 +46,8 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         		//-------------------------------------------------------------------------
         		// dynamically create callers view
         		//-------------------------------------------------------------------------
-        		Scope scope = parent.getScope();
 
-        		CallSiteScopeCallerView cc = (CallSiteScopeCallerView) scope;
+        		CallSiteScopeCallerView cc = (CallSiteScopeCallerView) parent;
         		CallSiteScope cct = (CallSiteScope) cc.getScopeCCT();
         		
         		LinkedList<CallSiteScopeCallerView> path =
@@ -75,7 +74,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
         		Scope.Node scope_children[] = new Scope.Node[num_kids];
         		scope_children[0] = first.getTreeNode();
         		return scope_children; */
-        		return cc.getTreeNode().getChildren();
+        		return cc.getChildren();
         	}
     	}
     	return null;
@@ -86,16 +85,15 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
      * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
      */
     public boolean hasChildren(Object element) {
-    	if(element instanceof Scope.Node) {
-    		Scope.Node node = (Scope.Node) element;
+    	if(element instanceof Scope) {
+    		Scope node = (Scope) element;
     		boolean has_children = node.hasChildren();
     		if (!has_children) {
-    			Scope scope = node.getScope();
-    			if (scope instanceof CallSiteScopeCallerView) {
-        			CallSiteScopeCallerView cc = (CallSiteScopeCallerView) scope;
+    			if (node instanceof CallSiteScopeCallerView) {
+        			CallSiteScopeCallerView cc = (CallSiteScopeCallerView) node;
         			has_children = cc.numChildren>0;
-    			} else if ( !(scope instanceof ProcedureScope)){
-    				throw new RuntimeException("Unexpected scope node: " + scope);
+    			} else if ( !(node instanceof ProcedureScope)){
+    				throw new RuntimeException("Unexpected scope node: " + node);
     			}
     		}
             return has_children; // !((Scope.Node) element).isLeaf();    		

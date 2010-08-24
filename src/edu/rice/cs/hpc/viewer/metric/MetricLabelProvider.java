@@ -21,10 +21,9 @@ public class MetricLabelProvider extends BaseMetricColumnProvider {
 	public String getText(Object element) {
 		String text = null; 
 
-		if ((metric != null) && (element instanceof Scope.Node)) {
-			Scope.Node node = (Scope.Node) element;
-			Scope scope = node.getScope();
-			text = metric.getMetricTextValue(scope);
+		if ((metric != null) && (element instanceof Scope)) {
+			Scope node = (Scope) element;
+			text = metric.getMetricTextValue(node);
 		}
 		return text;
 	}

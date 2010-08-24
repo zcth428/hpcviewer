@@ -64,6 +64,9 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 
 		if (vt == ScopeVisitType.PreVisit) { 
 						
+			if (this.isEmptyScope(scope))
+				return;
+			
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 
@@ -325,6 +328,21 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		} else {
 			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.hashCode());
 		}
+	}
+	
+	/****
+	 * check if a scope has a value or not
+	 * @param scope
+	 * @return
+	 */
+	private boolean isEmptyScope(Scope scope) {
+		
+		for(int i=0; i<this.numberOfPrimaryMetrics; i++) {
+			MetricValue mv = (scope.getMetricValue(i));
+			if (mv.isAvailable())
+				return false;
+		}
+		return true;
 	}
 
 }

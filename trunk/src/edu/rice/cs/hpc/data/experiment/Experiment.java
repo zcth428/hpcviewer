@@ -706,7 +706,7 @@ public Scope getRootScope()
 
 
 public TreeNode[] getRootScopeChildren() {
-	return this.rootScope.getTreeNode().getChildren();
+	return this.rootScope.getChildren();
 }
 
 //============================================================================

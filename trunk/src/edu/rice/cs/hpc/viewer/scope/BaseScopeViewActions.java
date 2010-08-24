@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
+import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
  * @author laksonoadhianto
@@ -22,7 +22,7 @@ public class BaseScopeViewActions extends ScopeViewActions {
 		// TODO Auto-generated constructor stub
 	}
 
-	public void checkStates(Node nodeSelected) {
+	public void checkStates(Scope nodeSelected) {
     	boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
 		objActionsGUI.enableZoomIn( bCanZoomIn );
 		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );

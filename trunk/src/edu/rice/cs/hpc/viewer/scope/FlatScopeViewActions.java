@@ -10,7 +10,6 @@ import org.eclipse.swt.widgets.CoolBar;
 
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.scope.Scope.Node;
 
 /**
  * @author laksonoadhianto
@@ -23,7 +22,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * Table of list of flattened node. We need to keep it in memory to avoid
 	 * recomputation of the flattening nodes
 	 */
-	private java.util.Hashtable<Integer, Scope.Node> tableNodes;
+	private java.util.Hashtable<Integer, Scope> tableNodes;
 
 	private java.util.Stack<Object[]> stackStates;
 	
@@ -71,7 +70,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	public void flatten() {
 		this.pushElementStates();
 		
-		Scope.Node objFlattenedNode;
+		Scope objFlattenedNode;
 		
 		if(this.iFlattenLevel<0)
 			objFlattenedNode = this.getFlatten(0);
@@ -102,7 +101,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * Unflatten flattened tree (tree has to be flattened before)
 	 */
 	public void unflatten() {
-		Scope.Node objParentNode = this.getFlatten(this.iFlattenLevel - 1);
+		Scope objParentNode = this.getFlatten(this.iFlattenLevel - 1);
 		if(objParentNode != null) {
 			this.treeViewer.setInput(objParentNode);
 			((FlatScopeViewActionsGUI) this.objActionsGUI).updateFlattenView(getFlattenLevel(), true);
@@ -114,7 +113,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.scope.IToolbarManager#checkStates(edu.rice.cs.hpc.data.experiment.scope.Scope.Node)
 	 */
-	public void checkStates(Node nodeSelected) {
+	public void checkStates(Scope nodeSelected) {
 		boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
 		objActionsGUI.enableHotCallPath( bCanZoomIn );
 		if (bCanZoomIn) {
@@ -157,16 +156,15 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	 * @param iLevel: level of flattened nodes, 0 is the root
 	 * @return
 	 */
-	private Scope.Node getFlatten(int iLevel) {
+	private Scope getFlatten(int iLevel) {
 		if (iLevel<0)
 			return null; // TODO: should return an exception instead
-		Scope.Node objFlattenedNode;
+		Scope objFlattenedNode;
 		Integer objLevel = Integer.valueOf(iLevel);
 		if(iLevel == 0) {
 			if(this.tableNodes == null) {
-				this.tableNodes = new java.util.Hashtable<Integer, Scope.Node>();
-				objFlattenedNode = new Scope.Node(this.myRootScope);
-				this.addChildren(this.myRootScope.getTreeNode(), objFlattenedNode);
+				this.tableNodes = new java.util.Hashtable<Integer, Scope>();
+				objFlattenedNode = this.myRootScope;
 				this.tableNodes.put(objLevel, objFlattenedNode);
 				
 			} else {
@@ -178,11 +176,11 @@ public class FlatScopeViewActions extends ScopeViewActions {
 				objFlattenedNode = this.tableNodes.get(objLevel);
 			} else {
 				// create the list of flattened node
-				Scope.Node objParentNode = this.tableNodes.get(Integer.valueOf(iLevel - 1));
-				objFlattenedNode = new Scope.Node(objParentNode.getValue());
+				Scope objParentNode = this.tableNodes.get(Integer.valueOf(iLevel - 1));
+				objFlattenedNode = (objParentNode.duplicate());
 				boolean hasKids = false;
 				for (int i=0;i<objParentNode.getChildCount();i++) {
-					Scope.Node node = (Node) objParentNode.getChildAt(i);
+					Scope node =  (Scope) objParentNode.getChildAt(i);
 					if(node.getChildCount()>0) {
 						// this node has children, add the children
 						this.addChildren(node, objFlattenedNode);
@@ -206,12 +204,12 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	}
 
 
-	private void addChildren(Scope.Node node, Scope.Node arrNodes) {
+	private void addChildren(Scope node, Scope arrNodes) {
 		int nbChildren = node.getChildCount();
 		for(int i=0;i<nbChildren;i++) {
 			// Laksono 2009.03.04: do not add call site !
-			Scope.Node nodeKid = ((Scope.Node) node.getChildAt(i));
-			if (nodeKid.getScope() instanceof CallSiteScope) {
+			Scope nodeKid = ((Scope) node.getChildAt(i));
+			if (nodeKid instanceof CallSiteScope) {
 				// the kid is a callsite: do nothing
 			} else {
 				// otherwise add the kid into the list of scopes to display

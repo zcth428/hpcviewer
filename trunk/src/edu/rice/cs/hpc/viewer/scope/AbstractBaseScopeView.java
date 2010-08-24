@@ -123,7 +123,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * Helper method to retrieve the selected item
      * @return
      */
-    private Scope.Node getSelectedItem() {
+    private Scope getSelectedItem() {
         TreeItem[] selection = this.treeViewer.getTree().getSelection();
         if(selection != null) {
         	Object o = selection[0].getData();
@@ -131,8 +131,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         	 * Fix bug which appears when the user wants to see the context menu of
         	 * the top row of the table (the aggregate metrics)
         	 */
-        	if(o instanceof Scope.Node)
-        		return (Scope.Node)o;
+        	if(o instanceof Scope)
+        		return (Scope)o;
         }
         return null;
     }
@@ -143,7 +143,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * @param mgr
      */
     private void fillContextMenu(IMenuManager mgr) {
-    	Scope.Node node = this.getSelectedItem();
+    	Scope scope = this.getSelectedItem();
         final Action acCopy = new Action("Copy") {
         	public void run() {
         		copyToClipboard();
@@ -153,13 +153,13 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	 * Fix bug which appears when the user wants to see the context menu of
     	 * the top row of the table (the aggregate metrics)
     	 */
-    	if(node == null) {
+    	if(scope == null) {
     		mgr.add(acCopy);
     		return;
     	}
     	// ---- zoomin
         mgr.add(acZoomin);
-        acZoomin.setEnabled(this.objViewActions.shouldZoomInBeEnabled(node));
+        acZoomin.setEnabled(this.objViewActions.shouldZoomInBeEnabled(scope));
         // ---- zoomout
         mgr.add(acZoomout);
         acZoomout.setEnabled(this.objViewActions.shouldZoomOutBeEnabled());
@@ -167,7 +167,6 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         // ---- additional feature
         mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
-        Scope scope = node.getScope();
 
         // Laks 2009.06.22: add new feature to copy selected line to the clipboard
         mgr.add(acCopy);
@@ -187,7 +186,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         		displayFileEditor(this.scope);
         	}
         };
-        acShowCode.setEnabled(node.hasSourceCodeFile);
+        acShowCode.setEnabled(scope.hasSourceCodeFile);
         mgr.add(acShowCode);
 
         // show the call site in case this one exists
@@ -335,9 +334,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
     		        Object o = selection.getFirstElement();
     		        // we will treat this click if the object is Scope.Node
-    		        if(o instanceof Scope.Node) {
-    		        	Scope.Node objNode = (Scope.Node) o;
-    		        	Scope scope = objNode.getScope();
+    		        if(o instanceof Scope) {
+    		        	Scope scope = (Scope) o;
     		            // show the call site in case this one exists
     		            if(scope instanceof CallSiteScope) {
     		            	// get the call site scope
@@ -352,9 +350,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
     		        Object o = selection.getFirstElement();
     		        // we will treat this click if the object is Scope.Node
-    		        if(o instanceof Scope.Node) {
-    		        	Scope.Node objNode = (Scope.Node) o;
-    		        	displayFileEditor(objNode.getScope());
+    		        if(o instanceof Scope) {
+    		        	displayFileEditor( (Scope)o );
     		        }
         		} else {
         			// User click a region other than tree
@@ -387,8 +384,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 		          (TreeSelection) event.getSelection();
 
 		        Object objElement = selection.getFirstElement();
-		        if(objElement instanceof Scope.Node) {
-			        Scope.Node nodeSelected = (Scope.Node) objElement;
+		        if(objElement instanceof Scope) {
+			        Scope nodeSelected = (Scope) objElement;
 			        if(nodeSelected != null) {
 			        	// update the state of the toolbar items
 			        	objViewActions.checkStates(nodeSelected);

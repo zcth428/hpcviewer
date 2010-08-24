@@ -145,8 +145,8 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
     	// DO NOT flatten if we reach to the point where there is no children 
     	//return this.myRootScope.getTreeNode().getDepth()>this.myRootScope.getFlattenLevel() + 1;
     	Object o = this.treeViewer.getInput();
-    	if (o instanceof Scope.Node) {
-    		Scope.Node objNode = (Scope.Node) o;
+    	if (o instanceof Scope) {
+    		Scope objNode = (Scope) o;
     		for( int i=0; i<objNode.getChildCount(); i++ ) {
     			if (objNode.getChildAt(i).hasChildren())
     				return true;

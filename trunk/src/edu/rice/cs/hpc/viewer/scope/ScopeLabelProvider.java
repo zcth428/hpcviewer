@@ -29,11 +29,9 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	 * Return the image of the column. By default no image
 	 */
 	public Image getImage(Object element) {
-		if(element instanceof Scope.Node) {
-			Scope.Node node;
-			node = (Scope.Node) element;
-			Scope scope = node.getScope();
-			return Utilities.getScopeNavButton(scope);
+		if(element instanceof Scope) {
+			Scope node = (Scope) element;
+			return Utilities.getScopeNavButton(node);
 		}
 		return null;
 	}
@@ -43,13 +41,12 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	 */
 	public String getText(Object element) {
 		String text = null;
-		if (element instanceof Scope.Node){
-			Scope.Node node = (Scope.Node) element;
+		if (element instanceof Scope){
+			Scope node = (Scope) element;
 			if (debug)  {
-				Scope scope = node.getScope();
-				text = "[" + scope.getCCTIndex() + "] " + scope.getName();
+				text = "[" + node.getCCTIndex() + "] " + node.getName();
 			} else
-				text = node.getScope().getName();			
+				text = node.getName();			
 		} else
 			text = element.getClass().toString();
 		return text;
@@ -60,10 +57,9 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	 * Attention: we do not verify if the source code exist or not !!
 	 */
 	public Color getForeground(Object element) {
-		if(element instanceof Scope.Node) {
-			Scope.Node node = (Scope.Node) element;
-			Scope scope = node.getScope();
-			if(Utilities.isFileReadable(scope)) {
+		if(element instanceof Scope) {
+			Scope node = (Scope) element;
+			if(Utilities.isFileReadable(node)) {
 				node.hasSourceCodeFile = true; //update the indicator flag in the node
 				// put the color blue
 				return this.windowCurrent.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);

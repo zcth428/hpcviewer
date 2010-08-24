@@ -87,7 +87,7 @@ public Scope duplicate() {
 	
 public String getName()
 {
-	return this.getSourceCitation();
+	return this.sourceFile.getName();
 }
 
 

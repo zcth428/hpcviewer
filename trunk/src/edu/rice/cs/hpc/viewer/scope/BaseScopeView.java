@@ -66,9 +66,8 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         }
         
         // Update root scope
-        Scope.Node nodeRootScope = myRootScope.getTreeNode();
-        if (nodeRootScope.getChildCount() > 0) {
-            treeViewer.setInput(myRootScope.getTreeNode());
+        if (myRootScope.getChildCount() > 0) {
+            treeViewer.setInput(myRootScope);
             // update the window title
             this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
             

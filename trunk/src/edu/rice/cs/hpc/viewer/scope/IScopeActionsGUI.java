@@ -100,7 +100,7 @@ public interface IScopeActionsGUI {
      * TODO: we need to shift to the left a little bit
      * @param nodeParent
      */
-    public void insertParentNode(Scope.Node nodeParent);
+    public void insertParentNode(Scope nodeParent);
     
     /**
      * Add a new metric column

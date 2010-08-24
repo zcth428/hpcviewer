@@ -165,7 +165,7 @@ public class ExperimentView {
 
 		for(int k=0;nbChildren>k;k++)
 		{
-			RootScope child = (RootScope) rootChildren[k].getValue();
+			RootScope child = (RootScope) rootChildren[k];
 			try {
 				BaseScopeView objView; 
 

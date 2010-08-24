@@ -9,7 +9,6 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.filters.RemoveCallsiteCostPropagationFilter;
 
 public class CallersViewScopeVisitor implements IScopeVisitor {
 
@@ -43,10 +42,9 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		this.numberOfPrimaryMetrics = nMetrics;
 		this.isdebug = dodebug;
 		this.filter = filter;
-		BaseMetric []metrics = experiment.getMetrics();
+
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(experiment);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
-		new RemoveCallsiteCostPropagationFilter(metrics);
 	}
 
 	//----------------------------------------------------

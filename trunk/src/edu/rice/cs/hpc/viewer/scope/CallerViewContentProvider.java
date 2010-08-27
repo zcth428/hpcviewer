@@ -7,12 +7,14 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
+import edu.rice.cs.hpc.data.experiment.scope.IMergedScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.DerivedIncrementalVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
 public class CallerViewContentProvider extends ScopeTreeContentProvider {
@@ -20,7 +22,8 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
 	private ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	private RootScope root;
-	private Experiment experiment;
+	private PercentScopeVisitor percentVisitor;
+	private DerivedIncrementalVisitor finalizeVisitor;
 	
     /**
      * get the number of elements (called by jface)
@@ -33,49 +36,13 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
      * find the list of children
      */
     public Object[] getChildren(Object parentElement) {
-    	if(parentElement instanceof Scope) {
+    	if(parentElement instanceof IMergedScope) {
     		// normal mode
-        	Scope parent = ((Scope) parentElement);
-        	Object arrChildren[] = parent.getChildren();
-        	// if the database has empty data, the children is null
-        	if (arrChildren != null) {
-        		if (arrChildren.length>0)
-        			return arrChildren;
-        	} else {
-        		
-        		//-------------------------------------------------------------------------
-        		// dynamically create callers view
-        		//-------------------------------------------------------------------------
-
-        		CallSiteScopeCallerView cc = (CallSiteScopeCallerView) parent;
-        		CallSiteScope cct = (CallSiteScope) cc.getScopeCCT();
-        		
-        		LinkedList<CallSiteScopeCallerView> path =
-        			CallersViewScopeVisitor.createCallChain( cct, cc,
-        					inclusiveOnly, exclusiveOnly);
-        		
-        		//CallersViewScopeVisitor.mergeCallerPath(cc, inclusiveOnly, exclusiveOnly, path);
-        		
-        		//-------------------------------------------------------------------------
-        		// set the percent
-        		//-------------------------------------------------------------------------
-        		for(int i=0; i<path.size(); i++) {
-        			CallSiteScopeCallerView callsite = path.get(i);
-            		PercentScopeVisitor.setPercentValue(callsite, root, this.experiment.getMetricCount());
-        		}
-        		
-        		CallSiteScopeCallerView first = path.removeFirst();
-        		CallersViewScopeVisitor.addNewPathIntoTree(cc, first, path);
-        		
-        		//-------------------------------------------------------------------------
-        		// set the new node into the content of the tree view:
-        		//-------------------------------------------------------------------------
-        		/*int num_kids = first.getSubscopeCount();
-        		Scope.Node scope_children[] = new Scope.Node[num_kids];
-        		scope_children[0] = first.getTreeNode();
-        		return scope_children; */
-        		return cc.getChildren();
-        	}
+    		IMergedScope parent = ((IMergedScope) parentElement);
+        	Object arrChildren[] = parent.getAllChildren(finalizeVisitor, percentVisitor, inclusiveOnly, exclusiveOnly);
+        	return arrChildren;
+    	} else if (parentElement instanceof Scope) {
+    		return ((Scope)parentElement).getChildren();
     	}
     	return null;
     }
@@ -112,6 +79,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     	inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
     	
     	root = experiment.getCallerTreeRoot();
-    	this.experiment = experiment;
+    	percentVisitor = new PercentScopeVisitor(experiment.getMetricCount(), root);
+    	finalizeVisitor = new DerivedIncrementalVisitor(experiment.getMetrics());
     }
 }

@@ -25,7 +25,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	
-	static private final int MAX_DESC = 3;
+	static private final int MAX_DESC = 2;
 	
 	/****--------------------------------------------------------------------------------****
 	 * 
@@ -74,7 +74,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList);
+			mergeCallerPath(callee, callPathList, this.inclusiveOnly, null);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();
@@ -120,9 +120,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		while ( (next != null) && !(next instanceof RootScope) && (numKids<MAX_DESC) )
 		{
 			// Laksono 2009.01.14: we only deal with call site OR pure procedure scope (no alien)
-			if ( ((next instanceof CallSiteScope) || 
-					(next instanceof ProcedureScope && !((ProcedureScope)next).isAlien()) )
-					 && innerCS != null) {
+			if ( isCallSiteCandidate(next, innerCS)) {
 
 				CallSiteScope enclosingCS = null;
 				ProcedureScope mycaller = null;
@@ -146,7 +144,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 							new CallSiteScopeCallerView( lineScope, mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
 
-						combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+						if (scope_cost == null) {
+							combine(callerScope, next, inclusiveOnly, exclusiveOnly);							 
+						} else {
+							combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+						}
 						callPathList.addLast(callerScope);
 						
 						innerCS = enclosingCS;
@@ -158,6 +160,13 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		}
 
 		return callPathList;
+	}
+	
+		 
+	static private boolean isCallSiteCandidate(Scope scope, CallSiteScope innerCS) {
+		return ( ((scope instanceof CallSiteScope) || 
+				(scope instanceof ProcedureScope && !((ProcedureScope)scope).isAlien()) )
+				&& (innerCS != null));
 	}
 	
 	public void visit(Scope scope, ScopeVisitType vt) { }
@@ -196,9 +205,17 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	//----------------------------------------------------
 	// helper functions  
 	//----------------------------------------------------
-	
-	protected void mergeCallerPath(Scope callee, 
-			LinkedList<CallSiteScopeCallerView> callerPathList) 
+
+	/******
+	 * merging caller path (if they are identical) 
+	 * @param callee
+	 * @param callerPathList
+	 * @param inclusiveOnly
+	 * @param exclusiveOnly
+	 */
+	static public void mergeCallerPath(Scope callee, 
+			LinkedList<CallSiteScopeCallerView> callerPathList,
+			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) 
 	{
 		if (callerPathList.size() == 0) return; // merging an empty path is trivial
 
@@ -209,7 +226,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		//--------------------------------------------------------------------------
 		int nCallers = callee.getSubscopeCount();
 		for (int i = 0; i < nCallers; i++) {
-			CallSiteScope existingCaller = (CallSiteScope) callee.getSubscope(i);
+			CallSiteScopeCallerView existingCaller = (CallSiteScopeCallerView) callee.getSubscope(i);
 
 			//------------------------------------------------------------------------
 			// we check if the flat ID (or static ID) of the scope in caller view is
@@ -221,16 +238,20 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			//	branches and consume enormous memory (it's so enormous that even the
 			//	JVM gives up).
 			//------------------------------------------------------------------------
-			if (first.isMyCCT(existingCaller) ) {
+			//if (first.isMyCCT(existingCaller) ) {
+			if (first.getCCTIndex() == existingCaller.getCCTIndex()) {
 
 				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
-				combine(first, existingCaller, this.inclusiveOnly, this.exclusiveOnly);
-				//System.out.println("callee: " + callee + "\t" + first + "\t" + existingCaller +"\t" + first.getMetricValue(0).getValue());
-				// merge rest of call path as a child of existingCaller.
-				mergeCallerPath(existingCaller, callerPathList);
+				combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
 
+				existingCaller.merge(first);
+//				System.out.println("merging: " + callee + " ("+ callee.getCCTIndex() + ")\t" + 
+//						first + " (" + first.getCCTIndex() + ")\t" + existingCaller +"\t" + existingCaller.getMetricValue(1).getValue());
+				// merge rest of call path as a child of existingCaller.
+				mergeCallerPath(existingCaller, callerPathList, inclusiveOnly, exclusiveOnly);
+				
 				return; // merged with existing child. nothing left to do.
 			}
 		}
@@ -304,10 +325,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	static private void combine(Scope caller_s, Scope cct_s, 
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
 		
-		if (caller_s.iCounter == 0) {
+		if (caller_s.iCounter == 0 && inclusiveOnly != null) {
 			caller_s.safeCombine(cct_s, inclusiveOnly);
 		}
-		caller_s.combine(cct_s, exclusiveOnly);
+		if (exclusiveOnly != null)
+			caller_s.combine(cct_s, exclusiveOnly);
 
 		caller_s.iCounter++;
 	}

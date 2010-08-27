@@ -14,6 +14,13 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
+
+/***
+ * Visitor to finalize metrics
+ * Only aggregate metrics will be finalized
+ * @author laksonoadhianto
+ *
+ */
 public class DerivedIncrementalVisitor implements IScopeVisitor {
 
 	private BaseMetric metrics[];

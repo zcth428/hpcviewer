@@ -33,10 +33,11 @@ public class CallerScopeView extends BaseScopeView {
 
 	@Override
 	protected CellLabelProvider getLabelProvider() {
-		CallerScopeLabelProvider objScopeLabel = new CallerScopeLabelProvider(this.getSite().getWorkbenchWindow());
+		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
+/*		CallerScopeLabelProvider objScopeLabel = new CallerScopeLabelProvider(this.getSite().getWorkbenchWindow());
 		final DelegatingStyledCellLabelProvider objLabelProvider = new DelegatingStyledCellLabelProvider( objScopeLabel );
 		return objLabelProvider;
-	}
+*/	}
 
 	@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {}

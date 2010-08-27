@@ -17,7 +17,9 @@ package edu.rice.cs.hpc.data.experiment.scope;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.DerivedIncrementalVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
 
@@ -34,7 +36,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
  */
 
 
-public class ProcedureScope extends Scope
+public class ProcedureScope extends Scope  implements IMergedScope 
 {
 
 
@@ -160,6 +162,13 @@ public LoadModuleScope getLoadModule() {
 public int getSID() {
 	return this.iScopeID;
 } */
+
+public Object[] getAllChildren(DerivedIncrementalVisitor finalizeVisitor, PercentScopeVisitor percentVisitor,
+		MetricValuePropagationFilter inclusiveOnly,
+		MetricValuePropagationFilter exclusiveOnly) {
+
+	return this.getChildren();
+}
 
 
 }

@@ -70,6 +70,7 @@ protected int lastLineNumber;
 
 /** The metric values associated with this scope. */
 protected MetricValue[] metrics;
+protected MetricValue[] combinedMetrics;
 
 /** source citation */
 protected String srcCitation;

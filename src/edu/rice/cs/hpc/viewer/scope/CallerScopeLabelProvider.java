@@ -28,7 +28,7 @@ public class CallerScopeLabelProvider extends ScopeLabelProvider implements ISty
 	 * @see org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider#getStyledText(java.lang.Object)
 	 */
 	public StyledString getStyledText(Object element) {
-		if (element instanceof Scope) {
+		/*if (element instanceof Scope) {
 			
 			Scope objScope = (Scope) element;
 			StyledString styledString= new StyledString();
@@ -42,7 +42,7 @@ public class CallerScopeLabelProvider extends ScopeLabelProvider implements ISty
 			
 			styledString.append(super.getText(element));
 			return styledString;
-		}
+		} */
 		return null;
 	}
 

@@ -10,7 +10,7 @@ import sun.tools.tree.ThisExpression;
 
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.DerivedIncrementalVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
 public class CallSiteScopeCallerView extends CallSiteScope implements IMergedScope {
@@ -54,7 +54,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	
 
 
-	public Object[] getAllChildren(DerivedIncrementalVisitor finalizeVisitor, PercentScopeVisitor percentVisitor, 
+	public Object[] getAllChildren(FinalizeMetricVisitor finalizeVisitor, PercentScopeVisitor percentVisitor, 
 			MetricValuePropagationFilter inclusiveOnly, 
 			MetricValuePropagationFilter exclusiveOnly ) {
 

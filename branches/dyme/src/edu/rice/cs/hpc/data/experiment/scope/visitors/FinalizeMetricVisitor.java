@@ -21,11 +21,11 @@ import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
  * @author laksonoadhianto
  *
  */
-public class DerivedIncrementalVisitor implements IScopeVisitor {
+public class FinalizeMetricVisitor implements IScopeVisitor {
 
 	private BaseMetric metrics[];
 	
-	public DerivedIncrementalVisitor( BaseMetric []listOfMetrics) {
+	public FinalizeMetricVisitor( BaseMetric []listOfMetrics) {
 		this.metrics = listOfMetrics;
 	}
 
@@ -50,6 +50,8 @@ public class DerivedIncrementalVisitor implements IScopeVisitor {
 
     
     private void setValue ( Scope scope) {
+    	scope.backupMetricValues();
+    	
     	for (int i=0; i<this.metrics.length; i++ ) {
     		if (metrics[i] instanceof AggregateMetric) {
     			AggregateMetric agg = (AggregateMetric) metrics[i];

@@ -503,7 +503,7 @@ private boolean checkExistenceOfDerivedIncr() {
 private void finalizeAggregateMetrics(Scope root) {
 	if (! checkExistenceOfDerivedIncr())
 		return;
-	DerivedIncrementalVisitor diVisitor = new DerivedIncrementalVisitor(this.getMetrics());
+	FinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
 	root.dfsVisitScopeTree(diVisitor);
 }
 

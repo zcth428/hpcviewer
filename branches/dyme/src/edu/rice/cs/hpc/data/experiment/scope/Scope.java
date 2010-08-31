@@ -577,6 +577,19 @@ public void accumulateMetricValue(int index, double value)
 }
 
 /**************************************************************************
+ * copy metric values into the backup 
+ **************************************************************************/
+public void backupMetricValues() {
+	this.combinedMetrics = new MetricValue[this.metrics.length];
+	
+	for(int i=0; i<this.metrics.length; i++) {
+		MetricValue value = this.metrics[i];
+		this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
+	}
+}
+
+
+/**************************************************************************
  * combining metric from source. use this function to combine metric between
  * 	different views
  * @param source

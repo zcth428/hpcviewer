@@ -14,7 +14,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.DerivedIncrementalVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
 public class CallerViewContentProvider extends ScopeTreeContentProvider {
@@ -23,7 +23,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	private RootScope root;
 	private PercentScopeVisitor percentVisitor;
-	private DerivedIncrementalVisitor finalizeVisitor;
+	private FinalizeMetricVisitor finalizeVisitor;
 	
     /**
      * get the number of elements (called by jface)
@@ -80,6 +80,6 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     	
     	root = experiment.getCallerTreeRoot();
     	percentVisitor = new PercentScopeVisitor(experiment.getMetricCount(), root);
-    	finalizeVisitor = new DerivedIncrementalVisitor(experiment.getMetrics());
+    	finalizeVisitor = new FinalizeMetricVisitor(experiment.getMetrics());
     }
 }

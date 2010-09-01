@@ -46,7 +46,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
  */
 
 
-public abstract class Scope extends Node implements IScopeValue
+public abstract class Scope extends Node
 {
 	/** The current maximum number of ID for all scopes	 */
 static protected int idMax = 0;

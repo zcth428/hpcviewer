@@ -454,15 +454,18 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		// FINALIZATION
 		//----------------------------------------------------------------------------------------------
+		FinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
+
 		if (callerView)	{												// caller view
-				this.finalizeAggregateMetrics(callersViewRootScope);
+				this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
 				// bug fix 2010.06.17: move the percent after finalization
 				addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
 		}
 		
-		this.finalizeAggregateMetrics(flatViewRootScope);				// flat view
+		this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
 		
-		this.finalizeAggregateMetrics(callingContextViewRootScope);		// cct
+		diVisitor = new FinalizeMetricVisitorWithBackup(this.getMetrics());
+		this.finalizeAggregateMetrics(callingContextViewRootScope, diVisitor);		// cct
 		
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
@@ -500,12 +503,12 @@ private boolean checkExistenceOfDerivedIncr() {
  * finalizing metric values (only for aggregate metric from hpcprof-mpi)
  * @param root
  */
-private void finalizeAggregateMetrics(Scope root) {
+private void finalizeAggregateMetrics(Scope root, FinalizeMetricVisitor diVisitor) {
 	if (! checkExistenceOfDerivedIncr())
 		return;
-	FinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
 	root.dfsVisitScopeTree(diVisitor);
 }
+
 
 /**
  * Check if an inclusive computation is needed or not

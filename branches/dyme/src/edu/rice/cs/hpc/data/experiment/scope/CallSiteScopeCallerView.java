@@ -86,6 +86,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			for(Iterator<CallSiteScopeCallerView> iter = this.listOfmerged.iterator(); iter.hasNext(); ) {
 				
 				CallSiteScopeCallerView scope = iter.next();
+				//Scope scope_cost = scope.duplicate();
+				//scope_cost.setMetricValues(scope.getCombinedValues());
+				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
 					(scope_cct, scope, inclusiveOnly, exclusiveOnly);

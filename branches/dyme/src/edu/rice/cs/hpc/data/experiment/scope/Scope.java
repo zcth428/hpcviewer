@@ -46,7 +46,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
  */
 
 
-public abstract class Scope extends Node
+public abstract class Scope extends Node implements IScopeValue
 {
 	/** The current maximum number of ID for all scopes	 */
 static protected int idMax = 0;
@@ -580,14 +580,43 @@ public void accumulateMetricValue(int index, double value)
  * copy metric values into the backup 
  **************************************************************************/
 public void backupMetricValues() {
+	if (this.metrics == null)
+		return;
+	
 	this.combinedMetrics = new MetricValue[this.metrics.length];
 	
 	for(int i=0; i<this.metrics.length; i++) {
 		MetricValue value = this.metrics[i];
-		this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
+		BaseMetric metric = this.experiment.getMetric(i);
+		
+		//----------------------------------------------------------------------
+		// derived incremental metric type needs special treatment: 
+		//	their value changes in finalization phase, while others don't
+		//----------------------------------------------------------------------
+		if (metric instanceof AggregateMetric)
+			this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
+		else 
+			this.combinedMetrics[i] = value;
 	}
 }
 
+public MetricValue[] getMetricValues() {
+	return this.metrics;
+}
+
+
+public void setMetricValues(MetricValue values[]) {	
+	this.metrics = values;
+}
+
+
+public MetricValue[] getCombinedValues() {
+	return this.combinedMetrics;
+}
+
+public void setCombinedValues(MetricValue values[]) {
+	this.combinedMetrics = values;
+}
 
 /**************************************************************************
  * combining metric from source. use this function to combine metric between

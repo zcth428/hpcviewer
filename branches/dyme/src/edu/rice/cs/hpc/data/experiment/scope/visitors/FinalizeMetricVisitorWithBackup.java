@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
-import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
@@ -14,19 +13,10 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
+public class FinalizeMetricVisitorWithBackup extends FinalizeMetricVisitor {
 
-/***
- * Visitor to finalize metrics
- * Only aggregate metrics will be finalized
- * @author laksonoadhianto
- *
- */
-public class FinalizeMetricVisitor implements IScopeVisitor {
-
-	private BaseMetric metrics[];
-	
-	public FinalizeMetricVisitor( BaseMetric []listOfMetrics) {
-		this.metrics = listOfMetrics;
+	public FinalizeMetricVisitorWithBackup(BaseMetric[] listOfMetrics) {
+		super(listOfMetrics);
 	}
 
     public void visit(LineScope scope, ScopeVisitType vt) { process(scope, vt); }
@@ -49,12 +39,12 @@ public class FinalizeMetricVisitor implements IScopeVisitor {
     }
 
     
-    protected void setValue ( Scope scope) {   	
-    	for (int i=0; i<this.metrics.length; i++ ) {
-    		if (metrics[i] instanceof AggregateMetric) {
-    			AggregateMetric agg = (AggregateMetric) metrics[i];
-    			agg.finalize(scope);
-    		}
-    	}
+    protected void setValue ( Scope scope) {
+    	if (scope instanceof CallSiteScope || 
+    			(scope instanceof ProcedureScope && !((ProcedureScope)scope).isAlien()) )
+    		scope.backupMetricValues();
+    	
+    	super.setValue(scope);
     }
+
 }

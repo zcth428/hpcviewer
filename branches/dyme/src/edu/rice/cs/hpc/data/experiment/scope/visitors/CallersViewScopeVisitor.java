@@ -144,11 +144,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 							new CallSiteScopeCallerView( lineScope, mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
 
-						if (scope_cost == null) {
-							combine(callerScope, next, inclusiveOnly, exclusiveOnly);							 
-						} else {
-							combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
-						}
+						combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+						callerScope.setCombinedValues( scope_cost.getCombinedValues() );
 						callPathList.addLast(callerScope);
 						
 						innerCS = enclosingCS;
@@ -247,8 +244,10 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
 
 				existingCaller.merge(first);
-//				System.out.println("merging: " + callee + " ("+ callee.getCCTIndex() + ")\t" + 
-//						first + " (" + first.getCCTIndex() + ")\t" + existingCaller +"\t" + existingCaller.getMetricValue(1).getValue());
+				if (first.getName().startsWith("MatSolve")) {
+					System.out.println("merging: " + callee + " ("+ callee.getCCTIndex() + ")\t" + 
+						first + " (" + first.getCCTIndex() + ")\t" + existingCaller +"\t" + existingCaller.getMetricValue(0).getValue());
+				}
 				// merge rest of call path as a child of existingCaller.
 				mergeCallerPath(existingCaller, callerPathList, inclusiveOnly, exclusiveOnly);
 				

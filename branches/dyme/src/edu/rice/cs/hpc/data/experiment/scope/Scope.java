@@ -611,7 +611,18 @@ public void setMetricValues(MetricValue values[]) {
 
 
 public MetricValue[] getCombinedValues() {
-	return this.combinedMetrics;
+	MetricValue [] values = new MetricValue[this.experiment.getMetricCount()];
+
+	for (int i=0; i<values.length; i++) {
+		if (this.experiment.getMetric(i) instanceof AggregateMetric) {
+			if (this.combinedMetrics == null)
+				System.err.println("scope: " + this);
+			values[i] = this.combinedMetrics[i];
+		} else {
+			values[i] = this.metrics[i];
+		}
+	}
+	return values;
 }
 
 public void setCombinedValues(MetricValue values[]) {

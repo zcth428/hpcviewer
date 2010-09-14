@@ -68,13 +68,13 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 
-			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope,
+			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope, false,
 					this.inclusiveOnly, this.exclusiveOnly);
 
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList, this.inclusiveOnly, null);
+			mergeCallerPath(callee, callPathList, false, this.inclusiveOnly, null);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();
@@ -100,7 +100,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 * @return
 	 ***********/
 	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct,
-			Scope scope_cost,
+			Scope scope_cost, boolean using_copy_metric,
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly ) {
 		//-----------------------------------------------------------------------
 		// compute callPath: a chain of my callers
@@ -139,13 +139,23 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 					numKids++;
 					if (prev_scope != null)
 						prev_scope.numChildren = 1;
+
+					//--------------------------------------------------------------
+					// creating a new child scope if the path is not too long (< MAX_DESC)
+					//--------------------------------------------------------------
 					if (numKids<MAX_DESC) {
 						CallSiteScopeCallerView callerScope =
 							new CallSiteScopeCallerView( lineScope, mycaller,
 									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
 
-						combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
-						callerScope.setCombinedValues( scope_cost.getCombinedValues() );
+						// set the value of the new scope
+						
+						if (using_copy_metric) {
+							combineWithCopy(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+						} else {							
+							combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+							callerScope.backupMetricValues();
+						}
 						callPathList.addLast(callerScope);
 						
 						innerCS = enclosingCS;
@@ -211,7 +221,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 * @param exclusiveOnly
 	 */
 	static public void mergeCallerPath(Scope callee, 
-			LinkedList<CallSiteScopeCallerView> callerPathList,
+			LinkedList<CallSiteScopeCallerView> callerPathList, boolean using_copy_metric,
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) 
 	{
 		if (callerPathList.size() == 0) return; // merging an empty path is trivial
@@ -241,15 +251,15 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				//------------------------------------------------------------------------
 				// add metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
-				combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
+				if (using_copy_metric) 
+					combineWithCopy(existingCaller, first, inclusiveOnly, exclusiveOnly);
+				else
+					combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
+				//CallersViewScopeVisitor.mergeMetrics(existingCaller, first);
 
 				existingCaller.merge(first);
-				if (first.getName().startsWith("MatSolve")) {
-					System.out.println("merging: " + callee + " ("+ callee.getCCTIndex() + ")\t" + 
-						first + " (" + first.getCCTIndex() + ")\t" + existingCaller +"\t" + existingCaller.getMetricValue(0).getValue());
-				}
 				// merge rest of call path as a child of existingCaller.
-				mergeCallerPath(existingCaller, callerPathList, inclusiveOnly, exclusiveOnly);
+				mergeCallerPath(existingCaller, callerPathList, using_copy_metric, inclusiveOnly, exclusiveOnly);
 				
 				return; // merged with existing child. nothing left to do.
 			}
@@ -278,12 +288,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	
 	
 	
-	/****--------------------------------------------------------------------------------****
+	/********
 	 * Find caller view's procedure of a given scope. 
 	 * If it doesn't exist, create a new one, attach to the tree, and copy the metrics
 	 * @param cct_s: either call site or procedure
 	 * @return
-	 ****--------------------------------------------------------------------------------****/
+	 ********/
 	private ProcedureScope createProcedureIfNecessary( Scope cct_s ) {
 		ProcedureScope cct_proc_s;
 		
@@ -316,11 +326,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	}
 	
 	
-	/****--------------------------------------------------------------------------------****
+	/********
 	 * Integrating cost of caller view and cct
 	 * @param caller_s
 	 * @param cct_s
-	 ****--------------------------------------------------------------------------------****/
+	 ********/
 	static private void combine(Scope caller_s, Scope cct_s, 
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
 		
@@ -333,11 +343,19 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		caller_s.iCounter++;
 	}
 	
+	static private void combineWithCopy(Scope caller_s, Scope cct_s, 
+			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
+		Scope copy = cct_s.duplicate();
+		copy.setMetricValues( cct_s.getCombinedValues() );
+		combine(caller_s, copy, inclusiveOnly, exclusiveOnly);
+	}
 	
-	/****--------------------------------------------------------------------------------****
+
+	
+	/********
 	 * decrement the counter of a caller scope
 	 * @param caller_s
-	 ****--------------------------------------------------------------------------------****/
+	 ********/
 	private void decrementCounter(Scope caller_s) {
 		if (caller_s == null)
 			return;

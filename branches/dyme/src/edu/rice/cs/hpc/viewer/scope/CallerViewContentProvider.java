@@ -15,6 +15,7 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagat
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitorWithBackup;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
 public class CallerViewContentProvider extends ScopeTreeContentProvider {
@@ -80,6 +81,6 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     	
     	root = experiment.getCallerTreeRoot();
     	percentVisitor = new PercentScopeVisitor(experiment.getMetricCount(), root);
-    	finalizeVisitor = new FinalizeMetricVisitor(experiment.getMetrics());
+    	finalizeVisitor = new FinalizeMetricVisitorWithBackup(experiment.getMetrics());
     }
 }

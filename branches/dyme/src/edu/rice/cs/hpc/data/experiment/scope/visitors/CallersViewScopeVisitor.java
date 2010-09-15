@@ -154,8 +154,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 							combineWithCopy(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
 						} else {							
 							combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
-							callerScope.backupMetricValues();
 						}
+						callerScope.backupMetricValues();
 						callPathList.addLast(callerScope);
 						
 						innerCS = enclosingCS;
@@ -255,7 +255,6 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 					combineWithCopy(existingCaller, first, inclusiveOnly, exclusiveOnly);
 				else
 					combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
-				//CallersViewScopeVisitor.mergeMetrics(existingCaller, first);
 
 				existingCaller.merge(first);
 				// merge rest of call path as a child of existingCaller.
@@ -272,7 +271,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	}
 	
 	
-	
+	/**********
+	 * add children 
+	 * @param callee: the parent
+	 * @param first: the first child
+	 * @param callerPathList: list of children (excluding the first child)
+	 */
 	static public void addNewPathIntoTree(Scope callee, CallSiteScopeCallerView first,
 			LinkedList<CallSiteScopeCallerView> callerPathList) {
 		
@@ -343,6 +347,14 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		caller_s.iCounter++;
 	}
 	
+	/****
+	 * combining metrics using the backup metrics. 
+	 * Backup metrics are the original metrics before finalization
+	 * @param caller_s
+	 * @param cct_s
+	 * @param inclusiveOnly
+	 * @param exclusiveOnly
+	 */
 	static private void combineWithCopy(Scope caller_s, Scope cct_s, 
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
 		Scope copy = cct_s.duplicate();

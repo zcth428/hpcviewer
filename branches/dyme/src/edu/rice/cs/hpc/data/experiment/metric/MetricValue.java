@@ -52,7 +52,7 @@ protected boolean percentAvailable;
 protected double percent;
 
 
-
+static final private double EPSILON_ZERO = 0.000001;
 
 /** The distinguished metric value indicating no data. */
 public static final MetricValue NONE = new MetricValue(-1);
@@ -187,7 +187,13 @@ public void setPercentValue(double percent)
 }
 
 
-
+public boolean isZero() 
+{
+	if (this != MetricValue.NONE) {
+		return ( Double.compare(EPSILON_ZERO, value) == 0 );
+	}
+	return true;
+}
 
 /*************************************************************************
  *	Compares the metric value to another one.

@@ -447,7 +447,8 @@ public boolean hasNonzeroMetrics() {
 	if (this.hasMetrics())
 		for (int i = 0; i< this.metrics.length; i++) {
 			MetricValue m = this.getMetricValue(i);
-			if (m != MetricValue.NONE && m.getValue() != 0.0) return true;
+			if (!m.isZero())
+				return true;
 		}
 	return false;
 }

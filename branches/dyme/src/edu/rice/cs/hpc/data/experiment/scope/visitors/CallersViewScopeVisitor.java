@@ -1,6 +1,9 @@
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -18,10 +21,13 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	//----------------------------------------------------
 	protected boolean isdebug = false; // true;
 	protected Hashtable/*<int, Scope>*/ calleeht = new Hashtable/*<int, Scope>*/();
+	private ListCombinedScopes listCombined;
+	
 	protected Experiment exp;
 	protected Scope callersViewRootScope;
 	protected MetricValuePropagationFilter filter;
 	protected int numberOfPrimaryMetrics;
+	
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	
@@ -45,6 +51,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(experiment);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
+		
+		this.listCombined = new ListCombinedScopes();
 	}
 
 	//----------------------------------------------------
@@ -69,12 +77,12 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 
 			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope, false,
-					this.inclusiveOnly, this.exclusiveOnly);
+					this.listCombined, this.inclusiveOnly, this.exclusiveOnly);
 
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList, false, this.inclusiveOnly, null);
+			mergeCallerPath(callee, callPathList, false, scope, this.listCombined, this.inclusiveOnly, null);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();
@@ -85,6 +93,20 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			//		a bug or a very strange call path
 			if(callee != null) {
 				this.decrementCounter(callee);
+			}
+			
+			//---------------------------------------------------------------------------
+			// decrement all the combined scopes which are computed in this scope
+			// 	When a caller view scope is created, it creates also its children and its merged children
+			//		the counter of these children are then need to be decremented based on the CCT scope
+			//---------------------------------------------------------------------------
+			ArrayList<Scope> list = this.listCombined.getList(scope);
+			if (list != null) {
+				Iterator<Scope> iter = list.iterator();
+				while (iter.hasNext()) {
+					Scope combinedScope = iter.next();
+					this.decrementCounter(combinedScope);
+				}
 			}
 		}
 	}
@@ -100,7 +122,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 * @return
 	 ***********/
 	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct,
-			Scope scope_cost, boolean using_copy_metric,
+			Scope scope_cost, boolean using_copy_metric, ListCombinedScopes list,
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly ) {
 		//-----------------------------------------------------------------------
 		// compute callPath: a chain of my callers
@@ -151,9 +173,9 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 						// set the value of the new scope
 						
 						if (using_copy_metric) {
-							combineWithCopy(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+							combineWithCopy(callerScope, scope_cost, scope_cct, list, inclusiveOnly, exclusiveOnly);
 						} else {							
-							combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);
+							combine(callerScope, scope_cost, scope_cct, list, inclusiveOnly, exclusiveOnly);
 						}
 						callerScope.backupMetricValues();
 						callPathList.addLast(callerScope);
@@ -222,6 +244,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 */
 	static public void mergeCallerPath(Scope callee, 
 			LinkedList<CallSiteScopeCallerView> callerPathList, boolean using_copy_metric,
+			Scope cct_entry, ListCombinedScopes list,
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) 
 	{
 		if (callerPathList.size() == 0) return; // merging an empty path is trivial
@@ -252,13 +275,13 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 				// add metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
 				if (using_copy_metric) 
-					combineWithCopy(existingCaller, first, inclusiveOnly, exclusiveOnly);
+					combineWithCopy(existingCaller, first, cct_entry, list, inclusiveOnly, exclusiveOnly);
 				else
-					combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
+					combine(existingCaller, first, cct_entry, list, inclusiveOnly, exclusiveOnly);
 
 				existingCaller.merge(first);
 				// merge rest of call path as a child of existingCaller.
-				mergeCallerPath(existingCaller, callerPathList, using_copy_metric, inclusiveOnly, exclusiveOnly);
+				mergeCallerPath(existingCaller, callerPathList, using_copy_metric, cct_entry, list, inclusiveOnly, exclusiveOnly);
 				
 				return; // merged with existing child. nothing left to do.
 			}
@@ -324,7 +347,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		}
 		
 		// accumulate the metrics
-		combine(caller_proc, cct_s, this.inclusiveOnly, this.exclusiveOnly);
+		combine(caller_proc, cct_s, cct_s, this.listCombined, this.inclusiveOnly, this.exclusiveOnly);
 		
 		return caller_proc;
 	}
@@ -335,7 +358,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 * @param caller_s
 	 * @param cct_s
 	 ********/
-	static private void combine(Scope caller_s, Scope cct_s, 
+	static private void combine(Scope caller_s, Scope cct_s, Scope cct_entry, ListCombinedScopes list, 
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
 		
 		if (caller_s.iCounter == 0 && inclusiveOnly != null) {
@@ -345,6 +368,9 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			caller_s.combine(cct_s, exclusiveOnly);
 
 		caller_s.iCounter++;
+		
+		if (list != null)
+			list.addList(cct_entry, caller_s);
 	}
 	
 	/****
@@ -355,11 +381,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	 * @param inclusiveOnly
 	 * @param exclusiveOnly
 	 */
-	static private void combineWithCopy(Scope caller_s, Scope cct_s, 
+	static private void combineWithCopy(Scope caller_s, Scope cct_s, Scope cct_entry, ListCombinedScopes list, 
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
 		Scope copy = cct_s.duplicate();
 		copy.setMetricValues( cct_s.getCombinedValues() );
-		combine(caller_s, copy, inclusiveOnly, exclusiveOnly);
+		combine(caller_s, copy, cct_entry, list, inclusiveOnly, exclusiveOnly);
 	}
 	
 
@@ -394,4 +420,33 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		return true;
 	}
 
+	
+	/********************************************************************
+	 * class helper to store the list of combined scopes
+	 * 
+	 * @author laksonoadhianto
+	 *
+	 */
+	private class ListCombinedScopes {
+		private HashMap<Integer, ArrayList<Scope>> combinedScopes;
+		
+		public void addList(Scope key, Scope combined) {
+			if (this.combinedScopes == null) {
+				this.combinedScopes = new HashMap<Integer, ArrayList<Scope>>();
+			}
+			
+			ArrayList<Scope> list = this.combinedScopes.get(key);
+			if (list == null) {
+				list = new ArrayList<Scope>();
+			}
+			list.add(combined);
+			this.combinedScopes.put(key.getCCTIndex(), list);
+			
+		}
+		
+		
+		public ArrayList<Scope> getList(Scope key) {
+			return this.combinedScopes.get(key.getCCTIndex());
+		}
+	}
 }

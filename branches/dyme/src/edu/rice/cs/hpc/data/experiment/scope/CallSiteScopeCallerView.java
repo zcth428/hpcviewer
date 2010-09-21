@@ -79,7 +79,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			//-------------------------------------------------------------------------
 
 			LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-				((CallSiteScope) this.scopeCCT, this, true, inclusiveOnly, exclusiveOnly);
+				((CallSiteScope) this.scopeCCT, this, true, null, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
 			CallersViewScopeVisitor.addNewPathIntoTree(this, first, listOfChain);
@@ -97,9 +97,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-					(scope_cct, scope, true, inclusiveOnly, exclusiveOnly);
+					(scope_cct, scope, true, null, inclusiveOnly, exclusiveOnly);
 				
-				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, true, inclusiveOnly, null);
+				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, true, scopeCCT, null, inclusiveOnly, null);
 				percent_need_recompute = true;
 				
 			}

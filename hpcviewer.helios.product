@@ -22,9 +22,8 @@ Software and the Performance Engineering Research Institute.
    </configIni>
 
    <launcherArgs>
-      <programArgs>-vmargs
--Xmx800m</programArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+      <vmArgs>-Xms400m
+-Xmx1024m</vmArgs>
    </launcherArgs>
 
    <windowImages i16="icons/hpcviewerEclipseShadow16.png" i32="icons/hpcviewerEclipseShadow32.png" i48="icons/hpcviewerEclipseShadow48.png" i64="icons/hpcviewerEclipseShadow64.png" i128="icons/hpcviewerEclipseShadow128.png"/>

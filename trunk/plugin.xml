@@ -23,21 +23,18 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="true"
-            category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.ScopeView"
             icon="icons/cct.png"
             id="edu.rice.cs.hpc.viewer.scope.ScopeView"
             name="ScopeView">
       </view>
       <view
-            category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
             icon="icons/flat.png"
             id="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
             name="FlatScopeView">
       </view>
       <view
-            category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             icon="icons/caller.png"
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
@@ -45,7 +42,6 @@
       </view>
       <view
             allowMultiple="true"
-            category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.graph.ThreadView"
             icon="icons/graphview.png"
             id="edu.rice.cs.hpc.viewer.graph.ThreadView"
@@ -54,7 +50,6 @@
       </view>
       <view
             allowMultiple="true"
-            category="hpcviewer"
             class="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
             icon="icons/cct.png"
             id="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"

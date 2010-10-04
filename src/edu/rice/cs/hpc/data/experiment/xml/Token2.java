@@ -60,6 +60,10 @@ public class Token2 {
         tokenMap.put("MetricDBTable", TokenXML.T_METRIC_RAW_TABLE);
         tokenMap.put("MetricDB", TokenXML.T_METRIC_RAW);
         
+        // trace database
+        tokenMap.put("TraceDBTable", TokenXML.T_TRACE_DB_TABLE);
+        tokenMap.put("TraceDB", TokenXML.T_TRACE_DB);
+
         // head of xml
         tokenMap.put("HPCToolkitExperiment", TokenXML.T_HPCTOOLKIT_EXPERIMENT);
         tokenMap.put("Header", TokenXML.T_HEADER);

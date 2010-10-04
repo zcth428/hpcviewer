@@ -12,9 +12,9 @@ import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
 public class ScopeLabelProvider extends ColumnLabelProvider {
-	static protected Icons iconCollection = Icons.getInstance();
-	private IWorkbenchWindow windowCurrent;
-	static private boolean debug = false;
+	final static protected Icons iconCollection = Icons.getInstance();
+	final static private boolean debug = true;
+	final private Color DARK_BLUE;
 	
 	/**
 	 * Default constructor
@@ -22,7 +22,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	public ScopeLabelProvider(IWorkbenchWindow window) {
 		// TODO Auto-generated constructor stub
 		super();
-		this.windowCurrent = window;
+		this.DARK_BLUE = window.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
 	}
 
 	/**
@@ -44,7 +44,11 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 		if (element instanceof Scope){
 			Scope node = (Scope) element;
 			if (debug)  {
-				text = "[" + node.getCCTIndex() + "] " + node.getName();
+				if (node instanceof CallSiteScopeCallerView) {
+					Scope cct = ((CallSiteScopeCallerView) node).getScopeCCT();
+					text = "[" + cct.getCCTIndex()  + "]" + node.getName();
+				} else
+					text = "[" + node.getCCTIndex() + "] " + node.getName();
 			} else
 				text = node.getName();			
 		} else
@@ -62,7 +66,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 			if(Utilities.isFileReadable(node)) {
 				node.hasSourceCodeFile = true; //update the indicator flag in the node
 				// put the color blue
-				return this.windowCurrent.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
+				return this.DARK_BLUE;
 			}
 		}
 		return null;

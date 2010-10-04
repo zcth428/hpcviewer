@@ -25,6 +25,9 @@ public class Token2 {
     	// metrics
     	T_METRIC_TABLE, T_METRIC, T_METRIC_FORMULA, T_M,
     	T_METRIC_RAW_TABLE, T_METRIC_RAW,
+		
+		// trace database
+        T_TRACE_DB_TABLE, T_TRACE_DB,
     	
     	// procedures
     	T_PROCEDURE_TABLE, T_PROCEDURE, 

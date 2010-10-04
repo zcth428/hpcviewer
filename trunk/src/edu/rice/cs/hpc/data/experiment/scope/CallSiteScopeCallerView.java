@@ -10,7 +10,7 @@ import sun.tools.tree.ThisExpression;
 
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.DerivedIncrementalVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
 public class CallSiteScopeCallerView extends CallSiteScope implements IMergedScope {
@@ -54,7 +54,15 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	
 
 
-	public Object[] getAllChildren(DerivedIncrementalVisitor finalizeVisitor, PercentScopeVisitor percentVisitor, 
+	/*****************
+	 * retrieve the child scopes of this node. 
+	 * If a node has merged siblings, then we need to reconstruct the children of the merged scopes
+	 * @param finalizeVisitor: visitor traversal for finalization phase
+	 * @param percentVisitor: visitor traversal to compute the percentage
+	 * @param inclusiveOnly: filter for inclusive metrics
+	 * @param exclusiveOnly: filter for exclusive metrics 
+	 */
+	public Object[] getAllChildren(FinalizeMetricVisitor finalizeVisitor, PercentScopeVisitor percentVisitor, 
 			MetricValuePropagationFilter inclusiveOnly, 
 			MetricValuePropagationFilter exclusiveOnly ) {
 
@@ -71,7 +79,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			//-------------------------------------------------------------------------
 
 			LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-				((CallSiteScope) this.scopeCCT, this, inclusiveOnly, exclusiveOnly);
+				((CallSiteScope) this.scopeCCT, this, true, null, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
 			CallersViewScopeVisitor.addNewPathIntoTree(this, first, listOfChain);
@@ -86,11 +94,12 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			for(Iterator<CallSiteScopeCallerView> iter = this.listOfmerged.iterator(); iter.hasNext(); ) {
 				
 				CallSiteScopeCallerView scope = iter.next();
+				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-					(scope_cct, scope, inclusiveOnly, exclusiveOnly);
+					(scope_cct, scope, true, null, inclusiveOnly, exclusiveOnly);
 				
-				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, inclusiveOnly, null);
+				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, true, scopeCCT, null, inclusiveOnly, null);
 				percent_need_recompute = true;
 				
 			}

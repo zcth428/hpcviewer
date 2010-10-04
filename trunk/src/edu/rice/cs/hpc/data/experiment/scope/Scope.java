@@ -447,7 +447,8 @@ public boolean hasNonzeroMetrics() {
 	if (this.hasMetrics())
 		for (int i = 0; i< this.metrics.length; i++) {
 			MetricValue m = this.getMetricValue(i);
-			if (m != MetricValue.NONE && m.getValue() != 0.0) return true;
+			if (!m.isZero())
+				return true;
 		}
 	return false;
 }
@@ -574,6 +575,59 @@ public void accumulateMetricValue(int index, double value)
 		m.setValue(m.getValue() + value);
 	}
 
+}
+
+/**************************************************************************
+ * copy metric values into the backup 
+ **************************************************************************/
+public void backupMetricValues() {
+	if (this.metrics == null)
+		return;
+	
+	this.combinedMetrics = new MetricValue[this.metrics.length];
+	
+	for(int i=0; i<this.metrics.length; i++) {
+		MetricValue value = this.metrics[i];
+		BaseMetric metric = this.experiment.getMetric(i);
+		
+		//----------------------------------------------------------------------
+		// derived incremental metric type needs special treatment: 
+		//	their value changes in finalization phase, while others don't
+		//----------------------------------------------------------------------
+		if (metric instanceof AggregateMetric)
+			this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
+		else 
+			this.combinedMetrics[i] = value;
+	}
+}
+
+public MetricValue[] getMetricValues() {
+	return this.metrics;
+}
+
+
+public void setMetricValues(MetricValue values[]) {	
+	this.metrics = values;
+}
+
+
+public MetricValue[] getCombinedValues() {
+	MetricValue [] values = new MetricValue[this.experiment.getMetricCount()];
+
+	for (int i=0; i<values.length; i++) {
+		if (this.experiment.getMetric(i) instanceof AggregateMetric) {
+			if (this.combinedMetrics == null)
+				System.err.println("scope: " + this);
+			values[i] = this.combinedMetrics[i];
+		} else {
+			values[i] = this.metrics[i];
+		}
+	}
+	return values;
+}
+
+public void setCombinedValues(MetricValue values[]) {
+	this.combinedMetrics = values;
 }
 
 /**************************************************************************

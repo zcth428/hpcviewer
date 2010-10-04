@@ -280,6 +280,10 @@ public class ExperimentBuilder2 extends Builder
 		// ---------------------
 		// Tokens to be ignored 
 		// ---------------------
+			
+			// trace database
+		case T_TRACE_DB_TABLE:
+		case T_TRACE_DB:
 		case T_PROCEDURE_TABLE:
 		case T_FILE_TABLE:
 		case T_LOAD_MODULE_TABLE:

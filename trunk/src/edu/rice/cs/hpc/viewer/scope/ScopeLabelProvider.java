@@ -13,7 +13,7 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 
 public class ScopeLabelProvider extends ColumnLabelProvider {
 	final static protected Icons iconCollection = Icons.getInstance();
-	final static private boolean debug = true;
+	final static private boolean debug = false;
 	final private Color DARK_BLUE;
 	
 	/**

@@ -364,6 +364,9 @@ public class ExperimentBuilder2 extends Builder
 			break;
 
 			// ignored elements
+			// trace database
+		case T_TRACE_DB_TABLE:
+		case T_TRACE_DB:
 		case T_METRIC_RAW:
 		case T_M:
 		case T_HPCTOOLKIT_EXPERIMENT:

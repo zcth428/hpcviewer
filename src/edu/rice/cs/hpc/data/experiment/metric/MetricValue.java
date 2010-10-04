@@ -51,9 +51,6 @@ protected boolean percentAvailable;
 /** The actual percentage value if available. */
 protected double percent;
 
-
-
-
 /** The distinguished metric value indicating no data. */
 public static final MetricValue NONE = new MetricValue(-1);
 
@@ -187,7 +184,13 @@ public void setPercentValue(double percent)
 }
 
 
-
+public boolean isZero() 
+{
+	if (this != MetricValue.NONE) {
+		return ( Double.compare(0.0, value) == 0 );
+	}
+	return true;
+}
 
 /*************************************************************************
  *	Compares the metric value to another one.

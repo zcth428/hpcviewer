@@ -6,8 +6,6 @@ import java.util.LinkedList;
 
 import org.eclipse.jface.viewers.TreeNode;
 
-import sun.tools.tree.ThisExpression;
-
 import edu.rice.cs.hpc.data.experiment.metric.CombineMetricUsingCopy;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
@@ -21,7 +19,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	private Scope scopeCCT; 
 	private ArrayList<CallSiteScopeCallerView> listOfmerged;
 
-	static final private CombineMetricUsingCopy combine = new CombineMetricUsingCopy();
+	static final private CombineMetricUsingCopy combine_with_dupl = new CombineMetricUsingCopy();
 	
 	/**
 	 * 
@@ -80,9 +78,12 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			//-------------------------------------------------------------------------
 			// construct my own child
 			//-------------------------------------------------------------------------
-
+			Scope scope_cost = this.scopeCCT;
+			if (this.listOfmerged == null){
+				scope_cost = this;
+			}
 			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
-				((CallSiteScope) this.scopeCCT, this, combine, inclusiveOnly, exclusiveOnly);
+				((CallSiteScope) this.scopeCCT, scope_cost, combine_with_dupl, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
 			CallersViewScopeVisitor.addNewPathIntoTree(this, first, listOfChain);
@@ -100,9 +101,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-					(scope_cct, scope, combine, inclusiveOnly, exclusiveOnly);
+					(scope_cct, scope, combine_with_dupl, inclusiveOnly, exclusiveOnly);
 				
-				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, combine, inclusiveOnly, null);
+				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, combine_with_dupl, inclusiveOnly, null);
 				percent_need_recompute = true;
 				
 			}

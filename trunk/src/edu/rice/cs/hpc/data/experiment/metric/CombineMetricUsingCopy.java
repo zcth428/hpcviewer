@@ -12,7 +12,14 @@ public class CombineMetricUsingCopy extends AbstractCombineMetric {
 
 		Scope copy = source.duplicate();
 		copy.setMetricValues( source.getCombinedValues() );
-		super.combine_internal(target, copy, inclusiveOnly, exclusiveOnly);
+		
+		if (inclusiveOnly != null) {
+			target.safeCombine(source, inclusiveOnly);
+		}
+		if (exclusiveOnly != null)
+			target.combine(source, exclusiveOnly);
+
+		//super.combine_internal(target, copy, inclusiveOnly, exclusiveOnly);
 		
 	}
 }

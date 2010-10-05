@@ -13,7 +13,7 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagat
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
-public class CallersViewScopeVisitor implements IScopeVisitor {
+public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScopeVisitor {
 
 
 	//----------------------------------------------------
@@ -21,13 +21,13 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	//----------------------------------------------------
 	protected boolean isdebug = false; // true;
 	protected Hashtable/*<int, Scope>*/ calleeht = new Hashtable/*<int, Scope>*/();
-	private ListCombinedScopes listCombined;
 	
 	protected Experiment exp;
 	protected Scope callersViewRootScope;
 	protected MetricValuePropagationFilter filter;
 	protected int numberOfPrimaryMetrics;
 	
+	private final CombineCallerScopeMetric combinedMetrics;
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	
@@ -51,8 +51,8 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(experiment);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
+		combinedMetrics = new CombineCallerScopeMetric();
 		
-		this.listCombined = new ListCombinedScopes();
 	}
 
 	//----------------------------------------------------
@@ -68,21 +68,21 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			return; 
 		}
 
+
 		if (vt == ScopeVisitType.PreVisit) { 
 						
-			if (this.isEmptyScope(scope))
-				return;
-			
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
+			
+			this.combinedMetrics.setEntryScope(scope);
 
-			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope, false,
-					this.listCombined, this.inclusiveOnly, this.exclusiveOnly);
+			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope, 
+					combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
 
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList, false, scope, this.listCombined, this.inclusiveOnly, null);
+			mergeCallerPath(callee, callPathList, combinedMetrics, this.inclusiveOnly, null);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();
@@ -100,7 +100,7 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			// 	When a caller view scope is created, it creates also its children and its merged children
 			//		the counter of these children are then need to be decremented based on the CCT scope
 			//---------------------------------------------------------------------------
-			ArrayList<Scope> list = this.listCombined.getList(scope);
+			ArrayList<Scope> list = this.combinedMetrics.getListCombinedScopes().getList(scope);
 			if (list != null) {
 				Iterator<Scope> iter = list.iterator();
 				while (iter.hasNext()) {
@@ -110,110 +110,26 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 			}
 		}
 	}
-
-
-	
-	/***********
-	 * create a call chain 
-	 * @param scope_cct: scope from cct
-	 * @param scope_cost: where the cost come
-	 * @param inclusiveOnly: filter for inclusive only
-	 * @param exclusiveOnly: filter for exclusive only
-	 * @return
-	 ***********/
-	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct,
-			Scope scope_cost, boolean using_copy_metric, ListCombinedScopes list,
-			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly ) {
-		//-----------------------------------------------------------------------
-		// compute callPath: a chain of my callers
-		//
-		// we build a chain of callers  by tracing the path from a procedure
-		// up to the root of the calling context tree. notice that 
-		// this isn't simply a reversal of the path. in the chain of callers,
-		// we associate the call site with the caller. in the calling context
-		// tree, the call site is paired with the callee. that's why we
-		// work with a pair of CallSiteScopes at a time (innerCS and enclosingCS)
-		//-----------------------------------------------------------------------
-		CallSiteScope innerCS = scope_cct;
-		LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
-		Scope next = scope_cct.getParentScope();
-		int numKids = 0;
-		CallSiteScopeCallerView prev_scope = null;
-		while ( (next != null) && !(next instanceof RootScope) && (numKids<MAX_DESC) )
-		{
-			// Laksono 2009.01.14: we only deal with call site OR pure procedure scope (no alien)
-			if ( isCallSiteCandidate(next, innerCS)) {
-
-				CallSiteScope enclosingCS = null;
-				ProcedureScope mycaller = null;
-				
-				if (next instanceof ProcedureScope) {
-					mycaller = (ProcedureScope) next;
-					
-				}	else if (next instanceof CallSiteScope) {
-					enclosingCS = (CallSiteScope) next;
-					mycaller = (ProcedureScope) enclosingCS.getProcedureScope(); 
-				}
-				
-				LineScope lineScope = innerCS.getLineScope();
-				
-				if(lineScope != null) {
-					numKids++;
-					if (prev_scope != null)
-						prev_scope.numChildren = 1;
-
-					//--------------------------------------------------------------
-					// creating a new child scope if the path is not too long (< MAX_DESC)
-					//--------------------------------------------------------------
-					if (numKids<MAX_DESC) {
-						CallSiteScopeCallerView callerScope =
-							new CallSiteScopeCallerView( lineScope, mycaller,
-									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
-
-						// set the value of the new scope
-						
-						if (using_copy_metric) {
-							combineWithCopy(callerScope, scope_cost, scope_cct, list, inclusiveOnly, exclusiveOnly);
-						} else {							
-							combine(callerScope, scope_cost, scope_cct, list, inclusiveOnly, exclusiveOnly);
-						}
-						callerScope.backupMetricValues();
-						callPathList.addLast(callerScope);
-						
-						innerCS = enclosingCS;
-						prev_scope = callerScope;
-					}
-				}
-			}
-			next = next.getParentScope();
-		}
-
-		return callPathList;
-	}
 	
 		 
-	static private boolean isCallSiteCandidate(Scope scope, CallSiteScope innerCS) {
-		return ( ((scope instanceof CallSiteScope) || 
-				(scope instanceof ProcedureScope && !((ProcedureScope)scope).isAlien()) )
-				&& (innerCS != null));
-	}
-	
 	public void visit(Scope scope, ScopeVisitType vt) { }
 	public void visit(RootScope scope, ScopeVisitType vt) { }
 	public void visit(LoadModuleScope scope, ScopeVisitType vt) { }
 	public void visit(FileScope scope, ScopeVisitType vt) { }
 	
 	public void visit(ProcedureScope scope, ScopeVisitType vt) { 
-
+		
+		//--------------------------------------------------------------------------------
+		// if there are no exclusive costs to attribute from this context, we are done here
+		//--------------------------------------------------------------------------------
+		if (!scope.hasNonzeroMetrics() || scope.isAlien()) {
+			return; 
+		}
+		
 		if (vt == ScopeVisitType.PreVisit) {
-			if (!scope.isAlien()) {
-				// if there are no exclusive costs to attribute from this context, we are done here
-				if (!scope.hasNonzeroMetrics()) 
-					return; 
-
 				// Find (or add) callee in top-level hashtable
 				this.createProcedureIfNecessary(scope);
-			}
+
 		} else if (vt == ScopeVisitType.PostVisit){
 			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(scope.hashCode()));
 			if  (callee != null) {
@@ -234,85 +150,6 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 	//----------------------------------------------------
 	// helper functions  
 	//----------------------------------------------------
-
-	/******
-	 * merging caller path (if they are identical) 
-	 * @param callee
-	 * @param callerPathList
-	 * @param inclusiveOnly
-	 * @param exclusiveOnly
-	 */
-	static public void mergeCallerPath(Scope callee, 
-			LinkedList<CallSiteScopeCallerView> callerPathList, boolean using_copy_metric,
-			Scope cct_entry, ListCombinedScopes list,
-			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) 
-	{
-		if (callerPathList.size() == 0) return; // merging an empty path is trivial
-
-		CallSiteScopeCallerView first = callerPathList.removeFirst();
-
-		// -------------------------------------------------------------------------
-		// attempt to merge first node on caller path with existing caller of callee  
-		//--------------------------------------------------------------------------
-		int nCallers = callee.getSubscopeCount();
-		for (int i = 0; i < nCallers; i++) {
-			CallSiteScopeCallerView existingCaller = (CallSiteScopeCallerView) callee.getSubscope(i);
-
-			//------------------------------------------------------------------------
-			// we check if the flat ID (or static ID) of the scope in caller view is
-			// the same with the flat ID in cct. If this is the case, we can merge it.
-			// ATTENTION: this will give incorrect representation for mutual recursives,
-			// 	since the same callsites can be called within the same tree (since 
-			//	they have the same flat ID).
-			//	A correct way is to use isMyCCT() method, BUT this will create a huge
-			//	branches and consume enormous memory (it's so enormous that even the
-			//	JVM gives up).
-			//------------------------------------------------------------------------
-			//if (first.isMyCCT(existingCaller) ) {
-			if (first.getCCTIndex() == existingCaller.getCCTIndex()) {
-
-				//------------------------------------------------------------------------
-				// add metric values for first to those of existingCaller.
-				//------------------------------------------------------------------------
-				if (using_copy_metric) 
-					combineWithCopy(existingCaller, first, cct_entry, list, inclusiveOnly, exclusiveOnly);
-				else
-					combine(existingCaller, first, cct_entry, list, inclusiveOnly, exclusiveOnly);
-
-				existingCaller.merge(first);
-				// merge rest of call path as a child of existingCaller.
-				mergeCallerPath(existingCaller, callerPathList, using_copy_metric, cct_entry, list, inclusiveOnly, exclusiveOnly);
-				
-				return; // merged with existing child. nothing left to do.
-			}
-		}
-
-		//----------------------------------------------
-		// no merge possible. add new path into tree.
-		//----------------------------------------------
-		addNewPathIntoTree(callee, first, callerPathList);
-	}
-	
-	
-	/**********
-	 * add children 
-	 * @param callee: the parent
-	 * @param first: the first child
-	 * @param callerPathList: list of children (excluding the first child)
-	 */
-	static public void addNewPathIntoTree(Scope callee, CallSiteScopeCallerView first,
-			LinkedList<CallSiteScopeCallerView> callerPathList) {
-		
-		callee.addSubscope(first);
-		first.setParentScope(callee);
-		for (Scope prev = first; callerPathList.size() > 0; ) {
-			Scope next = (Scope) callerPathList.removeFirst();
-			prev.addSubscope(next);
-			next.setParentScope(prev);
-			prev = next;
-		}
-	}
-	
 	
 	
 	/********
@@ -347,47 +184,11 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		}
 		
 		// accumulate the metrics
-		combine(caller_proc, cct_s, cct_s, this.listCombined, this.inclusiveOnly, this.exclusiveOnly);
+		this.combinedMetrics.combine(cct_s, caller_proc, cct_s);
 		
 		return caller_proc;
 	}
-	
-	
-	/********
-	 * Integrating cost of caller view and cct
-	 * @param caller_s
-	 * @param cct_s
-	 ********/
-	static private void combine(Scope caller_s, Scope cct_s, Scope cct_entry, ListCombinedScopes list, 
-			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
 		
-		if (caller_s.iCounter == 0 && inclusiveOnly != null) {
-			caller_s.safeCombine(cct_s, inclusiveOnly);
-		}
-		if (exclusiveOnly != null)
-			caller_s.combine(cct_s, exclusiveOnly);
-
-		caller_s.iCounter++;
-		
-		if (list != null)
-			list.addList(cct_entry, caller_s);
-	}
-	
-	/****
-	 * combining metrics using the backup metrics. 
-	 * Backup metrics are the original metrics before finalization
-	 * @param caller_s
-	 * @param cct_s
-	 * @param inclusiveOnly
-	 * @param exclusiveOnly
-	 */
-	static private void combineWithCopy(Scope caller_s, Scope cct_s, Scope cct_entry, ListCombinedScopes list, 
-			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) {
-		Scope copy = cct_s.duplicate();
-		copy.setMetricValues( cct_s.getCombinedValues() );
-		combine(caller_s, copy, cct_entry, list, inclusiveOnly, exclusiveOnly);
-	}
-	
 
 	
 	/********
@@ -401,32 +202,22 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		if (caller_s.iCounter>0) {
 			caller_s.iCounter--;
 		} else {
-			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+caller_s.hashCode());
+			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+ caller_s.getClass() + "\t" + caller_s.hashCode());
 		}
 	}
 	
-	/****
-	 * check if a scope has a value or not
-	 * @param scope
-	 * @return
-	 */
-	private boolean isEmptyScope(Scope scope) {
-		
-		for(int i=0; i<this.numberOfPrimaryMetrics; i++) {
-			MetricValue mv = (scope.getMetricValue(i));
-			if (mv.isAvailable())
-				return false;
-		}
-		return true;
-	}
 
+	
+	//----------------------------------------------------
+	// helper classes  
+	//----------------------------------------------------
 	
 	/********************************************************************
 	 * class helper to store the list of combined scopes
 	 * 
 	 * @author laksonoadhianto
 	 *
-	 */
+	 ********************************************************************/
 	private class ListCombinedScopes {
 		private HashMap<Integer, ArrayList<Scope>> combinedScopes;
 		
@@ -447,6 +238,44 @@ public class CallersViewScopeVisitor implements IScopeVisitor {
 		
 		public ArrayList<Scope> getList(Scope key) {
 			return this.combinedScopes.get(key.getCCTIndex());
+		}
+	}
+	
+	
+	/********************************************************************
+	 * class to combine metrics from different scopes
+	 * @author laksonoadhianto
+	 *
+	 ********************************************************************/
+	private class CombineCallerScopeMetric extends AbstractCombineMetric {
+		final private ListCombinedScopes listCombinedScopes;
+		private Scope cct_entry;
+		
+		public CombineCallerScopeMetric() {
+			this.listCombinedScopes = new ListCombinedScopes();
+		}
+		
+		public void combine(Scope cct_entry, Scope target, Scope source) {
+			this.setEntryScope(cct_entry);
+			this.combine(target, source, inclusiveOnly, exclusiveOnly);
+		}
+		
+		public ListCombinedScopes getListCombinedScopes() {
+			return this.listCombinedScopes;
+		}
+
+		
+		public void setEntryScope( Scope key ) {
+			this.cct_entry = key;
+		}
+
+		public void combine(Scope target, Scope source,
+				MetricValuePropagationFilter inclusiveOnly,
+				MetricValuePropagationFilter exclusiveOnly) {
+
+			super.combine_internal(target, source, inclusiveOnly, exclusiveOnly);
+			if (this.cct_entry != null)
+				this.listCombinedScopes.addList(cct_entry, target);
 		}
 	}
 }

@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.TreeNode;
 
 import sun.tools.tree.ThisExpression;
 
+import edu.rice.cs.hpc.data.experiment.metric.CombineMetricUsingCopy;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
@@ -20,6 +21,8 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	private Scope scopeCCT; 
 	private ArrayList<CallSiteScopeCallerView> listOfmerged;
 
+	static final private CombineMetricUsingCopy combine = new CombineMetricUsingCopy();
+	
 	/**
 	 * 
 	 * @param scope
@@ -49,7 +52,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		if (listOfmerged == null) 
 			listOfmerged = new ArrayList<CallSiteScopeCallerView>();
 		
-		listOfmerged.add(scope);
+		listOfmerged.add(scope);	// include the new scope to merge
 	}
 	
 
@@ -78,8 +81,8 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			// construct my own child
 			//-------------------------------------------------------------------------
 
-			LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-				((CallSiteScope) this.scopeCCT, this, true, null, inclusiveOnly, exclusiveOnly);
+			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
+				((CallSiteScope) this.scopeCCT, this, combine, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
 			CallersViewScopeVisitor.addNewPathIntoTree(this, first, listOfChain);
@@ -97,9 +100,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-					(scope_cct, scope, true, null, inclusiveOnly, exclusiveOnly);
+					(scope_cct, scope, combine, inclusiveOnly, exclusiveOnly);
 				
-				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, true, scopeCCT, null, inclusiveOnly, null);
+				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, combine, inclusiveOnly, null);
 				percent_need_recompute = true;
 				
 			}
@@ -114,5 +117,16 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		}
 		
 		return this.getChildren();
+	}
+	
+	/*****
+	 * retrieve the list of merged scopes
+	 * @return
+	 */
+	public Object[] getMergedScopes() {
+		if (this.listOfmerged != null)
+			return this.listOfmerged.toArray();
+		else 
+			return null;
 	}
 }

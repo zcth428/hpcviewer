@@ -40,13 +40,24 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	 * Return the text of the scope tree. By default is the scope name.
 	 */
 	public String getText(Object element) {
-		String text = null;
+		String text = "";
 		if (element instanceof Scope){
 			Scope node = (Scope) element;
 			if (debug)  {
+				//---------------------------------------------------------------
+				// label for debugging purpose
+				//---------------------------------------------------------------
 				if (node instanceof CallSiteScopeCallerView) {
-					Scope cct = ((CallSiteScopeCallerView) node).getScopeCCT();
-					text = "[" + cct.getCCTIndex()  + "]" + node.getName();
+					CallSiteScopeCallerView caller = (CallSiteScopeCallerView) node;
+					Object merged[] = caller.getMergedScopes();
+					if (merged != null) {
+						for(Object c: merged) {
+							CallSiteScopeCallerView cv = (CallSiteScopeCallerView) c;
+							text = text + cv.getScopeCCT().getCCTIndex() + " ";
+						}
+					}
+					Scope cct = caller.getScopeCCT();
+					text = text + "[" + cct.getCCTIndex()  + "]" + node.getName();
 				} else
 					text = "[" + node.getCCTIndex() + "] " + node.getName();
 			} else

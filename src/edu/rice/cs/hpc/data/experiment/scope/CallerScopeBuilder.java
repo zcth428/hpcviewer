@@ -123,7 +123,7 @@ public class CallerScopeBuilder {
 				Scope e_cct = existingCaller.getScopeCCT();
 				Scope f_cct = first.getScopeCCT();
 				if (e_cct.getCCTIndex() == f_cct.getCCTIndex()) {
-					System.out.println("Scope: " + callee + " [" + callee.cct_node_index+ "] " + "\tCCT identical: " + e_cct+ "\t" + e_cct.cct_node_index);
+					//System.out.println("Scope: " + callee + " [" + callee.cct_node_index+ "] " + "\tCCT identical: " + e_cct+ "\t" + e_cct.cct_node_index);
 					return;
 				}
 				//------------------------------------------------------------------------

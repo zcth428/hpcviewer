@@ -104,7 +104,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
 					(scope_cct, scope, combine_with_dupl, inclusiveOnly, exclusiveOnly);
 				
-				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, combine_with_dupl, inclusiveOnly, null);
+				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, combine_with_dupl, inclusiveOnly, exclusiveOnly);
 				percent_need_recompute = true;
 				
 			}

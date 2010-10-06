@@ -82,7 +82,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList, combinedMetrics, this.inclusiveOnly, null);
+			mergeCallerPath(callee, callPathList, combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();

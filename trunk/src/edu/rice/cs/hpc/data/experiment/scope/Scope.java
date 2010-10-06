@@ -601,26 +601,38 @@ public void backupMetricValues() {
 	}
 }
 
+/***************************************************************************
+ * retrieve the default metrics
+ * @return
+ */
 public MetricValue[] getMetricValues() {
 	return this.metrics;
 }
 
-
+/***************************************************************************
+ * set the default metrics
+ * @param values
+ */
 public void setMetricValues(MetricValue values[]) {	
 	this.metrics = values;
 }
 
 
+/***************************************************************************
+ * retrieve the backup metrics
+ * @return
+ ***************************************************************************/
 public MetricValue[] getCombinedValues() {
 	MetricValue [] values = new MetricValue[this.experiment.getMetricCount()];
-	boolean printed = false;
+	//boolean printed = false;
 
 	for (int i=0; i<values.length; i++) {
 		if (this.experiment.getMetric(i) instanceof AggregateMetric) {
 			if (this.combinedMetrics == null) {
-				if (!printed)
+				/*if (!printed) {
 					System.err.println("scope: " + this + "\t(" + this.getClass() + ") has no backup metrics.");
-				printed = true;
+					printed = true;
+				}*/
 				values[i] = this.metrics[i];
 			} else 
 				values[i] = this.combinedMetrics[i];
@@ -631,9 +643,6 @@ public MetricValue[] getCombinedValues() {
 	return values;
 }
 
-public void setCombinedValues(MetricValue values[]) {
-	this.combinedMetrics = values;
-}
 
 /**************************************************************************
  * combining metric from source. use this function to combine metric between

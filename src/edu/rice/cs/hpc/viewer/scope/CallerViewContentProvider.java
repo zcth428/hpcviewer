@@ -24,7 +24,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	private RootScope root;
 	private PercentScopeVisitor percentVisitor;
-	private FinalizeMetricVisitor finalizeVisitor;
+	private FinalizeMetricVisitorWithBackup finalizeVisitor;
 	
     /**
      * get the number of elements (called by jface)

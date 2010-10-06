@@ -613,12 +613,17 @@ public void setMetricValues(MetricValue values[]) {
 
 public MetricValue[] getCombinedValues() {
 	MetricValue [] values = new MetricValue[this.experiment.getMetricCount()];
+	boolean printed = false;
 
 	for (int i=0; i<values.length; i++) {
 		if (this.experiment.getMetric(i) instanceof AggregateMetric) {
-			if (this.combinedMetrics == null)
-				System.err.println("scope: " + this);
-			values[i] = this.combinedMetrics[i];
+			if (this.combinedMetrics == null) {
+				if (!printed)
+					System.err.println("scope: " + this + "\t(" + this.getClass() + ") has no backup metrics.");
+				printed = true;
+				values[i] = this.metrics[i];
+			} else 
+				values[i] = this.combinedMetrics[i];
 		} else {
 			values[i] = this.metrics[i];
 		}

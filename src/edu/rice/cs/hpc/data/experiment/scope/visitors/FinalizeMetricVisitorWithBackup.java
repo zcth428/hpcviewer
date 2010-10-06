@@ -13,30 +13,12 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
-public class FinalizeMetricVisitorWithBackup extends FinalizeMetricVisitor {
+public class FinalizeMetricVisitorWithBackup extends AbstractFinalizeMetricVisitor {
 
 	public FinalizeMetricVisitorWithBackup(BaseMetric[] listOfMetrics) {
 		super(listOfMetrics);
 	}
 
-    public void visit(LineScope scope, ScopeVisitType vt) { process(scope, vt); }
-    public void visit(StatementRangeScope scope, ScopeVisitType vt)  {process(scope, vt); }
-    public void visit(LoopScope scope, ScopeVisitType vt)  { process(scope, vt);}
-    public void visit(CallSiteScope scope, ScopeVisitType vt)  { process(scope, vt); }
-    public void visit(ProcedureScope scope, ScopeVisitType vt)  { process(scope, vt); }
-    public void visit(FileScope scope, ScopeVisitType vt)  { process(scope, vt); }
-    public void visit(GroupScope scope, ScopeVisitType vt)  { process(scope, vt); }
-    public void visit(LoadModuleScope scope, ScopeVisitType vt)  { process(scope, vt); }
-    public void visit(RootScope scope, ScopeVisitType vt)  { process(scope, vt); }
-    public void visit(Scope scope, ScopeVisitType vt)  { process(scope, vt); }
-    
-
-    
-    private void process( Scope scope, ScopeVisitType vt) {
-    	if (vt == ScopeVisitType.PreVisit ) {
-    		this.setValue(scope);
-    	}
-    }
 
     
     protected void setValue ( Scope scope) {
@@ -44,7 +26,7 @@ public class FinalizeMetricVisitorWithBackup extends FinalizeMetricVisitor {
     			(scope instanceof ProcedureScope && !((ProcedureScope)scope).isAlien()) )
     		scope.backupMetricValues();
     	
-    	super.setValue(scope);
+    	super.setValue_internal(scope);
     }
 
 }

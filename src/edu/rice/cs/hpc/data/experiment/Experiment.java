@@ -454,7 +454,7 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		// FINALIZATION
 		//----------------------------------------------------------------------------------------------
-		FinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
+		AbstractFinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
 
 		if (callerView)	{												// caller view
 				this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
@@ -503,7 +503,7 @@ private boolean checkExistenceOfDerivedIncr() {
  * finalizing metric values (only for aggregate metric from hpcprof-mpi)
  * @param root
  */
-private void finalizeAggregateMetrics(Scope root, FinalizeMetricVisitor diVisitor) {
+private void finalizeAggregateMetrics(Scope root, AbstractFinalizeMetricVisitor diVisitor) {
 	if (! checkExistenceOfDerivedIncr())
 		return;
 	root.dfsVisitScopeTree(diVisitor);

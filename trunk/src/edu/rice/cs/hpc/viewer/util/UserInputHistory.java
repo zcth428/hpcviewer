@@ -5,18 +5,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.service.prefs.Preferences ;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.IPreferencesService;
+
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
 
 public class UserInputHistory {
-    protected static final String HISTORY_NAME_BASE = "history."; //$NON-NLS-1$
-    protected final static String ENCODING = "UTF-8";
+	private static final String HISTORY_NAME_BASE = "history."; //$NON-NLS-1$
+	private final static String ENCODING = "UTF-8";
     
-    protected String name;
-    protected int depth;
-    protected List<String> history;
+    private static final Preferences CONFIGURATION = new ConfigurationScope().getNode("edu.rice.cs.hpc");
+    //public static final Preferences CONFIGURATION_NODES[] = new Preferences[]{new ConfigurationScope().getNode("edu.rice.cs.hpc")};
+    
+    
+    private String name;
+    private int depth;
+    private List<String> history;
 
 
     public UserInputHistory(String name) {
@@ -59,19 +63,33 @@ public class UserInputHistory {
         this.saveHistoryLines();
     }
 
+    /****
+     * retrieve the preference of this application
+     * @param node
+     * @return
+     */
+    static public Preferences getPreference(String node) {
+    	return CONFIGURATION.node(node);
+    }
     
-    static public Preferences getPreference() {
-    	IPreferencesService service = Platform.getPreferencesService();
-    	if (service != null) {
-        	IEclipsePreferences pref = service.getRootNode();
-        	return pref;
-    	}
-    	return null;
+    /****
+     * force to store a preference
+     * @param pref
+     */
+    static public void setPreference( Preferences pref ) {
+		// Forces the application to save the preferences
+		try {
+			pref.flush();
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+		}
+
     }
     
     protected void loadHistoryLines() {
         this.history = new ArrayList<String>();
-        String historyData = getPreference().get(UserInputHistory.HISTORY_NAME_BASE + this.name, "");
+        String historyData = getPreference(HISTORY_NAME_BASE).get(this.name, ""); 
+
         if (historyData != null && historyData.length() > 0) {
             String []historyArray = historyData.split(";"); //$NON-NLS-1$
             for (int i = 0; i < historyArray.length; i++) {
@@ -96,7 +114,8 @@ public class UserInputHistory {
 			}
             result += result.length() == 0 ? str : (";" + str); //$NON-NLS-1$
         }
-        getPreference().put(UserInputHistory.HISTORY_NAME_BASE + this.name, result);
+        Preferences pref = getPreference(HISTORY_NAME_BASE);
+        pref.put(this.name, result);
+        setPreference( pref );
     }
-
 }

@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.viewer.util;
 
+import org.osgi.service.prefs.Preferences;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -46,6 +47,7 @@ import java.util.Hashtable;
 public class ColumnProperties extends TitleAreaDialog {
 	
 	static final private String HISTORY_COLUMN_PROPERTY = "column_property";
+	static final private String HISTORY_APPLY_ALL = "apply-all";
 	
 	private ColumnCheckTableViewer objCheckBoxTable ;
 	private TreeViewerColumn []objColumns;
@@ -231,13 +233,22 @@ public class ColumnProperties extends TitleAreaDialog {
 
 	}
 	
+	/***
+	 * get the user preference of "apply-all"
+	 * @return
+	 */
 	private boolean getHistory() {
-		return UserInputHistory.getPreference().getBoolean
-			(ColumnProperties.HISTORY_COLUMN_PROPERTY, true);
+		return UserInputHistory.getPreference(HISTORY_COLUMN_PROPERTY).getBoolean(HISTORY_APPLY_ALL, true);
 	}
 	
+	/***
+	 * set the user preference of "apply-all"
+	 * @param value
+	 */
 	private void setHistory( boolean value ) {
-		UserInputHistory.getPreference().putBoolean(HISTORY_COLUMN_PROPERTY, value);
+		Preferences pref = UserInputHistory.getPreference(HISTORY_COLUMN_PROPERTY);
+		pref.putBoolean(HISTORY_APPLY_ALL, value);
+		UserInputHistory.setPreference(pref);
 	}
 	
 	/*

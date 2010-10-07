@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.service.prefs.Preferences ;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IPreferencesService;
 
 public class UserInputHistory {
     protected static final String HISTORY_NAME_BASE = "history."; //$NON-NLS-1$
@@ -56,9 +59,19 @@ public class UserInputHistory {
         this.saveHistoryLines();
     }
 
+    
+    private Preferences getPreference() {
+    	IPreferencesService service = Platform.getPreferencesService();
+    	if (service != null) {
+        	IEclipsePreferences pref = service.getRootNode();
+        	return pref;
+    	}
+    	return null;
+    }
+    
     protected void loadHistoryLines() {
         this.history = new ArrayList<String>();
-        String historyData = ResourcesPlugin.getPlugin().getPluginPreferences().getString(UserInputHistory.HISTORY_NAME_BASE + this.name);
+        String historyData = getPreference().get(UserInputHistory.HISTORY_NAME_BASE + this.name, "");
         if (historyData != null && historyData.length() > 0) {
             String []historyArray = historyData.split(";"); //$NON-NLS-1$
             for (int i = 0; i < historyArray.length; i++) {
@@ -83,7 +96,7 @@ public class UserInputHistory {
 			}
             result += result.length() == 0 ? str : (";" + str); //$NON-NLS-1$
         }
-        ResourcesPlugin.getPlugin().getPluginPreferences().setValue(UserInputHistory.HISTORY_NAME_BASE + this.name, result);
+        this.getPreference().put(UserInputHistory.HISTORY_NAME_BASE + this.name, result);
     }
 
 }

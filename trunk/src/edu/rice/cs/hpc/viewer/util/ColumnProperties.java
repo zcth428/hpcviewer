@@ -44,6 +44,9 @@ import java.util.Hashtable;
  *
  */
 public class ColumnProperties extends TitleAreaDialog {
+	
+	static final private String HISTORY_COLUMN_PROPERTY = "column_property";
+	
 	private ColumnCheckTableViewer objCheckBoxTable ;
 	private TreeViewerColumn []objColumns;
 	private boolean []results;
@@ -106,7 +109,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @return Control
 	 */
 	protected Control createDialogArea(Composite aParent) {
-		Composite composite = new Composite(aParent, SWT.BORDER);//(Composite) super.createDialogArea(aParent);
+		Composite composite = new Composite(aParent, SWT.BORDER);
 
 		GridLayout grid = new GridLayout();
 		grid.numColumns=1;
@@ -142,7 +145,7 @@ public class ColumnProperties extends TitleAreaDialog {
 		btnApplyToAllViews = new Button(groupButtons, SWT.CHECK);
 		btnApplyToAllViews.setText("Apply to all views");
 		// Laks 2009.01.26: by default, we apply for all views
-		btnApplyToAllViews.setSelection(true);
+		btnApplyToAllViews.setSelection( this.getHistory() );
 		btnApplyToAllViews.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
 		// set the layout for group filter
@@ -228,6 +231,15 @@ public class ColumnProperties extends TitleAreaDialog {
 
 	}
 	
+	private boolean getHistory() {
+		return UserInputHistory.getPreference().getBoolean
+			(ColumnProperties.HISTORY_COLUMN_PROPERTY, true);
+	}
+	
+	private void setHistory( boolean value ) {
+		UserInputHistory.getPreference().putBoolean(HISTORY_COLUMN_PROPERTY, value);
+	}
+	
 	/*
 	 * derived from the parent
 	 */
@@ -238,6 +250,8 @@ public class ColumnProperties extends TitleAreaDialog {
 		} 
 
 		this.isAppliedToAllViews = this.btnApplyToAllViews.getSelection();
+		this.setHistory(isAppliedToAllViews);
+		
 		super.okPressed();	// this will shut down the window
 	}
 

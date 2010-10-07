@@ -60,7 +60,7 @@ public class UserInputHistory {
     }
 
     
-    private Preferences getPreference() {
+    static public Preferences getPreference() {
     	IPreferencesService service = Platform.getPreferencesService();
     	if (service != null) {
         	IEclipsePreferences pref = service.getRootNode();
@@ -96,7 +96,7 @@ public class UserInputHistory {
 			}
             result += result.length() == 0 ? str : (";" + str); //$NON-NLS-1$
         }
-        this.getPreference().put(UserInputHistory.HISTORY_NAME_BASE + this.name, result);
+        getPreference().put(UserInputHistory.HISTORY_NAME_BASE + this.name, result);
     }
 
 }

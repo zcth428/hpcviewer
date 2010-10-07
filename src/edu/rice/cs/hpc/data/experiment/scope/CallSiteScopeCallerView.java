@@ -13,6 +13,13 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
+
+/**************************
+ * special class for caller view's call site scope
+ * 
+ * @author laksonoadhianto
+ *
+ */
 public class CallSiteScopeCallerView extends CallSiteScope implements IMergedScope {
 
 	public int numChildren;
@@ -38,15 +45,27 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		numChildren = 0;
 	}
 
-
+	/***
+	 * retrieve the CCT scope of this scope
+	 * @return
+	 */
 	public Scope getScopeCCT() {
 		return this.scopeCCT;
 	}
 	
+	/****
+	 * @deprecated
+	 * @param cct
+	 * @return
+	 */
 	public boolean isMyCCT( Scope cct ) {
 		return (this.scopeCCT == cct);
 	}
 	
+	/***
+	 * add merged scope into the list
+	 * @param scope
+	 */
 	public void merge(CallSiteScopeCallerView scope) {
 		if (listOfmerged == null) 
 			listOfmerged = new ArrayList<CallSiteScopeCallerView>();
@@ -73,6 +92,10 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		TreeNode children[] = this.getChildren();
 
 		if (children != null && children.length>0) {
+			
+			//-------------------------------------------------------------------------
+			// this scope has already computed children, we do nothing, just return them
+			//-------------------------------------------------------------------------
 			
 		} else {
 			

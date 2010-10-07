@@ -20,6 +20,7 @@ package edu.rice.cs.hpc.data.experiment.scope;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 //import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
@@ -627,7 +628,8 @@ public MetricValue[] getCombinedValues() {
 	//boolean printed = false;
 
 	for (int i=0; i<values.length; i++) {
-		if (this.experiment.getMetric(i) instanceof AggregateMetric) {
+		BaseMetric m = this.experiment.getMetric(i);
+		if (m instanceof AggregateMetric) {
 			if (this.combinedMetrics == null) {
 				/*if (!printed) {
 					System.err.println("scope: " + this + "\t(" + this.getClass() + ") has no backup metrics.");
@@ -636,6 +638,8 @@ public MetricValue[] getCombinedValues() {
 				values[i] = this.metrics[i];
 			} else 
 				values[i] = this.combinedMetrics[i];
+		} else if (m instanceof DerivedMetric) {
+			values[i] = MetricValue.NONE;
 		} else {
 			values[i] = this.metrics[i];
 		}

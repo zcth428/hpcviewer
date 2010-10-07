@@ -11,12 +11,13 @@ public class CallerScopeBuilder {
 
 	
 	/******
-	 * create caller view
-	 * @param scope_cct
-	 * @param scope_cost
-	 * @param combine
+	 * create caller tree, return the list of call path of this scope_cct
+	 * @param scope_cct: scope in CCT
+	 * @param scope_cost: the scope for cost reference. All nodes will be assigned with this cost
+	 * @param combine: the combine method
 	 * @param inclusiveOnly
 	 * @param exclusiveOnly
+	 * 
 	 * @return list of call path
 	 */
 	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct,
@@ -120,6 +121,9 @@ public class CallerScopeBuilder {
 			//if (first.isMyCCT(existingCaller) ) {
 			if (first.getCCTIndex() == existingCaller.getCCTIndex()) {
 
+				//----------------------------------------------------------------------------
+				// when the CCT scopes are identical, we return immediately without merging
+				//----------------------------------------------------------------------------
 				Scope e_cct = existingCaller.getScopeCCT();
 				Scope f_cct = first.getScopeCCT();
 				if (e_cct.getCCTIndex() == f_cct.getCCTIndex()) {

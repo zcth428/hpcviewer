@@ -14,10 +14,10 @@ public class CombineMetricUsingCopy extends AbstractCombineMetric {
 		copy.setMetricValues( source.getCombinedValues() );
 		
 		if (inclusiveOnly != null) {
-			target.safeCombine(source, inclusiveOnly);
+			target.safeCombine(copy, inclusiveOnly);
 		}
 		if (exclusiveOnly != null)
-			target.combine(source, exclusiveOnly);
+			target.combine(copy, exclusiveOnly);
 
 		//super.combine_internal(target, copy, inclusiveOnly, exclusiveOnly);
 		

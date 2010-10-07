@@ -456,15 +456,16 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		AbstractFinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
 
-		if (callerView)	{												// caller view
-				this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
-				// bug fix 2010.06.17: move the percent after finalization
-				addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
-		}
-		
 		this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
 		
 		diVisitor = new FinalizeMetricVisitorWithBackup(this.getMetrics());
+		
+		if (callerView)	{												// caller view
+			this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
+			// bug fix 2010.06.17: move the percent after finalization
+			addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
+		}
+		
 		this.finalizeAggregateMetrics(callingContextViewRootScope, diVisitor);		// cct
 		
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context

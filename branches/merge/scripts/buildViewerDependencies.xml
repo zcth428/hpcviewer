@@ -1,0 +1,18 @@
+<project default="tar">
+	<!--
+	This ant script contains these targets;
+	    tar         - builds source tar (depends on jar)
+	-->
+
+	 <target name="tar">
+	    <mkdir dir="../archive" />
+  		<delete file="../archive/rcpDependencies.gz" />
+	    <tar destfile="../archive/rcpDependencies.gz"
+	         basedir="../hpcviewer"
+	         includes="configuration/config.ini,plugins/**,hpcviewer,hpcviewer.ini,artifacts.xml"
+	    	 compression="gzip"
+         />
+	  </target>
+
+</project>
+

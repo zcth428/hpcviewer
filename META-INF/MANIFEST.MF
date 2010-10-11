@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: hpcviewer
-Bundle-SymbolicName: edu.rice.cs.hpc;singleton:=true
+Bundle-SymbolicName: edu.rice.cs.hpc.viewer;singleton:=true
 Bundle-Version: 1.0.1
 Bundle-Activator: edu.rice.cs.hpc.viewer.framework.Activator
 Bundle-Vendor: Rice University, Computer Science Department

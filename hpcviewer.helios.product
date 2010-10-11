@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="hpcviewer" id="edu.rice.cs.hpc.hpcviewer" application="edu.rice.cs.hpc" version="1.0.0" useFeatures="false" includeLaunchers="true">
+<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer" version="1.0.0" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="icons/hpcviewerEclipseShadow128.png"/>
@@ -24,6 +24,7 @@ Software and the Performance Engineering Research Institute.
    <launcherArgs>
       <vmArgs>-Xms400m
 -Xmx1024m</vmArgs>
+      <vmArgsMac>-Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
    <windowImages i16="icons/hpcviewerEclipseShadow16.png" i32="icons/hpcviewerEclipseShadow32.png" i48="icons/hpcviewerEclipseShadow48.png" i64="icons/hpcviewerEclipseShadow64.png" i128="icons/hpcviewerEclipseShadow128.png"/>
@@ -35,12 +36,11 @@ Software and the Performance Engineering Research Institute.
       <solaris/>
       <win useIco="false">
          <bmp
-            winSmallHigh="/edu.rice.cs.hpc-09-09/icons/hpcviewer-icon-16x16-32bit.bmp"
-            winMediumHigh="/edu.rice.cs.hpc-09-09/icons/hpcviewer-icon-32x32-32bit.bmp"
-            winLargeHigh="/edu.rice.cs.hpc-09-09/icons/hpcviewer-icon-48x48-32bit.bmp"/>
+            winSmallHigh="/hpcviewer/icons/hpcviewer-icon-16x16-32bit.bmp"
+            winMediumHigh="/hpcviewer/icons/hpcviewer-icon-32x32-32bit.bmp"
+            winLargeHigh="/hpcviewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>
@@ -82,7 +82,7 @@ if advised of the possibility of such damage.
 
    <plugins>
       <plugin id="com.ibm.icu"/>
-      <plugin id="edu.rice.cs.hpc"/>
+      <plugin id="edu.rice.cs.hpc.viewer"/>
       <plugin id="javax.xml"/>
       <plugin id="org.apache.xerces"/>
       <plugin id="org.apache.xml.resolver"/>

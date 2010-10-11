@@ -2,9 +2,11 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension
-         id="edu.rice.cs.hpc"
+         id="edu.rice.cs.hpc.viewer"
+         name="hpcviewer"
          point="org.eclipse.core.runtime.applications">
-      <application>
+      <application
+            icon="icons/hpcviewerEclipse48.gif">
          <run
                class="edu.rice.cs.hpc.viewer.framework.HPCViewer">
          </run>
@@ -119,7 +121,7 @@
          id="hpcviewer"
          point="org.eclipse.core.runtime.products">
       <product
-            application="edu.rice.cs.hpc"
+            application="edu.rice.cs.hpc.viewer"
             name="hpcviewer">
          <property
                name="appName"

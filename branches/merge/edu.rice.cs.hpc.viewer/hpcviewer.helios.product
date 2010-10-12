@@ -4,7 +4,7 @@
 <product name="hpcviewer" uid="edu.rice.cs.hpc.viewer" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer" version="1.0.0" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
-      <image path="icons/hpcviewerEclipseShadow128.png"/>
+      <image path="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow128.png"/>
       <text>
          hpcviewer is a user interface for analyzing a database of   
 performance metrics in conjunction with an application&apos;s source code.
@@ -27,20 +27,21 @@ Software and the Performance Engineering Research Institute.
       <vmArgsMac>-Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/hpcviewerEclipseShadow16.png" i32="icons/hpcviewerEclipseShadow32.png" i48="icons/hpcviewerEclipseShadow48.png" i64="icons/hpcviewerEclipseShadow64.png" i128="icons/hpcviewerEclipseShadow128.png"/>
+   <windowImages i16="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow16.png" i32="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow32.png" i48="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow48.png" i64="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow64.png" i128="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow128.png"/>
 
    <splash
       startupProgressRect="1,273,245,7" />
    <launcher name="hpcviewer">
-      <macosx icon="/hpcviewer/icons/hpcviewer.icns"/>
+      <macosx icon="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewer.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp
-            winSmallHigh="/hpcviewer/icons/hpcviewer-icon-16x16-32bit.bmp"
-            winMediumHigh="/hpcviewer/icons/hpcviewer-icon-32x32-32bit.bmp"
-            winLargeHigh="/hpcviewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
+            winSmallHigh="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-16x16-32bit.bmp"
+            winMediumHigh="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-32x32-32bit.bmp"
+            winLargeHigh="/edu.rice.cs.hpc/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

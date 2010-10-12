@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<plugin>
+<plugin
+   id="edu.rice.cs.hpc.viewer"
+   name="hpcviewer"
+   version="1.0.1"
+   provider-name="Rice University, Dept of Computer Science"
+   class="edu.rice.cs.hpc.viewer.framework.Activator">
+   <requires>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.filesystem"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.apache.xerces"/>
+   </requires>
    <extension
          id="edu.rice.cs.hpc.viewer"
          name="hpcviewer"
@@ -16,7 +31,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="edu.rice.cs.hpc.viewer.framework.Perspective"
-            icon="icons/hpc-16x16.png"
+            icon="edu.rice.cs.hpc.viewer/icons/hpc-16x16.png"
             id="edu.rice.cs.hpc.perspective"
             name="Perspective">
       </perspective>
@@ -26,26 +41,26 @@
       <view
             allowMultiple="true"
             class="edu.rice.cs.hpc.viewer.scope.ScopeView"
-            icon="icons/cct.png"
+            icon="edu.rice.cs.hpc.viewer/icons/cct.png"
             id="edu.rice.cs.hpc.viewer.scope.ScopeView"
             name="ScopeView">
       </view>
       <view
             class="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
-            icon="icons/flat.png"
+            icon="edu.rice.cs.hpc.viewer/icons/flat.png"
             id="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
             name="FlatScopeView">
       </view>
       <view
             class="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
-            icon="icons/caller.png"
+            icon="edu.rice.cs.hpc.viewer/icons/caller.png"
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
       </view>
       <view
             allowMultiple="true"
             class="edu.rice.cs.hpc.viewer.graph.ThreadView"
-            icon="icons/graphview.png"
+            icon="edu.rice.cs.hpc.viewer/icons/graphview.png"
             id="edu.rice.cs.hpc.viewer.graph.ThreadView"
             name="Thread view"
             restorable="true">
@@ -53,7 +68,7 @@
       <view
             allowMultiple="true"
             class="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
-            icon="icons/cct.png"
+            icon="edu.rice.cs.hpc.viewer/icons/cct.png"
             id="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
             name="Thread scope view"
             restorable="true">
@@ -129,7 +144,7 @@
          </property>
          <property
                name="aboutImage"
-               value="icons/hpcviewerEclipseShadow128.png">
+               value="edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow128.png">
          </property>
          <property
                name="aboutText"
@@ -137,7 +152,7 @@
          </property>
          <property
                name="windowImages"
-               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
+               value="edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow16.png,edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow32.png,edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow48.png,edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow64.png,edu.rice.cs.hpc.viewer/icons/hpcviewerEclipseShadow128.png">
          </property>
          <property
                name="preferenceCustomization"
@@ -155,13 +170,13 @@
           class="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
           default="true"
           extensions="*"
-          icon="icons/hpc-16x16.png"
+          icon="edu.rice.cs.hpc.viewer/icons/hpc-16x16.png"
           id="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
           name="Source Code Editor">
    		</editor>
     <editor
           class="edu.rice.cs.hpc.viewer.help.HTMLEditor"
-          icon="icons/hpc-merged-16x16.png"
+          icon="edu.rice.cs.hpc.viewer/icons/hpc-merged-16x16.png"
           id="edu.rice.cs.hpc.viewer.util.HTMLEditor"
           name="Web editor">
     </editor>
@@ -169,7 +184,7 @@
           class="edu.rice.cs.hpc.viewer.graph.GraphEditorPlot"
           default="false"
           extensions="*"
-          icon="icons/graphview.png"
+          icon="edu.rice.cs.hpc.viewer/icons/graphview.png"
           id="edu.rice.cs.hpc.viewer.graph.GraphEditorPlot"
           name="Plot editor">
     </editor>
@@ -177,7 +192,7 @@
           class="edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort"
           default="false"
           extensions="*"
-          icon="icons/graphview.png"
+          icon="edu.rice.cs.hpc.viewer/icons/graphview.png"
           id="edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort"
           name="Sort editor">
     </editor>
@@ -185,7 +200,7 @@
           class="edu.rice.cs.hpc.viewer.graph.GraphEditorHisto"
           default="false"
           extensions="*"
-          icon="icons/graphview.png"
+          icon="edu.rice.cs.hpc.viewer/icons/graphview.png"
           id="edu.rice.cs.hpc.viewer.graph.GraphEditorHisto"
           name="Histogram editor">
     </editor>

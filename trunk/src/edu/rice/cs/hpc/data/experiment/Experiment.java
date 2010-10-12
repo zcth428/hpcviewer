@@ -46,10 +46,6 @@ import com.graphbuilder.math.*;
 public class Experiment
 {
 
-static final public int ROOT_CALLING_CONTEXT = 0;
-static final public int ROOT_CALLER = 0;
-static final public int ROOT_FLAT = 0;
-	
 /** The file containing the experiment. */
 protected ExperimentFile experimentFile;
 

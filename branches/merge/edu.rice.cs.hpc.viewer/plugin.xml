@@ -6,7 +6,7 @@
          name="hpcviewer"
          point="org.eclipse.core.runtime.applications">
       <application
-            icon="icons/hpcviewerEclipse48.gif">
+            icon="edu.rice.cs.hpc.viewer/icons/hpcviewerEclipse48.gif">
          <run
                class="edu.rice.cs.hpc.viewer.framework.HPCViewer">
          </run>

@@ -558,9 +558,6 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 		DerivedMetricVisitor csv = new DerivedMetricVisitor(this, rootInclProp, iInclusive, iExclusive );
 		rootScope.dfsVisitScopeTree(csv);
 
-		//DerivedPercentVisitor psv = new DerivedPercentVisitor(this.getMetrics(), rootScope, iInclusive, iExclusive);
-		//rootScope.dfsVisitScopeTree(psv);
-
 	}
 
 	return objMetric;

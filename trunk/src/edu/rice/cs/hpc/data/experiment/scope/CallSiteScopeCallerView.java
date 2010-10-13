@@ -96,6 +96,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			//-------------------------------------------------------------------------
 			// this scope has already computed children, we do nothing, just return them
 			//-------------------------------------------------------------------------
+			return this.getChildren();
 			
 		} else {
 			

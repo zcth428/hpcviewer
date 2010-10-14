@@ -59,7 +59,7 @@ public class CallerScopeBuilder {
 				if(lineScope != null) {
 					numKids++;
 					if (prev_scope != null)
-						prev_scope.numChildren = 1;
+						prev_scope.markScopeHasChildren(); //numChildren = 1;
 
 					//--------------------------------------------------------------
 					// creating a new child scope if the path is not too long (< MAX_DESC)

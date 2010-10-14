@@ -3,6 +3,7 @@
  */
 package edu.rice.cs.hpc.viewer.scope;
 
+import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
@@ -103,6 +104,11 @@ public class ScopeZoom {
 	public boolean canZoomIn ( Scope node ) {
 		if (node == null)
 			return false;
+		if (node instanceof CallSiteScopeCallerView) {
+			// in caller view, we don't know exactly how many children a scope has
+			// the most reliable way is to retrieve the "mark" if the scope has a child or not
+			return ((CallSiteScopeCallerView)node).hasScopeChildren();
+		}
 		return ( node.getChildCount()>0 );
 	}
 	

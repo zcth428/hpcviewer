@@ -59,7 +59,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     		if (!has_children) {
     			if (node instanceof CallSiteScopeCallerView) {
         			CallSiteScopeCallerView cc = (CallSiteScopeCallerView) node;
-        			has_children = cc.numChildren>0;
+        			has_children = cc.hasScopeChildren(); //cc.numChildren>0;
     			} else if ( !(node instanceof ProcedureScope)){
     				throw new RuntimeException("Unexpected scope node: " + node);
     			}

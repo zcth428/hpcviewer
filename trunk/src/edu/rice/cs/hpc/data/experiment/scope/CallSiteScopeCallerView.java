@@ -22,7 +22,8 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
  */
 public class CallSiteScopeCallerView extends CallSiteScope implements IMergedScope {
 
-	public int numChildren;
+	//public int numChildren;
+	private boolean flag_scope_has_child;
 
 	private Scope scopeCCT; 
 	private ArrayList<CallSiteScopeCallerView> listOfmerged;
@@ -42,7 +43,8 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		super(scope, scope2, csst, id, cct.getFlatIndex());
 
 		this.scopeCCT = cct;
-		numChildren = 0;
+		this.flag_scope_has_child = false;
+		//numChildren = 0;
 	}
 
 	/***
@@ -74,6 +76,17 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	}
 	
 
+	/*****
+	 * Mark that this scope has a child. The number of children is still unknown though
+	 * 	and has to computed dynamically
+	 */
+	public void markScopeHasChildren() {
+		this.flag_scope_has_child = true;
+	}
+	
+	public boolean hasScopeChildren() {
+		return this.flag_scope_has_child;
+	}
 
 	/*****************
 	 * retrieve the child scopes of this node. 

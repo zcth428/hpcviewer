@@ -109,6 +109,14 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			this.treeViewer.expandToLevel(pathItem, 1);
 		}
 		int iCounts = item.getItemCount();
+
+		HotCallPath objCallPath = new HotCallPath();
+		// we found the hot call path
+		objCallPath.path = pathItem; // this.treeViewer.getTreePath(child);
+		objCallPath.item = item; // child;
+		objCallPath.node = (Scope) item.getData(); // nodeChild;
+		objCallPath.is_found = false;
+
 		// singly depth first search
 		// bug fix: we only drill once !
 		if (iCounts > 0) {
@@ -137,25 +145,22 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 				// simple comparison: if the child has "huge" difference compared to its parent
 				// then we consider it as host spot node.
 				if(x2 < (ScopeViewActions.fTHRESHOLD * x1)) {
-					HotCallPath objCallPath = new HotCallPath();
-					// we found the hot call path
-					objCallPath.path = pathItem; // this.treeViewer.getTreePath(child);
-					objCallPath.item = item; // child;
-					objCallPath.node = (Scope) item.getData(); // nodeChild;
+					objCallPath.is_found = true;
 					return objCallPath;
+					
 				} else {
 					// let move deeper down the tree
 					HotCallPath objHotPath = this.getHotCallPath(this.treeViewer.getTreePath(child), 
 							child, scopeChild, metric, iLevel+ 1);
 					// BUG FIX no 126: 
-					if(objHotPath != null) {
-						return objHotPath; // a hot path is found
-					}
+					//if(objHotPath != null) {
+					return objHotPath; // a hot path is found
+					//}
 				}
 			}
 		}
 		// if we reach at this statement, then there is no hot call path !
-		return null;
+		return objCallPath;
 	}
 
 	/**
@@ -282,9 +287,9 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			// find the hot call path
 			int iLevel = 0;
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current, metric, iLevel);
-			if(objHot != null) {
+			this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
+			if(objHot.is_found) {
 				// we found the hot path
-				this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
 			} else {
 				// we cannot find it
 				this.showErrorMessage("No hot call path detected.");
@@ -559,6 +564,9 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     	public TreeItem item;
     	// the node associated
     	public Scope node;
+    	
+    	// indicate if a hot path is found or not
+    	public boolean is_found = false;
     }
 
 }

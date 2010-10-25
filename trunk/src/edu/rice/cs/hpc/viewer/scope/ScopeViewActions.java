@@ -292,7 +292,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 				// we found the hot path
 			} else {
 				// we cannot find it
-				this.showErrorMessage("No hot call path detected.");
+				this.showErrorMessage("No hot path available.");
 			}
 		} else {
 			// It is almost impossible for the jvm to reach this part of branch.

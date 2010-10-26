@@ -151,8 +151,15 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		// set the percent
 		//-------------------------------------------------------------------------
 		if (percent_need_recompute) {
-			this.dfsVisitScopeTree(finalizeVisitor);
-			this.dfsVisitScopeTree(percentVisitor);
+			// there were some reconstruction of children. Let's finalize the metrics, and recompute the percent
+			for(TreeNode child:this.getChildren()) {
+				if (child instanceof CallSiteScopeCallerView) {
+					CallSiteScopeCallerView csChild = (CallSiteScopeCallerView) child;
+					
+					csChild.dfsVisitScopeTree(finalizeVisitor);
+					csChild.dfsVisitScopeTree(percentVisitor);
+				}
+			}
 		}
 		
 		return this.getChildren();

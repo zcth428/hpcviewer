@@ -47,7 +47,7 @@
 
 \begin{figure}
 \begin{center}
-\includegraphics{images/hpcviewer-legend.png}
+\includegraphics[width=6.5in]{images/hpcviewer-legend.png}
 \caption{A snapshot of hpcviewer} 
 \label{fig:hpcviewer}
 \end{center}
@@ -88,23 +88,23 @@ The browser window is divided into three panes: the \textbf{navigation}  pane, t
  The header above the navigation pane contains some controls for the  navigation and metric view. In Figure 1, they are labeled as "navigation/metric control".  
 \begin{itemize}
 	\item 
-\includegraphics{images/Flatten.gif}\textbf{Flatten / 
-\includegraphics{images/Unflatten.gif} unflatten} (available for the flat view): Enabling to flatten and unflatten  the navigation hierarchy. Clicking on the flatten button (the icon that  shows a tree node with a slash through it) will replace each top-level  scope shown with its children. If a scope has no children (i.e., it is a  leaf ), the node will remain in the view. This flattening operation is  useful for relaxing the strict hierarchical view so that peers at the same  level in the tree can be viewed and ranked together. For instance, this  can be used to hide procedures in the flat view so that outer loops  can be ranked and compared to one another. The inverse of the flatten  operation is the unflatten operation, which causes an elided node in  the tree to be made visible once again.  
+\includegraphics{images/Flatten.png}\textbf{Flatten / 
+\includegraphics{images/Unflatten.png} unflatten} (available for the flat view): Enabling to flatten and unflatten  the navigation hierarchy. Clicking on the flatten button (the icon that  shows a tree node with a slash through it) will replace each top-level  scope shown with its children. If a scope has no children (i.e., it is a  leaf ), the node will remain in the view. This flattening operation is  useful for relaxing the strict hierarchical view so that peers at the same  level in the tree can be viewed and ranked together. For instance, this  can be used to hide procedures in the flat view so that outer loops  can be ranked and compared to one another. The inverse of the flatten  operation is the unflatten operation, which causes an elided node in  the tree to be made visible once again.  
 	\item \textbf{
-\includegraphics{images/ZoomIn.gif} Zoom-in/ 
-\includegraphics{images/ZoomOut.gif} Zoom-out}: Depressing the up arrow button will zoom in to show only information for the selected line and its descendants. One can zoom out  (reversing a prior zoom operation) by depressing the down arrow button
+\includegraphics{images/ZoomIn.png} Zoom-in/ 
+\includegraphics{images/ZoomOut.png} Zoom-out}: Depressing the up arrow button will zoom in to show only information for the selected line and its descendants. One can zoom out  (reversing a prior zoom operation) by depressing the down arrow button
 	\item 
-\includegraphics{images/flameIcon.gif}\textbf{Hot call path}: Finding for the cost of performance hot-spots, and is used to show the chain of responsibility for costs.  The "hot spot" is computed by comparing parent and child values, and show the chain where the difference is greater that a threshold   (by default is 
+\includegraphics{images/flameIcon.png}\textbf{Hot call path}: Finding for the cost of performance hot-spots, and is used to show the chain of responsibility for costs.  The "hot spot" is computed by comparing parent and child values, and show the chain where the difference is greater that a threshold   (by default is 
 \texttt{50\%}). It is also possible to change the threshold value by clicking the menu "File-Preference".
 	\item 
-\includegraphics{images/FnMetric.gif}\textbf{Derived metric}: Creating a new metric based on mathematical formula.   See \hyperlink{derivedmetrics}{Derived metrics} section for more details.
+\includegraphics{images/FnMetric.png}\textbf{Derived metric}: Creating a new metric based on mathematical formula.   See \hyperlink{derivedmetrics}{Derived metrics} section for more details.
 	\item 
-\includegraphics{images/checkColumns.gif}\textbf{Hide/show metrics}: Showing and hiding metric columns.   A dialog box will appear, and user can select which columns to show or hide. See \hyperlink{hideshowcolumn}{hide/show column} section for more details 
+\includegraphics{images/checkColumns.png}\textbf{Hide/show metrics}: Showing and hiding metric columns.   A dialog box will appear, and user can select which columns to show or hide. See \hyperlink{hideshowcolumn}{hide/show column} section for more details 
 	\item 
-\includegraphics{images/savecsv.gif}\textbf{Export into a CSV format file}: Exporting the current metric table into a comma separated value (CSV) format file.  This feature only exports all metrics that are currently shown.  Metrics that are not shown in the view (whose scopes are not expanded) will not be exported (we assume these metrics are not significant).    
+\includegraphics{images/savecsv.png}\textbf{Export into a CSV format file}: Exporting the current metric table into a comma separated value (CSV) format file.  This feature only exports all metrics that are currently shown.  Metrics that are not shown in the view (whose scopes are not expanded) will not be exported (we assume these metrics are not significant).    
 	\item 
-\includegraphics{images/FontBigger.gif}\textbf{Increase} / 
-\includegraphics{images/FontSmaller.gif}\textbf{decrease font size}: Increasing or decreasing the size of the navigation and metric panes.  
+\includegraphics{images/FontBigger.png}\textbf{Increase} / 
+\includegraphics{images/FontSmaller.png}\textbf{decrease font size}: Increasing or decreasing the size of the navigation and metric panes.  
 \end{itemize}
 
 \subsection{Metric pane} The metric pane displays one or more performance metrics associated with entities to the left in the navigation pane. Entities  in the tree view of the navigation pane are sorted at each level of the  hierarchy by the metric in the selected column. When \textit{hpcviewer} is  launched, the leftmost metric column is the default selection and the  navigation pane is sorted according to the values of that metric in descending order. One can change the selected metric by clicking on a  column header. Clicking on the header of the selected column toggles  the sort order between descending and ascending.  
@@ -121,10 +121,8 @@ Call path profile measurements collected by \textit{hpcrun} correspond directly 
 
 \subsection{Example}
 \begin{center}
-
-\begin{tabular}{|l|l|}\\\hline
+\begin{tabular}{|p{3in}|p{3in}|}\hline
 \textbf{Figure 2a: file1.c} & \textbf{Figure 2b: file2.c} \\\hline 
-
 \begin{verbatim}
 f () { 
  	g (); 
@@ -143,30 +141,39 @@ g () {
 } 
 h () { 
 } 
-\end{verbatim}
+\end{verbatim}\\\hline
 \end{tabular}
-
-\begin{figure}
-\caption{Calling context view} 
-\includegraphics{images/metrics-cct.png}
-\end{figure}
-
-\begin{figure}
-\caption{Caller view} 
-\includegraphics{images/metrics-ct.png}
-\end{figure}
-
-\begin{figure}
-\caption{Flat view} 
-\includegraphics{images/metrics-ft.png}
-\end{figure}
-
 \end{center}
+
+\begin{figure}
+\begin{center}
+\caption{Calling context view} 
+\label{fig:cct}
+\includegraphics[scale=0.5]{images/metrics-cct.png}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\caption{Caller view} 
+\label{fig:ct}
+\includegraphics[scale=0.5]{images/metrics-ct.png}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\caption{Flat view} 
+\label{fig:ft}
+\includegraphics[scale=0.5]{images/metrics-ft.png}
+\end{center}
+\end{figure}
+
 
  Figure 2 (a and b) shows an example of a recursive program separated into two files: 
 \texttt{file1.c} and \texttt{file2.c}.  In this figure, we use numerical subscripts to distinguish between different instances of the same procedure. In the other parts of this figure, we use alphabetic subscripts.  We use different labels because there is no natural one-to-one correspondence between the instances in the different views.  
 
- Routine \texttt{g} (Figure 2b) can behave as a recursive function depending on the value of the condition branch (Line 3-4). Figure 3 shows an example of the call chain execution of the program annotated with both inclusive and exclusive costs. Computation of inclusive costs from exclusive costs in the calling context view involves simply summing up all of the costs in the subtree below. 
+ Routine \texttt{g} (Figure 2b) can behave as a recursive function depending on the value of the condition branch (Line 3-4). Figure~\ref{fig:cct}  shows an example of the call chain execution of the program annotated with both inclusive and exclusive costs. Computation of inclusive costs from exclusive costs in the calling context view involves simply summing up all of the costs in the subtree below. 
 
  In this figure, we can see that on the right path of the routine 
 \texttt{m}, routine 
@@ -179,7 +186,7 @@ h () {
 \texttt{g$_3$} are all instances from the same routine (i.e., 
 \texttt{g}), we attribute  a different cost for each instance. This separation of cost can be critical to identify which instance has a performance problem.  
 
- Figure 4 shows the corresponding scope structure for the caller view and the costs we compute for this recursive program. The procedure 
+ Figure~\ref{fig:ct} shows the corresponding scope structure for the caller view and the costs we compute for this recursive program. The procedure 
 \texttt{g} noted as 
 \texttt{g$_a$} (which is a root node in the diagram), has different cost to 
 \texttt{g} as a callsite as noted as 
@@ -197,7 +204,7 @@ h () {
 \texttt{g$_2$} is included in 
 \texttt{g$_1$}).   
 
- Inclusive costs need to be computed similarly in the flat view. The inclusive cost of a recursive routine is the sum of the highest cost for each branch in calling context tree. For instance, in Figure 5, The inclusive cost of 
+ Inclusive costs need to be computed similarly in the flat view. The inclusive cost of a recursive routine is the sum of the highest cost for each branch in calling context tree. For instance, in Figure~\ref{fig:ft}, The inclusive cost of 
 \texttt{g$_x$}, defined as the total cost of all instances of 
 \texttt{g}, is 
 \texttt{9}, and this is consistently the same as the cost in caller tree. The advantage of attributing different costs for each instance of 
@@ -238,11 +245,14 @@ avg($0, $2, $4. $6. $8) / avg($1, $3, $5, $7, $9)
 
 \subsection{Derived metric dialog box}
 
- A derived metric can be created by clicking the  \textbf{Derived metric} tool item in the navigation/control pane.  A derived metric window will then appear as shown in Figure 6 below.  
-\begin{center}
+ A derived metric can be created by clicking the  \textbf{Derived metric} tool item in the navigation/control pane.  A derived metric window will then appear as shown in Figure~\ref{fig:fig:derived} below.  
 
-\includegraphics{images/DerivedMetricDlg.png}
-\\ Figure 6: Derived metric dialog box 
+\begin{center}
+ \begin{figure}
+  \includegraphics{images/DerivedMetricDlg.png}
+  \caption{Derived metric dialog box}
+  \label{fig:derived}
+ \end{figure}
 \end{center}  The window has two main parts:  
 
 \textbf{Derived metric definition}, which consists of:   
@@ -294,15 +304,15 @@ In this section we describe some features of hpcviewer that help  improve produc
 	\item \textbf{Changing column order}. If it would be more convenient to have columns displayed in a different order, they can be permuted as you wish. Depress and hold the mouse button over the header of column that you wish to move and drag the column right or left to its new position. 
 	\item Copying selected metrics into clipboard. In order to copy selected  lines of scopes/metrics, one can right click on the metric pane or navigation pane  then select the menu \textbf{"Copy"}. The copied metrics can then be pasted into  any text editor.  
 	\item \textbf{Hiding or showing metric columns}. Sometimes, it may be more convenient to suppress the display of metrics that are not of current interest. When there are too many metrics to fit on the screen at once, it is often useful to suppress the display of some. The icon 
-\includegraphics{images/checkColumns.gif}  above the metric pane will bring up the column selection dialog shown below.
+\includegraphics{images/checkColumns.png}  above the metric pane will bring up the column selection dialog shown below.
 \end{itemize}
 
 \begin{figure}
 \begin{center}
-\includegraphics{images/HideShowColumns.png}
+\includegraphics[width=6in]{images/HideShowColumns.png}
 \caption{Hide/Show columns dialog box}
 \end{center}
-\begin{figure}
+\end{figure}
 
  The dialog box contains a list of metric columns sorted according to their order in HPCToolkit's performance database for the application. Each metric column is prefixed by a check box to indicate if the metric should be \textit{displayed} (if checked) or \textit{hidden} (unchecked). To display all metric columns, one can click the \textbf{Check all} button. A click to \textbf{Uncheck all} will hide all the metric columns.
 \\ Finally, an option \textbf{Apply to all views} will set the configuration into all views when checked.  Otherwise, the configuration will be applied only on the current view.  

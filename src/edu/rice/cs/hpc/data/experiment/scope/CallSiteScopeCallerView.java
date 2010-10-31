@@ -10,7 +10,6 @@ import edu.rice.cs.hpc.data.experiment.metric.CombineMetricUsingCopy;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.AbstractFinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 
 

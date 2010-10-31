@@ -430,8 +430,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @param child
 	 **------------------------------------------------------------------------------**/
 	private void addChild(Scope parent, Scope child) {
-		//if (parent.hashCode() == child.hashCode()) 
-		//	System.err.println("Err: Same ID "+parent.hashCode()+": "+parent + " - " + child);
+		if (parent.hashCode() == child.hashCode()) 
+			System.err.println("ERROR: Same ID "+parent.hashCode()+": "+parent + " - " + child);
 		parent.addSubscope(child);
 		child.setParentScope(parent);
 	}

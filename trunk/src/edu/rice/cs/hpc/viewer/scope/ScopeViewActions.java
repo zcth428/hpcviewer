@@ -126,38 +126,25 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 				// get the child node
 				Scope scopeChild = (Scope) o;
 
-				// get the values
-				double x1, x2;
-				double dParent, dChild;
-
 				MetricValue mvParent = metric.getValue(scope);
 				MetricValue mvChild = metric.getValue(scopeChild);
-				dParent = mvParent.getValue();
-				dChild = mvChild.getValue();
+				double dParent = mvParent.getValue();
+				double dChild = mvChild.getValue();
 				
-				// normalization: x1 must be bigger than x2
-				if(dParent > dChild) {
-					x1 = dParent; x2 = dChild;
-				} else {
-					x1 = dChild; x2 = dParent;
-				}
-
-				// simple comparison: if the child has "huge" difference compared to its parent
-				// then we consider it as host spot node.
-				if(x2 < (ScopeViewActions.fTHRESHOLD * x1)) {
-					objCallPath.is_found = true;
+				// simple comparison: if the child has "significant" difference compared to its parent
+				// then we consider it as hot path node.
+				if(dChild < (ScopeViewActions.fTHRESHOLD * dParent)) {
+					objCallPath.is_found = (iLevel>0);
 					return objCallPath;
-					
 				} else {
-					// let move deeper down the tree
+					// let's move deeper down the tree
 					HotCallPath objHotPath = this.getHotCallPath(this.treeViewer.getTreePath(child), 
 							child, scopeChild, metric, iLevel+ 1);
-					// BUG FIX no 126: 
-					//if(objHotPath != null) {
-					return objHotPath; // a hot path is found
-					//}
+					return objHotPath; 
 				}
 			}
+		} else {
+			objCallPath.is_found = true;
 		}
 		// if we reach at this statement, then there is no hot call path !
 		return objCallPath;
@@ -288,12 +275,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			int iLevel = 0;
 			HotCallPath objHot = this.getHotCallPath(arrPath[0], item, current, metric, iLevel);
 			this.treeViewer.setSelection(new TreeSelection(objHot.path), true);
-			if(objHot.is_found) {
-				// we found the hot path
-			} else {
-				// we cannot find it
-				if (objHot.item.getItemCount()<1)
-					this.showErrorMessage("No hot path available.");
+			if(objHot.is_found == false) {
+				this.showErrorMessage("No hot child.");
 			}
 		} else {
 			// It is almost impossible for the jvm to reach this part of branch.

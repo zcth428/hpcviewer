@@ -677,8 +677,8 @@ public BaseMetric getMetric(String name)
 	if (metric == null) {
 		// backward compatibility: do not throw wn exception ! some old databases 
 		//	have no partner information
-		// throw new RuntimeException("Unknown Metric " + name );
-		System.err.println("Unknown metric: " + name);
+		// ... Laksono 2010.11.11: temporarily disable error message
+		// System.err.println("Unknown metric: " + name);
 	}
 	return metric;
 }

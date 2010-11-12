@@ -41,9 +41,6 @@ public class Dialogs
 /** The frame to be used as parent for dialogs. */
 //private static JFrame parent;
 
-/** The directory which should be initially visible in file chooser dialogs. */
-private static File lastDirectory = new File(System.getProperty("user.dir"));
-
 /** Whether to display "temporary method" warning dialogs. */
 private static boolean warnTempMethods = false;
 

@@ -11,6 +11,7 @@ import org.eclipse.jface.layout.LayoutConstants;
 // swt
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -18,6 +19,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.SelectionEvent;
 // hpcviewer
@@ -38,8 +45,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	private Combo cbName;
 	private Combo cbExpression;
 	private Button btnPercent;
-	//private Button btnExclusive;
-	//private Button btnInclusive;
 
 	// ------------ Metric and math variables
 	private String []arrStrMetrics;
@@ -53,11 +58,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	private String sMetricName;
 	private boolean bPercent;
 	private Experiment experiment;
+	private Point expression_position;
 	
 	// ------------- object for storing history of formula and metric names
 	private UserInputHistory objHistoryFormula;
 	private UserInputHistory objHistoryName;
-	//private boolean bExclusive = false;
 
 	//==========================================================
 	  // ---- Constructor
@@ -133,6 +138,25 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	objHistoryFormula = new UserInputHistory(HISTORY_FORMULA);
 	    	this.cbExpression.setItems( objHistoryFormula.getHistory() );
 	    	cbExpression.setToolTipText("Write a simple arithmetic expression");
+	    	
+	    	expression_position = new Point(0,0);
+	    	cbExpression.addKeyListener( new KeyAdapter(){
+
+				public void keyReleased(KeyEvent e) {
+					expression_position = cbExpression.getSelection();
+				}
+				
+			});
+			
+	    	cbExpression.addMouseListener( new MouseAdapter(){
+				public void mouseUp(MouseEvent e)  {
+					if (cbExpression.getClientArea().contains(e.x, e.y)) {
+						expression_position = cbExpression.getSelection();
+					}
+				}
+				
+			});
+	    	
 	    	GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(grpExpression);
 	    	
 	    	//--------------- inserting metric
@@ -153,7 +177,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	btnMetric.addSelectionListener(new SelectionListener() {
 	   			public void widgetSelected(SelectionEvent e) {
 	   				final String sText = cbExpression.getText();
-	   				final int iSelIndex = cbExpression.getSelection().x;
+	   				final int iSelIndex = expression_position.x; //cbExpression.getCurrentCursorPosition();
 	   				StringBuffer sBuff = new StringBuffer(sText);
 	   				
 	   				// insert the metric variable ( i.e.: $ + metric index)
@@ -198,7 +222,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	btnFunc.addSelectionListener(new SelectionListener() {
 	    		 // action to insert the name of the function into the formula text
 	   			public void widgetSelected(SelectionEvent e) {
-	   				Point p = cbExpression.getSelection();
+	   				Point p = expression_position;
 	   				String sFunc = arrFuncNames[cbFunc.getSelectionIndex()];
 	   				StringBuffer sb = new StringBuffer( cbExpression.getText() );
 	   				int iLen = sFunc.length();

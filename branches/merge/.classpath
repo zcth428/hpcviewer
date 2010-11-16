@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="externals"/>
+	<classpathentry kind="src" path="edu.rice.cs.hpc.data/src"/>
 	<classpathentry exported="true" kind="lib" path="external-jars/org.swtchart_0.6.0.v20090801.jar"/>
 	<classpathentry exported="true" kind="lib" path="external-jars/org.swtchart.ext_0.6.0.v20090801.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

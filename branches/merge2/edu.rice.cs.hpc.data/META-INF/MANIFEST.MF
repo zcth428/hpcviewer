@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: hpcdata
+Bundle-SymbolicName: edu.rice.cs.hpc.data
+Bundle-Version: 1.0.0
+Bundle-Vendor: Rice University
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Require-Bundle: org.apache.xerces
+Import-Package: org.eclipse.jface.viewers
+Export-Package: com.graphbuilder.math,
+ com.graphbuilder.math.func,
+ edu.rice.cs.hpc.data.experiment,
+ edu.rice.cs.hpc.data.experiment.extdata,
+ edu.rice.cs.hpc.data.experiment.metric,
+ edu.rice.cs.hpc.data.experiment.scope,
+ edu.rice.cs.hpc.data.experiment.scope.filters,
+ edu.rice.cs.hpc.data.experiment.scope.visitors,
+ edu.rice.cs.hpc.data.experiment.source,
+ edu.rice.cs.hpc.data.util

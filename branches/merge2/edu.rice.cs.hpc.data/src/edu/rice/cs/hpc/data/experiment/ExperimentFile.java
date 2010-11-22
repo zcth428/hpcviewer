@@ -95,7 +95,10 @@ throws
 	InvalExperimentException;
 
 
-
+public abstract void parse(Experiment experiment, boolean need_metrics)
+throws
+	IOException,
+	InvalExperimentException;
 
 }
 

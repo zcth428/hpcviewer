@@ -55,12 +55,12 @@ public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber, i
 //	this.id = "LineScope";
 }
 
-/*
-public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber)
+
+public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber, int cct_id, int flat_id, int cpid)
 {
-	super(experiment, sourceFile, lineNumber, lineNumber, Scope.idMax++);
-//	this.id = "LineScope";
-}*/
+	super(experiment, sourceFile, lineNumber, lineNumber, cct_id, flat_id, cpid);
+}
+
 
 
 
@@ -139,7 +139,7 @@ public Scope duplicate() {
 		new LineScope(this.experiment, 
 				this.sourceFile, 
 				this.firstLineNumber,
-				this.cct_node_index, this.flat_node_index);
+				this.cct_node_index, this.flat_node_index,cpid);
 
 	return duplicatedScope;
 }

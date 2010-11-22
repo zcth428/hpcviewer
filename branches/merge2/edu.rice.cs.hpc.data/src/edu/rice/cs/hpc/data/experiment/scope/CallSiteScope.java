@@ -99,18 +99,17 @@ public LineScope getLineScope()
 	return this.lineScope;
 }
 
-/* Laksono 2009.09.10: get rid off unused methods
-public boolean getCsprofLeaf()
+
+public int getCpid()
 {
-   return this.CsprofLeaf;
+	return this.lineScope.getCpid();
 }
 
-
-public void setCsprofLeaf(boolean value) 
+public void setCpid(int cpid)
 {
-   this.CsprofLeaf=value;
-} 
-*/
+	this.lineScope.setCpid(cpid);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////

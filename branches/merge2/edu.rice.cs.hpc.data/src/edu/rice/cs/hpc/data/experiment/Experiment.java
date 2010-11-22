@@ -84,6 +84,14 @@ protected HashMap metricMap;
 private MetricRaw[] metrics_raw;
 private ThreadLevelDataManager threadsData = null;
 
+//FIXME:tallent: temporary interface
+public long trace_minBegTime;
+public long trace_maxEndTime;
+
+
+private boolean metrics_needed = false;
+
+
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
@@ -108,6 +116,7 @@ public Experiment(File filename)
 	// protect ourselves against filename being `foo' with no parent
 	// information whatsoever.
 	this.defaultDirectory = filename.getAbsoluteFile().getParentFile();
+	init_time();
 }
 
 
@@ -120,9 +129,14 @@ public Experiment(Experiment exp)
 	this.defaultDirectory = exp.getDefaultDirectory();
 	this.experimentFile = null;
 	this.fileExperiment = exp.getXMLExperimentFile();
+	this.trace_minBegTime = exp.trace_minBegTime;
+	this.trace_maxEndTime = exp.trace_maxEndTime;
 }
 
-
+private void init_time() {
+	trace_minBegTime = 0;
+	trace_maxEndTime = 0;
+}
 
 //////////////////////////////////////////////////////////////////////////
 //	PERSISTENCE															//
@@ -145,8 +159,7 @@ throws
 	IOException,
 	InvalExperimentException
 {
-	// parsing may throw exceptions
-	this.experimentFile.parse(this);
+	this.open(true);
 }
 
 
@@ -209,6 +222,9 @@ public void setMetrics(List metricList)
  *************************************************************************/
 public void finalizeDatabase()
 {
+	if (!metrics_needed)
+		return;
+	
 	this.metricMap.clear();
 	int nbMetrics = this.metricList.size();
 	for (int i=0; i<nbMetrics; i++) {
@@ -532,6 +548,9 @@ private boolean inclusiveNeeded() {
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
 	
+	if (!metrics_needed)
+		return null;
+	
 	// laks 2010.02.27: for aggregate metric, we need to know the ID of the last metric, then increment this ID
 	//					for the new metric
 	// if the last metric has index 7 and ID 10, then the new metric has index 8 and ID 11
@@ -629,6 +648,9 @@ public File getSearchPath(int index)
 	
 public BaseMetric[] getMetrics()
 {
+	if (!metrics_needed)
+		return null;
+	
 	return 	this.metricList.toArray(new BaseMetric[0]);
 	//return 	(Metric[])this.metricList.toArray(new Metric[0]);
 }
@@ -746,6 +768,9 @@ public File getXMLExperimentFile() {
 }
 
 public void setMetricRaw(MetricRaw []metrics) {
+	if (!metrics_needed)
+		return ;
+	
 	this.metrics_raw = metrics;
 	if (this.metrics_raw != null)
 		this.threadsData = new ThreadLevelDataManager(this);
@@ -853,5 +878,12 @@ private class CreateFlatViewThread extends Thread {
 	           System.err.println("$File has null pointer:" + npe.getMessage() + sFilename);
 	           experiment = null;
 	      }
+	}
+
+
+public void open(boolean need_metrics) throws IOException, InvalExperimentException {
+	// parsing may throw exceptions
+	this.experimentFile.parse(this, need_metrics);
+	this.metrics_needed = need_metrics;
 	}
 }

@@ -115,6 +115,15 @@ throws
 	IOException,
 	InvalExperimentException
 	{
+	this.parse(experiment, true);
+	}
+
+
+
+
+@Override
+public void parse(Experiment experiment, boolean need_metrics)
+		throws IOException, InvalExperimentException {
 	// get an appropriate input stream
 	String name;
 	InputStream stream;
@@ -123,8 +132,7 @@ throws
         stream = new FileInputStream(this.file);
     
 	// parse the stream
-	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
-        Builder builder = new ExperimentBuilder2(experiment, name);
+        Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
         Parser parser = new Parser(name, stream, builder);
         try {
             parser.parse();
@@ -150,7 +158,8 @@ throws
         	// parsing is done successfully
         } else
         	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
-	}
+	
+}
 
 }
 

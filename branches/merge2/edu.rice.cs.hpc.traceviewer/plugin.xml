@@ -37,5 +37,21 @@
       		id="hpccallstackview.view">
 	  </view>
    </extension>
+   <extension
+         id="hpctraceviewer"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="edu.rice.cs.hpc.traceviewer.application"
+            name="hpctraceviewer">
+         <property
+               name="windowImages"
+               value="icons/hpctraceviewer016.png,icons/hpctraceviewer032.png,icons/hpctraceviewer048.png,icons/hpctraceviewer128.png">
+         </property>
+         <property
+               name="appName"
+               value="hpctraceviewer">
+         </property>
+      </product>
+   </extension>
 
 </plugin>

@@ -16,7 +16,7 @@
    <windowImages i16="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer016.png" i32="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.png" i48="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.png" i128="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer128.png"/>
 
 
-   <launcher>
+   <launcher name="hpctraceviewer">
       <macosx icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer.icns"/>
       <solaris/>
       <win useIco="false">

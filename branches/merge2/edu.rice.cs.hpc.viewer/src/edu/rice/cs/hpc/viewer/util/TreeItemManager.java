@@ -77,7 +77,6 @@ public class TreeItemManager {
 	 *
 	 */
 	private class ElementDescriptor {
-		TreeItem itemElement;
 		Image imgElement;
 		String []sTextElement;
 		
@@ -89,18 +88,8 @@ public class TreeItemManager {
 		 * @param sTexts
 		 */
 		ElementDescriptor (TreeItem item, Image img, String []sTexts) {
-			this.itemElement = item;
 			this.imgElement = img;
 			this.sTextElement = sTexts;
-		}
-		
-		/**
-		 * 
-		 */
-		ElementDescriptor () {
-			this.imgElement = null;
-			this.itemElement = null;
-			this.sTextElement = null;
 		}
 	}
 

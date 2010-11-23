@@ -229,23 +229,15 @@
             name="hpcviewer">
          <property
                name="windowImages"
-               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
-         </property>
-         <property
-               name="aboutText"
-               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2010, Rice University">
-         </property>
-         <property
-               name="aboutImage"
-               value="icons/hpcviewerEclipseShadow128.png">
-         </property>
-         <property
-               name="startupProgressRect"
-               value="1,273,245,7">
+               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipse128.gif">
          </property>
          <property
                name="preferenceCustomization"
                value="plugin_customization.ini">
+         </property>
+         <property
+               name="appName"
+               value="hpcviewer">
          </property>
       </product>
    </extension>

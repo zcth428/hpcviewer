@@ -197,8 +197,6 @@ public class HTMLEditor extends EditorPart {
 		java.net.URL url = cs.getLocation();
 		if ( url == null ) return null;
 		java.io.File f = new java.io.File( url.getFile() );
-		if (f == null) return null;
-
 		return f.getAbsolutePath();
 		}
 }

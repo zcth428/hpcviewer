@@ -175,9 +175,7 @@ public class PrintFileXML {
 		
 		InputStream objFile = null;
 		File file = new File(hpc_dir + DTD_FILE_NAME);
-		if (file == null)
-			return;
-		else {
+		{
 			try {
 				objFile = new FileInputStream(file);
 			} catch (FileNotFoundException e) {

@@ -89,7 +89,7 @@ public long trace_minBegTime;
 public long trace_maxEndTime;
 
 
-private boolean metrics_needed = false;
+private boolean metrics_needed = true;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -786,52 +786,6 @@ public ThreadLevelDataManager getThreadLevelDataManager() {
 	return this.threadsData;
 }
 
-
-private class CreateCallersViewThread extends Thread {
-	private RootScope callersViewRootScope;
-	private RootScope callingContextViewRootScope;
-	
-	public CreateCallersViewThread(RootScope cctRootScope) {
-		super();
-		this.callingContextViewRootScope = cctRootScope;
-	}
-	
-	public void run() {
-		callersViewRootScope = createCallersView(callingContextViewRootScope);
-		addPercents(callersViewRootScope, (RootScope) callingContextViewRootScope);
-	}
-	
-	public RootScope getRootScope() {
-		return callersViewRootScope;
-	}
-	
-}
-
-
-private class CreateFlatViewThread extends Thread {
-	private RootScope flatViewRootScope;
-	private RootScope callingContextViewRootScope;
-	
-	public CreateFlatViewThread(RootScope cctRootScope) {
-		super();
-		this.callingContextViewRootScope = cctRootScope;
-	}
-	
-	public void run() {
-		// While creating the flat tree, we attribute the cost for procedure scopes
-		// One the tree has been created, we compute the inclusive cost for other scopes
-		flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);
-	}
-	
-	public RootScope getRootScope() {
-		return flatViewRootScope;
-	}
-	
-}
-
-//======================================================================================
-//	UNIT TEST
-//======================================================================================
 
 /**
  * unit test for this class

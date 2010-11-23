@@ -66,7 +66,6 @@ public Builder()
 {
 	this.parser = null;		// must be set non-null by 'setParser'
 	
-	this.parseOK = this.parseOK;
 	this.parseErrorLineNumber = -1;
 }
 

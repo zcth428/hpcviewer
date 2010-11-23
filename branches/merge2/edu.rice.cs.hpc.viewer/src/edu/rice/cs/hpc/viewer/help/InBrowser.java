@@ -7,7 +7,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.FileDialog;
 
-import com.onpositive.richtexteditor.viewer.RichTextViewer;
 import com.onpositive.richtexteditor.model.LayerManager;;
 
 public class InBrowser {

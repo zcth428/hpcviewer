@@ -1,8 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 
 /*****************************************

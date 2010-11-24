@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
-//johnmc
-import java.util.Hashtable;
 // laks 2008.08.27
 import java.util.EmptyStackException;
 
@@ -1232,7 +1230,6 @@ public class ExperimentBuilder2 extends Builder
 	}
 	private void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
 	{
-		String[] val_line      = new String[2];
 		int cct_id = 0, flat_id = 0;
 		// make a new statement-range scope object
 		int firstLn = 0;

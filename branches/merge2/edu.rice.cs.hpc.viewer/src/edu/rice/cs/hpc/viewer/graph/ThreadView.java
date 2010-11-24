@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.viewer.graph;
 
 import java.io.IOException;
 import java.text.Collator;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 

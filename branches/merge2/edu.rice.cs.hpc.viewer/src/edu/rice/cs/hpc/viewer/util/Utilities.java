@@ -36,7 +36,6 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
-import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 
 /**
  * Class providing auxiliary utilities methods.

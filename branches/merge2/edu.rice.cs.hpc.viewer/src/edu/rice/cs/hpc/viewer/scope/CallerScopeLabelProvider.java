@@ -4,8 +4,6 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.data.experiment.scope.Scope;
-
 /**
  * this class will specifically label scopes (tree items) in caller view.
  * If the view has "folded" scopes (i.e. multiple number of occurrences into one item)

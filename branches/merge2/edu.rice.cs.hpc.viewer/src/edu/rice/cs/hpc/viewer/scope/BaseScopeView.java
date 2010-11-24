@@ -5,7 +5,6 @@ import org.eclipse.swt.widgets.TreeItem;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
  * 

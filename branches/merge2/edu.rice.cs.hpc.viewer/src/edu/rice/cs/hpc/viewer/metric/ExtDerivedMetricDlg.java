@@ -362,7 +362,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 
 			// vm.setScope(null);
 			try {
-				double dValue = objExpression.eval( varMap, fctMap);
+				objExpression.eval( varMap, fctMap);
 				// if there is no exception, we assume everything goes fine
 				return true;
 			} catch(java.lang.Exception e) {

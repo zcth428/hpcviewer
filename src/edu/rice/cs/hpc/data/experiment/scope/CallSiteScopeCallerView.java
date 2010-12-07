@@ -6,7 +6,7 @@ import java.util.LinkedList;
 
 import org.eclipse.jface.viewers.TreeNode;
 
-import edu.rice.cs.hpc.data.experiment.metric.CombineMetricUsingCopy;
+import edu.rice.cs.hpc.data.experiment.metric.AbstractCombineMetric;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.AbstractFinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
@@ -27,7 +27,8 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	private Scope scopeCCT; 
 	private ArrayList<CallSiteScopeCallerView> listOfmerged;
 
-	static final private CombineMetricUsingCopy combine_with_dupl = new CombineMetricUsingCopy();
+	static final private IncrementalCombineMetricUsingCopy combine_with_dupl = new IncrementalCombineMetricUsingCopy();
+	static final private CombineMetricUsingCopyNoCondition combine_without_cond = new CombineMetricUsingCopyNoCondition();
 	
 	/**
 	 * 
@@ -43,7 +44,6 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 
 		this.scopeCCT = cct;
 		this.flag_scope_has_child = false;
-		//numChildren = 0;
 	}
 
 	/***
@@ -71,6 +71,14 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		if (listOfmerged == null) 
 			listOfmerged = new ArrayList<CallSiteScopeCallerView>();
 		
+		//-----------------------------------------
+		// the first phase of caller tree creation has counter equal to zero (at least)
+		// the second phase (incremental) should have the counter to be more than 1
+		//-----------------------------------------
+		if (this.iCounter>1) {
+			scope.iCounter = this.iCounter;
+		}
+
 		listOfmerged.add(scope);	// include the new scope to merge
 	}
 	
@@ -120,7 +128,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				scope_cost = this;
 			}
 			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
-				((CallSiteScope) this.scopeCCT, scope_cost, combine_with_dupl, inclusiveOnly, exclusiveOnly);
+				((CallSiteScope) this.scopeCCT, scope_cost, combine_without_cond, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
 			CallersViewScopeVisitor.addNewPathIntoTree(this, first, listOfChain);
@@ -138,7 +146,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-					(scope_cct, scope, combine_with_dupl, inclusiveOnly, exclusiveOnly);
+					(scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
 				
 				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, combine_with_dupl, inclusiveOnly, exclusiveOnly);
 				percent_need_recompute = true;
@@ -176,4 +184,92 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	}
 
 
+		
+	
+	/************************
+	 * combination class to combine two metrics
+	 * This class is specifically designed for combining merged nodes in incremental caller view
+	 * @author laksonoadhianto
+	 *
+	 *************************/
+	static private class IncrementalCombineMetricUsingCopy extends AbstractCombineMetric {
+
+		/*
+		 * (non-Javadoc)
+		 * @see edu.rice.cs.hpc.data.experiment.metric.AbstractCombineMetric#combine(edu.rice.cs.hpc.data.experiment.scope.Scope, edu.rice.cs.hpc.data.experiment.scope.Scope, edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter, edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter)
+		 */
+		public void combine(Scope target, Scope source,
+				MetricValuePropagationFilter inclusiveOnly,
+				MetricValuePropagationFilter exclusiveOnly) {
+
+			
+			if (target instanceof CallSiteScopeCallerView) {
+				CallSiteScopeCallerView target_scope = (CallSiteScopeCallerView) target;
+
+				Scope copy = source.duplicate();
+				copy.setMetricValues( source.getCombinedValues() );
+				
+				CallSiteScopeCallerView source_scope = (CallSiteScopeCallerView) source;
+				
+				//-----------------------------------------------------------
+				// only combine the outermost "node" of incremental callsite
+				// the counter was initialized by "1" so the outermost must be at least 1
+				//-----------------------------------------------------------
+				if (inclusiveOnly != null && source_scope.iCounter <= 1) {
+					target_scope.safeCombine(copy, inclusiveOnly);
+				} 
+										
+				if (exclusiveOnly != null)
+					target_scope.combine(copy, exclusiveOnly);
+				
+				
+			} else {
+				System.err.println("ERROR-ICMUC: the target combine is incorrect: " + target + " -> " + target.getClass() );
+			}
+			
+		}
+	}
+
+
+	/************************
+	 * combination class specific for the creation of incremental call site
+	 * in this phase, we need to store the information of counter from the source
+	 * @author laksonoadhianto
+	 *
+	 ************************/
+	static private class CombineMetricUsingCopyNoCondition extends AbstractCombineMetric {
+
+		/*
+		 * (non-Javadoc)
+		 * @see edu.rice.cs.hpc.data.experiment.metric.AbstractCombineMetric#combine(edu.rice.cs.hpc.data.experiment.scope.Scope, 
+		 * edu.rice.cs.hpc.data.experiment.scope.Scope, edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter, 
+		 * edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter)
+		 */
+		public void combine(Scope target, Scope source,
+				MetricValuePropagationFilter inclusiveOnly,
+				MetricValuePropagationFilter exclusiveOnly) {
+
+			if (target instanceof CallSiteScopeCallerView) {
+				CallSiteScopeCallerView target_scope = (CallSiteScopeCallerView) target;
+				Scope copy = source.duplicate();
+				copy.setMetricValues( source.getCombinedValues() );
+				
+				if (inclusiveOnly != null) {
+					target_scope.safeCombine(copy, inclusiveOnly);
+				}
+				if (exclusiveOnly != null)
+					target_scope.combine(copy, exclusiveOnly);
+				
+				target_scope.iCounter = source.iCounter;
+				
+			} else {
+				System.err.println("ERROR-CMUCNC: the target combine is incorrect: " + target + " -> " + target.getClass() );
+			}
+			
+		}
+	}
+
+	static private String getObjectID(Object o) {
+		return Integer.toHexString(System.identityHashCode(o));
+	}
 }

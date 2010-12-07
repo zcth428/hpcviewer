@@ -1,11 +1,6 @@
 package edu.rice.cs.hpc.viewer.scope;
 
-import java.util.LinkedList;
-
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
-import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
 import edu.rice.cs.hpc.data.experiment.scope.IMergedScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
@@ -13,8 +8,6 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.CallersViewScopeVisitor;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitorWithBackup;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 

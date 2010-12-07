@@ -139,7 +139,7 @@ public class CallerScopeBuilder {
 				// combine metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
 				combine.combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
-
+				
 				//------------------------------------------------------------------------
 				// merge rest of call path as a child of existingCaller.
 				//------------------------------------------------------------------------

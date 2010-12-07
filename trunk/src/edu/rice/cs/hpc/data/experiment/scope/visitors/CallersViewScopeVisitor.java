@@ -276,6 +276,9 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			super.combine_internal(target, source, inclusiveOnly, exclusiveOnly);
 			if (this.cct_entry != null)
 				this.listCombinedScopes.addList(cct_entry, target);
+			else {
+				System.err.println("CVSV error: no list of combined scopes for " + target + "\t source: " + source );
+			}
 		}
 	}
 }

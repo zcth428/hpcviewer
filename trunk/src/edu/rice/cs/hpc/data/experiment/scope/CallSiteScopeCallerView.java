@@ -229,10 +229,10 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 										
 				if (exclusiveOnly != null)
 					target_scope.combine(copy, exclusiveOnly);
-				if (source_scope.iCounter <= 1)
+/*				if (source_scope.iCounter <= 1)
 					System.out.println("\tCOMBINE: " + target_scope + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + source_scope.iCounter +
 						" <-- " + source_scope.getScopeCCT().getCCTIndex() + "\t m: " + target_scope.getMetricValue(0).getValue());
-				
+*/				
 			} else {
 				System.err.println("ERROR-ICMUC: the target combine is incorrect: " + target + " -> " + target.getClass() );
 			}
@@ -272,9 +272,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				target_scope.iCounter = source.iCounter;
 				
-				System.out.println("ASSGN: " + target_scope + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + target_scope.iCounter +
+/*				System.out.println("ASSGN: " + target_scope + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + target_scope.iCounter +
 						" <-- " + "\t m: " + target_scope.getMetricValue(0).getValue());
-			} else {
+*/			} else {
 				System.err.println("ERROR-CMUCNC: the target combine is incorrect: " + target + " -> " + target.getClass() );
 			}
 			

@@ -21,10 +21,11 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
  */
 public class CallSiteScopeCallerView extends CallSiteScope implements IMergedScope {
 
-	//public int numChildren;
 	private boolean flag_scope_has_child;
 
-	private Scope scopeCCT; 
+	private Scope scopeCCT; // store the orignal CCT scope
+	private Scope scopeCost; // the original CCT cost scope. In caller view, a caller scope needs 2 pointers: the cct and the scope
+	
 	private ArrayList<CallSiteScopeCallerView> listOfmerged;
 
 	static final private IncrementalCombineMetricUsingCopy combine_with_dupl = new IncrementalCombineMetricUsingCopy();
@@ -39,10 +40,11 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	 * @param cct
 	 */
 	public CallSiteScopeCallerView(LineScope scope, ProcedureScope scope2,
-			CallSiteScopeType csst, int id, Scope cct) {
+			CallSiteScopeType csst, int id, Scope cct, Scope s_cost) {
 		super(scope, scope2, csst, id, cct.getFlatIndex());
 
 		this.scopeCCT = cct;
+		this.scopeCost = s_cost;
 		this.flag_scope_has_child = false;
 	}
 
@@ -79,7 +81,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			scope.iCounter = this.iCounter;
 		}
 
-		listOfmerged.add(scope);	// include the new scope to merge
+/*		System.out.println("  MERGE: " + this + " (" + this.getScopeCCT().getCCTIndex()+") " + this.iCounter +
+				" <-- (" + scope.getScopeCCT().getCCTIndex() + ") " + scope.iCounter + "\t m: " + scope.getMetricValue(0).getValue());
+*/		listOfmerged.add(scope);	// include the new scope to merge
 	}
 	
 
@@ -91,6 +95,10 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		this.flag_scope_has_child = true;
 	}
 	
+	/***
+	 * check if the scope has a child or not
+	 * @return
+	 */
 	public boolean hasScopeChildren() {
 		return this.flag_scope_has_child;
 	}
@@ -123,11 +131,11 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			//-------------------------------------------------------------------------
 			// construct my own child
 			//-------------------------------------------------------------------------
-			Scope scope_cost = this.scopeCCT;
-			if (this.listOfmerged == null){
+			Scope scope_cost = this.scopeCost; //this.scopeCCT;
+/*			if (this.listOfmerged == null){
 				scope_cost = this;
 			}
-			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
+*/			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
 				((CallSiteScope) this.scopeCCT, scope_cost, combine_without_cond, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
@@ -221,7 +229,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 										
 				if (exclusiveOnly != null)
 					target_scope.combine(copy, exclusiveOnly);
-				
+				if (source_scope.iCounter <= 1)
+					System.out.println("\tCOMBINE: " + target_scope + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + source_scope.iCounter +
+						" <-- " + source_scope.getScopeCCT().getCCTIndex() + "\t m: " + target_scope.getMetricValue(0).getValue());
 				
 			} else {
 				System.err.println("ERROR-ICMUC: the target combine is incorrect: " + target + " -> " + target.getClass() );
@@ -262,6 +272,8 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				target_scope.iCounter = source.iCounter;
 				
+				System.out.println("ASSGN: " + target_scope + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + target_scope.iCounter +
+						" <-- " + "\t m: " + target_scope.getMetricValue(0).getValue());
 			} else {
 				System.err.println("ERROR-CMUCNC: the target combine is incorrect: " + target + " -> " + target.getClass() );
 			}

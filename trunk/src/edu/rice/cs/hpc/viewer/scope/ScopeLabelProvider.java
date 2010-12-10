@@ -51,10 +51,11 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 					CallSiteScopeCallerView caller = (CallSiteScopeCallerView) node;
 					Object merged[] = caller.getMergedScopes();
 					if (merged != null) {
-						for(Object c: merged) {
-							CallSiteScopeCallerView cv = (CallSiteScopeCallerView) c;
-							text = text + cv.getScopeCCT().getCCTIndex() + " ";
-						}
+						text += "{" + merged.length+ "}";
+//						for(Object c: merged) {
+//							CallSiteScopeCallerView cv = (CallSiteScopeCallerView) c;
+//							text = text + cv.getScopeCCT().getCCTIndex() + " ";
+//						}
 					}
 					Scope cct = caller.getScopeCCT();
 					text = text + "[" + cct.getCCTIndex()  + "]" + node.getName();

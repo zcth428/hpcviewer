@@ -67,7 +67,7 @@ public class CallerScopeBuilder {
 					if (numKids<MAX_DESC) {
 						CallSiteScopeCallerView callerScope =
 							new CallSiteScopeCallerView( lineScope, mycaller,
-									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next);
+									CallSiteScopeType.CALL_FROM_PROCEDURE, lineScope.hashCode(), next, scope_cost);
 
 						// set the value of the new scope
 						combine.combine(callerScope, scope_cost, inclusiveOnly, exclusiveOnly);

@@ -124,13 +124,12 @@ public class CallerScopeBuilder {
 				//----------------------------------------------------------------------------
 				// when the CCT scopes are identical, we return immediately without merging
 				//----------------------------------------------------------------------------
-				Scope e_cct = existingCaller.getScopeCCT();
+/*				Scope e_cct = existingCaller.getScopeCCT();
 				Scope f_cct = first.getScopeCCT();
 				if (e_cct.getCCTIndex() == f_cct.getCCTIndex()) {
-					//System.out.println("Scope: " + callee + " [" + callee.cct_node_index+ "] " + "\tCCT identical: " + e_cct+ "\t" + e_cct.cct_node_index);
 					return;
 				}
-				//------------------------------------------------------------------------
+*/				//------------------------------------------------------------------------
 				// We found the same CCT in the path. let's merge them
 				//------------------------------------------------------------------------
 				existingCaller.merge(first);

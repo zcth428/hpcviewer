@@ -81,9 +81,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			scope.iCounter = this.iCounter;
 		}
 
-/*		System.out.println("  MERGE: " + this + " (" + this.getScopeCCT().getCCTIndex()+") " + this.iCounter +
-				" <-- (" + scope.getScopeCCT().getCCTIndex() + ") " + scope.iCounter + "\t m: " + scope.getMetricValue(0).getValue());
-*/		listOfmerged.add(scope);	// include the new scope to merge
+//		System.out.println("  MERGE: " + this  + " " + getObjectID(this) + " (" + this.getScopeCCT().getCCTIndex()+") " + this.iCounter +
+//				" <-- (" + scope.getScopeCCT().getCCTIndex() + ") " + scope.iCounter + "\t m: " + scope.getMetricValue(0).getValue());
+		listOfmerged.add(scope);	// include the new scope to merge
 	}
 	
 
@@ -230,7 +230,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				if (exclusiveOnly != null)
 					target_scope.combine(copy, exclusiveOnly);
 /*				if (source_scope.iCounter <= 1)
-					System.out.println("\tCOMBINE: " + target_scope + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + source_scope.iCounter +
+					System.out.println("\tCOMBINE: " + target_scope + " " + getObjectID(target_scope) + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + source_scope.iCounter +
 						" <-- " + source_scope.getScopeCCT().getCCTIndex() + "\t m: " + target_scope.getMetricValue(0).getValue());
 */				
 			} else {
@@ -272,9 +272,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				target_scope.iCounter = source.iCounter;
 				
-/*				System.out.println("ASSGN: " + target_scope + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + target_scope.iCounter +
-						" <-- " + "\t m: " + target_scope.getMetricValue(0).getValue());
-*/			} else {
+//				System.out.println("ASSGN: " + target_scope + " " + getObjectID(target) + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + target_scope.iCounter +
+//						" <-- " + "\t m: " + target_scope.getMetricValue(0).getValue());
+			} else {
 				System.err.println("ERROR-CMUCNC: the target combine is incorrect: " + target + " -> " + target.getClass() );
 			}
 			

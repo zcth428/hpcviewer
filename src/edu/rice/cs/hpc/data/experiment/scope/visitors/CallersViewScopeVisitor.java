@@ -31,6 +31,8 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	
+	static private final int MAX_DESC = 2;
+	
 	/****--------------------------------------------------------------------------------****
 	 * 
 	 * @param experiment
@@ -65,7 +67,6 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		if (!scope.hasNonzeroMetrics()) {
 			return; 
 		}
-
 
 		if (vt == ScopeVisitType.PreVisit) { 
 						

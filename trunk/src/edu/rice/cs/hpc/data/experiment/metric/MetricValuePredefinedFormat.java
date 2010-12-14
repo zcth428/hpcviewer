@@ -27,11 +27,12 @@ public class MetricValuePredefinedFormat implements IMetricValueFormat {
 			// for next release, we need to have a universal metric value type that can 
 			//	represent any possible value such as double, int, long, hex, ...
 			// --------------------------------------------------------------------------------
-			if (format.indexOf("%x")>=0) {
+/*			if (format.indexOf("%x")>=0) {
 				long valong = (long) value.getValue();
 				format_str = format_str.format(format, valong);
 				
-			} else {
+			} else*/ 
+			{
 				format_str = format_str.format(format, value.getValue());
 			}
 

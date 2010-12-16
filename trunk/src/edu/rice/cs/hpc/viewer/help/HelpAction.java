@@ -40,7 +40,7 @@ public class HelpAction extends Action {
 		//java.net.URL objURL = this.getClass().getResource("hpcviewer.html");
 		
 		//Path location = new Path(objURL.getFile());
-		Path location = new Path("doc/hpcviewer.html");
+		Path location = new Path("doc/hpcviewer-users-manual.html");
 		IFile file = root.getFile(location);
 		
 		IWorkbenchPage objPage = this.objWindow.getActivePage(); 

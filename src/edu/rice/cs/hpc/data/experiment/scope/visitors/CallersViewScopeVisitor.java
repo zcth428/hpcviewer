@@ -28,10 +28,13 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 	protected int numberOfPrimaryMetrics;
 	
 	private final CombineCallerScopeMetric combinedMetrics;
+	private final CombineProcedureScope combineProcedureMetrics;
+	
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private final InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	
-	static private final int MAX_DESC = 2;
+	final private ListCombinedScopes listCombinedScopes;
+
 	
 	/****--------------------------------------------------------------------------------****
 	 * 
@@ -52,7 +55,9 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(experiment);
 		inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
 		combinedMetrics = new CombineCallerScopeMetric();
-		
+		combineProcedureMetrics = new CombineProcedureScope();
+		listCombinedScopes = new ListCombinedScopes();
+
 	}
 
 	//----------------------------------------------------
@@ -75,13 +80,14 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			
 			this.combinedMetrics.setEntryScope(scope);
 
-			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope, 
+			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(IMergedScope.MergingStatus.INIT, scope, scope, 
 					combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
 
 			//-------------------------------------------------------
 			// ensure my call path is represented among my children.
 			//-------------------------------------------------------
-			mergeCallerPath(callee, callPathList, combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
+			mergeCallerPath(IMergedScope.MergingStatus.INIT, 0, callee, callPathList, 
+					combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			ProcedureScope mycallee  = scope.getProcedureScope();
@@ -99,7 +105,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			// 	When a caller view scope is created, it creates also its children and its merged children
 			//		the counter of these children are then need to be decremented based on the CCT scope
 			//---------------------------------------------------------------------------
-			ArrayList<Scope> list = this.combinedMetrics.getListCombinedScopes().getList(scope);
+			ArrayList<Scope> list = this.listCombinedScopes.getList(scope);
 			if (list != null) {
 				Iterator<Scope> iter = list.iterator();
 				while (iter.hasNext()) {
@@ -183,7 +189,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		}
 		
 		// accumulate the metrics
-		this.combinedMetrics.combine(cct_s, caller_proc, cct_s);
+		this.combineProcedureMetrics.combine(cct_s, caller_proc, cct_s);
 		
 		return caller_proc;
 	}
@@ -247,22 +253,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 	 *
 	 ********************************************************************/
 	private class CombineCallerScopeMetric extends AbstractCombineMetric {
-		final private ListCombinedScopes listCombinedScopes;
 		private Scope cct_entry;
-		
-		public CombineCallerScopeMetric() {
-			this.listCombinedScopes = new ListCombinedScopes();
-		}
-		
-		public void combine(Scope cct_entry, Scope target, Scope source) {
-			this.setEntryScope(cct_entry);
-			this.combine(target, source, inclusiveOnly, exclusiveOnly);
-		}
-		
-		public ListCombinedScopes getListCombinedScopes() {
-			return this.listCombinedScopes;
-		}
-
 		
 		public void setEntryScope( Scope key ) {
 			this.cct_entry = key;
@@ -272,12 +263,35 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 				MetricValuePropagationFilter inclusiveOnly,
 				MetricValuePropagationFilter exclusiveOnly) {
 
-			super.combine_internal(target, source, inclusiveOnly, exclusiveOnly);
+			if (target.iCounter == 0 && inclusiveOnly != null) {
+				target.safeCombine(source, inclusiveOnly);
+			}
+			if (exclusiveOnly != null)
+				target.combine(source, exclusiveOnly);
+
+			target.iCounter++;
+
 			if (this.cct_entry != null)
-				this.listCombinedScopes.addList(cct_entry, target);
+				listCombinedScopes.addList(cct_entry, target);
 			else {
 				System.err.println("CVSV error: no list of combined scopes for " + target + "\t source: " + source );
 			}
 		}
 	}
+	
+	private class CombineProcedureScope extends AbstractCombineMetric {
+		
+		public void combine(Scope cct_entry, Scope target, Scope source) {
+			listCombinedScopes.addList(cct_entry, target);
+			this.combine(target, source, inclusiveOnly, exclusiveOnly);
+		}
+		
+		public void combine(Scope target, Scope source,
+				MetricValuePropagationFilter inclusiveOnly,
+				MetricValuePropagationFilter exclusiveOnly) {
+			
+			super.combine_internal(target, source, inclusiveOnly, exclusiveOnly);
+		}
+	}
+	
 }

@@ -2,6 +2,8 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 import java.util.LinkedList;
 
+import edu.rice.cs.hpc.data.util.Util;
+
 import edu.rice.cs.hpc.data.experiment.metric.AbstractCombineMetric;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
@@ -20,8 +22,8 @@ public class CallerScopeBuilder {
 	 * 
 	 * @return list of call path
 	 */
-	static public LinkedList<CallSiteScopeCallerView> createCallChain(CallSiteScope scope_cct,
-			Scope scope_cost, AbstractCombineMetric combine, 
+	static public LinkedList<CallSiteScopeCallerView> createCallChain(IMergedScope.MergingStatus status,
+			CallSiteScope scope_cct, Scope scope_cost, AbstractCombineMetric combine, 
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly ) {
 		//-----------------------------------------------------------------------
 		// compute callPath: a chain of my callers
@@ -93,7 +95,7 @@ public class CallerScopeBuilder {
 	 * @param inclusiveOnly
 	 * @param exclusiveOnly
 	 */
-	static public void mergeCallerPath(Scope callee, 
+	static public void mergeCallerPath(IMergedScope.MergingStatus status, int counter_to_assign, Scope callee, 
 			LinkedList<CallSiteScopeCallerView> callerPathList, AbstractCombineMetric combine,
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly) 
 	{
@@ -121,18 +123,10 @@ public class CallerScopeBuilder {
 			//if (first.isMyCCT(existingCaller) ) {
 			if (first.getCCTIndex() == existingCaller.getCCTIndex()) {
 
-				//----------------------------------------------------------------------------
-				// when the CCT scopes are identical, we return immediately without merging
-				//----------------------------------------------------------------------------
-/*				Scope e_cct = existingCaller.getScopeCCT();
-				Scope f_cct = first.getScopeCCT();
-				if (e_cct.getCCTIndex() == f_cct.getCCTIndex()) {
-					return;
-				}
-*/				//------------------------------------------------------------------------
+ 				//------------------------------------------------------------------------
 				// We found the same CCT in the path. let's merge them
 				//------------------------------------------------------------------------
-				existingCaller.merge(first);
+				existingCaller.merge(status, first, counter_to_assign);
 
 				//------------------------------------------------------------------------
 				// combine metric values for first to those of existingCaller.
@@ -142,7 +136,7 @@ public class CallerScopeBuilder {
 				//------------------------------------------------------------------------
 				// merge rest of call path as a child of existingCaller.
 				//------------------------------------------------------------------------
-				mergeCallerPath(existingCaller, callerPathList, combine, inclusiveOnly, exclusiveOnly);
+				mergeCallerPath(status, counter_to_assign, existingCaller, callerPathList, combine, inclusiveOnly, exclusiveOnly);
 				
 				return; // merged with existing child. nothing left to do.
 			}

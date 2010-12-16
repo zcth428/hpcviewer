@@ -231,6 +231,10 @@ public static File[] getListOfXMLFiles(String sDir)
 }
 
 
+static public String getObjectID(Object o) {
+	return Integer.toHexString(System.identityHashCode(o));
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //	COLOR																//

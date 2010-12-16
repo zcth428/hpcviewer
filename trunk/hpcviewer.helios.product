@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer" version="1.0.0" useFeatures="false" includeLaunchers="true">
+<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer.application" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer" version="1.0.1" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="icons/hpcviewerEclipseShadow128.png"/>

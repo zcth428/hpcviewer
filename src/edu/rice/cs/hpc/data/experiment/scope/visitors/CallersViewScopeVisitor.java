@@ -13,6 +13,14 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagat
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
+
+/*************************
+ * A class that manages the initialization phase of the creation of callers tree
+ * For the second phase of callers tree (incremental callers path) should be seen in CallSiteScopeCallerView
+ * 
+ * @author laksonoadhianto
+ *
+ */
 public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScopeVisitor {
 
 

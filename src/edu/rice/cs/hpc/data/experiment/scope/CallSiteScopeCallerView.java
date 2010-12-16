@@ -67,17 +67,21 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			listOfmerged = new ArrayList<CallSiteScopeCallerView>();
 		
 		//-----------------------------------------
-		// the first phase of caller tree creation has counter equal to zero (at least)
-		// the second phase (incremental) should have the counter to be more than 1
+		// During the initialization phase (the first time a caller tree is created,
+		//	the counter of the merged scope is equivalent to the counter of the existing scope.
+		//	This counter would be then used in the future (in the second phase)
+		//
+		// In the second phase (incremental), the counter of the child of the merged scope is given from 
+		//	the counter of the parent of this child. Since here we don't know who is the "real" parent,
+		//	we need to pass it from the parameter
 		//-----------------------------------------
 		switch (status) {
 		case INIT:
 			scope.iCounter = this.iCounter;
 			break;
+
 		case INCREMENTAL:
 			scope.iCounter = counter_to_assign;
-			//if (this.iCounter>1)
-			//	scope.iCounter = this.iCounter - 1;
 			break;
 		}
 
@@ -150,15 +154,28 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				CallSiteScopeCallerView scope = iter.next();
 				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
+
+				//-------------------------------------------------------------------------
+				// construct the child of this merged scope
+				//-------------------------------------------------------------------------
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
 					(IMergedScope.MergingStatus.INIT, scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
 				
+				//-------------------------------------------------------------------------
+				// For recursive function where the counter is more than 1, the counter to 
+				//	assign to the child scope is the counter of the scope minus 1
+				// For normal function it has to be zero
+				//-------------------------------------------------------------------------
 				int counter_to_assign = scope.iCounter - 1;
 				if (counter_to_assign<0)
 					counter_to_assign = 0;
 				
+				//-------------------------------------------------------------------------
+				// merge (if possible) the path of this new created merged scope
+				//-------------------------------------------------------------------------
 				CallersViewScopeVisitor.mergeCallerPath(IMergedScope.MergingStatus.INCREMENTAL, counter_to_assign,
 						this, listOfChain, combine_with_dupl, inclusiveOnly, exclusiveOnly);
+
 				percent_need_recompute = true;
 				
 			}
@@ -194,7 +211,16 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	}
 
 
-		
+	/**
+	 * get the scope with the combined metrics 
+	 * @param source
+	 * @return
+	 */
+	static private Scope getScopeOfCombineMetrics(Scope source) {
+		Scope copy = source.duplicate();
+		copy.setMetricValues( source.getCombinedValues() );
+		return copy;
+	}
 	
 	/************************
 	 * combination class to combine two metrics
@@ -214,23 +240,18 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 
 			
 			if (target instanceof CallSiteScopeCallerView) {
-				CallSiteScopeCallerView target_scope = (CallSiteScopeCallerView) target;
 
-				Scope copy = source.duplicate();
-				copy.setMetricValues( source.getCombinedValues() );
-				
-				CallSiteScopeCallerView source_scope = (CallSiteScopeCallerView) source;
+				Scope copy = getScopeOfCombineMetrics(source);
 				
 				//-----------------------------------------------------------
 				// only combine the outermost "node" of incremental callsite
-				// the counter was initialized by "1" so the outermost must be at least 1
 				//-----------------------------------------------------------
-				if (inclusiveOnly != null && source_scope.iCounter == 0) {
-					target_scope.safeCombine(copy, inclusiveOnly);
+				if (inclusiveOnly != null && source.iCounter == 0) {
+					target.safeCombine(copy, inclusiveOnly);
 				} 
 										
 				if (exclusiveOnly != null)
-					target_scope.combine(copy, exclusiveOnly);
+					target.combine(copy, exclusiveOnly);
 				
 			} else {
 				System.err.println("ERROR-ICMUC: the target combine is incorrect: " + target + " -> " + target.getClass() );
@@ -259,17 +280,15 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				MetricValuePropagationFilter exclusiveOnly) {
 
 			if (target instanceof CallSiteScopeCallerView) {
-				CallSiteScopeCallerView target_scope = (CallSiteScopeCallerView) target;
-				Scope copy = source.duplicate();
-				copy.setMetricValues( source.getCombinedValues() );
+				Scope copy = getScopeOfCombineMetrics(source);
 				
 				if (inclusiveOnly != null) {
-					target_scope.safeCombine(copy, inclusiveOnly);
+					target.safeCombine(copy, inclusiveOnly);
 				}
 				if (exclusiveOnly != null)
-					target_scope.combine(copy, exclusiveOnly);
+					target.combine(copy, exclusiveOnly);
 				
-				target_scope.iCounter = source.iCounter;
+				target.iCounter = source.iCounter;
 				
 			} else {
 				System.err.println("ERROR-CMUCNC: the target combine is incorrect: " + target + " -> " + target.getClass() );

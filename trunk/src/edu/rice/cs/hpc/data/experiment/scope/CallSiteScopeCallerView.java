@@ -56,20 +56,13 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		return this.scopeCCT;
 	}
 	
-	/****
-	 * @deprecated
-	 * @param cct
-	 * @return
-	 */
-	public boolean isMyCCT( Scope cct ) {
-		return (this.scopeCCT == cct);
-	}
 	
 	/***
 	 * add merged scope into the list
+	 * @param status
 	 * @param scope
 	 */
-	public void merge(CallSiteScopeCallerView scope) {
+	public void merge(IMergedScope.MergingStatus status, CallSiteScopeCallerView scope, int counter_to_assign) {
 		if (listOfmerged == null) 
 			listOfmerged = new ArrayList<CallSiteScopeCallerView>();
 		
@@ -77,12 +70,17 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		// the first phase of caller tree creation has counter equal to zero (at least)
 		// the second phase (incremental) should have the counter to be more than 1
 		//-----------------------------------------
-		if (this.iCounter>1) {
+		switch (status) {
+		case INIT:
 			scope.iCounter = this.iCounter;
+			break;
+		case INCREMENTAL:
+			scope.iCounter = counter_to_assign;
+			//if (this.iCounter>1)
+			//	scope.iCounter = this.iCounter - 1;
+			break;
 		}
 
-//		System.out.println("  MERGE: " + this  + " " + getObjectID(this) + " (" + this.getScopeCCT().getCCTIndex()+") " + this.iCounter +
-//				" <-- (" + scope.getScopeCCT().getCCTIndex() + ") " + scope.iCounter + "\t m: " + scope.getMetricValue(0).getValue());
 		listOfmerged.add(scope);	// include the new scope to merge
 	}
 	
@@ -131,12 +129,11 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			//-------------------------------------------------------------------------
 			// construct my own child
 			//-------------------------------------------------------------------------
-			Scope scope_cost = this.scopeCost; //this.scopeCCT;
-/*			if (this.listOfmerged == null){
-				scope_cost = this;
-			}
-*/			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
-				((CallSiteScope) this.scopeCCT, scope_cost, combine_without_cond, inclusiveOnly, exclusiveOnly);
+			Scope scope_cost = this.scopeCost; 
+			
+			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
+				(IMergedScope.MergingStatus.INIT, (CallSiteScope) this.scopeCCT, 
+						scope_cost, combine_without_cond, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
 			CallersViewScopeVisitor.addNewPathIntoTree(this, first, listOfChain);
@@ -154,9 +151,14 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-					(scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
+					(IMergedScope.MergingStatus.INIT, scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
 				
-				CallersViewScopeVisitor.mergeCallerPath(this, listOfChain, combine_with_dupl, inclusiveOnly, exclusiveOnly);
+				int counter_to_assign = scope.iCounter - 1;
+				if (counter_to_assign<0)
+					counter_to_assign = 0;
+				
+				CallersViewScopeVisitor.mergeCallerPath(IMergedScope.MergingStatus.INCREMENTAL, counter_to_assign,
+						this, listOfChain, combine_with_dupl, inclusiveOnly, exclusiveOnly);
 				percent_need_recompute = true;
 				
 			}
@@ -223,16 +225,13 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				// only combine the outermost "node" of incremental callsite
 				// the counter was initialized by "1" so the outermost must be at least 1
 				//-----------------------------------------------------------
-				if (inclusiveOnly != null && source_scope.iCounter <= 1) {
+				if (inclusiveOnly != null && source_scope.iCounter == 0) {
 					target_scope.safeCombine(copy, inclusiveOnly);
 				} 
 										
 				if (exclusiveOnly != null)
 					target_scope.combine(copy, exclusiveOnly);
-/*				if (source_scope.iCounter <= 1)
-					System.out.println("\tCOMBINE: " + target_scope + " " + getObjectID(target_scope) + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + source_scope.iCounter +
-						" <-- " + source_scope.getScopeCCT().getCCTIndex() + "\t m: " + target_scope.getMetricValue(0).getValue());
-*/				
+				
 			} else {
 				System.err.println("ERROR-ICMUC: the target combine is incorrect: " + target + " -> " + target.getClass() );
 			}
@@ -272,8 +271,6 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				target_scope.iCounter = source.iCounter;
 				
-//				System.out.println("ASSGN: " + target_scope + " " + getObjectID(target) + " (" + target_scope.getScopeCCT().getCCTIndex()+") " + target_scope.iCounter +
-//						" <-- " + "\t m: " + target_scope.getMetricValue(0).getValue());
 			} else {
 				System.err.println("ERROR-CMUCNC: the target combine is incorrect: " + target + " -> " + target.getClass() );
 			}
@@ -281,7 +278,4 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		}
 	}
 
-	static private String getObjectID(Object o) {
-		return Integer.toHexString(System.identityHashCode(o));
-	}
 }

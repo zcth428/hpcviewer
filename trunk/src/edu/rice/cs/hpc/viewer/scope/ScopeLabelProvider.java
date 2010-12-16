@@ -11,8 +11,14 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
+/*************
+ * Generic label provider for the scope column in scope view 
+ * @author laksonoadhianto
+ *
+ */
 public class ScopeLabelProvider extends ColumnLabelProvider {
 	final static protected Icons iconCollection = Icons.getInstance();
+	// turn the "debug" variable into "true" to show the ID of each scope
 	final static private boolean debug = false;
 	final private Color DARK_BLUE;
 	
@@ -51,7 +57,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 					CallSiteScopeCallerView caller = (CallSiteScopeCallerView) node;
 					Object merged[] = caller.getMergedScopes();
 					if (merged != null) {
-						text += "{" + merged.length+ "}";
+						text += merged.length+ "*";
 //						for(Object c: merged) {
 //							CallSiteScopeCallerView cv = (CallSiteScopeCallerView) c;
 //							text = text + cv.getScopeCCT().getCCTIndex() + " ";

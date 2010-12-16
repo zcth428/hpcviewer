@@ -2,13 +2,12 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 import java.util.LinkedList;
 
-import edu.rice.cs.hpc.data.util.Util;
-
 import edu.rice.cs.hpc.data.experiment.metric.AbstractCombineMetric;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
 public class CallerScopeBuilder {
 	
+	// number of maximum "descendants" in callers tree
 	static private final int MAX_DESC = 2;
 
 	
@@ -111,16 +110,9 @@ public class CallerScopeBuilder {
 			CallSiteScopeCallerView existingCaller = (CallSiteScopeCallerView) callee.getSubscope(i);
 
 			//------------------------------------------------------------------------
-			// we check if the flat ID (or static ID) of the scope in caller view is
-			// the same with the flat ID in cct. If this is the case, we can merge it.
-			// ATTENTION: this will give incorrect representation for mutual recursives,
-			// 	since the same callsites can be called within the same tree (since 
-			//	they have the same flat ID).
-			//	A correct way is to use isMyCCT() method, BUT this will create a huge
-			//	branches and consume enormous memory (it's so enormous that even the
-			//	JVM gives up).
+			// we check if the scope is identical with the existing scope in the path
+			// if it is the case, we should merge them
 			//------------------------------------------------------------------------
-			//if (first.isMyCCT(existingCaller) ) {
 			if (first.getCCTIndex() == existingCaller.getCCTIndex()) {
 
  				//------------------------------------------------------------------------

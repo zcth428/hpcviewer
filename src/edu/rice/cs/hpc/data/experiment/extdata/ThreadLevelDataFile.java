@@ -1,8 +1,6 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 
 /*****************************************
@@ -13,20 +11,45 @@ import java.util.HashMap;
  */
 public class ThreadLevelDataFile {
 
+	//-----------------------------------------------------------
+	// CONSTANTS
+	//-----------------------------------------------------------
+	private int FILE_VERSION;		// version of the raw metric file 
+	final private String FILE_SEPARATOR = "-";		// common separator for the filename
+	final private int POSITION_PROC_ID[] = {5,6};	// position of the process ID in the filename
+	final private int POSITION_THREAD_ID[] = {4,5};	// position of the thread ID in the filename
 	
 	/**
 	 * list of x axis names (process.thread) and its files
 	 */
 	private DataFile []data;
-
+	
 	
 	/**
 	 * constructor: initialize all data
 	 */
 	public ThreadLevelDataFile(File files[]) {
+		
+		FILE_VERSION = 1;
+		
 		if (files != null  &&  files.length>0 ) {
-			data = new DataFile[files.length];
+			
+			//---------------------------------------------
+			// test file version
+			//---------------------------------------------
+			String filename = files[0].getName();
+			String items[] = filename.split(FILE_SEPARATOR);
+
+			try {
+				Double.valueOf(items[items.length-3]);
+				
+			} catch (Exception e) {
+				// old version of the metric file
+				FILE_VERSION = 0;
+			}
+			
 			this.setData(files);
+
 		}
 	}
 
@@ -77,15 +100,18 @@ public class ThreadLevelDataFile {
 	 */
 	private void setData(File f[]) {
 		
+		data = new DataFile[f.length];
+
 		for(int i=0; i<f.length; i++) {
 			String filename = f[i].getName();
-			String parts[] = filename.split("-");
+			String parts[] = filename.split(FILE_SEPARATOR);
 			if (parts.length > 4) {
 				
 				//--------------------------------------------------------------------
 				// adding list of x-axis 
 				//--------------------------------------------------------------------
-				String x_val = parts[parts.length-5] + "." + parts[parts.length-4];
+				String x_val = parts[parts.length - POSITION_PROC_ID[FILE_VERSION] ] + "." 
+						+ parts[parts.length-POSITION_THREAD_ID[FILE_VERSION]];
 				data[i] = new DataFile(f[i], x_val);
 			}
 		}

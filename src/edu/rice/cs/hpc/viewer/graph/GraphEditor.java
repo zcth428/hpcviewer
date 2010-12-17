@@ -49,7 +49,16 @@ public abstract class GraphEditor extends GraphEditorBase {
 		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(exp);
 
 		double y_values[] = this.getValuesY(objDataManager, scope, metric);
-		double []x_values = this.getValuesX(objDataManager, scope, metric);
+		double []x_values;
+		// -----------------------------------------------------------------
+		// temporary bug fix:
+		// in case the x-axis is not double (kind of hex processor number) nullify the x-axis
+		// -----------------------------------------------------------------
+		try {
+			x_values = this.getValuesX(objDataManager, scope, metric);
+		} catch (NumberFormatException e) {
+			x_values = null;
+		}
 
 		Chart chart = this.getChart();
 
@@ -57,13 +66,21 @@ public abstract class GraphEditor extends GraphEditorBase {
 		ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()
 				.createSeries(SeriesType.LINE, metric.getDisplayName() );
 		scatterSeries.setLineStyle(LineStyle.NONE);
-		scatterSeries.setXSeries(x_values);
+		
+		// -----------------------------------------------------------------
+		// temporary bug fix:
+		// in case the x-axis is not double (kind of hex processor number)
+		// -----------------------------------------------------------------
+		if (x_values != null)
+			scatterSeries.setXSeries(x_values);
+		
 		scatterSeries.setYSeries(y_values);
 
 		// adjust the axis range
 		chart.getAxisSet().adjustRange();
 
-		updateRange(x_values.length);
+		if (x_values != null)
+			updateRange(x_values.length);
 
 		final Menu menuPopup = chart.getPlotArea().getMenu();
 		if (menuPopup != null) {

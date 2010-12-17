@@ -86,7 +86,15 @@ public class ThreadLevelDataManager {
 	}
 	
 	
-	public double[] getProcessIDsDouble(int metric_raw_id) {
+	/**
+	 * get the list of processor IDs. The ID has to a number. Otherwise it throws an exception 
+	 * 
+	 * @param metric_raw_id
+	 * @return
+	 * @throws NumberFormatException (in case the processor ID is not a number)
+	 */
+	public double[] getProcessIDsDouble(int metric_raw_id) throws NumberFormatException {
+		
 		String x[] = data_file[metric_raw_id].getValuesX();
 		double xd[] = new double[x.length];
 		for (int i=0; i<x.length; i++) {

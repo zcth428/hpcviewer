@@ -14,7 +14,8 @@ public class GraphEditorPlot extends GraphEditor {
     
 	@Override
 	protected double[] getValuesX(ThreadLevelDataManager objDataManager, 
-			Scope scope, MetricRaw metric) {
+			Scope scope, MetricRaw metric) 
+	throws NumberFormatException {
 
 		double []x_values = objDataManager.getProcessIDsDouble( metric.getID() );				
 		return x_values;

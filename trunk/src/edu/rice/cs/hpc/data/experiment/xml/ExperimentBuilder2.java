@@ -889,9 +889,13 @@ public class ExperimentBuilder2 extends Builder
 					sProcName = sProc;
 				}
 			} catch (java.lang.NumberFormatException e) {
-				
 			}
-		} 
+		} else {
+			//--------------------------------------------
+			// additional debugging feature for Nathan
+			//--------------------------------------------
+			sProcName = sProcIndex;
+		}
 		return sProcName;
 	}
 	

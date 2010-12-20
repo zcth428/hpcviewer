@@ -125,8 +125,12 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 		this.objOutputStream.print(indent + "<" + initial);
 		PrintFileXML.printAttribute(objOutputStream, "i", objScopeToPrint.hashCode());
 		
-		if (name)
-			PrintFileXML.printAttribute(objOutputStream, "n", objScopeToPrint.getName());
+		if (name) {
+			// 2010.12.17 Ashay addition:
+			// Escape the "name" so that we conform to a valid XML syntax
+			String sName = objScopeToPrint.getName().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+			PrintFileXML.printAttribute(objOutputStream, "n", sName);
+		}
 		
 		if (line) {
 			Scope linescope = objScopeToPrint;

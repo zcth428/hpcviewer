@@ -33,7 +33,8 @@
 		<mkdir dir="lib"/>
 		<copy todir="lib">
 			<fileset dir="../external-jars" >
-				<include name="**/*.jar" />
+				<include name="**/org.apache*.jar" />
+				<include name="**/org.eclipse*.jar" />
 			</fileset>
 		</copy>
 		<move file="hpcdata.jar" todir="lib/" />

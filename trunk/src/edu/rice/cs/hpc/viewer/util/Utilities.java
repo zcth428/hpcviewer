@@ -15,8 +15,11 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
@@ -133,33 +136,48 @@ public class Utilities {
 			ExperimentView objView = objManager.getExperimentView();
 			final BaseScopeView arrViews[] = objView.getViews();
 			final TreeItemManager objItemManager = new TreeItemManager();
-			IWorkbenchPart part = window.getPartService().getActivePart();
 
-			if (part instanceof BaseScopeView) {
-				// let refresh the active view first, then we refresh other views via helper thread
-				final BaseScopeView objActiveView = (BaseScopeView) part;
-				resetView  (objItemManager, objActiveView.getTreeViewer() );
-				
-				// using helper thread to refresh other views
-				window.getShell().getDisplay().asyncExec( new Runnable() {
-					public void run() {
-						// refresh all the views
-						for(int i=0;i<arrViews.length;i++) {
-							if (objActiveView != arrViews[i]) {
-								TreeViewer tree = arrViews[i].getTreeViewer();
-								// reset the view
-								Utilities.resetView(objItemManager, tree);
-							} else {
-								//System.out.println("view "+objActiveView.getTitle()+" has been reset ");
-							}
+			// first, we need to refresh the visible view
+			final BaseScopeView visible_view = Utilities.getTopView();
+			if (visible_view != null)
+				Utilities.resetView(objItemManager, visible_view.getTreeViewer());
+			
+			// next, using helper thread to refresh other views
+			window.getShell().getDisplay().asyncExec( new Runnable() {
+				public void run() {
+					
+					// refresh all the views except the visible one 
+					// we will prioritize the visible view to be refreshed first
+					for(int i=0;i<arrViews.length;i++) {
+						if (arrViews[i] != visible_view) {
+							TreeViewer tree = arrViews[i].getTreeViewer();
+							// reset the view
+							Utilities.resetView(objItemManager, tree);
 						}
 					}
-				});
-			} else {
-				System.err.println("Error while changing font: the active view is not an instance of BaseScopeView ! " + part);
+				}
+			});
+		}
+	}
+	
+
+	/****
+	 * Find the first visible scope view (the view can be active or not)
+	 * @return the visible view, null if there is no view
+	 */
+	static BaseScopeView getTopView() {
+		IWorkbenchPage page = 
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		IViewReference [] viewRefs = page.getViewReferences();
+		for(int i=0;i<viewRefs.length;i++) {
+			IWorkbenchPart part = viewRefs[i].getPart(false);
+			if (page.isPartVisible(part)) {
+				if (part instanceof BaseScopeView)
+					return (BaseScopeView)part;
 			}
 		}
 
+		return null;
 	}
 	
 	/**

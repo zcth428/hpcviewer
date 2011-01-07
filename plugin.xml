@@ -193,7 +193,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="edu.rice.cs.hpc.viewer.util.PreferencePage"
+            class="edu.rice.cs.hpc.viewer.util.ViewerPreferencePage"
             id="edu.rice.cs.hpc.viewer.util.PreferencePage"
             name="hpcviewer Preferences">
       </page>

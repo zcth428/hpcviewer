@@ -23,7 +23,7 @@ import edu.rice.cs.hpc.viewer.scope.ScopeActions;
  * be accessed directly via the preference store.
  */
 
-public class PreferencePage
+public class ViewerPreferencePage
 	extends FieldEditorPreferencePage
 	implements IWorkbenchPreferencePage, IPropertyChangeListener  {
 
@@ -35,7 +35,7 @@ public class PreferencePage
 	/**
 	 * 
 	 */
-	public PreferencePage() {
+	public ViewerPreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 	}

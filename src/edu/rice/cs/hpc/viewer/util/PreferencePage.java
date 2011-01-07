@@ -1,9 +1,9 @@
 package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.jface.preference.*;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
-import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;

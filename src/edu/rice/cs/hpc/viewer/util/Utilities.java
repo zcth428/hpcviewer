@@ -165,6 +165,8 @@ public class Utilities {
 					}
 				}
 			});
+		} else {
+			System.err.println("Error: cannot find experiment instance from window: " + window);
 		}
 	}
 	

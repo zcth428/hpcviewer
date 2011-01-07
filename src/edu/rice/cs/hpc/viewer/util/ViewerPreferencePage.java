@@ -3,9 +3,13 @@ package edu.rice.cs.hpc.viewer.util;
 import org.eclipse.jface.preference.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.ScopeActions;
 
@@ -32,6 +36,7 @@ public class ViewerPreferencePage
 	private FontFieldEditor objFontMetric;
 	private FontFieldEditor objFontGeneric;
 	
+	private IWorkbenchWindow objWindow;
 	/**
 	 * 
 	 */
@@ -81,10 +86,36 @@ public class ViewerPreferencePage
 		Object o = event.getSource();
 		System.out.println("PP: "+o.getClass() + " " + event.getNewValue());
 	}
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
+		this.objWindow = workbench.getActiveWorkbenchWindow();
 	}
+
+	/* (non-Javadoc)
+	 */
+    protected void performApply() {
+        this.performOk();
+    }
 	
+	/* (non-Javadoc)
+	 */
+	public boolean performOk() {
+		super.performOk();
+		
+		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+		// get the threshold
+		double fThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
+		ScopeActions.fTHRESHOLD = fThreshold;
+		// get the font for metrics columns
+		FontData []objFontsMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
+		FontData []objFontsGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
+		Utilities.setFontMetric(this.objWindow, objFontsMetric, objFontsGeneric);
+
+		ExperimentManager.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
+
+		return true;
+	}
 }

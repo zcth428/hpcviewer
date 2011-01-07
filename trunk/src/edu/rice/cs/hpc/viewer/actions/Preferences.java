@@ -57,16 +57,6 @@ public class Preferences implements IWorkbenchWindowActionDelegate {
 			int iRet = objDialog.open();
 			if(iRet == Window.OK) {
 				// user click OK
-				ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-				// get the threshold
-				double fThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
-				ScopeActions.fTHRESHOLD = fThreshold;
-				// get the font for metrics columns
-				FontData []objFontsMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
-				FontData []objFontsGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
-				Utilities.setFontMetric(this.objWindow, objFontsMetric, objFontsGeneric);
-
-				ExperimentManager.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
 			}
 		}
 	}

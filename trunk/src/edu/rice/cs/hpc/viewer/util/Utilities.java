@@ -39,7 +39,6 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
-import edu.rice.cs.hpc.viewer.scope.ColumnViewerSorter;
 
 /**
  * Class providing auxiliary utilities methods.
@@ -58,7 +57,6 @@ public class Utilities {
 	
 	static public String NEW_LINE = System.getProperty("line.separator");
 	static private Display objDisplay;	
-	static private int iFontHeight = 0;
 	
 	/**
 	 * Set the font for the metric columns (it may be different to other columns)
@@ -93,7 +91,6 @@ public class Utilities {
 		}
 		// create font for general purpose (view, editor, ...)
 		Utilities.fontGeneral = new Font (display, objFontGeneric);
-		iFontHeight = objFontGeneric[0].getHeight();
 		
 		Utilities.fontMetric = new Font(display, objFontMetric);
 		// save the display
@@ -112,12 +109,10 @@ public class Utilities {
 		FontData []myFontGeneric = Utilities.fontGeneral.getFontData();
 		if ( !myFontMetric[0].equals( objFontMetric[0] ) ) {
 			Utilities.fontMetric = new Font( Utilities.objDisplay, objFontMetric);
-			Utilities.iFontHeight = objFontMetric[0].getHeight();
 			isFontChanged = true; 
 		}		
 		if ( !myFontGeneric[0].equals( objFontGeneric[0] ) ) {
 			Utilities.fontGeneral = new Font( Utilities.objDisplay, objFontGeneric);
-			Utilities.iFontHeight = objFontGeneric[0].getHeight();
 			isFontChanged = true; 
 		}
 		if (isFontChanged) {
@@ -200,25 +195,16 @@ public class Utilities {
 	 * @param objFontData
 	 */
 	static private void setFontMetric(IWorkbenchWindow window, int iFontSize) {
-		if (iFontSize != Utilities.iFontHeight) {
-			Utilities.iFontHeight = iFontSize;
 			FontData []myFontGeneric = Utilities.fontGeneral.getFontData();
-			myFontGeneric[0].setHeight(iFontSize);
+			int iSize = myFontGeneric[0].getHeight() + iFontSize;
+			myFontGeneric[0].setHeight(iSize);
+			
 			FontData []myFontMetric = Utilities.fontMetric.getFontData();
-			myFontMetric[0].setHeight(iFontSize);
+			iSize = myFontMetric[0].getHeight() + iFontSize;
+			myFontMetric[0].setHeight(iSize);
 			
 			setFontMetric(window, myFontMetric, myFontGeneric);
 			
-			ExperimentManager objManager = ExperimentData.getInstance(window).getExperimentManager();
-			if(objManager != null) {
-				ExperimentView objView = objManager.getExperimentView();
-				final BaseScopeView arrViews[] = objView.getViews();
-				for (int i=0; i<arrViews.length; i++) {
-					//arrViews[i].getTreeViewer().getTree()
-				}
-			}
-		}
-		
 	}
 	
 	/**
@@ -226,7 +212,7 @@ public class Utilities {
 	 * @param window
 	 */
 	static public void increaseFont(IWorkbenchWindow window) {
-		Utilities.setFontMetric(window, Utilities.iFontHeight+1);
+		Utilities.setFontMetric(window, +1);
 		FontData []objFontData = JFaceResources.getHeaderFontDescriptor().increaseHeight(+1).getFontData();
 		JFaceResources.getFontRegistry().put(JFaceResources.HEADER_FONT, objFontData);
 
@@ -237,7 +223,7 @@ public class Utilities {
 	 * @param window
 	 */
 	static public void DecreaseFont(IWorkbenchWindow window) {
-		Utilities.setFontMetric(window, Utilities.iFontHeight-1);
+		Utilities.setFontMetric(window, -1);
 		FontData []objFontData = JFaceResources.getHeaderFontDescriptor().increaseHeight(-1).getFontData();
 		JFaceResources.getFontRegistry().put(JFaceResources.HEADER_FONT, objFontData);
 	}

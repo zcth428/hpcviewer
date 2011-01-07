@@ -118,7 +118,20 @@ public class Utilities {
 		if (isFontChanged) {
 			// a font has been changed. we need to refresh the view
 			resetAllViews (window);
+			
+			// store the changes
+			Utilities.storePreferenceFonts();
 		}
+	}
+	
+	
+	/****
+	 * Store the new fonts into the workspace registry
+	 */
+	static private void storePreferenceFonts() {
+		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+		PreferenceConverter.setValue(objPref, PreferenceConstants.P_FONT_GENERIC, Utilities.fontGeneral.getFontData());
+		PreferenceConverter.setValue(objPref, PreferenceConstants.P_FONT_METRIC, Utilities.fontMetric.getFontData());
 	}
 	
 	/**

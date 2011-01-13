@@ -41,6 +41,10 @@ public class ThreadLevelDataManager {
 	}
 	
 	
+	public ThreadLevelDataFile.ApplicationType getApplicationType() {
+		return this.data_file[0].getApplicationType();
+	}
+	
 	
 	/**
 	 * thread level data may contain some experiment instances. 
@@ -121,13 +125,15 @@ public class ThreadLevelDataManager {
 		ThreadLevelData objData = new ThreadLevelData();
 		
 		debugln(System.out, "Series: " +  metric_glob_id + " node: " + node_index + " metric: " + metric.getRawID());
+		String x[] = data.getValuesX();
 
 		for(int i=0; i<data_size; i++) {
 			metrics[i] = objData.getMetric(data.getFile(i).getAbsolutePath(), node_index, metric.getRawID(), 
 					metric.getSize());
+			debugln(System.out, "\t"+i + " " +  x[i] +"\t:"+metrics[i]);
 
 		}
-		debugln(System.out, "\tsize: " + data_size);
+		debugln(System.out, "\nsize: " + data_size);
 		return metrics;
 	}
 

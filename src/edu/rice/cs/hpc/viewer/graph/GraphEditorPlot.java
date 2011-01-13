@@ -1,9 +1,13 @@
 package edu.rice.cs.hpc.viewer.graph;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.swtchart.IAxisSet;
+import org.swtchart.IAxisTick;
 
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile.ApplicationType;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -35,6 +39,29 @@ public class GraphEditorPlot extends GraphEditor {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+
+	@Override
+	protected String getXAxisTitle(ApplicationType type) {
+		String axis_x;
+		IAxisSet axisSet = this.getChart().getAxisSet();
+		IAxisTick xTick = axisSet.getXAxis(0).getTick();
+
+		switch (type) {
+		case MULTI_PROCESSES:
+			axis_x = "Processes";
+			xTick.setFormat(new DecimalFormat("##########"));
+			break;
+		case MULTI_THREADING:
+			axis_x = "Threads";
+			xTick.setFormat(new DecimalFormat("##########"));
+			break;
+		default:
+			axis_x = "Process.Thread";
+			xTick.setFormat(new DecimalFormat("######00.00##"));
+		}
+		return axis_x;
 	}
 
 }

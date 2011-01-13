@@ -19,6 +19,10 @@ public class ThreadLevelDataFile {
 	final private int POSITION_PROC_ID[] = {5,6};	// position of the process ID in the filename
 	final private int POSITION_THREAD_ID[] = {4,5};	// position of the thread ID in the filename
 	
+	
+	public enum ApplicationType {MULTI_PROCESSES, MULTI_THREADING, HYBRID};
+	private ApplicationType type = ApplicationType.HYBRID;
+	
 	/**
 	 * list of x axis names (process.thread) and its files
 	 */
@@ -100,23 +104,106 @@ public class ThreadLevelDataFile {
 	 */
 	private void setData(File f[]) {
 		
-		data = new DataFile[f.length];
+		this.type = this.checkApplicationType(f);
+		
+		this.data = new DataFile[f.length];
 
 		for(int i=0; i<f.length; i++) {
-			String filename = f[i].getName();
-			String parts[] = filename.split(FILE_SEPARATOR);
-			if (parts.length > 4) {
+			FileNameComposition composition = this.getFileComposition(f[i]);
+			
+			if (composition != null) {
 				
 				//--------------------------------------------------------------------
 				// adding list of x-axis 
-				//--------------------------------------------------------------------
-				String x_val = parts[parts.length - POSITION_PROC_ID[FILE_VERSION] ] + "." 
-						+ parts[parts.length-POSITION_THREAD_ID[FILE_VERSION]];
-				data[i] = new DataFile(f[i], x_val);
+				//--------------------------------------------------------------------			
+				
+				String x_val;
+				switch (this.type) {
+					case HYBRID:
+						x_val = String.valueOf(composition.rank) + "." + String.valueOf(composition.thread);
+						break;
+					case MULTI_PROCESSES:
+						x_val = String.valueOf(composition.rank);
+						break;
+					case MULTI_THREADING:
+						x_val = String.valueOf(composition.thread);
+						break;
+					default:
+						x_val = "unknown";
+							
+				}
+				this.data[i] = new DataFile(f[i], x_val);
+				
 			}
 		}
 	}
 
+	
+	/****
+	 * retrieve the type of application (hybrid, mpi or openmp)
+	 * @return ApplicationType
+	 */
+	public ApplicationType getApplicationType() {
+		return this.type;
+	}
+	
+	
+	/****
+	 * check the type of the application (mpi, openmp or hybrid)
+	 * @param files
+	 * @return
+	 */
+	private ApplicationType checkApplicationType(File files[]) {
+		boolean with_all_processes = false; 
+		boolean with_all_threads = false; 
+
+		for(int i=0; i<files.length; i++) {
+			FileNameComposition file_composition = this.getFileComposition(files[i]);
+			with_all_processes |= (file_composition.rank>0);
+			with_all_threads   |= (file_composition.thread>0);
+			
+			if (with_all_processes && with_all_threads)
+				return ApplicationType.HYBRID;
+		}
+		
+		if (with_all_processes)
+			return ApplicationType.MULTI_PROCESSES;
+		else 
+			return ApplicationType.MULTI_THREADING;
+	}
+	
+	
+	/****
+	 * get the composition of the raw metric file
+	 * @param file
+	 * @return
+	 */
+	private FileNameComposition getFileComposition(File file) {
+		String s = file.getName();
+		String parts[] = s.split(FILE_SEPARATOR);
+		if (parts.length > 4) {
+			return new FileNameComposition(Integer.valueOf(parts[parts.length - POSITION_PROC_ID[FILE_VERSION] ]),
+										 Integer.valueOf(parts[parts.length - POSITION_THREAD_ID[FILE_VERSION]]));
+		}
+		return null;
+	}
+	
+	
+	/*******************************************************************
+	 * Composition of the raw metric file class
+	 * @author laksonoadhianto
+	 *
+	 *******************************************************************/
+	private class FileNameComposition {
+		public int thread;
+		public int rank;
+		
+		FileNameComposition(int rank, int thread) {
+			this.rank = rank;
+			this.thread = thread;
+		}
+	}
+	
 	
 	/*******************************************************************
 	 * 

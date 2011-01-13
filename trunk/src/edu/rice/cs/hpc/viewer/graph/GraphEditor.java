@@ -1,42 +1,24 @@
 package edu.rice.cs.hpc.viewer.graph;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.ui.IViewPart;
 import org.swtchart.Chart;
 import org.swtchart.ILineSeries;
 import org.swtchart.LineStyle;
 import org.swtchart.ISeries.SeriesType;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.scope.ThreadScopeView;
 
 public abstract class GraphEditor extends GraphEditorBase {
 
 
 	
 	//========================================================================
-	// Private method
+	// Protected method
 	//========================================================================
 	
-	
-	
-	private void showThreadView( Scope scope, MetricRaw metric, int rank_sequence ) {
-		final IViewPart view = this.getSite().getWorkbenchWindow().getActivePage().findView(edu.rice.cs.hpc.viewer.scope.ThreadScopeView.ID);
-		if (view != null) {
-			final ThreadScopeView thread_view = (ThreadScopeView) view;
-
-			final Experiment exp = scope.getExperiment();
-			final RootScope root = (RootScope) exp.getRootScope();
-
-			thread_view.setInput( exp, root, metric, rank_sequence);
-		}
-	}
 	
 	/**
 	 * Plot a given metrics for a specific scope
@@ -68,35 +50,44 @@ public abstract class GraphEditor extends GraphEditorBase {
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
 
+		ThreadLevelDataFile.ApplicationType type = objDataManager.getApplicationType();
+		
+		String axis_x = this.getXAxisTitle(type);
+		chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );
+		chart.getAxisSet().getYAxis(0).getTitle().setText( "Metrics" );
+		
 		// -----------------------------------------------------------------
 		// adjust the axis range
 		// -----------------------------------------------------------------
 		chart.getAxisSet().adjustRange();
 
 		updateRange(x_values.length);
-
-		final Menu menuPopup = chart.getPlotArea().getMenu();
-		if (menuPopup != null) {
-			MenuItem item = new MenuItem(menuPopup, SWT.PUSH);
-			item.setText("Show metric from all processes");
-		}
 	}
 
-	
+	/***
+	 * retrieve the title of the X axis
+	 * @param type
+	 * @return
+	 */
+	protected abstract String getXAxisTitle(ThreadLevelDataFile.ApplicationType type);
+
+	/*****
+	 * retrieve the value of Xs
+	 * @param objManager
+	 * @param scope
+	 * @param metric
+	 * @return
+	 */
 	protected abstract double[] getValuesX(ThreadLevelDataManager objManager, Scope scope, MetricRaw metric);
 	
+	/*****
+	 * retrieve the value of Y
+	 * @param objManager
+	 * @param scope
+	 * @param metric
+	 * @return
+	 */
 	protected abstract double[] getValuesY(ThreadLevelDataManager objManager, Scope scope, MetricRaw metric);
 
-	@Override
-	protected String getXAxisTitle() {
-		return "Process.Thread";
-	}
-
-
-	@Override
-	protected String getYAxisTitle() {
-		return "Metric";
-	}
-	
 
 }

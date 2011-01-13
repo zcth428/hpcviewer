@@ -41,7 +41,7 @@ public class Histogram {
 		//---------------------------------
 		for (int i=0; i<n_bins; i++) {
 			freq[i] = 0.0;
-			axis_x[i] = i * data_width;
+			axis_x[i] = data_min + (i * data_width);
 		}
 		
 		//---------------------------------

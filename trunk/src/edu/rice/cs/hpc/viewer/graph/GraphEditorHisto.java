@@ -22,16 +22,6 @@ public class GraphEditorHisto extends GraphEditorBase {
     
 
 	@Override
-	protected String getXAxisTitle() {
-		return "Metrics";
-	}
-
-	@Override
-	protected String getYAxisTitle() {
-		return "Frequency";
-	}
-
-	@Override
 	protected void plotData(Experiment exp, Scope scope, MetricRaw metric) {
 		final int bins = 10;
 		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(exp);
@@ -71,6 +61,9 @@ public class GraphEditorHisto extends GraphEditorBase {
 				.createSeries(SeriesType.BAR, metric.getDisplayName() );
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
+
+		chart.getAxisSet().getXAxis(0).getTitle().setText( "Metrics" );
+		chart.getAxisSet().getYAxis(0).getTitle().setText( "Frequency" );
 
 		// adjust the axis range
 		chart.getAxisSet().adjustRange();

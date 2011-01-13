@@ -82,15 +82,15 @@ public abstract class GraphEditorBase extends EditorPart {
 		//----------------------------------------------
 		// axis title
 		//----------------------------------------------
-		chart.getAxisSet().getXAxis(0).getTitle().setText( getXAxisTitle() );
-		chart.getAxisSet().getYAxis(0).getTitle().setText( getYAxisTitle() );
+//		chart.getAxisSet().getXAxis(0).getTitle().setText( getXAxisTitle() );
+//		chart.getAxisSet().getYAxis(0).getTitle().setText( getYAxisTitle() );
 
 		//----------------------------------------------
 		// formatting axis
 		//----------------------------------------------
 		IAxisSet axisSet = chart.getAxisSet();
-		IAxisTick xTick = axisSet.getXAxis(0).getTick();
-		xTick.setFormat(new DecimalFormat("######00.00##"));
+//		IAxisTick xTick = axisSet.getXAxis(0).getTick();
+//		xTick.setFormat(new DecimalFormat("######00.00##"));
 		IAxisTick yTick = axisSet.getYAxis(0).getTick();
 		yTick.setFormat(new DecimalFormat("0.0##E0##"));
 
@@ -141,8 +141,9 @@ public abstract class GraphEditorBase extends EditorPart {
 	}
 	
 	
-	protected abstract String getXAxisTitle();
-	protected abstract String getYAxisTitle();
+//	protected abstract String getXAxisTitle();
+//	protected abstract String getYAxisTitle();
+//	protected abstract void setAxisTitle();
 	protected abstract void plotData( Experiment exp, Scope scope, MetricRaw metric );
 
 }

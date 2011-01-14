@@ -169,7 +169,7 @@
           class="edu.rice.cs.hpc.viewer.graph.GraphEditorPlot"
           default="false"
           extensions="*"
-          icon="icons/graphview.png"
+          icon="icons/hpcviewer-icon-editor-plot.png"
           id="edu.rice.cs.hpc.viewer.graph.GraphEditorPlot"
           name="Plot editor">
     </editor>
@@ -177,7 +177,7 @@
           class="edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort"
           default="false"
           extensions="*"
-          icon="icons/graphview.png"
+          icon="icons/hpcviewer-icon-editor-plotsort.png"
           id="edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort"
           name="Sort editor">
     </editor>
@@ -185,7 +185,7 @@
           class="edu.rice.cs.hpc.viewer.graph.GraphEditorHisto"
           default="false"
           extensions="*"
-          icon="icons/graphview.png"
+          icon="icons/hpcviewer-icon-editor-histo.png"
           id="edu.rice.cs.hpc.viewer.graph.GraphEditorHisto"
           name="Histogram editor">
     </editor>

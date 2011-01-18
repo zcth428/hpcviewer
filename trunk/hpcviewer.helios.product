@@ -14,7 +14,7 @@ HPCToolkit is principally funded by the Department of Energy&apos;s Office of
 Science as part of the SciDAC Center for Scalable Application Development
 Software and the Performance Engineering Research Institute.
 
-(C) Copyright 2010, Rice University
+(C) Copyright 2010, Rice University.  $Revision$
       </text>
    </aboutInfo>
 
@@ -41,6 +41,7 @@ Software and the Performance Engineering Research Institute.
             winLargeHigh="/hpcviewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

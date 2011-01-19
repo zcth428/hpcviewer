@@ -56,7 +56,7 @@ public class ThreadView extends ViewPart {
 		Experiment experiment = scope.getExperiment();
 		MetricRaw metrics[] = experiment.getMetricRaw();
 		
-		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(experiment);
+		ThreadLevelDataManager objDataManager = experiment.getThreadLevelDataManager();
 		HashMap<Double, DataModel> ll;
 		
 		for ( MetricRaw metric: metrics ) {

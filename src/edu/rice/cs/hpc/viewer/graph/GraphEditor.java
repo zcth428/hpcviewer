@@ -28,7 +28,7 @@ public abstract class GraphEditor extends GraphEditorBase {
 	 */
 	protected void plotData(Experiment exp, Scope scope, MetricRaw metric ) {
 		
-		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(exp);
+		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 
 		double y_values[] = this.getValuesY(objDataManager, scope, metric);
 		double []x_values;

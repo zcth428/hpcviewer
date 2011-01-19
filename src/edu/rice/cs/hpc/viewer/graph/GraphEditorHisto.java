@@ -24,7 +24,7 @@ public class GraphEditorHisto extends GraphEditorBase {
 	@Override
 	protected void plotData(Experiment exp, Scope scope, MetricRaw metric) {
 		final int bins = 10;
-		ThreadLevelDataManager objDataManager = new ThreadLevelDataManager(exp);
+		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 		
 		double y_values[], x_values[];
 		try {

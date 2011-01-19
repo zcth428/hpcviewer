@@ -18,6 +18,7 @@ public class ThreadLevelDataManager {
 
 	private ThreadLevelDataFile data_file[];
 	private Experiment experiment;
+	private ThreadLevelDataFile.ApplicationType application_type;
 	
 	public ThreadLevelDataManager(Experiment exp) {
 		MetricRaw []metrics = exp.getMetricRaw();
@@ -42,7 +43,7 @@ public class ThreadLevelDataManager {
 	
 	
 	public ThreadLevelDataFile.ApplicationType getApplicationType() {
-		return this.data_file[0].getApplicationType();
+		return this.application_type;
 	}
 	
 	
@@ -185,7 +186,7 @@ public class ThreadLevelDataManager {
 		MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
 		File filesThreadsData[] = files.listFiles(new Util.FileThreadsMetricFilter( metric.getGlob()));
 		data_file[metric_raw_id] = new ThreadLevelDataFile(filesThreadsData);
-		
+		application_type = data_file[metric_raw_id].getApplicationType();
 	}
 
 

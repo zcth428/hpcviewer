@@ -169,7 +169,7 @@ public class ScopeView extends BaseScopeView {
         	Experiment exp = getExperiment();
         	
 			try {
-				String id = GraphEditorInput.getName(scope, metric, graph_type);
+				String id = GraphEditorInput.getID(scope, metric, graph_type);
 	        	GraphEditorInput objInput = getGraphEditorInput(id);
 	        	
 	        	if (objInput == null) {

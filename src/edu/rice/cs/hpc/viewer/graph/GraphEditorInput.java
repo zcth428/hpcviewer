@@ -41,6 +41,17 @@ public class GraphEditorInput implements IEditorInput {
 		return "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName();
 	}
 
+	/****
+	 * return the ID for the editor graph from the combination of scope, metric and graph type
+	 * @param scope
+	 * @param metric
+	 * @param type
+	 * @return
+	 */
+	static public String getID(Scope scope, MetricRaw metric, GraphType.PlotType type) {
+		return GraphType.toString(type) + ":" + scope.getCCTIndex()+":" + metric.getID();
+	}
+
 	
 	public IPersistableElement getPersistable() {
 		// TODO Auto-generated method stub

@@ -6,8 +6,12 @@ package edu.rice.cs.hpc.viewer.util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Rectangle;
 
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -108,10 +112,12 @@ public class Utilities {
 		FontData []myFontMetric = Utilities.fontMetric.getFontData();
 		FontData []myFontGeneric = Utilities.fontGeneral.getFontData();
 		if ( !myFontMetric[0].equals( objFontMetric[0] ) ) {
+			Utilities.fontMetric.dispose();
 			Utilities.fontMetric = new Font( Utilities.objDisplay, objFontMetric);
 			isFontChanged = true; 
 		}		
 		if ( !myFontGeneric[0].equals( objFontGeneric[0] ) ) {
+			Utilities.fontGeneral.dispose();
 			Utilities.fontGeneral = new Font( Utilities.objDisplay, objFontGeneric);
 			isFontChanged = true; 
 		}
@@ -199,11 +205,48 @@ public class Utilities {
 	static private void resetView ( TreeItemManager objItemManager, TreeViewer tree) {
 		// save the context first
 		objItemManager.saveContext(tree);
+		
+		//beginTableRowHeightAdjustment(tree);
 		// refresh
 		tree.refresh();
+		
+		//endTableRowHeightAdjustment(tree);
+		
 		// restore the context
 		objItemManager.restoreContext(tree);
 	}
+	
+	
+	static final private Listener paintTableListener = new Listener() {
+
+		public void handleEvent(Event event) {
+			int iheight = event.gc.getFontMetrics().getHeight();
+			switch (event.type) {
+			case SWT.MeasureItem: {
+				System.out.println("Orig: " + event.height + ", max: " + iheight+2 );
+				//event.height = 15;
+				break;
+		     	}
+			}
+		}
+		
+	};
+	
+	static private void beginTableRowHeightAdjustment( TreeViewer treeviewer ) {
+		Tree tree = treeviewer.getTree();
+		final int height_gen = Utilities.fontGeneral.getFontData()[0].getHeight();
+		final int height_met = Utilities.fontMetric.getFontData()[0].getHeight();
+		final int max_height = (height_gen>height_met? height_gen:height_met);
+		
+		tree.addListener(SWT.MeasureItem, paintTableListener);
+	}
+	
+	
+	static private void endTableRowHeightAdjustment( TreeViewer treeviewer) {
+		Tree tree = treeviewer.getTree();
+		tree.removeListener(SWT.MeasureItem, paintTableListener);
+	}
+	
 	
 	/**
 	 * Update the font for metric pane with one single font (just take the size)

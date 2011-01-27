@@ -110,7 +110,7 @@ public ExperimentFileXML(File filename)
  *
  ************************************************************************/
 	
-public void parse(Experiment experiment)
+public void parse(Experiment experiment, boolean need_metrics)
 throws
 	IOException,
 	InvalExperimentException
@@ -124,7 +124,7 @@ throws
     
 	// parse the stream
 	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
-        Builder builder = new ExperimentBuilder2(experiment, name);
+        Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
         Parser parser = new Parser(name, stream, builder);
         try {
             parser.parse();

@@ -26,6 +26,7 @@ import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
+import edu.rice.cs.hpc.data.util.IProcedureTable;
 //import edu.rice.cs.hpc.data.util.*;
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
 
@@ -93,6 +94,10 @@ public boolean hasSourceCodeFile;
 public int iCounter = 0;
 // --------------------------
 
+//the cpid is removed in hpcviewer, but hpctraceview still requires it in order to dfs
+protected int cpid;
+//--------------------------
+
 static public final int SOURCE_CODE_UNKNOWN = 0;
 static public final int SOURCE_CODE_AVAILABLE = 1;
 static public final int SOURCE_CODE_NOT_AVAILABLE= 2;
@@ -133,8 +138,15 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int cc
 	this.flat_node_index = flat_id;
 	this.cct_node_index = cct_id;
 	this.hasSourceCodeFile = false;
+	this.cpid = -1;
 }
 
+
+public Scope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id, int cpid)
+{
+	this(experiment, file, first, last, cct_id, flat_id);
+	this.cpid = cpid;
+}
 
 
 
@@ -205,6 +217,24 @@ public String getShortName()
 
 
 
+/*************************************************************************
+ * Returns which processor was active
+ ************************************************************************/
+
+public int getCpid()
+{
+	return cpid;
+}
+
+
+/*************************************************************************
+ *	Sets the value of the cpid
+ ************************************************************************/
+
+public void setCpid(int _cpid)
+{
+	this.cpid = _cpid;
+}
 
 /*************************************************************************
  *	Returns the tool tip for this scope.
@@ -748,6 +778,37 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////
+//returns maxDepth of the scope tree and fills colorTable across all scopes			//
+//////////////////////////////////////////////////////////////////////////////////////
+
+public int dfsSetup(IScopeVisitor sv, IProcedureTable colorTable, int depth)
+{
+	accept(sv, ScopeVisitType.PreVisit);
+	int nKids = getSubscopeCount();
+	int currentMaxDepth = depth;
+	/*if(depth == 1)
+colorTable.addProcedure(this.getName());*/
+	for (int i=0; i< nKids; i++)
+	{
+		int tempDepth;
+		Scope childScope = getSubscope(i);
+		if(this instanceof CallSiteScope || this instanceof ProcedureScope)
+		{
+			colorTable.addProcedure(this.getName());
+			tempDepth = childScope.dfsSetup(sv, colorTable, depth + 1);
+		}
+		else
+		{
+			tempDepth = childScope.dfsSetup(sv, colorTable, depth);
+		}
+		if(tempDepth > currentMaxDepth)
+			currentMaxDepth = tempDepth;
+	}
+	accept(sv, ScopeVisitType.PostVisit);
+	return currentMaxDepth;
+}
 
 
 //////////////////////////////////////////////////////////////////////////

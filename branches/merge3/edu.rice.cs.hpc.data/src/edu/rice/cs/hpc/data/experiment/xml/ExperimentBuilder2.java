@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
-//johnmc
-import java.util.Hashtable;
 // laks 2008.08.27
 import java.util.EmptyStackException;
 
@@ -105,7 +103,8 @@ public class ExperimentBuilder2 extends Builder
 	private HashMap<Integer, Scope> hashCallSiteTable;
 	
 	private boolean csviewer;
-	
+	private boolean metrics_needed = false;
+
 //	INITIALIZATION							//
 
 
@@ -133,7 +132,17 @@ public class ExperimentBuilder2 extends Builder
 	public ExperimentBuilder2(Experiment experiment, String defaultName)
 	{
 		super();
+		init(experiment, defaultName, true);
+	}
 
+
+	public ExperimentBuilder2(Experiment experiment, String defaultName, boolean need_metrics) {
+		super();
+		init(experiment, defaultName, need_metrics);
+	}
+	
+	public void init(Experiment experiment, String defaultName, boolean need_metrics)
+	{
 		// creation arguments
 		this.experiment = experiment;
 		this.defaultName = defaultName;
@@ -141,7 +150,9 @@ public class ExperimentBuilder2 extends Builder
 		this.csviewer = false;
 		// temporary storage for parsed objects
 		this.pathList   = new ArrayList/*<File>*/();
-		this.metricList = new ArrayList<BaseMetric>();
+		
+		if (need_metrics)
+			this.metricList = new ArrayList<BaseMetric>();
 
 		// parse action data structures
 		this.scopeStack = new Stack/*<Scope>*/();
@@ -153,6 +164,7 @@ public class ExperimentBuilder2 extends Builder
 		hashCallSiteTable = new HashMap<Integer, Scope>();
 		
 		numberOfPrimaryMetrics = 0;
+		metrics_needed = need_metrics;
 		
 		// laks hack: somehow, a scope object may want to know its source file.
 		//			However, the source file is stored in hashSourceFileTable, so we 
@@ -277,13 +289,19 @@ public class ExperimentBuilder2 extends Builder
 		case T_METRIC_FORMULA:
 			this.do_MetricFormula(attributes, values);
 			break;
+			
+			// trace database
+		case T_TRACE_DB_TABLE:
+			this.begin_TraceDBTable(attributes, values);
+			break;
+				
+		case T_TRACE_DB:
+			this.do_TraceDB(attributes, values);
+			break;
 		// ---------------------
 		// Tokens to be ignored 
 		// ---------------------
 			
-			// trace database
-		case T_TRACE_DB_TABLE:
-		case T_TRACE_DB:
 		case T_PROCEDURE_TABLE:
 		case T_FILE_TABLE:
 		case T_LOAD_MODULE_TABLE:
@@ -363,9 +381,12 @@ public class ExperimentBuilder2 extends Builder
 			this.end_MetricRawTable();
 			break;
 
+		case T_TRACE_DB_TABLE:
+			this.end_TraceDBTable();
+			break;
+			
 			// ignored elements
 			// trace database
-		case T_TRACE_DB_TABLE:
 		case T_TRACE_DB:
 		case T_METRIC_RAW:
 		case T_M:
@@ -510,6 +531,9 @@ public class ExperimentBuilder2 extends Builder
 	 ************************************************************************/
 	private void do_MetricFormula(String[] attributes, String[] values) 
 	{
+		if (!metrics_needed)
+			return;
+		
 		char formula_type = '\0';
 		int nbMetrics= this.metricList.size();
 		
@@ -542,6 +566,9 @@ public class ExperimentBuilder2 extends Builder
 	 ************************************************************************/
 	private void do_METRIC(String[] attributes, String[] values)
 	{
+		if (!metrics_needed)
+			return;
+		
 		int nbMetrics = this.metricList.size();
 		String sID = null;// = values[nID];
 		int iSelf = -1;
@@ -699,7 +726,8 @@ public class ExperimentBuilder2 extends Builder
 	{
 		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		
-		this.experiment.setMetrics(this.metricList);
+		if (metrics_needed)
+			this.experiment.setMetrics(this.metricList);
 
 		// make the root scope
 		this.rootScope = new RootScope(this.experiment, name,"Invisible Outer Root Scope", RootScopeType.Invisible);
@@ -752,13 +780,6 @@ public class ExperimentBuilder2 extends Builder
 			SourceFile sourceFile = this.getOrCreateSourceFile(name, objIndex.intValue());
 			Scope lmScope = new LoadModuleScope(this.experiment, name, sourceFile, objIndex.intValue());
 			// make a new load module scope object
-			/*
-			File filename = new File(name);
-			SourceFile sourceFile = new FileSystemSourceFile(experiment, filename, objIndex);
-			Scope lmScope = new LoadModuleScope(this.experiment, name, sourceFile);
-
-			this.hashSourceFileTable.put(objIndex, sourceFile);
-			*/
 			this.beginScope(lmScope);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -791,15 +812,7 @@ public class ExperimentBuilder2 extends Builder
 			// make a new file scope object
 			SourceFile sourceFile  = this.getOrCreateSourceFile(getAttributeByName(NAME_ATTRIBUTE, attributes, values), 
 					objFileKey.intValue());
-			/*
-			SourceFile sourceFile  = (SourceFile) this.hashSourceFileTable.get(objFileKey);
-			if (sourceFile == null ) {
-				// make a new source file object
-				String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-				File filename = new File(name);
-				sourceFile = new FileSystemSourceFile(experiment, filename, objFileKey.intValue());
-				this.hashSourceFileTable.put(objFileKey, sourceFile);
-			} */
+
 			this.srcFileStack.push(sourceFile);
 			Scope fileScope = new FileScope(this.experiment, sourceFile, objFileKey.intValue());
 
@@ -889,13 +902,9 @@ public class ExperimentBuilder2 extends Builder
 					sProcName = sProc;
 				}
 			} catch (java.lang.NumberFormatException e) {
+				
 			}
-		} else {
-			//--------------------------------------------
-			// additional debugging feature for Nathan
-			//--------------------------------------------
-			sProcName = sProcIndex;
-		}
+		} 
 		return sProcName;
 	}
 	
@@ -1224,23 +1233,16 @@ public class ExperimentBuilder2 extends Builder
 	}
 	private void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
 	{
-		String[] val_line      = new String[2];
 		int cct_id = 0, flat_id = 0;
 		// make a new statement-range scope object
 		int firstLn = 0;
 		int lastLn  = 0;
+		int cpid = 0;
 
 		for(int i=0; i<attributes.length; i++) {
 			if(attributes[i].equals(this.LINE_ATTRIBUTE)) {
-				/*String lines[] = values[i].split("-");
-				if (lines.length>1) {
-					firstLn = Integer.valueOf(lines[0]);
-					lastLn = Integer.valueOf(lines[1]);
-					
-				} else { */
-					firstLn = Integer.valueOf(values[i]);
-					lastLn = firstLn;
-				//}
+				firstLn = Integer.valueOf(values[i]);
+				lastLn = firstLn;
 				
 			} else if(attributes[i].equals("s"))  {
 				flat_id = Integer.valueOf(values[i]);
@@ -1249,7 +1251,11 @@ public class ExperimentBuilder2 extends Builder
 				
 			} else if(attributes[i].equals(this.ID_ATTRIBUTE))  {
 				cct_id = Integer.valueOf(values[i]);
+
+			} else if(attributes[i].equals("it")) { //the cpid
+				cpid = Integer.parseInt(values[i]);
 			}
+
 		}
 
 		SourceFile srcFile = (SourceFile)this.srcFileStack.peek();
@@ -1262,6 +1268,7 @@ public class ExperimentBuilder2 extends Builder
 			scope = new StatementRangeScope(this.experiment, srcFile, 
 					firstLn-1, lastLn-1, cct_id, flat_id);
 
+		scope.setCpid(cpid);
 		if (isCallSite) {
 			this.beginScope_internal(scope, false);
 		} else {
@@ -1282,6 +1289,9 @@ public class ExperimentBuilder2 extends Builder
 	 * finishes processing metric table
 	 *************************************************************************/
 	private void end_MetricTable() {
+		if (!metrics_needed)
+			return;
+		
 		int nbMetrics = this.metricList.size();
 		
 		for (int i=0; i<nbMetrics; i++) {
@@ -1299,6 +1309,9 @@ public class ExperimentBuilder2 extends Builder
 
 	private void do_M(String[] attributes, String[] values)
 	{
+		if (!metrics_needed)
+			return;
+		
 		// m n="abc" v="4.56e7"
 		// add a metric value to the current scope
 		String internalName = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
@@ -1419,6 +1432,9 @@ public class ExperimentBuilder2 extends Builder
 	 * @param values
 	 ************************************************************************/
 	private void do_NV(String[] attributes, String[] values) {
+		if (!metrics_needed)
+			return;
+		
 		if ( (this.previousState == TokenXML.T_METRIC) || (this.previousState == TokenXML.T_METRIC_FORMULA)){
 			InfoState iState = InfoState.NULL;
 			// previous state is metric. The attribute should be about periodicity or unit
@@ -1518,6 +1534,45 @@ public class ExperimentBuilder2 extends Builder
 			MetricRaw[] metrics = new MetricRaw[metricRawList.size()];
 			this.metricRawList.toArray( metrics );
 			this.experiment.setMetricRaw( metrics );
+		}
+	}
+
+	
+	//--------------------------------------------------------------------------------
+	// trace database
+	//--------------------------------------------------------------------------------
+	private void begin_TraceDBTable(String[] attributes, String[] values) 
+	{
+	}
+
+	
+	private void end_TraceDBTable() 
+	{
+	}
+
+	
+	/*******
+	 * handling trace db
+	 * @param attributes
+	 * @param values
+	 */
+	private void do_TraceDB(String[] attributes, String[] values)
+	{
+		String db_glob = null;
+		int db_header_sz = 0;
+
+		// tallent: Note that the DTD currently only permits one instance of <TraceDB>
+		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i].charAt(0) == 'i') {
+			} else if (attributes[i].equals("db-glob")) {
+				db_glob = values[i];
+			} else if (attributes[i].equals("db-min-time")) {
+				experiment.trace_minBegTime = Long.valueOf(values[i]);
+			} else if (attributes[i].equals("db-max-time")) {
+				experiment.trace_maxEndTime = Long.valueOf(values[i]);
+			} else if (attributes[i].equals("db-header-sz")) {
+				db_header_sz = Integer.valueOf(values[i]);
+			}
 		}
 	}
 

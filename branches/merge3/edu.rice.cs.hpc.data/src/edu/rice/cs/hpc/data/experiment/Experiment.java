@@ -83,6 +83,12 @@ protected HashMap metricMap;
 private MetricRaw[] metrics_raw;
 private ThreadLevelDataManager threadsData = null;
 
+private boolean metrics_needed = true;
+
+//FIXME:tallent: temporary interface
+public long trace_minBegTime;
+public long trace_maxEndTime;
+
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
@@ -122,6 +128,26 @@ public Experiment(Experiment exp)
 }
 
 
+/*************************************************************************
+ *	Opens the experiment from its file.
+ *
+ *	@exception			IOException if experiment file can't be read.
+ *	@exception			InvalExperimentException if file contents are
+ *							not a valid experiment.
+ *
+ ************************************************************************/
+	
+public void open(boolean need_metrics)
+throws
+	IOException,
+	InvalExperimentException
+{
+	// parsing may throw exceptions
+	this.experimentFile.parse(this, need_metrics);
+	this.metrics_needed = need_metrics;
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////
 //	PERSISTENCE															//
@@ -145,7 +171,7 @@ throws
 	InvalExperimentException
 {
 	// parsing may throw exceptions
-	this.experimentFile.parse(this);
+	this.experimentFile.parse(this, true);
 }
 
 
@@ -186,6 +212,9 @@ public void setConfiguration(ExperimentConfiguration configuration)
 	
 public void setMetrics(List metricList)
 {
+	if (!metrics_needed)
+		return;
+	
 	this.metricList = new Vector(metricList);
 
 	// initialize metric access data structures
@@ -208,6 +237,9 @@ public void setMetrics(List metricList)
  *************************************************************************/
 public void finalizeDatabase()
 {
+	if (!metrics_needed)
+		return;
+	
 	this.metricMap.clear();
 	int nbMetrics = this.metricList.size();
 	for (int i=0; i<nbMetrics; i++) {
@@ -531,6 +563,9 @@ private boolean inclusiveNeeded() {
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		boolean bPercent, MetricType metricType) {
 	
+	if (!metrics_needed)
+		return null;
+	
 	// laks 2010.02.27: for aggregate metric, we need to know the ID of the last metric, then increment this ID
 	//					for the new metric
 	// if the last metric has index 7 and ID 10, then the new metric has index 8 and ID 11
@@ -651,6 +686,9 @@ public int getMetricCount()
 	
 public BaseMetric getMetric(int index)
 {
+	if (!metrics_needed)
+		return null;
+	
 	BaseMetric metric;
 	// laks 2010.03.03: bug fix when the database contains no metrics
 	try {

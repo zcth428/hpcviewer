@@ -89,7 +89,7 @@ public static ExperimentFile makeFile(File filename)
  *
  ************************************************************************/
 	
-public abstract void parse(Experiment experiment)
+public abstract void parse(Experiment experiment, boolean need_metrics)
 throws
 	IOException,
 	InvalExperimentException;

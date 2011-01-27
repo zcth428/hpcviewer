@@ -52,6 +52,10 @@
       <product
             application="edu.rice.cs.hpc.traceviewer.application"
             name="hpctraceviewer">
+         <property
+               name="appName"
+               value="hpctraceviewer">
+         </property>
       </product>
    </extension>
 </plugin>

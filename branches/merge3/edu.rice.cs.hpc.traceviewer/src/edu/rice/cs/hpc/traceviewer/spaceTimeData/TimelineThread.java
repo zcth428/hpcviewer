@@ -36,7 +36,7 @@ public class TimelineThread extends Thread
 	
 	/**The scale in the y-direction of pixels to processors (for the drawing of the images).*/
 	double scaleY;
-	
+
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
@@ -122,5 +122,4 @@ public class TimelineThread extends Thread
 			}
 		}
 	}
-	
 }

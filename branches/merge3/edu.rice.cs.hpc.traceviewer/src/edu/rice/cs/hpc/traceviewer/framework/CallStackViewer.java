@@ -3,15 +3,25 @@ package edu.rice.cs.hpc.traceviewer.framework;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 
@@ -140,12 +150,6 @@ public class CallStackViewer extends TableViewer
 			ptl = stData.getDepthTrace();
 		else
 			ptl = stData.getProcess(process);
-		
-		//----------------------------------------------------------------------
-		// if there's no sample, we do not need to go further
-		//----------------------------------------------------------------------
-		if (ptl == null)
-			return;
 		
 		int sample = ptl.findMidpointBefore(closeTime);
 		selectionMade = true;

@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Composite;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.Visitor;
 import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
@@ -117,7 +116,7 @@ public class SpaceTimeData
 		}
 		
 		scopeMap = new HashMap<Integer, Scope>();
-		Visitor visitor = new Visitor(scopeMap);	
+		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);	
 		maxDepth = exp.getRootScope().dfsSetup(visitor, colorTable, 1);
 		
 		colorTable.setColorTable();
@@ -236,13 +235,10 @@ public class SpaceTimeData
 				e.printStackTrace();
 			}
 		}
-		
-		if (compositeLines[0] != null) {
-			for (int i = 0; i < linesToPaint; i++)
-			{
-				masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0, (int)Math.round(i*Math.max(canvas.getScaleY(),1)), 
+		for (int i = 0; i < linesToPaint; i++)
+		{
+			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0, (int)Math.round(i*Math.max(canvas.getScaleY(),1)), 
 					compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
-			}
 		}
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to get data and paint.");
 	}
@@ -305,12 +301,9 @@ public class SpaceTimeData
 			}
 		
 		}
-		
-		if (compositeLines[0] != null)  {
 		for (int i = 0; i < linesToPaint; i++)
 		{
 			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0,(int)Math.round(i*numPixelsV/(float)maxDepth), compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
-		}
 		}
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to paint depth time canvas.");
 		

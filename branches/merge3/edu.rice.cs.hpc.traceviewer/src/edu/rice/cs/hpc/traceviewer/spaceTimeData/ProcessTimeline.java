@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
@@ -86,7 +85,7 @@ public class ProcessTimeline
 	}
 	
 	/**Fills the ProcessTimeline with data from the file.*/
-	public void readInData() throws InsufficientDataException
+	public void readInData()
 	{
 		RandomAccessFile inFile = null;
 		FileChannel f = null;
@@ -115,10 +114,10 @@ public class ProcessTimeline
 				b = (ByteBuffer)b.clear();
 				f.read(b, minLoc);
 				b.flip();
-				nextTime = this.getLongOrRemaining(b); //b.getLong();
-				if (nextTime > 0 && !times.firstElement().equals(nextTime))
+				nextTime = b.getLong();
+				if (!times.firstElement().equals(nextTime))
 				{
-					cpid = (int) this.getLongOrRemaining(b); //b.getInt();
+					cpid = b.getInt();
 					addSample(cpid, nextTime, 0);
 				}
 				
@@ -149,23 +148,6 @@ public class ProcessTimeline
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	private long getLongOrRemaining(ByteBuffer bytebuf) {
-		long longbyte = 0L;
-		int remain = bytebuf.remaining();
-		if (remain>1) {
-			try {
-				longbyte = bytebuf.getLong();
-			} catch (BufferUnderflowException e) {
-				System.err.println("ERROR: remaining buffer byte: " + remain);
-				throw new InsufficientDataException("ERROR: remaining buffer byte: " + remain);
-			}
-		} else {
-			throw new InsufficientDataException("Insufficient data in trace data file. The cause of this error can be due to small amount of sampling.\nNumber of data bytes remaining in the file: " + longbyte);
-		}
-		
-		return longbyte;
 	}
 	
 	/**Adds a sample to times and timeLine.*/

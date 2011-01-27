@@ -142,9 +142,9 @@ throws
 	IOException,
 	InvalExperimentException
 {
+	this.metrics_needed = need_metrics;
 	// parsing may throw exceptions
 	this.experimentFile.parse(this, need_metrics);
-	this.metrics_needed = need_metrics;
 }
 
 

@@ -56,7 +56,9 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeData _stData)
 	{	
-		super(_composite, _stData);
+		super(_composite);
+		this.setSpaceTimeData(_stData);
+		
 		getHorizontalBar().setVisible(false);
 		getVerticalBar().setVisible(false);
 		mouseState = MouseState.ST_MOUSE_NONE;

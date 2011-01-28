@@ -21,9 +21,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 
-import edu.rice.cs.hpc.traceviewer.framework.CallStackViewer;
-import edu.rice.cs.hpc.traceviewer.framework.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
+import edu.rice.cs.hpc.traceviewer.ui.Frame;
 
 /*************************************************************************
  * 

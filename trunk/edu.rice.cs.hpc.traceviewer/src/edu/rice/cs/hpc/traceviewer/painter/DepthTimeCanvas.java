@@ -15,8 +15,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import edu.rice.cs.hpc.traceviewer.framework.CallStackViewer;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 
 /**A view for displaying the depthview.*/
 //all the GUI setup for the depth view is here

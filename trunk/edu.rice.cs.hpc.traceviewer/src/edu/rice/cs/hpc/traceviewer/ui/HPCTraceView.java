@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.framework;
+package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.File;
 import java.util.ArrayList;

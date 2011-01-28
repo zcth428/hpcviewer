@@ -47,8 +47,6 @@ public class HPCTraceView extends ViewPart
 	/** Stores the current depth that is being displayed.*/
 	int currentDepth;
 	
-	HPCDepthView depthview;
-	
 	HPCCallStackView csview;
 	
 	/*************************************************************************

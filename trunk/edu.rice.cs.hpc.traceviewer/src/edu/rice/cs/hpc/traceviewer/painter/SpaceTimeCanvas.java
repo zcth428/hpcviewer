@@ -40,10 +40,9 @@ public abstract class SpaceTimeCanvas extends Canvas
     double endProcess;
 	
     /**Creates a SpaceTimeCanvas with the data _stData and Composite _composite.*/
-    public SpaceTimeCanvas(Composite _composite, SpaceTimeData _stData)
+    public SpaceTimeCanvas(Composite _composite)
     {
 		super(_composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
-		stData = _stData;
 	}
     
     /**Sets the depth of this SpaceTimeCanvas.*/
@@ -69,5 +68,10 @@ public abstract class SpaceTimeCanvas extends Canvas
     public int getDepth()
     {
     	return depth;
+    }
+    
+    
+    public void setSpaceTimeData(SpaceTimeData _stData) {
+    	this.stData = _stData;
     }
 }

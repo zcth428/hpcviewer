@@ -148,7 +148,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
 	public SpaceTimeDetailCanvas(Composite _composite, SpaceTimeData _stData)
 	{
-		super(_composite, _stData);
+		super(_composite );
+		this.setSpaceTimeData(_stData);
+		
 		homeScreen = true;
 		rebuffer = true;
 		undoStack = new Stack<Frame>();

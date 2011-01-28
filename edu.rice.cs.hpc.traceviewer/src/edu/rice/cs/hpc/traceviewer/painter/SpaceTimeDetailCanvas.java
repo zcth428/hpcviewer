@@ -146,7 +146,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     private final static int MIN_PROC_DISP = 1;
 	
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
-	public SpaceTimeDetailCanvas(Composite _composite, int depth, SpaceTimeData _stData)
+	public SpaceTimeDetailCanvas(Composite _composite, SpaceTimeData _stData)
 	{
 		super(_composite, _stData);
 		homeScreen = true;

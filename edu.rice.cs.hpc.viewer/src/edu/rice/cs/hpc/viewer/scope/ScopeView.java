@@ -126,23 +126,37 @@ public class ScopeView extends BaseScopeView {
 	}
 	
 	
+	/****
+	 * If the editor has been displayed, we need to activate it
+	 * If not, return null and let the caller to create a new editor
+	 * @param id
+	 * @return
+	 */
 	private GraphEditorInput getGraphEditorInput(String id) {
 		IEditorReference editors[] = this.getSite().getWorkbenchWindow().getActivePage().getEditorReferences();
 		if (editors == null)
 			return null;
 		
+		//-------------------------------------------------------------------
+		// look at all active editors if our editor has been there or not
+		//-------------------------------------------------------------------
 		for (int i = 0; i<editors.length; i++) {
 			String name = editors[i].getName();
-			if (name != null) {
-
-				if (id.equals(name)) {
-					try {
-						IEditorInput input = editors[i].getEditorInput();
-						return (GraphEditorInput) input;
-					} catch (PartInitException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+			
+			// check if it is a graph editor (started with [....])
+			if (name != null && name.charAt(0)=='[') {
+				try {
+					IEditorInput input = editors[i].getEditorInput();
+					if (input instanceof GraphEditorInput) {
+						String editor_id = ((GraphEditorInput)input).getID();
+						if (editor_id.equals(id)) {
+							// we found out editor !
+							return (GraphEditorInput) input;
+						}
 					}
+				} catch (PartInitException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}

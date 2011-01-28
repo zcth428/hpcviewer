@@ -21,8 +21,10 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
@@ -35,7 +37,7 @@ public class HPCTraceView extends ViewPart
 	public static final String ID = "hpctraceview.view";
 	
 	/** Stores/Creates all of the data that is used in the view.*/
-	SpaceTimeData stData;
+	SpaceTimeData stData = null;
 	
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
@@ -64,48 +66,18 @@ public class HPCTraceView extends ViewPart
 	 *************************************************************************/
 	public void setupEverything(final Composite master)
 	{
-		DirectoryDialog dialog;
-		ArrayList<File> traceFiles = null;
-		File experimentFile = null;
-
-		boolean validDatabaseFound = false;
-		dialog = new DirectoryDialog(master.getShell());
-		dialog.setMessage("Please select the directory which holds the trace databases.");
-		dialog.setText("Select Data Directory");
-		String dir;
-		while(!validDatabaseFound)
-		{
-			traceFiles = new ArrayList<File>();
-			
-			dir = dialog.open();
-			
-			if (dir == null) master.getShell().close();
-			File dirFile = new File(dir);
-			String[] databases = dirFile.list();
-			if ((databases == null)) master.getShell().close();
-			
-			experimentFile = new File(dir+File.separatorChar+"experiment.xml");
-			
-			for (int databaseId = 0; databaseId < databases.length; databaseId++)
-			{
-				String cstName = dir+File.separatorChar+databases[databaseId];
-				if (cstName.contains(".hpctrace"))
-				{
-					traceFiles.add(new File(dir+File.separatorChar+databases[databaseId]));
-					validDatabaseFound = true;
-				}
-			}
-			if (!experimentFile.exists())
-				validDatabaseFound = false;
-			
-			if (!validDatabaseFound)
-				dialog.setMessage("The directory selected contains no trace databases.\n" +
-						"Please select the directory which holds the trace databases.");
+		TraceDatabase trace_db = new TraceDatabase();
+		Shell shell = master.getShell();
+		
+		if (!trace_db.open(shell)) {
+			shell.close();
 		}
+		
+		File experimentFile = trace_db.getExperimentFile();
+		ArrayList<File> traceFiles = trace_db.getTraceFiles();
 		
 		stData = new SpaceTimeData(master, experimentFile, traceFiles);
 		currentDepth = 0;
-		int maxDepth = stData.getMaxDepth();
 
 		/*************************************************************************
 		 * Master Composite
@@ -358,7 +330,7 @@ public class HPCTraceView extends ViewPart
 		 * Detail View Canvas
 		 ************************************************************************/
 		
-		detailCanvas = new SpaceTimeDetailCanvas(master, maxDepth, stData);
+		detailCanvas = new SpaceTimeDetailCanvas(master, stData);
 		detailCanvas.setDepth(currentDepth);
 		detailCanvas.setLayout(new GridLayout());
 		detailCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));

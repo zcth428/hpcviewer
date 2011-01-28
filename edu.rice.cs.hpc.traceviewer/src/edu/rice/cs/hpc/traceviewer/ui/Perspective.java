@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.framework;
+package edu.rice.cs.hpc.traceviewer.ui;
 
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;

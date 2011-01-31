@@ -122,24 +122,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		});
 	}
 	
-	public void setTimeZoom(long leftTime, long rightTime)
-	{
-		begTime = leftTime;
-		endTime = rightTime;
-		
-		assertTimeBounds();
-		
-		if (numTimeUnitsDisp < MIN_TIME_UNITS_DISP)
-		{
-			begTime += (numTimeUnitsDisp - MIN_TIME_UNITS_DISP)/2;
-			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
-			endTime = begTime + numTimeUnitsDisp;
-			assertTimeBounds();
-		}
-		
-		redraw();
-	}
-	
 	public void paintControl(PaintEvent event)
 	{
 		if (homeScreen)
@@ -192,16 +174,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		System.gc();
 	}
 	
-	public void assertTimeBounds()
-	{
-		if (begTime < 0)
-			begTime = 0;
-		if (endTime > (long)stData.getWidth())
-			endTime = (long)stData.getWidth();
-		
-		numTimeUnitsDisp = endTime - begTime;
-	}
-	
 	public void home()
 	{
 		setTimeZoom(0, (long)stData.getWidth());
@@ -230,14 +202,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
         rightSelection = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
     }
     
-    public void setDetail()
-    {
-		long topLeftTime = (long)((double)leftSelection / getScaleX());
-		long bottomRightTime = (long)((double)rightSelection / getScaleX());
-		setTimeZoom(topLeftTime, bottomRightTime);
-		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
-    }
-    
     public void setTimeRange(long begTime, long endTime)
     {
     	rebuffer();
@@ -260,7 +224,47 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		return (double)viewWidth / (double)numTimeUnitsDisp;
 	}
 	
-	public void rebuffer()
+	//---------------------------------------------------------------------------------------
+	// PRIVATE METHODS
+	//---------------------------------------------------------------------------------------
+
+	private void setTimeZoom(long leftTime, long rightTime)
+	{
+		begTime = leftTime;
+		endTime = rightTime;
+		
+		assertTimeBounds();
+		
+		if (numTimeUnitsDisp < MIN_TIME_UNITS_DISP)
+		{
+			begTime += (numTimeUnitsDisp - MIN_TIME_UNITS_DISP)/2;
+			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
+			endTime = begTime + numTimeUnitsDisp;
+			assertTimeBounds();
+		}
+		
+		redraw();
+	}
+
+	private void assertTimeBounds()
+	{
+		if (begTime < 0)
+			begTime = 0;
+		if (endTime > (long)stData.getWidth())
+			endTime = (long)stData.getWidth();
+		
+		numTimeUnitsDisp = endTime - begTime;
+	}
+    
+    private void setDetail()
+    {
+		long topLeftTime = (long)((double)leftSelection / getScaleX());
+		long bottomRightTime = (long)((double)rightSelection / getScaleX());
+		setTimeZoom(topLeftTime, bottomRightTime);
+		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
+    }
+	
+	private void rebuffer()
 	{
 		rebuffer = true;
 	}

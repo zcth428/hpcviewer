@@ -16,7 +16,7 @@ export HPCVIEWER_DIR_PATH="${bindir}/"
 
 JAVA_CMD=java
 MAIN_CLASS=edu.rice.cs.hpc.data.framework.Application
-CLASSPATH=$HPCVIEWER_DIR_PATH/lib/org.apache.xerces_2.9.0.v200909240008.jar:$HPCVIEWER_DIR_PATH/lib/org.eclipse.jface_3.5.1.M20090826-0800.jar:$HPCVIEWER_DIR_PATH/lib/hpcdata.jar
+CLASSPATH=$HPCVIEWER_DIR_PATH/lib/org.apache.xerces_2.9.0.v201005080400.jar:$HPCVIEWER_DIR_PATH/lib/hpcdata.jar
 VM_ARGS="-Xms20m -Xmx180m"
 
 # run the java main class

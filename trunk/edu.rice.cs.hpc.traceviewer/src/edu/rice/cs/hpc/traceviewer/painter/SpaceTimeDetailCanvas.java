@@ -60,6 +60,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/**The selected process that is open in the csViewer*/
 	public int selectedProcess;
 	
+	/**The current depth that is selected for this canvas.*/
+    int depth = 0;
+    
 	/**Triggers zoom back to beginning view screen.*/
 	Button homeButton;
 	

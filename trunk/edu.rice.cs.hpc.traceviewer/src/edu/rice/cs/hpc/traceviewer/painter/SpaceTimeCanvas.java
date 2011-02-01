@@ -15,9 +15,6 @@ public abstract class SpaceTimeCanvas extends Canvas
 	/**The SpaceTimeData corresponding to this canvas.*/
 	SpaceTimeData stData;
 	
-	/**The current depth that is selected for this canvas.*/
-    int depth = 0;
-    
     /**The width of the current screen in this canvas.*/
     int viewWidth;
     

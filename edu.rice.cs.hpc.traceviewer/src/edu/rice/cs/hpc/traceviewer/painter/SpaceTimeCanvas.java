@@ -4,7 +4,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 /******************************************************************
  * An abstract class for the two canvases on the viewer to extend.
@@ -45,12 +44,6 @@ public abstract class SpaceTimeCanvas extends Canvas
 		super(_composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
 	}
     
-    /**Sets the depth of this SpaceTimeCanvas.*/
-    public void setDepth(int newDepth)
-    {
-        depth = newDepth;
-        redraw();
-    }
     
     /**Conversion factor from actual time to pixels on the x axis. To be implemented in subclasses.*/
     public abstract double getScaleX();
@@ -58,18 +51,7 @@ public abstract class SpaceTimeCanvas extends Canvas
     /**Conversion factor from actual processes to pixels on the y axis.  To be implemented in subclasses.*/
     public abstract double getScaleY();
     
-    /**Returns the ColorTable associated with this canvas's stData.*/
-    public ColorTable getColorTable()
-    {
-    	return stData.getColorTable();
-    }
-    
-    /**Returns the current depth of this canvas.*/
-    public int getDepth()
-    {
-    	return depth;
-    }
-    
+        
     
     public void setSpaceTimeData(SpaceTimeData _stData) {
     	this.stData = _stData;

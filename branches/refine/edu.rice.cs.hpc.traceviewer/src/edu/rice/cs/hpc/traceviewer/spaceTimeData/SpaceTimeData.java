@@ -32,14 +32,14 @@ public class SpaceTimeData
 	 * HashMap is a map between that line and the ProcessTimeline.*/
 	HashMap<Integer, ProcessTimeline> traces;
 	
-	ProcessTimeline depthTrace;
-	private DepthTimeCanvas depthView;
+	public ProcessTimeline depthTrace;
+	public DepthTimeCanvas depthView;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
-	Image[] compositeLines;
+	public Image[] compositeLines;
 	
 	/** Contains the Call Path Trace files that are parsed by CallStackTrace to construct the ProcessTimelines.*/
-	ArrayList<File> traceFiles;
+	public ArrayList<File> traceFiles;
 	
 	/** Stores the color to function name assignments for all of the functions in all of the processes.*/
 	ColorTable colorTable;
@@ -48,7 +48,7 @@ public class SpaceTimeData
 	Composite canvasHolder;
 	
 	/**The map between the nodes and the cpid's.*/
-	HashMap<Integer, Scope> scopeMap;
+	public HashMap<Integer, Scope> scopeMap;
 	
 	/**The total number of traces.*/
 	int height;
@@ -57,7 +57,7 @@ public class SpaceTimeData
 	int maxDepth;
 	
 	/**The minimum beginning and maximum ending time stamp across all traces (in microseconds)).*/
-	long minBegTime;
+	private long minBegTime;
 	long maxEndTime;
 	
 	/**The beginning/end of the process range on the viewer.*/
@@ -65,20 +65,20 @@ public class SpaceTimeData
 	int endProcess;
 	
 	/**The process to be painted in the depth time viewer.*/
-	int dtProcess;
+	public int dtProcess;
 	
 	/**The beginning/end of the time range on the viewer.*/
 	long begTime;
 	long endTime;
 	
 	/** The width of the detail canvas in pixels.*/
-	int numPixelsH;
+	public int numPixelsH;
 	
 	/** The height of the detail canvas in pixels.*/
-	int numPixelsV;
+	public int numPixelsV;
 	
 	/**The number of the line that's being processed (for threads).*/
-	int lineNum;
+	public int lineNum;
 	
 	/**The file that's the SpaceTimeData is initializing (getting first and last timestamps) - 
 	used in initialization for threads.*/
@@ -241,73 +241,6 @@ public class SpaceTimeData
 					compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
 		}
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to get data and paint.");
-	}
-	
-	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, int process, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
-	{
-		boolean changedBounds = true;
-		if (begTime == _begTime && endTime == _endTime && dtProcess == process && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
-		{
-			changedBounds = false;
-		}
-		else
-		{
-			depthTrace = null;
-		}
-		//	traces = new HashMap<Integer, ProcessTimeline>(1);
-		
-		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processor
-		//long programTime = System.currentTimeMillis();
-		int linesToPaint = Math.min(_numPixelsV, maxDepth);
-		if (changedBounds)
-		{
-			begTime = _begTime;
-			endTime = _endTime;
-			dtProcess = process;
-			numPixelsH = _numPixelsH;
-			numPixelsV = _numPixelsV;
-			
-			compositeLines = new Image[linesToPaint];
-			lineNum = 0;
-			depthTrace = new ProcessTimeline(0, scopeMap, traceFiles.get(dtProcess), numPixelsH, endTime-begTime, minBegTime+begTime);
-			depthTrace.readInData();
-			depthTrace.shiftTimeBy(minBegTime);
-			
-			TimelineThread[] threads;
-			threads = new TimelineThread[Math.min(linesToPaint, Runtime.getRuntime().availableProcessors())];
-			
-			for (int threadNum = 0; threadNum < threads.length; threadNum++)
-			{
-				threads[threadNum] = new TimelineThread(this, false, canvas, numPixelsH, canvas.getScaleX(), Math.max(numPixelsV/(double)maxDepth, 1));
-				if (!OSValidator.isUnix())
-					threads[threadNum].start();
-				else
-					threads[threadNum].run();
-			}
-			
-			if (!OSValidator.isUnix()) {
-				try
-				{
-					for (int threadNum = 0; threadNum < threads.length; threadNum++)
-					{
-						if (threads[threadNum].isAlive())
-							threads[threadNum].join();
-					}
-				}
-				catch(InterruptedException e)
-				{
-					e.printStackTrace();
-				}
-			}
-		
-		}
-		for (int i = 0; i < linesToPaint; i++)
-		{
-			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0,(int)Math.round(i*numPixelsV/(float)maxDepth), compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
-		}
-		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to paint depth time canvas.");
-		
-		depthView = canvas;
 	}
 	
 	
@@ -911,23 +844,6 @@ public class SpaceTimeData
 	{
 		if (lineNum < Math.min(numPixelsV, maxDepth))
 		{
-			/*if (lineNum==1)
-			{
-				accessingStData = true;
-				depthTrace = new ProcessTimeline(0, scopeMap, traceFiles.get(dtProcess), numPixelsH, endTime-begTime, minBegTime + begTime);
-				return depthTrace;
-			}
-			else
-			{
-				//ensures that you don't paint before you have data
-				while (accessingStData)
-				{
-					try
-					{
-						this.wait();
-					}
-					catch (InterruptedException e) {}
-				}*/
 			if (lineNum==0)
 			{
 				lineNum++;
@@ -938,7 +854,6 @@ public class SpaceTimeData
 			toDonate.timeLine = depthTrace.timeLine;
 			lineNum++;
 			return toDonate;
-			//}
 		}
 		else
 			return null;

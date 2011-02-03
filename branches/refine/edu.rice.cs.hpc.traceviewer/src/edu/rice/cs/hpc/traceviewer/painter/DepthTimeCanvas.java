@@ -15,7 +15,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.data.util.OSValidator;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.TimelineThread;
 import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 
 /**A view for displaying the depthview.*/
@@ -144,7 +147,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 			try
 			{
-				stData.paintDepthViewport(bufferGC, this, process, begTime, endTime, viewWidth, viewHeight);
+				this.paintDepthViewport(bufferGC, this, process, begTime, endTime, viewWidth, viewHeight);
 			}
 			catch(Exception e)
 			{
@@ -321,4 +324,75 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			redraw();
 		}
 	}
+	
+	private void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, int process, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	{
+		boolean changedBounds = true;
+		if (begTime == _begTime && endTime == _endTime && this.stData.dtProcess == process && this.stData.numPixelsH == _numPixelsH && this.stData.numPixelsV == _numPixelsV)
+		{
+			changedBounds = false;
+		}
+		else
+		{
+			this.stData.depthTrace = null;
+		}
+		//	traces = new HashMap<Integer, ProcessTimeline>(1);
+		
+		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processor
+		//long programTime = System.currentTimeMillis();
+		int linesToPaint = Math.min(_numPixelsV, maxDepth);
+		if (changedBounds)
+		{
+			begTime = _begTime;
+			endTime = _endTime;
+			this.stData.dtProcess = process;
+			this.stData.numPixelsH = _numPixelsH;
+			this.stData.numPixelsV = _numPixelsV;
+			
+			this.stData.compositeLines = new Image[linesToPaint];
+			this.stData.lineNum = 0;
+			this.stData.depthTrace = new ProcessTimeline(0, this.stData.scopeMap, this.stData.traceFiles.get(this.stData.dtProcess), this.stData.numPixelsH, endTime-begTime, this.stData.getMinBegTime()+begTime);
+			this.stData.depthTrace.readInData();
+			this.stData.depthTrace.shiftTimeBy(this.stData.getMinBegTime());
+			
+			TimelineThread[] threads;
+			threads = new TimelineThread[Math.min(linesToPaint, Runtime.getRuntime().availableProcessors())];
+			
+			for (int threadNum = 0; threadNum < threads.length; threadNum++)
+			{
+				threads[threadNum] = new TimelineThread(this.stData, false, canvas, this.stData.numPixelsH, canvas.getScaleX(), Math.max(this.stData.numPixelsV/(double)maxDepth, 1));
+				if (!OSValidator.isUnix())
+					threads[threadNum].start();
+				else
+					threads[threadNum].run();
+			}
+			
+			if (!OSValidator.isUnix()) {
+				try
+				{
+					for (int threadNum = 0; threadNum < threads.length; threadNum++)
+					{
+						if (threads[threadNum].isAlive())
+							threads[threadNum].join();
+					}
+				}
+				catch(InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		
+		}
+		for (int i = 0; i < linesToPaint; i++)
+		{
+			masterGC.drawImage(this.stData.compositeLines[i], 0, 0, this.stData.compositeLines[i].getBounds().width, 
+					this.stData.compositeLines[i].getBounds().height, 0,(int)Math.round(i*this.stData.numPixelsV/(float)maxDepth), 
+					this.stData.compositeLines[i].getBounds().width, this.stData.compositeLines[i].getBounds().height);
+		}
+		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to paint depth time canvas.");
+		
+		this.stData.depthView = canvas;
+	}
+	
+
 }

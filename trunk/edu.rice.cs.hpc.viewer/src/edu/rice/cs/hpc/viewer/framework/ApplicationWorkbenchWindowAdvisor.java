@@ -8,6 +8,8 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -150,6 +152,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    		}
 		    	} else {
 		    		System.err.println("File doesn't exist: " + fileStore.getName() );
+					this.hideViews();
+
 		    	}
 
 				this.shutdownEvent(this.workbench, windowCurrent.getActivePage());
@@ -173,9 +177,31 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		this.dataEx = 
 			ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
 		ExperimentManager expFile = this.dataEx.getExperimentManager();
-		expFile.openFileExperiment( this.getFlag(withCallerView));
+		boolean has_database = expFile.openFileExperiment( this.getFlag(withCallerView));
+
+		if (!has_database) {
+			this.hideViews();
+		}
 	}
 
+
+	/****
+	 * when there is no database opened, we have to hide views to avoid users to click buttons
+	 * since most action buttons assume the database is already opened, then an action of this
+	 * button while there is no database will cause chaos
+	 */
+	private void hideViews() {
+		// close views
+		IWorkbenchPage page = this.workbench.getActiveWorkbenchWindow().getActivePage();
+		IViewReference refs[] = page.getViewReferences();
+		for (IViewReference ref_view: refs) {
+			IViewPart view = ref_view.getView(false);
+			if (view != null)
+				page.hideView(view);
+		}
+	}
+	
+	
 	/**
 	 * return the flag to indicate if a caller view needs to be displayed or not
 	 * @param withCallerView

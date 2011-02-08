@@ -109,10 +109,12 @@ public class Utilities {
 		FontData []myFontMetric = Utilities.fontMetric.getFontData();
 		FontData []myFontGeneric = Utilities.fontGeneral.getFontData();
 		if ( !myFontMetric[0].equals( objFontMetric[0] ) ) {
+			Utilities.fontMetric.dispose();
 			Utilities.fontMetric = new Font( Utilities.objDisplay, objFontMetric);
 			isFontChanged = true; 
 		}		
 		if ( !myFontGeneric[0].equals( objFontGeneric[0] ) ) {
+			Utilities.fontGeneral.dispose();
 			Utilities.fontGeneral = new Font( Utilities.objDisplay, objFontGeneric);
 			isFontChanged = true; 
 		}

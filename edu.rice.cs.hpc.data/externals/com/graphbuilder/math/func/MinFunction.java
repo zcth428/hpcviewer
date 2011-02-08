@@ -30,6 +30,6 @@ public class MinFunction implements Function {
 	}
 
 	public String toString() {
-		return "min(x1, x2, ..., xn)";
+		return "min($x1, $x2, ..., $xn)";
 	}
 }

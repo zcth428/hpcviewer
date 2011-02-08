@@ -22,6 +22,6 @@ public class AtanhFunction implements Function {
 	}
 
 	public String toString() {
-		return "atanh(x)";
+		return "atanh($x)";
 	}
 }

@@ -23,6 +23,6 @@ public class CoshFunction implements Function {
 	}
 
 	public String toString() {
-		return "cosh(x)";
+		return "cosh($x)";
 	}
 }

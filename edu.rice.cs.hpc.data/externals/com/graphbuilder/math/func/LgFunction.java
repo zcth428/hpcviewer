@@ -22,6 +22,6 @@ public class LgFunction implements Function {
 	}
 
 	public String toString() {
-		return "lg(x)";
+		return "lg($x)";
 	}
 }

@@ -27,6 +27,6 @@ public class LogFunction implements Function {
 	}
 
 	public String toString() {
-		return "log(x):log(x, y)";
+		return "log($x):log($x, y)";
 	}
 }

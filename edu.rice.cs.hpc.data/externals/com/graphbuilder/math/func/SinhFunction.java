@@ -23,6 +23,6 @@ public class SinhFunction implements Function {
 	}
 
 	public String toString() {
-		return "sinh(x)";
+		return "sinh($x)";
 	}
 }

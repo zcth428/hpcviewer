@@ -32,6 +32,6 @@ public class SqrtFunction implements Function {
 	}
 
 	public String toString() {
-		return "sqrt(x)";
+		return "sqrt($x)";
 	}
 }

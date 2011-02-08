@@ -101,7 +101,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    setTitle("Creating a derived metric");
 
 	    // Set the message
-	    setMessage("A derived metric is based on a simple arithmetic expression of base metrics");
+	    setMessage("A derived metric is based on a simple arithmetic expression of base metrics\n");
 
 	    return contents;
 	  }
@@ -118,9 +118,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    {
 	    	Group grpExpression = new Group(expressionArea, SWT.NONE);
 	    	
+			//--------------------------------------------
 			// name of the metric
-			Composite nameArea = new Composite(grpExpression, SWT.NONE);
-			Label lblName = new Label(nameArea, SWT.LEFT);
+			//--------------------------------------------
+			final Composite nameArea = new Composite(grpExpression, SWT.NONE);
+			final Label lblName = new Label(nameArea, SWT.LEFT);
 			lblName.setText("New name for the derived metric:");
 			
 			this.cbName = new Combo(nameArea, SWT.NONE);
@@ -130,14 +132,25 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			
 			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
 			
+			//--------------------------------------------
 			// formula
-	    	Label lbl = new Label(grpExpression, SWT.NONE);
-	    	lbl.setText("Type the formula for the derived metric. Example: $0+(avg($1,$2,$3)/max($1,$2,$3))");
+			//--------------------------------------------
+	    	Label lbl = new Label(grpExpression, SWT.WRAP);
+	    	lbl.setText("The value of a metric is labeled with $x where x is the metric ID which can be found in the Metric combo box.\n" + 
+	    		"For instance, an expression \'$1 / $2 * 100.0\' means that" + 
+	    		" the new metric is computed by dividing the value of metric \'1\' with the value of metric \'2\' and multiplied with number 100.0");
 	    	
-	    	this.cbExpression = new Combo(grpExpression, SWT.NONE);
+			final Composite formulaArea = new Composite(grpExpression, SWT.NONE);
+	    	Label lblFormula = new Label(formulaArea, SWT.NONE);
+	    	lblFormula.setText("Formula: ");
+	    	
+	    	this.cbExpression = new Combo(formulaArea, SWT.NONE);
 	    	objHistoryFormula = new UserInputHistory(HISTORY_FORMULA);
 	    	this.cbExpression.setItems( objHistoryFormula.getHistory() );
 	    	cbExpression.setToolTipText("Write a simple arithmetic expression");
+	    				
+			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(formulaArea);
+
 	    	
 	    	expression_position = new Point(0,0);
 	    	cbExpression.addKeyListener( new KeyAdapter(){
@@ -177,7 +190,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	btnMetric.addSelectionListener(new SelectionListener() {
 	   			public void widgetSelected(SelectionEvent e) {
 	   				final String sText = cbExpression.getText();
-	   				final int iSelIndex = expression_position.x; //cbExpression.getCurrentCursorPosition();
+	   				final int iSelIndex = expression_position.x; 
 	   				StringBuffer sBuff = new StringBuffer(sText);
 	   				
 	   				// insert the metric variable ( i.e.: $ + metric index)
@@ -250,34 +263,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		// options
 		Group grpOptions = new Group(composite,SWT.NONE);
 		{
-			// exclusive or inclusive ?
-			/*
-			Composite typeArea = new Composite(grpOptions, SWT.NONE);
-			Label lblType = new Label(typeArea, SWT.LEFT);
-			lblType.setText("Type of metric: ");
-			btnExclusive = new Button(typeArea, SWT.RADIO);
-			btnExclusive.setText("Exclusive");
-			btnExclusive.addSelectionListener(new SelectionListener() {
-				public void widgetSelected(SelectionEvent e) { 
-					appendMetricType();
-				}
-	   			public void widgetDefaultSelected(SelectionEvent e) {
-	   				
-	   			}
-			});
-			btnExclusive.setSelection(true);
-			btnInclusive = new Button(typeArea, SWT.RADIO);
-			btnInclusive.setText("Inclusive");
-			btnInclusive.addSelectionListener(new SelectionListener() {
-				public void widgetSelected(SelectionEvent e) { 
-					appendMetricType();
-				}
-	   			public void widgetDefaultSelected(SelectionEvent e) {
-	   				
-	   			}
-			});
-			GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(typeArea);
-			*/
 			// percent option
 			this.btnPercent = new Button(grpOptions, SWT.CHECK);
 			this.btnPercent.setText("Display the metric percentage");
@@ -295,44 +280,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    return composite;
 	  }
 	  
-	  //==========================================================
-	  // ---- PRIVATE METHODS
-	  //==========================================================
-	  /*
-	  private boolean appendMetricType() {
-		  int iAppendType = 0; // 0=no append, 1=append inc, 2=append exc
-		  String sName = this.txtName.getText();
-		  boolean bEndsWithInc = sName.endsWith("(I)");
-		  boolean bEndsWithExc = sName.endsWith("(E)");
-		  boolean bIsInclusive = this.btnInclusive.getSelection();
-		  if(bEndsWithInc) {
-			  if(bIsInclusive)
-				  return false;
-			  else {
-				  iAppendType = 2;
-				  sName = sName.substring(0, sName.length()-3);
-			  }
-		  } else if(bEndsWithExc) {
-			  if(!bIsInclusive)
-				  return false;
-			  else {
-				  sName = sName.substring(0, sName.length()-3);
-				  iAppendType = 1;
-			  }
-		  } else {
-			  // the name has no suffix for inclusive/exclusive, we just append it
-			  if(bIsInclusive)
-				  iAppendType = 1;
-			  else
-				  iAppendType = 2;
-		  }
-		  if(iAppendType == 1) {
-			  this.txtName.setText(sName + "(I)");
-		  } else if(iAppendType == 2) {
-			  this.txtName.setText(sName + "(E)");
-		  }
-		  return (iAppendType==0);
-	  }*/
 
 	  /**
 	   * check if the expression is correct
@@ -365,9 +312,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 
 			// vm.setScope(null);
 			try {
-				double dValue = objExpression.eval( varMap, fctMap);
+				objExpression.eval( varMap, fctMap);
 				// if there is no exception, we assume everything goes fine
 				return true;
+				
 			} catch(java.lang.Exception e) {
 				// should throw an exception
 				MessageDialog.openError( this.getShell(), "Error: incorrect expression", e.getMessage());

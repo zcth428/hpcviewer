@@ -136,7 +136,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			// formula
 			//--------------------------------------------
 	    	Label lbl = new Label(grpExpression, SWT.WRAP);
-	    	lbl.setText("The value of a metric is labeled with $x where x is the metric ID which can be found in the Metric combo box.\n" + 
+	    	lbl.setText("The value of a metric is labeled with $x where x is the metric ID which can be found in the Metric help combo box.\n" + 
 	    		"For instance, an expression \'$1 / $2 * 100.0\' means that" + 
 	    		" the new metric is computed by dividing the value of metric \'1\' with the value of metric \'2\' and multiplied with number 100.0");
 	    	

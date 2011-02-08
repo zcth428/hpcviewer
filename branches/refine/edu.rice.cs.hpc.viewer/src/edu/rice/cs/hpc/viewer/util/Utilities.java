@@ -39,6 +39,7 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
+import edu.rice.cs.hpc.viewer.scope.ScopeTreeViewer;
 
 /**
  * Class providing auxiliary utilities methods.
@@ -158,7 +159,9 @@ public class Utilities {
 					// we will prioritize the visible view to be refreshed first
 					for(int i=0;i<arrViews.length;i++) {
 						if (arrViews[i] != visible_view) {
-							TreeViewer tree = arrViews[i].getTreeViewer();
+							ScopeTreeViewer tree = (ScopeTreeViewer) arrViews[i].getTreeViewer();
+							tree.enableAutoRowAdjust();
+							
 							// reset the view
 							Utilities.resetView(objItemManager, tree);
 						}

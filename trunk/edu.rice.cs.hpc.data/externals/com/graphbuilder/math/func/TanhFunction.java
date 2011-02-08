@@ -24,6 +24,6 @@ public class TanhFunction implements Function {
 	}
 
 	public String toString() {
-		return "tanh(x)";
+		return "tanh($x)";
 	}
 }

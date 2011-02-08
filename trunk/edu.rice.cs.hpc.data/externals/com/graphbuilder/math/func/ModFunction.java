@@ -23,6 +23,6 @@ public class ModFunction implements Function {
 	}
 
 	public String toString() {
-		return "mod(x, y)";
+		return "mod($x, y)";
 	}
 }

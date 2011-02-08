@@ -24,6 +24,6 @@ public class SinFunction implements Function {
 	}
 
 	public String toString() {
-		return "sin(x)";
+		return "sin($x)";
 	}
 }

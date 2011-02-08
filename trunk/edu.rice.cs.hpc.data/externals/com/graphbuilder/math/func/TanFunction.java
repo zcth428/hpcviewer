@@ -24,6 +24,6 @@ public class TanFunction implements Function {
 	}
 
 	public String toString() {
-		return "tan(x)";
+		return "tan($x)";
 	}
 }

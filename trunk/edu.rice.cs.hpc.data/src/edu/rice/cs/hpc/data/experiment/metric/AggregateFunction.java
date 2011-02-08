@@ -51,7 +51,7 @@ public class AggregateFunction implements Function {
 	}
 
 	public String toString() {
-		return "aggregate(&x)";
+		return "aggregate(x)";
 	}
 
 }

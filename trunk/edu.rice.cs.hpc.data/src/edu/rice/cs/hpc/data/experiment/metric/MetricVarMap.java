@@ -10,6 +10,7 @@ import com.graphbuilder.math.VarMap;
 import com.graphbuilder.math.func.Function;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /**
@@ -83,18 +84,25 @@ public class MetricVarMap extends VarMap {
 			return 0.0;
 			
 		} else if (varName.startsWith("&")) {
-			// pointer to metric variable
+			//---------------------------------------------------------
+			// 2011.02.08: new interpretation of the symbol "&x" where x is the metric ID
+			// &x means the aggregate value of metric x 
+			//---------------------------------------------------------
 			String sIndex = varName.substring(1);
 			if(sIndex.startsWith("$")) {
 				// we want to enable users to declare a pointer as "&$1" or "&1"
 				sIndex = sIndex.substring(1);
 			}
 			try{
-				int index = this.experiment.getMetric(sIndex).getIndex();
-				return index;
+				BaseMetric metric = this.experiment.getMetric(sIndex);
+				if (metric == null)
+					throw new RuntimeException("Unrecognize metric ID: " + varName);
+
+				RootScope root = (RootScope) this.experiment.getRootScopeChildren()[0];
+				return metric.getValue(root).getValue();
+
 			} catch (java.lang.Exception e) {
-				e.printStackTrace();
-				throw new RuntimeException(varName);
+				throw new RuntimeException("Unrecognize variable: &" + varName);
 			}
 		} else
 			return super.getValue(varName);

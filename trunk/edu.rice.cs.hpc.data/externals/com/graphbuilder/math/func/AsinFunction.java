@@ -24,6 +24,6 @@ public class AsinFunction implements Function {
 	}
 
 	public String toString() {
-		return "asin(x)";
+		return "asin($x)";
 	}
 }

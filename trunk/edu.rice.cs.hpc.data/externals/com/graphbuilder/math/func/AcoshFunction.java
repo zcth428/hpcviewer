@@ -25,6 +25,6 @@ public class AcoshFunction implements Function {
 	}
 
 	public String toString() {
-		return "acosh(x)";
+		return "acosh($x)";
 	}
 }

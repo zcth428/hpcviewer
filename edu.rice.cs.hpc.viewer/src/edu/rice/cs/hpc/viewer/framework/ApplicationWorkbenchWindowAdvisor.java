@@ -221,8 +221,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	
 	/**
 	 * add a shutdown event to the workbench
-	 * @param IWorkbench
-	 * @param IWorkbenchPage
 	 */
 	private void shutdownEvent(IWorkbench workbench, final IWorkbenchPage pageCurrent) {
 		// attach a new listener to the workbench
@@ -235,6 +233,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				if (pageCurrent != null)
 					// somehow, closeEditors method works better than closeAllEditors.
 					pageCurrent.closeEditors(pageCurrent.getEditorReferences(), false);
+				
+				//---------------------------------------------------------------------------
+				// we need to explicitly remove all allocated native resources since Eclipse
+				// 	will not do this for us (due to resources that are platform dependent)
+				//---------------------------------------------------------------------------
+				Utilities.dispose();
+				
 				return true;
 			}
 			public void postShutdown(IWorkbench workbench) {

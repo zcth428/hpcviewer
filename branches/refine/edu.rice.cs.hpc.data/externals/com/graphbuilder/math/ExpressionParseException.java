@@ -7,6 +7,10 @@ Exception thrown if expression cannot be parsed correctly.
 */
 public class ExpressionParseException extends RuntimeException {
 
+	/**
+	 * serial version
+	 */
+	private static final long serialVersionUID = 3976878419653066876L;
 	private String descrip = null;
 	private int index = 0;
 

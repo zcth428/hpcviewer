@@ -27,6 +27,6 @@ public class SumFunction implements Function {
 	}
 
 	public String toString() {
-		return "sum(x1, x2, ..., xn)";
+		return "sum($x1, $x2, ..., $xn)";
 	}
 }

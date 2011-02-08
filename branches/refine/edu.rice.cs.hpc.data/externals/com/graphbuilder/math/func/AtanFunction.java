@@ -24,6 +24,6 @@ public class AtanFunction implements Function {
 	}
 
 	public String toString() {
-		return "atan(x)";
+		return "atan($x)";
 	}
 }

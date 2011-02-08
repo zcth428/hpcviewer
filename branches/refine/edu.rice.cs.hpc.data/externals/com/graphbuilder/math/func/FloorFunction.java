@@ -24,6 +24,6 @@ public class FloorFunction implements Function {
 	}
 
 	public String toString() {
-		return "floor(x)";
+		return "floor($x)";
 	}
 }

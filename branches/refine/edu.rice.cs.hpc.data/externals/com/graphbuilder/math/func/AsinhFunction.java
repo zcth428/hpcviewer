@@ -23,6 +23,6 @@ public class AsinhFunction implements Function {
 	}
 
 	public String toString() {
-		return "asinh(x)";
+		return "asinh($x)";
 	}
 }

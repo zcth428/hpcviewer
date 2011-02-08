@@ -5,11 +5,13 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.jface.viewers.ViewerRow;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.FontMetrics;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Listener;
@@ -51,9 +53,22 @@ public class ScopeTreeViewer extends TreeViewer {
 	public ScopeTreeViewer(Composite parent, int style) {
 		super(parent, SWT.VIRTUAL | style);
 		this.setUseHashlookup(true);
-		// TODO Auto-generated constructor stub
+
 	}
 
+	
+	public void enableAutoRowAdjust() {
+		
+		this.getTree().addListener(SWT.MeasureItem, new Listener() {
+
+			public void handleEvent(Event event) {
+				event.height = event.gc.getFontMetrics().getHeight() + 5;
+				//System.out.println("event: " + event.height + ", met: " + fm.getHeight() + ", pt: " + pt.y + ", gc:" + event.gc.getFontMetrics().getHeight());
+			}}
+		);
+	
+	}
+	
 	/**
 	 * Finding the path based on the treeitem information
 	 * @param item

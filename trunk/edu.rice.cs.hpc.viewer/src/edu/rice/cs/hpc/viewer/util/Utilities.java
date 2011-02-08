@@ -129,6 +129,21 @@ public class Utilities {
 	
 	
 	/****
+	 * remove all the allocated resources
+	 */
+	static public void dispose() {
+		try {
+			Utilities.fontGeneral.dispose();
+			Utilities.fontMetric.dispose();
+			
+			Icons.dispose();
+			
+		} catch (Exception e) {
+			
+		}
+	}
+	
+	/****
 	 * Store the new fonts into the workspace registry
 	 */
 	static private void storePreferenceFonts() {

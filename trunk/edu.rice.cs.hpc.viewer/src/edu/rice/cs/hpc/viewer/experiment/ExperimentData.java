@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.viewer.experiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * Class to store an experiment data for each instance of Workbench Window

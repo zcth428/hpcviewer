@@ -38,8 +38,8 @@ public class AggregateFunction implements Function {
 		int index = (int) param[0];
 
 		if (!is_warned) {
-			System.err.println("WARNING: this function is deprecated. Please use the prefix '&' to get the aggregate value of a metric.\n " +
-			"For instance, the expression: '&1' is to get the aggregate value of metric 1 (where 1 is the metric ID)");
+			System.err.println("WARNING: this function is deprecated. Please use the prefix '@' to get the aggregate value of a metric.\n " +
+			"For instance, expression: '@' is to get the aggregate value of metric 1 (where 1 is the metric ID)");
 			
 			is_warned = true;
 		}
@@ -59,7 +59,7 @@ public class AggregateFunction implements Function {
 	}
 
 	public String toString() {
-		return "aggregate(x) -- deprecated. Use &x instead.";
+		return "aggregate(x) -- deprecated. Use @x instead.";
 	}
 
 }

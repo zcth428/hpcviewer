@@ -98,7 +98,8 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    setTitle("Creating a derived metric");
 
 	    // Set the message
-	    setMessage("A derived metric is based on a simple arithmetic expression of base metrics\n");
+	    setMessage("A derived metric is a spreadsheet-like formula using other metrics (variables), arithmetic operators, functions,\n"
+	    			+ "and numerical constants.\n");
 
 	    return contents;
 	  }
@@ -120,10 +121,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			//--------------------------------------------
 			final Composite nameArea = new Composite(grpExpression, SWT.NONE);
 			final Label lblName = new Label(nameArea, SWT.LEFT);
-			lblName.setText("New name for the derived metric:");
+			lblName.setText("Name:");
 			
 			this.cbName = new Combo(nameArea, SWT.NONE);
-			this.cbName.setToolTipText("Enter the new name of the derived metric");
+			this.cbName.setToolTipText("Name of the derived metric");
 			objHistoryName = new UserInputHistory( ExtDerivedMetricDlg.HISTORY_METRIC_NAME );
 			this.cbName.setItems( this.objHistoryName.getHistory() );
 			
@@ -131,12 +132,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			
 			//--------------------------------------------
 			// formula
-			//--------------------------------------------
-	    	Label lbl = new Label(grpExpression, SWT.WRAP);
-	    	lbl.setText("The value of a metric is labeled with $x where x is the metric ID which can be found in the Metric help combo box.\n" + 
-	    		"For instance, an expression \'$1 / $2 * 100.0\' means that" + 
-	    		" the new metric is computed by dividing the value of metric \'1\' with the value of metric \'2\' and multiplied with number 100.0");
-	    	
+			//--------------------------------------------	    	
 			final Composite formulaArea = new Composite(grpExpression, SWT.NONE);
 	    	Label lblFormula = new Label(formulaArea, SWT.NONE);
 	    	lblFormula.setText("Formula: ");
@@ -144,10 +140,16 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	this.cbExpression = new Combo(formulaArea, SWT.NONE);
 	    	objHistoryFormula = new UserInputHistory(HISTORY_FORMULA);
 	    	this.cbExpression.setItems( objHistoryFormula.getHistory() );
-	    	cbExpression.setToolTipText("Write a simple arithmetic expression");
+	    	cbExpression.setToolTipText("A spread-sheet like formula using other metrics (variables), arithmetic operators, functions, and numerical constants");
 	    				
 			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(formulaArea);
 
+	    	Label lbl = new Label(grpExpression, SWT.WRAP);
+	    	lbl.setText("There are two kinds of metric variables: point-wise and aggregate.  The former is like a spreadsheet cell, the "
+						+ "latter is like a spreadsheet-column sum.  To form a variable, prepend '$' and '@', respectively, to a metric id.  "
+						+ "For instance, the formula\n"
+						+ "    (($2 - $1) * 100.0) / @2\n"
+						+ "divides the scaled difference of the point-wise metrics 2 and 1 by the aggregate value of metric 2.");
 	    	
 	    	expression_position = new Point(0,0);
 	    	cbExpression.addKeyListener( new KeyAdapter(){
@@ -171,10 +173,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	
 	    	//--------------- inserting metric
 	    	Group grpInsertion = new Group(expressionArea, SWT.NONE);
-	    	grpInsertion.setText("Help: Inserting metrics/functions");
+	    	grpInsertion.setText("Assistance:");
 
 	    	Label lblMetric = new Label(grpInsertion, SWT.NONE);
-	    	lblMetric.setText("Metric:");
+	    	lblMetric.setText("Point-wise variables:");
 	    	
 	    	// combo box that lists the metrics
 	    	final Combo cbMetric = new Combo(grpInsertion, SWT.READ_ONLY);
@@ -183,7 +185,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	
 	    	// button to insert the metric code into the expression field
 	    	Button btnMetric = new Button(grpInsertion, SWT.PUSH);
-	    	btnMetric.setText("Insert metric");
+	    	btnMetric.setText("Insert variable");
 	    	btnMetric.addSelectionListener(new SelectionListener() {
 	   			public void widgetSelected(SelectionEvent e) {
 	   				final String sText = cbExpression.getText();
@@ -206,7 +208,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	
 	    	//---------------- inserting function
 	    	Label lblFunc = new Label(grpInsertion, SWT.NONE);
-	    	lblFunc.setText("Function:");
+	    	lblFunc.setText("Functions:");
 	    	
 	    	final Combo cbFunc = new Combo(grpInsertion, SWT.READ_ONLY);
 	    	fctMap.loadDefaultFunctions();
@@ -247,6 +249,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   				
 	   			}
 	    	});
+	    	
+	    	Label lblOperators = new Label(grpInsertion, SWT.NONE);
+	    	lblOperators.setText("Operators: ( ) + - * / ^");
+
 
 	    	// do not expand the group
 	    	GridDataFactory.fillDefaults().grab(false, false).applyTo(grpInsertion);
@@ -262,8 +268,8 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		{
 			// percent option
 			this.btnPercent = new Button(grpOptions, SWT.CHECK);
-			this.btnPercent.setText("Display the metric percentage");
-			this.btnPercent.setToolTipText("Also compute the percent in the metric");
+			this.btnPercent.setText("Display metric percentage");
+			this.btnPercent.setToolTipText("For each metric value, display percentage of aggregate metric value");
 
 			grpOptions.setText("Options");
 		}

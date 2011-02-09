@@ -24,6 +24,6 @@ public class ExpFunction implements Function {
 	}
 
 	public String toString() {
-		return "exp($x)";
+		return "exp(x)";
 	}
 }

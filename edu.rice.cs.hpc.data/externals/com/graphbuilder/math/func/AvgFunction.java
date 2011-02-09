@@ -27,6 +27,6 @@ public class AvgFunction implements Function {
 	}
 
 	public String toString() {
-		return "avg($x1, $x2, ..., $xn)";
+		return "avg(x1, x2, ..., xn)";
 	}
 }

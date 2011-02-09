@@ -29,6 +29,6 @@ public class MaxFunction implements Function {
 	}
 
 	public String toString() {
-		return "max($x1, $x2, ..., $xn)";
+		return "max(x1, x2, ..., xn)";
 	}
 }

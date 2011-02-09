@@ -24,6 +24,6 @@ public class CosFunction implements Function {
 	}
 
 	public String toString() {
-		return "cos($x)";
+		return "cos(x)";
 	}
 }

@@ -24,6 +24,6 @@ public class AbsFunction implements Function {
 	}
 
 	public String toString() {
-		return "abs($x)";
+		return "abs(x)";
 	}
 }

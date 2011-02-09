@@ -27,11 +27,12 @@ public class ExtFuncMap extends FuncMap {
 		super(caseSensitive);
 	}
 
-	/**
-	 * 
+	/***
+	 * construct list of function specifically for hpcdata
+	 * @param metrics: list of metrics
+	 * @param rootscope: a root scope (any root scope will do)
 	 */
 	public ExtFuncMap(BaseMetric []metrics, RootScope rootscope) {
-		// TODO Auto-generated constructor stub
 		super(false);
 		this.init(metrics, rootscope);
 	}
@@ -39,8 +40,8 @@ public class ExtFuncMap extends FuncMap {
 	public void init(BaseMetric []metrics, RootScope rootscope) {
 		AggregateFunction fct = new AggregateFunction(metrics, rootscope);
 		StdDevFunction fctStdDev = new StdDevFunction();
-		this.setFunction("aggregate", fct);
 		this.setFunction("stdev", fctStdDev);
 		this.loadDefaultFunctions();
+		this.setFunction("aggregate", fct);
 	}
 }

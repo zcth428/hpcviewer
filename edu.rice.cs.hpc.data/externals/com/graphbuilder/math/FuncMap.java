@@ -104,14 +104,14 @@ public class FuncMap {
 		setFunction("avg", new AvgFunction());
 
 		// 0 parameters
-		setFunction("pi", new PiFunction());
+		//setFunction("pi", new PiFunction());
 		setFunction("e", new EFunction());
-		setFunction("rand", new RandFunction());
+//		setFunction("rand", new RandFunction());
 
 		// 1 parameter
-		setFunction("sin", new SinFunction());
-		setFunction("cos", new CosFunction());
-		setFunction("tan", new TanFunction());
+//		setFunction("sin", new SinFunction());
+//		setFunction("cos", new CosFunction());
+//		setFunction("tan", new TanFunction());
 		setFunction("sqrt", new SqrtFunction());
 		setFunction("abs", new AbsFunction());
 		setFunction("ceil", new CeilFunction());
@@ -122,15 +122,15 @@ public class FuncMap {
 		setFunction("sign", new SignFunction());
 		setFunction("round", new RoundFunction());
 		setFunction("fact", new FactFunction());
-		setFunction("cosh", new CoshFunction());
-		setFunction("sinh", new SinhFunction());
-		setFunction("tanh", new TanhFunction());
-		setFunction("acos", new AcosFunction());
-		setFunction("asin", new AsinFunction());
-		setFunction("atan", new AtanFunction());
-		setFunction("acosh", new AcoshFunction());
-		setFunction("asinh", new AsinhFunction());
-		setFunction("atanh", new AtanhFunction());
+//		setFunction("cosh", new CoshFunction());
+//		setFunction("sinh", new SinhFunction());
+//		setFunction("tanh", new TanhFunction());
+//		setFunction("acos", new AcosFunction());
+//		setFunction("asin", new AsinFunction());
+//		setFunction("atan", new AtanFunction());
+//		setFunction("acosh", new AcoshFunction());
+//		setFunction("asinh", new AsinhFunction());
+//		setFunction("atanh", new AtanhFunction());
 
 		// 2 parameters
 		setFunction("pow", new PowFunction());

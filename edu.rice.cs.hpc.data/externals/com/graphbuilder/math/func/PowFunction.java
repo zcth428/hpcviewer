@@ -25,6 +25,6 @@ public class PowFunction implements Function {
 	}
 
 	public String toString() {
-		return "pow(x, y)";
+		return "pow(base, exponent)";
 	}
 }

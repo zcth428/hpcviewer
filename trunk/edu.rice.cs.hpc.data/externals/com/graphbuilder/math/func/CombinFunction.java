@@ -29,6 +29,6 @@ public class CombinFunction implements Function {
 	}
 
 	public String toString() {
-		return "combin(n, r)";
+		return "choose(n, r)";
 	}
 }

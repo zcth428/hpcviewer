@@ -83,7 +83,7 @@ public class MetricVarMap extends VarMap {
 			}
 			return 0.0;
 			
-		} else if (varName.startsWith("&")) {
+		} else if (varName.startsWith("@")) {
 			//---------------------------------------------------------
 			// 2011.02.08: new interpretation of the symbol "&x" where x is the metric ID
 			// &x means the aggregate value of metric x 
@@ -102,7 +102,7 @@ public class MetricVarMap extends VarMap {
 				return metric.getValue(root).getValue();
 
 			} catch (java.lang.Exception e) {
-				throw new RuntimeException("Unrecognize variable: &" + varName);
+				throw new RuntimeException("Unrecognize variable: " + varName);
 			}
 		} else
 			return super.getValue(varName);
@@ -114,7 +114,7 @@ public class MetricVarMap extends VarMap {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String s = "&1*r^2";
+		String s = "@1*r^2";
 		Expression x = ExpressionTree.parse(s);
 
 		MetricVarMap vm = new MetricVarMap(false /* case sensitive */);

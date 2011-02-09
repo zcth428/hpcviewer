@@ -24,6 +24,6 @@ public class SignFunction implements Function {
 	}
 
 	public String toString() {
-		return "sign($x)";
+		return "sign(x)";
 	}
 }

@@ -24,6 +24,6 @@ public class CeilFunction implements Function {
 	}
 
 	public String toString() {
-		return "ceil($x)";
+		return "ceil(x)";
 	}
 }

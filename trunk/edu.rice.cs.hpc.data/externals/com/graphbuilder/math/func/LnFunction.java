@@ -24,6 +24,6 @@ public class LnFunction implements Function {
 	}
 
 	public String toString() {
-		return "ln($x)";
+		return "ln(x)";
 	}
 }

@@ -24,6 +24,6 @@ public class AcosFunction implements Function {
 	}
 
 	public String toString() {
-		return "acos($x)";
+		return "acos(x)";
 	}
 }

@@ -98,7 +98,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    setTitle("Creating a derived metric");
 
 	    // Set the message
-	    setMessage("A derived metric is a spreadsheet-like formula using other metrics (variables), arithmetic operators, functions,\n"
+	    setMessage("A derived metric is a spreadsheet-like formula using other metrics (variables), operators, functions,\n"
 	    			+ "and numerical constants.\n");
 
 	    return contents;
@@ -128,21 +128,18 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			objHistoryName = new UserInputHistory( ExtDerivedMetricDlg.HISTORY_METRIC_NAME );
 			this.cbName.setItems( this.objHistoryName.getHistory() );
 			
-			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
-			
 			//--------------------------------------------
 			// formula
 			//--------------------------------------------	    	
-			final Composite formulaArea = new Composite(grpExpression, SWT.NONE);
-	    	Label lblFormula = new Label(formulaArea, SWT.NONE);
+	    	Label lblFormula = new Label(nameArea, SWT.NONE);
 	    	lblFormula.setText("Formula: ");
 	    	
-	    	this.cbExpression = new Combo(formulaArea, SWT.NONE);
+	    	this.cbExpression = new Combo(nameArea, SWT.NONE);
 	    	objHistoryFormula = new UserInputHistory(HISTORY_FORMULA);
 	    	this.cbExpression.setItems( objHistoryFormula.getHistory() );
 	    	cbExpression.setToolTipText("A spread-sheet like formula using other metrics (variables), arithmetic operators, functions, and numerical constants");
-	    				
-			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(formulaArea);
+	    							
+			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
 
 	    	Label lbl = new Label(grpExpression, SWT.WRAP);
 	    	lbl.setText("There are two kinds of metric variables: point-wise and aggregate.  The former is like a spreadsheet cell, the "
@@ -176,36 +173,45 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	grpInsertion.setText("Assistance:");
 
 	    	Label lblMetric = new Label(grpInsertion, SWT.NONE);
-	    	lblMetric.setText("Point-wise variables:");
+	    	lblMetric.setText("Metrics:");
 	    	
 	    	// combo box that lists the metrics
 	    	final Combo cbMetric = new Combo(grpInsertion, SWT.READ_ONLY);
 	    	cbMetric.setItems(this.arrStrMetrics);
 	    	cbMetric.setText(this.arrStrMetrics[0]);
-	    	
+
+	    	//---------------------------------------------------------------
 	    	// button to insert the metric code into the expression field
-	    	Button btnMetric = new Button(grpInsertion, SWT.PUSH);
-	    	btnMetric.setText("Insert variable");
+	    	//---------------------------------------------------------------
+
+	    	final Composite buttonArea = new Composite(grpInsertion, SWT.NONE);
+	    	final Button btnMetric = new Button(buttonArea, SWT.PUSH);
+	    	btnMetric.setText("Point-wise");
+	    	btnMetric.setToolTipText("Insert the metric as point-wise variable in the formula by prepending with '$' sign");
+	    	
 	    	btnMetric.addSelectionListener(new SelectionListener() {
 	   			public void widgetSelected(SelectionEvent e) {
-	   				final String sText = cbExpression.getText();
-	   				final int iSelIndex = expression_position.x; 
-	   				StringBuffer sBuff = new StringBuffer(sText);
-	   				
-	   				// insert the metric variable ( i.e.: $ + metric index)
-	   				final String sMetricIndex = "$" + experiment.getMetric(cbMetric.getSelectionIndex()).getShortName() ; 
-	   				sBuff.insert(iSelIndex, sMetricIndex );
-	   				cbExpression.setText(sBuff.toString());
-
-	   				// put cursor after the metric variable
-	   				Point p = new Point(iSelIndex + sMetricIndex.length(), iSelIndex + sMetricIndex.length());
-	   				cbExpression.setSelection( p );
+	   				insertMetricToFormula("$", cbMetric.getSelectionIndex());
 	   			}
 	   			public void widgetDefaultSelected(SelectionEvent e) {
 	   				
 	   			}
 	    	});
 	    	
+	    	final Button btnAggregate = new Button(buttonArea, SWT.PUSH);
+	    	btnAggregate.setText("Aggregate");
+	    	btnAggregate.setToolTipText("Insert the metric as aggregate variable in the formula by prepending with '@' sign");
+	    	
+	    	btnAggregate.addSelectionListener(new SelectionListener() {
+	   			public void widgetSelected(SelectionEvent e) {
+	   				insertMetricToFormula("@", cbMetric.getSelectionIndex());
+	   			}
+	   			public void widgetDefaultSelected(SelectionEvent e) {
+	   				
+	   			}
+	    	});
+	    	GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(buttonArea);
+
 	    	//---------------- inserting function
 	    	Label lblFunc = new Label(grpInsertion, SWT.NONE);
 	    	lblFunc.setText("Functions:");
@@ -250,8 +256,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   			}
 	    	});
 	    	
-	    	Label lblOperators = new Label(grpInsertion, SWT.NONE);
-	    	lblOperators.setText("Operators: ( ) + - * / ^");
+	    	final Label lblOperators = new Label(grpInsertion, SWT.NONE);
+	    	lblOperators.setText("Operators: ");
+	    	final Label lblOpValues  = new Label(grpInsertion, SWT.NONE);
+	    	lblOpValues.setText("( ) + - * / ^");
 
 
 	    	// do not expand the group
@@ -264,6 +272,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		
 		//-------
 		// options
+		//-------
 		Group grpOptions = new Group(composite,SWT.NONE);
 		{
 			// percent option
@@ -283,6 +292,28 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    return composite;
 	  }
 	  
+	  
+	  /*****
+	   * insert the selected metric from the combo box into the formula field
+	   * 
+	   * @param signToPrepend
+	   * @param selection_index
+	   */
+	  private void insertMetricToFormula(String signToPrepend, int selection_index) {
+		  final String sText = cbExpression.getText();
+		  final int iSelIndex = expression_position.x; 
+		  StringBuffer sBuff = new StringBuffer(sText);
+
+		  // insert the metric variable ( i.e.: $ + metric index)
+		  final String sMetricIndex = signToPrepend + experiment.getMetric(selection_index).getShortName() ; 
+		  sBuff.insert(iSelIndex, sMetricIndex );
+		  cbExpression.setText(sBuff.toString());
+
+		  // put cursor after the metric variable
+		  Point p = new Point(iSelIndex + sMetricIndex.length(), iSelIndex + sMetricIndex.length());
+		  cbExpression.setSelection( p );
+
+	  }
 
 	  /**
 	   * check if the expression is correct
@@ -338,7 +369,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  for(int i=0;i<nbMetrics;i++) {
 			  BaseMetric metric = listOfMetrics[i];
 			  // laksono 2009.12.15: we need to use the shortname instead of the index
-			  this.arrStrMetrics[i]="$"+metric.getShortName() + ": "+ metric.getDisplayName();
+			  this.arrStrMetrics[i] = metric.getShortName() + ": "+ metric.getDisplayName();
 		  }
 	  }
 	  /**

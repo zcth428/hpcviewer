@@ -38,10 +38,11 @@ public class ExtFuncMap extends FuncMap {
 	}
 
 	public void init(BaseMetric []metrics, RootScope rootscope) {
-		AggregateFunction fct = new AggregateFunction(metrics, rootscope);
+		//AggregateFunction fct = new AggregateFunction(metrics, rootscope);
 		StdDevFunction fctStdDev = new StdDevFunction();
+
+		//this.setFunction("@", fct);
 		this.setFunction("stdev", fctStdDev);
 		this.loadDefaultFunctions();
-		this.setFunction("aggregate", fct);
 	}
 }

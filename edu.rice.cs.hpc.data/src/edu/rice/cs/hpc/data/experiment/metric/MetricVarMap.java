@@ -85,14 +85,11 @@ public class MetricVarMap extends VarMap {
 			
 		} else if (varName.startsWith("@")) {
 			//---------------------------------------------------------
-			// 2011.02.08: new interpretation of the symbol "&x" where x is the metric ID
-			// &x means the aggregate value of metric x 
+			// 2011.02.08: new interpretation of the symbol "@x" where x is the metric ID
+			// @x returns the aggregate value of metric x 
 			//---------------------------------------------------------
 			String sIndex = varName.substring(1);
-			if(sIndex.startsWith("$")) {
-				// we want to enable users to declare a pointer as "&$1" or "&1"
-				sIndex = sIndex.substring(1);
-			}
+
 			try{
 				BaseMetric metric = this.experiment.getMetric(sIndex);
 				if (metric == null)

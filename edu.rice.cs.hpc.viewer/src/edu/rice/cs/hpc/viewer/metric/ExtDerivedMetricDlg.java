@@ -312,6 +312,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  // put cursor after the metric variable
 		  Point p = new Point(iSelIndex + sMetricIndex.length(), iSelIndex + sMetricIndex.length());
 		  cbExpression.setSelection( p );
+		  expression_position = cbExpression.getSelection();
 
 	  }
 

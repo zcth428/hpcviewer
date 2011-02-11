@@ -296,7 +296,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  /*****
 	   * insert the selected metric from the combo box into the formula field
 	   * 
-	   * @param signToPrepend
+	   * @param signToPrepend: either '$' or '@'
 	   * @param selection_index
 	   */
 	  private void insertMetricToFormula(String signToPrepend, int selection_index) {
@@ -397,14 +397,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  return this.bPercent;
 	  }
 	  
-	  /**
-	   * return true if the metrics' type is exclusive
-	   * @return
-	   */
-	  /*
-	  public boolean isExclusive() {
-		  return this.bExclusive;
-	  }*/
+
 	  /**
 	   * Call back method when the OK button is pressed
 	   */
@@ -422,33 +415,4 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		}
 	  }
 	
-	  /**
-	   * Set the scope for verifying the formula
-	   * @param s scope
-	   */
-	  /*
-	  public void setScope(Scope s) {
-		this.scope = s;
-	  } */
-	  
-	//-----------------------------
-	/**
-	 * @param args
-	 */
-	  /*
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Metric []metrics = new Metric[4];
-		Scope scope = new RootScope(null, "Toto", "Tata", null);
-		for(int i=0;i<4;i++) {
-			metrics[i] = new Metric(null, "s"+i,"native-"+i,"display-"+i,false,true,
-					"%",null,0);
-			//MetricValue val = new MetricValue(i, i*10.0);
-			//scope.setMetricValue(i, val);
-		}
-		ExtDerivedMetricDlg dlg =  new ExtDerivedMetricDlg(null, metrics);
-		//dlg.setScope(scope);
-		dlg.open();
-	}
-*/
 }

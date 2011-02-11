@@ -137,7 +137,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	this.cbExpression = new Combo(nameArea, SWT.NONE);
 	    	objHistoryFormula = new UserInputHistory(HISTORY_FORMULA);
 	    	this.cbExpression.setItems( objHistoryFormula.getHistory() );
-	    	cbExpression.setToolTipText("A spread-sheet like formula using other metrics (variables), arithmetic operators, functions, and numerical constants");
+	    	cbExpression.setToolTipText("A spreadsheet-like formula using other metrics (variables), arithmetic operators, functions, and numerical constants");
 	    							
 			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
 

@@ -7,7 +7,7 @@
 <meta name="originator" content="TeX4ht (http://www.cse.ohio-state.edu/~gurari/TeX4ht/)"> 
 <!-- html --> 
 <meta name="src" content="hpcviewer-users-manual.tex"> 
-<meta name="date" content="2010-12-16 16:04:00"> 
+<meta name="date" content="2011-02-14 15:44:00"> 
 <link rel="stylesheet" type="text/css" href="hpcviewer-users-manual.css"> 
 </head><body 
 >
@@ -29,9 +29,16 @@ class="small-caps">l</span><span
 class="small-caps">k</span><span 
 class="small-caps">i</span><span 
 class="small-caps">t</span> </span>provides the <span 
-class="cmtt-10x-x-109">hpcviewer </span>performance presentation tool for interactive examination of
-performance databases.
-<!--l. 8--><p class="indent" >   <span 
+class="cmtt-10x-x-109">hpcviewer</span>&#x00A0;<span class="cite">&#x00A0;[<a 
+href="#XAdhianto-MC-Ta:2010:PSTI-hpcviewer">1</a>]</span> performance presentation tool for interactive examination
+of performance databases. <span 
+class="cmtt-10x-x-109">hpcviewer </span>interactively presents context-sensitive performance metrics
+correlated to program structure and mapped to a program&#8217;s source code, if available. It can present an
+arbitrary collection of performance metrics gathered during one or more runs or compute derived
+metrics.
+   <h3 class="sectionHead"><span class="titlemark">1   </span> <a 
+ id="x1-10001"></a>Launching</h3>
+<!--l. 16--><p class="noindent" ><span 
 class="cmtt-10x-x-109">hpcviewer </span>can either be launched from a command line (Linux/Unix platform) or by clicking the
 <span 
 class="cmtt-10x-x-109">hpcviewer </span>icon (for Windows, Mac OS X and Linux/Unix platform). The command line syntax is as
@@ -42,12 +49,12 @@ follows:
      <div class="verbatim" id="verbatim-1">
 &#x00A0;&#x00A0;hpcviewer&#x00A0;[options]&#x00A0;[&#x003C;hpctoolkit-database&#x003E;]
 </div>
-     <!--l. 13--><p class="nopar" ></div>
-<!--l. 15--><p class="noindent" >Here, <span 
-class="cmtt-10x-x-109">&#x003C;database-directory&#x003E; </span>is an optional argument to load a database automatically. Without this
+     <!--l. 21--><p class="nopar" ></div>
+<!--l. 23--><p class="noindent" >Here, <span 
+class="cmtt-10x-x-109">&#x003C;hpctoolkit-database&#x003E; </span>is an optional argument to load a database automatically. Without this
 argument, <span 
 class="cmtt-10x-x-109">hpcviewer </span>will prompt for the location of a database.
-<!--l. 18--><p class="indent" >   The possible options are as follows:
+<!--l. 26--><p class="indent" >   The possible options are as follows:
      <ul class="itemize1">
      <li class="itemize"><span 
 class="cmtt-10x-x-109">-n</span>: Do not display the Callers View. (Saves memory and time.)
@@ -58,37 +65,45 @@ class="cmtt-10x-x-109">-consolelog</span>: Send log entries to a console in addi
      </li>
      <li class="itemize"><span 
 class="cmtt-10x-x-109">-debug</span>: Log additional information about plug-in dependency problems.</li></ul>
-   <h3 class="sectionHead"><span class="titlemark">1   </span> <a 
- id="x1-10001"></a>Views</h3>
-<!--l. 72--><p class="noindent" ><hr class="figure"><div class="figure" 
+<!--l. 78--><p class="noindent" >
+   <h3 class="sectionHead"><span class="titlemark">2   </span> <a 
+ id="x1-20002"></a>Views</h3>
+<!--l. 80--><p class="noindent" ><hr class="figure"><div class="figure" 
 >
                                                                                          
                                                                                          
 <a 
- id="x1-10011"></a>
+ id="x1-20011"></a>
                                                                                          
                                                                                          
-<!--l. 73--><p class="noindent" ><img 
+<!--l. 81--><p class="noindent" ><img 
 src="fig/hpcviewer-legend.png" alt="PIC"  
 >
 <br /> <div class="caption" 
 ><span class="id">Figure&#x00A0;1: </span><span  
 class="content">An annotated screenshot of <span 
-class="cmtt-10x-x-109">hpcviewer</span>&#8217;s interface.</span></div><!--tex4ht:label?: x1-10011 -->
+class="cmtt-10x-x-109">hpcviewer</span>&#8217;s interface.</span></div><!--tex4ht:label?: x1-20011 -->
                                                                                          
                                                                                          
-<!--l. 76--><p class="noindent" ></div><hr class="endfigure">
-<!--l. 78--><p class="indent" >   Figure&#x00A0;<a 
-href="#x1-10011">1<!--tex4ht:ref: fig:hpcviewer-legend --></a> shows a screenshot of an <span 
-class="cmtt-10x-x-109">hpcviewer </span>brower window with panes and key controls labeled. The
-browser supports three different views of performance data. The browser window is divided into
-three panes. We first explain the views of performance data and then the role of the different
-panes.
-<!--l. 84--><p class="indent" >   <span 
-class="cmtt-10x-x-109">hpcviewer </span>supports three principal views of an application&#8217;s performance data: a top-down Calling
-Context View, a bottom-up caller&#8217;s view, and a Flat View. One selects the desired view by clicking on the
-corresponding view control tab. We briefly describe the three views and their corresponding
-purposes.
+<!--l. 84--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 86--><p class="indent" >   Figure&#x00A0;<a 
+href="#x1-20011">1<!--tex4ht:ref: fig:hpcviewer-legend --></a> shows an annotated screenshot of <span 
+class="cmtt-10x-x-109">hpcviewer</span>&#8217;s user interface presenting a call
+path profile. The annotations highlight <span 
+class="cmtt-10x-x-109">hpcviewer</span>&#8217;s principal window panes and key controls.
+The browser window is divided into three panes. The Source pane (top) displays program
+source code. The Navigation and Metric panes (bottom) associate a table of performance
+metrics with static or dynamic program structure. These panes are discussed in more detail in
+Section&#x00A0;<a 
+href="#x1-30003">3<!--tex4ht:ref: sec:hpcviewer:panes --></a>.
+<!--l. 93--><p class="indent" >   <span 
+class="cmtt-10x-x-109">hpcviewer </span>displays calling-context-sensitive performance data in three different views: a top-down
+<span 
+class="cmti-10x-x-109">Calling Context View</span>, a bottom-up <span 
+class="cmti-10x-x-109">Callers View</span>, and a <span 
+class="cmti-10x-x-109">Flat View</span>. One selects the desired view by
+clicking on the corresponding view control tab. We briefly describe the three views and their
+corresponding purposes.
      <ul class="itemize1">
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Calling  Context  View</span>.  This  top-down  view  represents  the  dynamic  calling  contexts
@@ -101,7 +116,7 @@ class="cmti-10x-x-109">time </span>since <span
 class="cmtt-10x-x-109">hpcviewer </span>can present a multiplicity of measured such as cycles, or cache misses) or
      derived metrics (e.g. cache miss rates or bandwidth consumed) that that are other indicators
      of execution cost.
-     <!--l. 94--><p class="noindent" >A calling context for a procedure <span 
+     <!--l. 103--><p class="noindent" >A calling context for a procedure <span 
 class="cmss-10x-x-109">f</span> consists of the stack of procedure frames active when the
      call was made to <span 
 class="cmss-10x-x-109">f</span>. Using this view, one can readily see how much of the application&#8217;s cost
@@ -127,15 +142,26 @@ class="cmss-10x-x-109">f</span> in different places, these represent
      separate calling contexts.
      </li>
      <li class="itemize"><span 
-class="cmbx-10x-x-109">Callers View</span>. This bottom up view enables one to look upward along call paths. This view is
-     particularly useful for understanding the performance of software components or procedures
+class="cmbx-10x-x-109">Callers View</span>. This bottom-up view enables one to look upward along call paths. The view
+     apportions a procedure&#8217;s costs to its caller and, more generally, its calling contexts. This view
+     is particularly useful for understanding the performance of software components or procedures
      that are used in more than one context. For instance, a message-passing program may call
      <span 
 class="cmtt-10x-x-109">MPI_Wait </span>in many different calling contexts. The cost of any particular call will depend upon
      the structure of the parallelization in which the call is made. Serialization or load imbalance
      may cause long waits in some calling contexts while other parts of the program may have short
      waits because computation is balanced and communication is overlapped with computation.
+     <!--l. 116--><p class="noindent" >When several levels of the Callers View are expanded, saying that the Callers View apportions
+     metrics of a callee on behalf of its caller can be confusing: what is the caller and what is the
+     callee? In this situation, we can say that the Callers View apportions the metrics of a particular
+     procedure <span 
+class="cmti-10x-x-109">in its various calling contexts </span>on behalf of that context&#8217;s caller. Alternatively but
+     equivalently, the Callers View apportions the metrics of a particular procedure on behalf of
+     its various <span 
+class="cmti-10x-x-109">calling contexts</span>.
      </li>
+                                                                                         
+                                                                                         
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Flat  View</span>.  This  view  organizes  performance  measurement  data  according  to  the  static
      structure of an application. All costs incurred in any calling context by a procedure are
@@ -143,19 +169,18 @@ class="cmbx-10x-x-109">Flat  View</span>.  This  view  organizes  performance  m
      the costs incurred by a particular procedure are represented separately for each call to the
      procedure from a different calling context.
      </li></ul>
-                                                                                         
-                                                                                         
-   <h3 class="sectionHead"><span class="titlemark">2   </span> <a 
- id="x1-20002"></a>Panes</h3>
-<!--l. 119--><p class="noindent" >The browser window is divided into three panes: the <span 
-class="cmbx-10x-x-109">navigation </span>pane, the <span 
-class="cmbx-10x-x-109">source </span>pane, and the <span 
-class="cmbx-10x-x-109">metrics</span>
-pane. We briefly describe the role of each pane.
-<!--l. 125--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">2.1   </span> <a 
- id="x1-30002.1"></a>Source pane</h4>
-<!--l. 127--><p class="noindent" >The source pane displays the source code associated with the current entity selected in the
+   <h3 class="sectionHead"><span class="titlemark">3   </span> <a 
+ id="x1-30003"></a>Panes</h3>
+<!--l. 134--><p class="noindent" ><span 
+class="cmtt-10x-x-109">hpcviewer</span>&#8217;s browser window is divided into three panes: the <span 
+class="cmti-10x-x-109">Navigation pane</span>, <span 
+class="cmti-10x-x-109">Source pane</span>, and the
+<span 
+class="cmti-10x-x-109">Metrics pane</span>. We briefly describe the role of each pane.
+<!--l. 140--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">3.1   </span> <a 
+ id="x1-40003.1"></a>Source pane</h4>
+<!--l. 142--><p class="noindent" >The source pane displays the source code associated with the current entity selected in the
 navigation pane. When a performance database is first opened with <span 
 class="cmtt-10x-x-109">hpcviewer</span>, the source
 pane is initially blank because no entity has been selected in the navigation pane. Selecting
@@ -163,16 +188,16 @@ any entity in the navigation pane will cause the source pane to load the corresp
 scroll to and highlight the line corresponding to the selection. Switching the source pane to
 view to a different source file is accomplished by making another selection in the navigation
 pane.
-<!--l. 135--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">2.2   </span> <a 
- id="x1-40002.2"></a>Navigation pane</h4>
-<!--l. 136--><p class="noindent" >The navigation pane presents a hierarchical tree-based structure that is used to organize the presentation
+<!--l. 150--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">3.2   </span> <a 
+ id="x1-50003.2"></a>Navigation pane</h4>
+<!--l. 152--><p class="noindent" >The navigation pane presents a hierarchical tree-based structure that is used to organize the presentation
 of an applications&#8217;s performance data. Entities that occur in the navigation pane&#8217;s tree include load
 modules, files, procedures, procedure activations, inlined code, loops, and source lines. Selecting any of
 these entities will cause its corresponding source code (if any) to be displayed in the source pane. One can
 reveal or conceal children in this hierarchy by &#8216;opening&#8217; or &#8216;closing&#8217; any non-leaf (i.e., individual source
 line) entry in this view.
-<!--l. 141--><p class="indent" >   The nature of the entities in the navigation pane&#8217;s tree structure depends upon whether one is
+<!--l. 160--><p class="indent" >   The nature of the entities in the navigation pane&#8217;s tree structure depends upon whether one is
 exploring the Calling Context View, the Callers View, or the Flat View of the performance
 data.
      <ul class="itemize1">
@@ -185,17 +210,17 @@ class="cmbx-10x-x-109">Calling Context View</span>, entities in the navigation t
      <li class="itemize">In  the  <span 
 class="cmbx-10x-x-109">Callers  View</span>,  entities  in  the  navigation  tree  are  procedure  activations.  Unlike
      procedure activations in the calling context tree view in which call sites are paired with
+                                                                                         
+                                                                                         
      the called procedure, in the caller&#8217;s view, call sites are paired with the calling procedure to
      facilitate attribution of costs for a called procedure to multiple different call sites and callers.
      </li>
      <li class="itemize">In the <span 
 class="cmbx-10x-x-109">Flat View</span>, entities in the navigation tree correspond to source files, procedure call
      sites (which are rendered the same way as procedure activations), loops, and source lines.</li></ul>
-<!--l. 153--><p class="indent" >   The header above the navigation pane contains some controls for the navigation and metric view. In
+<!--l. 172--><p class="indent" >   The header above the navigation pane contains some controls for the navigation and metric view. In
 Figure&#x00A0;<a 
-href="#x1-10011">1<!--tex4ht:ref: fig:hpcviewer-legend --></a>, they are labeled as &#8220;navigation/metric control.&#8221;
-                                                                                         
-                                                                                         
+href="#x1-20011">1<!--tex4ht:ref: fig:hpcviewer-legend --></a>, they are labeled as &#8220;navigation/metric control.&#8221;
      <ul class="itemize1">
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Flatten</span> <img 
@@ -204,7 +229,7 @@ src="fig/hpcviewer-button-flatten.png" alt="PIC"
 class="cmbx-10x-x-109">Unflatten</span> <img 
 src="fig/hpcviewer-button-unflatten.png" alt="PIC"  
 > (available for the Flat View):
-     <!--l. 161--><p class="noindent" >Enabling to flatten and unflatten the navigation hierarchy. Clicking on the flatten button (the
+     <!--l. 180--><p class="noindent" >Enabling to flatten and unflatten the navigation hierarchy. Clicking on the flatten button (the
      icon that shows a tree node with a slash through it) will replace each top-level scope shown
      with its children. If a scope has no children (i.e., it is a leaf ), the node will remain in the
      view. This flattening operation is useful for relaxing the strict hierarchical view so that peers
@@ -220,7 +245,7 @@ src="fig/hpcviewer-button-zoomin.png" alt="PIC"
 class="cmbx-10x-x-109">Zoom-out</span> <img 
 src="fig/hpcviewer-button-zoomout.png" alt="PIC"  
 > :
-     <!--l. 171--><p class="noindent" >Depressing the up arrow button will zoom in to show only information for the selected line
+     <!--l. 190--><p class="noindent" >Depressing the up arrow button will zoom in to show only information for the selected line
      and its descendants. One can zoom out (reversing a prior zoom operation) by depressing the
      down arrow button.
      </li>
@@ -228,7 +253,7 @@ src="fig/hpcviewer-button-zoomout.png" alt="PIC"
 class="cmbx-10x-x-109">Hot call path</span> <img 
 src="fig/hpcviewer-button-hotpath.png" alt="PIC"  
 > :
-     <!--l. 176--><p class="noindent" >This button is used to automatically find hot call paths with respect to the currently selected
+     <!--l. 195--><p class="noindent" >This button is used to automatically find hot call paths with respect to the currently selected
      metric column. The hot path is computed by comparing parent and child metric values, and
      showing the chain where the difference is greater than a threshold (by default is <span 
 class="cmtt-10x-x-109">50%</span>). It is
@@ -238,22 +263,24 @@ class="cmtt-10x-x-109">50%</span>). It is
 class="cmbx-10x-x-109">Derived metric</span> <img 
 src="fig/hpcviewer-button-derivedmetric.png" alt="PIC"  
 > :
-     <!--l. 182--><p class="noindent" >Creating a new metric based on mathematical formula. See Section&#x00A0;<a 
-href="#x1-90004">4<!--tex4ht:ref: sec:hpcviewer:derived-metrics --></a> for more details.
+     <!--l. 201--><p class="noindent" >Creating a new metric based on mathematical formula. See Section&#x00A0;<a 
+href="#x1-100005">5<!--tex4ht:ref: sec:hpcviewer:derived-metrics --></a> for more details.
      </li>
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Hide/show metrics</span> <img 
 src="fig/hpcviewer-button-checkcolumns.png" alt="PIC"  
 > :
-     <!--l. 187--><p class="noindent" >Showing and hiding metric columns. A dialog box will appear, and user can select which
+     <!--l. 206--><p class="noindent" >Showing and hiding metric columns. A dialog box will appear, and user can select which
      columns to show or hide. See Section&#x00A0;<a 
-href="#x1-150005.2">5.2<!--tex4ht:ref: sec:hpcviewer:metric-pane --></a> section for more details.
+href="#x1-170007.2">7.2<!--tex4ht:ref: sec:hpcviewer:metric-pane --></a> section for more details.
      </li>
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Export into a CSV format file</span> <img 
 src="fig/hpcviewer-button-csv.png" alt="PIC"  
 > :
-     <!--l. 193--><p class="noindent" >Exporting the current metric table into a comma separated value (CSV) format file. This
+                                                                                         
+                                                                                         
+     <!--l. 212--><p class="noindent" >Exporting the current metric table into a comma separated value (CSV) format file. This
      feature only exports all metrics that are currently shown. Metrics that are not shown in the
      view (whose scopes are not expanded) will not be exported (we assume these metrics are not
      significant).
@@ -265,14 +292,12 @@ src="fig/hpcviewer-button-fontplus.png" alt="PIC"
 class="cmbx-10x-x-109">Decrease font size</span> <img 
 src="fig/hpcviewer-button-fontminus.png" alt="PIC"  
 > :
-     <!--l. 200--><p class="noindent" >Increasing or decreasing the size of the navigation and metric panes.
+     <!--l. 219--><p class="noindent" >Increasing or decreasing the size of the navigation and metric panes.
      </li></ul>
-                                                                                         
-                                                                                         
-<!--l. 207--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">2.3   </span> <a 
- id="x1-50002.3"></a>Metric pane</h4>
-<!--l. 209--><p class="noindent" >The metric pane displays one or more performance metrics associated with entities to the left in the
+<!--l. 226--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">3.3   </span> <a 
+ id="x1-60003.3"></a>Metric pane</h4>
+<!--l. 228--><p class="noindent" >The metric pane displays one or more performance metrics associated with entities to the left in the
 navigation pane. Entities in the tree view of the navigation pane are sorted at each level of the hierarchy
 by the metric in the selected column. When <span 
 class="cmtt-10x-x-109">hpcviewer </span>is launched, the leftmost metric column is the
@@ -280,30 +305,44 @@ default selection and the navigation pane is sorted according to the values of t
 in descending order. One can change the selected metric by clicking on a column header.
 Clicking on the header of the selected column toggles the sort order between descending and
 ascending.
-<!--l. 215--><p class="indent" >   During analysis, one often wants to consider the relationship between two metrics. This is easier when
+<!--l. 234--><p class="indent" >   During analysis, one often wants to consider the relationship between two metrics. This is easier when
 the metrics of interest are in adjacent columns of the metric pane. One can change the order of columns in
 the metric pane by selecting the column header for a metric and then dragging it left or right to its
 desired position. The metric pane also includes scroll bars for horizontal scrolling (to reveal other metrics)
 and vertical scrolling (to reveal other scopes). Vertical scrolling of the metric and navigation panes is
 synchronized.
-<!--l. 225--><p class="noindent" >
-   <h3 class="sectionHead"><span class="titlemark">3   </span> <a 
- id="x1-60003"></a>Understanding Metrics</h3>
-<!--l. 227--><p class="noindent" >The data gathered by the profiler attributes the cost for each scope (a file, procedure, loop, or inlined
-function) exclusively. <span 
-class="cmtt-10x-x-109">hpcviewer </span>presents inclusive values for each cost metric associated with a program
-scope as well. Exclusive costs are those incurred by scope itself; whereas inclusive costs include costs
-incurred by any calls it makes.
-<!--l. 234--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">3.1   </span> <a 
- id="x1-70003.1"></a>How metrics are computed?</h4>
-<!--l. 236--><p class="noindent" >Call path profile measurements collected by <span 
+<!--l. 244--><p class="noindent" >
+   <h3 class="sectionHead"><span class="titlemark">4   </span> <a 
+ id="x1-70004"></a>Understanding Metrics</h3>
+<!--l. 246--><p class="noindent" ><span 
+class="cmtt-10x-x-109">hpcviewer </span>can present an arbitrary collection of performance metrics gathered during one or more runs,
+or compute derived metrics expressed as formulae with existing metrics as terms.
+<!--l. 248--><p class="indent" >   For any given scope in <span 
+class="cmtt-10x-x-109">hpcviewer</span>&#8217;s three views, <span 
+class="cmtt-10x-x-109">hpcviewer </span>computes both <span 
+class="cmti-10x-x-109">inclusive </span>and <span 
+class="cmti-10x-x-109">exclusive</span>
+metric values. For the moment, consider the Calling Context View. Inclusive metrics reflect costs for the
+entire subtree rooted at that scope. Exclusive metrics are of two flavors, depending on the scope. For a
+procedure, exclusive metrics reflect all costs within that procedure but excluding callees. In other words,
+for a procedure, costs are exclusive with respect to dynamic call chains. For all other scopes, exclusive
+metrics reflect costs for the scope itself; i.e., costs are exclusive with respect to static structure.
+The Callers and Flat Views contain inclusive and exclusive metric values that are relative
+to the Calling Context View. This means, e.g., that inclusive metrics for a particular scope
+in the Callers or Flat View are with respect to that scope&#8217;s subtree in the Calling Context
+View.
+                                                                                         
+                                                                                         
+<!--l. 262--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">4.1   </span> <a 
+ id="x1-80004.1"></a>How metrics are computed?</h4>
+<!--l. 264--><p class="noindent" >Call path profile measurements collected by <span 
 class="cmtt-10x-x-109">hpcrun </span>correspond directly to the Calling Context View.
 <span 
-class="cmtt-10x-x-109">hpcviewer </span>derives all other views from exclusive metric costs in the Calling Context View. For the caller
-view, <span 
+class="cmtt-10x-x-109">hpcviewer </span>derives all other views from exclusive metric costs in the Calling Context View. For the Caller
+View, <span 
 class="cmtt-10x-x-109">hpcviewer </span>collects the cost of all samples in each function and attribute that to a top-level entry in
-the caller view. Under each top-level function, <span 
+the Caller View. Under each top-level function, <span 
 class="cmtt-10x-x-109">hpcviewer </span>can look up the call chain at all of the context
 in which the function is called. For each function, <span 
 class="cmtt-10x-x-109">hpcviewer </span>apportions its costs among each of the
@@ -312,15 +351,15 @@ class="cmtt-10x-x-109">hpcviewer </span>computes the Flat View by traversing the
 context tree and attributing all costs for a scope to the scope within its static source code structure. The
 Flat View presents a hierarchy of nested scopes for load modules, files, procedures, loops, inlined code and
 statements.
-<!--l. 248--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">3.2   </span> <a 
- id="x1-80003.2"></a>Example</h4>
-<!--l. 250--><p class="noindent" ><hr class="figure"><div class="figure" 
+<!--l. 276--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">4.2   </span> <a 
+ id="x1-90004.2"></a>Example</h4>
+<!--l. 278--><p class="noindent" ><hr class="figure"><div class="figure" 
 >
                                                                                          
                                                                                          
 <a 
- id="x1-80012"></a>
+ id="x1-90012"></a>
                                                                                          
                                                                                          
 <div class="tabular"> <table id="TBL-2" class="tabular" 
@@ -330,9 +369,9 @@ id="TBL-2-1"></colgroup><colgroup id="TBL-2-2g"><col
 id="TBL-2-2"></colgroup><tr 
 class="hline"><td><hr></td><td><hr></td></tr><tr  
  style="vertical-align:baseline;" id="TBL-2-1-"><td  style="white-space:wrap; text-align:left;" id="TBL-2-1-1"  
-class="td11"><!--l. 254--><p class="noindent" ><span 
+class="td11"><!--l. 282--><p class="noindent" ><span 
 class="cmbx-10x-x-109">file1.c</span>                                       </td><td  style="white-space:wrap; text-align:left;" id="TBL-2-1-2"  
-class="td11"><!--l. 254--><p class="noindent" ><span 
+class="td11"><!--l. 282--><p class="noindent" ><span 
 class="cmbx-10x-x-109">file2.c</span>                                       </td></tr><tr 
 class="hline"><td><hr></td><td><hr></td></tr><tr  
  style="vertical-align:baseline;" id="TBL-2-2-"><td  style="white-space:wrap; text-align:left;" id="TBL-2-2-1"  
@@ -347,7 +386,7 @@ f&#x00A0;()&#x00A0;{
 &#x00A0;<br />&#x00A0;&#x00A0;g&#x00A0;();
 &#x00A0;<br />}
 </div>
-<!--l. 266--><p class="nopar" >                                   </td><td  style="white-space:wrap; text-align:left;" id="TBL-2-2-2"  
+<!--l. 294--><p class="nopar" >                                   </td><td  style="white-space:wrap; text-align:left;" id="TBL-2-2-2"  
 class="td11"><div class="verbatim" id="verbatim-3">
 //&#x00A0;g&#x00A0;can&#x00A0;be&#x00A0;a&#x00A0;recursive&#x00A0;function
 &#x00A0;<br />g&#x00A0;()&#x00A0;{
@@ -358,84 +397,84 @@ class="td11"><div class="verbatim" id="verbatim-3">
 &#x00A0;<br />h&#x00A0;()&#x00A0;{
 &#x00A0;<br />}
 </div>
-<!--l. 277--><p class="nopar" >                                  </td>
+<!--l. 305--><p class="nopar" >                                  </td>
 </tr><tr 
 class="hline"><td><hr></td><td><hr></td></tr><tr  
  style="vertical-align:baseline;" id="TBL-2-3-"><td  style="white-space:wrap; text-align:left;" id="TBL-2-3-1"  
 class="td11">                                   </td></tr></table></div>
 <br /> <div class="caption" 
 ><span class="id">Figure&#x00A0;2: </span><span  
-class="content">A sample program divided into two source files.</span></div><!--tex4ht:label?: x1-80012 -->
+class="content">A sample program divided into two source files.</span></div><!--tex4ht:label?: x1-90012 -->
                                                                                          
                                                                                          
-<!--l. 284--><p class="noindent" ></div><hr class="endfigure">
-<!--l. 288--><p class="indent" >   <hr class="figure"><div class="figure" 
+<!--l. 312--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 316--><p class="indent" >   <hr class="figure"><div class="figure" 
 >
                                                                                          
                                                                                          
 <a 
- id="x1-80023"></a>
+ id="x1-90023"></a>
                                                                                          
                                                                                          
-<!--l. 289--><p class="noindent" ><img 
+<!--l. 317--><p class="noindent" ><img 
 src="fig/metrics-cct.png" alt="PIC"  
 >
 <br /> <div class="caption" 
 ><span class="id">Figure&#x00A0;3: </span><span  
-class="content">Calling Context View</span></div><!--tex4ht:label?: x1-80023 -->
+class="content">Calling Context View</span></div><!--tex4ht:label?: x1-90023 -->
                                                                                          
                                                                                          
-<!--l. 292--><p class="indent" >   </div><hr class="endfigure">
-<!--l. 294--><p class="indent" >   <hr class="figure"><div class="figure" 
+<!--l. 320--><p class="indent" >   </div><hr class="endfigure">
+<!--l. 322--><p class="indent" >   <hr class="figure"><div class="figure" 
 >
                                                                                          
                                                                                          
 <a 
- id="x1-80034"></a>
+ id="x1-90034"></a>
                                                                                          
                                                                                          
-<!--l. 295--><p class="noindent" ><img 
+<!--l. 323--><p class="noindent" ><img 
 src="fig/metrics-callers.png" alt="PIC"  
 >
 <br /> <div class="caption" 
 ><span class="id">Figure&#x00A0;4: </span><span  
-class="content">Caller View</span></div><!--tex4ht:label?: x1-80034 -->
+class="content">Caller View</span></div><!--tex4ht:label?: x1-90034 -->
                                                                                          
                                                                                          
-<!--l. 298--><p class="indent" >   </div><hr class="endfigure">
-<!--l. 300--><p class="indent" >   <hr class="figure"><div class="figure" 
+<!--l. 326--><p class="indent" >   </div><hr class="endfigure">
+<!--l. 328--><p class="indent" >   <hr class="figure"><div class="figure" 
 >
                                                                                          
                                                                                          
 <a 
- id="x1-80045"></a>
+ id="x1-90045"></a>
                                                                                          
                                                                                          
-<!--l. 301--><p class="noindent" ><img 
+<!--l. 329--><p class="noindent" ><img 
 src="fig/metrics-flat.png" alt="PIC"  
 >
 <br /> <div class="caption" 
 ><span class="id">Figure&#x00A0;5: </span><span  
-class="content">Flat View</span></div><!--tex4ht:label?: x1-80045 -->
+class="content">Flat View</span></div><!--tex4ht:label?: x1-90045 -->
                                                                                          
                                                                                          
-<!--l. 304--><p class="indent" >   </div><hr class="endfigure">
-<!--l. 307--><p class="indent" >   Figure&#x00A0;<a 
-href="#x1-80012">2<!--tex4ht:ref: fig:source-files --></a> shows an example of a recursive program separated into two files, <span 
+<!--l. 332--><p class="indent" >   </div><hr class="endfigure">
+<!--l. 335--><p class="indent" >   Figure&#x00A0;<a 
+href="#x1-90012">2<!--tex4ht:ref: fig:source-files --></a> shows an example of a recursive program separated into two files, <span 
 class="cmtt-10x-x-109">file1.c </span>and <span 
 class="cmtt-10x-x-109">file2.c</span>. In
 this figure, we use numerical subscripts to distinguish between different instances of the same
 procedure. In the other parts of this figure, we use alphabetic subscripts. We use different labels
 because there is no natural one-to-one correspondence between the instances in the different
 views.
-<!--l. 312--><p class="indent" >   Routine <span 
+<!--l. 340--><p class="indent" >   Routine <span 
 class="cmtt-10x-x-109">g </span>can behave as a recursive function depending on the value of the condition
 branch (lines 3&#8211;4). Figure&#x00A0;<a 
-href="#x1-80023">3<!--tex4ht:ref: fig:cct --></a> shows an example of the call chain execution of the program
+href="#x1-90023">3<!--tex4ht:ref: fig:cct --></a> shows an example of the call chain execution of the program
 annotated with both inclusive and exclusive costs. Computation of inclusive costs from exclusive
 costs in the Calling Context View involves simply summing up all of the costs in the subtree
 below.
-<!--l. 316--><p class="indent" >   In this figure, we can see that on the right path of the routine <span 
+<!--l. 344--><p class="indent" >   In this figure, we can see that on the right path of the routine <span 
 class="cmtt-10x-x-109">m</span>, routine <span 
 class="cmtt-10x-x-109">g </span>(instantiated in
 the diagram as <span 
@@ -454,13 +493,13 @@ class="cmr-8">3</span></sub> are all instances from the same routine (i.e., <spa
 class="cmtt-10x-x-109">g</span>), we attribute a different cost for each
 instance. This separation of cost can be critical to identify which instance has a performance
 problem.
-<!--l. 320--><p class="indent" >   Figure&#x00A0;<a 
-href="#x1-80034">4<!--tex4ht:ref: fig:metrics-callers --></a> shows the corresponding scope structure for the caller view and the costs we compute for this
-recursive program. The procedure <span 
+<!--l. 348--><p class="indent" >   Figure&#x00A0;<a 
+href="#x1-90034">4<!--tex4ht:ref: fig:metrics-callers --></a> shows the corresponding scope structure for the Caller View and the costs we compute for
+this recursive program. The procedure <span 
 class="cmtt-10x-x-109">g </span>noted as <span 
 class="cmtt-10x-x-109">g</span><sub><span 
-class="cmmi-8">a</span></sub> (which is a root node in the diagram), has different cost
-to <span 
+class="cmmi-8">a</span></sub> (which is a root node in the diagram), has different
+cost to <span 
 class="cmtt-10x-x-109">g </span>as a callsite as noted as <span 
 class="cmtt-10x-x-109">g</span><sub><span 
 class="cmmi-8">b</span></sub>, <span 
@@ -473,7 +512,7 @@ class="cmtt-10x-x-109">g</span><sub><span
 class="cmmi-8">a</span></sub> is <span 
 class="cmtt-10x-x-109">9</span>, which is the sum of the highest cost for each branch in calling context tree
 (Figure&#x00A0;<a 
-href="#x1-80023">3<!--tex4ht:ref: fig:cct --></a>): the inclusive cost of <span 
+href="#x1-90023">3<!--tex4ht:ref: fig:cct --></a>): the inclusive cost of <span 
 class="cmtt-10x-x-109">g</span><sub><span 
 class="cmr-8">3</span></sub> (which is <span 
 class="cmtt-10x-x-109">3</span>) and <span 
@@ -490,9 +529,9 @@ class="cmr-8">2</span></sub> is included in
 <span 
 class="cmtt-10x-x-109">g</span><sub><span 
 class="cmr-8">1</span></sub>).
-<!--l. 325--><p class="indent" >   Inclusive costs need to be computed similarly in the Flat View. The inclusive cost of a recursive
+<!--l. 353--><p class="indent" >   Inclusive costs need to be computed similarly in the Flat View. The inclusive cost of a recursive
 routine is the sum of the highest cost for each branch in calling context tree. For instance, in Figure&#x00A0;<a 
-href="#x1-80045">5<!--tex4ht:ref: fig:metrics-flat --></a>,
+href="#x1-90045">5<!--tex4ht:ref: fig:metrics-flat --></a>,
 The inclusive cost of <span 
 class="cmtt-10x-x-109">g</span><sub><span 
 class="cmmi-8">x</span></sub>, defined as the total cost of all instances of <span 
@@ -503,9 +542,9 @@ class="cmtt-10x-x-109">g </span>is that
 it enables a user to identify which instance of the call to <span 
 class="cmtt-10x-x-109">g </span>is responsible for performance
 losses.
-   <h3 class="sectionHead"><span class="titlemark">4   </span> <a 
- id="x1-90004"></a>Derived Metrics</h3>
-<!--l. 337--><p class="noindent" >Frequently, the data become useful only when combined with other information such as the
+   <h3 class="sectionHead"><span class="titlemark">5   </span> <a 
+ id="x1-100005"></a>Derived Metrics</h3>
+<!--l. 365--><p class="noindent" >Frequently, the data become useful only when combined with other information such as the
 number of instructions executed or the total number of cache accesses. While users don&#8217;t mind
 a bit of mental arithmetic and frequently compare values in different columns to see how
 they relate for a scope, doing this for many scopes is exhausting. To address this problem,
@@ -518,25 +557,25 @@ class="cmtt-10x-x-109">n </span>to refer to the value in the <span
 class="cmtt-10x-x-109">n</span><sup class="textsuperscript"><span 
 class="cmr-10">th</span></sup>
 column.
-<!--l. 346--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">4.1   </span> <a 
- id="x1-100004.1"></a>Formulae</h4>
+<!--l. 374--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">5.1   </span> <a 
+ id="x1-110005.1"></a>Formulae</h4>
                                                                                          
                                                                                          
-<!--l. 348--><p class="noindent" >The formula syntax supported by <span 
+<!--l. 376--><p class="noindent" >The formula syntax supported by <span 
 class="cmtt-10x-x-109">hpcviewer </span>is inspired by spreadsheet-like in-fix mathematical formulae.
 Operators have standard algebraic precedence.
-<!--l. 369--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">4.2   </span> <a 
- id="x1-110004.2"></a>Examples</h4>
-<!--l. 371--><p class="noindent" >Suppose the database contains information about 5 processes, each with two metrics:
+<!--l. 397--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">5.2   </span> <a 
+ id="x1-120005.2"></a>Examples</h4>
+<!--l. 399--><p class="noindent" >Suppose the database contains information about 5 processes, each with two metrics:
      <ol  class="enumerate1" >
      <li 
-  class="enumerate" id="x1-11002x1">Metric 0, 2, 4, 6 and 8: total number of cycles
+  class="enumerate" id="x1-12002x1">Metric 0, 2, 4, 6 and 8: total number of cycles
      </li>
      <li 
-  class="enumerate" id="x1-11004x2">Metric 1, 3, 5, 7 and 9: total number of floating point operations</li></ol>
-<!--l. 376--><p class="noindent" >To compute the average number of cycles per floating point operation across all of the processes, we can
+  class="enumerate" id="x1-12004x2">Metric 1, 3, 5, 7 and 9: total number of floating point operations</li></ol>
+<!--l. 404--><p class="noindent" >To compute the average number of cycles per floating point operation across all of the processes, we can
 define a formula as follows:
      <div class="quote">
                                                                                          
@@ -544,32 +583,32 @@ define a formula as follows:
      <div class="verbatim" id="verbatim-4">
 avg($0,&#x00A0;$2,&#x00A0;$4.&#x00A0;$6.&#x00A0;$8)&#x00A0;/&#x00A0;avg($1,&#x00A0;$3,&#x00A0;$5,&#x00A0;$7,&#x00A0;$9)
 </div>
-     <!--l. 380--><p class="nopar" ></div>
-<!--l. 386--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">4.3   </span> <a 
- id="x1-120004.3"></a>Derived metric dialog box</h4>
-<!--l. 388--><p class="noindent" ><hr class="figure"><div class="figure" 
+     <!--l. 408--><p class="nopar" ></div>
+<!--l. 414--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">5.3   </span> <a 
+ id="x1-130005.3"></a>Derived metric dialog box</h4>
+<!--l. 416--><p class="noindent" ><hr class="figure"><div class="figure" 
 >
                                                                                          
                                                                                          
 <a 
- id="x1-120016"></a>
+ id="x1-130016"></a>
                                                                                          
                                                                                          
-<!--l. 389--><p class="noindent" ><img 
+<!--l. 417--><p class="noindent" ><img 
 src="fig/hpcviewer-dialog-derived-metric.png" alt="PIC"  
 >
 <br /> <div class="caption" 
 ><span class="id">Figure&#x00A0;6: </span><span  
-class="content">Derived metric dialog box</span></div><!--tex4ht:label?: x1-120016 -->
+class="content">Derived metric dialog box</span></div><!--tex4ht:label?: x1-130016 -->
                                                                                          
                                                                                          
-<!--l. 392--><p class="noindent" ></div><hr class="endfigure">
-<!--l. 394--><p class="indent" >   A derived metric can be created by clicking the <span 
+<!--l. 420--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 422--><p class="indent" >   A derived metric can be created by clicking the <span 
 class="cmbx-10x-x-109">Derived metric </span>tool item in the navigation/control
 pane. A derived metric window will then appear as shown in Figure&#x00A0;<a 
-href="#x1-120016">6<!--tex4ht:ref: fig:hpcviewer-derived-dialog-box --></a>.
-<!--l. 398--><p class="indent" >   The window has two main parts:
+href="#x1-130016">6<!--tex4ht:ref: fig:hpcviewer-derived-dialog-box --></a>.
+<!--l. 426--><p class="indent" >   The window has two main parts:
      <ul class="itemize1">
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Derived metric definition</span>, which consists of:
@@ -619,19 +658,81 @@ class="cmti-10x-x-109">s</span>&#8217;s derived metric value) / (the derived met
           program won&#8217;t yield a meaningful result. To avoid a confusing metric display, think
           before you use this button to annotate a metric with its percent of total.</li></ul>
      </li></ul>
-<!--l. 436--><p class="indent" >   Note that the entered formula and the metric name will be stored automatically. One can then review
+<!--l. 464--><p class="indent" >   Note that the entered formula and the metric name will be stored automatically. One can then review
 again the formula (or metric name) by clicking the small triangle of the combo box (marked with a red
 circle).
-   <h3 class="sectionHead"><span class="titlemark">5   </span> <a 
- id="x1-130005"></a>For Convenience Sake</h3>
-<!--l. 445--><p class="noindent" >In this section we describe some features of <span 
+   <h3 class="sectionHead"><span class="titlemark">6   </span> <a 
+ id="x1-140006"></a>Plotting Graphs of Thread-level Metric Values</h3>
+<!--l. 474--><p class="noindent" ><hr class="figure"><div class="figure" 
+>
+                                                                                         
+                                                                                         
+<a 
+ id="x1-140017"></a>
+                                                                                         
+                                                                                         
+<!--l. 475--><p class="noindent" ><img 
+src="fig/hpcviewer-view-rawmetrics.png" alt="PIC"  
+>
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;7: </span><span  
+class="content">Plot graph view of main procedure in a Coarray Fortran application.</span></div><!--tex4ht:label?: x1-140017 -->
+                                                                                         
+                                                                                         
+<!--l. 478--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 481--><p class="indent" >   <span 
+class="cmcsc-10x-x-109">HPCT<span 
+class="small-caps">o</span><span 
+class="small-caps">o</span><span 
+class="small-caps">l</span><span 
+class="small-caps">k</span><span 
+class="small-caps">i</span><span 
+class="small-caps">t</span> </span>Experiment databases that have been generated by <span 
+class="cmtt-10x-x-109">hpcprof-mpi </span>(in contrast to
+<span 
+class="cmtt-10x-x-109">hpcprof</span>) can be used by <span 
+class="cmtt-10x-x-109">hpcviewer </span>to plot graphs of thread-level metric values. This is particularly
+useful for quickly assessing load imbalance <span 
+class="cmti-10x-x-109">in context </span>across the several threads or processes of an
+execution. Figure&#x00A0;<a 
+href="#x1-140017">7<!--tex4ht:ref: fig:hpcviewer-view-scatterplot --></a> shows <span 
+class="cmtt-10x-x-109">hpcviewer </span>rendering such a plot. The horizontal axis shows application
+processes, ordered by MPI rank. The vertical axis shows metric values for each process. Because
+<span 
+class="cmtt-10x-x-109">hpcviewer </span>can generate scatter plots for any node in the Calling Context View, these graphs are
+calling-context sensitive.
+<!--l. 488--><p class="indent" >   To create a graph, first select a scope in the Calling Context View; in the Figure, the top-level
+procedure <span 
+class="cmtt-10x-x-109">main </span>is selected. Then, right-click the selected scope to show the associated context menu. (The
+menu begins with entries labeled &#8216;Zoom-in&#8217; and &#8216;Zoom-out.&#8217;) At the bottom of the context menu is a list
+of metrics that <span 
+class="cmtt-10x-x-109">hpcviewer </span>can graph. Each metric contains a sub-menu that lists the three different types
+of graphs <span 
+class="cmtt-10x-x-109">hpcviewer </span>can plot:
+     <ul class="itemize1">
+     <li class="itemize"><span 
+class="cmbx-10x-x-109">Plot graph</span>. This standard graph plots metric values by their MPI rank (if available) and
+     thread id (where ids are assigned by thread creation).
+     </li>
+     <li class="itemize"><span 
+class="cmbx-10x-x-109">Sorted plot graph</span>. This graph plots metric values in ascending order.
+     </li>
+     <li class="itemize"><span 
+class="cmbx-10x-x-109">Histogram graph</span>. This graph is a histogram of metric values. It divides the range of metric
+     values into a small number of sub-ranges. The graph plots the frequency that a metric value
+     falls into a particular sub-range.</li></ul>
+<!--l. 506--><p class="indent" >   Currently, it is only possible to generate scatter plots for metrics directly collected by <span 
+class="cmtt-10x-x-109">hpcrun</span>, which
+excludes derived metrics created within <span 
+class="cmtt-10x-x-109">hpcviewer</span>.
+   <h3 class="sectionHead"><span class="titlemark">7   </span> <a 
+ id="x1-150007"></a>For Convenience Sake</h3>
+<!--l. 515--><p class="noindent" >In this section we describe some features of <span 
 class="cmtt-10x-x-109">hpcviewer </span>that help improve productivity.
-                                                                                         
-                                                                                         
-<!--l. 450--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">5.1   </span> <a 
- id="x1-140005.1"></a>Editor pane</h4>
-<!--l. 452--><p class="noindent" >The editor pane is used to display <span 
+<!--l. 520--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">7.1   </span> <a 
+ id="x1-160007.1"></a>Editor pane</h4>
+<!--l. 522--><p class="noindent" >The editor pane is used to display <span 
 class="cmti-10x-x-109">a copy </span>of your program&#8217;s source code or <span 
 class="cmcsc-10x-x-109">HPCT<span 
 class="small-caps">o</span><span 
@@ -666,6 +767,8 @@ class="cmtt-10x-x-109">command</span><span
 class="cmmi-10x-x-109">&#x003E;</span><span 
 class="cmtt-10x-x-109">-l </span>(Mac) will bring up a dialog that enables you to enter the
      target line number.
+                                                                                         
+                                                                                         
      </li>
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Find</span>. To search for a string in the current source pane, <span 
@@ -697,10 +800,10 @@ src="fig/hpcviewer-button-minimize.png" alt="PIC"
 src="fig/hpcviewer-button-maximize.png" alt="PIC"  
 >) the <span 
 class="cmtt-10x-x-109">hpcviewer </span>window.</li></ul>
-<!--l. 475--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">5.2   </span> <a 
- id="x1-150005.2"></a>Metric pane</h4>
-<!--l. 478--><p class="noindent" >For the metric pane, <span 
+<!--l. 545--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">7.2   </span> <a 
+ id="x1-170007.2"></a>Metric pane</h4>
+<!--l. 548--><p class="noindent" >For the metric pane, <span 
 class="cmtt-10x-x-109">hpcviewer </span>has some convenient features:
      <ul class="itemize1">
      <li class="itemize"><span 
@@ -720,8 +823,6 @@ class="cmbx-10x-x-109">Changing column width</span>. To increase or decrease the
      cursor over the right or left border of the column&#8217;s header field. The cursor will change into
      a vertical bar between a left and right arrow. Depress the mouse and drag the column border
      to the desired position.
-                                                                                         
-                                                                                         
      </li>
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Changing column order</span>. If it would be more convenient to have columns displayed in a
@@ -733,6 +834,8 @@ class="cmbx-10x-x-109">Changing column order</span>. If it would be more conveni
      can right click on the metric pane or navigation pane then select the menu <span 
 class="cmbx-10x-x-109">Copy</span>. The copied
      metrics can then be pasted into any text editor.
+                                                                                         
+                                                                                         
      </li>
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Hiding or showing metric columns</span>. Sometimes, it may be more convenient to suppress
@@ -741,17 +844,17 @@ class="cmbx-10x-x-109">Hiding or showing metric columns</span>. Sometimes, it ma
 src="fig/hpcviewer-button-checkcolumns.png" alt="PIC"  
 > above
      the metric pane will bring up the column selection dialog shown in Figure&#x00A0;<a 
-href="#x1-150017">7<!--tex4ht:ref: fig:hpcviewer-hide-show-columns --></a>.
-     <!--l. 509--><p class="noindent" ><hr class="figure"><div class="figure" 
+href="#x1-170018">8<!--tex4ht:ref: fig:hpcviewer-hide-show-columns --></a>.
+     <!--l. 579--><p class="noindent" ><hr class="figure"><div class="figure" 
 ><a 
- id="x1-150017"></a> <img 
+ id="x1-170018"></a> <img 
 src="fig/hpcviewer-dialog-checkcolumns.png" alt="PIC"  
 >
 <br /> <div class="caption" 
-><span class="id">Figure&#x00A0;7: </span><span  
-class="content">Hide/Show columns dialog box</span></div><!--tex4ht:label?: x1-150017 -->
-     <!--l. 513--><p class="noindent" ></div><hr class="endfigure">
-     <!--l. 515--><p class="noindent" >The dialog box contains a list of metric columns sorted according to their order in <span 
+><span class="id">Figure&#x00A0;8: </span><span  
+class="content">Hide/Show columns dialog box</span></div><!--tex4ht:label?: x1-170018 -->
+     <!--l. 583--><p class="noindent" ></div><hr class="endfigure">
+     <!--l. 585--><p class="noindent" >The dialog box contains a list of metric columns sorted according to their order in <span 
 class="cmcsc-10x-x-109">HPCT<span 
 class="small-caps">o</span><span 
 class="small-caps">o</span><span 
@@ -767,19 +870,19 @@ class="cmti-10x-x-109">hidden </span>(unchecked). To display all metric columns,
 class="cmbx-10x-x-109">Check all </span>button. A click to <span 
 class="cmbx-10x-x-109">Uncheck all </span>will hide all the metric
      columns.
-     <!--l. 520--><p class="noindent" >Finally, an option <span 
+     <!--l. 590--><p class="noindent" >Finally, an option <span 
 class="cmbx-10x-x-109">Apply to all views </span>will set the configuration into all views when checked.
      Otherwise, the configuration will be applied only on the current view.
      </li></ul>
-<!--l. 529--><p class="noindent" >
-   <h3 class="sectionHead"><span class="titlemark">6   </span> <a 
- id="x1-160006"></a>Menus</h3>
-<!--l. 531--><p class="noindent" ><span 
+<!--l. 599--><p class="noindent" >
+   <h3 class="sectionHead"><span class="titlemark">8   </span> <a 
+ id="x1-180008"></a>Menus</h3>
+<!--l. 601--><p class="noindent" ><span 
 class="cmtt-10x-x-109">hpcviewer </span>provides three main menus:
-<!--l. 536--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">6.1   </span> <a 
- id="x1-170006.1"></a>File</h4>
-<!--l. 537--><p class="noindent" >This menu includes several menu items for controlling basic viewer operations.
+<!--l. 606--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">8.1   </span> <a 
+ id="x1-190008.1"></a>File</h4>
+<!--l. 607--><p class="noindent" >This menu includes several menu items for controlling basic viewer operations.
      <ul class="itemize1">
      <li class="itemize"><span 
 class="cmbx-10x-x-109">New window </span>Open a new <span 
@@ -788,8 +891,6 @@ class="cmtt-10x-x-109">hpcviewer </span>window that is independent from the exis
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Open database... </span>Load a performance database into the current <span 
 class="cmtt-10x-x-109">hpcviewer </span>window.
-                                                                                         
-                                                                                         
      </li>
      <li class="itemize"><span 
 class="cmbx-10x-x-109">Preferences... </span>Display the settings dialog box.
@@ -798,10 +899,12 @@ class="cmbx-10x-x-109">Preferences... </span>Display the settings dialog box.
 class="cmbx-10x-x-109">Exit </span>Quit the <span 
 class="cmtt-10x-x-109">hpcviewer </span>application.
      </li></ul>
-<!--l. 556--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">6.2   </span> <a 
- id="x1-180006.2"></a>Debug</h4>
-<!--l. 558--><p class="noindent" >This menu enables one to request display of <span 
+                                                                                         
+                                                                                         
+<!--l. 626--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">8.2   </span> <a 
+ id="x1-200008.2"></a>Debug</h4>
+<!--l. 628--><p class="noindent" >This menu enables one to request display of <span 
 class="cmcsc-10x-x-109">HPCT<span 
 class="small-caps">o</span><span 
 class="small-caps">o</span><span 
@@ -810,10 +913,10 @@ class="small-caps">k</span><span
 class="small-caps">i</span><span 
 class="small-caps">t</span></span>&#8217;s raw XML representation for performance
 data. (This operation is intended primarily for tool developer use.)
-<!--l. 564--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">6.3   </span> <a 
- id="x1-190006.3"></a>Help</h4>
-<!--l. 566--><p class="noindent" >This menu displays information about the viewer. The menu contains two items:
+<!--l. 634--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">8.3   </span> <a 
+ id="x1-210008.3"></a>Help</h4>
+<!--l. 636--><p class="noindent" >This menu displays information about the viewer. The menu contains two items:
      <ul class="itemize1">
      <li class="itemize"><span 
 class="cmbx-10x-x-109">About</span>. Displays brief information about the viewer, including used plug-ins and error log.
@@ -821,10 +924,10 @@ class="cmbx-10x-x-109">About</span>. Displays brief information about the viewer
      <li class="itemize"><span 
 class="cmbx-10x-x-109">hpcviewer help</span>. This document.
      </li></ul>
-<!--l. 581--><p class="noindent" >
-   <h3 class="sectionHead"><span class="titlemark">7   </span> <a 
- id="x1-200007"></a>Limitations</h3>
-<!--l. 583--><p class="noindent" >Some important <span 
+<!--l. 651--><p class="noindent" >
+   <h3 class="sectionHead"><span class="titlemark">9   </span> <a 
+ id="x1-220009"></a>Limitations</h3>
+<!--l. 653--><p class="noindent" >Some important <span 
 class="cmtt-10x-x-109">hpcviewer </span>limitations are listed below:
      <ul class="itemize1">
      <li class="itemize"><span 
@@ -832,6 +935,22 @@ class="cmbx-10x-x-109">Limited number of metrics</span>. With a large number of 
 class="cmtt-10x-x-109">hpcviewer</span>&#8217;s response
      time may become sluggish as this requires a large amount of memory.
      </li></ul>
+<!--l. 1--><p class="noindent" >
+   <h3 class="likesectionHead"><a 
+ id="x1-230009"></a>References</h3>
+<!--l. 1--><p class="noindent" >
+   <div class="thebibliography">
+   <p class="bibitem" ><span class="biblabel">
+ [1]<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="XAdhianto-MC-Ta:2010:PSTI-hpcviewer"></a>L.&#x00A0;Adhianto,  J.&#x00A0;Mellor-Crummey,  and  N.&#x00A0;R.  Tallent.   Effectively  presenting  call  path
+   profiles  of  application  performance.   In  <span 
+class="cmti-10x-x-109">PSTI  2010:  Workshop  on  Parallel  Software  Tools</span>
+   <span 
+class="cmti-10x-x-109">and Tool Infrastructures, in conjuction with the 2010 International Conference on Parallel</span>
+   <span 
+class="cmti-10x-x-109">Processing</span>, 2010.
+</p>
+   </div>
     
 </body></html> 
 

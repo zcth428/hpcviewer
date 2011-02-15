@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Launch the hpcviewer binary and set workspace directory.
 #

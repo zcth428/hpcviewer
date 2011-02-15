@@ -6,8 +6,6 @@ package edu.rice.cs.hpc.viewer.help;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Path;
-
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -79,19 +77,13 @@ public class HTMLEditor extends EditorPart {
 		// TODO Auto-generated method stub
 		this.setSite(site);
 		this.setInput(input);
-		if(input instanceof FileEditorInput) {
-			//if(browser != null){
-				FileEditorInput objInput = (FileEditorInput) input;
-				IFile file = objInput.getFile();
-				if(file != null) {
-					IPath objPath = file.getFullPath();
-					Path objAbsPath = new Path(getAbsolutePath(this));
-					//IFileStore objFileStore = EFS.getLocalFileSystem().getStore(objPath);
-					this.sFilePath = objAbsPath.removeLastSegments(1)+objPath.toString();
-					sURI = "file:///"+sFilePath;
-				}
-//				browser.setUrl(sURI);
-			//}
+
+		FileEditorInput objInput = (FileEditorInput) input;
+		IFile file = objInput.getFile();
+		if(file != null) {
+			IPath objPath = file.getFullPath();
+			this.sFilePath = file.getName();
+			sURI = "file:///"+objPath;
 		}
 	}
 
@@ -132,8 +124,7 @@ public class HTMLEditor extends EditorPart {
 			browser.setData(HTMLEditor.ID, this);
 			// display the URL
 			GridDataFactory.fillDefaults().grab(true, true).applyTo(browser);
-			// Laksono 2009.02.16: on windows the following layout will shrink the browser :-(
-			//GridLayoutFactory.fillDefaults().numColumns(1).applyTo(browser);
+
 			browser.setUrl(sURI);
 
 		} catch (SWTError e) {
@@ -144,25 +135,6 @@ public class HTMLEditor extends EditorPart {
 			this.richTextViewer.setEditable(false);
 			this.richTextViewer.getLayerManager().openHTMLFile(sFilePath);
 
-			/*
-			org.eclipse.swt.widgets.Shell objShell = this.getSite().getShell();
-			// find the default external browser
-			String sBrowser = System.getenv(this.sDEFAULT_BROWSER);
-
-			if(sBrowser != null) {
-				// launch the external browser
-				org.eclipse.swt.program.Program.launch(sBrowser+" "+sURI);
-			} else {
-				// the variable is not set or there is no external browser
-				org.eclipse.jface.dialogs.MessageDialog.openWarning(objShell,
-					"Unset default browser", "The environment variable "+this.sDEFAULT_BROWSER+
-					" has not been set.\n"+
-					"The help file can be displayed on "+sURI+
-					" with your browser.");
-			}
-			this.getEditorSite().getPage().closeEditor(this, false);
-			return;
-			*/
 		}
 		// display the original source of the HTML file (debugging purpose)
 		this.setContentDescription(sURI);
@@ -178,27 +150,6 @@ public class HTMLEditor extends EditorPart {
 	 */
 	@Override
 	public void setFocus() {
-		// TODO Auto-generated method stub
-		//if(browser != null)
-		//	browser.setFocus();
 	}
 	
-	/**
-	 * Finding the absolute path of the object/class.
-	 * This method is general enough to be in static utilities
-	 * @param o
-	 * @return
-	 */
-	public String getAbsolutePath(Object o){
-		java.security.ProtectionDomain pd = o.getClass().getProtectionDomain();
-		if ( pd == null ) return null;
-		java.security.CodeSource cs = pd.getCodeSource();
-		if ( cs == null ) return null;
-		java.net.URL url = cs.getLocation();
-		if ( url == null ) return null;
-		java.io.File f = new java.io.File( url.getFile() );
-		if (f == null) return null;
-
-		return f.getAbsolutePath();
-		}
 }

@@ -115,6 +115,17 @@ public class CallerScopeBuilder {
 			//------------------------------------------------------------------------
 			if (first.getCCTIndex() == existingCaller.getCCTIndex()) {
 
+				if ( (first.getScopeCCT() instanceof ProcedureScope) || 
+						(existingCaller.getScopeCCT() instanceof ProcedureScope) ){
+					
+					//--------------------------------------------------------------------------
+					// theoretically it is IMPOSSIBLE to merge two entry procedures
+					// however in case of "partial call path" entry procedure, we do NOT
+					//  merge between callsite and/or procedure scope
+					//--------------------------------------------------------------------------
+					
+				} else {
+					
  				//------------------------------------------------------------------------
 				// We found the same CCT in the path. let's merge them
 				//------------------------------------------------------------------------
@@ -131,6 +142,7 @@ public class CallerScopeBuilder {
 				mergeCallerPath(status, counter_to_assign, existingCaller, callerPathList, combine, inclusiveOnly, exclusiveOnly);
 				
 				return; // merged with existing child. nothing left to do.
+				}
 			}
 		}
 

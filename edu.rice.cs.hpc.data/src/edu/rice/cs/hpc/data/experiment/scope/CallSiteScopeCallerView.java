@@ -151,30 +151,43 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				
 				CallSiteScopeCallerView scope = iter.next();
 				
-				CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
+				try {
+					CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 
-				//-------------------------------------------------------------------------
-				// construct the child of this merged scope
-				//-------------------------------------------------------------------------
-				LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-					(IMergedScope.MergingStatus.INIT, scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
-				
-				//-------------------------------------------------------------------------
-				// For recursive function where the counter is more than 1, the counter to 
-				//	assign to the child scope is the counter of the scope minus 1
-				// For normal function it has to be zero
-				//-------------------------------------------------------------------------
-				int counter_to_assign = scope.iCounter - 1;
-				if (counter_to_assign<0)
-					counter_to_assign = 0;
-				
-				//-------------------------------------------------------------------------
-				// merge (if possible) the path of this new created merged scope
-				//-------------------------------------------------------------------------
-				CallersViewScopeVisitor.mergeCallerPath(IMergedScope.MergingStatus.INCREMENTAL, counter_to_assign,
-						this, listOfChain, combine_with_dupl, inclusiveOnly, exclusiveOnly);
+					//-------------------------------------------------------------------------
+					// construct the child of this merged scope
+					//-------------------------------------------------------------------------
+					LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
+						(IMergedScope.MergingStatus.INIT, scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
+					
+					//-------------------------------------------------------------------------
+					// For recursive function where the counter is more than 1, the counter to 
+					//	assign to the child scope is the counter of the scope minus 1
+					// For normal function it has to be zero
+					//-------------------------------------------------------------------------
+					int counter_to_assign = scope.iCounter - 1;
+					if (counter_to_assign<0)
+						counter_to_assign = 0;
+					
+					//-------------------------------------------------------------------------
+					// merge (if possible) the path of this new created merged scope
+					//-------------------------------------------------------------------------
+					CallersViewScopeVisitor.mergeCallerPath(IMergedScope.MergingStatus.INCREMENTAL, counter_to_assign,
+							this, listOfChain, combine_with_dupl, inclusiveOnly, exclusiveOnly);
 
-				percent_need_recompute = true;
+					percent_need_recompute = true;
+
+				} catch (java.lang.ClassCastException e) {
+					
+					//-------------------------------------------------------------------------
+					// theoretically it is impossible to merge two main procedures 
+					// however thanks to "partial call path", the CCT can have two main procedures !
+					//-------------------------------------------------------------------------
+
+					System.err.println("Warning: dynamically merging procedure scope: " + scope.scopeCCT +
+							" ["+scope.scopeCCT.flat_node_index+"]");
+				}
+
 				
 			}
 		}

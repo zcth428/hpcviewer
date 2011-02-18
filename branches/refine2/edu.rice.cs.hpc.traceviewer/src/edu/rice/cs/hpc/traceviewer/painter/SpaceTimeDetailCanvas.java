@@ -189,6 +189,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			mouseState = MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
+		rebuffer = true;
 		
 		this.redraw();
 	}

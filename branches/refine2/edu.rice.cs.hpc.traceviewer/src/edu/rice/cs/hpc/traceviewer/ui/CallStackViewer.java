@@ -28,16 +28,12 @@ public class CallStackViewer extends TableViewer
 	/**This CallStackViewer's current depth.*/
 	int depth;
 	
-	/**Whether or not the user has already clicked on this viewer.*/
-	boolean selectionMade;
-	
 	/**********************************************************************************
 	 * The built-in viewer for lists of things (the actual graphical representation of
 	 * the list of function names.
 	 ********************************************************************************/
 	private Table stack;
 
-	private final ArrayList<String> callstackname;
 	
 	/**The View in which this stack has been created.*/
     public HPCCallStackView csview;
@@ -50,21 +46,13 @@ public class CallStackViewer extends TableViewer
     
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
-	public CallStackViewer(Composite parent, SpaceTimeData _stData,	HPCCallStackView _csview)
+	public CallStackViewer(Composite parent, HPCCallStackView _csview)
 	{
 		super(parent, SWT.SINGLE | SWT.V_SCROLL);
 		
-		callstackname = new ArrayList<String>();
-		
-		selectionMade = false;
-		depth = 0;
-		stData = _stData;
 		csview = _csview;
         stack = this.getTable();
         
-        callstackname.add("Select a sample");
-        callstackname.add("from the Detail View");
-
         data = new GridData(GridData.FILL_BOTH);
         stack.setLayoutData(data);
         
@@ -110,13 +98,8 @@ public class CallStackViewer extends TableViewer
         	
         });
         
-        this.setInput(this.callstackname);
-	}
-	
-	
-	public void updateData(SpaceTimeData _stData) {
-		this.stData = _stData;
-
+        this.stack.setVisible(false);
+        
 		stack.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
@@ -126,7 +109,20 @@ public class CallStackViewer extends TableViewer
 				fixSample();
 			}
 		});
+	}
+	
+	
+	/***
+	 * set new database
+	 * @param _stData
+	 */
+	public void updateData(SpaceTimeData _stData) {
+		this.stData = _stData;
 
+		depth = 0;
+
+		this.resetStack();
+		this.stack.setVisible(true);
 		this.refresh();
 	}
 	
@@ -137,10 +133,6 @@ public class CallStackViewer extends TableViewer
 	 *********************************************************************/
 	public void setSample(double closeTime, int process, int _depth)
 	{
-		if(!selectionMade)
-		{
-			data.widthHint = stack.getSize().x;
-		}
 		if (closeTime == -20)
 			return;
 		
@@ -152,7 +144,7 @@ public class CallStackViewer extends TableViewer
 			ptl = stData.getProcess(process);
 		
 		int sample = ptl.findMidpointBefore(closeTime);
-		selectionMade = true;
+
 		sampleVector = ptl.getSample(sample).getNames();
 
 		int numOverDepth = 0;
@@ -195,4 +187,18 @@ public class CallStackViewer extends TableViewer
 		}
 		stack.redraw();
 	}
+	
+	
+	/***
+	 * reset the content of the stack
+	 */
+	private void resetStack() {
+		final ArrayList<String> callstackname = new ArrayList<String>();
+
+        callstackname.add("Select a sample");
+        callstackname.add("from the Detail View");
+
+        this.setInput(callstackname);
+	}
+
 }

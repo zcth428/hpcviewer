@@ -80,7 +80,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		/*************************************************************************
 		 * CallStackViewer
 		 ************************************************************************/
-		csViewer = new CallStackViewer(master, stData, this);
+		csViewer = new CallStackViewer(master, this);
 		
 		/*************************************************************************
 		 * MiniMap

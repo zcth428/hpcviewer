@@ -117,8 +117,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	private void init() {
 		viewWidth = getClientArea().width;
 		viewHeight = getClientArea().height;
-		
-		System.out.println("depth view: " + viewWidth +" x " + viewHeight);
 	}
 	
 	public void addCanvasListener() {

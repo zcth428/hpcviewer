@@ -4,8 +4,10 @@
 
    <extension
          id="application"
+         name="hpctraceviewer"
          point="org.eclipse.core.runtime.applications">
-      <application>
+      <application
+            icon="icons/hpctraceviewer048.png">
          <run
                class="edu.rice.cs.hpc.traceviewer.framework.Application">
          </run>

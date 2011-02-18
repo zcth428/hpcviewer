@@ -24,11 +24,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		super(configurer);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#createActionBarAdvisor(org.eclipse.ui.application.IActionBarConfigurer)
+	 */
 	public ActionBarAdvisor createActionBarAdvisor(
 			IActionBarConfigurer configurer) {
 		return new ApplicationActionBarAdvisor(configurer);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#preWindowOpen()
+	 */
 	public void preWindowOpen() {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		configurer.setInitialSize(new Point(1200, 800));
@@ -37,14 +45,26 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	}
 	
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowOpen()
+	 */
 	public void postWindowOpen() {
-		//--
+		
+		//---------------------------------------------------------------------
+		// once the widgets have been created, we ask user a database to open
+		// ---------------------------------------------------------------------
+		
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		
 		TraceDatabase trace_db = new TraceDatabase();
 		Shell shell = configurer.getWindow().getShell();
 		
 		if (trace_db.open(shell)) {
+			
+			//---------------------------------------------------------------------
+			// Try to open the database and refresh the data
+			// ---------------------------------------------------------------------
 			
 			File experimentFile = trace_db.getExperimentFile();
 			ArrayList<File> traceFiles = trace_db.getTraceFiles();
@@ -53,15 +73,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.setData("trace-data", stData);
 			
 			try {
+				//---------------------------------------------------------------------
+				// Tell all views that we have the data, and they need to refresh their content
+				// ---------------------------------------------------------------------				
+
 				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
 				tview.updateData(stData);
+				
 				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
 				dview.updateData(stData);
+				
 				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
 				cview.updateData(stData);
 				
 			} catch (PartInitException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

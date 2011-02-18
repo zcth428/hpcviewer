@@ -911,23 +911,6 @@ public class SpaceTimeData
 	{
 		if (lineNum < Math.min(numPixelsV, maxDepth))
 		{
-			/*if (lineNum==1)
-			{
-				accessingStData = true;
-				depthTrace = new ProcessTimeline(0, scopeMap, traceFiles.get(dtProcess), numPixelsH, endTime-begTime, minBegTime + begTime);
-				return depthTrace;
-			}
-			else
-			{
-				//ensures that you don't paint before you have data
-				while (accessingStData)
-				{
-					try
-					{
-						this.wait();
-					}
-					catch (InterruptedException e) {}
-				}*/
 			if (lineNum==0)
 			{
 				lineNum++;
@@ -938,7 +921,6 @@ public class SpaceTimeData
 			toDonate.timeLine = depthTrace.timeLine;
 			lineNum++;
 			return toDonate;
-			//}
 		}
 		else
 			return null;
@@ -970,13 +952,7 @@ public class SpaceTimeData
 	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
 	public synchronized void addNextImage(Image line, int index)
 	{
-		//System.out.println("adding image to spot "+index);
 		compositeLines[index] = line;
 	}
 	
-	/*public synchronized void wakeUpThreads()
-	{
-		accessingStData = false;
-		notifyAll();
-	}*/
 }

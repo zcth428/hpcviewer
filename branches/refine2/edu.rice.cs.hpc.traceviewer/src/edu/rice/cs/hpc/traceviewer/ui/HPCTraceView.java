@@ -33,18 +33,19 @@ public class HPCTraceView extends ViewPart
 	public static final String ID = "hpctraceview.view";
 	
 	/** Stores/Creates all of the data that is used in the view.*/
-	SpaceTimeData stData = null;
+	private SpaceTimeData stData = null;
 	
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
 	
 	/** Determines whether this view has been setup.*/
-	boolean initialized = false;
+	private boolean initialized = false;
 	
-	/** Stores the current depth that is being displayed.*/
+	/** Stores the current depth that is being displayed.
+	 *  WARNING: this variable is accessible by other classes ! */
 	int currentDepth;
 	
-	HPCCallStackView csview;
+	private HPCCallStackView csview;
 	
 	/*************************************************************************
 	 *	Creates the view.

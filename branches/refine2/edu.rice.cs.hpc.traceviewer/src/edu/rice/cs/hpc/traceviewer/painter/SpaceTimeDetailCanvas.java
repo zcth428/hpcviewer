@@ -181,7 +181,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 	}
 
-	
+
+	/*****
+	 * set new database and refresh the screen
+	 * @param _stData
+	 */
 	public void updateData(SpaceTimeData _stData) {
 		this.setSpaceTimeData(_stData);
 		
@@ -189,11 +193,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			mouseState = MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		rebuffer = true;
 		
-		this.redraw();
+		this.home();
+
+		// clear undo button
+		this.undoStack.clear();
+		this.undoButton.setEnabled(false);
 	}
 	
+	/***
+	 * add listeners to the canvas 
+	 * caution: this method can only be called at most once ! 
+	 */
 	private void addCanvasListener() {
 		addMouseListener(this);
 		addMouseMoveListener(this);

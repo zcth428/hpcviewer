@@ -51,4 +51,40 @@
          </property>
       </product>
    </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="edu.rice.cs.hpc.traceviewer.actions.OpenDatabase"
+            id="edu.rice.cs.hpc.traceviewer.openDatabase"
+            name="Open database">
+      </command>
+   </extension>
+   <extension
+         id="edu.rice.cs.hpc.traceviewer.menus"
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu">
+         <menu
+               id="edu.rice.cs.hpc.traceviewer.menu.file"
+               label="File"
+               mnemonic="F"
+               tooltip="File database menu">
+            <command
+                  commandId="edu.rice.cs.hpc.traceviewer.openDatabase"
+                  label="Open database"
+                  mnemonic="O"
+                  style="push"
+                  tooltip="Open a new database (the existing database will be replaced)">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.exit"
+                  label="Exit"
+                  mnemonic="x"
+                  style="push"
+                  tooltip="Exit the application">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
 </plugin>

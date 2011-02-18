@@ -20,9 +20,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	// them
 	// in the fill methods. This ensures that the actions aren't recreated
 	// when fillActionBars is called with FILL_PROXY.
-	private IWorkbenchAction exitAction;
-	
-	private IWorkbenchAction openNewAction;
+//	private IWorkbenchAction exitAction;
+//	
+//	private IWorkbenchAction openNewAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -36,20 +36,25 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// Registering also provides automatic disposal of the actions when
 		// the window is closed.
 		
-		openNewAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
-		openNewAction.setText("Open New Trace");
-		register(openNewAction);
+//		openNewAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
+//		openNewAction.setText("Open New Trace");
+//		register(openNewAction);
 		
-		exitAction = ActionFactory.QUIT.create(window);
-		register(exitAction);
+//		exitAction = ActionFactory.QUIT.create(window);
+//		register(exitAction);
 	}
 
 	protected void fillMenuBar(IMenuManager menuBar) {
-		MenuManager fileMenu = new MenuManager("&File",
-				IWorkbenchActionConstants.M_FILE);
-		menuBar.add(fileMenu);
-		fileMenu.add(openNewAction);
-		fileMenu.add(exitAction);
+//		super.fillMenuBar(menuBar);
+//		IMenuManager menu = menuBar.findMenuUsingPath("FileMenu");
+//		if (menu != null) {
+//			menu.add(this.exitAction);
+//		}
+//		MenuManager fileMenu = new MenuManager("&File",
+//				IWorkbenchActionConstants.M_FILE);
+//		menuBar.add(fileMenu);
+//		fileMenu.add(openNewAction);
+//		fileMenu.add(exitAction);
 	}
 
 }

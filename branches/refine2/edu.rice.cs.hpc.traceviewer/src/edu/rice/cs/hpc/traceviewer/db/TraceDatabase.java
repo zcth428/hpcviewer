@@ -12,6 +12,13 @@ public class TraceDatabase {
 	private File experimentFile = null;
 	
 
+	/***
+	 * Open a database by displaying a directory dialog box
+	 * return true if the database is correct, false otherwise
+	 * 
+	 * @param shell
+	 * @return
+	 */
 	public boolean open( Shell shell) {
 		DirectoryDialog dialog;
 

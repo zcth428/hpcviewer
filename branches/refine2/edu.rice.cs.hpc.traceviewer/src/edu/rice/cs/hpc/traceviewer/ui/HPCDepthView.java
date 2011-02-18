@@ -24,9 +24,6 @@ public class HPCDepthView extends ViewPart
 	/**The selectedProcess from the detail canvas/view*/
 	int process;
 	
-	/** Stores/Creates all of the data that is used in the view. */
-	SpaceTimeData stData;
-	
 	/** Paints and displays the detail view. */
 	DepthTimeCanvas depthCanvas;
 	
@@ -64,9 +61,6 @@ public class HPCDepthView extends ViewPart
 		if(process==-1)
 			process = 0;
 		
-		stData = traceview.getData();
-		maxDepth = stData.getMaxDepth();
-		
 		/*************************************************************************
 		 * Master Composite
 		 */
@@ -78,20 +72,14 @@ public class HPCDepthView extends ViewPart
 		 * Depth View Canvas
 		 */
 		
-		depthCanvas = new DepthTimeCanvas(master, maxDepth, stData, traceview.detailCanvas, process);
+		depthCanvas = new DepthTimeCanvas(master, traceview.detailCanvas, process);
 		depthCanvas.setLayout(new GridLayout());
 		depthCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		/**************************************************************************
-         * Time dimension labels
-         *
-        Group labelGroup = new Group(master, SWT.EMBEDDED);
-        GridLayout labelGroupLayout = new GridLayout();
-        labelGroupLayout.numColumns = 3;
-        labelGroup.setLayout(labelGroupLayout);
-        labelGroup.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
-
-        depthCanvas.setLabels(labelGroup);*/
+	}
+	
+	public void updateData(SpaceTimeData _stData) {
+		this.depthCanvas.updateData(_stData);
 	}
 
 	public void setFocus()

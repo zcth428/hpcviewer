@@ -1,7 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.FileInputStream;
@@ -20,10 +19,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
 
-import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
@@ -63,17 +60,7 @@ public class HPCTraceView extends ViewPart
 	 *************************************************************************/
 	public void setupEverything(final Composite master)
 	{
-		TraceDatabase trace_db = new TraceDatabase();
-		Shell shell = master.getShell();
-		
-		if (!trace_db.open(shell)) {
-			shell.close();
-		}
-		
-		File experimentFile = trace_db.getExperimentFile();
-		ArrayList<File> traceFiles = trace_db.getTraceFiles();
-		
-		stData = new SpaceTimeData(master, experimentFile, traceFiles);
+
 		currentDepth = 0;
 
 		/*************************************************************************
@@ -352,6 +339,13 @@ public class HPCTraceView extends ViewPart
         detailCanvas.setLabels(labelGroup);    
 	}
 
+	
+	public void updateData(SpaceTimeData _stData) {
+		this.stData = _stData;
+		this.detailCanvas.updateData(_stData);
+	}
+	
+	
 	/*************************************************************************
 	 *	Updates/sets the depth that is displayed in the context view and 
 	 *	detail view.

@@ -65,15 +65,6 @@ public class CallStackViewer extends TableViewer
         callstackname.add("Select a sample");
         callstackname.add("from the Detail View");
 
-        stack.addListener(SWT.Selection, new Listener(){
-			public void handleEvent(Event event)
-			{
-				if(stack.getSelectionIndex()!=-1 && stack.getSelectionIndex() != csview.traceview.currentDepth) {
-					csview.traceview.setDepth(stack.getSelectionIndex(), true);
-				}
-				fixSample();
-			}
-		});
         data = new GridData(GridData.FILL_BOTH);
         stack.setLayoutData(data);
         
@@ -83,7 +74,9 @@ public class CallStackViewer extends TableViewer
         this.setLabelProvider(new LabelProvider() {
         	public Image getImage(Object element) {
         		if (element instanceof String) {
-        			Image img = stData.getColorTable().getImage((String)element);
+        			Image img = null;
+        			if (stData != null)
+        				img = stData.getColorTable().getImage((String)element);
         			return img;
         		}
         		
@@ -118,6 +111,23 @@ public class CallStackViewer extends TableViewer
         });
         
         this.setInput(this.callstackname);
+	}
+	
+	
+	public void updateData(SpaceTimeData _stData) {
+		this.stData = _stData;
+
+		stack.addListener(SWT.Selection, new Listener(){
+			public void handleEvent(Event event)
+			{
+				if(stack.getSelectionIndex()!=-1 && stack.getSelectionIndex() != csview.traceview.currentDepth) {
+					csview.traceview.setDepth(stack.getSelectionIndex(), true);
+				}
+				fixSample();
+			}
+		});
+
+		this.refresh();
 	}
 	
 	/**********************************************************************

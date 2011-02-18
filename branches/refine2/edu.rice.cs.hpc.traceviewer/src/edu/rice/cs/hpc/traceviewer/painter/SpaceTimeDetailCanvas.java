@@ -102,7 +102,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	DepthTimeCanvas depthCanvas = null;
 	
 	/** Relates to the condition that the mouse is in.*/
-	enum MouseState { ST_MOUSE_NONE, ST_MOUSE_DOWN };
 	MouseState mouseState;
 	
 	/** The point at which the mouse was clicked.*/
@@ -157,7 +156,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		rebuffer = true;
 		undoStack = new Stack<Frame>();
 		redoStack = new Stack<Frame>();
-		mouseState = MouseState.ST_MOUSE_NONE;
+		mouseState = MouseState.ST_MOUSE_INIT;
 		selectedTime = -20;
 		selectedProcess = -1;
 		selectionTopLeftX = 0;
@@ -185,7 +184,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	
 	public void updateData(SpaceTimeData _stData) {
 		this.setSpaceTimeData(_stData);
-		this.addCanvasListener();
+		
+		if (mouseState == MouseState.ST_MOUSE_INIT) {
+			mouseState = MouseState.ST_MOUSE_NONE;
+			this.addCanvasListener();
+		}
+		
+		this.redraw();
 	}
 	
 	private void addCanvasListener() {

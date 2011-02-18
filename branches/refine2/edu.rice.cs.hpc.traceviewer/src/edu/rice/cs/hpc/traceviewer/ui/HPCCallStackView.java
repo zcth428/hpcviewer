@@ -53,9 +53,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 			e.printStackTrace();
 			System.exit(0);
 		}
-		
-		stData = traceview.getData();
-		
+				
 		setupEverything();
 	}
 	
@@ -73,12 +71,41 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		 ************************************************************************/
 		
 		depthEditor = new Spinner(master, SWT.EMBEDDED);
-		depthEditor.setMaximum(stData.getMaxDepth());
 		depthEditor.setMinimum(0);
 		depthEditor.setLayout(new GridLayout());
 		GridData depthData = new GridData(SWT.CENTER, SWT.TOP, true, false);
 		depthData.widthHint = 140;
 		depthEditor.setLayoutData(depthData);
+		
+		/*************************************************************************
+		 * CallStackViewer
+		 ************************************************************************/
+		csViewer = new CallStackViewer(master, stData, this);
+		
+		/*************************************************************************
+		 * MiniMap
+		 ************************************************************************/
+		
+		Label l = new Label(master, SWT.SINGLE);
+		l.setText("Mini Map");
+		miniCanvas = new SpaceTimeMiniCanvas(master, stData);
+		miniCanvas.setLayout(new GridLayout());
+		GridData miniCanvasData = new GridData(SWT.CENTER, SWT.BOTTOM, true, false);
+		miniCanvasData.heightHint = 100;
+		miniCanvasData.widthHint = 140;
+		miniCanvas.setLayoutData(miniCanvasData);
+		miniCanvas.setDetailCanvas(traceview.detailCanvas);
+		traceview.detailCanvas.setMiniCanvas(miniCanvas);
+		
+		traceview.setCSView(this);
+		depthview.setCSView(this);
+	}
+	
+	public void updateData(SpaceTimeData _stData) 
+	{
+		this.stData = _stData;
+		
+		depthEditor.setMaximum(stData.getMaxDepth());
 		depthEditor.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e)
 			{
@@ -103,33 +130,9 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 				//depthEditor.setSelection(value);
 			}
 		});
-		
-		/*************************************************************************
-		 * CallStackViewer
-		 ************************************************************************/
-		csViewer = new CallStackViewer(master, stData, this);
-		//csViewer.setLayout(new GridLayout());
-		//GridData csvData = new GridData(SWT.CENTER, SWT.FILL, true, true);
-		//csViewer.setLayoutData(csvData);
-		//csViewer.setVisible(true);
-		
-		/*************************************************************************
-		 * MiniMap
-		 ************************************************************************/
-		
-		Label l = new Label(master, SWT.SINGLE);
-		l.setText("Mini Map");
-		miniCanvas = new SpaceTimeMiniCanvas(master, stData);
-		miniCanvas.setLayout(new GridLayout());
-		GridData miniCanvasData = new GridData(SWT.CENTER, SWT.BOTTOM, true, false);
-		miniCanvasData.heightHint = 100;
-		miniCanvasData.widthHint = 140;
-		miniCanvas.setLayoutData(miniCanvasData);
-		miniCanvas.setDetailCanvas(traceview.detailCanvas);
-		traceview.detailCanvas.setMiniCanvas(miniCanvas);
-		
-		traceview.setCSView(this);
-		depthview.setCSView(this);
+
+		this.csViewer.updateData(_stData);
+		this.miniCanvas.updateData(_stData);
 	}
 
 	public void setFocus() 

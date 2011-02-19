@@ -123,7 +123,7 @@ public class CallStackViewer extends TableViewer
 
 		this.resetStack();
 		this.stack.setVisible(true);
-		this.refresh();
+		//this.refresh();
 	}
 	
 	/**********************************************************************
@@ -175,16 +175,6 @@ public class CallStackViewer extends TableViewer
 	public void setDepth(int _depth)
 	{
 		depth = _depth;
-		if (stack.getItemCount() <= depth)
-		{
-			// deadcode
-			//int numOverDepth = depth-stack.getItemCount()+1;
-			if (!stack.getItem(0).equals("Select a sample"))
-			{
-				//for(int l = 0; l<numOverDepth; l++)
-					//stack.add("--Over Depth--");
-			}
-		}
 		stack.redraw();
 	}
 	
@@ -196,7 +186,7 @@ public class CallStackViewer extends TableViewer
 		final ArrayList<String> callstackname = new ArrayList<String>();
 
         callstackname.add("Select a sample");
-        callstackname.add("from the Detail View");
+        callstackname.add("from the Trace View");
 
         this.setInput(callstackname);
 	}

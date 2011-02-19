@@ -195,6 +195,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 		
 		this.home();
+		this.setDepth(0);
 
 		// clear undo button
 		this.undoStack.clear();

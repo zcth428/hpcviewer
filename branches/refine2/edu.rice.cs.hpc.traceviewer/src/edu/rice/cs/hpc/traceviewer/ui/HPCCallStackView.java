@@ -76,6 +76,29 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		GridData depthData = new GridData(SWT.CENTER, SWT.TOP, true, false);
 		depthData.widthHint = 140;
 		depthEditor.setLayoutData(depthData);
+		depthEditor.setVisible(false);
+		depthEditor.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e)
+			{
+				String string = depthEditor.getText();
+				int value;
+				if (string.length()<1)
+					value = 0;
+				else
+					value = Integer.valueOf(string);
+				int maximum = depthEditor.getMaximum();
+				int minimum = 0;
+				if (value > maximum)
+					value = maximum;
+				if (value < minimum)
+					value = minimum;
+				if(traceview.currentDepth != value)
+				{
+					traceview.setDepth(value, false);
+					csViewer.fixSample();
+				}
+			}
+		});
 		
 		/*************************************************************************
 		 * CallStackViewer
@@ -106,30 +129,8 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		this.stData = _stData;
 		
 		depthEditor.setMaximum(stData.getMaxDepth());
-		depthEditor.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e)
-			{
-				String string = depthEditor.getText();
-				int value;
-				if (string.length()<1)
-					value = 0;
-				else
-					value = Integer.valueOf(string);
-				int maximum = depthEditor.getMaximum();
-				int minimum = 0;
-				if (value > maximum)
-					value = maximum;
-				if (value < minimum)
-					value = minimum;
-				if(traceview.currentDepth != value)
-				{
-					traceview.setDepth(value, false);
-					csViewer.fixSample();
-				}
-				// laksono 2010.10.05: need to disable stack overflow
-				//depthEditor.setSelection(value);
-			}
-		});
+		depthEditor.setSelection(0);
+		depthEditor.setVisible(true);
 
 		this.csViewer.updateData(_stData);
 		this.miniCanvas.updateData(_stData);

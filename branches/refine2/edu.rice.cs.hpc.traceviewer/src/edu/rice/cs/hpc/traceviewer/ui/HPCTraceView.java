@@ -344,6 +344,8 @@ public class HPCTraceView extends ViewPart
 	public void updateData(SpaceTimeData _stData) {
 		this.stData = _stData;
 		this.detailCanvas.updateData(_stData);
+
+		this.currentDepth = 0;
 	}
 	
 	

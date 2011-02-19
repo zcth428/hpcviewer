@@ -5,14 +5,68 @@ import java.util.ArrayList;
 
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
+import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
+import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
 
 public class TraceDatabase {
 	
 	private ArrayList<File> traceFiles = null;
 	private File experimentFile = null;
 	
+	
+	public boolean openDatabase(Shell shell) {
+		
+		if (this.open(shell)) {
+			
+			//---------------------------------------------------------------------
+			// Try to open the database and refresh the data
+			// ---------------------------------------------------------------------
+			
+			File experimentFile = this.getExperimentFile();
+			ArrayList<File> traceFiles = this.getTraceFiles();
+			
+			SpaceTimeData stData = new SpaceTimeData(shell, experimentFile, traceFiles);
+			
+			try {
+				//---------------------------------------------------------------------
+				// Tell all views that we have the data, and they need to refresh their content
+				// ---------------------------------------------------------------------				
 
-	public boolean open( Shell shell) {
+				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
+				tview.updateData(stData);
+				
+				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
+				dview.updateData(stData);
+				
+				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
+				cview.updateData(stData);
+				
+				return true;
+				
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return false;
+
+	}
+	
+
+	/***
+	 * Open a database by displaying a directory dialog box
+	 * return true if the database is correct, false otherwise
+	 * 
+	 * @param shell
+	 * @return
+	 */
+	private boolean open( Shell shell) {
 		DirectoryDialog dialog;
 
 		boolean validDatabaseFound = false;

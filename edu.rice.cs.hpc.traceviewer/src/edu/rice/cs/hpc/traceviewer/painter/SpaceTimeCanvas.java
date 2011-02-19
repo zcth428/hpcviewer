@@ -12,6 +12,10 @@ public abstract class SpaceTimeCanvas extends Canvas
 {
 	private static final long serialVersionUID = 1L;
 	
+	
+	enum MouseState { ST_MOUSE_INIT, ST_MOUSE_NONE, ST_MOUSE_DOWN };
+
+	
 	/**The SpaceTimeData corresponding to this canvas.*/
 	SpaceTimeData stData;
 	
@@ -35,6 +39,7 @@ public abstract class SpaceTimeCanvas extends Canvas
     /**The last process being viewed now.*/
     double endProcess;
 	
+    
     /**Creates a SpaceTimeCanvas with the data _stData and Composite _composite.*/
     public SpaceTimeCanvas(Composite _composite)
     {

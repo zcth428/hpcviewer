@@ -53,9 +53,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 			e.printStackTrace();
 			System.exit(0);
 		}
-		
-		stData = traceview.getData();
-		
+				
 		setupEverything();
 	}
 	
@@ -73,12 +71,12 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		 ************************************************************************/
 		
 		depthEditor = new Spinner(master, SWT.EMBEDDED);
-		depthEditor.setMaximum(stData.getMaxDepth());
 		depthEditor.setMinimum(0);
 		depthEditor.setLayout(new GridLayout());
 		GridData depthData = new GridData(SWT.CENTER, SWT.TOP, true, false);
 		depthData.widthHint = 140;
 		depthEditor.setLayoutData(depthData);
+		depthEditor.setVisible(false);
 		depthEditor.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e)
 			{
@@ -99,19 +97,13 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 					traceview.setDepth(value, false);
 					csViewer.fixSample();
 				}
-				// laksono 2010.10.05: need to disable stack overflow
-				//depthEditor.setSelection(value);
 			}
 		});
 		
 		/*************************************************************************
 		 * CallStackViewer
 		 ************************************************************************/
-		csViewer = new CallStackViewer(master, stData, this);
-		//csViewer.setLayout(new GridLayout());
-		//GridData csvData = new GridData(SWT.CENTER, SWT.FILL, true, true);
-		//csViewer.setLayoutData(csvData);
-		//csViewer.setVisible(true);
+		csViewer = new CallStackViewer(master, this);
 		
 		/*************************************************************************
 		 * MiniMap
@@ -130,6 +122,18 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		
 		traceview.setCSView(this);
 		depthview.setCSView(this);
+	}
+	
+	public void updateData(SpaceTimeData _stData) 
+	{
+		this.stData = _stData;
+		
+		depthEditor.setMaximum(stData.getMaxDepth());
+		depthEditor.setSelection(0);
+		depthEditor.setVisible(true);
+
+		this.csViewer.updateData(_stData);
+		this.miniCanvas.updateData(_stData);
 	}
 
 	public void setFocus() 

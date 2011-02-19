@@ -1,11 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.framework;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 
@@ -20,9 +16,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	// them
 	// in the fill methods. This ensures that the actions aren't recreated
 	// when fillActionBars is called with FILL_PROXY.
-	private IWorkbenchAction exitAction;
-	
-	private IWorkbenchAction openNewAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -36,20 +29,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// Registering also provides automatic disposal of the actions when
 		// the window is closed.
 		
-		openNewAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
-		openNewAction.setText("Open New Trace");
-		register(openNewAction);
-		
-		exitAction = ActionFactory.QUIT.create(window);
-		register(exitAction);
 	}
 
 	protected void fillMenuBar(IMenuManager menuBar) {
-		MenuManager fileMenu = new MenuManager("&File",
-				IWorkbenchActionConstants.M_FILE);
-		menuBar.add(fileMenu);
-		fileMenu.add(openNewAction);
-		fileMenu.add(exitAction);
 	}
 
 }

@@ -3,18 +3,16 @@
 
 <product name="hpctraceviewer" uid="edu.rice.cs.hpc.traceviewer" id="edu.rice.cs.hpc.traceviewer.product" application="edu.rice.cs.hpc.traceviewer.application" version="1.0.0" useFeatures="false" includeLaunchers="true">
 
-
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
       <programArgs>-consoleLog</programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -XX:MaxPermSize=256m -Xms40m -Xmx512m -Xdock:icon=../Resources/Eclipse.icns -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgs>
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -XX:MaxPermSize=256m -Xms40m -Xmx512m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
    <windowImages/>
-
 
    <launcher name="hpctraceviewer">
       <macosx icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer.icns"/>
@@ -24,10 +22,8 @@
       </win>
    </launcher>
 
-
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="com.ibm.icu"/>

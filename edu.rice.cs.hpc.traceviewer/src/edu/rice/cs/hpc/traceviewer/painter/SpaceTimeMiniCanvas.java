@@ -35,7 +35,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	int viewingHeight;
 	
 	/** Relates to the condition that the mouse is in.*/
-	enum MouseState { ST_MOUSE_NONE, ST_MOUSE_DOWN };
 	MouseState mouseState;
 	
 	/** The point at which the mouse was clicked.*/
@@ -57,18 +56,29 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeData _stData)
 	{	
 		super(_composite);
-		this.setSpaceTimeData(_stData);
 		
 		getHorizontalBar().setVisible(false);
 		getVerticalBar().setVisible(false);
-		mouseState = MouseState.ST_MOUSE_NONE;
-		addMouseListener(this);
-		addMouseMoveListener(this);
-		addPaintListener(this);
+		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
 		initialized = false;
 		selectionTopLeft = new Point(0,0);
 		selectionBottomRight = new Point(0,0);
+	}
+	
+	public void updateData(SpaceTimeData _stData) {
+		this.setSpaceTimeData(_stData);
+
+		if (this.mouseState == MouseState.ST_MOUSE_INIT) {
+			this.mouseState = MouseState.ST_MOUSE_NONE;
+
+			addMouseListener(this);
+			addMouseMoveListener(this);
+			addPaintListener(this);
+
+		}
+		
+		this.redraw();
 	}
 	
 	/**Sets the detail canvas.*/
@@ -80,6 +90,10 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	/**The painting of the miniMap.*/
 	public void paintControl(PaintEvent event)
 	{
+		if (this.stData == null)
+			return;
+			
+			
 		if(!initialized)
 		{
 			viewWidth = getClientArea().width;

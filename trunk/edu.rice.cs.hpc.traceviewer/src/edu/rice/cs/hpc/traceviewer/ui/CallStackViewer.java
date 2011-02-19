@@ -28,16 +28,12 @@ public class CallStackViewer extends TableViewer
 	/**This CallStackViewer's current depth.*/
 	int depth;
 	
-	/**Whether or not the user has already clicked on this viewer.*/
-	boolean selectionMade;
-	
 	/**********************************************************************************
 	 * The built-in viewer for lists of things (the actual graphical representation of
 	 * the list of function names.
 	 ********************************************************************************/
 	private Table stack;
 
-	private final ArrayList<String> callstackname;
 	
 	/**The View in which this stack has been created.*/
     public HPCCallStackView csview;
@@ -50,30 +46,13 @@ public class CallStackViewer extends TableViewer
     
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
-	public CallStackViewer(Composite parent, SpaceTimeData _stData,	HPCCallStackView _csview)
+	public CallStackViewer(Composite parent, HPCCallStackView _csview)
 	{
 		super(parent, SWT.SINGLE | SWT.V_SCROLL);
 		
-		callstackname = new ArrayList<String>();
-		
-		selectionMade = false;
-		depth = 0;
-		stData = _stData;
 		csview = _csview;
         stack = this.getTable();
         
-        callstackname.add("Select a sample");
-        callstackname.add("from the Detail View");
-
-        stack.addListener(SWT.Selection, new Listener(){
-			public void handleEvent(Event event)
-			{
-				if(stack.getSelectionIndex()!=-1 && stack.getSelectionIndex() != csview.traceview.currentDepth) {
-					csview.traceview.setDepth(stack.getSelectionIndex(), true);
-				}
-				fixSample();
-			}
-		});
         data = new GridData(GridData.FILL_BOTH);
         stack.setLayoutData(data);
         
@@ -83,7 +62,9 @@ public class CallStackViewer extends TableViewer
         this.setLabelProvider(new LabelProvider() {
         	public Image getImage(Object element) {
         		if (element instanceof String) {
-        			Image img = stData.getColorTable().getImage((String)element);
+        			Image img = null;
+        			if (stData != null)
+        				img = stData.getColorTable().getImage((String)element);
         			return img;
         		}
         		
@@ -117,7 +98,32 @@ public class CallStackViewer extends TableViewer
         	
         });
         
-        this.setInput(this.callstackname);
+        this.stack.setVisible(false);
+        
+		stack.addListener(SWT.Selection, new Listener(){
+			public void handleEvent(Event event)
+			{
+				if(stack.getSelectionIndex()!=-1 && stack.getSelectionIndex() != csview.traceview.currentDepth) {
+					csview.traceview.setDepth(stack.getSelectionIndex(), true);
+				}
+				fixSample();
+			}
+		});
+	}
+	
+	
+	/***
+	 * set new database
+	 * @param _stData
+	 */
+	public void updateData(SpaceTimeData _stData) {
+		this.stData = _stData;
+
+		depth = 0;
+
+		this.resetStack();
+		this.stack.setVisible(true);
+		//this.refresh();
 	}
 	
 	/**********************************************************************
@@ -127,10 +133,6 @@ public class CallStackViewer extends TableViewer
 	 *********************************************************************/
 	public void setSample(double closeTime, int process, int _depth)
 	{
-		if(!selectionMade)
-		{
-			data.widthHint = stack.getSize().x;
-		}
 		if (closeTime == -20)
 			return;
 		
@@ -142,7 +144,7 @@ public class CallStackViewer extends TableViewer
 			ptl = stData.getProcess(process);
 		
 		int sample = ptl.findMidpointBefore(closeTime);
-		selectionMade = true;
+
 		sampleVector = ptl.getSample(sample).getNames();
 
 		int numOverDepth = 0;
@@ -173,16 +175,20 @@ public class CallStackViewer extends TableViewer
 	public void setDepth(int _depth)
 	{
 		depth = _depth;
-		if (stack.getItemCount() <= depth)
-		{
-			// deadcode
-			//int numOverDepth = depth-stack.getItemCount()+1;
-			if (!stack.getItem(0).equals("Select a sample"))
-			{
-				//for(int l = 0; l<numOverDepth; l++)
-					//stack.add("--Over Depth--");
-			}
-		}
 		stack.redraw();
 	}
+	
+	
+	/***
+	 * reset the content of the stack
+	 */
+	private void resetStack() {
+		final ArrayList<String> callstackname = new ArrayList<String>();
+
+        callstackname.add("Select a sample");
+        callstackname.add("from the Trace View");
+
+        this.setInput(callstackname);
+	}
+
 }

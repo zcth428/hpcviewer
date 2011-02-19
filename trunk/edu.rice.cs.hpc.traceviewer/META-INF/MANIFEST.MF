@@ -7,7 +7,8 @@ Bundle-Activator: edu.rice.cs.hpc.traceviewer.framework.Activator
 Bundle-Vendor: Rice University
 Require-Bundle: edu.rice.cs.hpc.data,
  org.eclipse.core.commands,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.eclipse.ui
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.jface.action,

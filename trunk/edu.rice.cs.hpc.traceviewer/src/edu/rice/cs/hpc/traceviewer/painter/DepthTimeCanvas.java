@@ -62,8 +62,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	int selectedDepth;
 	
 	/** Relates to the condition that the mouse is in.*/
-	enum MouseState { ST_MOUSE_NONE, ST_MOUSE_DOWN };
-	MouseState mouseState;
+	SpaceTimeCanvas.MouseState mouseState;
 	
 	/** The point at which the mouse was clicked.*/
 	Point mouseDown;
@@ -82,19 +81,15 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     public static Color white;
     public static Color black;
 	
-	public DepthTimeCanvas(Composite composite, int _maxDepth, SpaceTimeData _stData, SpaceTimeDetailCanvas _detailCanvas, int _process)
+	public DepthTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas, int _process)
     {
 		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
-    	maxDepth = _maxDepth;
-		stData = _stData;
 		detailCanvas = _detailCanvas;
 		process = _process;
 		homeScreen = true;
 		rebuffer = true;
-		mouseState = MouseState.ST_MOUSE_NONE;
-		addMouseListener(this);
-		addMouseMoveListener(this);
-		addPaintListener(this);
+		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
+
 		selectedTime = -20;
 		selectedDepth = -1;
 		leftSelection = 0;
@@ -104,13 +99,35 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		
 		this.getVerticalBar().setVisible(false);
 		this.getHorizontalBar().setVisible(false);
+	}
+	
+	
+	public void updateData(SpaceTimeData _stData) {
+		this.stData = _stData;
+		this.maxDepth = _stData.getMaxDepth();
+		
+		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT) {
+			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
+			this.addCanvasListener();
+		}
+		this.init();
+		this.redraw();
+	}
+	
+	private void init() {
+		viewWidth = getClientArea().width;
+		viewHeight = getClientArea().height;
+	}
+	
+	public void addCanvasListener() {
+		addMouseListener(this);
+		addMouseMoveListener(this);
+		addPaintListener(this);
 		
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
 			{
-				viewWidth = getClientArea().width;
-				viewHeight = getClientArea().height;
-
+				init();
 				if (homeScreen)
 					imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 				
@@ -120,10 +137,14 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 				assertTimeBounds();
 			}
 		});
+
 	}
 	
 	public void paintControl(PaintEvent event)
 	{
+		if (this.stData == null)
+			return;
+		
 		if (homeScreen)
 		{
 			topLeftPixelX = 0;
@@ -158,7 +179,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
 
 		//paints the selection currently being made
-		if (mouseState==MouseState.ST_MOUSE_DOWN)
+		if (mouseState==SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
 		{
         	event.gc.setForeground(white);
     		event.gc.setLineWidth(2);
@@ -279,19 +300,19 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 
 	public void mouseDown(MouseEvent e)
 	{
-		if (mouseState == MouseState.ST_MOUSE_NONE)
+		if (mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_NONE)
 		{
-			mouseState = MouseState.ST_MOUSE_DOWN;
+			mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);
 		}
 	}
 
 	public void mouseUp(MouseEvent e)
 	{
-		if (mouseState == MouseState.ST_MOUSE_DOWN)
+		if (mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
 		{
 			mouseUp = new Point(e.x,e.y);
-			mouseState = MouseState.ST_MOUSE_NONE;
+			mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			
 			//difference in mouse movement < 3 constitutes a "single click"
 			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
@@ -314,7 +335,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	
 	public void mouseMove(MouseEvent e)
 	{
-		if(mouseState == MouseState.ST_MOUSE_DOWN)
+		if(mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
 		{
 			Point mouseTemp = new Point(e.x,e.y);
 			adjustSelection(mouseDown,mouseTemp);

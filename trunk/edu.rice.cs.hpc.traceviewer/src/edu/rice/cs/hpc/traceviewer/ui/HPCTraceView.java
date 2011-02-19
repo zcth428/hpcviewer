@@ -1,7 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.FileInputStream;
@@ -20,10 +19,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
 
-import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
@@ -36,18 +33,19 @@ public class HPCTraceView extends ViewPart
 	public static final String ID = "hpctraceview.view";
 	
 	/** Stores/Creates all of the data that is used in the view.*/
-	SpaceTimeData stData = null;
+	private SpaceTimeData stData = null;
 	
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
 	
 	/** Determines whether this view has been setup.*/
-	boolean initialized = false;
+	private boolean initialized = false;
 	
-	/** Stores the current depth that is being displayed.*/
+	/** Stores the current depth that is being displayed.
+	 *  WARNING: this variable is accessible by other classes ! */
 	int currentDepth;
 	
-	HPCCallStackView csview;
+	private HPCCallStackView csview;
 	
 	/*************************************************************************
 	 *	Creates the view.
@@ -63,17 +61,7 @@ public class HPCTraceView extends ViewPart
 	 *************************************************************************/
 	public void setupEverything(final Composite master)
 	{
-		TraceDatabase trace_db = new TraceDatabase();
-		Shell shell = master.getShell();
-		
-		if (!trace_db.open(shell)) {
-			shell.close();
-		}
-		
-		File experimentFile = trace_db.getExperimentFile();
-		ArrayList<File> traceFiles = trace_db.getTraceFiles();
-		
-		stData = new SpaceTimeData(master, experimentFile, traceFiles);
+
 		currentDepth = 0;
 
 		/*************************************************************************
@@ -327,7 +315,7 @@ public class HPCTraceView extends ViewPart
 		 * Detail View Canvas
 		 ************************************************************************/
 		
-		detailCanvas = new SpaceTimeDetailCanvas(master, stData);
+		detailCanvas = new SpaceTimeDetailCanvas(master); //(master, stData);
 		detailCanvas.setDepth(currentDepth);
 		detailCanvas.setLayout(new GridLayout());
 		detailCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -352,6 +340,15 @@ public class HPCTraceView extends ViewPart
         detailCanvas.setLabels(labelGroup);    
 	}
 
+	
+	public void updateData(SpaceTimeData _stData) {
+		this.stData = _stData;
+		this.detailCanvas.updateData(_stData);
+
+		this.currentDepth = 0;
+	}
+	
+	
 	/*************************************************************************
 	 *	Updates/sets the depth that is displayed in the context view and 
 	 *	detail view.

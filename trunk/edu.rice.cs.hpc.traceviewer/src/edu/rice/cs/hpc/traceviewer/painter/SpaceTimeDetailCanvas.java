@@ -102,7 +102,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	DepthTimeCanvas depthCanvas = null;
 	
 	/** Relates to the condition that the mouse is in.*/
-	enum MouseState { ST_MOUSE_NONE, ST_MOUSE_DOWN };
 	MouseState mouseState;
 	
 	/** The point at which the mouse was clicked.*/
@@ -149,19 +148,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     private final static int MIN_PROC_DISP = 1;
 	
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
-	public SpaceTimeDetailCanvas(Composite _composite, SpaceTimeData _stData)
+	public SpaceTimeDetailCanvas(Composite _composite)
 	{
 		super(_composite );
-		this.setSpaceTimeData(_stData);
 		
 		homeScreen = true;
 		rebuffer = true;
 		undoStack = new Stack<Frame>();
 		redoStack = new Stack<Frame>();
-		mouseState = MouseState.ST_MOUSE_NONE;
-		addMouseListener(this);
-		addMouseMoveListener(this);
-		addPaintListener(this);
+		mouseState = MouseState.ST_MOUSE_INIT;
 		selectedTime = -20;
 		selectedProcess = -1;
 		selectionTopLeftX = 0;
@@ -175,6 +170,47 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		//vertical scrollbar
 		vBar = this.getVerticalBar();
 		vBar.setMinimum(0);
+		
+		//horizontal scrollbar
+		hBar = this.getHorizontalBar();
+		hBar.setMinimum(0);
+		
+		if (this.stData != null) {
+			this.addCanvasListener();
+		}
+		
+	}
+
+
+	/*****
+	 * set new database and refresh the screen
+	 * @param _stData
+	 */
+	public void updateData(SpaceTimeData _stData) {
+		this.setSpaceTimeData(_stData);
+		
+		if (mouseState == MouseState.ST_MOUSE_INIT) {
+			mouseState = MouseState.ST_MOUSE_NONE;
+			this.addCanvasListener();
+		}
+		
+		this.home();
+		this.setDepth(0);
+
+		// clear undo button
+		this.undoStack.clear();
+		this.undoButton.setEnabled(false);
+	}
+	
+	/***
+	 * add listeners to the canvas 
+	 * caution: this method can only be called at most once ! 
+	 */
+	private void addCanvasListener() {
+		addMouseListener(this);
+		addMouseMoveListener(this);
+		addPaintListener(this);
+
 		vBar.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
@@ -212,10 +248,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				}
 			}
 		});
+
 		
-		//horizontal scrollbar
-		hBar = this.getHorizontalBar();
-		hBar.setMinimum(0);
 		hBar.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
@@ -255,9 +289,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				}
 			}
 		});
+
 		
-		//A listener for resizing the the window.
-		
+		//A listener for resizing the the window.		
 		//FIXME: Every time the window is resized just a tiny bit, the program rebuffers
 		//(goes out and gets the data again). It would be better to have a listener for
 		//when the user stops resizing before rebuffering or something...
@@ -281,7 +315,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			}
 		});
 	}
-	
+	 
 	/*************************************************************************
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.
@@ -340,6 +374,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 ******************************************************************************/
 	public void paintControl(PaintEvent event)
 	{
+		if (this.stData == null)
+			return;
+		
 		if(homeScreen)
 		{
 			//if this is the first time painting,
@@ -455,7 +492,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * bounds of the database, are integers, and adjusts the process zoom 
 	 * button accordingly.
 	 *************************************************************************/
-	public void assertProcessBounds()
+	private void assertProcessBounds()
 	{
 		begProcess = (int)begProcess;
 		endProcess = Math.ceil(endProcess);
@@ -477,7 +514,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * Asserts the time bounds to make sure they're within the actual
 	 * bounds of the database and adjusts the time zoom button accordingly.
 	 *************************************************************************/
-	public void assertTimeBounds()
+	private void assertTimeBounds()
 	{
 		if (begTime < 0)
 			begTime = 0;

@@ -21,12 +21,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
-public class HPCTraceView extends ViewPart
+public class HPCTraceView extends ViewPart implements ITraceDepth
 {
 	
 	/**The ID needed to create this view (used in plugin.xml).*/
@@ -40,10 +41,6 @@ public class HPCTraceView extends ViewPart
 	
 	/** Determines whether this view has been setup.*/
 	private boolean initialized = false;
-	
-	/** Stores the current depth that is being displayed.
-	 *  WARNING: this variable is accessible by other classes ! */
-	int currentDepth;
 	
 	private HPCCallStackView csview;
 	
@@ -61,8 +58,6 @@ public class HPCTraceView extends ViewPart
 	 *************************************************************************/
 	public void setupEverything(final Composite master)
 	{
-
-		currentDepth = 0;
 
 		/*************************************************************************
 		 * Master Composite
@@ -165,7 +160,7 @@ public class HPCTraceView extends ViewPart
 			public void handleEvent(Event event)
 			{
 				detailCanvas.popUndo();
-				if (detailCanvas.getDepth() != currentDepth)
+				if (detailCanvas.getDepth() != stData.getDepth())
 				{
 					csview.depthEditor.setSelection(detailCanvas.getDepth());
 					detailCanvas.popUndo();
@@ -183,7 +178,7 @@ public class HPCTraceView extends ViewPart
 			public void handleEvent(Event event)
 			{
 				detailCanvas.popRedo();
-				if (detailCanvas.getDepth() != currentDepth)
+				if (detailCanvas.getDepth() != stData.getDepth())
 				{
 					csview.depthEditor.setSelection(detailCanvas.getDepth());
 					detailCanvas.popRedo();
@@ -316,7 +311,7 @@ public class HPCTraceView extends ViewPart
 		 ************************************************************************/
 		
 		detailCanvas = new SpaceTimeDetailCanvas(master); //(master, stData);
-		detailCanvas.setDepth(currentDepth);
+		detailCanvas.setDepth(0);
 		detailCanvas.setLayout(new GridLayout());
 		detailCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		detailCanvas.setButtons(new Button[]{home,open,save,undo,redo,tZoomIn,tZoomOut,pZoomIn,pZoomOut});
@@ -344,8 +339,7 @@ public class HPCTraceView extends ViewPart
 	public void updateData(SpaceTimeData _stData) {
 		this.stData = _stData;
 		this.detailCanvas.updateData(_stData);
-
-		this.currentDepth = 0;
+		this.stData.addDepthListener(this);
 	}
 	
 	
@@ -353,14 +347,9 @@ public class HPCTraceView extends ViewPart
 	 *	Updates/sets the depth that is displayed in the context view and 
 	 *	detail view.
 	 ************************************************************************/
-	public void setDepth(int depth, boolean textBox)
+	public void setDepth(int depth)
 	{
-		currentDepth = depth;
 		detailCanvas.setDepth(depth);
-		csview.csViewer.setDepth(depth);
-		this.stData.getDepthTimeCanvas().setDepth(depth);
-		if(textBox)
-			csview.depthEditor.setSelection(depth);
 	}
 
 	/**Required in order to extend ViewPart.*/

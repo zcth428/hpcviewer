@@ -14,6 +14,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.util.OSValidator;
+import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
@@ -24,7 +25,7 @@ import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
  *	the view including all of the ProcessTimelines.
  *
  ************************************************************************/
-public class SpaceTimeData
+public class SpaceTimeData extends TraceEvents
 {
 	/** Contains all of the ProcessTimelines. It's a HashMap because,
 	 * due to the multithreading, the traces may not get added in order.
@@ -84,6 +85,10 @@ public class SpaceTimeData
 	used in initialization for threads.*/
 	int fileNum;
 	
+	/** Stores the current depth that is being displayed.
+	 *  WARNING: this variable is accessible by other classes ! */
+	private int currentDepth;
+	
 	/**Used to ensure that threads do not access the same thing at the same time*/
 	boolean accessingStData;
 	
@@ -129,6 +134,14 @@ public class SpaceTimeData
 		//System.gc();
 	}
 
+	
+	public void setDepth(int _depth) {
+		this.currentDepth = _depth;
+	}
+	
+	public int getDepth() {
+		return this.currentDepth;
+	}
 	/*************************************************************************
 	 *	Returns width of the spaceTimeData:
 	 *	The width (the last time in the ProcessTimeline) of the longest 

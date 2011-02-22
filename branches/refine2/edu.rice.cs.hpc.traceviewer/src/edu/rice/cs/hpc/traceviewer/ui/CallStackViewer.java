@@ -25,9 +25,6 @@ public class CallStackViewer extends TableViewer
 	/**The SpaceTimeData associated with this CallStackViewer.*/
 	private SpaceTimeData stData;
 	
-	/**This CallStackViewer's current depth.*/
-	private int depth;
-	
 	/**********************************************************************************
 	 * The built-in viewer for lists of things (the actual graphical representation of
 	 * the list of function names.
@@ -100,10 +97,11 @@ public class CallStackViewer extends TableViewer
 		stack.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
-				if(stack.getSelectionIndex()!=-1 && stack.getSelectionIndex() != csview.traceview.currentDepth) {
-					csview.traceview.setDepth(stack.getSelectionIndex(), true);
+				int depth = stack.getSelectionIndex(); 
+				if(depth !=-1 && depth != stData.getDepth()) {
+					//csview.traceview.setDepth(stack.getSelectionIndex(), true);
+					stData.updateDepth(depth);
 				}
-				fixSample();
 			}
 		});
 	}
@@ -116,11 +114,8 @@ public class CallStackViewer extends TableViewer
 	public void updateData(SpaceTimeData _stData) {
 		this.stData = _stData;
 
-		depth = 0;
-
 		this.resetStack();
 		this.stack.setVisible(true);
-		//this.refresh();
 	}
 	
 	/**********************************************************************
@@ -133,7 +128,6 @@ public class CallStackViewer extends TableViewer
 		if (closeTime == -20)
 			return;
 		
-		depth = _depth;
 		ProcessTimeline ptl;
 		if (process == -1337)
 			ptl = stData.getDepthTrace();
@@ -145,33 +139,32 @@ public class CallStackViewer extends TableViewer
 		sampleVector = ptl.getSample(sample).getNames();
 
 		int numOverDepth = 0;
-		if (sampleVector.size()<=depth)
+		if (sampleVector.size()<=_depth)
 		{
-			numOverDepth = depth-sampleVector.size()+1;
+			numOverDepth = _depth-sampleVector.size()+1;
 			for(int l = 0; l<numOverDepth; l++)
 				sampleVector.add("--------------");
 		}
 		this.setInput(new ArrayList<String>(sampleVector));
 	
-		stack.select(depth);
+		stack.select(_depth);
 		stack.redraw();
 	}
 	
 	/**Removes unnecessary over depth "--------------"s from the stack.*/
 	public void fixSample()
 	{
-		while((stack.getItemCount() - 1 > depth) && 
+		while((stack.getItemCount() - 1 > stData.getDepth()) && 
 			  stack.getItem(stack.getItemCount()-1).equals("--------------"))
 		{
 			stack.remove(stack.getItemCount() - 1);
 		}
-		stack.select(depth);
+		stack.select(stData.getDepth());
 	}
 	
 	/**Sets the viewer's depth to _depth.*/
 	public void setDepth(int _depth)
 	{
-		depth = _depth;
 		stack.redraw();
 	}
 	

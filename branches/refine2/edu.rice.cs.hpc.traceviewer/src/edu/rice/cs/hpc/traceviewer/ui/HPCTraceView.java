@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -22,12 +23,14 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
+import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
-public class HPCTraceView extends ViewPart implements ITraceDepth
+public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePosition
 {
 	
 	/**The ID needed to create this view (used in plugin.xml).*/
@@ -339,7 +342,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth
 	public void updateData(SpaceTimeData _stData) {
 		this.stData = _stData;
 		this.detailCanvas.updateData(_stData);
+		
 		this.stData.addDepthListener(this);
+		this.stData.addPositionListener(this);
 	}
 	
 	
@@ -374,5 +379,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth
 		csview = _csview;
 		detailCanvas.csViewer = csview.csViewer;
 		initialized = true;
+	}
+
+	public void setPosition(Position position) {
+		this.detailCanvas.setCrossHair(position.time, position.process);
 	}
 }

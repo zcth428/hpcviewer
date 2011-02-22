@@ -14,12 +14,14 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
+import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeMiniCanvas;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the call path viewer and minimap.*/
 //all the GUI setup for the call path and minimap are here//
-public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceDepth
+public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceDepth, ITracePosition
 {
 	
 	public static final String ID = "hpccallstackview.view";
@@ -139,6 +141,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		this.miniCanvas.updateData(_stData);
 		
 		stData.addDepthListener(this);
+		stData.addPositionListener(this);
 	}
 
 	public void setFocus() 
@@ -164,5 +167,9 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	public void setDepth(int new_depth) {
 		this.depthEditor.setSelection(new_depth);
 		this.csViewer.setDepth(new_depth);
+	}
+
+	public void setPosition(Position position) {
+		this.csViewer.setSample(position.time, position.process, stData.getDepth());
 	}
 }

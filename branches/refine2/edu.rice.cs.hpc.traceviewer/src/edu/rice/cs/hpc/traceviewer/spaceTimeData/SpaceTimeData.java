@@ -8,6 +8,7 @@ import java.lang.Math;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -16,6 +17,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 
@@ -85,9 +87,11 @@ public class SpaceTimeData extends TraceEvents
 	used in initialization for threads.*/
 	int fileNum;
 	
-	/** Stores the current depth that is being displayed.
-	 *  WARNING: this variable is accessible by other classes ! */
+	/** Stores the current depth that is being displayed.*/
 	private int currentDepth;
+	
+	/** Stores the current position of cursor */
+	private Position currentPosition;
 	
 	/**Used to ensure that threads do not access the same thing at the same time*/
 	boolean accessingStData;
@@ -966,6 +970,12 @@ public class SpaceTimeData extends TraceEvents
 	public synchronized void addNextImage(Image line, int index)
 	{
 		compositeLines[index] = line;
+	}
+
+
+	@Override
+	public void setPosition(Position position) {
+		this.currentPosition = position;
 	}
 	
 }

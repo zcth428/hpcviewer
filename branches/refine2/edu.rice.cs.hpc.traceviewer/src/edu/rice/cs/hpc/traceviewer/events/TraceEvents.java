@@ -3,6 +3,8 @@ package edu.rice.cs.hpc.traceviewer.events;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import edu.rice.cs.hpc.traceviewer.painter.Position;
+
 /*********************************************************************
  * 
  * Base abstract class for managing events in traces. 
@@ -27,7 +29,7 @@ public abstract class TraceEvents {
 	public TraceEvents() {
 		listRegionListener = new ITraceRegion[3];
 		listDepthListener = new ITraceDepth[3];
-		listPositionListener = new ITracePosition[2];
+		listPositionListener = new ITracePosition[3];
 		
 		index_region = 0;
 		index_depth = 0;
@@ -87,7 +89,9 @@ public abstract class TraceEvents {
 	 * tell the manager that an event has changed
 	 * @param region
 	 */
-	public void updatePosition(Point position) {
+	public void updatePosition(Position position) {
+		
+		setPosition(position);
 		
 		for(ITracePosition position_listener: listPositionListener) {
 			if (position_listener != null) {
@@ -102,4 +106,5 @@ public abstract class TraceEvents {
 	 */
 	public abstract void setDepth(int depth);
 	
+	public abstract void setPosition(Position position);
 }

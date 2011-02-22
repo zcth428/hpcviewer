@@ -205,10 +205,9 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	 * Also updates the rest of the program to know that this is the selected
 	 * point (so that the CallStackViewer can update, etc.).
 	 **************************************************************************/
-	public void setCrossHair(double _selectedTime, int _selectedDepth)
+	public void setCrossHair(double _selectedTime)
 	{
 		selectedTime = _selectedTime;
-		selectedDepth = _selectedDepth;
 		redraw();
 	}
 	
@@ -234,10 +233,11 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     	if (mouseDown == null)
     		return;
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
+    	stData.updatePosition(new Position(closeTime, process));
     	//int depth = mouseDown.y*maxDepth/viewHeight;
-    	setCrossHair(closeTime, detailCanvas.depth);
-    	detailCanvas.setCrossHair(closeTime, process);
-    	csViewer.setSample(closeTime, -1337, detailCanvas.depth);
+    	//setCrossHair(closeTime);
+    	//detailCanvas.setCrossHair(closeTime, process);
+    	//csViewer.setSample(closeTime, -1337, detailCanvas.depth);
     }
 
 	public double getScaleX()

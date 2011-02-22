@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.events;
 
-import org.eclipse.swt.graphics.Point;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
+
 
 
 
@@ -13,5 +14,5 @@ import org.eclipse.swt.graphics.Point;
  */
 public interface ITracePosition {
 
-	public void setPosition(Point position);
+	public void setPosition(Position position);
 }

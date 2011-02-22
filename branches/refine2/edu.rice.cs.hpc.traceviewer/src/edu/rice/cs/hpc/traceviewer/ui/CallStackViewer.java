@@ -24,28 +24,14 @@ public class CallStackViewer extends TableViewer
 {
 	/**The SpaceTimeData associated with this CallStackViewer.*/
 	private SpaceTimeData stData;
-	
-	/**********************************************************************************
-	 * The built-in viewer for lists of things (the actual graphical representation of
-	 * the list of function names.
-	 ********************************************************************************/
-	private Table stack;
-
-	
-	/**The View in which this stack has been created.*/
-    public HPCCallStackView csview;
-    
-    /**The list of function names to be displayed.*/
-    private Vector<String> sampleVector;
-    
+	    
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, HPCCallStackView _csview)
 	{
 		super(parent, SWT.SINGLE | SWT.V_SCROLL);
 		
-		csview = _csview;
-        stack = this.getTable();
+        final Table stack = this.getTable();
         
         GridData data = new GridData(GridData.FILL_BOTH);
         stack.setLayoutData(data);
@@ -92,14 +78,13 @@ public class CallStackViewer extends TableViewer
         	
         });
         
-        this.stack.setVisible(false);
+        stack.setVisible(false);
         
 		stack.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
 				int depth = stack.getSelectionIndex(); 
 				if(depth !=-1 && depth != stData.getDepth()) {
-					//csview.traceview.setDepth(stack.getSelectionIndex(), true);
 					stData.updateDepth(depth);
 				}
 			}
@@ -115,7 +100,7 @@ public class CallStackViewer extends TableViewer
 		this.stData = _stData;
 
 		this.resetStack();
-		this.stack.setVisible(true);
+		this.getTable().setVisible(true);
 	}
 	
 	/**********************************************************************
@@ -136,7 +121,7 @@ public class CallStackViewer extends TableViewer
 		
 		int sample = ptl.findMidpointBefore(closeTime);
 
-		sampleVector = ptl.getSample(sample).getNames();
+		final Vector<String> sampleVector = ptl.getSample(sample).getNames();
 
 		int numOverDepth = 0;
 		if (sampleVector.size()<=_depth)
@@ -147,13 +132,14 @@ public class CallStackViewer extends TableViewer
 		}
 		this.setInput(new ArrayList<String>(sampleVector));
 	
-		stack.select(_depth);
-		stack.redraw();
+		this.setDepth(_depth);
 	}
 	
 	/**Removes unnecessary over depth "--------------"s from the stack.*/
 	public void fixSample()
 	{
+		final Table stack = this.getTable();
+		
 		while((stack.getItemCount() - 1 > stData.getDepth()) && 
 			  stack.getItem(stack.getItemCount()-1).equals("--------------"))
 		{
@@ -165,7 +151,8 @@ public class CallStackViewer extends TableViewer
 	/**Sets the viewer's depth to _depth.*/
 	public void setDepth(int _depth)
 	{
-		stack.redraw();
+		this.getTable().select(_depth);
+		this.getTable().redraw();
 	}
 	
 	

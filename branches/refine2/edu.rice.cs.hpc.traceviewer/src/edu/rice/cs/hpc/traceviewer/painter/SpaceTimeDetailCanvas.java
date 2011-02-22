@@ -893,9 +893,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     		procIndex = mouseDown.y;
     	}
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
-    	depthCanvas.setCrossHair(closeTime, depth);
-    	setCrossHair(closeTime, selectedProcess);
-    	csViewer.setSample(closeTime, procIndex,depth);
+    	
+    	this.stData.updatePosition(new Position(closeTime, selectedProcess));
+//    	depthCanvas.setCrossHair(closeTime, depth);
+//    	setCrossHair(closeTime, selectedProcess);
+//    	csViewer.setSample(closeTime, procIndex,depth);
     }
 
 	/* *****************************************************************
@@ -925,7 +927,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
 			{
 				setCSSample();
-				csViewer.csview.updateProcess();
+				//this.stData.updatePosition(position);
+				//csViewer.csview.updateProcess();
 			}
 			else
 			{

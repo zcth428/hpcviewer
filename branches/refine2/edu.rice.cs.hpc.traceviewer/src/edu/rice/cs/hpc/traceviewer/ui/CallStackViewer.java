@@ -23,10 +23,10 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 public class CallStackViewer extends TableViewer
 {
 	/**The SpaceTimeData associated with this CallStackViewer.*/
-	SpaceTimeData stData;
+	private SpaceTimeData stData;
 	
 	/**This CallStackViewer's current depth.*/
-	int depth;
+	private int depth;
 	
 	/**********************************************************************************
 	 * The built-in viewer for lists of things (the actual graphical representation of
@@ -38,11 +38,8 @@ public class CallStackViewer extends TableViewer
 	/**The View in which this stack has been created.*/
     public HPCCallStackView csview;
     
-    /**The GridData to be used for the layout of this CallStackViewer.*/
-    GridData data;
-    
     /**The list of function names to be displayed.*/
-    Vector<String> sampleVector;
+    private Vector<String> sampleVector;
     
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
@@ -53,7 +50,7 @@ public class CallStackViewer extends TableViewer
 		csview = _csview;
         stack = this.getTable();
         
-        data = new GridData(GridData.FILL_BOTH);
+        GridData data = new GridData(GridData.FILL_BOTH);
         stack.setLayoutData(data);
         
         //------------------------------------------------

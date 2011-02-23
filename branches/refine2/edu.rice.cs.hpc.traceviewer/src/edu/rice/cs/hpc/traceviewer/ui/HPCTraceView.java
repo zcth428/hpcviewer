@@ -10,7 +10,6 @@ import java.io.IOException;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -368,11 +367,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	{
 		return stData;
 	}
-	
-//	public int getSelectedProcess()
-//	{
-//		return detailCanvas.selectedProcess;
-//	}
 	
 	public void setCSView(HPCCallStackView _csview)
 	{

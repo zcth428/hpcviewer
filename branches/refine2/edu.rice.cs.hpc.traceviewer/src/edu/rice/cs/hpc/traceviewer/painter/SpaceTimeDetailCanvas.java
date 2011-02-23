@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ScrollBar;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
@@ -54,12 +53,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/** The number of processes being displayed on the Detail View.*/
 	double numProcessDisp;
 	
-	/**The selected time that is open in the csViewer.*/
-	//long selectedTime;
-	
-	/**The selected process that is open in the csViewer*/
-	//public int selectedProcess;
-	
 	/**The current depth that is selected for this canvas.*/
     int depth = 0;
     
@@ -89,12 +82,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	
 	/** Triggers zoom-out on the process axis.*/
 	Button pZoomOutButton;
-	
-	/** The horizontal scroll bar of this Canvas.*/
-	//private ScrollBar hBar;
-	
-	/**The vertical scroll bar of this Canvas.*/
-	//private ScrollBar vBar;
 	
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	SpaceTimeMiniCanvas miniCanvas;
@@ -166,14 +153,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		white = getDisplay().getSystemColor(SWT.COLOR_WHITE);
 		black = getDisplay().getSystemColor(SWT.COLOR_BLACK);
 		
-		//vertical scrollbar
-		//vBar = this.getVerticalBar();
-		//vBar.setMinimum(0);
-		
-		//horizontal scrollbar
-		//hBar = this.getHorizontalBar();
-		//hBar.setMinimum(0);
-		
 		if (this.stData != null) {
 			this.addCanvasListener();
 		}
@@ -209,86 +188,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		addMouseListener(this);
 		addMouseMoveListener(this);
 		addPaintListener(this);
-
-/*		vBar.addListener(SWT.Selection, new Listener(){
-			public void handleEvent(Event event)
-			{
-				int sel = vBar.getSelection();
-				int thumb = vBar.getThumb();
-				if((sel>endProcess-.5*numProcessDisp) || (sel<begProcess-.5*numProcessDisp))
-				{
-					pushUndo();
-					begProcess = sel;
-					endProcess = begProcess+numProcessDisp;
-					assertProcessBounds();
-					miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-					redraw();
-				}
-				else
-				{
-					if(sel+thumb>=vBar.getMaximum())
-					{
-						pushUndo();
-						begProcess = vBar.getMaximum()-thumb;
-						endProcess = vBar.getMaximum();
-						assertProcessBounds();
-						miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-						redraw();
-					}
-					else if (sel<=vBar.getMinimum())
-					{
-						pushUndo();
-						begProcess = vBar.getMinimum();
-						endProcess = begProcess+thumb;
-						assertProcessBounds();
-						miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-						redraw();
-					}
-				}
-			}
-		});
-
-		
-		hBar.addListener(SWT.Selection, new Listener(){
-			public void handleEvent(Event event)
-			{
-				int sel = hBar.getSelection();
-				int thumb = hBar.getThumb();
-				//user clicked outside of the scroll bar
-				if ((sel>endTime-.5*numTimeUnitsDisp && sel+thumb<=hBar.getMaximum()) || (sel<begTime-.5*numTimeUnitsDisp && sel>=hBar.getMinimum()))
-				{
-					pushUndo();
-					begTime = sel;
-					endTime = begTime + numTimeUnitsDisp;
-					assertTimeBounds();
-					miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-					redraw();
-				}
-				else
-				{
-					if (sel+thumb>=hBar.getMaximum())
-					{
-						pushUndo();
-						begTime = hBar.getMaximum()-thumb;
-						endTime = hBar.getMaximum();
-						assertTimeBounds();
-						miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-						redraw();
-					}
-					else if (sel<=hBar.getMinimum())
-					{
-						pushUndo();
-						begTime = hBar.getMinimum();
-						endTime = begTime+thumb;
-						assertTimeBounds();
-						miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-						redraw();
-					}
-					
-				}
-			}
-		});
-*/
 		
 		//A listener for resizing the the window.		
 		//FIXME: Every time the window is resized just a tiny bit, the program rebuffers
@@ -306,9 +205,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				if(viewWidth > 0 && viewHeight > 0)
 					rebuffer = true;
 
-//				resetHScrollBar();
-//				resetVScrollBar();
-				
 				assertProcessBounds();
 				assertTimeBounds();
 			}
@@ -357,12 +253,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			homeButton.setEnabled(true);
 		else
 			homeButton.setEnabled(false);
-		
-//		resetHScrollBar();
-//		resetVScrollBar();
-//		vBar.setSelection((int)Math.round(begProcess));
-//		hBar.setSelection((int)Math.round(begTime));
-		
+			
 		redraw();
 	}
 	
@@ -403,7 +294,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		topLeftPixelX = Math.round(begTime * getScaleX());
 		topLeftPixelY = Math.round(begProcess * getScaleY());
 		miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-		//if (csViewer.csview.depthview.openedView)
+
 		depthCanvas.setTimeRange(begTime, endTime);
 		
 		//if something has changed the bounds, you need to go get the data again
@@ -452,48 +343,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		System.gc();
 		adjustLabels();
 	}
-	
-	/*********************************************************************************
-	 * Resets the size and position of the horizontal scrollbar to what is should be,
-	 * based on the current time bounds.
-	 *********************************************************************************/
-	//hBar uses actual times as its coordinate system
-/*	private void resetHScrollBar()
-	{
-		double maxH = stData.getWidth();
-		if(maxH <= numTimeUnitsDisp)
-		{
-			hBar.setVisible(false);
-		}
-		else
-		{
-			hBar.setVisible(true);
-			hBar.setMaximum((int)Math.ceil(maxH));
-			hBar.setThumb((int)Math.round(numTimeUnitsDisp));
-		}
-		hBar.setIncrement((int)Math.round(.5*numTimeUnitsDisp));
-	}
-*/	
-	/*********************************************************************************
-	 * Resets the size and position of the vertical scrollbar to what is should be,
-	 * based on the current process bounds.
-	 *********************************************************************************/
-	//vBar uses processes as its coordinate system
-/*	private void resetVScrollBar()
-	{
-		double maxV = stData.getHeight();
-		if (maxV <= numProcessDisp)
-		{
-			vBar.setVisible(false);
-		}
-		else
-		{
-			vBar.setVisible(true);
-			vBar.setMaximum((int)Math.ceil(maxV));
-			vBar.setThumb((int)Math.round(numProcessDisp));
-		}
-		vBar.setIncrement((int)Math.round(.5*numProcessDisp));
-	}*/
 
 	/*************************************************************************
 	 * Asserts the process bounds to make sure they're within the actual
@@ -702,9 +551,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		homeButton.setEnabled(true);
 		
-//		resetVScrollBar();
-//		vBar.setSelection((int)Math.round(begProcess));
-		
 		redraw();
 	}
 
@@ -733,8 +579,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			numProcessDisp = MIN_PROC_DISP;
 			pZoomInButton.setEnabled(false);
 		}
-//		resetVScrollBar();
-//		vBar.setSelection((int)Math.round(begProcess));
+
 		redraw();
 	}
 
@@ -764,8 +609,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		homeButton.setEnabled(true);
 		
-//		resetHScrollBar();
-//		hBar.setSelection((int)Math.round(begTime));
 		redraw();
 	}
 
@@ -789,8 +632,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		assertTimeBounds();
 		
-//		resetHScrollBar();
-//		hBar.setSelection((int)Math.round(begTime));
 		redraw();
 	}
 	
@@ -861,9 +702,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     		int selectedProcess = stData.getPosition().process;
         	crossHairLabel.setText("Cross Hair: (" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcess + ")");
         }
-        
-        // johnmc
-        // crossHairLabel.setSize(crossHairLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         labelGroup.setSize(labelGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
@@ -941,8 +779,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
 			{
 				setCSSample();
-				//this.stData.updatePosition(position);
-				//csViewer.csview.updateProcess();
 			}
 			else
 			{

@@ -35,7 +35,6 @@ public class SpaceTimeData extends TraceEvents
 	private HashMap<Integer, ProcessTimeline> traces;
 	
 	private ProcessTimeline depthTrace;
-	private DepthTimeCanvas depthView;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	private Image[] compositeLines;
@@ -323,13 +322,9 @@ public class SpaceTimeData extends TraceEvents
 		}
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to paint depth time canvas.");
 		
-		depthView = canvas;
 	}
 	
-	
-	public DepthTimeCanvas getDepthTimeCanvas() {
-		return depthView;
-	}
+
 	
 	/**********************************************************************
 	 * Paints one "line" (the timeline for one processor) to its own image,

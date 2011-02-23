@@ -91,10 +91,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	Button pZoomOutButton;
 	
 	/** The horizontal scroll bar of this Canvas.*/
-	private ScrollBar hBar;
+	//private ScrollBar hBar;
 	
 	/**The vertical scroll bar of this Canvas.*/
-	private ScrollBar vBar;
+	//private ScrollBar vBar;
 	
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	SpaceTimeMiniCanvas miniCanvas;
@@ -167,12 +167,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		black = getDisplay().getSystemColor(SWT.COLOR_BLACK);
 		
 		//vertical scrollbar
-		vBar = this.getVerticalBar();
-		vBar.setMinimum(0);
+		//vBar = this.getVerticalBar();
+		//vBar.setMinimum(0);
 		
 		//horizontal scrollbar
-		hBar = this.getHorizontalBar();
-		hBar.setMinimum(0);
+		//hBar = this.getHorizontalBar();
+		//hBar.setMinimum(0);
 		
 		if (this.stData != null) {
 			this.addCanvasListener();
@@ -210,7 +210,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		addMouseMoveListener(this);
 		addPaintListener(this);
 
-		vBar.addListener(SWT.Selection, new Listener(){
+/*		vBar.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
 				int sel = vBar.getSelection();
@@ -255,7 +255,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				int sel = hBar.getSelection();
 				int thumb = hBar.getThumb();
 				//user clicked outside of the scroll bar
-				if ((sel>endTime-.5*numTimeUnitsDisp/* && sel+thumb<=hBar.getMaximum()*/) || (sel<begTime-.5*numTimeUnitsDisp/* && sel>=hBar.getMinimum()*/))
+				if ((sel>endTime-.5*numTimeUnitsDisp && sel+thumb<=hBar.getMaximum()) || (sel<begTime-.5*numTimeUnitsDisp && sel>=hBar.getMinimum()))
 				{
 					pushUndo();
 					begTime = sel;
@@ -288,7 +288,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				}
 			}
 		});
-
+*/
 		
 		//A listener for resizing the the window.		
 		//FIXME: Every time the window is resized just a tiny bit, the program rebuffers
@@ -306,8 +306,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				if(viewWidth > 0 && viewHeight > 0)
 					rebuffer = true;
 
-				resetHScrollBar();
-				resetVScrollBar();
+//				resetHScrollBar();
+//				resetVScrollBar();
 				
 				assertProcessBounds();
 				assertTimeBounds();
@@ -358,10 +358,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		else
 			homeButton.setEnabled(false);
 		
-		resetHScrollBar();
-		resetVScrollBar();
-		vBar.setSelection((int)Math.round(begProcess));
-		hBar.setSelection((int)Math.round(begTime));
+//		resetHScrollBar();
+//		resetVScrollBar();
+//		vBar.setSelection((int)Math.round(begProcess));
+//		hBar.setSelection((int)Math.round(begTime));
 		
 		redraw();
 	}
@@ -389,6 +389,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			begProcess = 0;
 			endProcess = stData.getHeight();
 			setDetailZoom(begTime, begProcess, endTime, endProcess);
+			viewWidth = this.getClientArea().width;
+			viewHeight = this.getClientArea().height;
+			if (viewWidth <= 0)
+				viewWidth = 1;
+			if (viewHeight <= 0)
+				viewHeight = 1;
 			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 			homeButton.setEnabled(false);
 			homeScreen = false;
@@ -452,7 +458,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * based on the current time bounds.
 	 *********************************************************************************/
 	//hBar uses actual times as its coordinate system
-	private void resetHScrollBar()
+/*	private void resetHScrollBar()
 	{
 		double maxH = stData.getWidth();
 		if(maxH <= numTimeUnitsDisp)
@@ -467,13 +473,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 		hBar.setIncrement((int)Math.round(.5*numTimeUnitsDisp));
 	}
-	
+*/	
 	/*********************************************************************************
 	 * Resets the size and position of the vertical scrollbar to what is should be,
 	 * based on the current process bounds.
 	 *********************************************************************************/
 	//vBar uses processes as its coordinate system
-	private void resetVScrollBar()
+/*	private void resetVScrollBar()
 	{
 		double maxV = stData.getHeight();
 		if (maxV <= numProcessDisp)
@@ -487,7 +493,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			vBar.setThumb((int)Math.round(numProcessDisp));
 		}
 		vBar.setIncrement((int)Math.round(.5*numProcessDisp));
-	}
+	}*/
 
 	/*************************************************************************
 	 * Asserts the process bounds to make sure they're within the actual
@@ -696,8 +702,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		homeButton.setEnabled(true);
 		
-		resetVScrollBar();
-		vBar.setSelection((int)Math.round(begProcess));
+//		resetVScrollBar();
+//		vBar.setSelection((int)Math.round(begProcess));
 		
 		redraw();
 	}
@@ -727,8 +733,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			numProcessDisp = MIN_PROC_DISP;
 			pZoomInButton.setEnabled(false);
 		}
-		resetVScrollBar();
-		vBar.setSelection((int)Math.round(begProcess));
+//		resetVScrollBar();
+//		vBar.setSelection((int)Math.round(begProcess));
 		redraw();
 	}
 
@@ -758,8 +764,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		homeButton.setEnabled(true);
 		
-		resetHScrollBar();
-		hBar.setSelection((int)Math.round(begTime));
+//		resetHScrollBar();
+//		hBar.setSelection((int)Math.round(begTime));
 		redraw();
 	}
 
@@ -783,8 +789,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		assertTimeBounds();
 		
-		resetHScrollBar();
-		hBar.setSelection((int)Math.round(begTime));
+//		resetHScrollBar();
+//		hBar.setSelection((int)Math.round(begTime));
 		redraw();
 	}
 	

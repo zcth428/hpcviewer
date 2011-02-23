@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
-import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 
 /**A view for displaying the depthview.*/
 //all the GUI setup for the depth view is here
@@ -28,9 +27,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	SpaceTimeData stData;
 	
 	Image imageBuffer;
-	
-	/**The selected process from the detail canvas/view*/
-	//public int process;
 	
 	/**The left pixel's x location*/
 	long topLeftPixelX;
@@ -74,8 +70,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	long leftSelection;
 	long rightSelection;
     
-    //public CallStackViewer csViewer;
-    
     public SpaceTimeDetailCanvas detailCanvas;
     
     public static Color white;
@@ -85,7 +79,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     {
 		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
 		detailCanvas = _detailCanvas;
-		//process = _process;
+
 		homeScreen = true;
 		rebuffer = true;
 		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
@@ -233,11 +227,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     	if (mouseDown == null)
     		return;
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
+
     	stData.updatePosition(new Position(closeTime, stData.getPosition().process));
-    	//int depth = mouseDown.y*maxDepth/viewHeight;
-    	//setCrossHair(closeTime);
-    	//detailCanvas.setCrossHair(closeTime, process);
-    	//csViewer.setSample(closeTime, -1337, detailCanvas.depth);
     }
 
 	public double getScaleX()

@@ -32,59 +32,59 @@ public class SpaceTimeData extends TraceEvents
 	 * due to the multithreading, the traces may not get added in order.
 	 * So, each ProcessTimeline now knows which line it is, and the
 	 * HashMap is a map between that line and the ProcessTimeline.*/
-	HashMap<Integer, ProcessTimeline> traces;
+	private HashMap<Integer, ProcessTimeline> traces;
 	
-	ProcessTimeline depthTrace;
+	private ProcessTimeline depthTrace;
 	private DepthTimeCanvas depthView;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
-	Image[] compositeLines;
+	private Image[] compositeLines;
 	
 	/** Contains the Call Path Trace files that are parsed by CallStackTrace to construct the ProcessTimelines.*/
-	ArrayList<File> traceFiles;
+	private ArrayList<File> traceFiles;
 	
 	/** Stores the color to function name assignments for all of the functions in all of the processes.*/
-	ColorTable colorTable;
+	private ColorTable colorTable;
 	
 	/** The composite that holds the Context View canvas and the Detail View canvas.*/
-	Composite canvasHolder;
+	private Composite canvasHolder;
 	
 	/**The map between the nodes and the cpid's.*/
-	HashMap<Integer, Scope> scopeMap;
+	private HashMap<Integer, Scope> scopeMap;
 	
 	/**The total number of traces.*/
-	int height;
+	private int height;
 	
 	/**The maximum depth of any single CallStackSample in any trace.*/
-	int maxDepth;
+	private int maxDepth;
 	
 	/**The minimum beginning and maximum ending time stamp across all traces (in microseconds)).*/
-	long minBegTime;
-	long maxEndTime;
+	private long minBegTime;
+	private long maxEndTime;
 	
 	/**The beginning/end of the process range on the viewer.*/
-	int begProcess;
-	int endProcess;
+	private int begProcess;
+	private int endProcess;
 	
 	/**The process to be painted in the depth time viewer.*/
-	int dtProcess;
+	private int dtProcess;
 	
 	/**The beginning/end of the time range on the viewer.*/
-	long begTime;
-	long endTime;
+	private long begTime;
+	private long endTime;
 	
 	/** The width of the detail canvas in pixels.*/
-	int numPixelsH;
+	private int numPixelsH;
 	
 	/** The height of the detail canvas in pixels.*/
-	int numPixelsV;
+	private int numPixelsV;
 	
 	/**The number of the line that's being processed (for threads).*/
-	int lineNum;
+	private int lineNum;
 	
 	/**The file that's the SpaceTimeData is initializing (getting first and last timestamps) - 
 	used in initialization for threads.*/
-	int fileNum;
+	private int fileNum;
 	
 	/** Stores the current depth that is being displayed.*/
 	private int currentDepth;
@@ -92,16 +92,12 @@ public class SpaceTimeData extends TraceEvents
 	/** Stores the current position of cursor */
 	private Position currentPosition;
 	
-	/**Used to ensure that threads do not access the same thing at the same time*/
-	boolean accessingStData;
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
 	public SpaceTimeData(Composite _canvasHolder, File expFile, ArrayList<File> _traceFiles)
 	{
-		//System.out.println("Initializing...");
-		accessingStData = true;
 		canvasHolder = _canvasHolder;
 		colorTable = new ColorTable(canvasHolder.getDisplay());
 		

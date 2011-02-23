@@ -8,7 +8,6 @@ import java.lang.Math;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -135,6 +134,8 @@ public class SpaceTimeData extends TraceEvents
 		
 		height = traceFiles.size();
 		
+		// default position
+		this.currentPosition = new Position(0,0);
 		//System.gc();
 	}
 
@@ -260,9 +261,11 @@ public class SpaceTimeData extends TraceEvents
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to get data and paint.");
 	}
 	
-	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, int process, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{
 		boolean changedBounds = true;
+		int process = this.currentPosition.process;
+		
 		if (begTime == _begTime && endTime == _endTime && dtProcess == process && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
 		{
 			changedBounds = false;
@@ -973,9 +976,17 @@ public class SpaceTimeData extends TraceEvents
 	}
 
 
+	public int getBegProcess() {
+		return this.begProcess;
+	}
+	
+	
 	@Override
 	public void setPosition(Position position) {
 		this.currentPosition = position;
 	}
 	
+	public Position getPosition() {
+		return this.currentPosition;
+	}
 }

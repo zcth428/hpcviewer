@@ -30,7 +30,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	Image imageBuffer;
 	
 	/**The selected process from the detail canvas/view*/
-	public int process;
+	//public int process;
 	
 	/**The left pixel's x location*/
 	long topLeftPixelX;
@@ -85,7 +85,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     {
 		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
 		detailCanvas = _detailCanvas;
-		process = _process;
+		//process = _process;
 		homeScreen = true;
 		rebuffer = true;
 		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
@@ -165,7 +165,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 			try
 			{
-				stData.paintDepthViewport(bufferGC, this, process, begTime, endTime, viewWidth, viewHeight);
+				stData.paintDepthViewport(bufferGC, this, begTime, endTime, viewWidth, viewHeight);
 			}
 			catch(Exception e)
 			{
@@ -233,7 +233,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     	if (mouseDown == null)
     		return;
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
-    	stData.updatePosition(new Position(closeTime, process));
+    	stData.updatePosition(new Position(closeTime, stData.getPosition().process));
     	//int depth = mouseDown.y*maxDepth/viewHeight;
     	//setCrossHair(closeTime);
     	//detailCanvas.setCrossHair(closeTime, process);

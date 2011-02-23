@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.events;
 
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;

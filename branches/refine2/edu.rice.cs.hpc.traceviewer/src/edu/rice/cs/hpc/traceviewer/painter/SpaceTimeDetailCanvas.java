@@ -55,10 +55,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	double numProcessDisp;
 	
 	/**The selected time that is open in the csViewer.*/
-	long selectedTime;
+	//long selectedTime;
 	
 	/**The selected process that is open in the csViewer*/
-	public int selectedProcess;
+	//public int selectedProcess;
 	
 	/**The current depth that is selected for this canvas.*/
     int depth = 0;
@@ -157,8 +157,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		undoStack = new Stack<Frame>();
 		redoStack = new Stack<Frame>();
 		mouseState = MouseState.ST_MOUSE_INIT;
-		selectedTime = -20;
-		selectedProcess = -1;
+
 		selectionTopLeftX = 0;
 		selectionTopLeftY = 0;
 		selectionBottomRightX = 0;
@@ -436,6 +435,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         }
 		
 		//draws cross hairs
+		long selectedTime = stData.getPosition().time;
+		int selectedProcess = stData.getPosition().process;
+		
 		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScaleX())-10-topLeftPixelX);
 		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScaleY())-10-topLeftPixelY);
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
@@ -573,6 +575,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	public Frame save()
 	{
+		long selectedTime = stData.getPosition().time;
+		int selectedProcess = stData.getPosition().process;
+
 		return new Frame(begTime, endTime, begProcess, endProcess, depth, selectedTime, selectedProcess);
 	}
 	
@@ -588,6 +593,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		redoStack.clear();
 		redoStack = new Stack<Frame>();
 		redoButton.setEnabled(false);
+		long selectedTime = stData.getPosition().time;
+		int selectedProcess = stData.getPosition().process;
 		undoStack.push(new Frame(begTime,endTime,begProcess,endProcess,depth,selectedTime,selectedProcess));
 		undoButton.setEnabled(true);
 	}
@@ -601,6 +608,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	{
 		rebuffer = true;
 		Frame nextFrame = undoStack.pop();
+		long selectedTime = stData.getPosition().time;
+		int selectedProcess = stData.getPosition().process;
 		Frame currentFrame = new Frame(begTime,endTime,begProcess,endProcess,depth,selectedTime,selectedProcess);
 		redoStack.push(currentFrame);
 		redoButton.setEnabled(true);
@@ -617,6 +626,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	{
 		rebuffer = true;
 		Frame nextFrame = redoStack.pop();
+		long selectedTime = stData.getPosition().time;
+		int selectedProcess = stData.getPosition().process;
 		Frame currentFrame = new Frame(begTime,endTime,begProcess,endProcess,depth,selectedTime,selectedProcess);
 		undoStack.push(currentFrame);
 		undoButton.setEnabled(true);
@@ -632,6 +643,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		depth = current.depth;
 		setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);
 		setCrossHair(current.selectedTime, current.selectedProcess);
+		long selectedTime = stData.getPosition().time;
+		int selectedProcess = stData.getPosition().process;
 		if (selectedTime >= begTime && selectedProcess >= begProcess 
 				&& selectedTime<=endTime && selectedProcess<=endProcess)
 		{
@@ -809,8 +822,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	public void setCrossHair(long _selectedTime, int _selectedProcess)
 	{
-		selectedTime = _selectedTime;
-		selectedProcess = _selectedProcess;
 		redraw();
 	}
 	
@@ -837,10 +848,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         processLabel.setText("Process Range: " + ((long)(begProcess*1000))/1000.0 + "|"+((long)(endProcess*1000))/1000.0);
         processLabel.setSize(processLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-        if(selectedTime==-20.0)
+        if(stData == null)
             crossHairLabel.setText("Select Sample For Cross Hair");
-        else
+        else {
+    		long selectedTime = stData.getPosition().time;
+    		int selectedProcess = stData.getPosition().process;
         	crossHairLabel.setText("Cross Hair: (" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcess + ")");
+        }
         
         // johnmc
         // crossHairLabel.setSize(crossHairLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -880,24 +894,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	if(mouseDown == null)
     		return;
     	int selectedProcess;
-    	int procIndex;
     	//need to do different things if there are more traces to paint than pixels
     	if(viewHeight > endProcess-begProcess)
     	{
     		selectedProcess = (int)(begProcess+mouseDown.y/getScaleY());
-    		procIndex = (int)(mouseDown.y/getScaleY());
     	}
     	else
     	{
     		selectedProcess = (int)(begProcess+(mouseDown.y*(endProcess-begProcess))/viewHeight);
-    		procIndex = mouseDown.y;
     	}
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
     	
     	this.stData.updatePosition(new Position(closeTime, selectedProcess));
-//    	depthCanvas.setCrossHair(closeTime, depth);
-//    	setCrossHair(closeTime, selectedProcess);
-//    	csViewer.setSample(closeTime, procIndex,depth);
     }
 
 	/* *****************************************************************

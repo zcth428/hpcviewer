@@ -25,7 +25,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	int maxDepth;
 	
 	/**The selectedProcess from the detail canvas/view*/
-	int process;
+	//int process;
 	
 	/** Paints and displays the detail view. */
 	DepthTimeCanvas depthCanvas;
@@ -60,9 +60,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	public void setupEverything()
 	{
-		process = traceview.getSelectedProcess();
-		if(process==-1)
-			process = 0;
+		//process = 0;
 		
 		/*************************************************************************
 		 * Master Composite
@@ -75,7 +73,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		 * Depth View Canvas
 		 */
 		
-		depthCanvas = new DepthTimeCanvas(master, traceview.detailCanvas, process);
+		depthCanvas = new DepthTimeCanvas(master, traceview.detailCanvas, 0);
 		depthCanvas.setLayout(new GridLayout());
 		depthCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
@@ -95,19 +93,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 			depthCanvas.setCSSample();
 		}
 	}
-	
-	public void updateProcess()
-	{
-		process = traceview.getSelectedProcess();
-		if (process == -1)
-			process = 0;
-		if (process!=depthCanvas.process)
-		{
-			depthCanvas.process = process;
-			depthCanvas.home();
-		}
-	}
-	
+		
 	public void setCSView(HPCCallStackView _csview)
 	{
 		csview = _csview;

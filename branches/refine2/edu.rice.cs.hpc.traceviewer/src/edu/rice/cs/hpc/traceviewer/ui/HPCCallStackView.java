@@ -148,11 +148,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	{
 		
 	}
-	
-	public void updateProcess()
-	{
-		depthview.updateProcess();
-	}
 
 	public int computePreferredSize(boolean width, int availableParallel, int availablePerpendicular, int preferredSize) 
 	{
@@ -170,6 +165,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	}
 
 	public void setPosition(Position position) {
-		this.csViewer.setSample(position.time, position.process, stData.getDepth());
+		this.csViewer.setSample(position.time, position.process-stData.getBegProcess(), stData.getDepth());
 	}
 }

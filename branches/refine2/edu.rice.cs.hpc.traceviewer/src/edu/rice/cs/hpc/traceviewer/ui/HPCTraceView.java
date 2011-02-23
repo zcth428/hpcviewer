@@ -369,10 +369,10 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		return stData;
 	}
 	
-	public int getSelectedProcess()
-	{
-		return detailCanvas.selectedProcess;
-	}
+//	public int getSelectedProcess()
+//	{
+//		return detailCanvas.selectedProcess;
+//	}
 	
 	public void setCSView(HPCCallStackView _csview)
 	{

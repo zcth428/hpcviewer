@@ -74,7 +74,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	long leftSelection;
 	long rightSelection;
     
-    public CallStackViewer csViewer;
+    //public CallStackViewer csViewer;
     
     public SpaceTimeDetailCanvas detailCanvas;
     

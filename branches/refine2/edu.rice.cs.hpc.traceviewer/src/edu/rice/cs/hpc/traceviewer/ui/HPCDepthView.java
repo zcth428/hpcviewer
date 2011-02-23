@@ -38,7 +38,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	HPCTraceView traceview;
 	
-	HPCCallStackView csview;
+	//HPCCallStackView csview;
 	
 	public void createPartControl(Composite _master)
 	{
@@ -96,8 +96,8 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		
 	public void setCSView(HPCCallStackView _csview)
 	{
-		csview = _csview;
-		depthCanvas.csViewer = csview.csViewer;
+		//csview = _csview;
+		//depthCanvas.csViewer = csview.csViewer;
 		traceview.detailCanvas.setDepthCanvas(depthCanvas);
 		initialized = true;
 	}

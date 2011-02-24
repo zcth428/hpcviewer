@@ -120,9 +120,6 @@ public class CallStackViewer extends TableViewer
 
 		final Vector<String> sampleVector = ptl.getSample(sample).getNames();
 
-		//System.out.println("CSV ("+closeTime+", " +process+", "+_depth+"): " +sample+"  cpid: " + ptl.getCpid(sample));
-		//System.out.println("-----------");
-		
 		int numOverDepth = 0;
 		if (sampleVector.size()<=_depth)
 		{

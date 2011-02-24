@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -68,24 +70,17 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		master.setLayout(new GridLayout());
 		master.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
+		Composite toolbar = new Composite(master, SWT.NONE);
+		GridLayoutFactory.fillDefaults().numColumns(2).extendedMargins(0, 0, 0, 0).spacing(1, 0).generateLayout(toolbar);
+		GridDataFactory.defaultsFor(toolbar).grab(true, false).applyTo(toolbar);
+
 		/***************************************************
 		 * Buttons
 		 **************************************************/
-		Group buttonGroup = new Group(master, SWT.EMBEDDED);
-		GridLayout buttonLayout = new GridLayout();
-		buttonLayout.numColumns = 9;
-		buttonLayout.makeColumnsEqualWidth = true;
-		
-		// tighten layout -- johnmc
-		buttonLayout.marginHeight = 0;
-		buttonLayout.verticalSpacing = 0;
-		buttonLayout.marginWidth = 0;
-		buttonLayout.verticalSpacing = 0;
-		buttonLayout.horizontalSpacing = 0;
-	
-		buttonGroup.setLayout(buttonLayout);
-		buttonGroup.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
-		
+		Group buttonGroup = new Group(toolbar, SWT.EMBEDDED);
+		GridLayoutFactory.fillDefaults().numColumns(9).extendedMargins(0, 0, 0, 0).spacing(1, 0).generateLayout(buttonGroup);
+		GridDataFactory.swtDefaults().grab(false, false).applyTo(buttonGroup);
+
 		Button home = new Button(buttonGroup, SWT.PUSH);
 		ImageDescriptor homeSamp = ImageDescriptor.createFromFile(this.getClass(), "home-screen.png");
 		Image homeScreen = homeSamp.createImage();
@@ -307,34 +302,29 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 			}
 		});
 		open.setEnabled(true);
+
+		/**************************************************************************
+         * Process and Time dimension labels
+         *************************************************************************/
+		Composite labelGroup = new Composite(toolbar, SWT.EMBEDDED);
+
+		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);
+		GridDataFactory.fillDefaults().grab(true, false).align(SWT.LEFT, SWT.CENTER).applyTo(labelGroup);
 		
 		/*************************************************************************
 		 * Detail View Canvas
 		 ************************************************************************/
 		
 		detailCanvas = new SpaceTimeDetailCanvas(master); //(master, stData);
+		//detailCanvas takes care of updating the labels
+        detailCanvas.setLabels(labelGroup);    
+
+        GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(detailCanvas);
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(detailCanvas);
+
 		detailCanvas.setDepth(0);
-		detailCanvas.setLayout(new GridLayout());
-		detailCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		detailCanvas.setButtons(new Button[]{home,open,save,undo,redo,tZoomIn,tZoomOut,pZoomIn,pZoomOut});
 		
-		/**************************************************************************
-         * Process and Time dimension labels
-         *************************************************************************/
-		Composite labelGroup = new Composite(master, SWT.EMBEDDED);
-        GridLayout labelGroupLayout = new GridLayout();
-        labelGroupLayout.numColumns = 3;
-        
-		// tighten layout -- johnmc
-        labelGroupLayout.marginHeight = 1;
-        labelGroupLayout.verticalSpacing = 0;
-        labelGroupLayout.verticalSpacing = 0;
-	
-        labelGroup.setLayout(labelGroupLayout);
-        labelGroup.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
-
-        //detailCanvas takes care of updating the labels
-        detailCanvas.setLabels(labelGroup);    
 	}
 
 	

@@ -23,37 +23,17 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 public class CallStackViewer extends TableViewer
 {
 	/**The SpaceTimeData associated with this CallStackViewer.*/
-	SpaceTimeData stData;
-	
-	/**This CallStackViewer's current depth.*/
-	int depth;
-	
-	/**********************************************************************************
-	 * The built-in viewer for lists of things (the actual graphical representation of
-	 * the list of function names.
-	 ********************************************************************************/
-	private Table stack;
-
-	
-	/**The View in which this stack has been created.*/
-    public HPCCallStackView csview;
-    
-    /**The GridData to be used for the layout of this CallStackViewer.*/
-    GridData data;
-    
-    /**The list of function names to be displayed.*/
-    Vector<String> sampleVector;
-    
+	private SpaceTimeData stData;
+	    
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, HPCCallStackView _csview)
 	{
 		super(parent, SWT.SINGLE | SWT.V_SCROLL);
 		
-		csview = _csview;
-        stack = this.getTable();
+        final Table stack = this.getTable();
         
-        data = new GridData(GridData.FILL_BOTH);
+        GridData data = new GridData(GridData.FILL_BOTH);
         stack.setLayoutData(data);
         
         //------------------------------------------------
@@ -98,15 +78,15 @@ public class CallStackViewer extends TableViewer
         	
         });
         
-        this.stack.setVisible(false);
+        stack.setVisible(false);
         
 		stack.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
-				if(stack.getSelectionIndex()!=-1 && stack.getSelectionIndex() != csview.traceview.currentDepth) {
-					csview.traceview.setDepth(stack.getSelectionIndex(), true);
+				int depth = stack.getSelectionIndex(); 
+				if(depth !=-1 && depth != stData.getDepth()) {
+					stData.updateDepth(depth);
 				}
-				fixSample();
 			}
 		});
 	}
@@ -119,11 +99,8 @@ public class CallStackViewer extends TableViewer
 	public void updateData(SpaceTimeData _stData) {
 		this.stData = _stData;
 
-		depth = 0;
-
 		this.resetStack();
-		this.stack.setVisible(true);
-		//this.refresh();
+		this.getTable().setVisible(true);
 	}
 	
 	/**********************************************************************
@@ -136,46 +113,43 @@ public class CallStackViewer extends TableViewer
 		if (closeTime == -20)
 			return;
 		
-		depth = _depth;
 		ProcessTimeline ptl;
-		if (process == -1337)
-			ptl = stData.getDepthTrace();
-		else
-			ptl = stData.getProcess(process);
+		ptl = stData.getProcess(process);
 		
 		int sample = ptl.findMidpointBefore(closeTime);
 
-		sampleVector = ptl.getSample(sample).getNames();
+		final Vector<String> sampleVector = ptl.getSample(sample).getNames();
 
 		int numOverDepth = 0;
-		if (sampleVector.size()<=depth)
+		if (sampleVector.size()<=_depth)
 		{
-			numOverDepth = depth-sampleVector.size()+1;
+			numOverDepth = _depth-sampleVector.size()+1;
 			for(int l = 0; l<numOverDepth; l++)
 				sampleVector.add("--------------");
 		}
 		this.setInput(new ArrayList<String>(sampleVector));
 	
-		stack.select(depth);
-		stack.redraw();
+		this.setDepth(_depth);
 	}
 	
 	/**Removes unnecessary over depth "--------------"s from the stack.*/
 	public void fixSample()
 	{
-		while((stack.getItemCount() - 1 > depth) && 
+		final Table stack = this.getTable();
+		
+		while((stack.getItemCount() - 1 > stData.getDepth()) && 
 			  stack.getItem(stack.getItemCount()-1).equals("--------------"))
 		{
 			stack.remove(stack.getItemCount() - 1);
 		}
-		stack.select(depth);
+		stack.select(stData.getDepth());
 	}
 	
 	/**Sets the viewer's depth to _depth.*/
 	public void setDepth(int _depth)
 	{
-		depth = _depth;
-		stack.redraw();
+		this.getTable().select(_depth);
+		this.getTable().redraw();
 	}
 	
 	

@@ -13,12 +13,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
+import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeMiniCanvas;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the call path viewer and minimap.*/
 //all the GUI setup for the call path and minimap are here//
-public class HPCCallStackView extends ViewPart implements ISizeProvider
+public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceDepth, ITracePosition
 {
 	
 	public static final String ID = "hpccallstackview.view";
@@ -92,10 +95,11 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 					value = maximum;
 				if (value < minimum)
 					value = minimum;
-				if(traceview.currentDepth != value)
+				if(stData.getDepth() != value)
 				{
-					traceview.setDepth(value, false);
-					csViewer.fixSample();
+					//traceview.setDepth(value, false);
+					//csViewer.fixSample();
+					stData.updateDepth(value);
 				}
 			}
 		});
@@ -124,6 +128,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		depthview.setCSView(this);
 	}
 	
+	
 	public void updateData(SpaceTimeData _stData) 
 	{
 		this.stData = _stData;
@@ -134,16 +139,14 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 
 		this.csViewer.updateData(_stData);
 		this.miniCanvas.updateData(_stData);
+		
+		stData.addDepthListener(this);
+		stData.addPositionListener(this);
 	}
 
 	public void setFocus() 
 	{
 		
-	}
-	
-	public void updateProcess()
-	{
-		depthview.updateProcess();
 	}
 
 	public int computePreferredSize(boolean width, int availableParallel, int availablePerpendicular, int preferredSize) 
@@ -154,5 +157,33 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	public int getSizeFlags(boolean width) 
 	{
 		return width ? SWT.MAX : 0;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.traceviewer.events.ITraceDepth#setDepth(int)
+	 */
+	public void setDepth(int new_depth) {
+		this.depthEditor.setSelection(new_depth);
+		this.csViewer.setDepth(new_depth);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.traceviewer.events.ITracePosition#setPosition(edu.rice.cs.hpc.traceviewer.painter.Position)
+	 */
+	public void setPosition(Position position) {
+		
+		//-------------------------------------------------------------------------------------------
+		// dirty hack: the call stack viewer requires relative index of process, not the absolute !
+		// so if the region is zoomed, then the relative index is based on the displayed processes
+		//
+		// however, if the selected process is less than the start of displayed process, 
+		// 	then we keep the selected process
+		//-------------------------------------------------------------------------------------------
+		int adustedPostiion = ( position.process < stData.getBegProcess() ? 
+				position.process : position.process-stData.getBegProcess() );
+		
+		this.csViewer.setSample(position.time, adustedPostiion, stData.getDepth());
 	}
 }

@@ -8,10 +8,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
+import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
-public class HPCDepthView extends ViewPart
+public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePosition
 {
 	public static final String ID = "hpcdepthview.view";
 	
@@ -21,21 +24,13 @@ public class HPCDepthView extends ViewPart
 	/**The max depth of the space time data.*/
 	int maxDepth;
 	
-	/**The selectedProcess from the detail canvas/view*/
-	int process;
-	
 	/** Paints and displays the detail view. */
 	DepthTimeCanvas depthCanvas;
 	
 	/** Determines whether this view has been setup.*/
 	boolean initialized = false;
 	
-	/** Determines whether this view has been setup.*/
-	//public boolean openedView = false;
-	
 	HPCTraceView traceview;
-	
-	HPCCallStackView csview;
 	
 	public void createPartControl(Composite _master)
 	{
@@ -57,10 +52,6 @@ public class HPCDepthView extends ViewPart
 	
 	public void setupEverything()
 	{
-		process = traceview.getSelectedProcess();
-		if(process==-1)
-			process = 0;
-		
 		/*************************************************************************
 		 * Master Composite
 		 */
@@ -72,7 +63,7 @@ public class HPCDepthView extends ViewPart
 		 * Depth View Canvas
 		 */
 		
-		depthCanvas = new DepthTimeCanvas(master, traceview.detailCanvas, process);
+		depthCanvas = new DepthTimeCanvas(master, traceview.detailCanvas, 0);
 		depthCanvas.setLayout(new GridLayout());
 		depthCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
@@ -80,34 +71,29 @@ public class HPCDepthView extends ViewPart
 	
 	public void updateData(SpaceTimeData _stData) {
 		this.depthCanvas.updateData(_stData);
+		_stData.addDepthListener(this);
+		_stData.addPositionListener(this);
 	}
 
 	public void setFocus()
 	{
 		if (initialized)
 		{
-			//openedView = true;
 			depthCanvas.setCSSample();
 		}
 	}
-	
-	public void updateProcess()
-	{
-		process = traceview.getSelectedProcess();
-		if (process == -1)
-			process = 0;
-		if (process!=depthCanvas.process)
-		{
-			depthCanvas.process = process;
-			depthCanvas.home();
-		}
-	}
-	
+		
 	public void setCSView(HPCCallStackView _csview)
 	{
-		csview = _csview;
-		depthCanvas.csViewer = csview.csViewer;
 		traceview.detailCanvas.setDepthCanvas(depthCanvas);
 		initialized = true;
+	}
+
+	public void setDepth(int new_depth) {
+		this.depthCanvas.setDepth(new_depth);
+	}
+
+	public void setPosition(Position position) {
+		this.depthCanvas.setCrossHair(position.time);
 	}
 }

@@ -43,7 +43,7 @@ public abstract class SpaceTimeCanvas extends Canvas
     /**Creates a SpaceTimeCanvas with the data _stData and Composite _composite.*/
     public SpaceTimeCanvas(Composite _composite)
     {
-		super(_composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
+		super(_composite, SWT.NO_BACKGROUND);
 	}
     
     

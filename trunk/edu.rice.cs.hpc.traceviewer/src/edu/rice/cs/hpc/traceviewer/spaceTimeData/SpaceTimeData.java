@@ -14,7 +14,9 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.util.OSValidator;
+import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 
@@ -24,76 +26,77 @@ import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
  *	the view including all of the ProcessTimelines.
  *
  ************************************************************************/
-public class SpaceTimeData
+public class SpaceTimeData extends TraceEvents
 {
 	/** Contains all of the ProcessTimelines. It's a HashMap because,
 	 * due to the multithreading, the traces may not get added in order.
 	 * So, each ProcessTimeline now knows which line it is, and the
 	 * HashMap is a map between that line and the ProcessTimeline.*/
-	HashMap<Integer, ProcessTimeline> traces;
+	private HashMap<Integer, ProcessTimeline> traces;
 	
-	ProcessTimeline depthTrace;
-	private DepthTimeCanvas depthView;
+	private ProcessTimeline depthTrace;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
-	Image[] compositeLines;
+	private Image[] compositeLines;
 	
 	/** Contains the Call Path Trace files that are parsed by CallStackTrace to construct the ProcessTimelines.*/
-	ArrayList<File> traceFiles;
+	private ArrayList<File> traceFiles;
 	
 	/** Stores the color to function name assignments for all of the functions in all of the processes.*/
-	ColorTable colorTable;
+	private ColorTable colorTable;
 	
 	/** The composite that holds the Context View canvas and the Detail View canvas.*/
-	Composite canvasHolder;
+	private Composite canvasHolder;
 	
 	/**The map between the nodes and the cpid's.*/
-	HashMap<Integer, Scope> scopeMap;
+	private HashMap<Integer, Scope> scopeMap;
 	
 	/**The total number of traces.*/
-	int height;
+	private int height;
 	
 	/**The maximum depth of any single CallStackSample in any trace.*/
-	int maxDepth;
+	private int maxDepth;
 	
 	/**The minimum beginning and maximum ending time stamp across all traces (in microseconds)).*/
-	long minBegTime;
-	long maxEndTime;
+	private long minBegTime;
+	private long maxEndTime;
 	
 	/**The beginning/end of the process range on the viewer.*/
-	int begProcess;
-	int endProcess;
+	private int begProcess;
+	private int endProcess;
 	
 	/**The process to be painted in the depth time viewer.*/
-	int dtProcess;
+	private int dtProcess;
 	
 	/**The beginning/end of the time range on the viewer.*/
-	long begTime;
-	long endTime;
+	private long begTime;
+	private long endTime;
 	
 	/** The width of the detail canvas in pixels.*/
-	int numPixelsH;
+	private int numPixelsH;
 	
 	/** The height of the detail canvas in pixels.*/
-	int numPixelsV;
+	private int numPixelsV;
 	
 	/**The number of the line that's being processed (for threads).*/
-	int lineNum;
+	private int lineNum;
 	
 	/**The file that's the SpaceTimeData is initializing (getting first and last timestamps) - 
 	used in initialization for threads.*/
-	int fileNum;
+	private int fileNum;
 	
-	/**Used to ensure that threads do not access the same thing at the same time*/
-	boolean accessingStData;
+	/** Stores the current depth that is being displayed.*/
+	private int currentDepth;
+	
+	/** Stores the current position of cursor */
+	private Position currentPosition;
+	
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
 	public SpaceTimeData(Composite _canvasHolder, File expFile, ArrayList<File> _traceFiles)
 	{
-		//System.out.println("Initializing...");
-		accessingStData = true;
 		canvasHolder = _canvasHolder;
 		colorTable = new ColorTable(canvasHolder.getDisplay());
 		
@@ -126,9 +129,19 @@ public class SpaceTimeData
 		
 		height = traceFiles.size();
 		
+		// default position
+		this.currentPosition = new Position(0,0);
 		//System.gc();
 	}
 
+	
+	public void setDepth(int _depth) {
+		this.currentDepth = _depth;
+	}
+	
+	public int getDepth() {
+		return this.currentDepth;
+	}
 	/*************************************************************************
 	 *	Returns width of the spaceTimeData:
 	 *	The width (the last time in the ProcessTimeline) of the longest 
@@ -243,9 +256,11 @@ public class SpaceTimeData
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to get data and paint.");
 	}
 	
-	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, int process, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{
 		boolean changedBounds = true;
+		int process = this.currentPosition.process;
+		
 		if (begTime == _begTime && endTime == _endTime && dtProcess == process && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
 		{
 			changedBounds = false;
@@ -307,13 +322,9 @@ public class SpaceTimeData
 		}
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to paint depth time canvas.");
 		
-		depthView = canvas;
 	}
 	
-	
-	public DepthTimeCanvas getDepthTimeCanvas() {
-		return depthView;
-	}
+
 	
 	/**********************************************************************
 	 * Paints one "line" (the timeline for one processor) to its own image,
@@ -850,11 +861,7 @@ public class SpaceTimeData
 	{
 		return traces.get(process);
 	}
-	
-	public ProcessTimeline getDepthTrace()
-	{
-		return depthTrace;
-	}
+
 	
 	/**Returns the midpoint between x1 and x2*/
 	public static double midpoint(double x1, double x2)
@@ -954,5 +961,19 @@ public class SpaceTimeData
 	{
 		compositeLines[index] = line;
 	}
+
+
+	public int getBegProcess() {
+		return this.begProcess;
+	}
 	
+	
+	@Override
+	public void setPosition(Position position) {
+		this.currentPosition = position;
+	}
+	
+	public Position getPosition() {
+		return this.currentPosition;
+	}
 }

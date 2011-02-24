@@ -20,45 +20,45 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
 {
 	/**The detail canvas that correlates to this mini map.*/
-	SpaceTimeDetailCanvas detailCanvas;
+	private SpaceTimeDetailCanvas detailCanvas;
 	
 	/** The top-left point of the current selection box.*/
-	Point selectionTopLeft;
+	private Point selectionTopLeft;
 	
 	/** The bottom-right point of the current selection box.*/
-	Point selectionBottomRight;
+	private Point selectionBottomRight;
 	
 	/**The width in pixels of the detail view representation on the miniMap.*/
-	int viewingWidth;
+	private int viewingWidth;
 	
 	/**The height in pixels of the detail view representation on the miniMap.*/
-	int viewingHeight;
+	private int viewingHeight;
 	
 	/** Relates to the condition that the mouse is in.*/
-	MouseState mouseState;
+	private MouseState mouseState;
 	
 	/** The point at which the mouse was clicked.*/
-	Point mouseDown;
+	private Point mouseDown;
 	
 	/** The point at which the mouse was on.*/
-	Point mousePrevious;
+	private Point mousePrevious;
 	
 	/** The point at which the mouse was released.*/
-	Point mouseUp;
+	private Point mouseUp;
 	
 	/**Determines whether or not the mini map has been painted yet.*/
-	boolean initialized;
+	private boolean initialized;
 	
 	/**Determines whether the first mouse click was inside the box or not.*/
-	boolean insideBox;
+	private boolean insideBox;
 
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeData _stData)
 	{	
 		super(_composite);
 		
-		getHorizontalBar().setVisible(false);
-		getVerticalBar().setVisible(false);
+//		getHorizontalBar().setVisible(false);
+//		getVerticalBar().setVisible(false);
 		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
 		initialized = false;

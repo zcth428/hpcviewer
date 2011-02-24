@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
-import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 
 /**A view for displaying the depthview.*/
 //all the GUI setup for the depth view is here
@@ -29,15 +28,12 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	
 	Image imageBuffer;
 	
-	/**The selected process from the detail canvas/view*/
-	public int process;
-	
 	/**The left pixel's x location*/
 	long topLeftPixelX;
 	
 	/**The width/height of the current screen in this canvas*/
-    int viewWidth;
-    int viewHeight;
+    //int viewWidth;
+    //int viewHeight;
 	
 	/**The first/last time being viewed now*/
     long begTime;
@@ -74,8 +70,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	long leftSelection;
 	long rightSelection;
     
-    public CallStackViewer csViewer;
-    
     public SpaceTimeDetailCanvas detailCanvas;
     
     public static Color white;
@@ -85,7 +79,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     {
 		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
 		detailCanvas = _detailCanvas;
-		process = _process;
+
 		homeScreen = true;
 		rebuffer = true;
 		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
@@ -110,15 +104,10 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		this.init();
 		this.redraw();
 	}
 	
-	private void init() {
-		viewWidth = getClientArea().width;
-		viewHeight = getClientArea().height;
-	}
-	
+
 	public void addCanvasListener() {
 		addMouseListener(this);
 		addMouseMoveListener(this);
@@ -127,7 +116,10 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
 			{
-				init();
+				//init();
+				final int viewWidth = getClientArea().width;
+				final int viewHeight = getClientArea().height;
+				
 				if (homeScreen)
 					imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 				
@@ -156,6 +148,9 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			topLeftPixelX = Math.round(begTime*getScaleX());
 		}
 		
+		final int viewWidth = getClientArea().width;
+		final int viewHeight = getClientArea().height;
+
 		if (rebuffer)
 		{
 			//paints the current screen
@@ -165,7 +160,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 			try
 			{
-				stData.paintDepthViewport(bufferGC, this, process, begTime, endTime, viewWidth, viewHeight);
+				stData.paintDepthViewport(bufferGC, this, begTime, endTime, viewWidth, viewHeight);
 			}
 			catch(Exception e)
 			{
@@ -205,13 +200,13 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	 * Also updates the rest of the program to know that this is the selected
 	 * point (so that the CallStackViewer can update, etc.).
 	 **************************************************************************/
-	public void setCrossHair(double _selectedTime, int _selectedDepth)
+	public void setCrossHair(double _selectedTime)
 	{
 		selectedTime = _selectedTime;
-		selectedDepth = _selectedDepth;
 		redraw();
 	}
 	
+
 	public void setDepth(int _selectedDepth) {
 		selectedDepth = _selectedDepth;
 		redraw();
@@ -219,6 +214,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	
 	public void adjustSelection(Point p1, Point p2)
 	{
+		final int viewWidth = getClientArea().width;
+
     	leftSelection = topLeftPixelX + Math.max(Math.min(p1.x, p2.x), 0);
         rightSelection = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
     }
@@ -234,14 +231,14 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     	if (mouseDown == null)
     		return;
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
-    	//int depth = mouseDown.y*maxDepth/viewHeight;
-    	setCrossHair(closeTime, detailCanvas.depth);
-    	detailCanvas.setCrossHair(closeTime, process);
-    	csViewer.setSample(closeTime, -1337, detailCanvas.depth);
+
+    	stData.updatePosition(new Position(closeTime, stData.getPosition().process));
     }
 
 	public double getScaleX()
 	{
+		final int viewWidth = getClientArea().width;
+
 		return (double)viewWidth / (double)numTimeUnitsDisp;
 	}
 	

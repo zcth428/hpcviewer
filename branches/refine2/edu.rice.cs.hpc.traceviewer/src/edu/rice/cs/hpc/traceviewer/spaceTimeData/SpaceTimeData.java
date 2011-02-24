@@ -861,11 +861,7 @@ public class SpaceTimeData extends TraceEvents
 	{
 		return traces.get(process);
 	}
-	
-	public ProcessTimeline getDepthTrace()
-	{
-		return depthTrace;
-	}
+
 	
 	/**Returns the midpoint between x1 and x2*/
 	public static double midpoint(double x1, double x2)

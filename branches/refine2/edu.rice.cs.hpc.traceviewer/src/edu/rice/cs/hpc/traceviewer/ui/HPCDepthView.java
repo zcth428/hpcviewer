@@ -24,21 +24,13 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	/**The max depth of the space time data.*/
 	int maxDepth;
 	
-	/**The selectedProcess from the detail canvas/view*/
-	//int process;
-	
 	/** Paints and displays the detail view. */
 	DepthTimeCanvas depthCanvas;
 	
 	/** Determines whether this view has been setup.*/
 	boolean initialized = false;
 	
-	/** Determines whether this view has been setup.*/
-	//public boolean openedView = false;
-	
 	HPCTraceView traceview;
-	
-	//HPCCallStackView csview;
 	
 	public void createPartControl(Composite _master)
 	{
@@ -60,8 +52,6 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	public void setupEverything()
 	{
-		//process = 0;
-		
 		/*************************************************************************
 		 * Master Composite
 		 */
@@ -89,15 +79,12 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	{
 		if (initialized)
 		{
-			//openedView = true;
 			depthCanvas.setCSSample();
 		}
 	}
 		
 	public void setCSView(HPCCallStackView _csview)
 	{
-		//csview = _csview;
-		//depthCanvas.csViewer = csview.csViewer;
 		traceview.detailCanvas.setDepthCanvas(depthCanvas);
 		initialized = true;
 	}

@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the depthview.*/
@@ -32,8 +33,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	long topLeftPixelX;
 	
 	/**The width/height of the current screen in this canvas*/
-    int viewWidth;
-    int viewHeight;
+    //int viewWidth;
+    //int viewHeight;
 	
 	/**The first/last time being viewed now*/
     long begTime;
@@ -104,15 +105,15 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		this.init();
+		//this.init();
 		this.redraw();
 	}
 	
-	private void init() {
+/*	private void init() {
 		viewWidth = getClientArea().width;
 		viewHeight = getClientArea().height;
 	}
-	
+*/	
 	public void addCanvasListener() {
 		addMouseListener(this);
 		addMouseMoveListener(this);
@@ -121,7 +122,10 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
 			{
-				init();
+				//init();
+				final int viewWidth = getClientArea().width;
+				final int viewHeight = getClientArea().height;
+				
 				if (homeScreen)
 					imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 				
@@ -150,6 +154,9 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			topLeftPixelX = Math.round(begTime*getScaleX());
 		}
 		
+		final int viewWidth = getClientArea().width;
+		final int viewHeight = getClientArea().height;
+
 		if (rebuffer)
 		{
 			//paints the current screen
@@ -203,6 +210,13 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	{
 		selectedTime = _selectedTime;
 		redraw();
+//		ProcessTimeline ptl;
+//		
+//		int process = this.stData.getPosition().process;
+//		ptl = stData.getProcess(process);
+//		int sample = ptl.findMidpointBefore(selectedTime);
+
+		//System.out.println("DTC (" + _selectedTime + ", " + process +", " + this.selectedDepth+"): " + sample +"  cpid: " + ptl.getCpid(sample));
 	}
 	
 	public void setDepth(int _selectedDepth) {
@@ -212,6 +226,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	
 	public void adjustSelection(Point p1, Point p2)
 	{
+		final int viewWidth = getClientArea().width;
+
     	leftSelection = topLeftPixelX + Math.max(Math.min(p1.x, p2.x), 0);
         rightSelection = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
     }
@@ -233,6 +249,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 
 	public double getScaleX()
 	{
+		final int viewWidth = getClientArea().width;
+
 		return (double)viewWidth / (double)numTimeUnitsDisp;
 	}
 	

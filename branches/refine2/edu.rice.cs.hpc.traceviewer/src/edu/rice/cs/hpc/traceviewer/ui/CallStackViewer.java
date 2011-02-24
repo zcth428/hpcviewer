@@ -114,15 +114,15 @@ public class CallStackViewer extends TableViewer
 			return;
 		
 		ProcessTimeline ptl;
-		if (process == -1337)
-			ptl = stData.getDepthTrace();
-		else
-			ptl = stData.getProcess(process);
+		ptl = stData.getProcess(process);
 		
 		int sample = ptl.findMidpointBefore(closeTime);
 
 		final Vector<String> sampleVector = ptl.getSample(sample).getNames();
 
+		//System.out.println("CSV ("+closeTime+", " +process+", "+_depth+"): " +sample+"  cpid: " + ptl.getCpid(sample));
+		//System.out.println("-----------");
+		
 		int numOverDepth = 0;
 		if (sampleVector.size()<=_depth)
 		{

@@ -49,6 +49,10 @@
                name="appName"
                value="hpctraceviewer">
          </property>
+         <property
+               name="windowImages"
+               value="icons/hpctraceviewer016.png,icons/hpctraceviewer032.png,icons/hpctraceviewer048.png,icons/hpctraceviewer128.png">
+         </property>
       </product>
    </extension>
    <extension

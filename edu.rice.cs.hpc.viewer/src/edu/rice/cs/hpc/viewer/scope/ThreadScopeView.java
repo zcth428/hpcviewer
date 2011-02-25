@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Event;
@@ -19,11 +18,9 @@ public class ThreadScopeView extends AbstractBaseScopeView {
 	
     public static final String ID = "edu.rice.cs.hpc.viewer.scope.ThreadScopeView";
     
-    private int rank_sequence;
     private ArrayList<MetricRaw> metrics = null;
 
     public void setInput(Experiment ex, RootScope scope, MetricRaw metric, int rank) {
-    	this.setRankSequence(rank);
     	
     	if (metrics == null) {
     		metrics = new ArrayList<MetricRaw>();
@@ -39,9 +36,6 @@ public class ThreadScopeView extends AbstractBaseScopeView {
 
     }
     
-    public void setRankSequence(int rank) {
-    	this.rank_sequence = rank;
-    }
     
 	@Override
 	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
@@ -92,8 +86,6 @@ public class ThreadScopeView extends AbstractBaseScopeView {
         // ---------------------------------------------------------------------------------
         if (num_columns < metrics.length) {
         	// we have new metric 
-        	MetricRaw metric = metrics[ metrics.length - 1 ];
-        	TreeViewerColumn colMetric = this.treeViewer.addTreeColumn( metric, num_columns==0 );
         }
         
         

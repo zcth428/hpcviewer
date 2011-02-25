@@ -7,8 +7,6 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;

@@ -7,18 +7,25 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.CoolBar;
+import org.eclipse.swt.widgets.CoolItem;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
@@ -68,25 +75,69 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		master.setLayout(new GridLayout());
 		master.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
+		this.createToolbar(master);
+
+        GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(detailCanvas);
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(detailCanvas);
+
+		detailCanvas.setDepth(0);
+	}
+
+	/**
+	 * update new data
+	 */
+	public void updateData(SpaceTimeData _stData) {
+		this.stData = _stData;
+		this.detailCanvas.updateData(_stData);
+		
+		this.stData.addDepthListener(this);
+		this.stData.addPositionListener(this);
+	}
+	
+	
+	/*************************************************************************
+	 *	Updates/sets the depth that is displayed in the context view and 
+	 *	detail view.
+	 ************************************************************************/
+	public void setDepth(int depth)
+	{
+		detailCanvas.setDepth(depth);
+	}
+
+	/**Required in order to extend ViewPart.*/
+	public void setFocus()
+	{
+		if (initialized)
+			detailCanvas.setCSSample();
+	}
+	
+	public SpaceTimeData getData()
+	{
+		return stData;
+	}
+	
+	public void setCSView(HPCCallStackView _csview)
+	{
+		csview = _csview;
+		detailCanvas.csViewer = csview.csViewer;
+		initialized = true;
+	}
+
+	public void setPosition(Position position) {
+		this.detailCanvas.setCrossHair(position.time, position.process);
+	}
+	
+	
+	private void createToolbar(Composite parent) {
+		final Composite coolBarArea = new Composite(parent, SWT.NONE);
+		final CoolBar coolBar = new CoolBar(coolBarArea, SWT.NONE);
+		final ToolBar toolBar = new ToolBar(coolBar, SWT.FLAT);
+		
 		/***************************************************
 		 * Buttons
 		 **************************************************/
-		Group buttonGroup = new Group(master, SWT.EMBEDDED);
-		GridLayout buttonLayout = new GridLayout();
-		buttonLayout.numColumns = 9;
-		buttonLayout.makeColumnsEqualWidth = true;
-		
-		// tighten layout -- johnmc
-		buttonLayout.marginHeight = 0;
-		buttonLayout.verticalSpacing = 0;
-		buttonLayout.marginWidth = 0;
-		buttonLayout.verticalSpacing = 0;
-		buttonLayout.horizontalSpacing = 0;
-	
-		buttonGroup.setLayout(buttonLayout);
-		buttonGroup.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
-		
-		Button home = new Button(buttonGroup, SWT.PUSH);
+
+		final ToolItem home = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor homeSamp = ImageDescriptor.createFromFile(this.getClass(), "home-screen.png");
 		Image homeScreen = homeSamp.createImage();
 		home.setImage(homeScreen);
@@ -100,7 +151,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		home.setEnabled(true);
 		
 		
-		Button tZoomIn = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem tZoomIn = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor zoomInTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-time.png");
 		Image zoomInTime = zoomInTim.createImage();
 		tZoomIn.setImage(zoomInTime);
@@ -113,7 +164,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		tZoomIn.setEnabled(true);
 
-		Button tZoomOut = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem tZoomOut = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor zoomOutTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-time.png");
 		Image zoomOutTime = zoomOutTim.createImage();
 		tZoomOut.setImage(zoomOutTime);
@@ -126,7 +177,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		tZoomOut.setEnabled(false);
 
-		Button pZoomIn = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem pZoomIn = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor zoomInProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-process.png");
 		Image zoomInProcess = zoomInProc.createImage();
 		pZoomIn.setImage(zoomInProcess);
@@ -139,7 +190,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		pZoomIn.setEnabled(true);
 
-		Button pZoomOut = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem pZoomOut = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor zoomOutProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-process.png");
 		Image zoomOutProcess = zoomOutProc.createImage();
 		pZoomOut.setImage(zoomOutProcess);
@@ -153,7 +204,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		pZoomOut.setEnabled(false);
 		
 
-		Button undo = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem undo = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
 		Image undoArrow = undoSamp.createImage();
 		undo.setImage(undoArrow);
@@ -171,7 +222,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		undo.setEnabled(false);
 		
-		Button redo = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem redo = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
 		Image redoArrow = redoSamp.createImage();
 		redo.setImage(redoArrow);
@@ -191,7 +242,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		
 	
 		
-		Button save = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem save = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor saveSamp = ImageDescriptor.createFromFile(this.getClass(), "save.png");
 		Image saveImage = saveSamp.createImage();
 		save.setImage(saveImage);
@@ -200,7 +251,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 			public void handleEvent(Event event)
 			{
 				FileDialog saveDialog;
-				saveDialog = new FileDialog(master.getShell(), SWT.SAVE);
+				saveDialog = new FileDialog(coolBar.getShell(), SWT.SAVE);
 				saveDialog.setText("Save View Configuration");
 				String fileName = "";
 				boolean validSaveFileFound = false;
@@ -219,7 +270,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 							validSaveFileFound = true;
 						else
 						{
-							MessageBox msg = new MessageBox(master.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+							MessageBox msg = new MessageBox(coolBar.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 							msg.setText("File Exists");
 							msg.setMessage("This file path already exists.\nDo you want to overwrite this save file?");
 							int selectionChoice = msg.open();
@@ -254,10 +305,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 			}
 		});
 		save.setEnabled(true);
-		
-		
 
-		Button open = new Button(buttonGroup, SWT.PUSH);
+		final ToolItem open = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor openSamp = ImageDescriptor.createFromFile(this.getClass(), "open.png");
 		Image openImage = openSamp.createImage();
 		open.setImage(openImage);
@@ -266,7 +315,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 			public void handleEvent(Event event)
 			{
 				FileDialog openDialog;
-				openDialog = new FileDialog(master.getShell(), SWT.OPEN);
+				openDialog = new FileDialog(coolBar.getShell(), SWT.OPEN);
 				openDialog.setText("Open View Configuration");
 				String fileName = "";
 				boolean validFrameFound = false;
@@ -308,74 +357,35 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		open.setEnabled(true);
 		
-		/*************************************************************************
-		 * Detail View Canvas
-		 ************************************************************************/
+		GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 0, 0).numColumns(1).generateLayout(coolBar);
+		GridDataFactory.fillDefaults().applyTo(coolBar);
+
+		toolBar.pack();
+		Point size = toolBar.getSize();
 		
-		detailCanvas = new SpaceTimeDetailCanvas(master); //(master, stData);
-		detailCanvas.setDepth(0);
-		detailCanvas.setLayout(new GridLayout());
-		detailCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		detailCanvas.setButtons(new Button[]{home,open,save,undo,redo,tZoomIn,tZoomOut,pZoomIn,pZoomOut});
+		final CoolItem buttonItems = new CoolItem(coolBar, SWT.NONE);
+		buttonItems.setControl(toolBar);
+		Point preferred = buttonItems.computeSize(size.x, size.y);
+		buttonItems.setPreferredSize(preferred);
 		
 		/**************************************************************************
          * Process and Time dimension labels
          *************************************************************************/
-		Composite labelGroup = new Composite(master, SWT.EMBEDDED);
-        GridLayout labelGroupLayout = new GridLayout();
-        labelGroupLayout.numColumns = 3;
-        
-		// tighten layout -- johnmc
-        labelGroupLayout.marginHeight = 1;
-        labelGroupLayout.verticalSpacing = 0;
-        labelGroupLayout.verticalSpacing = 0;
-	
-        labelGroup.setLayout(labelGroupLayout);
-        labelGroup.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
-
-        //detailCanvas takes care of updating the labels
-        detailCanvas.setLabels(labelGroup);    
-	}
-
-	
-	public void updateData(SpaceTimeData _stData) {
-		this.stData = _stData;
-		this.detailCanvas.updateData(_stData);
+		Composite labelGroup = new Composite(coolBarArea, SWT.NONE);
 		
-		this.stData.addDepthListener(this);
-		this.stData.addPositionListener(this);
-	}
-	
-	
-	/*************************************************************************
-	 *	Updates/sets the depth that is displayed in the context view and 
-	 *	detail view.
-	 ************************************************************************/
-	public void setDepth(int depth)
-	{
-		detailCanvas.setDepth(depth);
-	}
+		/*************************************************************************
+		 * Detail View Canvas
+		 ************************************************************************/
+		
+		detailCanvas = new SpaceTimeDetailCanvas(parent); //(master, stData);
+		
+		detailCanvas.setLabels(labelGroup);
+		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(labelGroup);
+		
+		GridLayoutFactory.swtDefaults().numColumns(2).generateLayout(coolBarArea);
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(coolBarArea);
 
-	/**Required in order to extend ViewPart.*/
-	public void setFocus()
-	{
-		if (initialized)
-			detailCanvas.setCSSample();
-	}
-	
-	public SpaceTimeData getData()
-	{
-		return stData;
-	}
-	
-	public void setCSView(HPCCallStackView _csview)
-	{
-		csview = _csview;
-		detailCanvas.csViewer = csview.csViewer;
-		initialized = true;
-	}
-
-	public void setPosition(Position position) {
-		this.detailCanvas.setCrossHair(position.time, position.process);
+		detailCanvas.setButtons(new ToolItem[]{home,open,save,undo,redo,tZoomIn,tZoomOut,pZoomIn,pZoomOut});
 	}
 }

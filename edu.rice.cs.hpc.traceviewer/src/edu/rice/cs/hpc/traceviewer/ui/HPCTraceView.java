@@ -379,7 +379,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		
 		detailCanvas.setLabels(labelGroup);
 		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);
-		GridDataFactory.fillDefaults().grab(true, false).applyTo(labelGroup);
+		GridDataFactory.fillDefaults().grab(true, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(labelGroup);
 		
 		GridLayoutFactory.swtDefaults().numColumns(2).generateLayout(coolBarArea);
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(coolBarArea);

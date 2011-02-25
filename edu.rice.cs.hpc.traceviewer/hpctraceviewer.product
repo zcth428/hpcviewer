@@ -3,6 +3,7 @@
 
 <product name="hpctraceviewer" uid="edu.rice.cs.hpc.traceviewer" id="edu.rice.cs.hpc.traceviewer.product" application="edu.rice.cs.hpc.traceviewer.application" version="1.0.0" useFeatures="false" includeLaunchers="true">
 
+
    <configIni use="default">
    </configIni>
 
@@ -12,7 +13,7 @@
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages/>
+   <windowImages i16="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer016.png" i32="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.png" i48="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.png" i128="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer128.png"/>
 
    <launcher name="hpctraceviewer">
       <linux icon="/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-32x32-32bit.xpm"/>
@@ -25,6 +26,7 @@
             winLargeHigh="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.BMP"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

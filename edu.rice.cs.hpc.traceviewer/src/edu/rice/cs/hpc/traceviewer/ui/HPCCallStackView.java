@@ -177,16 +177,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	 */
 	public void setPosition(Position position) {
 		
-		//-------------------------------------------------------------------------------------------
-		// dirty hack: the call stack viewer requires relative index of process, not the absolute !
-		// so if the region is zoomed, then the relative index is based on the displayed processes
-		//
-		// however, if the selected process is less than the start of displayed process, 
-		// 	then we keep the selected process
-		//-------------------------------------------------------------------------------------------
-		int adustedPostiion = ( position.process < stData.getBegProcess() ? 
-				position.process : position.process-stData.getBegProcess() );
-		
-		this.csViewer.setSample(position.time, adustedPostiion, stData.getDepth());
+		this.csViewer.setSample(position.time, position.process, stData.getDepth());
 	}
 }

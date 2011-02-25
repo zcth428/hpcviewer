@@ -113,8 +113,18 @@ public class CallStackViewer extends TableViewer
 		if (closeTime == -20)
 			return;
 		
+		//-------------------------------------------------------------------------------------------
+		// dirty hack: the call stack viewer requires relative index of process, not the absolute !
+		// so if the region is zoomed, then the relative index is based on the displayed processes
+		//
+		// however, if the selected process is less than the start of displayed process, 
+		// 	then we keep the selected process
+		//-------------------------------------------------------------------------------------------
+		int adustedPostiion = ( process < stData.getBegProcess() ? 
+				process : process-stData.getBegProcess() );
+		
 		ProcessTimeline ptl;
-		ptl = stData.getProcess(process);
+		ptl = stData.getProcess(adustedPostiion);
 		
 		int sample = ptl.findMidpointBefore(closeTime);
 

@@ -126,6 +126,8 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		
 		traceview.setCSView(this);
 		depthview.setCSView(this);
+		
+		miniCanvas.setVisible(false);
 	}
 	
 	
@@ -142,6 +144,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		
 		stData.addDepthListener(this);
 		stData.addPositionListener(this);
+		miniCanvas.setVisible(true);
 	}
 
 	public void setFocus() 

@@ -51,6 +51,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	private HPCCallStackView csview;
 	
+	private Composite coolBarArea;
+	
 	/*************************************************************************
 	 *	Creates the view.
 	 ************************************************************************/
@@ -90,6 +92,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		
 		this.stData.addDepthListener(this);
 		this.stData.addPositionListener(this);
+		detailCanvas.setVisible(true);
+		coolBarArea.setVisible(true);
 	}
 	
 	
@@ -127,7 +131,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	
 	private void createToolbar(Composite parent) {
-		final Composite coolBarArea = new Composite(parent, SWT.NONE);
+		coolBarArea = new Composite(parent, SWT.NONE);
 		final CoolBar coolBar = new CoolBar(coolBarArea, SWT.NONE);
 		final ToolBar toolBar = new ToolBar(coolBar, SWT.FLAT);
 		
@@ -389,5 +393,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(coolBarArea);
 
 		detailCanvas.setButtons(new ToolItem[]{home,open,save,undo,redo,tZoomIn,tZoomOut,pZoomIn,pZoomOut});
+		
+		detailCanvas.setVisible(false);
+		coolBarArea.setVisible(false);
 	}
 }

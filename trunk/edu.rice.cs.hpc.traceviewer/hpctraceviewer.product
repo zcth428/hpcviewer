@@ -15,10 +15,14 @@
    <windowImages/>
 
    <launcher name="hpctraceviewer">
+      <linux icon="/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-32x32-32bit.xpm"/>
       <macosx icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer.icns"/>
       <solaris/>
       <win useIco="false">
-         <bmp/>
+         <bmp
+            winSmallHigh="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer016.BMP"
+            winMediumHigh="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.BMP"
+            winLargeHigh="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.BMP"/>
       </win>
    </launcher>
 

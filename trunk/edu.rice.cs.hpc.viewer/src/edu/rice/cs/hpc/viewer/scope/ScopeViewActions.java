@@ -1,15 +1,12 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.dialogs.Dialog;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -23,7 +20,6 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 
 import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.metric.*;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 //math expression

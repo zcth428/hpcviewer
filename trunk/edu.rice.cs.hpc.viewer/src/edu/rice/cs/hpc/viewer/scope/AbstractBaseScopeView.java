@@ -4,10 +4,7 @@ import java.io.FileNotFoundException;
 
 //User interface
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 
 //SWT
 import org.eclipse.swt.*;
@@ -17,7 +14,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
@@ -33,15 +29,10 @@ import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ITreeViewerListener;
-import org.eclipse.jface.viewers.ViewerCell;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 

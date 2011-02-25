@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ToolItem;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
@@ -57,31 +58,31 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     int depth = 0;
     
 	/**Triggers zoom back to beginning view screen.*/
-	Button homeButton;
+	ToolItem homeButton;
 	
 	/**Triggers open function to open previously saved frame.*/
-	Button openButton;
+	ToolItem openButton;
 	
 	/**Triggers save function to save current frame to file.*/
-	Button saveButton;
+	ToolItem saveButton;
 	
 	/**Triggers undo of screen.*/
-	Button undoButton;
+	ToolItem undoButton;
 	
 	/**Triggers screen re-do.*/
-	Button redoButton;
+	ToolItem redoButton;
 	
 	/** Triggers zoom-in on the time axis.*/
-	Button tZoomInButton;
+	ToolItem tZoomInButton;
 	
 	/** Triggers zoom-out on the time axis.*/
-	Button tZoomOutButton;
+	ToolItem tZoomOutButton;
 	
 	/** Triggers zoom-in on the process axis.*/
-	Button pZoomInButton;
+	ToolItem pZoomInButton;
 	
 	/** Triggers zoom-out on the process axis.*/
-	Button pZoomOutButton;
+	ToolItem pZoomOutButton;
 	
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	SpaceTimeMiniCanvas miniCanvas;
@@ -115,13 +116,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     Composite labelGroup;
    
     /**The Label with the time boundaries.*/
-    Label timeLabel;
+    public Label timeLabel;
    
     /**The Label with the process boundaries.*/
-    Label processLabel;
+    public Label processLabel;
     
     /**The Label with the current cross hair information.*/
-    Label crossHairLabel;
+    public Label crossHairLabel;
     
     /**The SWT Color for white.*/
     public static Color white;
@@ -389,17 +390,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/**************************************************************************
 	 * Initializes the buttons above the detail canvas.
 	 **************************************************************************/
-	public void setButtons(Button[] buttons)
+	public void setButtons(ToolItem[] toolItems)
 	{
-		homeButton = buttons[0];
-		openButton = buttons[1];
-		saveButton = buttons[2];
-		undoButton = buttons[3];
-		redoButton = buttons[4];
-		tZoomInButton = buttons[5];
-		tZoomOutButton = buttons[6];
-		pZoomInButton = buttons[7];
-		pZoomOutButton = buttons[8];
+		homeButton = toolItems[0];
+		openButton = toolItems[1];
+		saveButton = toolItems[2];
+		undoButton = toolItems[3];
+		redoButton = toolItems[4];
+		tZoomInButton = toolItems[5];
+		tZoomOutButton = toolItems[6];
+		pZoomInButton = toolItems[7];
+		pZoomOutButton = toolItems[8];
 	}
 	
 	/**************************************************************************

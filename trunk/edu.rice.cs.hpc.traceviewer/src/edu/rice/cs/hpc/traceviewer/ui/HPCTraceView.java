@@ -148,6 +148,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		home.setEnabled(true);
 		
+		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		final ToolItem tZoomIn = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor zoomInTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-time.png");
@@ -200,7 +201,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 			}
 		});
 		pZoomOut.setEnabled(false);
-		
+				
+		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		final ToolItem undo = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
@@ -237,8 +239,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 			}
 		});
 		redo.setEnabled(false);
-		
-	
+				
+		new ToolItem(toolBar, SWT.SEPARATOR);
 		
 		final ToolItem save = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor saveSamp = ImageDescriptor.createFromFile(this.getClass(), "save.png");
@@ -357,6 +359,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		
 		GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 0, 0).numColumns(1).generateLayout(coolBar);
 		GridDataFactory.fillDefaults().applyTo(coolBar);
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		toolBar.pack();
 		Point size = toolBar.getSize();

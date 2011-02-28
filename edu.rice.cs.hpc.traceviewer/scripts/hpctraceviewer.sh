@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# Launch the hpcviewer binary and set workspace directory.
+# Launch the hpctraceviewer binary and set workspace directory.
 #
 # $Id: hpcviewer.sh 534 2010-07-21 13:15:27Z laksono $
 #
 
-workspace="${HOME}/.hpctoolkit/hpcviewer"
+workspace="${HOME}/.hpctoolkit/hpctraceviewer"
 
 die()
 {
@@ -22,7 +22,7 @@ if test -L "$script" ; then
 fi
 bindir=`dirname "$script"`
 bindir=`( cd "$bindir" && pwd )`
-viewer="${bindir}/../libexec/hpcviewer/hpcviewer"
+viewer="${bindir}/../libexec/hpctraceviewer/hpctraceviewer"
 test -x "$viewer" || die "unable to find: $viewer"
 
 #

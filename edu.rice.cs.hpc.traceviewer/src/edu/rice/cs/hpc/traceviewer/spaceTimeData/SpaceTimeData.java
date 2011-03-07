@@ -176,7 +176,24 @@ public class SpaceTimeData extends TraceEvents
 	{
 		return minBegTime;
 	}
+
+	/*************************************************************************
+	 * 
+	 * @return the highest end time of all of the process time lines
+	 *************************************************************************/
+	public long getMaxBegTime()
+	{
+		return maxEndTime;
+	}
 	
+	public long getViewTimeBegin() {
+		return this.begTime;
+	}
+	
+	public long getViewTimeEnd() {
+		return this.endTime;
+	}
+
 	/*************************************************************************
 	 *	Returns the largest depth of all of the CallStackSamples of all of the
 	 *	ProcessTimelines.
@@ -967,6 +984,10 @@ public class SpaceTimeData extends TraceEvents
 		return this.begProcess;
 	}
 	
+	
+	public int getEndProcess() {
+		return this.endProcess;
+	}
 	
 	@Override
 	public void setPosition(Position position) {

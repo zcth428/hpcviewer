@@ -583,6 +583,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		redraw();
 	}
 
+	
 	/**************************************************************************
 	 * The action that gets performed when the 'time zoom in' button is pressed - 
 	 * zooms in timewise with a scale of .4.
@@ -726,13 +727,104 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		long bottomRightTime = (long)((double)selectionBottomRightX / getScaleX());
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
+	
+	final static private double SCALE_MOVE = 0.20;
     
+	/***
+	 * go to the left one step
+	 */
+    public void goEast()
+    {
+    	long topLeftTime = stData.getViewTimeBegin();
+		long bottomRightTime = stData.getViewTimeEnd();
+		
+		long deltaTime = bottomRightTime - topLeftTime;
+		final long moveTime = (long)java.lang.Math.ceil(deltaTime * SCALE_MOVE);
+		topLeftTime = topLeftTime - moveTime;
+		
+		if (topLeftTime < 0) {
+			topLeftTime = 0;
+		}
+		bottomRightTime = topLeftTime + deltaTime;
+		
+		setTimeRange(topLeftTime, bottomRightTime);
+    }
+    
+    /***
+     * go to the right one step
+     */
+    public void goWest()
+    {
+    	long topLeftTime = stData.getViewTimeBegin();
+		long bottomRightTime = stData.getViewTimeEnd();
+		
+		long deltaTime = bottomRightTime - topLeftTime;
+		final long moveTime = (long)java.lang.Math.ceil(deltaTime * SCALE_MOVE);
+		bottomRightTime = bottomRightTime + moveTime;
+		
+		if (bottomRightTime > stData.getWidth()) {
+			bottomRightTime = stData.getWidth();
+		}
+		topLeftTime = bottomRightTime - deltaTime;
+		
+		setTimeRange(topLeftTime, bottomRightTime);
+    }
+    
+    /***
+     * set a new range of X-axis
+     * @param topLeftTime
+     * @param bottomRightTime
+     */
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
     	pushUndo();
     	setDetailZoom(topLeftTime, begProcess, bottomRightTime, endProcess);
     }
+
+    /*******
+     * go north one step
+     */
+    public void goNorth() {
+    	double proc_begin = stData.getBegProcess();
+    	double proc_end = stData.getEndProcess();
+    	final double delta = proc_end - proc_begin;
+    	final double move = java.lang.Math.ceil((double)delta * SCALE_MOVE);
+    	proc_begin = proc_begin - move;
+    	
+    	if (proc_begin < 0) {
+    		proc_begin = 0;
+    	}
+    	proc_end = proc_begin + delta;
+    	this.setProcessRange(proc_begin, proc_end);
+    }
+
+    /*******
+     * go south one step
+     */
+    public void goSouth() {
+    	double proc_begin = stData.getBegProcess();
+    	double proc_end = stData.getEndProcess();
+    	final double delta = proc_end - proc_begin;
+    	final double move = java.lang.Math.ceil((double)delta * SCALE_MOVE);
+    	proc_end = proc_end + move;
+    	
+    	if (proc_end > stData.getHeight()) {
+    		proc_end = stData.getHeight();
+    	}
+    	proc_begin = proc_end - delta;
+    	this.setProcessRange(proc_begin, proc_end);
+    }
     
+    /***
+     * set a new range for Y-axis
+     * @param pBegin: the top position
+     * @param pEnd: the bottom position
+     */
+	private void setProcessRange(double pBegin, double pEnd) {
+		pushUndo();
+		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
+	}
+
     public void setCSSample()
     {
     	if(mouseDown == null)

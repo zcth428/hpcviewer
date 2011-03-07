@@ -362,8 +362,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		open.setEnabled(true);
 		
 		final ToolItem goEast = new ToolItem(toolBar, SWT.PUSH);
-		goEast.setText("<-");
-		goEast.setToolTipText("Go to the left");
+		final ImageDescriptor eastDesc = ImageDescriptor.createFromFile(getClass(), "go-east.png");
+		goEast.setImage(eastDesc.createImage());
+		goEast.setToolTipText("Move left one step");
 		goEast.addListener(SWT.Selection, new Listener(){
 
 			public void handleEvent(Event event) {
@@ -373,8 +374,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		
 		final ToolItem goWest = new ToolItem(toolBar, SWT.PUSH);
-		goWest.setText("->");
-		goWest.setToolTipText("Go to the right");
+		final ImageDescriptor westDesc = ImageDescriptor.createFromFile(getClass(), "go-west.png");
+		goWest.setImage(westDesc.createImage());
+		goWest.setToolTipText("Move right one step");
 		goWest.addListener(SWT.Selection, new Listener(){
 
 			public void handleEvent(Event event) {
@@ -384,8 +386,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		
 		final ToolItem goNorth = new ToolItem(toolBar, SWT.PUSH);
-		goNorth.setText("/\\");
-		goNorth.setToolTipText("Go up");
+		final ImageDescriptor northDesc = ImageDescriptor.createFromFile(getClass(), "go-north.png");
+		goNorth.setImage(northDesc.createImage());
+		goNorth.setToolTipText("Move up one step");
 		goNorth.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event) {
 				detailCanvas.goNorth();
@@ -394,8 +397,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		
 		final ToolItem goSouth = new ToolItem(toolBar, SWT.PUSH);
-		goSouth.setText("\\/");
-		goSouth.setToolTipText("Go down");
+		final ImageDescriptor southDesc = ImageDescriptor.createFromFile(getClass(), "go-south.png");
+		goSouth.setImage(southDesc.createImage());
+		goSouth.setToolTipText("Move down one step");
 		goSouth.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event) {
 				detailCanvas.goSouth();

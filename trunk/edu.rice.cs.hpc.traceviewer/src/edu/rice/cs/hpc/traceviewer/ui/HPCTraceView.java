@@ -361,6 +361,48 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 		open.setEnabled(true);
 		
+		final ToolItem goEast = new ToolItem(toolBar, SWT.PUSH);
+		goEast.setText("<-");
+		goEast.setToolTipText("Go to the left");
+		goEast.addListener(SWT.Selection, new Listener(){
+
+			public void handleEvent(Event event) {
+				detailCanvas.goEast();
+			}
+			
+		});
+		
+		final ToolItem goWest = new ToolItem(toolBar, SWT.PUSH);
+		goWest.setText("->");
+		goWest.setToolTipText("Go to the right");
+		goWest.addListener(SWT.Selection, new Listener(){
+
+			public void handleEvent(Event event) {
+				detailCanvas.goWest();
+			}
+			
+		});
+		
+		final ToolItem goNorth = new ToolItem(toolBar, SWT.PUSH);
+		goNorth.setText("/\\");
+		goNorth.setToolTipText("Go up");
+		goNorth.addListener(SWT.Selection, new Listener(){
+			public void handleEvent(Event event) {
+				detailCanvas.goNorth();
+			}
+			
+		});
+		
+		final ToolItem goSouth = new ToolItem(toolBar, SWT.PUSH);
+		goSouth.setText("\\/");
+		goSouth.setToolTipText("Go down");
+		goSouth.addListener(SWT.Selection, new Listener(){
+			public void handleEvent(Event event) {
+				detailCanvas.goSouth();
+			}
+			
+		});
+		
 		GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 0, 0).numColumns(1).generateLayout(coolBar);
 		GridDataFactory.fillDefaults().applyTo(coolBar);
 		

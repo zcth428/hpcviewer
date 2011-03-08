@@ -54,7 +54,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	double numProcessDisp;
 	
 	/**The current depth that is selected for this canvas.*/
-    int depth = 0;
+    //int depth = 0;
     
 	/**Triggers zoom back to beginning view screen.*/
 	ToolItem homeButton;
@@ -314,7 +314,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			GC bufferGC = new GC(imageBuffer);
 			bufferGC.setBackground(white);
 			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
-			stData.paintDetailViewport(bufferGC, this, depth, (int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
+			stData.paintDetailViewport(bufferGC, this, this.stData.getDepth(), 
+					(int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
 			
 			bufferGC.dispose();
 			rebuffer = false;
@@ -433,7 +434,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		long selectedTime = stData.getPosition().time;
 		int selectedProcess = stData.getPosition().process;
 
-		return new Frame(begTime, endTime, begProcess, endProcess, depth, selectedTime, selectedProcess);
+		return new Frame(begTime, endTime, begProcess, endProcess, stData.getDepth(), selectedTime, selectedProcess);
 	}
 	
 	/**************************************************************************
@@ -450,7 +451,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		redoButton.setEnabled(false);
 		long selectedTime = stData.getPosition().time;
 		int selectedProcess = stData.getPosition().process;
-		undoStack.push(new Frame(begTime,endTime,begProcess,endProcess,depth,selectedTime,selectedProcess));
+		undoStack.push(new Frame(begTime,endTime,begProcess,endProcess,stData.getDepth(),selectedTime,selectedProcess));
 		undoButton.setEnabled(true);
 	}
 	
@@ -465,7 +466,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		Frame nextFrame = undoStack.pop();
 		long selectedTime = stData.getPosition().time;
 		int selectedProcess = stData.getPosition().process;
-		Frame currentFrame = new Frame(begTime,endTime,begProcess,endProcess,depth,selectedTime,selectedProcess);
+		Frame currentFrame = new Frame(begTime,endTime,begProcess,endProcess,stData.getDepth(),selectedTime,selectedProcess);
 		redoStack.push(currentFrame);
 		redoButton.setEnabled(true);
 		if (undoStack.isEmpty()) undoButton.setEnabled(false);
@@ -483,7 +484,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		Frame nextFrame = redoStack.pop();
 		long selectedTime = stData.getPosition().time;
 		int selectedProcess = stData.getPosition().process;
-		Frame currentFrame = new Frame(begTime,endTime,begProcess,endProcess,depth,selectedTime,selectedProcess);
+		Frame currentFrame = new Frame(begTime,endTime,begProcess,endProcess,stData.getDepth(),selectedTime,selectedProcess);
 		undoStack.push(currentFrame);
 		undoButton.setEnabled(true);
 		if (redoStack.isEmpty()) redoButton.setEnabled(false);
@@ -495,7 +496,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	public void setFrame(Frame current)
 	{
-		depth = current.depth;
+		//depth = current.depth;
+		stData.setDepth(current.depth);
 		setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);
 		setCrossHair(current.selectedTime, current.selectedProcess);
 		long selectedTime = stData.getPosition().time;
@@ -503,7 +505,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (selectedTime >= begTime && selectedProcess >= begProcess 
 				&& selectedTime<=endTime && selectedProcess<=endProcess)
 		{
-			csViewer.setSample(selectedTime,selectedProcess,depth);
+			csViewer.setSample(selectedTime,selectedProcess,current.depth);
 		}
 	}
 	
@@ -659,7 +661,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	{
 		if (!homeScreen)
 			pushUndo();
-		depth = newDepth;
+		//depth = newDepth;
+		stData.setDepth(newDepth);
 		redraw();
     }
 	
@@ -908,11 +911,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			redraw();
 		}
 	}
-	
+	/*
 	public int getDepth()
 	{
 		return depth;
-	}
+	}*/
 	
 	public void setMiniCanvas(SpaceTimeMiniCanvas _miniCanvas)
 	{

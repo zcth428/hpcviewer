@@ -101,8 +101,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/**Required in order to extend ViewPart.*/
 	public void setFocus()
 	{
-		if (initialized)
-			detailCanvas.setCSSample();
+		this.detailCanvas.setFocus();
+		//if (initialized)
+		//	detailCanvas.setCSSample();
 	}
 	
 	public SpaceTimeData getData()
@@ -150,6 +151,11 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		coolBarArea.setVisible(false);
 	}
 
+
+	//----------------------------------------------------------------------------------------------------
+	// Implementation of ITraceAction
+	//----------------------------------------------------------------------------------------------------
+	
 	public void home() {
 		detailCanvas.home();
 	}

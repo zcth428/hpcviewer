@@ -129,7 +129,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
          * Process and Time dimension labels
          *************************************************************************/
 		final Composite labelGroup = new Composite(coolBarArea, SWT.NONE);
-		labelGroup.setBackground(this.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_YELLOW));
 				
 		/*************************************************************************
 		 * Detail View Canvas

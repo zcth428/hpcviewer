@@ -85,7 +85,7 @@ public class TimelineThread extends Thread
 				Image line = new Image(canvas.getDisplay(), width, imageHeight);
 				GC gc = new GC(line);
 				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
-				stData.paintDetailLine(spp, ((SpaceTimeDetailCanvas)canvas).getDepth(), nextTrace.line(), imageHeight, changedBounds);
+				stData.paintDetailLine(spp, stData.getDepth(), nextTrace.line(), imageHeight, changedBounds);
 				gc.dispose();
 				
 				stData.addNextImage(line, nextTrace.line());

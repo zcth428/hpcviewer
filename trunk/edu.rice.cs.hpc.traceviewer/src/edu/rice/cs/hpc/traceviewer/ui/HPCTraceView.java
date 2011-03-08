@@ -38,9 +38,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
 	
-	/** Determines whether this view has been setup.*/
-	private boolean initialized = false;
-	
 	private HPCCallStackView csview;
 	
 	private TraceCoolBar coolBarArea;
@@ -72,7 +69,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
         GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(detailCanvas);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(detailCanvas);
 
-		detailCanvas.setDepth(0);
+		//detailCanvas.setDepth(0);
 	}
 
 	/**
@@ -102,8 +99,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	public void setFocus()
 	{
 		this.detailCanvas.setFocus();
-		//if (initialized)
-		//	detailCanvas.setCSSample();
 	}
 	
 	public SpaceTimeData getData()
@@ -115,7 +110,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	{
 		csview = _csview;
 		detailCanvas.csViewer = csview.csViewer;
-		initialized = true;
 	}
 
 	public void setPosition(Position position) {
@@ -178,18 +172,18 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 
 	public void undo() {
 		detailCanvas.popUndo();
-		if (detailCanvas.getDepth() != stData.getDepth())
+		if (stData.getDepth() != stData.getDepth())
 		{
-			csview.depthEditor.setSelection(detailCanvas.getDepth());
+			csview.depthEditor.setSelection(stData.getDepth());
 			detailCanvas.popUndo();
 		}
 	}
 
 	public void redo() {
 		detailCanvas.popRedo();
-		if (detailCanvas.getDepth() != stData.getDepth())
+		if (stData.getDepth() != stData.getDepth())
 		{
-			csview.depthEditor.setSelection(detailCanvas.getDepth());
+			csview.depthEditor.setSelection(stData.getDepth());
 			detailCanvas.popRedo();
 		}
 	}

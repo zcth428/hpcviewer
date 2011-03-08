@@ -335,7 +335,9 @@ public class SpaceTimeData extends TraceEvents
 		}
 		for (int i = 0; i < linesToPaint; i++)
 		{
-			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0,(int)Math.round(i*numPixelsV/(float)maxDepth), compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
+			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, 
+					compositeLines[i].getBounds().height, 0,(int)Math.round(i*numPixelsV/(float)maxDepth), 
+					compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
 		}
 		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to paint depth time canvas.");
 		

@@ -118,7 +118,8 @@ Once hpcviewer has been exported successfully, we need to prepare a distribution
 2. Building hpcdata
 ----------------------------------------
 
-To build the jar file (and the launch script), you need either Eclipse or Apache Ant tool (recommended). To build with Apache Ant tool, you just need to go to the script directory:
+To build the jar file (and the launch script), you need either Eclipse or Apache Ant tool (recommended). 
+To build with Apache Ant tool, you just need to go to the script directory:
 
 cd edu.rice.cs.hpc.data/script
 
@@ -126,11 +127,14 @@ then launch the build script with Ant tool:
 
 ant -buildfile hpcdata.xml
 
-This process creates "hpcdata.zip" file which contains hpcdata.jar (the bytecodes), required libraries and the launch script (hpcdata.sh). Once you unzip the file, you can run the launch script:
+This process creates "hpcdata.zip" file which contains hpcdata.jar (the bytecodes), 
+required libraries and the launch script (hpcdata.sh). 
+Once you unzip the file, you can run the launch script:
 
 sh hpcdata.sh [-o output_file] database_directory
 
-Currently we only provide the launch script for Linux/Unix/Mac OSX. Adopting the launch script for Windows platform should be trivial.
+Currently we only provide the launch script for Linux/Unix/Mac OSX. 
+Adopting the launch script for Windows platform should be trivial.
 
 
 

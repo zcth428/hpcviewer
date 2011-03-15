@@ -2,6 +2,8 @@ package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.Serializable;
 
+import edu.rice.cs.hpc.traceviewer.painter.Position;
+
 public class Frame implements Serializable
 {
 	
@@ -13,11 +15,7 @@ public class Frame implements Serializable
     /**The first and last time being viewed now*/
     public double begProcess, endProcess;
 	
-	/**The selected time that is open in the csViewer*/
-    public long selectedTime;
-    
-    /**The selected process that is open in the csViewer*/
-    public int selectedProcess;
+	public Position position;
 	
 	/**The depth of the frame saved*/
 	public int depth;
@@ -30,8 +28,8 @@ public class Frame implements Serializable
 		begProcess = _begProcess;
 		endProcess = _endProcess;
 		depth = _depth;
-		selectedTime = _selectedTime;
-		selectedProcess = _selectedProcess;
+		
+		position = new Position(_selectedTime, _selectedProcess);
 	}
 	
 	public Frame(long _begTime, long _endTime, long _selectedTime, int _selectedDepth)
@@ -41,8 +39,7 @@ public class Frame implements Serializable
 		begProcess = -1;
 		endProcess = -1;
 		depth = -1;
-		selectedTime = _selectedTime;
-		selectedProcess = _selectedDepth;
+		position = new Position(_selectedTime, _selectedDepth);
 	}
 	
 	public boolean equals(Frame other)
@@ -52,7 +49,6 @@ public class Frame implements Serializable
 			&& endProcess == other.endProcess
 			&& endTime == other.endTime
 			&& depth == other.depth
-			&& selectedTime == other.selectedTime
-			&& selectedProcess == other.selectedProcess);
+			&& position.isEqual(other.position) );
 	}
 }

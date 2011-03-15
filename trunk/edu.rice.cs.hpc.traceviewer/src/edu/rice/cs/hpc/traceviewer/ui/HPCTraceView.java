@@ -171,21 +171,11 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	}
 
 	public void undo() {
-		detailCanvas.popUndo();
-		if (stData.getDepth() != stData.getDepth())
-		{
-			csview.depthEditor.setSelection(stData.getDepth());
-			detailCanvas.popUndo();
-		}
+		detailCanvas.popUndo();		
 	}
 
 	public void redo() {
-		detailCanvas.popRedo();
-		if (stData.getDepth() != stData.getDepth())
-		{
-			csview.depthEditor.setSelection(stData.getDepth());
-			detailCanvas.popRedo();
-		}
+		detailCanvas.popRedo();		
 	}
 	
 	public void save() {

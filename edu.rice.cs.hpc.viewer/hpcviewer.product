@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer" version="1.0.0.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer" version="5.0.0" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="icons/hpcviewerEclipseShadow128.png"/>
@@ -42,7 +42,6 @@ Software and the Performance Engineering Research Institute.
             winLargeHigh="/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>

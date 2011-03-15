@@ -621,14 +621,23 @@ public void backupMetricValues() {
 		MetricValue value = this.metrics[i];
 		BaseMetric metric = this.experiment.getMetric(i);
 		
-		//----------------------------------------------------------------------
-		// derived incremental metric type needs special treatment: 
-		//	their value changes in finalization phase, while others don't
-		//----------------------------------------------------------------------
-		if (metric instanceof AggregateMetric)
-			this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
-		else 
-			this.combinedMetrics[i] = value;
+		//------------------------------------------------------------------
+		// if the value is not availabe we do NOT store it but instead we
+		//    assign to MetricValue.NONE
+		//------------------------------------------------------------------
+		if (value.isAvailable()) {
+			//----------------------------------------------------------------------
+			// derived incremental metric type needs special treatment: 
+			//	their value changes in finalization phase, while others don't
+			//----------------------------------------------------------------------
+			if (metric instanceof AggregateMetric)
+				this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
+			else 
+				this.combinedMetrics[i] = value;
+		} else {
+			// the metric has no value available
+			this.combinedMetrics[i] = MetricValue.NONE;
+		}
 	}
 }
 

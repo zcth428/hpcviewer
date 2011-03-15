@@ -70,11 +70,11 @@ public abstract class TraceEvents {
 	public void updateDepth(int depth) {
 		
 		setDepth(depth);
-		
 		for(ITraceDepth depth_listener: listDepthListener) {
 			if (depth_listener != null)
 				depth_listener.setDepth(depth);
 		}
+		
 	}
 	
 	

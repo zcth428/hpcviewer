@@ -8,4 +8,8 @@ public class Position {
 		this.time = _time;
 		this.process = _process;
 	}
+	
+	public boolean isEqual(Position p) {
+		return (time == p.time && process == p.process);
+	}
 }

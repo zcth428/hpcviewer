@@ -50,12 +50,10 @@ Software and the Performance Engineering Research Institute.
       <plugin id="com.ibm.icu"/>
       <plugin id="edu.rice.cs.hpc.data"/>
       <plugin id="edu.rice.cs.hpc.viewer"/>
-      <plugin id="javax.servlet"/>
       <plugin id="javax.xml"/>
       <plugin id="org.apache.xerces"/>
       <plugin id="org.apache.xml.resolver"/>
       <plugin id="org.apache.xml.serializer"/>
-      <plugin id="org.eclipse.ant.core"/>
       <plugin id="org.eclipse.compare.core"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
@@ -75,17 +73,10 @@ Software and the Performance Engineering Research Institute.
       <plugin id="org.eclipse.core.filesystem.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.filesystem.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.jobs"/>
-      <plugin id="org.eclipse.core.net"/>
-      <plugin id="org.eclipse.core.net.linux.x86" fragment="true"/>
-      <plugin id="org.eclipse.core.net.linux.x86_64" fragment="true"/>
-      <plugin id="org.eclipse.core.net.win32.x86" fragment="true"/>
-      <plugin id="org.eclipse.core.net.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.resources"/>
       <plugin id="org.eclipse.core.resources.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.runtime"/>
-      <plugin id="org.eclipse.core.runtime.compatibility.auth"/>
       <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
-      <plugin id="org.eclipse.core.variables"/>
       <plugin id="org.eclipse.ecf"/>
       <plugin id="org.eclipse.ecf.filetransfer"/>
       <plugin id="org.eclipse.ecf.identity"/>
@@ -94,7 +85,6 @@ Software and the Performance Engineering Research Institute.
       <plugin id="org.eclipse.ecf.ssl" fragment="true"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
-      <plugin id="org.eclipse.equinox.concurrent"/>
       <plugin id="org.eclipse.equinox.p2.core"/>
       <plugin id="org.eclipse.equinox.p2.engine"/>
       <plugin id="org.eclipse.equinox.p2.metadata"/>
@@ -135,18 +125,11 @@ Software and the Performance Engineering Research Institute.
       <plugin id="org.eclipse.ui.carbon" fragment="true"/>
       <plugin id="org.eclipse.ui.cocoa" fragment="true"/>
       <plugin id="org.eclipse.ui.editors"/>
-      <plugin id="org.eclipse.ui.forms"/>
       <plugin id="org.eclipse.ui.ide"/>
-      <plugin id="org.eclipse.ui.views"/>
       <plugin id="org.eclipse.ui.win32" fragment="true"/>
       <plugin id="org.eclipse.ui.workbench"/>
       <plugin id="org.eclipse.ui.workbench.texteditor"/>
    </plugins>
 
-   <configurations>
-      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
-      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1" />
-   </configurations>
 
 </product>

@@ -500,8 +500,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void setFrame(Frame current)
 	{
 		
-		if (!current.position.isEqual(stData.getPosition())) {
-			stData.updatePosition(current.position);
+		if (current.begTime == stData.getViewTimeBegin() && current.endTime == stData.getViewTimeEnd() 
+				&& current.begProcess == stData.getBegProcess() && current.endProcess == stData.getEndProcess()) {
+			
+		} else {
+			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);			
 		}
 		
 		if (current.depth != stData.getDepth()) {
@@ -509,11 +512,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			stData.updateDepth(current.depth);
 		}
 		
-		if (current.begTime == stData.getViewTimeBegin() && current.endTime == stData.getViewTimeEnd() 
-				&& current.begProcess == stData.getBegProcess() && current.endProcess == stData.getEndProcess()) {
-			
-		} else {
-			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);			
+		if (!current.position.isEqual(stData.getPosition())) {
+			stData.updatePosition(current.position);
 		}
 	}
 	

@@ -10,8 +10,11 @@ import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
-	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
+	final private String args[];
+	
+	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []_args) {
 		super(configurer);
+		args = _args;
 	}
 
 	/*
@@ -47,7 +50,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		
-		TraceDatabase trace_db = new TraceDatabase();
+		TraceDatabase trace_db = new TraceDatabase(this.args);
 		trace_db.openDatabase(configurer.getWindow().getShell());
 		
 	}

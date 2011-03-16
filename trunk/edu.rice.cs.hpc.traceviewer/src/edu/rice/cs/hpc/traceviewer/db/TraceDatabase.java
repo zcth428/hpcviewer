@@ -16,11 +16,34 @@ public class TraceDatabase {
 	
 	private ArrayList<File> traceFiles = null;
 	private File experimentFile = null;
+	final private String []args;
 	
+	public TraceDatabase(String []_args) {
+		this.args = _args;
+	}
 	
 	public boolean openDatabase(Shell shell) {
 		
-		if (this.open(shell)) {
+		boolean hasDatabase = false;
+		
+		//---------------------------------------------------------------
+		// processing the command line argument
+		//---------------------------------------------------------------
+		if (args != null && args.length>0) {
+			for(String arg: args) {
+				if (arg != null && arg.charAt(0)!='-') {
+					// this must be the name of the database to open
+					hasDatabase = this.isCorrectDatabase(arg);
+				}
+			}
+		}
+		
+		if (!hasDatabase) {
+			// use dialog box to find the database
+			hasDatabase = this.open(shell);
+		}
+		
+		if (hasDatabase) {
 			
 			//---------------------------------------------------------------------
 			// Try to open the database and refresh the data
@@ -79,28 +102,11 @@ public class TraceDatabase {
 			dir = dialog.open();
 			
 			if (dir == null) 
+				// user click cancel
 				return false;
 			
-			File dirFile = new File(dir);
-			String[] databases = dirFile.list();
-			
-			if ((databases == null)) 
-				this.msgNoDatabase(dialog, dir);
-			
-			experimentFile = new File(dir+File.separatorChar+"experiment.xml");
-			
-			for (int databaseId = 0; databaseId < databases.length; databaseId++)
-			{
-				String cstName = dir+File.separatorChar+databases[databaseId];
-				if (cstName.contains(".hpctrace"))
-				{
-					traceFiles.add(new File(dir+File.separatorChar+databases[databaseId]));
-					validDatabaseFound = true;
-				}
-			}
-			if (!experimentFile.exists())
-				validDatabaseFound = false;
-			
+			validDatabaseFound = this.isCorrectDatabase(dir);
+						
 			if (!validDatabaseFound)
 				this.msgNoDatabase(dialog, dir);
 		}
@@ -117,6 +123,31 @@ public class TraceDatabase {
 		return this.experimentFile;
 	}
 	
+	
+	private boolean isCorrectDatabase(String directory) {
+		File dirFile = new File(directory);
+		String[] databases = dirFile.list();
+		
+		if (databases != null) {
+			experimentFile = new File(directory+File.separatorChar+"experiment.xml");
+			
+			if (experimentFile.canRead()) {
+				
+				ArrayList<File> listOfFiles = new ArrayList<File>();
+				for(String db: databases) {
+					String traceFile = directory + File.separatorChar + db;
+					if (traceFile.contains(".hpctrace")) {
+						listOfFiles.add(new File(traceFile));
+					}
+				}
+				if (listOfFiles.size()>0) {
+					this.traceFiles = listOfFiles;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	
 	private void msgNoDatabase(DirectoryDialog dialog, String str) {
 		

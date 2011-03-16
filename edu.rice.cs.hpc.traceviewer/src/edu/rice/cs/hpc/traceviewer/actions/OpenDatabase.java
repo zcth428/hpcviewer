@@ -14,7 +14,7 @@ public class OpenDatabase extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 		
-		TraceDatabase trace_db = new TraceDatabase();
+		TraceDatabase trace_db = new TraceDatabase(null);
 		trace_db.openDatabase(shell);
 		
 		return null;

@@ -881,7 +881,10 @@ public class SpaceTimeData extends TraceEvents
 		return traces.get(process);
 	}
 
-	
+	public int getNumberOfDisplayedProcesses() {
+		return this.traces.size();
+	}
+	 
 	/**Returns the midpoint between x1 and x2*/
 	public static double midpoint(double x1, double x2)
 	{

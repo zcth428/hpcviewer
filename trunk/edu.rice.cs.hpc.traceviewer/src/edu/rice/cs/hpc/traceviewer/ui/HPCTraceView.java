@@ -139,7 +139,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(coolBarArea);
 
 		detailCanvas.setButtons(new ToolItem[]{coolBarArea.home, coolBarArea.open, coolBarArea.save, coolBarArea.undo,
-				coolBarArea.redo, coolBarArea.tZoomIn, coolBarArea.tZoomOut, coolBarArea.pZoomIn, coolBarArea.pZoomOut});
+				coolBarArea.redo, coolBarArea.tZoomIn, coolBarArea.tZoomOut, coolBarArea.pZoomIn, coolBarArea.pZoomOut,
+				coolBarArea.goEast, coolBarArea.goNorth, coolBarArea.goSouth, coolBarArea.goWest});
 		
 		detailCanvas.setVisible(false);
 		coolBarArea.setVisible(false);

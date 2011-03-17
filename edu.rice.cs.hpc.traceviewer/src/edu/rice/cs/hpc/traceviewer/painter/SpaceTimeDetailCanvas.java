@@ -84,6 +84,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	
 	/** Triggers zoom-out on the process axis.*/
 	ToolItem pZoomOutButton;
+
+	ToolItem goEastButton, goNorthButton, goWestButton, goSouthButton;
 	
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	SpaceTimeMiniCanvas miniCanvas;
@@ -227,35 +229,36 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		assertProcessBounds();
 		assertTimeBounds();
 		
-		if (numTimeUnitsDisp > MIN_TIME_UNITS_DISP)
+/*		if (numTimeUnitsDisp > MIN_TIME_UNITS_DISP)
 			tZoomInButton.setEnabled(true);
 		else if (numTimeUnitsDisp == MIN_TIME_UNITS_DISP)
-			tZoomInButton.setEnabled(false);
-		else
+			tZoomInButton.setEnabled(false);*/
+		if (numTimeUnitsDisp < MIN_TIME_UNITS_DISP)
 		{
-			tZoomInButton.setEnabled(false);
+			//tZoomInButton.setEnabled(false);
 			begTime += (numTimeUnitsDisp - MIN_TIME_UNITS_DISP) / 2;
 			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
 			endTime = begTime + numTimeUnitsDisp;
 		}
 		
-		if (numProcessDisp > MIN_PROC_DISP)
+/*		if (numProcessDisp > MIN_PROC_DISP)
 			pZoomInButton.setEnabled(true);
 		else if (numProcessDisp == MIN_PROC_DISP)
-			pZoomInButton.setEnabled(false);
-		else
+			pZoomInButton.setEnabled(false);*/
+		if (numProcessDisp < MIN_PROC_DISP)
 		{
 			numProcessDisp = MIN_PROC_DISP;
-			pZoomInButton.setEnabled(false);
+			//pZoomInButton.setEnabled(false);
 			begProcess = (int)begProcess;
 			endProcess = begProcess+numProcessDisp;
 		}
 		
-		if (begTime>0 || endTime<stData.getWidth() || begProcess>0 || endProcess<stData.getHeight())
+		this.updateButtonStates();
+/*		if (begTime>0 || endTime<stData.getWidth() || begProcess>0 || endProcess<stData.getHeight())
 			homeButton.setEnabled(true);
 		else
 			homeButton.setEnabled(false);
-			
+*/			
 		redraw();
 	}
 	
@@ -289,7 +292,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			if (viewHeight <= 0)
 				viewHeight = 1;
 			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-			homeButton.setEnabled(false);
+			//homeButton.setEnabled(false);
 			homeScreen = false;
 		}
 		
@@ -362,11 +365,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (endProcess > stData.getHeight())
 			endProcess = stData.getHeight();
 		
-		if (begProcess==0 && endProcess==stData.getHeight())
+/*		if (begProcess==0 && endProcess==stData.getHeight())
 			pZoomOutButton.setEnabled(false);
 		else
 			pZoomOutButton.setEnabled(true);
-		
+*/		
+		this.updateButtonStates();
 		numProcessDisp = endProcess-begProcess;
 	}
 	
@@ -381,11 +385,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (endTime > stData.getWidth())
 			endTime = stData.getWidth();
 		
-		if (begTime==0 && endTime==stData.getWidth())
+/*		if (begTime==0 && endTime==stData.getWidth())
 			tZoomOutButton.setEnabled(false);
 		else
 			tZoomOutButton.setEnabled(true);
-		
+*/		
+		this.updateButtonStates();
 		numTimeUnitsDisp = endTime-begTime;
 	}
 	
@@ -403,6 +408,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		tZoomOutButton = toolItems[6];
 		pZoomInButton = toolItems[7];
 		pZoomOutButton = toolItems[8];
+		
+		goEastButton = toolItems[9];
+		goNorthButton = toolItems[10];
+		goSouthButton = toolItems[11];
+		goWestButton = toolItems[12];
 	}
 	
 	/**************************************************************************
@@ -526,7 +536,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		pushUndo();
 		final double SCALE = .4;
 		
-		pZoomOutButton.setEnabled(true);
+		//pZoomOutButton.setEnabled(true);
 		
 		double yMid = (endProcess+begProcess)/2.0;
 		
@@ -556,10 +566,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			numProcessDisp = MIN_PROC_DISP;
 			begProcess = (int)begProcess;
 			endProcess = begProcess+MIN_PROC_DISP;
-			pZoomInButton.setEnabled(false);
+			//pZoomInButton.setEnabled(false);
 		}
-		
-		homeButton.setEnabled(true);
+		this.updateButtonStates();
+		//homeButton.setEnabled(true);
 		
 		redraw();
 	}
@@ -573,7 +583,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		pushUndo();
 		final double SCALE = .625;
 		
-		pZoomInButton.setEnabled(true);
+		//pZoomInButton.setEnabled(true);
 		
 		//zoom out works as follows: find mid point of times (yMid).
 		//Add/Subtract 1/2 of the scaled numProcessDisp to yMid to get new endProcess and begProcess
@@ -587,9 +597,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if(numProcessDisp <= MIN_PROC_DISP)
 		{
 			numProcessDisp = MIN_PROC_DISP;
-			pZoomInButton.setEnabled(false);
+			//pZoomInButton.setEnabled(false);
 		}
-
+		this.updateButtonStates();
 		redraw();
 	}
 
@@ -603,7 +613,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		pushUndo();
 		final double SCALE = .4;
 		
-		tZoomOutButton.setEnabled(true);
+		//tZoomOutButton.setEnabled(true);
 		
 		long xMid = (endTime + begTime) / 2;
 		
@@ -615,12 +625,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if(numTimeUnitsDisp < MIN_TIME_UNITS_DISP)
 		{
 			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
-			tZoomInButton.setEnabled(false);
+			//tZoomInButton.setEnabled(false);
 		}
 		
-		homeButton.setEnabled(true);
+		//homeButton.setEnabled(true);
 		
 		redraw();
+		
+		this.updateButtonStates();
 	}
 
 	/**************************************************************************
@@ -632,7 +644,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		pushUndo();
 		final double SCALE = 0.625;
 		
-		tZoomInButton.setEnabled(true);
+		//tZoomInButton.setEnabled(true);
 		
 		//zoom out works as follows: find mid point of times (xMid).
 		//Add/Subtract 1/2 of the scaled numTimeUnitsDisp to xMid to get new endTime and begTime
@@ -644,6 +656,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		assertTimeBounds();
 		
 		redraw();
+		this.updateButtonStates();
 	}
 	
 	/**************************************************************************
@@ -740,6 +753,38 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
 	
+    private void updateButtonStates() {
+    	// if "home" then no browse no zoom-out
+    	/*
+    	if (this.homeScreen) {
+    		this.goEast.setEnabled(false);
+    		this.goNorth.setEnabled(false);
+    		this.goSouth.setEnabled(false);
+    		this.goWest.setEnabled(false);
+    		
+    		this.tZoomOutButton.setEnabled(false);
+    		this.pZoomOutButton.setEnabled(false);
+    	} */
+    	
+		this.undoButton.setEnabled( this.undoStack.size()>0 );
+		this.redoButton.setEnabled( this.redoStack.size()>0 );
+		
+		this.tZoomInButton.setEnabled( numTimeUnitsDisp > MIN_TIME_UNITS_DISP );
+		this.tZoomOutButton.setEnabled(this.begTime>0 || this.endTime<stData.getWidth() );
+		
+		this.pZoomInButton.setEnabled( numProcessDisp > MIN_PROC_DISP );
+		this.pZoomOutButton.setEnabled( this.begProcess>0 || this.endProcess<stData.getHeight());
+		
+		this.goEastButton.setEnabled( this.begTime > 0 );
+		this.goWestButton.setEnabled( this.endTime< this.stData.getWidth() );
+		this.goNorthButton.setEnabled( this.begProcess>0 );
+		this.goSouthButton.setEnabled( this.endProcess<this.stData.getHeight() );
+		
+		homeButton.setEnabled( begTime>0 || endTime<stData.getWidth() || 
+					begProcess>0 || endProcess<stData.getHeight() );
+
+    }
+    
 	final static private double SCALE_MOVE = 0.20;
     
 	/***
@@ -760,6 +805,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		bottomRightTime = topLeftTime + deltaTime;
 		
 		setTimeRange(topLeftTime, bottomRightTime);
+		
+		updateButtonStates();
     }
     
     /***
@@ -780,6 +827,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		topLeftTime = bottomRightTime - deltaTime;
 		
 		setTimeRange(topLeftTime, bottomRightTime);
+		
+		this.updateButtonStates();
     }
     
     /***
@@ -808,6 +857,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	}
     	proc_end = proc_begin + delta;
     	this.setProcessRange(proc_begin, proc_end);
+		this.updateButtonStates();
     }
 
     /*******
@@ -825,6 +875,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	}
     	proc_begin = proc_end - delta;
     	this.setProcessRange(proc_begin, proc_end);
+		this.updateButtonStates();
     }
     
     /***

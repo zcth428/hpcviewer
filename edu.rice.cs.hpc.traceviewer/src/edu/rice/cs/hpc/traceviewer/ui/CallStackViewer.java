@@ -120,11 +120,15 @@ public class CallStackViewer extends TableViewer
 		// however, if the selected process is less than the start of displayed process, 
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
-		int adustedPostiion = ( process < stData.getBegProcess() ? 
+		int adjustedPosition = ( process < stData.getBegProcess() ? 
 				process : process-stData.getBegProcess() );
 		
+		if (process >= stData.getNumberOfDisplayedProcesses() ) {
+			double scale = stData.getHeight() / stData.getNumberOfDisplayedProcesses();
+			adjustedPosition = (int) (process /  scale);
+		}
 		ProcessTimeline ptl;
-		ptl = stData.getProcess(adustedPostiion);
+		ptl = stData.getProcess(adjustedPosition);
 		
 		int sample = ptl.findMidpointBefore(closeTime);
 

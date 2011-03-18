@@ -56,6 +56,9 @@ public class ProcessTimeline
 	/**The new format for trace files has a 24-byte header (if 0, we were most recently testing old data).*/
 	final static byte SIZE_OF_HEADER = 24;
 	
+	/**** debugger output flag ****/
+	final boolean PTL_DEBUG = true;
+	
 	/*************************************************************************
 	 *	Reads in the call-stack trace data from the binary traceFile in the form:
 	 *	double time-stamp
@@ -89,13 +92,13 @@ public class ProcessTimeline
 	{
 		RandomAccessFile inFile = null;
 		FileChannel f = null;
+		ByteBuffer b = ByteBuffer.allocateDirect(SIZE_OF_TRACE_RECORD);
 		try
 		{
 			try
 			{
 				inFile = new RandomAccessFile(traceFile, "r");
 				f = inFile.getChannel();
-				ByteBuffer b = ByteBuffer.allocateDirect(SIZE_OF_TRACE_RECORD);
 				ByteBuffer cacheBuffer = ByteBuffer.allocate(SIZE_OF_TRACE_RECORD*129 - 4);
 				long maxLoc = Math.min(findLocBeforeRAF(timeRange+startingTime, f, b)+SIZE_OF_TRACE_RECORD, traceFile.length()-SIZE_OF_TRACE_RECORD);
 				cacheBuffer = (ByteBuffer)cacheBuffer.clear();
@@ -107,21 +110,37 @@ public class ProcessTimeline
 				b = (ByteBuffer)b.clear();
 				f.read(b, maxLoc);
 				b.flip();
-				double nextTime = b.getLong();
-				int cpid = b.getInt();
-				addSample(cpid, nextTime, times.size());
-				
-				b = (ByteBuffer)b.clear();
-				f.read(b, minLoc);
-				b.flip();
-				nextTime = b.getLong();
-				if (!times.firstElement().equals(nextTime))
-				{
-					cpid = b.getInt();
-					addSample(cpid, nextTime, 0);
+
+				//-----------------------------------------------------------------------------
+				// Hack: if the trace has no data at all, we give up and quit
+				//-----------------------------------------------------------------------------
+				if (b.remaining()>=8) {
+					double nextTime = b.getLong();
+					int cpid = b.getInt();
+					addSample(cpid, nextTime, times.size());
+					
+					b = (ByteBuffer)b.clear();
+					f.read(b, minLoc);
+					b.flip();
+
+					//-----------------------------------------------------------------------------
+					// Hack: if the trace has no pair data, we give up, and do not add sample
+					//-----------------------------------------------------------------------------
+					if (b.remaining()>=8) {
+						nextTime = b.getLong();
+						if (!times.firstElement().equals(nextTime))
+						{
+							cpid = b.getInt();
+							addSample(cpid, nextTime, 0);
+						}
+					} else {
+						this.debug("Warning: no pair data value for file: " + this.traceFile );
+					}
+					
+					postProcess();
+				} else {
+					this.debug("Warning: no data value for file " + this.traceFile);
 				}
-				
-				postProcess();
 			}
 			catch (FileNotFoundException e)
 			{
@@ -133,6 +152,9 @@ public class ProcessTimeline
 			}
 			catch (IOException e)
 			{
+				e.printStackTrace();
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -574,6 +596,16 @@ public class ProcessTimeline
 				times.remove(i+1);
 				timeLine.remove(i+1);
 			}
+		}
+	}
+	
+	/****
+	 * debugger output
+	 * @param str
+	 */
+	private void debug(String str) {
+		if (this.PTL_DEBUG) {
+			System.out.println("PTL: " + str);
 		}
 	}
 }

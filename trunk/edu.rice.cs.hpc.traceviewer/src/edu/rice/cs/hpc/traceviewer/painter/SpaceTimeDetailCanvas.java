@@ -8,21 +8,14 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -349,7 +342,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (endProcess > stData.getHeight())
 			endProcess = stData.getHeight();
 		
-		this.updateButtonStates();
 		numProcessDisp = endProcess-begProcess;
 	}
 	
@@ -364,7 +356,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (endTime > stData.getWidth())
 			endTime = stData.getWidth();
 		
-		this.updateButtonStates();
 		numTimeUnitsDisp = endTime-begTime;
 	}
 	
@@ -937,54 +928,4 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		depthCanvas = _depthCanvas;
 	}
 	
-	
-	class DropdownSelectionListener extends SelectionAdapter {
-		  private ToolItem dropdown;
-		  private Menu menu;
-
-		  /**
-		   * Constructs a DropdownSelectionListener
-		   * 
-		   * @param dropdown the dropdown this listener belongs to
-		   */
-		  public DropdownSelectionListener(ToolItem dropdown) {
-		    this.dropdown = dropdown;
-		    menu = new Menu(dropdown.getParent().getShell());
-		  }
-
-		  /**
-		   * Adds an item to the dropdown list
-		   * 
-		   * @param item the item to add
-		   */
-		  public void add(String item) {
-		    MenuItem menuItem = new MenuItem(menu, SWT.NONE);
-		    menuItem.setText(item);
-		    menuItem.addSelectionListener(new SelectionAdapter() {
-		      public void widgetSelected(SelectionEvent event) {
-		        MenuItem selected = (MenuItem) event.widget;
-		        dropdown.setText(selected.getText());
-		      }
-		    });
-		  }
-
-		  /**
-		   * Called when either the button itself or the dropdown arrow is clicked
-		   * 
-		   * @param event the event that trigged this call
-		   */
-		  public void widgetSelected(SelectionEvent event) {
-		    // If they clicked the arrow, we show the list
-		    if (event.detail == SWT.ARROW) {
-		      // Determine where to put the dropdown list
-		      ToolItem item = (ToolItem) event.widget;
-		      Rectangle rect = item.getBounds();
-		      Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
-		      menu.setLocation(pt.x, pt.y + rect.height);
-		      menu.setVisible(true);
-		    } else {
-		      // They pushed the button; take appropriate action
-		    }
-		  }
-		}
 }

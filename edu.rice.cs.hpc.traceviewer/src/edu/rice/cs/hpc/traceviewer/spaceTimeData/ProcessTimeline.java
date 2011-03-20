@@ -57,7 +57,7 @@ public class ProcessTimeline
 	final static byte SIZE_OF_HEADER = 24;
 	
 	/**** debugger output flag ****/
-	final boolean PTL_DEBUG = true;
+	final boolean PTL_DEBUG = false;
 	
 	/*************************************************************************
 	 *	Reads in the call-stack trace data from the binary traceFile in the form:

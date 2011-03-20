@@ -91,6 +91,7 @@ public class SpaceTimeData extends TraceEvents
 	/** Stores the current position of cursor */
 	private Position currentPosition;
 	
+	final private boolean debug =  true;
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
@@ -368,16 +369,10 @@ public class SpaceTimeData extends TraceEvents
 		//Reed - special cases were giving me a headache, so I threw them in a switch
 		switch(ptl.size())
 		{
-			case 0:
-			{
-				System.err.println("There's 0 timestamps? Then what do I paint?");
-				break;
-			}
-			case 1:
-			{
-				System.err.println("How can I draw a rectangle with only one timestamp?");
-				break;
-			}
+		case 0:
+		case 1:
+			this.printDebug("Warning! incorrect timestamp size: " + ptl.size() );
+			break;
 			case 2:
 			{
 				//System.out.println("two");
@@ -619,15 +614,9 @@ public class SpaceTimeData extends TraceEvents
 		switch(ptl.size())
 		{
 			case 0:
-			{
-				System.err.println("WTF? There's 0 timestamps? Then what do I paint?");
-				break;
-			}
 			case 1:
-			{
-				System.err.println("How can I draw a rectangle with only one timestamp?");
+				this.printDebug("Warning! incorrect timestamp size: " + ptl.size() );
 				break;
-			}
 			case 2:
 			{
 				//System.out.println("two");
@@ -1001,5 +990,11 @@ public class SpaceTimeData extends TraceEvents
 	
 	public Position getPosition() {
 		return this.currentPosition;
+	}
+	
+	private void printDebug(String str) {
+		
+		if (this.debug)
+			System.err.println(str);
 	}
 }

@@ -3,6 +3,8 @@ package edu.rice.cs.hpc.traceviewer.painter;
 import java.util.Stack;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
@@ -185,6 +187,33 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		addMouseListener(this);
 		addMouseMoveListener(this);
 		addPaintListener(this);
+		
+		addKeyListener( new KeyListener(){
+
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			public void keyReleased(KeyEvent e) {
+				switch (e.keyCode) {
+				
+				case SWT.ARROW_DOWN:
+					goSouth();
+					break;
+				case SWT.ARROW_UP:
+					goNorth();
+					break;
+				case SWT.ARROW_LEFT:
+					goEast();
+					break;
+				case SWT.ARROW_RIGHT:
+					goWest();
+					break;				
+				}
+			}
+			
+		});
 		
 		//A listener for resizing the the window.		
 		//FIXME: Every time the window is resized just a tiny bit, the program rebuffers
@@ -702,6 +731,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     }
 
     
+    private boolean canGoEast() {
+    	return (this.begTime > 0);
+    }
+    
     /**********
      * check the status of all buttons
      */
@@ -716,7 +749,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.pZoomInButton.setEnabled( numProcessDisp > MIN_PROC_DISP );
 		this.pZoomOutButton.setEnabled( this.begProcess>0 || this.endProcess<stData.getHeight());
 		
-		this.goEastButton.setEnabled( this.begTime > 0 );
+		this.goEastButton.setEnabled( canGoEast() );
 		this.goWestButton.setEnabled( this.endTime< this.stData.getWidth() );
 		this.goNorthButton.setEnabled( this.begProcess>0 );
 		this.goSouthButton.setEnabled( this.endProcess<this.stData.getHeight() );

@@ -369,10 +369,10 @@ public class SpaceTimeData extends TraceEvents
 		//Reed - special cases were giving me a headache, so I threw them in a switch
 		switch(ptl.size())
 		{
-		case 0:
-		case 1:
-			this.printDebug("Warning! incorrect timestamp size: " + ptl.size() );
-			break;
+			case 0:
+			case 1:
+				this.printDebug("Warning! incorrect timestamp size: " + ptl.size() );
+				break;
 			case 2:
 			{
 				//System.out.println("two");

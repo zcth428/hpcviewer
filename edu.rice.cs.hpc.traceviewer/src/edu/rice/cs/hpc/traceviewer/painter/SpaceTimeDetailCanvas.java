@@ -199,16 +199,20 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				switch (e.keyCode) {
 				
 				case SWT.ARROW_DOWN:
-					goSouth();
+					if (canGoSouth())
+						goSouth();
 					break;
 				case SWT.ARROW_UP:
-					goNorth();
+					if (canGoNorth())
+						goNorth();
 					break;
 				case SWT.ARROW_LEFT:
-					goEast();
+					if (canGoEast())
+						goEast();
 					break;
 				case SWT.ARROW_RIGHT:
-					goWest();
+					if (canGoWest())
+						goWest();
 					break;				
 				}
 			}
@@ -735,6 +739,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	return (this.begTime > 0);
     }
     
+    private boolean canGoWest() {
+    	return (this.endTime< this.stData.getWidth());
+    }
+    
+    private boolean canGoNorth() {
+    	return (this.begProcess>0);
+    }
+    
+    private boolean canGoSouth() {
+    	return (this.endProcess<this.stData.getHeight());
+    }
     /**********
      * check the status of all buttons
      */
@@ -750,9 +765,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.pZoomOutButton.setEnabled( this.begProcess>0 || this.endProcess<stData.getHeight());
 		
 		this.goEastButton.setEnabled( canGoEast() );
-		this.goWestButton.setEnabled( this.endTime< this.stData.getWidth() );
-		this.goNorthButton.setEnabled( this.begProcess>0 );
-		this.goSouthButton.setEnabled( this.endProcess<this.stData.getHeight() );
+		this.goWestButton.setEnabled( canGoWest() );
+		this.goNorthButton.setEnabled( canGoNorth() );
+		this.goSouthButton.setEnabled( canGoSouth() );
 		
 		homeButton.setEnabled( begTime>0 || endTime<stData.getWidth() || 
 					begProcess>0 || endProcess<stData.getHeight() );

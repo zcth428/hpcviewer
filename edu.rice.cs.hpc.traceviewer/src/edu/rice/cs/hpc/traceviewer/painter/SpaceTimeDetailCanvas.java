@@ -358,6 +358,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);
 		System.gc();
 		adjustLabels();
+		
+		System.out.println("STDC: (" + selectedTime + ", " + selectedProcess + ", " 
+				+ stData.getDepth() + ") ");
+
 	}
 
 	/*************************************************************************
@@ -882,18 +886,25 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	if(mouseDown == null)
     		return;
     	int selectedProcess;
+    	int procIndex;
+
     	//need to do different things if there are more traces to paint than pixels
     	if(viewHeight > endProcess-begProcess)
     	{
     		selectedProcess = (int)(begProcess+mouseDown.y/getScaleY());
+    		procIndex = (int)(mouseDown.y/getScaleY());
     	}
     	else
     	{
     		selectedProcess = (int)(begProcess+(mouseDown.y*(endProcess-begProcess))/viewHeight);
+    		procIndex = mouseDown.y;
     	}
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
     	
-    	this.stData.updatePosition(new Position(closeTime, selectedProcess));
+    	Position position = new Position(closeTime, selectedProcess);
+    	position.processInCS = procIndex;
+    	
+    	this.stData.updatePosition(position);
     }
 
 	/* *****************************************************************

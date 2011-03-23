@@ -10,6 +10,7 @@ public class Position  implements Serializable {
 	
 	public long time;
 	public int process;
+	public int processInCS; // hack: relative process index in CS 
 	
 	public Position(long _time, int _process ) {
 		this.time = _time;

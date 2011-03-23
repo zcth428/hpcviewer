@@ -177,6 +177,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	 */
 	public void setPosition(Position position) {
 		
-		this.csViewer.setSample(position.time, position.process, stData.getDepth());
+		this.csViewer.setSample(position, stData.getDepth());
 	}
 }

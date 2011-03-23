@@ -359,9 +359,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		System.gc();
 		adjustLabels();
 		
-		System.out.println("STDC: (" + selectedTime + ", " + selectedProcess + ", " 
-				+ stData.getDepth() + ") ");
-
 	}
 
 	/*************************************************************************

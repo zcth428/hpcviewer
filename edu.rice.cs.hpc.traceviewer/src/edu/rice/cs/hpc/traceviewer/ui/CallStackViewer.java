@@ -145,10 +145,6 @@ public class CallStackViewer extends TableViewer
 		this.setInput(new ArrayList<String>(sampleVector));
 	
 		this.setDepth(_depth);
-		int tmpProcess = stData.getBegProcess() + adjustedPosition;
-		System.out.println("CSV: (" + position.time +  " / " + ptl.getTime(sample) + ", " + position.process + " / " + 
-				adjustedPosition + " / " + tmpProcess + ", " 
-				+ _depth + ") ");
 	}
 	
 	/**Removes unnecessary over depth "--------------"s from the stack.*/

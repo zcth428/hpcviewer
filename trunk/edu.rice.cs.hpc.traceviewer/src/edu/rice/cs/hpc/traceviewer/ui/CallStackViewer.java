@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 /**************************************************
@@ -108,9 +109,9 @@ public class CallStackViewer extends TableViewer
 	 * that most closely corresponds to (closeTime, process). Additionally,
 	 * sets the depth to _depth.
 	 *********************************************************************/
-	public void setSample(double closeTime, int process, int _depth)
+	public void setSample(Position position, int _depth)
 	{
-		if (closeTime == -20)
+		if (position.time == -20)
 			return;
 		
 		//-------------------------------------------------------------------------------------------
@@ -120,17 +121,17 @@ public class CallStackViewer extends TableViewer
 		// however, if the selected process is less than the start of displayed process, 
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
-		int adjustedPosition = ( process < stData.getBegProcess() ? 
+		int adjustedPosition = position.processInCS; /*( process < stData.getBegProcess() ? 
 				process : process-stData.getBegProcess() );
 		
 		if (process >= stData.getNumberOfDisplayedProcesses() ) {
 			double scale = stData.getHeight() / stData.getNumberOfDisplayedProcesses();
 			adjustedPosition = (int) (process /  scale);
-		}
+		}*/
 		ProcessTimeline ptl;
 		ptl = stData.getProcess(adjustedPosition);
 		
-		int sample = ptl.findMidpointBefore(closeTime);
+		int sample = ptl.findMidpointBefore(position.time);
 
 		final Vector<String> sampleVector = ptl.getSample(sample).getNames();
 
@@ -144,6 +145,10 @@ public class CallStackViewer extends TableViewer
 		this.setInput(new ArrayList<String>(sampleVector));
 	
 		this.setDepth(_depth);
+		int tmpProcess = stData.getBegProcess() + adjustedPosition;
+		System.out.println("CSV: (" + position.time +  " / " + ptl.getTime(sample) + ", " + position.process + " / " + 
+				adjustedPosition + " / " + tmpProcess + ", " 
+				+ _depth + ") ");
 	}
 	
 	/**Removes unnecessary over depth "--------------"s from the stack.*/

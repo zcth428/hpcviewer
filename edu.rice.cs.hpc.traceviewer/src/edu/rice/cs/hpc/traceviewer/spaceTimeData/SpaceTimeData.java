@@ -829,7 +829,13 @@ public class SpaceTimeData extends TraceEvents
 					{
 						spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
 					}
-				}
+/*					System.out.print("STD1 ("+process + ", " + currSampleMidpoint + " - " + succSampleMidpoint + ", " + sampleDepth + "): idx " + sIndex 
+							+ "\t cpid: " + ptl.getCpid(sIndex-2) + ", " + ptl.getCpid(sIndex-1) + ", " + ptl.getCpid(sIndex) );
+					if (sIndex+1 < ptl.size()) {
+						System.out.println(", " + ptl.getCpid(sIndex + 1));
+					} else 
+						System.out.println();
+*/				}
 				else
 				{
 					if(ptl.getCpid(sIndex-1) != ptl.getCpid(sIndex))

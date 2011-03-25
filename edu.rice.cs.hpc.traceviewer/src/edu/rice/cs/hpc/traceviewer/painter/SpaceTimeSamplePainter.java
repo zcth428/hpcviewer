@@ -13,23 +13,14 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 
 public class SpaceTimeSamplePainter
 {	
-	/**The x scale of the space time canvas to be used while painting.*/
-	double canvasScaleX;
-	
 	/**The y scale of the space time canvas to be used while painting.*/
-	double canvasScaleY;
+	private final double canvasScaleY;
 	
 	/**The color table that will be used to paint this canvas.*/
-	ColorTable colorTable;
-	
-	/**The Color white in this space time canvas.*/
-	Color white;
-	
-	/**The Color black in this space time canvas.*/
-	Color black;
+	private final ColorTable colorTable;
 	
 	/**The GC that the painter paints the samples onto.*/
-	GC gc;
+	private final GC gc;
 	
 	/**The minimum height the samples need to be in order to paint the white separator lines.*/
 	public final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
@@ -46,10 +37,7 @@ public class SpaceTimeSamplePainter
 	{
 		gc = _gc;
 		canvasScaleY = scaleY;
-		canvasScaleX = scaleX;
 		colorTable = _colorTable;
-		white = SpaceTimeDetailCanvas.white;
-		black = SpaceTimeDetailCanvas.black;
 	}
 	
 	/**********************************************************************************
@@ -77,9 +65,9 @@ public class SpaceTimeSamplePainter
 		
 		//Sets the color that the over depth text should be
 		if (bgColor.getRed()+bgColor.getBlue()+bgColor.getGreen()>DARKEST_COLOR)
-			gc.setForeground(black);
+			gc.setForeground(SpaceTimeDetailCanvas.black);
 		else
-			gc.setForeground(white);
+			gc.setForeground(SpaceTimeDetailCanvas.white);
 		
 		String overDepthText = String.valueOf(depth);
 		Point textSize = gc.textExtent(overDepthText);

@@ -14,5 +14,7 @@ public class PreferenceConstants {
 	public static final String P_FONT_METRIC = "fontMetricViewPreference";
 
 	public static final String P_FONT_GENERIC = "fontGenericViewPreference";
+	
+	public static final String P_GRAPH_DOT_DIAMETER = "graphDotDiameterPreference";
 
 }

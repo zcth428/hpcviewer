@@ -10,6 +10,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.framework.Activator;
+import edu.rice.cs.hpc.viewer.graph.GraphEditor;
 import edu.rice.cs.hpc.viewer.scope.ScopeActions;
 
 /**
@@ -34,6 +35,7 @@ public class ViewerPreferencePage
 	private StringFieldEditor objThreshold;
 	private FontFieldEditor objFontMetric;
 	private FontFieldEditor objFontGeneric;
+	private StringFieldEditor objGraphDotDiameter;
 	
 	private IWorkbenchWindow objWindow;
 	/**
@@ -51,14 +53,24 @@ public class ViewerPreferencePage
 	 * restore itself.
 	 */
 	public void createFieldEditors() {
+		
+		//----------------------------------------------------------------------
+		// option to show the caller view
+		//----------------------------------------------------------------------
 		BooleanFieldEditor objCallerViewFlag = new BooleanFieldEditor(PreferenceConstants.P_CALLER_VIEW,
 				"Show caller view", getFieldEditorParent());
 		addField(objCallerViewFlag);
 		
+		//----------------------------------------------------------------------
+		// option the location of the default directory
+		//----------------------------------------------------------------------
 		objDirectory = new DirectoryFieldEditor(PreferenceConstants.P_PATH, 
 				"&Default database directory:", getFieldEditorParent()); 
 		addField(objDirectory); 
 		
+		//----------------------------------------------------------------------
+		// option the threshold of hot call path
+		//----------------------------------------------------------------------
 		objThreshold = new StringFieldEditor(PreferenceConstants.P_THRESHOLD,
 				"&Threshold for hot call path\n(fraction from parent metric value, between 0.0 and 1.0)", 
 				this.getFieldEditorParent());
@@ -67,6 +79,9 @@ public class ViewerPreferencePage
 		objThreshold.setStringValue(String.valueOf(ScopeActions.fTHRESHOLD));
 		addField(objThreshold);
 		
+		//----------------------------------------------------------------------
+		// options for fonts 
+		//----------------------------------------------------------------------
 		this.objFontMetric = new FontFieldEditor(PreferenceConstants.P_FONT_METRIC,
 				"Font for metric columns", getFieldEditorParent());
 		addField(this.objFontMetric);
@@ -74,6 +89,13 @@ public class ViewerPreferencePage
 				"Font for view/editor", getFieldEditorParent());
 		
 		addField(this.objFontGeneric);
+		
+		//----------------------------------------------------------------------
+		// option for the size of the dot in the graph
+		//----------------------------------------------------------------------
+		objGraphDotDiameter = new StringFieldEditor(PreferenceConstants.P_GRAPH_DOT_DIAMETER, "Graph dot diameter",
+				this.getFieldEditorParent());
+		addField(this.objGraphDotDiameter);
 
 	}
 
@@ -106,7 +128,9 @@ public class ViewerPreferencePage
 		Utilities.setFontMetric(this.objWindow, objFontsMetric, objFontsGeneric);
 
 		ExperimentManager.sLastPath = objPref.getString(PreferenceConstants.P_PATH);
-
+		
+		int size = objPref.getInt(PreferenceConstants.P_GRAPH_DOT_DIAMETER);
+		GraphEditor.setSymbolSize(size);
 		return true;
 	}
 }

@@ -1,11 +1,9 @@
 package edu.rice.cs.hpc.viewer.graph;
 
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.swtchart.Chart;
@@ -50,7 +48,10 @@ public abstract class GraphEditor extends GraphEditorBase {
 		GraphEditor.updateChange();
 	}
 	
-	public void refresh() {
+	/*****
+	 * refresh the graph updated with the value of diameter
+	 */
+	private void refresh() {
 		Chart chart = this.getChart();
 		if (chart != null) {
 			ISeriesSet seriesSet = chart.getSeriesSet();
@@ -64,7 +65,11 @@ public abstract class GraphEditor extends GraphEditorBase {
 		}
 	}
 	
-	static public void updateChange() {
+	
+	/***
+	 * make changes to all the graph editor
+	 */
+	static private void updateChange() {
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IWorkbenchPage page  = workbench.getActiveWorkbenchWindow().getActivePage();
 		

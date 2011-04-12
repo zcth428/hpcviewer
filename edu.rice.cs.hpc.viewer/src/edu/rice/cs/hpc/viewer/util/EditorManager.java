@@ -114,13 +114,7 @@ public class EditorManager {
 	    	if(!objFile.fetchInfo().exists()) {
 	    		throw new FileNotFoundException(sFilename+": File not found.");
 	    	}
-	    	try {
-	    		IEditorPart objEditor = openEditorOnFileStore(wbPage, objFile); 
-	    		this.setEditorMarker(wbPage, iLineNumber);
-	    	} catch (PartInitException e) {
-	    		System.err.println(sFilename+": Error opening the file.");
-	    		System.err.println(e.getMessage());
-	    	}
+	    	this.setEditorMarker(wbPage, iLineNumber);
 		}
 	}
 

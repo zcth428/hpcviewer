@@ -16,6 +16,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -114,7 +115,13 @@ public class EditorManager {
 	    	if(!objFile.fetchInfo().exists()) {
 	    		throw new FileNotFoundException(sFilename+": File not found.");
 	    	}
-	    	this.setEditorMarker(wbPage, iLineNumber);
+	    	try {
+				openEditorOnFileStore(wbPage, objFile);
+		    	this.setEditorMarker(wbPage, iLineNumber);
+			} catch (PartInitException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -129,7 +136,9 @@ public class EditorManager {
 	    	   IResource resource = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot();
 	    	   IMarker marker=resource.createMarker(IMarker.MARKER); 
 			   marker.setAttribute(IMarker.LINE_NUMBER, iLineNumber+1);
-			   org.eclipse.ui.ide.IDE.gotoMarker(wbPage.getActiveEditor(), marker);
+			   IEditorPart editor = wbPage.getActiveEditor();
+			   if (editor != null)
+				   org.eclipse.ui.ide.IDE.gotoMarker(wbPage.getActiveEditor(), marker);
 	    	   
 	       } catch (org.eclipse.core.runtime.CoreException e) {
 	    	   e.printStackTrace();
@@ -146,7 +155,7 @@ public class EditorManager {
 	 * @return
 	 * @throws PartInitException
 	 */
-	public static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore) throws PartInitException {
+	private static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore) throws PartInitException {
         //sanity checks
         if (page == null) {
 			throw new IllegalArgumentException();

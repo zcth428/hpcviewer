@@ -9,13 +9,13 @@ public abstract class AbstractCombineMetric  {
 			MetricValuePropagationFilter inclusiveOnly,
 			MetricValuePropagationFilter exclusiveOnly) {
 
-		if (target.iCounter == 0 && inclusiveOnly != null) {
+		if (target.isCounterZero() && inclusiveOnly != null) {
 			target.safeCombine(source, inclusiveOnly);
 		}
 		if (exclusiveOnly != null)
 			target.combine(source, exclusiveOnly);
 
-		target.iCounter++;
+		target.incrementCounter();
 		
 	}
 	

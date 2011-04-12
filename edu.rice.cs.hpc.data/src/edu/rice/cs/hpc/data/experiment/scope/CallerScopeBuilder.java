@@ -125,16 +125,16 @@ public class CallerScopeBuilder {
 					//--------------------------------------------------------------------------
 					
 				} else {
-					
- 				//------------------------------------------------------------------------
-				// We found the same CCT in the path. let's merge them
-				//------------------------------------------------------------------------
-				existingCaller.merge(status, first, counter_to_assign);
 
 				//------------------------------------------------------------------------
 				// combine metric values for first to those of existingCaller.
 				//------------------------------------------------------------------------
 				combine.combine(existingCaller, first, inclusiveOnly, exclusiveOnly);
+				
+ 				//------------------------------------------------------------------------
+				// We found the same CCT in the path. let's merge them
+				//------------------------------------------------------------------------
+				existingCaller.merge(status, first, counter_to_assign);
 				
 				//------------------------------------------------------------------------
 				// merge rest of call path as a child of existingCaller.

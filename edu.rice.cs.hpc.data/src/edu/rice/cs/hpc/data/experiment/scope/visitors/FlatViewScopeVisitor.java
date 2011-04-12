@@ -142,10 +142,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 ****---------------------------------------------------------------------------****/
 	private void decrementCounter(Scope flat_s) {
 		if (flat_s != null) {
-			if (flat_s.iCounter > 0) {
-				flat_s.iCounter--;
-			} else
-				System.err.println("FVSV dec counter err: [" + flat_s.hashCode() + "] " +  flat_s+"\t"+flat_s.iCounter);
+			flat_s.decrementCounter();
 		}
 	}
 	
@@ -469,7 +466,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @return
 	 **------------------------------------------------------------------------------**/
 	private boolean isOutermostInstance(Scope scope) {
-		return scope.iCounter == 1;
+		return scope.getCounter() == 1;
 	}
 
 	
@@ -483,7 +480,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		if (flat_s == null)
 			return;
 		
-		flat_s.iCounter++;
+		flat_s.incrementCounter();
 			
 		if (isOutermostInstance(flat_s)) {
 			if (add_inclusive)
@@ -507,10 +504,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			arr_new_scopes[0] = flat_s;
 		}
 		htFlatCostAdded.put(objCode, arr_new_scopes);
-		/*if (flat_s.getName().equals("free")) {
-			System.out.println(objCode+"\t"+iline+" FVSV "+flat_s+" ("+flat_s.hashCode()+"): "+flat_s.getMetricValue(0).getValue()+"\t<-- " + cct_s + "(" + cct_s.hashCode()+ ")");
-			iline++;
-		}*/
+
 	}
 	//int iline = 0; 
 

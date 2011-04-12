@@ -91,7 +91,7 @@ public boolean hasSourceCodeFile;
  * FIXME: this variable is only used for the creation of callers view to count
  * 			the number of instances. To be removed in the future
  */
-public int iCounter = 0;
+private int iCounter;
 // --------------------------
 
 //the cpid is removed in hpcviewer, but hpctraceview still requires it in order to dfs
@@ -139,6 +139,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int cc
 	this.cct_node_index = cct_id;
 	this.hasSourceCodeFile = false;
 	this.cpid = -1;
+	this.iCounter  = 0;
 }
 
 
@@ -215,7 +216,41 @@ public String getShortName()
 	return this.getName();
 }
 
+//////////////////////////////////////////////////////////////////////////
+// counter														//
+//////////////////////////////////////////////////////////////////////////
 
+
+public void incrementCounter() {
+	this.iCounter++;
+}
+
+public void decrementCounter() {
+	if (this.isCounterPositif())
+		this.iCounter--;
+	else {
+		System.err.println("Scope " + this.getName() + " [" + this.getCCTIndex() + "/" + this.flat_node_index + "]"  + " has non-positive counter");
+	}
+}
+
+public void setCounter(int counter) {
+	if (this.getCCTIndex() == 12 && this.flat_node_index == -1345834033) {
+		System.out.print("\t");
+	}
+	this.iCounter = counter;
+}
+
+public int getCounter() {
+	return this.iCounter;
+}
+
+public boolean isCounterPositif() {
+	return this.iCounter>0;
+}
+
+public boolean isCounterZero() {
+	return (this.iCounter == 0);
+}
 
 /*************************************************************************
  * Returns which processor was active

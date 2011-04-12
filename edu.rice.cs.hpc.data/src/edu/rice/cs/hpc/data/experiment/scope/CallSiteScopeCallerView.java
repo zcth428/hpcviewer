@@ -75,14 +75,15 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		//-----------------------------------------
 		switch (status) {
 		case INIT:
-			scope.iCounter = this.iCounter;
+			scope.setCounter(this.getCounter());
 			break;
 
 		case INCREMENTAL:
-			scope.iCounter = counter_to_assign;
+			scope.setCounter(counter_to_assign);
 			break;
 		}
-
+//		System.out.println("CSSCV merge this: " + this.getShortName() + " [" + this.scopeCCT.getCCTIndex()+"] " + this.iCounter +
+//			" --> ["+ scope.scopeCCT.getCCTIndex() +	"] " + scope.iCounter);
 		listOfmerged.add(scope);	// include the new scope to merge
 	}
 	
@@ -150,7 +151,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			for(Iterator<CallSiteScopeCallerView> iter = this.listOfmerged.iterator(); iter.hasNext(); ) {
 				
 				CallSiteScopeCallerView scope = iter.next();
-				
+
 				try {
 					CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
 
@@ -165,7 +166,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 					//	assign to the child scope is the counter of the scope minus 1
 					// For normal function it has to be zero
 					//-------------------------------------------------------------------------
-					int counter_to_assign = scope.iCounter - 1;
+					int counter_to_assign = scope.getCounter() - 1;
 					if (counter_to_assign<0)
 						counter_to_assign = 0;
 					
@@ -257,7 +258,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				//-----------------------------------------------------------
 				// only combine the outermost "node" of incremental callsite
 				//-----------------------------------------------------------
-				if (inclusiveOnly != null && source.iCounter == 0) {
+				if (inclusiveOnly != null && source.isCounterZero()) {
 					target.safeCombine(copy, inclusiveOnly);
 				} 
 										
@@ -299,7 +300,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				if (exclusiveOnly != null)
 					target.combine(copy, exclusiveOnly);
 				
-				target.iCounter = source.iCounter;
+				target.setCounter(source.getCounter());
 				
 			} else {
 				System.err.println("ERROR-CMUCNC: the target combine is incorrect: " + target + " -> " + target.getClass() );

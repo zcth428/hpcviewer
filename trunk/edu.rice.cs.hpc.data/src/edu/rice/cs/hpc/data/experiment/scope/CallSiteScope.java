@@ -63,7 +63,6 @@ public CallSiteScope(LineScope scope, ProcedureScope scope2,
 	this.lineScope = scope;
 	this.procScope = scope2;
 	this.type = csst;
-	this.iCounter = 0;
 //	this.id = "CallSiteScope";
 }
 

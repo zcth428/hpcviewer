@@ -64,7 +64,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 //						}
 					}
 					Scope cct = caller.getScopeCCT();
-					text = text + "[" + cct.getCCTIndex()  + "]" + node.getName();
+					text = text + "[" + caller.getCCTIndex() +"/" + cct.getCCTIndex()  + "]" + node.getName();
 				} else
 					text = "[" + node.getCCTIndex() + "] " + node.getName();
 			} else

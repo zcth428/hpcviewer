@@ -80,9 +80,12 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		if (!scope.hasNonzeroMetrics()) {
 			return; 
 		}
-
-		if (vt == ScopeVisitType.PreVisit) { 
-						
+		
+		if (scope.getCCTIndex() == 20) {
+			System.out.println();
+		}
+		if (vt == ScopeVisitType.PreVisit) {
+			
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 			
@@ -98,16 +101,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 					combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
-			ProcedureScope mycallee  = scope.getProcedureScope();
-			Integer objCode = new Integer(mycallee.hashCode());
-			
-			ProcedureScope callee = (ProcedureScope) calleeht.get(objCode);
-			// it is nearly impossible that the callee is null but I prefer to do this in case we encounter
-			//		a bug or a very strange call path
-			if(callee != null) {
-				this.decrementCounter(callee);
-			}
-			
+
 			//---------------------------------------------------------------------------
 			// decrement all the combined scopes which are computed in this scope
 			// 	When a caller view scope is created, it creates also its children and its merged children
@@ -141,15 +135,25 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		
 		if (vt == ScopeVisitType.PreVisit) {
 				// Find (or add) callee in top-level hashtable
-				this.createProcedureIfNecessary(scope);
+			this.createProcedureIfNecessary(scope);
 
 		} else if (vt == ScopeVisitType.PostVisit){
-			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(scope.hashCode()));
+			
+			ArrayList<Scope> list = this.listCombinedScopes.getList(scope);
+			if (list != null) {
+				Iterator<Scope> iter = list.iterator();
+				while (iter.hasNext()) {
+					Scope combinedScope = iter.next();
+					this.decrementCounter(combinedScope);
+				}
+			}
+
+/*			ProcedureScope callee = (ProcedureScope) calleeht.get(new Integer(scope.hashCode()));
 			if  (callee != null) {
 				this.decrementCounter(callee);
 
 			}
-		}
+*/		}
 	
 	}
 	
@@ -180,13 +184,12 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			cct_proc_s = ( (CallSiteScope)cct_s).getProcedureScope();
 		
 		Integer objCode = Integer.valueOf(cct_proc_s.hashCode());
-		
+
 		ProcedureScope caller_proc = (ProcedureScope) calleeht.get(objCode);
 		
 		if (caller_proc == null) {
 			// create a new procedure scope
 			caller_proc = (ProcedureScope) cct_proc_s.duplicate();
-			caller_proc.iCounter = 0;
 			
 			// add to the tree
 			callersViewRootScope.addSubscope(caller_proc);
@@ -212,11 +215,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		if (caller_s == null)
 			return;
 
-		if (caller_s.iCounter>0) {
-			caller_s.iCounter--;
-		} else {
-			System.err.println("CVSV Err dec "+caller_s.getName()+" \t"+ caller_s.getClass() + "\t" + caller_s.hashCode());
-		}
+		caller_s.decrementCounter();
 	}
 	
 
@@ -238,19 +237,19 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			if (this.combinedScopes == null) {
 				this.combinedScopes = new HashMap<Integer, ArrayList<Scope>>();
 			}
-			
-			ArrayList<Scope> list = this.combinedScopes.get(key);
+			int intKey = System.identityHashCode(key);
+			ArrayList<Scope> list = this.combinedScopes.get(intKey);
 			if (list == null) {
 				list = new ArrayList<Scope>();
 			}
 			list.add(combined);
-			this.combinedScopes.put(key.getCCTIndex(), list);
-			
+			this.combinedScopes.put(intKey, list);
 		}
 		
 		
 		public ArrayList<Scope> getList(Scope key) {
-			return this.combinedScopes.get(key.getCCTIndex());
+			int intKey = System.identityHashCode(key);
+			return this.combinedScopes.get(intKey);
 		}
 	}
 	
@@ -271,14 +270,14 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 				MetricValuePropagationFilter inclusiveOnly,
 				MetricValuePropagationFilter exclusiveOnly) {
 
-			if (target.iCounter == 0 && inclusiveOnly != null) {
+			if (target.isCounterZero() && inclusiveOnly != null) {
 				target.safeCombine(source, inclusiveOnly);
 			}
 			if (exclusiveOnly != null)
 				target.combine(source, exclusiveOnly);
 
-			target.iCounter++;
-
+			target.incrementCounter();
+			
 			if (this.cct_entry != null)
 				listCombinedScopes.addList(cct_entry, target);
 			else {
@@ -299,6 +298,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 				MetricValuePropagationFilter exclusiveOnly) {
 			
 			super.combine_internal(target, source, inclusiveOnly, exclusiveOnly);
+
 		}
 	}
 	

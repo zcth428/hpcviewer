@@ -89,20 +89,8 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 					combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
-
-			//---------------------------------------------------------------------------
-			// decrement all the combined scopes which are computed in this scope
-			// 	When a caller view scope is created, it creates also its children and its merged children
-			//		the counter of these children are then need to be decremented based on the CCT scope
-			//---------------------------------------------------------------------------
-			ArrayList<Scope> list = this.listCombinedScopes.pop();
-			if (list != null) {
-				Iterator<Scope> iter = list.iterator();
-				while (iter.hasNext()) {
-					Scope combinedScope = iter.next();
-					this.decrementCounter(combinedScope);
-				}
-			}
+			
+			this.decrementCounter();
 		}
 	}
 	
@@ -128,15 +116,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 
 		} else if (vt == ScopeVisitType.PostVisit){
 			
-			ArrayList<Scope> list = this.listCombinedScopes.pop();
-			if (list != null) {
-				Iterator<Scope> iter = list.iterator();
-				while (iter.hasNext()) {
-					Scope combinedScope = iter.next();
-					this.decrementCounter(combinedScope);
-				}
-			}
-
+			this.decrementCounter();
 		}
 	
 	}
@@ -194,11 +174,21 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 	 * decrement the counter of a caller scope
 	 * @param caller_s
 	 ********/
-	private void decrementCounter(Scope caller_s) {
-		if (caller_s == null)
-			return;
-
-		caller_s.decrementCounter();
+	private void decrementCounter() {
+		
+		//---------------------------------------------------------------------------
+		// decrement all the combined scopes which are computed in this scope
+		// 	When a caller view scope is created, it creates also its children and its merged children
+		//		the counter of these children are then need to be decremented based on the CCT scope
+		//---------------------------------------------------------------------------
+		ArrayList<Scope> list = this.listCombinedScopes.pop();
+		if (list != null) {
+			Iterator<Scope> iter = list.iterator();
+			while (iter.hasNext()) {
+				Scope combinedScope = iter.next();
+				combinedScope.decrementCounter();
+			}
+		}
 	}
 	
 

@@ -39,10 +39,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	Image imageBuffer;
 	
 	/** Stores whether the Detail Panel has changed screens from the first frame or not.*/
-	boolean homeScreen;
-	
-	/** Stores whether or not the Detail Panel's background has just changed or not (used to determine when to rebuffer).*/
-	boolean rebuffer;
+	//boolean homeScreen;
 	
 	/** The CallStackViewer that is controlled by this SpaceTimeDetailCanvas.*/
 	public CallStackViewer csViewer;
@@ -138,8 +135,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	{
 		super(_composite );
 		
-		homeScreen = true;
-		rebuffer = true;
+		//homeScreen = true;
 		undoStack = new Stack<Frame>();
 		redoStack = new Stack<Frame>();
 		mouseState = MouseState.ST_MOUSE_INIT;
@@ -172,7 +168,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 		
 		this.home();
-		this.setDepth(0);
+		stData.setDepth(0);
 
 		// clear undo button
 		this.undoStack.clear();
@@ -229,11 +225,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				viewWidth = getClientArea().width;
 				viewHeight = getClientArea().height;
 
-				if(homeScreen)
-					imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-				
-				if(viewWidth > 0 && viewHeight > 0)
-					rebuffer = true;
 
 				assertProcessBounds();
 				assertTimeBounds();
@@ -270,7 +261,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 		
 		this.updateButtonStates();
-		redraw();
+		this.rebuffer();
 	}
 	
 	/*******************************************************************************
@@ -283,27 +274,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (this.stData == null)
 			return;
 		
-		if(homeScreen)
+		//if(homeScreen)
 		{
-			//if this is the first time painting,
-			//some stuff needs to get initialized
-			topLeftPixelX = 0;
-			topLeftPixelY = 0;
-			
-			begTime = 0;
-			endTime = stData.getWidth();
-			
-			begProcess = 0;
-			endProcess = stData.getHeight();
-			setDetailZoom(begTime, begProcess, endTime, endProcess);
-			viewWidth = this.getClientArea().width;
-			viewHeight = this.getClientArea().height;
-			if (viewWidth <= 0)
-				viewWidth = 1;
-			if (viewHeight <= 0)
-				viewHeight = 1;
-			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-			homeScreen = false;
+			//homeScreen = false;
 		}
 		
 		topLeftPixelX = Math.round(begTime * getScaleX());
@@ -313,28 +286,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		depthCanvas.setTimeRange(begTime, endTime);
 		
 		//if something has changed the bounds, you need to go get the data again
-		if (rebuffer)
-		{
-			//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
-			//you need to draw to its GC. So, we have this bufferImage that we draw to, so
-			//we get its GC (bufferGC), and then pass that GC to paintViewport, which draws
-			//everything to it. Then the image is copied to the canvas on the screen with that
-			//event.gc.drawImage call down there below the 'if' block - this is called "double buffering," 
-			//and it's useful because it prevent the screen from flickering (if you draw directly then
-			//you would see each sample as it was getting drawn very quickly, which you would
-			//interpret as flickering. This way, you finish the puzzle before you put it on the
-			//table).
-			
-			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-			GC bufferGC = new GC(imageBuffer);
-			bufferGC.setBackground(white);
-			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
-			stData.paintDetailViewport(bufferGC, this, this.stData.getDepth(), 
-					(int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
-			
-			bufferGC.dispose();
-			rebuffer = false;
-		}
 		event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
     	
 		//paints the selection currently being made (the little white box that appears
@@ -358,7 +309,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);
 		System.gc();
 		adjustLabels();
-		
+		System.out.println("STDC-paint control w x h: " + viewWidth + " x " + viewHeight);
+		Throwable t = new Throwable();
+		System.out.println("paint: "+t.getStackTrace()[1].toString());
 	}
 
 	/*************************************************************************
@@ -422,6 +375,26 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void home()
 	{
 		pushUndo();
+		
+		//if this is the first time painting,
+		//some stuff needs to get initialized
+		topLeftPixelX = 0;
+		topLeftPixelY = 0;
+		
+		begTime = 0;
+		endTime = stData.getWidth();
+		
+		begProcess = 0;
+		endProcess = stData.getHeight();
+
+		viewWidth = this.getClientArea().width;
+		viewHeight = this.getClientArea().height;
+		if (viewWidth <= 0)
+			viewWidth = 1;
+		if (viewHeight <= 0)
+			viewHeight = 1;
+		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+
 		setDetailZoom(0, 0, stData.getWidth(), stData.getHeight());
 	}
 	
@@ -456,7 +429,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	public void pushUndo()
 	{
-		rebuffer = true;
 		redoStack.clear();
 		redoStack = new Stack<Frame>();
 		redoButton.setEnabled(false);
@@ -473,7 +445,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	public void popUndo()
 	{
-		rebuffer = true;
 		Frame nextFrame = undoStack.pop();
 		long selectedTime = stData.getPosition().time;
 		int selectedProcess = stData.getPosition().process;
@@ -491,7 +462,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	public void popRedo()
 	{
-		rebuffer = true;
 		Frame nextFrame = redoStack.pop();
 		long selectedTime = stData.getPosition().time;
 		int selectedProcess = stData.getPosition().process;
@@ -566,7 +536,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 		this.updateButtonStates();
 		
-		redraw();
+		rebuffer();
 	}
 
 	/**************************************************************************
@@ -592,7 +562,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			numProcessDisp = MIN_PROC_DISP;
 		}
 		this.updateButtonStates();
-		redraw();
+		rebuffer();
 	}
 
 	
@@ -617,7 +587,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
 		}
 		
-		redraw();
+		rebuffer();
 		
 		this.updateButtonStates();
 	}
@@ -640,7 +610,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		assertTimeBounds();
 		
-		redraw();
+		rebuffer();
 		this.updateButtonStates();
 	}
 	
@@ -666,8 +636,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void setDepth(int newDepth)
 	{
 		stData.setDepth(newDepth);
-		rebuffer = true;
-		redraw();
+		rebuffer();
     }
 	
 	/**************************************************************************
@@ -982,6 +951,39 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void setDepthCanvas(DepthTimeCanvas _depthCanvas)
 	{
 		depthCanvas = _depthCanvas;
+	}
+	
+	
+	private void rebuffer() {
+		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
+		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
+		//we get its GC (bufferGC), and then pass that GC to paintViewport, which draws
+		//everything to it. Then the image is copied to the canvas on the screen with that
+		//event.gc.drawImage call down there below the 'if' block - this is called "double buffering," 
+		//and it's useful because it prevent the screen from flickering (if you draw directly then
+		//you would see each sample as it was getting drawn very quickly, which you would
+		//interpret as flickering. This way, you finish the puzzle before you put it on the
+		//table).
+
+		if (viewWidth==0 && viewHeight==0) {
+			viewWidth = this.getClientArea().width;
+			viewHeight = this.getClientArea().height;
+		}
+
+		if (viewWidth>0 && viewHeight>0 && getDisplay() != null) {
+			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+			GC bufferGC = new GC(imageBuffer);
+			bufferGC.setBackground(white);
+			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+			stData.paintDetailViewport(bufferGC, this, this.stData.getDepth(), 
+					(int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
+			
+			bufferGC.dispose();
+			Throwable t = new Throwable();
+			System.out.println("STDC rebuffer: "+t.getStackTrace()[1] + "\n" + t.getStackTrace()[2]);
+
+			redraw();
+		}
 	}
 	
 }

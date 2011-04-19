@@ -309,9 +309,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);
 		System.gc();
 		adjustLabels();
-		System.out.println("STDC-paint control w x h: " + viewWidth + " x " + viewHeight);
-		Throwable t = new Throwable();
-		System.out.println("paint: "+t.getStackTrace()[1].toString());
 	}
 
 	/*************************************************************************
@@ -488,7 +485,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		if (current.depth != stData.getDepth()) {
 			// we have change of depth
-			stData.updateDepth(current.depth);
+			stData.updateDepth(current.depth, this);
 		}
 		
 		if (!current.position.isEqual(stData.getPosition())) {

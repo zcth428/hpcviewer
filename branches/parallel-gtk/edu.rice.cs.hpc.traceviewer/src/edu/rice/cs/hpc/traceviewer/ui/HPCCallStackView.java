@@ -72,7 +72,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		/*************************************************************************
 		 * Depth View Spinner (the thing with the text box and little arrow buttons)
 		 ************************************************************************/
-		
+		final HPCCallStackView csview = this;
 		depthEditor = new Spinner(master, SWT.EMBEDDED);
 		depthEditor.setMinimum(0);
 		depthEditor.setLayout(new GridLayout());
@@ -99,7 +99,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 				{
 					//traceview.setDepth(value, false);
 					//csViewer.fixSample();
-					stData.updateDepth(value);
+					stData.updateDepth(value, csview);
 				}
 			}
 		});

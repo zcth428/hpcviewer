@@ -1009,13 +1009,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 					(int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
 			
 			bufferGC.dispose();
-			Throwable t = new Throwable();
+/*			Throwable t = new Throwable();
 			StackTraceElement traces[] = t.getStackTrace();
 			System.out.println("BUFF " + traces[0]);
 			for (int i=1; i<5; i++) {
 				System.out.println("\t" + traces[i]);
 			}
-
+*/
 			redraw();
 		}
 	}

@@ -14,6 +14,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
@@ -215,19 +216,39 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			
 		});
 		
+		final long lastEvent[] = new long[1];
+		
+		final Runnable resizeDelay = new Runnable() {
+			public void run() {
+			//	if ( (lastEvent[0]+1000) > System.currentTimeMillis() ) {
+					viewWidth = getClientArea().width;
+					viewHeight = getClientArea().height;
+
+					assertProcessBounds();
+					assertTimeBounds();
+					System.out.println("--- rebuffer: " + viewWidth + " x " + viewHeight);
+					rebuffer();
+		//		} else {
+		//			System.out.println("--- retimer ------: " + viewWidth + " x " + viewHeight);
+					//getDisplay().timerExec(1000, this);
+		//		}
+			}			
+		};
+		
 		//A listener for resizing the the window.		
 		//FIXME: Every time the window is resized just a tiny bit, the program rebuffers
 		//(goes out and gets the data again). It would be better to have a listener for
 		//when the user stops resizing before rebuffering or something...
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
-			{
+			{				
+				lastEvent[0] = System.currentTimeMillis();
 				viewWidth = getClientArea().width;
 				viewHeight = getClientArea().height;
-
-
-				assertProcessBounds();
-				assertTimeBounds();
+				//getDisplay().timerExec(1000, resizeDelay);
+				rebuffer();
+				//new Timer(1000, resizeAction).start();
+				//rebuffer();
 			}
 		});
 	}
@@ -284,6 +305,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
 
 		depthCanvas.setTimeRange(begTime, endTime);
+		
+		Rectangle region = imageBuffer.getBounds();
+		if (region.width != viewWidth || region.height != viewHeight)
+			return;
 		
 		//if something has changed the bounds, you need to go get the data again
 		event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
@@ -950,7 +975,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		depthCanvas = _depthCanvas;
 	}
 	
-	Frame currentFrame = null;
+	//Frame currentFrame = null;
 	private void rebuffer() {
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
@@ -967,15 +992,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			viewHeight = this.getClientArea().height;
 		}
 
-		if (viewWidth>0 && viewHeight>0 && getDisplay() != null) {
+/*		if (viewWidth>0 && viewHeight>0 && getDisplay() != null) {
 			Frame frame = new Frame(begTime, endTime, begProcess, endProcess,this.stData.getDepth(),0,0);
 			if (currentFrame != null) {
 				if (frame.equalDimension(currentFrame)) {
 					return;
 				}
 			}
-			currentFrame = frame;
-
+			currentFrame = frame;*/
+		{
 			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 			GC bufferGC = new GC(imageBuffer);
 			bufferGC.setBackground(white);
@@ -987,7 +1012,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			Throwable t = new Throwable();
 			StackTraceElement traces[] = t.getStackTrace();
 			System.out.println("BUFF " + traces[0]);
-			for (int i=1; i<traces.length-20; i++) {
+			for (int i=1; i<5; i++) {
 				System.out.println("\t" + traces[i]);
 			}
 

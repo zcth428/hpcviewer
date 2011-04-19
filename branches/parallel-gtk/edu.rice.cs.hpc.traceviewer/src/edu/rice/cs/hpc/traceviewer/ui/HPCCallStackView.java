@@ -86,7 +86,11 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 				String string = depthEditor.getText();
 				int value;
 				if (string.length()<1)
-					value = 0;
+					// be careful: on linux/GTK, any change in the spinner will consists of two steps:
+					//  1) empty the string
+					//  2) set with the specified value
+					// therefore, we consider any empty string to be illegal
+					return;
 				else
 					value = Integer.valueOf(string);
 				int maximum = depthEditor.getMaximum();

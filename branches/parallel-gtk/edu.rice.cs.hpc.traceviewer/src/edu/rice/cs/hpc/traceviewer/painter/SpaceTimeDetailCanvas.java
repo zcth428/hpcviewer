@@ -950,7 +950,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		depthCanvas = _depthCanvas;
 	}
 	
-	
+	Frame currentFrame = null;
 	private void rebuffer() {
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
@@ -968,6 +968,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 
 		if (viewWidth>0 && viewHeight>0 && getDisplay() != null) {
+			Frame frame = new Frame(begTime, endTime, begProcess, endProcess,this.stData.getDepth(),0,0);
+			if (currentFrame != null) {
+				if (frame.equalDimension(currentFrame)) {
+					return;
+				}
+			}
+			currentFrame = frame;
+
 			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 			GC bufferGC = new GC(imageBuffer);
 			bufferGC.setBackground(white);
@@ -977,7 +985,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			
 			bufferGC.dispose();
 			Throwable t = new Throwable();
-			System.out.println("STDC rebuffer: "+t.getStackTrace()[1] + "\n" + t.getStackTrace()[2]);
+			StackTraceElement traces[] = t.getStackTrace();
+			System.out.println("BUFF " + traces[0]);
+			for (int i=1; i<traces.length-20; i++) {
+				System.out.println("\t" + traces[i]);
+			}
 
 			redraw();
 		}

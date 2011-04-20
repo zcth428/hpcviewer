@@ -51,12 +51,4 @@ public class Frame implements Serializable
 			&& depth == other.depth
 			&& position.isEqual(other.position) );
 	}
-	
-	public boolean equalDimension(Frame other) {
-		return (begProcess == other.begProcess
-				&& begTime == other.begTime
-				&& endProcess == other.endProcess
-				&& endTime == other.endTime
-				&& depth == other.depth);
-	}
 }

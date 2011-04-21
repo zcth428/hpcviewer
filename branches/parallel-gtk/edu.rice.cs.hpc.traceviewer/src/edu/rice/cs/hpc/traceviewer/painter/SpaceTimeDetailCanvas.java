@@ -168,7 +168,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			this.addCanvasListener();
 		}
 		
-		this.home();
+		this.home(false);
 		stData.setDepth(0);
 
 		// clear undo button
@@ -215,26 +215,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			}
 			
 		});
-		
-		final long lastEvent[] = new long[1];
-		
-		final Runnable resizeDelay = new Runnable() {
-			public void run() {
-			//	if ( (lastEvent[0]+1000) > System.currentTimeMillis() ) {
-					viewWidth = getClientArea().width;
-					viewHeight = getClientArea().height;
-
-					assertProcessBounds();
-					assertTimeBounds();
-					System.out.println("--- rebuffer: " + viewWidth + " x " + viewHeight);
-					rebuffer();
-		//		} else {
-		//			System.out.println("--- retimer ------: " + viewWidth + " x " + viewHeight);
-					//getDisplay().timerExec(1000, this);
-		//		}
-			}			
-		};
-		
+				
 		//A listener for resizing the the window.		
 		//FIXME: Every time the window is resized just a tiny bit, the program rebuffers
 		//(goes out and gets the data again). It would be better to have a listener for
@@ -242,22 +223,25 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
 			{				
-				lastEvent[0] = System.currentTimeMillis();
 				viewWidth = getClientArea().width;
 				viewHeight = getClientArea().height;
-				//getDisplay().timerExec(1000, resizeDelay);
-				rebuffer();
-				//new Timer(1000, resizeAction).start();
-				//rebuffer();
+				getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
 			}
 		});
 	}
-	 
+
+	private class DetailBufferPaint implements BufferPaint {
+		public void rebuffering() {
+			rebuffer();
+		}
+	}
+
 	/*************************************************************************
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.
 	 *************************************************************************/
-	public void setDetailZoom(long _topLeftTime, double _topLeftProcess, long _bottomRightTime, double _bottomRightProcess)
+	public void setDetailZoom(long _topLeftTime, double _topLeftProcess, long _bottomRightTime, double _bottomRightProcess,
+			boolean updateDepthView)
 	{
 		begTime = _topLeftTime;
 		begProcess = _topLeftProcess;
@@ -283,6 +267,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		this.updateButtonStates();
 		this.rebuffer();
+		
+		if (updateDepthView)
+			depthCanvas.setTimeRange(begTime, endTime);
+
 	}
 	
 	/*******************************************************************************
@@ -303,8 +291,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		topLeftPixelX = Math.round(begTime * getScaleX());
 		topLeftPixelY = Math.round(begProcess * getScaleY());
 		miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
-
-		depthCanvas.setTimeRange(begTime, endTime);
 		
 		Rectangle region = imageBuffer.getBounds();
 		if (region.width != viewWidth || region.height != viewHeight)
@@ -394,7 +380,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * the bounds are reset so that the viewer is zoomed all the way out on the
 	 * image.
 	 **************************************************************************/
-	public void home()
+	public void home(boolean updateDepthView)
 	{
 		pushUndo();
 		
@@ -417,7 +403,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			viewHeight = 1;
 		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 
-		setDetailZoom(0, 0, stData.getWidth(), stData.getHeight());
+		setDetailZoom(0, 0, stData.getWidth(), stData.getHeight(), updateDepthView);
 	}
 	
 	/**************************************************************************
@@ -505,7 +491,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				&& current.begProcess == stData.getBegProcess() && current.endProcess == stData.getEndProcess()) {
 			
 		} else {
-			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);			
+			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess, true);			
 		}
 		
 		if (current.depth != stData.getDepth()) {
@@ -723,7 +709,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		long topLeftTime = (long)((double)selectionTopLeftX / getScaleX());
 		double bottomRightProcess = (selectionBottomRightY / getScaleY());
 		long bottomRightTime = (long)((double)selectionBottomRightX / getScaleX());
-		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
+		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess, true);
     }
 
     
@@ -820,7 +806,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
     	pushUndo();
-    	setDetailZoom(topLeftTime, begProcess, bottomRightTime, endProcess);
+    	setDetailZoom(topLeftTime, begProcess, bottomRightTime, endProcess, true);
     }
 
     /*******
@@ -866,7 +852,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      */
 	private void setProcessRange(double pBegin, double pEnd) {
 		pushUndo();
-		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
+		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd, false);
 	}
 
     public void setCSSample()
@@ -1017,6 +1003,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			}
 */
 			redraw();
+			
+			depthCanvas.setTimeRange(begTime, endTime);
 		}
 	}
 	

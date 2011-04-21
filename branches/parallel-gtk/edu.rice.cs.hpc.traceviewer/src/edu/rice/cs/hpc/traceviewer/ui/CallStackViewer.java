@@ -79,7 +79,7 @@ public class CallStackViewer extends TableViewer
         });
         
         stack.setVisible(false);
-        
+        final CallStackViewer csviewer = this;
 		stack.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
@@ -87,7 +87,7 @@ public class CallStackViewer extends TableViewer
 				if(depth !=-1 && depth != stData.getDepth()) {
 					// ask the depth editor to update the depth and launch the updateDepth event
 					_csview.depthEditor.setSelection(depth);
-					//stData.updateDepth(depth);
+					stData.updateDepth(depth, csviewer);
 				}
 			}
 		});

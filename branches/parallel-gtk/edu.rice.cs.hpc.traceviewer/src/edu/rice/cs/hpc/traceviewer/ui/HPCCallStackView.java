@@ -3,6 +3,8 @@ package edu.rice.cs.hpc.traceviewer.ui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -80,9 +82,8 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		depthData.widthHint = 140;
 		depthEditor.setLayoutData(depthData);
 		depthEditor.setVisible(false);
-		depthEditor.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e)
-			{
+		depthEditor.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(SelectionEvent e) {
 				String string = depthEditor.getText();
 				int value;
 				if (string.length()<1)
@@ -101,10 +102,11 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 					value = minimum;
 				if(stData.getDepth() != value)
 				{
-					//traceview.setDepth(value, false);
-					//csViewer.fixSample();
 					stData.updateDepth(value, csview);
 				}
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
 		

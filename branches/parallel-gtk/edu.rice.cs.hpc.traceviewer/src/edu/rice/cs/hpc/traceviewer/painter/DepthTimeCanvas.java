@@ -39,12 +39,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     long begTime;
     long endTime;
 	
-	/** Stores whether the Detail Panel has changed screens from the first frame or not. */
-	boolean homeScreen;
-	
-	/** Stores whether or not the Detail Panel's background has just changed or not (used to determine when to rebuffer)*/
-	boolean rebuffer;
-	
 	/** The number of time units being displayed on the Detail View.*/
 	long numTimeUnitsDisp;
 	
@@ -80,8 +74,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
 		detailCanvas = _detailCanvas;
 
-		homeScreen = true;
-		rebuffer = true;
 		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
 
 		selectedTime = -20;
@@ -104,7 +96,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		this.redraw();
+		this.home();
 	}
 	
 
@@ -119,14 +111,12 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 				//init();
 				final int viewWidth = getClientArea().width;
 				final int viewHeight = getClientArea().height;
-				
-				if (homeScreen)
-					imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-				
-				if (viewWidth > 0 && viewHeight > 0)
-					rebuffer = true;
 
 				assertTimeBounds();
+				
+				if (viewWidth > 0 && viewHeight > 0) {
+					getDisplay().asyncExec(new ResizeThread( new DepthBufferPaint()));
+				}
 			}
 		});
 
@@ -134,43 +124,14 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	
 	public void paintControl(PaintEvent event)
 	{
-		if (this.stData == null)
+		if (this.stData == null || imageBuffer == null)
 			return;
 		
-		if (homeScreen)
-		{
-			topLeftPixelX = 0;
-			setTimeZoom(0, (long)stData.getWidth());
-			homeScreen = false;
-		}
-		else
-		{
-			topLeftPixelX = Math.round(begTime*getScaleX());
-		}
+		topLeftPixelX = Math.round(begTime*getScaleX());
 		
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 
-		if (rebuffer)
-		{
-			//paints the current screen
-			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-			GC bufferGC = new GC(imageBuffer);
-			bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
-			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
-			try
-			{
-				stData.paintDepthViewport(bufferGC, this, begTime, endTime, viewWidth, viewHeight);
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			
-			bufferGC.dispose();
-			rebuffer = false;
-		}
-		
 		event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
 
 		//paints the selection currently being made
@@ -203,13 +164,13 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	public void setCrossHair(double _selectedTime)
 	{
 		selectedTime = _selectedTime;
-		redraw();
+		rebuffer();
 	}
 	
 
 	public void setDepth(int _selectedDepth) {
 		selectedDepth = _selectedDepth;
-		redraw();
+		//rebuffer();
 	}
 	
 	public void adjustSelection(Point p1, Point p2)
@@ -222,7 +183,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     
     public void setTimeRange(long begTime, long endTime)
     {
-    	rebuffer();
+    	if (stData == null)
+    		return;
     	setTimeZoom(begTime, endTime);
     }
     
@@ -260,6 +222,11 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		return (double)viewWidth / (double)numTimeUnitsDisp;
 	}
 	
+	private class DepthBufferPaint implements BufferPaint {
+		public void rebuffering() {
+			rebuffer();
+		}
+	}
 	//---------------------------------------------------------------------------------------
 	// PRIVATE METHODS
 	//---------------------------------------------------------------------------------------
@@ -279,7 +246,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			assertTimeBounds();
 		}
 		
-		redraw();
+		rebuffer();
 	}
 
 	private void assertTimeBounds()
@@ -300,11 +267,41 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
     }
 	
-	private void rebuffer()
+	void rebuffer()
 	{
-		rebuffer = true;
+		if (stData == null)
+			return;
+		
+		System.out.print("DTC rebuffer ");
+		this.traceCalls();
+		final int viewWidth = getClientArea().width;
+		final int viewHeight = getClientArea().height;
+
+		//paints the current screen
+		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		GC bufferGC = new GC(imageBuffer);
+		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		try
+		{
+			stData.paintDepthViewport(bufferGC, this, begTime, endTime, viewWidth, viewHeight);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		bufferGC.dispose();
+		
+		redraw();
 	}
 
+	private void traceCalls() {
+		Throwable t = new Throwable();
+		for (int i=2; i<10; i++) {
+			System.out.println("\t" + t.getStackTrace()[i]);
+		}
+	}
 	/******************************************************************
 	 *		
 	 *	MouseListener and MouseMoveListener interface Implementation
@@ -344,7 +341,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 					setDetail();
 				}
 			}
-			redraw();
 		}
 	}
 	

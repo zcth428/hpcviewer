@@ -31,10 +31,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	/**The left pixel's x location*/
 	long topLeftPixelX;
 	
-	/**The width/height of the current screen in this canvas*/
-    //int viewWidth;
-    //int viewHeight;
-	
 	/**The first/last time being viewed now*/
     long begTime;
     long endTime;
@@ -156,15 +152,21 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		setTimeZoom(0, (long)stData.getWidth());
 	}
 	
+	private int currentProcess = -1;
 	/**************************************************************************
 	 * Sets the location of the crosshair to (_selectedTime, _selectedProcess).
 	 * Also updates the rest of the program to know that this is the selected
 	 * point (so that the CallStackViewer can update, etc.).
 	 **************************************************************************/
-	public void setCrossHair(double _selectedTime)
+	public void setPosition(Position position)
 	{
-		selectedTime = _selectedTime;
-		rebuffer();
+		selectedTime = (double)position.time;
+		if (currentProcess != position.process) {
+			rebuffer();
+			currentProcess = position.process;
+		} else
+			// just display a new cross
+			redraw();
 	}
 	
 

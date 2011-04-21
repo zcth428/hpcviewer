@@ -28,7 +28,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	DepthTimeCanvas depthCanvas;
 	
 	/** Determines whether this view has been setup.*/
-	boolean initialized = false;
+	//boolean initialized = false;
 	
 	HPCTraceView traceview;
 	
@@ -78,16 +78,13 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 
 	public void setFocus()
 	{
-		if (initialized)
-		{
-			depthCanvas.setCSSample();
-		}
+		
 	}
 		
 	public void setCSView(HPCCallStackView _csview)
 	{
 		traceview.detailCanvas.setDepthCanvas(depthCanvas);
-		initialized = true;
+		//initialized = true;
 	}
 
 	public void setDepth(int new_depth) {
@@ -95,6 +92,6 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	}
 
 	public void setPosition(Position position) {
-		this.depthCanvas.setCrossHair(position.time);
+		this.depthCanvas.setPosition(position);
 	}
 }

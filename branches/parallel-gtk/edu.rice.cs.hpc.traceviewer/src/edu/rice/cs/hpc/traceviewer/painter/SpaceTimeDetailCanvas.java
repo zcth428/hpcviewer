@@ -268,8 +268,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.updateButtonStates();
 		this.rebuffer();
 		
-		if (updateDepthView)
-			depthCanvas.setTimeRange(begTime, endTime);
+		//if (updateDepthView)
+		//	depthCanvas.setTimeRange(begTime, endTime);
 
 	}
 	

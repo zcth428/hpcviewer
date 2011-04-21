@@ -77,6 +77,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		final HPCCallStackView csview = this;
 		depthEditor = new Spinner(master, SWT.EMBEDDED);
 		depthEditor.setMinimum(0);
+		depthEditor.setPageIncrement(1);
 		depthEditor.setLayout(new GridLayout());
 		GridData depthData = new GridData(SWT.CENTER, SWT.TOP, true, false);
 		depthData.widthHint = 140;
@@ -103,6 +104,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 				if(stData.getDepth() != value)
 				{
 					stData.updateDepth(value, csview);
+					csViewer.setDepth(value);
 				}
 			}
 

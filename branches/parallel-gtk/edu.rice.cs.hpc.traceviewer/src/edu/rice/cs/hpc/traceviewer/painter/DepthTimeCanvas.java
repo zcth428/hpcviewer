@@ -191,11 +191,28 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
         rightSelection = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
     }
     
-    public void setTimeRange(long begTime, long endTime)
+	/*****
+	 * Refresh the content of the depth canvas based on the given time range.
+	 * If the old time range is different from the new one, we will create a 
+	 * new image buffer, otherwise just repaint the canvas
+	 * @param _begTime
+	 * @param _endTime
+	 */
+    public void refresh(long _begTime, long _endTime)
     {
     	if (stData == null)
     		return;
-    	setTimeZoom(begTime, endTime);
+    	
+    	//------------------------------------------------------
+    	// check if the new time range is the same as the existing time range
+    	// if it is the same then repaint the canvas, otherwise we have to 
+    	//	create a new image buffer
+    	//------------------------------------------------------
+    	if (begTime != _begTime || endTime != _endTime)
+    		// different time range. Needs to create a new image buffer
+    		setTimeZoom(begTime, endTime);
+    	else
+    		this.redraw();
     }
     
     public void setCSSample()

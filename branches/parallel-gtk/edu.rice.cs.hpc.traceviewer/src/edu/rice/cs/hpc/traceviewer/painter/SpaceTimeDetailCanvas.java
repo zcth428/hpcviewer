@@ -1004,7 +1004,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 */
 			redraw();
 			
-			depthCanvas.setTimeRange(begTime, endTime);
+			depthCanvas.refresh(begTime, endTime);
 		}
 	}
 	

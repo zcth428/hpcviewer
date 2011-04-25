@@ -148,18 +148,7 @@ public class CallStackViewer extends TableViewer
 		this.setDepth(_depth);
 	}
 	
-	/**Removes unnecessary over depth "--------------"s from the stack.*/
-	public void fixSample()
-	{
-		final Table stack = this.getTable();
-		
-		while((stack.getItemCount() - 1 > stData.getDepth()) && 
-			  stack.getItem(stack.getItemCount()-1).equals("--------------"))
-		{
-			stack.remove(stack.getItemCount() - 1);
-		}
-		stack.select(stData.getDepth());
-	}
+
 	
 	/**Sets the viewer's depth to _depth.*/
 	public void setDepth(int _depth)

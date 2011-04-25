@@ -210,7 +210,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     	//------------------------------------------------------
     	if (begTime != _begTime || endTime != _endTime)
     		// different time range. Needs to create a new image buffer
-    		setTimeZoom(begTime, endTime);
+    		setTimeZoom(_begTime, _endTime);
     	else
     		this.redraw();
     }

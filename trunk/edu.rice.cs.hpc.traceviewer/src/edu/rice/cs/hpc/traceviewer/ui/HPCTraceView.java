@@ -69,7 +69,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
         GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(detailCanvas);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(detailCanvas);
 
-		//detailCanvas.setDepth(0);
 	}
 
 	/**

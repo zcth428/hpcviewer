@@ -131,35 +131,28 @@ public class CallStackViewer extends TableViewer
 		}*/
 		ProcessTimeline ptl;
 		ptl = stData.getProcess(adjustedPosition);
+		if (ptl != null) {
+			int sample = ptl.findMidpointBefore(position.time);
+
+			final Vector<String> sampleVector = ptl.getSample(sample).getNames();
+
+			int numOverDepth = 0;
+			if (sampleVector.size()<=_depth)
+			{
+				numOverDepth = _depth-sampleVector.size()+1;
+				for(int l = 0; l<numOverDepth; l++)
+					sampleVector.add("--------------");
+			}
+			this.setInput(new ArrayList<String>(sampleVector));
 		
-		int sample = ptl.findMidpointBefore(position.time);
-
-		final Vector<String> sampleVector = ptl.getSample(sample).getNames();
-
-		int numOverDepth = 0;
-		if (sampleVector.size()<=_depth)
-		{
-			numOverDepth = _depth-sampleVector.size()+1;
-			for(int l = 0; l<numOverDepth; l++)
-				sampleVector.add("--------------");
+			this.setDepth(_depth);
+		} else {
+			System.err.println("Internal error: unable to get process " + adjustedPosition+"\nProcess range: " +
+					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tProcesses: " + stData.getNumberOfDisplayedProcesses());
 		}
-		this.setInput(new ArrayList<String>(sampleVector));
-	
-		this.setDepth(_depth);
 	}
 	
-	/**Removes unnecessary over depth "--------------"s from the stack.*/
-	public void fixSample()
-	{
-		final Table stack = this.getTable();
-		
-		while((stack.getItemCount() - 1 > stData.getDepth()) && 
-			  stack.getItem(stack.getItemCount()-1).equals("--------------"))
-		{
-			stack.remove(stack.getItemCount() - 1);
-		}
-		stack.select(stData.getDepth());
-	}
+
 	
 	/**Sets the viewer's depth to _depth.*/
 	public void setDepth(int _depth)

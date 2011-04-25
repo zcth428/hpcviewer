@@ -210,7 +210,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     	//------------------------------------------------------
     	if (begTime != _begTime || endTime != _endTime)
     		// different time range. Needs to create a new image buffer
-    		setTimeZoom(begTime, endTime);
+    		setTimeZoom(_begTime, _endTime);
     	else
     		this.redraw();
     }
@@ -219,7 +219,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     {
     	if(mouseDown == null)
     		return;
-    	int selectedProcess;
+ /*   	int selectedProcess;
     	int procIndex;
 
     	//need to do different things if there are more traces to paint than pixels
@@ -233,11 +233,12 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     		selectedProcess = (int)(detailCanvas.begProcess+
     				(mouseDown.y*(detailCanvas.endProcess-detailCanvas.begProcess))/detailCanvas.viewHeight);
     		procIndex = mouseDown.y;
-    	}
+    	}*/
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
     	
-    	Position position = new Position(closeTime, selectedProcess);
-    	position.processInCS = procIndex;
+    	Position currentPosition = stData.getPosition();
+    	Position position = new Position(closeTime, currentPosition.process);
+    	position.processInCS = currentPosition.processInCS;
     	
     	this.stData.updatePosition(position);
     }
@@ -299,8 +300,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		if (stData == null)
 			return;
 		
-		System.out.print("DTC rebuffer ");
-		this.traceCalls();
+		//System.out.print("DTC rebuffer ");
+		//this.traceCalls();
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 

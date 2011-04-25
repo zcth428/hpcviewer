@@ -128,9 +128,17 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 
-		event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
-
-		//paints the selection currently being made
+		try {
+			event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
+		} catch (Exception e) {
+			// An exception "Illegal argument" will be raised if the resize method is not "fast" enough to create the image
+			//		buffer before the painting is called. Thus, it causes inconsistency between the size of the image buffer
+			//		and the size of client area. 
+			//		If this happens, either we wait for the creation of image buffer, or do nothing. 
+			//		I prefer to do nothing for the scalability reason.
+			return;
+		}
+ 		//paints the selection currently being made
 		if (mouseState==SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
 		{
         	event.gc.setForeground(white);

@@ -247,12 +247,8 @@ public class SpaceTimeData extends TraceEvents
 		for (int threadNum = 0; threadNum < threads.length; threadNum++)
 		{
 			threads[threadNum] = new TimelineThread(this, changedBounds, canvas, numPixelsH, canvas.getScaleX(), Math.max(canvas.getScaleY(), 1));
-			if (!OSValidator.isUnix())
-				threads[threadNum].start();
-			else
-				threads[threadNum].run();
+			threads[threadNum].start();
 		}
-		if (!OSValidator.isUnix()) {
 			try
 			{
 				for (int threadNum = 0; threadNum < threads.length; threadNum++)
@@ -265,7 +261,6 @@ public class SpaceTimeData extends TraceEvents
 			{
 				e.printStackTrace();
 			}
-		}
 		for (int i = 0; i < linesToPaint; i++)
 		{
 			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0, (int)Math.round(i*Math.max(canvas.getScaleY(),1)), 
@@ -312,13 +307,9 @@ public class SpaceTimeData extends TraceEvents
 			for (int threadNum = 0; threadNum < threads.length; threadNum++)
 			{
 				threads[threadNum] = new TimelineThread(this, false, canvas, numPixelsH, canvas.getScaleX(), Math.max(numPixelsV/(double)maxDepth, 1));
-				if (!OSValidator.isUnix())
-					threads[threadNum].start();
-				else
-					threads[threadNum].run();
+				threads[threadNum].start();
 			}
 			
-			if (!OSValidator.isUnix()) {
 				try
 				{
 					for (int threadNum = 0; threadNum < threads.length; threadNum++)
@@ -331,7 +322,6 @@ public class SpaceTimeData extends TraceEvents
 				{
 					e.printStackTrace();
 				}
-			}
 		
 		}
 		for (int i = 0; i < linesToPaint; i++)

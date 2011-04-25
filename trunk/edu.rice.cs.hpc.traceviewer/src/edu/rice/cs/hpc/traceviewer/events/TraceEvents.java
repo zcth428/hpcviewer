@@ -67,11 +67,11 @@ public abstract class TraceEvents {
 	 * tell the manager that an event has changed
 	 * @param region
 	 */
-	public void updateDepth(int depth) {
+	public void updateDepth(int depth, Object source) {
 		
 		setDepth(depth);
 		for(ITraceDepth depth_listener: listDepthListener) {
-			if (depth_listener != null)
+			if (depth_listener != null && source != depth_listener)
 				depth_listener.setDepth(depth);
 		}
 		

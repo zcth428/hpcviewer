@@ -169,7 +169,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		double detailBottomRightProcess = miniBottomRight.y/getScaleY();
 		
 		detailCanvas.pushUndo();
-		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
+		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess, true);
 		setBox(detailCanvas.begTime, detailCanvas.begProcess, detailCanvas.endTime, detailCanvas.endProcess);
 	}
 	

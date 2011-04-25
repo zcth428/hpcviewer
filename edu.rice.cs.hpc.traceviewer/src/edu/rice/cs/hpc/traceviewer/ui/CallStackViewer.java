@@ -25,10 +25,9 @@ public class CallStackViewer extends TableViewer
 {
 	/**The SpaceTimeData associated with this CallStackViewer.*/
 	private SpaceTimeData stData;
-	    
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
-	public CallStackViewer(Composite parent, HPCCallStackView _csview)
+	public CallStackViewer(Composite parent, final HPCCallStackView _csview)
 	{
 		super(parent, SWT.SINGLE | SWT.V_SCROLL);
 		
@@ -80,13 +79,15 @@ public class CallStackViewer extends TableViewer
         });
         
         stack.setVisible(false);
-        
+        final CallStackViewer csviewer = this;
 		stack.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
 			{
 				int depth = stack.getSelectionIndex(); 
 				if(depth !=-1 && depth != stData.getDepth()) {
-					stData.updateDepth(depth);
+					// ask the depth editor to update the depth and launch the updateDepth event
+					_csview.depthEditor.setSelection(depth);
+					stData.updateDepth(depth, csviewer);
 				}
 			}
 		});

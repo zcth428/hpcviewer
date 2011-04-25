@@ -219,7 +219,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     {
     	if(mouseDown == null)
     		return;
-    	int selectedProcess;
+ /*   	int selectedProcess;
     	int procIndex;
 
     	//need to do different things if there are more traces to paint than pixels
@@ -233,11 +233,12 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     		selectedProcess = (int)(detailCanvas.begProcess+
     				(mouseDown.y*(detailCanvas.endProcess-detailCanvas.begProcess))/detailCanvas.viewHeight);
     		procIndex = mouseDown.y;
-    	}
+    	}*/
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
     	
-    	Position position = new Position(closeTime, selectedProcess);
-    	position.processInCS = procIndex;
+    	Position currentPosition = stData.getPosition();
+    	Position position = new Position(closeTime, currentPosition.process);
+    	position.processInCS = currentPosition.processInCS;
     	
     	this.stData.updatePosition(position);
     }

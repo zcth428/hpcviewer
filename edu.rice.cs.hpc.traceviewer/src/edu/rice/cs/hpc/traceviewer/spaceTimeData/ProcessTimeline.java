@@ -305,11 +305,19 @@ public class ProcessTimeline
         	return low;
 	}
 	
-	/**Finds the sample to which 'time' most closely corresponds in the ProcessTimeline.*/
+	/**Finds the sample to which 'time' most closely corresponds in the ProcessTimeline.
+	 * @param time: the requested time
+	 * @return the index of the sample if the time is within the range, -1 otherwise 
+	 * */
 	public int findMidpointBefore(double time)
 	{
 		int low = 0;
 		int high = times.size() - 2;
+		
+		// do not search the sample if the time is out of range
+		if (time < times.get(low) || time>times.get(high)) 
+			return -1;
+		
 		int mid = ( low + high ) / 2;
 		while( low != mid )
 		{

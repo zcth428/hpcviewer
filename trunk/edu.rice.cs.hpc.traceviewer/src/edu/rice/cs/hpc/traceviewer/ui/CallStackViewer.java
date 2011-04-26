@@ -134,7 +134,12 @@ public class CallStackViewer extends TableViewer
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time);
 
-			final Vector<String> sampleVector = ptl.getSample(sample).getNames();
+			final Vector<String> sampleVector;
+			if (sample>=0)
+				sampleVector = ptl.getSample(sample).getNames();
+			else
+				// empty array of string
+				sampleVector = new Vector<String>();
 
 			int numOverDepth = 0;
 			if (sampleVector.size()<=_depth)

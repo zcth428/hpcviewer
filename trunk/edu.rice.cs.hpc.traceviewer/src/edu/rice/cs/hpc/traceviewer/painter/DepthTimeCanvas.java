@@ -299,7 +299,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	{
 		if (stData == null)
 			return;
-		
+		//System.out.print("DTC rebuffer: ");
+		//this.traceCalls();
 		//System.out.print("DTC rebuffer ");
 		//this.traceCalls();
 		final int viewWidth = getClientArea().width;

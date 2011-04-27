@@ -68,6 +68,10 @@ public class TraceDatabase {
 				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
 				cview.updateData(stData);
 				
+				//---------------------------------------------------------------------
+				// upate the title of the application
+				//---------------------------------------------------------------------
+				shell.setText("hpctraceviewer: " + stData.getName());
 				return true;
 				
 			} catch (PartInitException e) {

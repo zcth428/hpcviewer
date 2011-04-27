@@ -91,6 +91,8 @@ public class SpaceTimeData extends TraceEvents
 	/** Stores the current position of cursor */
 	private Position currentPosition;
 	
+	private String dbName;
+	
 	final private boolean debug =  true;
 	
 	/*************************************************************************
@@ -117,6 +119,7 @@ public class SpaceTimeData extends TraceEvents
 		catch (InvalExperimentException e) {
 			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
 			e.printStackTrace();
+			return;
 		}
 		
 		scopeMap = new HashMap<Integer, Scope>();
@@ -132,9 +135,13 @@ public class SpaceTimeData extends TraceEvents
 		
 		// default position
 		this.currentPosition = new Position(0,0);
+		this.dbName = exp.getName();
 		//System.gc();
 	}
 
+	public String getName() {
+		return this.dbName;
+	}
 	
 	public void setDepth(int _depth) {
 		this.currentDepth = _depth;

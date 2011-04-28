@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Composite;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
@@ -289,7 +288,6 @@ public class SpaceTimeData extends TraceEvents
 		{
 			depthTrace = null;
 		}
-		//	traces = new HashMap<Integer, ProcessTimeline>(1);
 		
 		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processor
 		//long programTime = System.currentTimeMillis();

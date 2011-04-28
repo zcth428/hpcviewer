@@ -45,16 +45,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/*************************************************************************
 	 *	Creates the view.
 	 ************************************************************************/
-	//TO THE NEXT SCHLIMAZEL THAT WORKS ON THIS - THIS METHOD IS WHERE EVERYTHING STARTS
 	public void createPartControl(Composite master)
-	{
-		setupEverything(master);
-	}
-	
-	/**************************************************************************
-	 * Sets up everything that is to be displayed on the view.
-	 *************************************************************************/
-	public void setupEverything(final Composite master)
 	{
 
 		/*************************************************************************
@@ -68,12 +59,12 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 
         GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(detailCanvas);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(detailCanvas);
-
 	}
 
-	/**
+	
+	/*************************************************************************
 	 * update new data
-	 */
+	 *************************************************************************/
 	public void updateData(SpaceTimeData _stData) {
 		this.stData = _stData;
 		this.detailCanvas.updateData(_stData);

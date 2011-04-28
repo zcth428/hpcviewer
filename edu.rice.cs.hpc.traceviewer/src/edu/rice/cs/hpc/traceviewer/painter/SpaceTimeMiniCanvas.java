@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 
 import org.eclipse.swt.events.MouseEvent;
@@ -46,9 +47,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	/** The point at which the mouse was released.*/
 	private Point mouseUp;
 	
-	/**Determines whether or not the mini map has been painted yet.*/
-	private boolean initialized;
-	
 	/**Determines whether the first mouse click was inside the box or not.*/
 	private boolean insideBox;
 
@@ -57,11 +55,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	{	
 		super(_composite);
 		
-//		getHorizontalBar().setVisible(false);
-//		getVerticalBar().setVisible(false);
 		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
-		initialized = false;
 		selectionTopLeft = new Point(0,0);
 		selectionBottomRight = new Point(0,0);
 	}
@@ -77,6 +72,9 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 			addPaintListener(this);
 
 		}
+		Rectangle r = this.getClientArea();
+		this.viewingHeight = r.height;
+		this.viewingWidth = r.width;
 		
 		this.redraw();
 	}
@@ -94,16 +92,11 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 			return;
 			
 			
-		if(!initialized)
-		{
-			viewWidth = getClientArea().width;
-			viewHeight = getClientArea().height;
-			initialized = true;
-		}
+		viewWidth = getClientArea().width;
+		viewHeight = getClientArea().height;
 		
 		event.gc.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
 		event.gc.fillRectangle(this.getClientArea());
-		
 		
 		if (insideBox)
 		{
@@ -123,6 +116,9 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/
 	public void setBox(long topLeftTime, double topLeftProcess, long bottomRightTime, double bottomRightProcess)
 	{
+		if (this.stData == null)
+			return;
+		
 		topLeftPixelX = (int)Math.round(topLeftTime * getScaleX());
 		topLeftPixelY = (int)Math.round(topLeftProcess * getScaleY());
 		
@@ -204,6 +200,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		viewingHeight = selectionBottomRight.y-selectionTopLeft.y;
 		insideBox = true;
 		setDetailSelection();
+		
 	}
 	
 	/**Gets the scale in the X-direction (pixels per time unit).*/
@@ -279,6 +276,14 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 				adjustSelection(mouseDown, mouseCurrent);
 			
 			redraw();
+		}
+	}
+	
+	private void printTrace() {
+		Throwable t = new Throwable();
+		StackTraceElement traces[] = t.getStackTrace();
+		for (int i=3; i<8; i++) {
+			System.out.println("\t" + traces[i]);
 		}
 	}
 }

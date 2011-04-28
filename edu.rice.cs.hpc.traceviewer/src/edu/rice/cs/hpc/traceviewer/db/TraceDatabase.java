@@ -69,7 +69,7 @@ public class TraceDatabase {
 				cview.updateData(stData);
 				
 				//---------------------------------------------------------------------
-				// upate the title of the application
+				// Update the title of the application
 				//---------------------------------------------------------------------
 				shell.setText("hpctraceviewer: " + stData.getName());
 				return true;

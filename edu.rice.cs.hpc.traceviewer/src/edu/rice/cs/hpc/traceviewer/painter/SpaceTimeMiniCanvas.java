@@ -133,7 +133,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	}
 	
 	/**Moves white box to correspond to where mouse has moved to.*/
-	public void moveBox(Point mouseCurrent)
+	private void moveBox(Point mouseCurrent)
 	{
 		int changeX = mouseCurrent.x-mousePrevious.x;
 		int changeY = mouseCurrent.y-mousePrevious.y;
@@ -153,7 +153,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	}
 	
 	/**Scales coordinates and sends them to detailCanvas.*/
-	public void setDetailSelection()
+	private void setDetailSelection()
 	{
 		Point miniTopLeft = new Point((int)topLeftPixelX,(int)topLeftPixelY);
 		Point miniBottomRight = new Point((int)topLeftPixelX+viewingWidth, (int)topLeftPixelY+viewingHeight);
@@ -170,7 +170,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	}
 	
 	/**Updates the selectionBox on the MiniMap to have corners at p1 and p2.*/
-	public void adjustSelection(Point p1, Point p2)
+	private void adjustSelection(Point p1, Point p2)
 	{
     	selectionTopLeft.x = Math.min(p1.x, p2.x);
         selectionTopLeft.y = Math.min(p1.y, p2.y);
@@ -191,7 +191,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	 * What happens when you let go of the selection box - 
 	 * sets the bounds according to those of the selection box.
 	 *********************************************************/
-	public void setSelection(Point p1, Point p2)
+	private void setSelection(Point p1, Point p2)
 	{
 		adjustSelection(p1, p2);
 		topLeftPixelX = selectionTopLeft.x;
@@ -223,8 +223,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 
 	public void mouseDoubleClick(MouseEvent e)
 	{
-		setSelection(new Point(0,0), new Point(viewWidth,viewHeight));
-		redraw();
+		//setSelection(new Point(0,0), new Point(viewWidth,viewHeight));
+		//redraw();
 	}
 
 	public void mouseDown(MouseEvent e)

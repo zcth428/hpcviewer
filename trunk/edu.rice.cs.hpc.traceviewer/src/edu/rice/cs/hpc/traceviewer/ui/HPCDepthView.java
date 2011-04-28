@@ -84,7 +84,6 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	public void setCSView(HPCCallStackView _csview)
 	{
 		traceview.detailCanvas.setDepthCanvas(depthCanvas);
-		//initialized = true;
 	}
 
 	public void setDepth(int new_depth) {

@@ -283,14 +283,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (this.stData == null)
 			return;
 		
-		//if(homeScreen)
-		{
-			//homeScreen = false;
-		}
-		
 		topLeftPixelX = Math.round(begTime * getScaleX());
 		topLeftPixelY = Math.round(begProcess * getScaleY());
-		miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
 		
 		Rectangle region = imageBuffer.getBounds();
 		if (region.width != viewWidth || region.height != viewHeight)
@@ -945,11 +939,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			redraw();
 		}
 	}
-	/*
-	public int getDepth()
-	{
-		return depth;
-	}*/
 	
 	public void setMiniCanvas(SpaceTimeMiniCanvas _miniCanvas)
 	{
@@ -961,7 +950,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		depthCanvas = _depthCanvas;
 	}
 	
-	//Frame currentFrame = null;
+
+	/***********************************************************************************
+	 * Forcing to create image buffer
+	 * Attention: this method will take some time to generate an image buffer, so
+	 * 	please do not call this if not necessary
+	 ***********************************************************************************/
 	private void rebuffer() {
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
@@ -978,34 +972,20 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			viewHeight = this.getClientArea().height;
 		}
 
-/*		if (viewWidth>0 && viewHeight>0 && getDisplay() != null) {
-			Frame frame = new Frame(begTime, endTime, begProcess, endProcess,this.stData.getDepth(),0,0);
-			if (currentFrame != null) {
-				if (frame.equalDimension(currentFrame)) {
-					return;
-				}
-			}
-			currentFrame = frame;*/
-		{
-			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-			GC bufferGC = new GC(imageBuffer);
-			bufferGC.setBackground(white);
-			bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
-			stData.paintDetailViewport(bufferGC, this, this.stData.getDepth(), 
-					(int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
-			
-			bufferGC.dispose();
-/*			Throwable t = new Throwable();
-			StackTraceElement traces[] = t.getStackTrace();
-			System.out.println("BUFF " + traces[0]);
-			for (int i=1; i<5; i++) {
-				System.out.println("\t" + traces[i]);
-			}
-*/
-			redraw();
-			
-			depthCanvas.refresh(begTime, endTime);
-		}
+		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		GC bufferGC = new GC(imageBuffer);
+		bufferGC.setBackground(white);
+		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		stData.paintDetailViewport(bufferGC, this, this.stData.getDepth(), 
+				(int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
+		
+		bufferGC.dispose();
+		redraw();
+		
+		depthCanvas.refresh(begTime, endTime);
+		
+		// forcing the minimap to refresh with the new region
+		miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
 	}
 	
 }

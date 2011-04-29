@@ -957,7 +957,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * 	please do not call this if not necessary
 	 ***********************************************************************************/
 	private void rebuffer() {
-		Debugger.printTrace("STDC rebuffer");
+		//Debugger.printTrace("STDC rebuffer");
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
 		//we get its GC (bufferGC), and then pass that GC to paintViewport, which draws

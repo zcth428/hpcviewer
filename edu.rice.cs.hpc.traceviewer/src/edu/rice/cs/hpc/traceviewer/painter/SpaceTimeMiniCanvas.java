@@ -165,7 +165,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		double detailBottomRightProcess = miniBottomRight.y/getScaleY();
 		
 		detailCanvas.pushUndo();
-		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess, true);
+		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
 		setBox(detailCanvas.begTime, detailCanvas.begProcess, detailCanvas.endTime, detailCanvas.endProcess);
 	}
 	
@@ -279,11 +279,5 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		}
 	}
 	
-	private void printTrace() {
-		Throwable t = new Throwable();
-		StackTraceElement traces[] = t.getStackTrace();
-		for (int i=3; i<8; i++) {
-			System.out.println("\t" + traces[i]);
-		}
-	}
+
 }

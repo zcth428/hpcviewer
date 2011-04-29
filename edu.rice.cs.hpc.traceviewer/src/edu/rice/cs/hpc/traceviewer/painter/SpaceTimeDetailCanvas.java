@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 /*************************************************************************
  * 
@@ -168,7 +169,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			this.addCanvasListener();
 		}
 		
-		this.home(false);
+		this.home();
 		stData.setDepth(0);
 
 		// clear undo button
@@ -240,8 +241,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.
 	 *************************************************************************/
-	public void setDetailZoom(long _topLeftTime, double _topLeftProcess, long _bottomRightTime, double _bottomRightProcess,
-			boolean updateDepthView)
+	public void setDetailZoom(long _topLeftTime, double _topLeftProcess, long _bottomRightTime, double _bottomRightProcess)
 	{
 		begTime = _topLeftTime;
 		begProcess = _topLeftProcess;
@@ -374,7 +374,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * the bounds are reset so that the viewer is zoomed all the way out on the
 	 * image.
 	 **************************************************************************/
-	public void home(boolean updateDepthView)
+	public void home()
 	{
 		pushUndo();
 		
@@ -397,7 +397,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			viewHeight = 1;
 		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 
-		setDetailZoom(0, 0, stData.getWidth(), stData.getHeight(), updateDepthView);
+		setDetailZoom(0, 0, stData.getWidth(), stData.getHeight());
 	}
 	
 	/**************************************************************************
@@ -480,12 +480,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	public void setFrame(Frame current)
 	{
-		
 		if (current.begTime == stData.getViewTimeBegin() && current.endTime == stData.getViewTimeEnd() 
 				&& current.begProcess == stData.getBegProcess() && current.endProcess == stData.getEndProcess()) {
 			
 		} else {
-			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess, true);			
+			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);	
+			return;
 		}
 		
 		if (current.depth != stData.getDepth()) {
@@ -703,7 +703,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		long topLeftTime = (long)((double)selectionTopLeftX / getScaleX());
 		double bottomRightProcess = (selectionBottomRightY / getScaleY());
 		long bottomRightTime = (long)((double)selectionBottomRightX / getScaleX());
-		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess, true);
+		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
 
     
@@ -800,7 +800,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
     	pushUndo();
-    	setDetailZoom(topLeftTime, begProcess, bottomRightTime, endProcess, true);
+    	setDetailZoom(topLeftTime, begProcess, bottomRightTime, endProcess);
     }
 
     /*******
@@ -846,7 +846,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      */
 	private void setProcessRange(double pBegin, double pEnd) {
 		pushUndo();
-		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd, false);
+		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
 	}
 
     public void setCSSample()
@@ -957,6 +957,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * 	please do not call this if not necessary
 	 ***********************************************************************************/
 	private void rebuffer() {
+		Debugger.printTrace("STDC rebuffer");
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
 		//we get its GC (bufferGC), and then pass that GC to paintViewport, which draws

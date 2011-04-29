@@ -142,7 +142,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	//----------------------------------------------------------------------------------------------------
 	
 	public void home() {
-		detailCanvas.home(true);
+		detailCanvas.home();
 	}
 
 	public void timeZoomIn() {

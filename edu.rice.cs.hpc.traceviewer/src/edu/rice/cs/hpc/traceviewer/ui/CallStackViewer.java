@@ -168,17 +168,4 @@ public class CallStackViewer extends TableViewer
 		this.getTable().redraw();
 	}
 	
-	
-	/***
-	 * reset the content of the stack
-	 */
-	private void resetStack() {
-		final ArrayList<String> callstackname = new ArrayList<String>();
-
-        callstackname.add("Select a sample");
-        callstackname.add("from the Trace View");
-
-        this.setInput(callstackname);
-	}
-
 }

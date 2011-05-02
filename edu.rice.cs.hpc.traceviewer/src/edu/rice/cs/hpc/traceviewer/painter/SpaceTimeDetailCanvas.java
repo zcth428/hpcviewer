@@ -925,7 +925,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				redraw();
 			}
 			//don't draw the selection if you're not selecting anything
-			adjustSelection(new Point(-1,-1),new Point(-1,-1));
+			//adjustSelection(new Point(-1,-1),new Point(-1,-1));
 		}
 	}
 	

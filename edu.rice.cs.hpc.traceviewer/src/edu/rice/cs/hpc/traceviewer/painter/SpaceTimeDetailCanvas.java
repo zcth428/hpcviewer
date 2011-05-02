@@ -263,6 +263,19 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			endProcess = begProcess+numProcessDisp;
 		}
 		
+		long selectedTime = stData.getPosition().time;
+		int selectedProcess = stData.getPosition().process;
+		
+		// cross hair is out of the new selected region ?
+		if (selectedTime < begTime || selectedTime > endTime ) {
+			selectedTime = (endTime+begTime)/2;
+		}
+		
+		if (selectedProcess < begProcess || selectedProcess > endProcess) {
+			selectedProcess = (int) ((begProcess + endProcess)/2);
+		}
+		this.stData.updatePosition(new Position(selectedTime, selectedProcess));
+
 		this.updateButtonStates();
 		this.rebuffer();
 		

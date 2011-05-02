@@ -102,7 +102,7 @@ public class CallStackViewer extends TableViewer
 	public void updateData(SpaceTimeData _stData) {
 		this.stData = _stData;
 
-		this.resetStack();
+		this.setSample(stData.getPosition(), this.stData.getDepth());
 		this.getTable().setVisible(true);
 	}
 	

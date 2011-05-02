@@ -162,7 +162,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			this.addCanvasListener();
 		}
 		
+		long rangeX = this.stData.getWidth();
+		int rangeY = this.stData.getHeight();
+		
+		stData.setPosition(new Position(rangeX>>1, rangeY>>1));
+		
 		this.home();
+
 		stData.setDepth(0);
 
 		// clear undo button

@@ -312,7 +312,7 @@ public class ProcessTimeline
 	public int findMidpointBefore(double time)
 	{
 		int low = 0;
-		int high = times.size() - 2;
+		int high = times.size() - 1;
 		
 		// do not search the sample if the time is out of range
 		if (time < times.get(low) || time>times.get(high)) 

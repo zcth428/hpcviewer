@@ -883,7 +883,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 
 	public void mouseDown(MouseEvent e)
 	{
-		if (mouseState == MouseState.ST_MOUSE_NONE)
+		// take into account ONLY when the button-1 is clicked and it's never been clicked before
+		if (e.button == 1 && mouseState == MouseState.ST_MOUSE_NONE)
 		{
 			mouseState = MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);

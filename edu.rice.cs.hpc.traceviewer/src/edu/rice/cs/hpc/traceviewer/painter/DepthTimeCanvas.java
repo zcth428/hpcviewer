@@ -6,7 +6,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -16,6 +15,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**A view for displaying the depthview.*/
 //all the GUI setup for the depth view is here
@@ -62,8 +62,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     
     public SpaceTimeDetailCanvas detailCanvas;
     
-    public static Color white;
-    public static Color black;
 	
 	public DepthTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas, int _process)
     {
@@ -76,8 +74,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		selectedDepth = -1;
 		leftSelection = 0;
 		rightSelection = 0;
-		white = getDisplay().getSystemColor(SWT.COLOR_WHITE);
-		black = getDisplay().getSystemColor(SWT.COLOR_BLACK);
 		
 		this.getVerticalBar().setVisible(false);
 		this.getHorizontalBar().setVisible(false);
@@ -141,7 +137,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
  		//paints the selection currently being made
 		if (mouseState==SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
 		{
-        	event.gc.setForeground(white);
+        	event.gc.setForeground(Constants.COLOR_WHITE);
     		event.gc.setLineWidth(2);
     		event.gc.drawRectangle((int)(leftSelection-topLeftPixelX), 0, (int)(rightSelection-leftSelection), viewHeight);
         }
@@ -180,7 +176,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 
 	public void setDepth(int _selectedDepth) {
 		selectedDepth = _selectedDepth;
-		//rebuffer();
 	}
 	
 	public void adjustSelection(Point p1, Point p2)
@@ -219,21 +214,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
     {
     	if(mouseDown == null)
     		return;
- /*   	int selectedProcess;
-    	int procIndex;
 
-    	//need to do different things if there are more traces to paint than pixels
-    	if(detailCanvas.viewHeight > detailCanvas.endProcess-detailCanvas.begProcess)
-    	{
-    		selectedProcess = (int)(detailCanvas.begProcess+mouseDown.y/detailCanvas.getScaleY());
-    		procIndex = (int)(mouseDown.y/detailCanvas.getScaleY());
-    	}
-    	else
-    	{
-    		selectedProcess = (int)(detailCanvas.begProcess+
-    				(mouseDown.y*(detailCanvas.endProcess-detailCanvas.begProcess))/detailCanvas.viewHeight);
-    		procIndex = mouseDown.y;
-    	}*/
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
     	
     	Position currentPosition = stData.getPosition();
@@ -250,11 +231,16 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		return (double)viewWidth / (double)numTimeUnitsDisp;
 	}
 	
+	//---------------------------------------------------------------------------------------
+	// PRIVATE CLASSES
+	//---------------------------------------------------------------------------------------
+
 	private class DepthBufferPaint implements BufferPaint {
 		public void rebuffering() {
 			rebuffer();
 		}
 	}
+
 	//---------------------------------------------------------------------------------------
 	// PRIVATE METHODS
 	//---------------------------------------------------------------------------------------
@@ -299,10 +285,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	{
 		if (stData == null)
 			return;
-		//System.out.print("DTC rebuffer: ");
-		//this.traceCalls();
-		//System.out.print("DTC rebuffer ");
-		//this.traceCalls();
+
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 
@@ -325,12 +308,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		redraw();
 	}
 
-	private void traceCalls() {
-		Throwable t = new Throwable();
-		for (int i=2; i<10; i++) {
-			System.out.println("\t" + t.getStackTrace()[i]);
-		}
-	}
+
 	/******************************************************************
 	 *		
 	 *	MouseListener and MouseMoveListener interface Implementation

@@ -17,26 +17,29 @@ import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 public class TimelineThread extends Thread
 {
 	/**The SpaceTimeData that this thread gets its files from and adds it data and images to.*/
-	SpaceTimeData stData;
+	private SpaceTimeData stData;
 	
 	/**Stores whether or not the bounds have been changed*/
-	boolean changedBounds;
+	private boolean changedBounds;
 	
 	/**Stores whether a SpaceTimeDetailCanvas or a DepthTimeCanvas is being painted*/
-	boolean detailPaint;
+	private boolean detailPaint;
 	
 	/**The canvas on which to paint.*/
-	Canvas canvas;
+	private Canvas canvas;
 	
 	/**The width that the images that this thread draws should be.*/
-	int width;
+	private int width;
 	
 	/**The scale in the x-direction of pixels to time (for the drawing of the images).*/
-	double scaleX;
+	private double scaleX;
 	
 	/**The scale in the y-direction of pixels to processors (for the drawing of the images).*/
-	double scaleY;
+	private double scaleY;
 
+	/**The minimum height the samples need to be in order to paint the white separator lines.*/
+	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
+	
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
@@ -70,14 +73,12 @@ public class TimelineThread extends Thread
 			{
 				if(changedBounds)
 				{
-					//long time = System.currentTimeMillis();
 					nextTrace.readInData();
-					//System.out.println("Filling " + nextTrace.line() + ": " + (System.currentTimeMillis() - time));
 					stData.addNextTrace(nextTrace);
 				}
 				
 				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > SpaceTimeSamplePainter.MIN_HEIGHT_FOR_SEPARATOR_LINES)
+				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
 					imageHeight--;
 				else
 					imageHeight++;
@@ -106,7 +107,7 @@ public class TimelineThread extends Thread
 				}*/
 				
 				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > SpaceTimeSamplePainter.MIN_HEIGHT_FOR_SEPARATOR_LINES)
+				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
 					imageHeight--;
 				else
 					imageHeight++;

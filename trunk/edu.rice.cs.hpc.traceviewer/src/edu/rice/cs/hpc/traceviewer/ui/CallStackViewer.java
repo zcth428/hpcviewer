@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Table;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 /**************************************************
  * A viewer for CallStackSamples.
  *************************************************/
@@ -152,8 +153,9 @@ public class CallStackViewer extends TableViewer
 		
 			this.setDepth(_depth);
 		} else {
-			System.err.println("Internal error: unable to get process " + adjustedPosition+"\nProcess range: " +
-					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tProcesses: " + stData.getNumberOfDisplayedProcesses());
+			System.err.println("Internal error: unable to get process " + adjustedPosition+"\tProcess range: " +
+					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
+			Debugger.printTrace("CSV traces: ");
 		}
 	}
 	

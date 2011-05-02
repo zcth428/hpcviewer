@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 /*************************************************************************
@@ -120,12 +121,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     
     /**The Label with the current cross hair information.*/
     public Label crossHairLabel;
-    
-    /**The SWT Color for white.*/
-    public static Color white;
-    /**The SWT Color for black.*/
-    public static Color black;
-    
+        
     /**The min number of time units you can zoom in.*/
     private final static long MIN_TIME_UNITS_DISP = 50000;
     
@@ -146,9 +142,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		selectionTopLeftY = 0;
 		selectionBottomRightX = 0;
 		selectionBottomRightY = 0;
-		
-		white = getDisplay().getSystemColor(SWT.COLOR_WHITE);
-		black = getDisplay().getSystemColor(SWT.COLOR_BLACK);
 		
 		if (this.stData != null) {
 			this.addCanvasListener();
@@ -975,7 +968,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 
 		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 		GC bufferGC = new GC(imageBuffer);
-		bufferGC.setBackground(white);
+		bufferGC.setBackground(Constants.COLOR_WHITE);
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 		stData.paintDetailViewport(bufferGC, this, this.stData.getDepth(), 
 				(int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);

@@ -5,6 +5,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /***************************************************************
  * A painter that actually paints the samples onto an image
@@ -21,13 +22,6 @@ public class SpaceTimeSamplePainter
 	
 	/**The GC that the painter paints the samples onto.*/
 	private final GC gc;
-	
-	/**The minimum height the samples need to be in order to paint the white separator lines.*/
-	public final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
-	
-	/**The darkest color for black over depth text (switch to white if the sum of the 
-	 * R, G, and B components is less than this number).*/
-	public final static short DARKEST_COLOR = 384;
 	
 	/*****************************************************************************************************
 	 * Creates a SpaceTimeSamplePainter that will draw to the GC _gc, with the master canvas 'canvas' and
@@ -64,10 +58,10 @@ public class SpaceTimeSamplePainter
 		gc.setBackground(bgColor);
 		
 		//Sets the color that the over depth text should be
-		if (bgColor.getRed()+bgColor.getBlue()+bgColor.getGreen()>DARKEST_COLOR)
-			gc.setForeground(SpaceTimeDetailCanvas.black);
+		if (bgColor.getRed()+bgColor.getBlue()+bgColor.getGreen()>Constants.DARKEST_COLOR)
+			gc.setForeground(Constants.COLOR_BLACK);
 		else
-			gc.setForeground(SpaceTimeDetailCanvas.white);
+			gc.setForeground(Constants.COLOR_WHITE);
 		
 		String overDepthText = String.valueOf(depth);
 		Point textSize = gc.textExtent(overDepthText);

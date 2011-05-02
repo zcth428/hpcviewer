@@ -248,7 +248,6 @@ public class SpaceTimeData extends TraceEvents
 		lineNum = 0;
 		TimelineThread[] threads;
 		threads = new TimelineThread[Math.min(linesToPaint, Runtime.getRuntime().availableProcessors())];
-		//long programTime = System.currentTimeMillis();
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++)
 		{
@@ -272,7 +271,6 @@ public class SpaceTimeData extends TraceEvents
 			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0, (int)Math.round(i*Math.max(canvas.getScaleY(),1)), 
 					compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
 		}
-		//System.out.println("Took "+(System.currentTimeMillis()-programTime)+" milliseconds to get data and paint.");
 	}
 	
 	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)

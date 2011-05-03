@@ -600,6 +600,9 @@ public class SpaceTimeData extends TraceEvents
 	{
 		//System.out.println("I'm painting process "+process+" at depth "+depth);
 		ProcessTimeline ptl = traces.get(process);
+		if (ptl == null)
+			return;
+		
 		if (changedBounds)
 			ptl.shiftTimeBy(minBegTime);
 		double pixelLength = (endTime - begTime)/(double)numPixelsH;

@@ -38,14 +38,13 @@ public abstract class GraphEditorBase extends EditorPart {
 	@Override
 	public void init(IEditorSite site, IEditorInput input)
 			throws PartInitException {
-		
+
 		this.setSite(site);
 		this.setInput(input);
 	}
 
 	@Override
 	public boolean isDirty() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -63,6 +62,7 @@ public abstract class GraphEditorBase extends EditorPart {
 	}
 
 	public void createPartControl(Composite parent) {
+		
 		IEditorInput input = this.getEditorInput();
 		if (input == null || !(input instanceof GraphEditorInput) )
 			throw new RuntimeException("Invalid input for graph editor");
@@ -78,19 +78,11 @@ public abstract class GraphEditorBase extends EditorPart {
 		chart = new InteractiveChart(parent, SWT.NONE);
 		chart.getTitle().setText( title );
 
-		
-		//----------------------------------------------
-		// axis title
-		//----------------------------------------------
-//		chart.getAxisSet().getXAxis(0).getTitle().setText( getXAxisTitle() );
-//		chart.getAxisSet().getYAxis(0).getTitle().setText( getYAxisTitle() );
 
 		//----------------------------------------------
 		// formatting axis
 		//----------------------------------------------
 		IAxisSet axisSet = chart.getAxisSet();
-//		IAxisTick xTick = axisSet.getXAxis(0).getTick();
-//		xTick.setFormat(new DecimalFormat("######00.00##"));
 		IAxisTick yTick = axisSet.getYAxis(0).getTick();
 		yTick.setFormat(new DecimalFormat("0.0##E0##"));
 
@@ -140,10 +132,6 @@ public abstract class GraphEditorBase extends EditorPart {
 		chart.updateLayout();		
 	}
 	
-	
-//	protected abstract String getXAxisTitle();
-//	protected abstract String getYAxisTitle();
-//	protected abstract void setAxisTitle();
 	protected abstract void plotData( Experiment exp, Scope scope, MetricRaw metric );
 
 }

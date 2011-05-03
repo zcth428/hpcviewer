@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.viewer.graph;
 
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
@@ -34,6 +35,15 @@ public abstract class GraphEditor extends GraphEditorBase {
 			diameter = DEFAULT_DIAMETER;
 	}
 	
+	/******
+	 * Do finalization of the editor
+	 * 
+	 * Due to SWT Chart bug, we need to adjust the range once the create-part-control
+	 * 	finishes its layout.
+	 */
+	public void finalize() {
+		this.getChart().getAxisSet().adjustRange();
+	}
 	
 	/*****
 	 * change the size of the dot
@@ -81,6 +91,11 @@ public abstract class GraphEditor extends GraphEditorBase {
 			}
 		}
 	}
+	
+	private void addMenu(Menu menu) {
+		
+	}
+	
 	//========================================================================
 	// Protected method
 	//========================================================================
@@ -122,13 +137,6 @@ public abstract class GraphEditor extends GraphEditorBase {
 		String axis_x = this.getXAxisTitle(type);
 		chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );
 		chart.getAxisSet().getYAxis(0).getTitle().setText( "Metrics" );
-		
-		// -----------------------------------------------------------------
-		// adjust the axis range
-		// -----------------------------------------------------------------
-		chart.getAxisSet().adjustRange();
-
-		updateRange(x_values.length);
 	}
 
 	/***

@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -18,6 +19,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.graph.GraphEditor;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorHisto;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorPlot;
@@ -189,17 +191,21 @@ public class ScopeView extends BaseScopeView {
 	        	if (objInput == null) {
 	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type);
 	        	}
-	        	
+	        	IEditorPart editor = null;
 	        	switch (graph_type) {
 	        	case PLOT:
-		        	objPage.openEditor(objInput, GraphEditorPlot.ID);
+	        		editor = objPage.openEditor(objInput, GraphEditorPlot.ID);
 		        	break;
 	        	case SORTED:
-		        	objPage.openEditor(objInput, GraphEditorPlotSort.ID);
+	        		editor = objPage.openEditor(objInput, GraphEditorPlotSort.ID);
 	        		break;
 	        	case HISTO:
-		        	objPage.openEditor(objInput, GraphEditorHisto.ID);
+	        		editor = objPage.openEditor(objInput, GraphEditorHisto.ID);
 	        		break;
+	        	}
+	        	
+	        	if (editor instanceof GraphEditor) {
+	        		((GraphEditor)editor).finalize();
 	        	}
 				
 			} catch (PartInitException e) {

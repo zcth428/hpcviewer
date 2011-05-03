@@ -638,7 +638,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/**************************************************************************
 	 * Updates what the labels display to the viewer's current state.
 	 **************************************************************************/
-    public void adjustLabels()
+	private void adjustLabels()
     {
         timeLabel.setText("Time Range: " + ((long)(begTime/1000))/1000.0 + "s |" + ((long)endTime/1000)/1000.0 +  "s");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -660,7 +660,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     /**************************************************************************
 	 * Updates what the position of the selected box is.
 	 **************************************************************************/
-	public void adjustSelection(Point p1, Point p2)
+    private void adjustSelection(Point p1, Point p2)
 	{
     	selectionTopLeftX = topLeftPixelX + Math.max(Math.min(p1.x, p2.x), 0);
         selectionTopLeftY = topLeftPixelY + Math.max(Math.min(p1.y, p2.y), 0);
@@ -674,14 +674,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * 	the new region or not. If this is not the case, we force the position
 	 * 	of crosshair to be inside the region 
 	 **************************************************************************/
-    public void setDetail()
+	private void setDetail()
     {
     	double topLeftProcess = (selectionTopLeftY / getScaleY());
 		long topLeftTime = (long)((double)selectionTopLeftX / getScaleX());
 		double bottomRightProcess = (selectionBottomRightY / getScaleY());
 		long bottomRightTime = (long)((double)selectionBottomRightX / getScaleX());
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
-		
     }
     
     /******
@@ -862,7 +861,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
 	}
 
-    public void setCSSample()
+	private void setCSSample()
     {
     	if(mouseDown == null)
     		return;

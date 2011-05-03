@@ -699,6 +699,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         selectionBottomRightY = topLeftPixelY + Math.min(Math.max(p1.y, p2.y), viewHeight-1);
     }
     
+	/**************************************************************************
+	 * create a new region of trace view, and check if the cross hair is inside
+	 * 	the new region or not. If this is not the case, we force the position
+	 * 	of crosshair to be inside the region 
+	 **************************************************************************/
     public void setDetail()
     {
     	double topLeftProcess = (selectionTopLeftY / getScaleY());
@@ -706,6 +711,41 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		double bottomRightProcess = (selectionBottomRightY / getScaleY());
 		long bottomRightTime = (long)((double)selectionBottomRightX / getScaleX());
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
+		
+		//----------------------------------------------------------------------------
+		// we have new region. Check if the cross hair is still within the new region
+		//----------------------------------------------------------------------------
+		this.adjustCrossHair(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
+    }
+    
+    /******
+     * If necessary adjust the position of cross hair with the view region
+     * If the cross hair is outside the region, we force to position it within the region
+     * 	in order to avoid exposed bugs and confusion that the depth and the call path are not
+     * 	consistent with the trace view
+     * 
+     * @param t1
+     * @param p1
+     * @param t2
+     * @param p2
+     */
+    private void adjustCrossHair(long t1, double p1, long t2, double p2) {
+    	
+    	Position current = this.stData.getPosition();
+    	int process = current.process;
+    	long time = current.time;
+    	
+    	if (process < p1 || process > p2) {
+    		process = (int) ((long) p1+p2) >> 1;
+    	}
+    	if (time < t1 || time > t2) {
+    		time = (t1+t2)>>1;
+    	}
+    	Position newPosition = new Position(time,process);
+    	newPosition.processInCS = (int) (process - begProcess);
+    	
+    	// tell other views that we have new position 
+    	this.stData.updatePosition(newPosition);
     }
 
     
@@ -870,6 +910,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     		procIndex = mouseDown.y;
     	}
     	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
+    	if (closeTime > endTime) {
+    		System.err.println("ERR STDC SCSSample time: " + closeTime +" max time: " + endTime + "\t new: " + ((begTime + endTime) >> 1));
+    		closeTime = (begTime + endTime) >> 1;
+    		
+    	}
     	
     	Position position = new Position(closeTime, selectedProcess);
     	position.processInCS = procIndex;

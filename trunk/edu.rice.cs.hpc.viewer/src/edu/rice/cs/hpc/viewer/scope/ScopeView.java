@@ -19,7 +19,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.graph.GraphEditor;
+import edu.rice.cs.hpc.viewer.graph.GraphEditorBase;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorHisto;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorPlot;
@@ -204,8 +204,8 @@ public class ScopeView extends BaseScopeView {
 	        		break;
 	        	}
 	        	
-	        	if (editor instanceof GraphEditor) {
-	        		((GraphEditor)editor).finalize();
+	        	if (editor instanceof GraphEditorBase) {
+	        		((GraphEditorBase)editor).finalize();
 	        	}
 				
 			} catch (PartInitException e) {

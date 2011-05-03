@@ -9,10 +9,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.swtchart.IAxis;
 import org.swtchart.IAxisSet;
 import org.swtchart.IAxisTick;
-import org.swtchart.Range;
 import org.swtchart.Chart;
 import org.swtchart.ext.InteractiveChart;
 
@@ -60,6 +58,16 @@ public abstract class GraphEditorBase extends EditorPart {
 		// TODO Auto-generated method stub
 
 	}
+	
+	/******
+	 * Do finalization of the editor
+	 * 
+	 * Due to SWT Chart bug, we need to adjust the range once the create-part-control
+	 * 	finishes its layout.
+	 */
+	public void finalize() {
+		this.getChart().getAxisSet().adjustRange();
+	}
 
 	public void createPartControl(Composite parent) {
 		
@@ -103,34 +111,6 @@ public abstract class GraphEditorBase extends EditorPart {
 		return this.chart;
 	}
 
-	/***
-	 * temporary SWTChart bug fix 
-	 * add axis padding for scatter graph
-	 */
-	protected void updateRange(int num_items_x) {
-		Chart chart = getChart();
-		IAxis axis = chart.getAxisSet().getXAxis(0);
-		Range range = axis.getRange();
-		double delta = 0.1 * (range.upper - range.lower) / num_items_x;
-		Range new_range = new Range(range.lower - delta, range.upper + delta);
-		axis.setRange(new_range);
-		chart.updateLayout();		
-	}
-	
-	/**
-	 * temporary SWTChart bug fix 
-	 * add padding for histogram
-	 * @param width
-	 */
-	protected void updateRange(double width) {
-		Chart chart = getChart();
-		IAxis axis = chart.getAxisSet().getXAxis(0);
-		Range range = axis.getRange();
-		double pad = 0.5 * width;
-		Range new_range = new Range(range.lower - pad, range.upper + pad);
-		axis.setRange(new_range);
-		chart.updateLayout();		
-	}
 	
 	protected abstract void plotData( Experiment exp, Scope scope, MetricRaw metric );
 

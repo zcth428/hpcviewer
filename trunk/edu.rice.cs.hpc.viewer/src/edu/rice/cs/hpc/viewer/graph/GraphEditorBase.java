@@ -12,6 +12,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.swtchart.IAxisSet;
 import org.swtchart.IAxisTick;
 import org.swtchart.Chart;
+import org.swtchart.Range;
 import org.swtchart.ext.InteractiveChart;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -66,7 +67,15 @@ public abstract class GraphEditorBase extends EditorPart {
 	 * 	finishes its layout.
 	 */
 	public void finalize() {
-		this.getChart().getAxisSet().adjustRange();
+		IAxisSet axisSet = this.getChart().getAxisSet();
+		axisSet.adjustRange();
+
+		// set the lower range to be zero so that we can see if there is load imbalance or not
+		Range range = axisSet.getAxes()[1].getRange();
+		if (range.lower > 0) {
+			range.lower = 0;
+			axisSet.getAxes()[1].setRange(range);
+		}
 	}
 
 	public void createPartControl(Composite parent) {

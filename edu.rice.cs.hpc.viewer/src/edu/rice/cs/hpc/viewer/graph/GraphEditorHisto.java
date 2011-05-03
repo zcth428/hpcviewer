@@ -64,12 +64,6 @@ public class GraphEditorHisto extends GraphEditorBase {
 
 		chart.getAxisSet().getXAxis(0).getTitle().setText( "Metrics" );
 		chart.getAxisSet().getYAxis(0).getTitle().setText( "Frequency" );
-
-		// adjust the axis range
-		chart.getAxisSet().adjustRange();
-		
-		updateRange( histo.getWidth() );
-
 	}
 
 }

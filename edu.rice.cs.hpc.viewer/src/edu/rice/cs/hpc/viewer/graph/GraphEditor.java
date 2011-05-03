@@ -35,16 +35,6 @@ public abstract class GraphEditor extends GraphEditorBase {
 			diameter = DEFAULT_DIAMETER;
 	}
 	
-	/******
-	 * Do finalization of the editor
-	 * 
-	 * Due to SWT Chart bug, we need to adjust the range once the create-part-control
-	 * 	finishes its layout.
-	 */
-	public void finalize() {
-		this.getChart().getAxisSet().adjustRange();
-	}
-	
 	/*****
 	 * change the size of the dot
 	 * @param di
@@ -92,9 +82,6 @@ public abstract class GraphEditor extends GraphEditorBase {
 		}
 	}
 	
-	private void addMenu(Menu menu) {
-		
-	}
 	
 	//========================================================================
 	// Protected method

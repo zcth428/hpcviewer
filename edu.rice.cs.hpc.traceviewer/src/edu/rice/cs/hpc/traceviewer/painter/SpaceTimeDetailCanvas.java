@@ -164,11 +164,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		long rangeX = this.stData.getWidth();
 		int rangeY = this.stData.getHeight();
 		
-		stData.setPosition(new Position(rangeX>>1, rangeY>>1));
-		
 		this.home();
 
 		stData.setDepth(0);
+		
+		Position position = new Position(rangeX>>1, rangeY>>1);
+		stData.updatePosition(position);
+		
+		// forcing the depth canvas to update the position
+		this.depthCanvas.setPosition(position);
 
 		// clear undo button
 		this.undoStack.clear();
@@ -263,19 +267,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			endProcess = begProcess+numProcessDisp;
 		}
 		
-		long selectedTime = stData.getPosition().time;
-		int selectedProcess = stData.getPosition().process;
-		
-		// cross hair is out of the new selected region ?
-		if (selectedTime < begTime || selectedTime > endTime ) {
-			selectedTime = (endTime+begTime)/2;
-		}
-		
-		if (selectedProcess < begProcess || selectedProcess > endProcess) {
-			selectedProcess = (int) ((begProcess + endProcess)/2);
-		}
-		this.stData.updatePosition(new Position(selectedTime, selectedProcess));
-
 		this.updateButtonStates();
 		this.rebuffer();
 		

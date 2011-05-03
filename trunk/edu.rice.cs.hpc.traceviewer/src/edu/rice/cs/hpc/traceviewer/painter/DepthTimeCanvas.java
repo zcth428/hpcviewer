@@ -279,9 +279,25 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		long bottomRightTime = (long)((double)rightSelection / getScaleX());
 		setTimeZoom(topLeftTime, bottomRightTime);
 		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
+		
+		adjustCrossHair(topLeftTime, bottomRightTime);
     }
 	
-	void rebuffer()
+    private void adjustCrossHair(long t1, long t2) {
+    	Position currentPosition = stData.getPosition();
+    	long time = currentPosition.time;
+    	
+    	if (time<t1 || time>t2)
+    		time = (t1+t2)>>1;
+		
+    	Position position = new Position(time, currentPosition.process);
+    	position.processInCS = currentPosition.processInCS;
+    	
+    	this.stData.updatePosition(position);
+	
+    }
+    
+	private void rebuffer()
 	{
 		if (stData == null)
 			return;

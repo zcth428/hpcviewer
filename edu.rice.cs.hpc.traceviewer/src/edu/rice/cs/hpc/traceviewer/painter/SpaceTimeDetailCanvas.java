@@ -513,36 +513,23 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		double yMid = (endProcess+begProcess)/2.0;
 		
-		double oldEnd = endProcess;
-		double oldBeg = begProcess;
-		
-		endProcess = yMid+numProcessDisp*SCALE;
-		begProcess = yMid-numProcessDisp*SCALE;
+		double p2 = Math.ceil( yMid+numProcessDisp*SCALE );
+		double p1 = Math.floor( yMid-numProcessDisp*SCALE );
 		
 		assertProcessBounds();
 		
-		if(oldEnd == endProcess && oldBeg == begProcess)
+		if(p2 == endProcess && p1 == begProcess)
 		{
 			if(numProcessDisp == 2)
-				endProcess--;
+				p2--;
 			else if(numProcessDisp > 2)
 			{
-				endProcess--;
-				begProcess++;
+				p2--;
+				p1++;
 			}
 		}
 		
-		assertProcessBounds();
-		
-		if (numProcessDisp<=MIN_PROC_DISP)
-		{
-			numProcessDisp = MIN_PROC_DISP;
-			begProcess = (int)begProcess;
-			endProcess = begProcess+MIN_PROC_DISP;
-		}
-		this.updateButtonStates();
-		
-		rebuffer();
+		this.setDetailZoom(this.begTime, p1, this.endTime, p2);
 	}
 
 	/**************************************************************************
@@ -558,17 +545,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		//Add/Subtract 1/2 of the scaled numProcessDisp to yMid to get new endProcess and begProcess
 		double yMid = (endProcess+begProcess)/2.0;
 		
-		endProcess = yMid+numProcessDisp*SCALE;
-		begProcess = yMid-numProcessDisp*SCALE;
+		double p2 = Math.ceil( yMid+numProcessDisp*SCALE );
+		double p1 = Math.floor( yMid-numProcessDisp*SCALE );
 		
-		assertProcessBounds();
-		
-		if(numProcessDisp <= MIN_PROC_DISP)
-		{
-			numProcessDisp = MIN_PROC_DISP;
-		}
-		this.updateButtonStates();
-		rebuffer();
+		this.setDetailZoom(begTime, p1, endTime, p2);
 	}
 
 	
@@ -583,19 +563,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		long xMid = (endTime + begTime) / 2;
 		
-		endTime = xMid + (long)((double)numTimeUnitsDisp * SCALE);
-		begTime = xMid - (long)((double)numTimeUnitsDisp * SCALE);
+		long t2 = xMid + (long)((double)numTimeUnitsDisp * SCALE);
+		long t1 = xMid - (long)((double)numTimeUnitsDisp * SCALE);
 		
-		assertTimeBounds();
-		
-		if(numTimeUnitsDisp < MIN_TIME_UNITS_DISP)
-		{
-			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
-		}
-		
-		rebuffer();
-		
-		this.updateButtonStates();
+		this.setDetailZoom(t1, this.begProcess, t2, this.endProcess);
 	}
 
 	/**************************************************************************
@@ -611,13 +582,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		//Add/Subtract 1/2 of the scaled numTimeUnitsDisp to xMid to get new endTime and begTime
 		long xMid = (endTime + begTime) / 2;
 		
-		endTime = xMid + (long)((double)numTimeUnitsDisp * SCALE);
-		begTime = xMid - (long)((double)numTimeUnitsDisp * SCALE);
+		long t2 = xMid + (long)((double)numTimeUnitsDisp * SCALE);
+		long t1 = xMid - (long)((double)numTimeUnitsDisp * SCALE);
 		
-		assertTimeBounds();
-		
-		rebuffer();
-		this.updateButtonStates();
+		this.setDetailZoom(t1, this.begProcess, t2, this.endProcess);
 	}
 	
 	/**************************************************************************
@@ -735,6 +703,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	
     	if (process < p1 || process > p2) {
     		process = (int) ((long) p1+p2) >> 1;
+		
+			// if the new location is bigger than the max proc, set it to the min proc
+			// this situation only happens when there is only 1 proc to display
+			if (process >= (int)p2)
+				process = (int)p1;
     	}
     	if (time < t1 || time > t2) {
     		time = (t1+t2)>>1;

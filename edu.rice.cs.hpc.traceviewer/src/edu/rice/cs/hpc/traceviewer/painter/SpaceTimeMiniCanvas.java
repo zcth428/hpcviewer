@@ -257,8 +257,12 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 			{
 				if(Math.abs(mouseUp.x-mouseDown.x)>3 || Math.abs(mouseUp.y-mouseDown.y)>3)
 					setSelection(mouseDown, mouseUp);
-				else
-					setBox(detailCanvas.begTime, detailCanvas.begProcess, detailCanvas.endTime, detailCanvas.endProcess);
+				
+//!!-------------------------------------------------------------------------------------------------			
+//!!== WARNING: I don't understand the meaning of this statement. This code doesn't change anything
+//!!-------------------------------------------------------------------------------------------------			
+//				else
+//					setBox(detailCanvas.begTime, detailCanvas.begProcess, detailCanvas.endTime, detailCanvas.endProcess);
 			}
 			redraw();
 		}

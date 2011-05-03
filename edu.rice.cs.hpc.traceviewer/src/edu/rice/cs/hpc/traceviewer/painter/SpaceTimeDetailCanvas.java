@@ -270,8 +270,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.updateButtonStates();
 		this.rebuffer();
 		
-		//if (updateDepthView)
-		//	depthCanvas.setTimeRange(begTime, endTime);
+		//----------------------------------------------------------------------------
+		// we have new region. Check if the cross hair is still within the new region
+		//----------------------------------------------------------------------------
+		this.adjustCrossHair(_topLeftTime, _topLeftProcess, _bottomRightTime, _bottomRightProcess);
 
 	}
 	
@@ -712,10 +714,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		long bottomRightTime = (long)((double)selectionBottomRightX / getScaleX());
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
 		
-		//----------------------------------------------------------------------------
-		// we have new region. Check if the cross hair is still within the new region
-		//----------------------------------------------------------------------------
-		this.adjustCrossHair(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
     
     /******

@@ -283,6 +283,12 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		adjustCrossHair(topLeftTime, bottomRightTime);
     }
 	
+    /******************
+     * Forcing the crosshair to be always inside the region
+     * 
+     * @param t1: the leftmost time
+     * @param t2: the rightmost time
+     */
     private void adjustCrossHair(long t1, long t2) {
     	Position currentPosition = stData.getPosition();
     	long time = currentPosition.time;

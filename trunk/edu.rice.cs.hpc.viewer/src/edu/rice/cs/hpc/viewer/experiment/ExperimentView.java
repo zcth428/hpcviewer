@@ -4,6 +4,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.framework.Activator;
+import edu.rice.cs.hpc.viewer.help.HTMLEditor;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
@@ -14,6 +15,8 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 /**
@@ -211,9 +214,16 @@ public class ExperimentView {
 	}
 	
 	/**
-	 * Close all editors in the current active page
+	 * Close all editors except HTML editor in the current active page
 	 */
 	private void closeAllEditors() {
-		this.objPage.closeAllEditors(false);
+		IEditorReference editors[] = this.objPage.getEditorReferences();
+		for (IEditorReference editor: editors) {
+			IEditorPart part = editor.getEditor(false);
+			
+			if (!(part instanceof HTMLEditor)) {
+				this.objPage.closeEditor(part, false);
+			}
+		}
 	}
 }

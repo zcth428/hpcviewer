@@ -234,9 +234,6 @@ public void decrementCounter() {
 }
 
 public void setCounter(int counter) {
-	if (this.getCCTIndex() == 12 && this.flat_node_index == -1345834033) {
-		System.out.print("\t");
-	}
 	this.iCounter = counter;
 }
 

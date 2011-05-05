@@ -41,8 +41,8 @@ public class HelpAction extends Action {
 		IWorkspace objWorkspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = objWorkspace.getRoot();
 
-		String sFilePath = this.getHelpPath();
-		IFile file = root.getFile(new Path(sFilePath));
+		//String sFilePath = this.getHelpPath();
+		IFile file = root.getFile(new Path(HELP_FILE_PATH));
 		
 		IWorkbenchPage objPage = this.objWindow.getActivePage(); 
 				

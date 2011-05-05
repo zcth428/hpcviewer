@@ -3,8 +3,13 @@
  */
 package edu.rice.cs.hpc.viewer.help;
 
+import java.io.IOException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -18,8 +23,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.ui.part.FileEditorInput;
+import org.osgi.framework.Bundle;
 
 import com.onpositive.richtexteditor.viewer.RichTextViewer;
+
+import edu.rice.cs.hpc.viewer.framework.Activator;
 
 
 /**
@@ -82,8 +90,18 @@ public class HTMLEditor extends EditorPart {
 		IFile file = objInput.getFile();
 		if(file != null) {
 			IPath objPath = file.getFullPath();
-			this.sFilePath = file.getName();
-			sURI = "file:///"+objPath;
+			Bundle plugin = Activator.getDefault().getBundle();
+			URL fileInPlugin = FileLocator.find(plugin, objPath, null);
+
+			try {
+				URL pageUrl = FileLocator.toFileURL(fileInPlugin);
+				this.sFilePath = file.getName();
+				sURI = pageUrl.toString();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 	}
 
@@ -150,6 +168,7 @@ public class HTMLEditor extends EditorPart {
 	 */
 	@Override
 	public void setFocus() {
+		this.browser.setFocus();
 	}
 	
 }

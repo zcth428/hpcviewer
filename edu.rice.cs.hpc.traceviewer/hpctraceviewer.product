@@ -3,6 +3,21 @@
 
 <product name="hpctraceviewer" uid="edu.rice.cs.hpc.traceviewer" id="edu.rice.cs.hpc.traceviewer.product" application="edu.rice.cs.hpc.traceviewer.application" version="5.1.0" useFeatures="false" includeLaunchers="true">
 
+   <aboutInfo>
+      <image path="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.png"/>
+      <text>
+         hpctracecviewer is a user interface for analyzing a database of   
+performance metrics in conjunction with an application&apos;s source code.
+
+hpctraceviewer is part of Rice University&apos;s HPCToolkit project.  Development of 
+HPCToolkit is principally funded by the Department of Energy&apos;s Office of 
+Science as part of the SciDAC Center for Scalable Application Development
+Software and the Performance Engineering Research Institute.
+
+Release 5.1.0 (C) Copyright 2011, Rice University.
+      </text>
+   </aboutInfo>
+
    <configIni use="default">
    </configIni>
 
@@ -25,6 +40,7 @@
             winLargeHigh="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.BMP"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

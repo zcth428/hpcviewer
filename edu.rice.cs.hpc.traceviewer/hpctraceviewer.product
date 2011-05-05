@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="hpctraceviewer" uid="edu.rice.cs.hpc.traceviewer" id="edu.rice.cs.hpc.traceviewer.product" application="edu.rice.cs.hpc.traceviewer.application" version="1.0.0" useFeatures="false" includeLaunchers="true">
+<product name="hpctraceviewer" uid="edu.rice.cs.hpc.traceviewer" id="edu.rice.cs.hpc.traceviewer.product" application="edu.rice.cs.hpc.traceviewer.application" version="5.1.0" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>

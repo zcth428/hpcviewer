@@ -44,14 +44,6 @@
       </view>
       <view
             allowMultiple="true"
-            class="edu.rice.cs.hpc.viewer.graph.ThreadView"
-            icon="icons/hpc-16x16.png"
-            id="edu.rice.cs.hpc.viewer.graph.ThreadView"
-            name="Thread view"
-            restorable="true">
-      </view>
-      <view
-            allowMultiple="true"
             class="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
             icon="icons/cct.png"
             id="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
@@ -133,7 +125,7 @@
          </property>
          <property
                name="aboutText"
-               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;(C) Copyright 2010, Rice University.  $Revision: 661$">
+               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;hpcviewer Release 5.1.0 (C) Copyright 2011, Rice University.">
          </property>
          <property
                name="windowImages"

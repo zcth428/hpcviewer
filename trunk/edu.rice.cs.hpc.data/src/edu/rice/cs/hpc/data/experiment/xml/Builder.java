@@ -66,7 +66,6 @@ public Builder()
 {
 	this.parser = null;		// must be set non-null by 'setParser'
 	
-	this.parseOK = this.parseOK;
 	this.parseErrorLineNumber = -1;
 }
 
@@ -179,9 +178,9 @@ public abstract void end();
 	
 public void error(int lineNumber)
 {
-	if( this.parseOK == this.PARSER_OK)
+	if( this.parseOK == Builder.PARSER_OK)
 	{
-		this.parseOK = this.PARSER_FAIL;
+		this.parseOK = Builder.PARSER_FAIL;
 		this.parseErrorLineNumber = lineNumber;
 	}
 }

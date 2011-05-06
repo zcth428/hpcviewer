@@ -175,15 +175,11 @@ public class PrintFileXML {
 		
 		InputStream objFile = null;
 		File file = new File(hpc_dir + DTD_FILE_NAME);
-		if (file == null)
+		try {
+			objFile = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			// we don't need DTD. let's exit silently
 			return;
-		else {
-			try {
-				objFile = new FileInputStream(file);
-			} catch (FileNotFoundException e) {
-				// we don't need DTD. let's exit silently
-				return;
-			}
 		}
 
 	    byte[] buf=new byte[MAX_BUFFER];

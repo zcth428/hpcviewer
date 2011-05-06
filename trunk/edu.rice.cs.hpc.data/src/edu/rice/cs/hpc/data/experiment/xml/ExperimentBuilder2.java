@@ -1564,20 +1564,15 @@ public class ExperimentBuilder2 extends Builder
 	 */
 	private void do_TraceDB(String[] attributes, String[] values)
 	{
-		String db_glob = null;
-		int db_header_sz = 0;
-
 		// tallent: Note that the DTD currently only permits one instance of <TraceDB>
 		for (int i=0; i<attributes.length; i++) {
 			if (attributes[i].charAt(0) == 'i') {
 			} else if (attributes[i].equals("db-glob")) {
-				db_glob = values[i];
 			} else if (attributes[i].equals("db-min-time")) {
 				experiment.trace_minBegTime = Long.valueOf(values[i]);
 			} else if (attributes[i].equals("db-max-time")) {
 				experiment.trace_maxEndTime = Long.valueOf(values[i]);
 			} else if (attributes[i].equals("db-header-sz")) {
-				db_header_sz = Integer.valueOf(values[i]);
 			}
 		}
 	}

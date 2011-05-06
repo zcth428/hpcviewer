@@ -1335,7 +1335,10 @@ public class ExperimentBuilder2 extends Builder
 		// update also the self metric value for calling context only
 		if (metric.getMetricType() == MetricType.INCLUSIVE) {
 
-			if (metric instanceof Metric) {
+			//----------------------------------------------------------------------------
+			// Final metric (inherited from Metric) doesn't need partner. It is final.
+			//----------------------------------------------------------------------------
+			if (!(metric instanceof FinalMetric) && metric instanceof Metric) {
 				int partner = ( (Metric) metric).getPartnerIndex();
 				String selfShortName = String.valueOf(partner);
 

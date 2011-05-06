@@ -902,9 +902,12 @@ public class ExperimentBuilder2 extends Builder
 					sProcName = sProc;
 				}
 			} catch (java.lang.NumberFormatException e) {
-				
+				System.err.println("Warning: Procedure index doesn't exist: " + sProcIndex);
 			}
-		} 
+		} else {
+			// the database of procedure doesn't exist. This can be a flat view.
+			sProcName = sProcIndex;
+		}
 		return sProcName;
 	}
 	

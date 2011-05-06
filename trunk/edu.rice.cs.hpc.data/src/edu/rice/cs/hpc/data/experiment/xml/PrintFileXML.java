@@ -97,7 +97,8 @@ public class PrintFileXML {
 				printAttribute(objPrint, "n", m.getDisplayName().trim());				
 				printAttribute(objPrint, "v", "final");				
 				printAttribute(objPrint, "t", getMetricType(m) );				
-				printAttribute(objPrint, "s", booleanToInt(m.getDisplayed()) );				
+				printAttribute(objPrint, "show", booleanToInt(m.getDisplayed()) );
+				printAttribute(objPrint, "show-percent", booleanToInt(m.getPercent()) );
 			}
 			objPrint.print(">");
 

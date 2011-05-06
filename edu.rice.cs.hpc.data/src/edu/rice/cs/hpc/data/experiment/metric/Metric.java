@@ -15,7 +15,6 @@
 package edu.rice.cs.hpc.data.experiment.metric;
 
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 

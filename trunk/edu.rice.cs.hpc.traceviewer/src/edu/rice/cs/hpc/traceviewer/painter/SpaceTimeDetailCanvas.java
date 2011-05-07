@@ -697,7 +697,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     private void adjustCrossHair(long t1, double p1, long t2, double p2) {
     	
     	Position current = this.stData.getPosition();
-    	int process = current.process;
+    	int process = (current.process);
     	long time = current.time;
     	
     	if (process < p1 || process > p2) {
@@ -712,12 +712,52 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     		time = (t1+t2)>>1;
     	}
     	Position newPosition = new Position(time,process);
-    	newPosition.processInCS = (int) (process - begProcess);
+    	newPosition = this.getAdjustedProcess(newPosition);
     	
     	// tell other views that we have new position 
     	this.stData.updatePosition(newPosition);
     }
 
+    /****
+     * Adjust the position of cross hair depending of the availability of traces
+     * 
+     * @param position
+     * @return adjusted position
+     */
+    private Position getAdjustedProcess(Position position) {
+    	int process = position.process;
+    	double scale = 1.0;
+    	if (this.viewHeight<this.numProcessDisp) 
+    		scale = this.getScaleY();
+    	
+    	int adjustedProc = (int) ((int) (process - begProcess)*scale);
+    	boolean found = false;
+    	int distance = 1;
+    	int change = 1;
+    	int centerProc = adjustedProc;
+    	
+    	// ------------------------------------------------------------------------
+    	// check if the crosshair position is availabe in the traces
+    	// if it doesn't exist, we need to find the closest available position
+    	// for instance, the desired process position is 100, but this doesn't exist
+    	//	we then try to find a process in the following sequence: 
+    	//		99, 101, 98, 102, ..... 
+    	// ------------------------------------------------------------------------
+    	while(!found) {
+    		found = (null != stData.getProcess(adjustedProc));
+    		if (!found) {
+        		distance++;
+        		change =  -1 * change;
+        		adjustedProc = centerProc + (int)(change * (distance>>1));
+    		}
+    	}
+    	
+    	process = (int) (adjustedProc/scale + begProcess);
+    	Position newPosition = new Position(position.time, process);
+    	newPosition.processInCS = adjustedProc;
+    	return newPosition;
+    	
+    }
     
     private boolean canGoEast() {
     	return (this.begTime > 0);

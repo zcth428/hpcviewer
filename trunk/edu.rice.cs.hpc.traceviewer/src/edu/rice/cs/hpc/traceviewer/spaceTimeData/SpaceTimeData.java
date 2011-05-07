@@ -31,7 +31,7 @@ public class SpaceTimeData extends TraceEvents
 	 * due to the multithreading, the traces may not get added in order.
 	 * So, each ProcessTimeline now knows which line it is, and the
 	 * HashMap is a map between that line and the ProcessTimeline.*/
-	private HashMap<Integer, ProcessTimeline> traces;
+	private ProcessTimeline traces[];
 	
 	private ProcessTimeline depthTrace;
 	
@@ -232,7 +232,7 @@ public class SpaceTimeData extends TraceEvents
 		if (begTime == _begTime && endTime == _endTime && begProcess == _begProcess && endProcess == _endProcess && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
 			changedBounds = false;
 		else
-			traces = new HashMap<Integer, ProcessTimeline>(Math.min(_numPixelsV, _endProcess - _begProcess));
+			traces = new ProcessTimeline[Math.min(_numPixelsV, _endProcess - _begProcess)];
 
 		begTime = _begTime;
 		endTime = _endTime;
@@ -599,7 +599,7 @@ public class SpaceTimeData extends TraceEvents
 	public void paintDetailLine(SpaceTimeSamplePainter spp, int depth, int process, int height, boolean changedBounds)
 	{
 		//System.out.println("I'm painting process "+process+" at depth "+depth);
-		ProcessTimeline ptl = traces.get(process);
+		ProcessTimeline ptl = traces[process];
 		if (ptl == null)
 			return;
 		
@@ -869,11 +869,11 @@ public class SpaceTimeData extends TraceEvents
 	 ************************************************************************/
 	public ProcessTimeline getProcess(int process)
 	{
-		return traces.get(process);
+		return traces[process];
 	}
 
 	public int getNumberOfDisplayedProcesses() {
-		return this.traces.size();
+		return this.traces.length;
 	}
 	 
 	/**Returns the midpoint between x1 and x2*/
@@ -917,7 +917,7 @@ public class SpaceTimeData extends TraceEvents
 			if(changedBounds)
 				return new ProcessTimeline(lineNum-1, scopeMap, traceFiles.get(lineToPaint(lineNum-1)), numPixelsH, endTime-begTime, minBegTime + begTime);
 			else
-				return traces.get(lineNum-1);
+				return traces[lineNum-1];
 		}
 		else
 			return null;
@@ -961,7 +961,7 @@ public class SpaceTimeData extends TraceEvents
 	/**Adds a filled ProcessTimeline to traces - used by TimelineThreads.*/
 	public synchronized void addNextTrace(ProcessTimeline nextPtl)
 	{
-		traces.put(nextPtl.line(), nextPtl);
+		traces[nextPtl.line()] = nextPtl;
 	}
 	
 	public synchronized void setDepthTrace(ProcessTimeline ptl)

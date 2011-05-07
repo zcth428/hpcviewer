@@ -725,37 +725,35 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      * @return adjusted position
      */
     private Position getAdjustedProcess(Position position) {
-    	int process = position.process;
-    	double scale = 1.0;
-    	if (this.viewHeight<this.numProcessDisp) 
-    		scale = this.getScaleY();
     	
-    	int adjustedProc = (int) ((int) (process - begProcess)*scale);
-    	boolean found = false;
-    	int distance = 1;
-    	int change = 1;
-    	int centerProc = adjustedProc;
+    	double numDisplayedProcess = stData.getNumberOfDisplayedProcesses();
+    	int estimatedProcess = (int) (position.process - this.begProcess);			
+    	double scaleProcess = numDisplayedProcess/(double)this.numProcessDisp;
     	
-    	// ------------------------------------------------------------------------
-    	// check if the crosshair position is availabe in the traces
-    	// if it doesn't exist, we need to find the closest available position
-    	// for instance, the desired process position is 100, but this doesn't exist
-    	//	we then try to find a process in the following sequence: 
-    	//		99, 101, 98, 102, ..... 
-    	// ------------------------------------------------------------------------
-    	while(!found) {
-    		found = (null != stData.getProcess(adjustedProc));
-    		if (!found) {
-        		distance++;
-        		change =  -1 * change;
-        		adjustedProc = centerProc + (int)(change * (distance>>1));
-    		}
+    	//---------------------------------------------------------------------------------------
+    	// computing the relative process rank: 
+    	//	the relative rank is adjusted based on the number of displayed process
+    	//	for instance, if the mouse click computes that the position of process rank is 100
+    	//		from range 50 to 500 (so the range is 450), but the number of displayed process
+    	//		is only 200, then we need to adjust the relative position of the process into
+    	//		200/450 * (100-50)
+    	//---------------------------------------------------------------------------------------
+    	int relativeProcess = (int) (scaleProcess * estimatedProcess);
+    	
+    	// generalization of case where there is only one single process to display
+    	if (relativeProcess>=numDisplayedProcess)
+    		relativeProcess = (int) (numDisplayedProcess - 1);
+    	
+    	position.processInCS = relativeProcess;
+    	if (estimatedProcess != relativeProcess) {
+        	//---------------------------------------------------------------------------------------
+        	// if there is any change between the estimated process by mouse click and the
+    		//	estimated process by the array of displayed process, we need to adjust
+    		//	the absolute process
+        	//---------------------------------------------------------------------------------------
+        	position.process = (int) (relativeProcess/scaleProcess + this.begProcess);
     	}
-    	
-    	process = (int) (adjustedProc/scale + begProcess);
-    	Position newPosition = new Position(position.time, process);
-    	newPosition.processInCS = adjustedProc;
-    	return newPosition;
+    	return position;
     	
     }
     

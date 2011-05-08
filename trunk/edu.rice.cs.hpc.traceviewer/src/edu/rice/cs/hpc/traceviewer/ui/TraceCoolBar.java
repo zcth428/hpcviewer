@@ -46,7 +46,7 @@ public class TraceCoolBar extends Composite {
 		ImageDescriptor homeSamp = ImageDescriptor.createFromFile(this.getClass(), "home-screen.png");
 		Image homeScreen = homeSamp.createImage();
 		home.setImage(homeScreen);
-		home.setToolTipText("Resets the view to the home screen");
+		home.setToolTipText("Reset the view to display the whole trace");
 		home.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event)
 			{
@@ -61,7 +61,7 @@ public class TraceCoolBar extends Composite {
 		ImageDescriptor zoomInTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-time.png");
 		Image zoomInTime = zoomInTim.createImage();
 		tZoomIn.setImage(zoomInTime);
-		tZoomIn.setToolTipText("Zoom in on the time axis");
+		tZoomIn.setToolTipText("Zoom in along the time axis");
 		tZoomIn.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event)
 			{
@@ -74,7 +74,7 @@ public class TraceCoolBar extends Composite {
 		ImageDescriptor zoomOutTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-time.png");
 		Image zoomOutTime = zoomOutTim.createImage();
 		tZoomOut.setImage(zoomOutTime);
-		tZoomOut.setToolTipText("Zoom out on the time axis");
+		tZoomOut.setToolTipText("Zoom out along the time axis");
 		tZoomOut.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event)
 			{
@@ -87,7 +87,7 @@ public class TraceCoolBar extends Composite {
 		ImageDescriptor zoomInProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-process.png");
 		Image zoomInProcess = zoomInProc.createImage();
 		pZoomIn.setImage(zoomInProcess);
-		pZoomIn.setToolTipText("Zoom in on the process axis");
+		pZoomIn.setToolTipText("Zoom in along the process axis");
 		pZoomIn.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event)
 			{
@@ -100,7 +100,7 @@ public class TraceCoolBar extends Composite {
 		ImageDescriptor zoomOutProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-process.png");
 		Image zoomOutProcess = zoomOutProc.createImage();
 		pZoomOut.setImage(zoomOutProcess);
-		pZoomOut.setToolTipText("Zoom out on the process axis");
+		pZoomOut.setToolTipText("Zoom out along the process axis");
 		pZoomOut.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event)
 			{
@@ -115,7 +115,7 @@ public class TraceCoolBar extends Composite {
 		goEast = new ToolItem(toolBar, SWT.PUSH);
 		final ImageDescriptor eastDesc = ImageDescriptor.createFromFile(getClass(), "go-east.png");
 		goEast.setImage(eastDesc.createImage());
-		goEast.setToolTipText("Move left one step");
+		goEast.setToolTipText("Scroll left one step along the time axis");
 		goEast.addListener(SWT.Selection, new Listener(){
 
 			public void handleEvent(Event event) {
@@ -127,7 +127,7 @@ public class TraceCoolBar extends Composite {
 		goWest = new ToolItem(toolBar, SWT.PUSH);
 		final ImageDescriptor westDesc = ImageDescriptor.createFromFile(getClass(), "go-west.png");
 		goWest.setImage(westDesc.createImage());
-		goWest.setToolTipText("Move right one step");
+		goWest.setToolTipText("Scroll right one step along the time axis");
 		goWest.addListener(SWT.Selection, new Listener(){
 
 			public void handleEvent(Event event) {
@@ -139,7 +139,7 @@ public class TraceCoolBar extends Composite {
 		goNorth = new ToolItem(toolBar, SWT.PUSH);
 		final ImageDescriptor northDesc = ImageDescriptor.createFromFile(getClass(), "go-north.png");
 		goNorth.setImage(northDesc.createImage());
-		goNorth.setToolTipText("Move up one step");
+		goNorth.setToolTipText("Scroll up one step along the process axis");
 		goNorth.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event) {
 				action.goNorth();
@@ -150,7 +150,7 @@ public class TraceCoolBar extends Composite {
 		goSouth = new ToolItem(toolBar, SWT.PUSH);
 		final ImageDescriptor southDesc = ImageDescriptor.createFromFile(getClass(), "go-south.png");
 		goSouth.setImage(southDesc.createImage());
-		goSouth.setToolTipText("Move down one step");
+		goSouth.setToolTipText("Scroll down one step along the process axis");
 		goSouth.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event) {
 				action.goSouth();
@@ -164,7 +164,7 @@ public class TraceCoolBar extends Composite {
 		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
 		Image undoArrow = undoSamp.createImage();
 		undo.setImage(undoArrow);
-		undo.setToolTipText("Undo the last made action");
+		undo.setToolTipText("Undo the last action");
 		undo.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event)
 			{
@@ -192,7 +192,7 @@ public class TraceCoolBar extends Composite {
 		ImageDescriptor saveSamp = ImageDescriptor.createFromFile(this.getClass(), "save.png");
 		Image saveImage = saveSamp.createImage();
 		save.setImage(saveImage);
-		save.setToolTipText("Save the view configuration to a file");
+		save.setToolTipText("Save the current view configuration to a file");
 		save.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event)
 			{

@@ -41,34 +41,7 @@ public class TraceCoolBar extends Composite {
 		 * Buttons
 		 **************************************************/
 
-		open = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor openSamp = ImageDescriptor.createFromFile(this.getClass(), "open.png");
-		Image openImage = openSamp.createImage();
-		open.setImage(openImage);
-		open.setToolTipText("Open a saved view configuration");
-		open.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
-				action.open();
-			}
-		});
-		open.setEnabled(true);
 		
-		save = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor saveSamp = ImageDescriptor.createFromFile(this.getClass(), "save.png");
-		Image saveImage = saveSamp.createImage();
-		save.setImage(saveImage);
-		save.setToolTipText("Save the view configuration to a file");
-		save.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
-				action.save();
-			}
-		});
-		save.setEnabled(true);
-		
-		new ToolItem(toolBar, SWT.SEPARATOR);
-
 		home = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor homeSamp = ImageDescriptor.createFromFile(this.getClass(), "home-screen.png");
 		Image homeScreen = homeSamp.createImage();
@@ -138,33 +111,6 @@ public class TraceCoolBar extends Composite {
 				
 		new ToolItem(toolBar, SWT.SEPARATOR);
 
-		undo = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
-		Image undoArrow = undoSamp.createImage();
-		undo.setImage(undoArrow);
-		undo.setToolTipText("Undo the last made action");
-		undo.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
-				action.undo();
-			}
-		});
-		undo.setEnabled(false);
-		
-		redo = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
-		Image redoArrow = redoSamp.createImage();
-		redo.setImage(redoArrow);
-		redo.setToolTipText("Redo the last undo");
-		redo.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
-				action.redo();
-			}
-		});
-		redo.setEnabled(false);
-				
-		new ToolItem(toolBar, SWT.SEPARATOR);
 
 		goEast = new ToolItem(toolBar, SWT.PUSH);
 		final ImageDescriptor eastDesc = ImageDescriptor.createFromFile(getClass(), "go-east.png");
@@ -211,6 +157,63 @@ public class TraceCoolBar extends Composite {
 			}
 			
 		});
+		
+		new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		undo = new ToolItem(toolBar, SWT.PUSH);
+		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
+		Image undoArrow = undoSamp.createImage();
+		undo.setImage(undoArrow);
+		undo.setToolTipText("Undo the last made action");
+		undo.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event)
+			{
+				action.undo();
+			}
+		});
+		undo.setEnabled(false);
+		
+		redo = new ToolItem(toolBar, SWT.PUSH);
+		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
+		Image redoArrow = redoSamp.createImage();
+		redo.setImage(redoArrow);
+		redo.setToolTipText("Redo the last undo");
+		redo.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event)
+			{
+				action.redo();
+			}
+		});
+		redo.setEnabled(false);
+				
+		new ToolItem(toolBar, SWT.SEPARATOR);
+		
+		save = new ToolItem(toolBar, SWT.PUSH);
+		ImageDescriptor saveSamp = ImageDescriptor.createFromFile(this.getClass(), "save.png");
+		Image saveImage = saveSamp.createImage();
+		save.setImage(saveImage);
+		save.setToolTipText("Save the view configuration to a file");
+		save.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event)
+			{
+				action.save();
+			}
+		});
+		save.setEnabled(true);
+
+		open = new ToolItem(toolBar, SWT.PUSH);
+		ImageDescriptor openSamp = ImageDescriptor.createFromFile(this.getClass(), "open.png");
+		Image openImage = openSamp.createImage();
+		open.setImage(openImage);
+		open.setToolTipText("Open a saved view configuration");
+		open.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event)
+			{
+				action.open();
+			}
+		});
+		open.setEnabled(true);
+
 		
 		GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 0, 0).numColumns(1).generateLayout(coolBar);
 		GridDataFactory.fillDefaults().applyTo(coolBar);

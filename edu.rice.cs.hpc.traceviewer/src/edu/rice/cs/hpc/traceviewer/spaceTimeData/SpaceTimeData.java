@@ -544,43 +544,47 @@ public class SpaceTimeData extends TraceEvents
 			String succFunction = succSample.getFunctionName(succDepth);
 			Color succColor = colorTable.getColor(succFunction);
 
-			for (int index = 0; index < ptl.size()-1; index++)
+			for (int index = 0; index < ptl.size(); index++)
 			{
 				int currDepth = succDepth;
 				int currSampleMidpoint = succSampleMidpoint;
 				
 				//-----------------------------------------------------------------------
-				// skipping if the successor has the same CCT and depth
+				// skipping if the successor has the same color and depth
 				//-----------------------------------------------------------------------
 				boolean still_the_same = true;
 				int indexSucc = index;
-				String functionName = succFunction;
+				final String functionName = succFunction;
 				final Color currColor = succColor;
 				
 				while(still_the_same && (indexSucc < ptl.size()-1)) {
 					indexSucc++;
-					succSample = ptl.getSample(indexSucc-1);
+					succSample = ptl.getSample(indexSucc);
 					succDepth = Math.min(depth, succSample.getSize()-1);
 					succFunction = succSample.getFunctionName(succDepth);
 					succColor = this.colorTable.getColor(succFunction);
 					
 					still_the_same = (succDepth == currDepth) && (succColor==currColor);
 					if (still_the_same)
-						index = indexSucc - 1;
+						index = indexSucc;
 				};
-							
-				succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(index),ptl.getTime(index+1))-begTime)/pixelLength));
+				
+				if (index<ptl.size()-1) {
+					// --------------------------------------------------------------------
+					// start and middle samples: the rightmost point is the midpoint between
+					// 	the two samples
+					// --------------------------------------------------------------------
+					succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(index),ptl.getTime(index+1))-begTime)/pixelLength));
+
+				} else {
+					// --------------------------------------------------------------------
+					// for the last iteration (or last sample), we don't have midpoint
+					// 	so the rightmost point will be the time of the last sample
+					// --------------------------------------------------------------------
+					succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength));
+				}
 				this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName);
-			}
-			
-			int indexLast = ptl.size() - 1;
-			int currSampleMidpoint = succSampleMidpoint;
-			succSampleMidpoint = (int) Math.max(0, ( (ptl.getTime(indexLast)-begTime) )/pixelLength );
-			CallStackSample lastSample = ptl.getSample(indexLast);
-			int lastDepth = Math.min(depth, lastSample.getSize()-1);
-			String lastFunction = lastSample.getFunctionName(lastDepth);
-			
-			this.finishPaint(currSampleMidpoint, succSampleMidpoint, lastDepth, lastFunction);
+			}			
 		}
 		
 		/***

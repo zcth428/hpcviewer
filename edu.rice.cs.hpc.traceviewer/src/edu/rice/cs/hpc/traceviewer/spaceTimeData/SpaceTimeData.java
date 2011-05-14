@@ -15,6 +15,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
+import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
@@ -489,7 +490,7 @@ public class SpaceTimeData extends TraceEvents
 			default:
 			{
 
-				BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, depth, height, pixelLength) {
+				BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, begTime, depth, height, pixelLength) {
 					@Override
 					public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName) {
 						if (currDepth >= depth)
@@ -507,96 +508,6 @@ public class SpaceTimeData extends TraceEvents
 		}
 	}
 	
-	/***********************************************************************
-	 * 
-	 * Basic abstract class to paint for trace view and depth view
-	 * 
-	 * we will use an abstract method to finalize the painting since 
-	 * 	depth view has slightly different way to paint compared to
-	 * 	trace view
-	 * 
-	 ***********************************************************************/
-	private abstract class BasePaintLine {
-		protected ProcessTimeline ptl;
-		protected SpaceTimeSamplePainter spp;
-		protected int depth;
-		protected int height;
-		protected double pixelLength;
-		protected ColorTable colorTable;
-		
-		public BasePaintLine(ColorTable _colorTable, ProcessTimeline _ptl, SpaceTimeSamplePainter _spp, 
-				int _depth, int _height, double _pixelLength) {
-			this.ptl = _ptl;
-			this.spp = _spp;
-			this.depth = _depth;
-			this.height = _height;
-			this.pixelLength = _pixelLength;
-			this.colorTable = _colorTable;
-		}
-		
-		/***
-		 * Painting action
-		 */
-		public void paint() {
-			int succSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-			CallStackSample succSample = ptl.getSample(0);
-			int succDepth = Math.min(depth, succSample.getSize()-1);
-			String succFunction = succSample.getFunctionName(succDepth);
-			Color succColor = colorTable.getColor(succFunction);
-
-			for (int index = 0; index < ptl.size(); index++)
-			{
-				int currDepth = succDepth;
-				int currSampleMidpoint = succSampleMidpoint;
-				
-				//-----------------------------------------------------------------------
-				// skipping if the successor has the same color and depth
-				//-----------------------------------------------------------------------
-				boolean still_the_same = true;
-				int indexSucc = index;
-				final String functionName = succFunction;
-				final Color currColor = succColor;
-				
-				while(still_the_same && (indexSucc < ptl.size()-1)) {
-					indexSucc++;
-					succSample = ptl.getSample(indexSucc);
-					succDepth = Math.min(depth, succSample.getSize()-1);
-					succFunction = succSample.getFunctionName(succDepth);
-					succColor = this.colorTable.getColor(succFunction);
-					
-					still_the_same = (succDepth == currDepth) && (succColor==currColor);
-					if (still_the_same)
-						index = indexSucc;
-				};
-				
-				if (index<ptl.size()-1) {
-					// --------------------------------------------------------------------
-					// start and middle samples: the rightmost point is the midpoint between
-					// 	the two samples
-					// --------------------------------------------------------------------
-					succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(index),ptl.getTime(index+1))-begTime)/pixelLength));
-
-				} else {
-					// --------------------------------------------------------------------
-					// for the last iteration (or last sample), we don't have midpoint
-					// 	so the rightmost point will be the time of the last sample
-					// --------------------------------------------------------------------
-					succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength));
-				}
-				this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName);
-			}			
-		}
-		
-		/***
-		 * Abstract method to finalize the painting given its range, depth and the function name
-		 * 
-		 * @param currSampleMidpoint
-		 * @param succSampleMidpoint
-		 * @param currDepth
-		 * @param functionName
-		 */
-		public abstract void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName);
-	}
 
 
 	
@@ -748,7 +659,7 @@ public class SpaceTimeData extends TraceEvents
 			default:
 			{
 				// do the paint
-				BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, depth, height, pixelLength) {
+				BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, begTime, depth, height, pixelLength) {
 
 					@Override
 					public void finishPaint(int currSampleMidpoint,

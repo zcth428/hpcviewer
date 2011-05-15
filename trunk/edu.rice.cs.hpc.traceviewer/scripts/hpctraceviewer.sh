@@ -31,7 +31,7 @@ test -n "$DISPLAY" || die "fatal error - DISPLAY variable must be set"
 #
 java_version=`java -version 2>&1 | awk '{print $3}'`
 java_version=${java_version:3:1}
-if test $java_version -lt 5
+if test $java_version -lt 5 ; then
   echo "$0 fatal error - Java version $java_version is too old; please use at least Java 1.5."
   exit
 fi

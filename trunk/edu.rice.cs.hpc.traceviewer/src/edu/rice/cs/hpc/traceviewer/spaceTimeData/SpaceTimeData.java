@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -368,125 +367,7 @@ public class SpaceTimeData extends TraceEvents
 			case 1:
 				this.printDebug("Warning! incorrect timestamp size: " + ptl.size() );
 				break;
-			case 2:
-			{
-				//System.out.println("two");
-				//only one or two samples to be painted; special case
-				
-				//the call path sample based on the sample index
-				CallStackSample css = ptl.getSample(0);
-				//the updated depth
-				int sampleDepth = css.getSize()-1;
-				//the function name of the sample at the correct depth
-				String functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-				//the "midpoints" of the sample to be painted
-				int currSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-				int succSampleMidpoint = (int) Math.min(numPixelsH, (midpoint(ptl.getTime(0), ptl.getTime(1))-begTime)/pixelLength);
-				succSampleMidpoint = Math.max(0, succSampleMidpoint);
-				if(ptl.getCpid(0) == ptl.getCpid(1))
-				{
-					succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(1)-begTime)/pixelLength);
-					succSampleMidpoint = Math.max(0, succSampleMidpoint);
-					if (sampleDepth >= depth)
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);				
-					}
-				}
-				else
-				{
-					if (sampleDepth >= depth)
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-					}
-					
-					css = ptl.getSample(1);
-					sampleDepth = css.getSize()-1;
-					functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-					
-					currSampleMidpoint = succSampleMidpoint;
-					succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(1)-begTime)/pixelLength);
-					succSampleMidpoint = Math.max(0, succSampleMidpoint);
-					
-					if (sampleDepth >= depth)
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);			
-					}
-				}
-				break;
-			}
-			case 3:
-			{
-				//System.out.println("three");
-				//there are three items in the ptl; either one, two, or three samples to be painted,
-				//depending on the locations of the midpoints
-				
-				//the call path sample based on the sample index
-				CallStackSample css = ptl.getSample(0);
-				//the updated depth
-				int sampleDepth = css.getSize()-1;
-				//the function name of the sample at the correct depth
-				String functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-				//the "midpoints" of the sample to be painted
-				int currSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-				int succSampleMidpoint = (int) Math.max(0, (midpoint(ptl.getTime(0),ptl.getTime(1))-begTime)/pixelLength);
-				succSampleMidpoint = Math.min(numPixelsH, succSampleMidpoint);
-				if(ptl.getCpid(0) == ptl.getCpid(1))
-				{
-					succSampleMidpoint = (int) Math.min(numPixelsH, (midpoint(ptl.getTime(1),ptl.getTime(2))-begTime)/pixelLength);
-					if (sampleDepth >= depth)
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-					}
-					
-					currSampleMidpoint = succSampleMidpoint;
-					succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(2)-begTime)/pixelLength);
-					if (sampleDepth >= depth)
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-					}
-				}
-				else
-				{
-					if (sampleDepth >= depth)
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-					}
-					
-					css = ptl.getSample(1);
-					sampleDepth = css.getSize()-1;
-					functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-					
-					currSampleMidpoint = succSampleMidpoint;
-					succSampleMidpoint = (int) Math.min(numPixelsH, (midpoint(ptl.getTime(1),ptl.getTime(2))-begTime)/pixelLength);
-					if(ptl.getCpid(1) == ptl.getCpid(2))
-					{
-						succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(2)-begTime)/pixelLength);
-						if (sampleDepth >= depth)
-						{
-							spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-						}
-					}
-					else
-					{
-						if (sampleDepth >= depth)
-						{
-							spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-						}
-						
-						css = ptl.getSample(2);
-						sampleDepth = css.getSize()-1;
-						functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-						
-						currSampleMidpoint = succSampleMidpoint;
-						succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(2)-begTime)/pixelLength);
-						if (sampleDepth >= depth)
-						{
-							spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-						}
-					}
-				}
-				break;
-			}
+
 			default:
 			{
 
@@ -528,134 +409,7 @@ public class SpaceTimeData extends TraceEvents
 			case 1:
 				this.printDebug("Warning! incorrect timestamp size: " + ptl.size() );
 				break;
-			case 2:
-			{
-				//System.out.println("two");
-				//only one or two samples to be painted; special case
-				
-				//the call path sample based on the sample index
-				CallStackSample css = ptl.getSample(0);
-				//the updated depth
-				int sampleDepth = css.getSize()-1;
-				//the function name of the sample at the correct depth
-				String functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-				//the "midpoints" of the sample to be painted
-				int currSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-				int succSampleMidpoint = (int) Math.min(numPixelsH, (midpoint(ptl.getTime(0), ptl.getTime(1))-begTime)/pixelLength);
-				succSampleMidpoint = Math.max(0, succSampleMidpoint);
-				if(ptl.getCpid(0) == ptl.getCpid(1))
-				{
-					succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(1)-begTime)/pixelLength);
-					succSampleMidpoint = Math.max(0, succSampleMidpoint);
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);				
-					if (sampleDepth < depth)
-					{
-						spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-					}
-				}
-				else
-				{
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);				
-					if (sampleDepth < depth)
-					{
-						spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-					}
-					
-					css = ptl.getSample(1);
-					sampleDepth = css.getSize()-1;
-					functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-					
-					currSampleMidpoint = succSampleMidpoint;
-					succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(1)-begTime)/pixelLength);
-					succSampleMidpoint = Math.max(0, succSampleMidpoint);
-					
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);				
-					if (sampleDepth < depth)
-					{
-						spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-					}
-				}
-				break;
-			}
-			case 3:
-			{
-				//System.out.println("three");
-				//there are three items in the ptl; either one, two, or three samples to be painted,
-				//depending on the locations of the midpoints
-				
-				//the call path sample based on the sample index
-				CallStackSample css = ptl.getSample(0);
-				//the updated depth
-				int sampleDepth = css.getSize()-1;
-				//the function name of the sample at the correct depth
-				String functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-				//the "midpoints" of the sample to be painted
-				int currSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-				int succSampleMidpoint = (int) Math.max(0, (midpoint(ptl.getTime(0),ptl.getTime(1))-begTime)/pixelLength);
-				succSampleMidpoint = Math.min(numPixelsH, succSampleMidpoint);
-				if(ptl.getCpid(0) == ptl.getCpid(1))
-				{
-					succSampleMidpoint = (int) Math.min(numPixelsH, (midpoint(ptl.getTime(1),ptl.getTime(2))-begTime)/pixelLength);
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-					if (sampleDepth < depth)
-					{
-						spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-					}
-					
-					currSampleMidpoint = succSampleMidpoint;
-					succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(2)-begTime)/pixelLength);
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-					if (sampleDepth < depth)
-					{
-						spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-					}
-				}
-				else
-				{
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-					if (sampleDepth < depth)
-					{
-						spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-					}
-					
-					css = ptl.getSample(1);
-					sampleDepth = css.getSize()-1;
-					functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-					
-					currSampleMidpoint = succSampleMidpoint;
-					succSampleMidpoint = (int) Math.min(numPixelsH, (midpoint(ptl.getTime(1),ptl.getTime(2))-begTime)/pixelLength);
-					if(ptl.getCpid(1) == ptl.getCpid(2))
-					{
-						succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(2)-begTime)/pixelLength);
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-						if (sampleDepth < depth)
-						{
-							spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-						}
-					}
-					else
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-						if (sampleDepth < depth)
-						{
-							spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-						}
-						
-						css = ptl.getSample(2);
-						sampleDepth = css.getSize()-1;
-						functionName = css.getFunctionName(Math.min(depth, sampleDepth));
-						
-						currSampleMidpoint = succSampleMidpoint;
-						succSampleMidpoint = (int) Math.min(numPixelsH, (ptl.getTime(2)-begTime)/pixelLength);
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-						if (sampleDepth < depth)
-						{
-							spp.paintOverDepthText(currSampleMidpoint, succSampleMidpoint, sampleDepth, functionName);
-						}
-					}
-				}
-				break;
-			}
+
 			default:
 			{
 				// do the paint
@@ -691,11 +445,6 @@ public class SpaceTimeData extends TraceEvents
 		return this.traces.length;
 	}
 	 
-	/**Returns the midpoint between x1 and x2*/
-	public static double midpoint(double x1, double x2)
-	{
-		return (x1 + x2)/2.0;
-	}
 	
 	/**Returns the index of the file to which the line-th line corresponds.*/
 	public int lineToPaint(int line)

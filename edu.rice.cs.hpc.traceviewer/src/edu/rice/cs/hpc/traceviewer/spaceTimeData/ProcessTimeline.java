@@ -51,10 +51,10 @@ public class ProcessTimeline
 	int numPixelH;
 	
 	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
-	final static byte SIZE_OF_TRACE_RECORD = 12;
+	public final static byte SIZE_OF_TRACE_RECORD = 12;
 	
 	/**The new format for trace files has a 24-byte header (if 0, we were most recently testing old data).*/
-	final static byte SIZE_OF_HEADER = 24;
+	public final static byte SIZE_OF_HEADER = 24;
 	
 	/**** debugger output flag ****/
 	final boolean PTL_DEBUG = false;
@@ -185,6 +185,7 @@ public class ProcessTimeline
 			times.add(index, timestamp);
 			timeLine.add(index, cpid);
 		}
+		this.debug("add_sample " + index + ": " + cpid + "\ttime: " + timestamp);
 	}
 	
 	/**Shifts all the times in the ProcessTimeline to the left by lowestStartingTime.*/

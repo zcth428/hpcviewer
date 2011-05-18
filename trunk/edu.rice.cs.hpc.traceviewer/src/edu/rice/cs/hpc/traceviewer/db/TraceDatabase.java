@@ -7,13 +7,22 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
 
+
+/*************
+ * 
+ * Class to manage trace database: opening and detecting the *.hpctrace files
+ *
+ */
 public class TraceDatabase {
 	
+	final private static int MIN_TRACE_SIZE = ProcessTimeline.SIZE_OF_HEADER + (ProcessTimeline.SIZE_OF_TRACE_RECORD * 2);
 	private ArrayList<File> traceFiles = null;
 	private File experimentFile = null;
 	final private String []args;
@@ -141,7 +150,17 @@ public class TraceDatabase {
 				for(String db: databases) {
 					String traceFile = directory + File.separatorChar + db;
 					if (traceFile.contains(".hpctrace")) {
-						listOfFiles.add(new File(traceFile));
+						File file = new File(traceFile);
+						
+						//-----------------------------------------------------------------------------
+						// check if the trace file size is correct.
+						// 	the min size of trace file is HEADER + TWO_SAMPLE
+						//	Where TWO_SAMPLE = RECORD_SIZE x 2
+						//-----------------------------------------------------------------------------
+						if (file.length()>=MIN_TRACE_SIZE)
+							listOfFiles.add(file);
+						else
+							System.err.println("Warning! Trace file size " + file.length() +" is too small: " + file.getName());
 					}
 				}
 				if (listOfFiles.size()>0) {

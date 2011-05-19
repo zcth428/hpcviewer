@@ -157,7 +157,8 @@ public class TraceDatabase {
 						// 	the min size of trace file is HEADER + TWO_SAMPLE
 						//	Where TWO_SAMPLE = RECORD_SIZE x 2
 						//-----------------------------------------------------------------------------
-						if (file.length()>=MIN_TRACE_SIZE)
+						System.out.println("TF: " + file.getName() +"\t" +  file.length() +" bytes");
+						if (file.length()>MIN_TRACE_SIZE)
 							listOfFiles.add(file);
 						else
 							System.err.println("Warning! Trace file size " + file.length() +" is too small: " + file.getName());

@@ -145,6 +145,14 @@ public class TraceDatabase {
 			experimentFile = new File(directory+File.separatorChar+"experiment.xml");
 			
 			if (experimentFile.canRead()) {
+				//--------------------------------------------------------------
+				// Forcing to sort alphabetically the file name. Here we do not
+				//	parse the string to grab the process rank, but instead we
+				//	assume the order of file is equivalent with the order of line
+				//	in the trace view.
+				// On Linux, the files are not sorted alphabetically
+				//--------------------------------------------------------------
+				java.util.Arrays.sort(databases);
 				
 				ArrayList<File> listOfFiles = new ArrayList<File>();
 				for(String db: databases) {

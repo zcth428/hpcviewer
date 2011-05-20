@@ -24,6 +24,8 @@ public abstract class BasePaintLine {
 	protected ColorTable colorTable;
 	private long begTime;
 	
+	private boolean debug = false;  
+	
 	public BasePaintLine(ColorTable _colorTable, ProcessTimeline _ptl, SpaceTimeSamplePainter _spp, 
 			long _begTime, int _depth, int _height, double _pixelLength) {
 		this.ptl = _ptl;
@@ -84,6 +86,7 @@ public abstract class BasePaintLine {
 				// --------------------------------------------------------------------
 				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength));
 			}
+			printDebug(" i: " + index + "\tcs: " + currSampleMidpoint + "\tss: " + succSampleMidpoint + "\td: " + currDepth);
 			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName);
 		}			
 	}
@@ -94,6 +97,10 @@ public abstract class BasePaintLine {
 		return (x1 + x2)/2.0;
 	}
 
+	private void printDebug(String str) {
+		if (debug)
+			System.out.println("[BPL] " + str);
+	}
 	/***
 	 * Abstract method to finalize the painting given its range, depth and the function name
 	 * 

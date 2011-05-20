@@ -41,8 +41,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	private HPCCallStackView csview;
 	
-	//private Composite coolBarArea;
-	
 	/*************************************************************************
 	 *	Creates the view.
 	 ************************************************************************/
@@ -73,7 +71,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		this.stData.addDepthListener(this);
 		this.stData.addPositionListener(this);
 		detailCanvas.setVisible(true);
-		//coolBarArea.setVisible(true);
 	}
 	
 	
@@ -114,8 +111,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		
 		final TraceCoolBar traceCoolBar = new TraceCoolBar(tbMgr, this, SWT.NONE);
 		
-		//coolBarArea = new Composite(parent, SWT.NONE); 
-
 		/**************************************************************************
          * Process and Time dimension labels
          *************************************************************************/
@@ -125,21 +120,17 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		 * Detail View Canvas
 		 ************************************************************************/
 		
-		detailCanvas = new SpaceTimeDetailCanvas(parent); //(master, stData);
+		detailCanvas = new SpaceTimeDetailCanvas(parent); 
 		
 		detailCanvas.setLabels(labelGroup);
 		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);
 		GridDataFactory.fillDefaults().grab(true, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(labelGroup);
 		
-		//GridLayoutFactory.swtDefaults().numColumns(2).generateLayout(coolBarArea);
-		//GridDataFactory.fillDefaults().grab(true, false).applyTo(coolBarArea);
-
 		detailCanvas.setButtons(new Action[]{traceCoolBar.home, traceCoolBar.open, traceCoolBar.save, traceCoolBar.undo,
 				traceCoolBar.redo, traceCoolBar.tZoomIn, traceCoolBar.tZoomOut, traceCoolBar.pZoomIn, traceCoolBar.pZoomOut,
 				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		
 		detailCanvas.setVisible(false);
-		//coolBarArea.setVisible(false);
 	}
 
 

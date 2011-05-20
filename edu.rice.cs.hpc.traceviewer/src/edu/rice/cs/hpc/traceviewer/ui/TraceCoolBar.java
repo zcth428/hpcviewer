@@ -21,11 +21,6 @@ public class TraceCoolBar {
 	final Action goNorth;
 	final Action goSouth;
 	
-	private void createAction(IToolBarManager toolbar, Action action, String sDesc) {
-		action.setToolTipText(sDesc);
-		action.setEnabled(false);
-		toolbar.add(action);
-	}
 	
 	public TraceCoolBar(final IToolBarManager toolbar, final ITraceViewAction action, int style) {
 		
@@ -150,4 +145,18 @@ public class TraceCoolBar {
 		};
 		this.createAction(toolbar, open, "Open a saved view configuration");
 	}
+
+	/*****
+	 * Finalize an action by setting the tooltop and insert it into the toolbar
+	 * 
+	 * @param toolbar
+	 * @param action
+	 * @param sDesc
+	 */
+	private void createAction(IToolBarManager toolbar, Action action, String sDesc) {
+		action.setToolTipText(sDesc);
+		action.setEnabled(false);
+		toolbar.add(action);
+	}
+
 }

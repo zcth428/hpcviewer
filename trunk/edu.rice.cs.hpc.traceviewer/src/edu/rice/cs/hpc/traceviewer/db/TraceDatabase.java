@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.db;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
@@ -31,9 +32,11 @@ public class TraceDatabase {
 		this.args = _args;
 	}
 	
-	public boolean openDatabase(Shell shell) {
+	public boolean openDatabase(Shell shell, final IStatusLineManager statusMgr) {
 		
 		boolean hasDatabase = false;
+		
+		statusMgr.setMessage("Opening database...");
 		
 		//---------------------------------------------------------------
 		// processing the command line argument
@@ -61,8 +64,8 @@ public class TraceDatabase {
 			File experimentFile = this.getExperimentFile();
 			ArrayList<File> traceFiles = this.getTraceFiles();
 			
-			SpaceTimeData stData = new SpaceTimeData(shell, experimentFile, traceFiles);
-			
+			SpaceTimeData stData = new SpaceTimeData(shell.getDisplay(), experimentFile, traceFiles, statusMgr.getProgressMonitor());
+
 			try {
 				//---------------------------------------------------------------------
 				// Tell all views that we have the data, and they need to refresh their content
@@ -70,13 +73,13 @@ public class TraceDatabase {
 
 				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
 				tview.updateData(stData);
-				
+
 				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
 				dview.updateData(stData);
 				
 				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
 				cview.updateData(stData);
-				
+
 				//---------------------------------------------------------------------
 				// Update the title of the application
 				//---------------------------------------------------------------------
@@ -87,6 +90,7 @@ public class TraceDatabase {
 				e.printStackTrace();
 			}
 		}
+		statusMgr.setMessage("");
 		
 		return false;
 

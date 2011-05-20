@@ -6,9 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
@@ -44,9 +45,6 @@ public class SpaceTimeData extends TraceEvents
 	
 	/** Stores the color to function name assignments for all of the functions in all of the processes.*/
 	private ColorTable colorTable;
-	
-	/** The composite that holds the Context View canvas and the Detail View canvas.*/
-	private Composite canvasHolder;
 	
 	/**The map between the nodes and the cpid's.*/
 	private HashMap<Integer, Scope> scopeMap;
@@ -95,13 +93,16 @@ public class SpaceTimeData extends TraceEvents
 	
 	final private boolean debug =  true;
 	
+	private final IProgressMonitor monitor;
+	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
-	public SpaceTimeData(Composite _canvasHolder, File expFile, ArrayList<File> _traceFiles)
+	public SpaceTimeData(Display display, File expFile, ArrayList<File> _traceFiles, IProgressMonitor _monitor)
 	{
-		canvasHolder = _canvasHolder;
-		colorTable = new ColorTable(canvasHolder.getDisplay());
+		this.monitor = _monitor;
+		
+		colorTable = new ColorTable(display);
 		
 		//Initializes the CSS that represents time values outside of the time-line.
 		colorTable.addProcedure(CallStackSample.NULL_FUNCTION); 
@@ -244,34 +245,43 @@ public class SpaceTimeData extends TraceEvents
 		
 		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processor
 		int linesToPaint = Math.min(numPixelsV, endProcess - begProcess);
+		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
+
+		monitor.beginTask("Trace painting", (2 * num_threads) + linesToPaint);
 		
 		compositeLines = new Image[linesToPaint];
 		lineNum = 0;
 		TimelineThread[] threads;
-		threads = new TimelineThread[Math.min(linesToPaint, Runtime.getRuntime().availableProcessors())];
+		threads = new TimelineThread[num_threads];
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++)
 		{
 			threads[threadNum] = new TimelineThread(this, changedBounds, canvas, numPixelsH, canvas.getScaleX(), Math.max(canvas.getScaleY(), 1));
 			threads[threadNum].start();
+			monitor.worked(1);
 		}
-			try
+		
+		try
+		{
+			for (int threadNum = 0; threadNum < threads.length; threadNum++)
 			{
-				for (int threadNum = 0; threadNum < threads.length; threadNum++)
-				{
-					if (threads[threadNum].isAlive())
-						threads[threadNum].join();
-				}
+				if (threads[threadNum].isAlive())
+					threads[threadNum].join();
+				monitor.worked(1);
 			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+
 		for (int i = 0; i < linesToPaint; i++)
 		{
 			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0, (int)Math.round(i*Math.max(canvas.getScaleY(),1)), 
 					compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
+			monitor.worked(1);
 		}
+		monitor.done();
 	}
 	
 	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)

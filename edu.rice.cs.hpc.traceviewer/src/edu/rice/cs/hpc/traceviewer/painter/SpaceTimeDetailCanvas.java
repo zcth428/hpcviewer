@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.util.Stack;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -18,8 +19,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ToolItem;
-
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
@@ -53,33 +52,33 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	double numProcessDisp;
 	
 	/**Triggers zoom back to beginning view screen.*/
-	ToolItem homeButton;
+	Action homeButton;
 	
 	/**Triggers open function to open previously saved frame.*/
-	ToolItem openButton;
+	Action openButton;
 	
 	/**Triggers save function to save current frame to file.*/
-	ToolItem saveButton;
+	Action saveButton;
 	
 	/**Triggers undo of screen.*/
-	ToolItem undoButton;
+	Action undoButton;
 	
 	/**Triggers screen re-do.*/
-	ToolItem redoButton;
+	Action redoButton;
 	
 	/** Triggers zoom-in on the time axis.*/
-	ToolItem tZoomInButton;
+	Action tZoomInButton;
 	
 	/** Triggers zoom-out on the time axis.*/
-	ToolItem tZoomOutButton;
+	Action tZoomOutButton;
 	
 	/** Triggers zoom-in on the process axis.*/
-	ToolItem pZoomInButton;
+	Action pZoomInButton;
 	
 	/** Triggers zoom-out on the process axis.*/
-	ToolItem pZoomOutButton;
+	Action pZoomOutButton;
 
-	ToolItem goEastButton, goNorthButton, goWestButton, goSouthButton;
+	Action goEastButton, goNorthButton, goWestButton, goSouthButton;
 	
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	SpaceTimeMiniCanvas miniCanvas;
@@ -177,6 +176,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		// clear undo button
 		this.undoStack.clear();
 		this.undoButton.setEnabled(false);
+		
+		this.saveButton.setEnabled(true);
+		this.openButton.setEnabled(true);
 	}
 	
 	/***
@@ -355,7 +357,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/**************************************************************************
 	 * Initializes the buttons above the detail canvas.
 	 **************************************************************************/
-	public void setButtons(ToolItem[] toolItems)
+	public void setButtons(Action[] toolItems)
 	{
 		homeButton = toolItems[0];
 		openButton = toolItems[1];

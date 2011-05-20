@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -15,7 +17,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
@@ -40,7 +41,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	private HPCCallStackView csview;
 	
-	private TraceCoolBar coolBarArea;
+	//private Composite coolBarArea;
 	
 	/*************************************************************************
 	 *	Creates the view.
@@ -72,7 +73,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		this.stData.addDepthListener(this);
 		this.stData.addPositionListener(this);
 		detailCanvas.setVisible(true);
-		coolBarArea.setVisible(true);
+		//coolBarArea.setVisible(true);
 	}
 	
 	
@@ -106,14 +107,19 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		this.detailCanvas.setCrossHair(position.time, position.process);
 	}
 	
-	
+
 	private void createToolbar(Composite parent) {
-		coolBarArea = new TraceCoolBar(parent, this, SWT.NONE);
+		
+		final IToolBarManager tbMgr = getViewSite().getActionBars().getToolBarManager();
+		
+		final TraceCoolBar traceCoolBar = new TraceCoolBar(tbMgr, this, SWT.NONE);
+		
+		//coolBarArea = new Composite(parent, SWT.NONE); 
 
 		/**************************************************************************
          * Process and Time dimension labels
          *************************************************************************/
-		final Composite labelGroup = new Composite(coolBarArea, SWT.NONE);
+		final Composite labelGroup = new Composite(parent, SWT.NONE);
 				
 		/*************************************************************************
 		 * Detail View Canvas
@@ -125,15 +131,15 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);
 		GridDataFactory.fillDefaults().grab(true, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(labelGroup);
 		
-		GridLayoutFactory.swtDefaults().numColumns(2).generateLayout(coolBarArea);
-		GridDataFactory.fillDefaults().grab(true, false).applyTo(coolBarArea);
+		//GridLayoutFactory.swtDefaults().numColumns(2).generateLayout(coolBarArea);
+		//GridDataFactory.fillDefaults().grab(true, false).applyTo(coolBarArea);
 
-		detailCanvas.setButtons(new ToolItem[]{coolBarArea.home, coolBarArea.open, coolBarArea.save, coolBarArea.undo,
-				coolBarArea.redo, coolBarArea.tZoomIn, coolBarArea.tZoomOut, coolBarArea.pZoomIn, coolBarArea.pZoomOut,
-				coolBarArea.goEast, coolBarArea.goNorth, coolBarArea.goSouth, coolBarArea.goWest});
+		detailCanvas.setButtons(new Action[]{traceCoolBar.home, traceCoolBar.open, traceCoolBar.save, traceCoolBar.undo,
+				traceCoolBar.redo, traceCoolBar.tZoomIn, traceCoolBar.tZoomOut, traceCoolBar.pZoomIn, traceCoolBar.pZoomOut,
+				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		
 		detailCanvas.setVisible(false);
-		coolBarArea.setVisible(false);
+		//coolBarArea.setVisible(false);
 	}
 
 

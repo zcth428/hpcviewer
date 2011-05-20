@@ -1,232 +1,153 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.CoolBar;
-import org.eclipse.swt.widgets.CoolItem;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 
-public class TraceCoolBar extends Composite {
+public class TraceCoolBar {
 
-	final ToolItem home;
-	final ToolItem tZoomIn;
-	final ToolItem tZoomOut;
-	final ToolItem pZoomIn;
-	final ToolItem pZoomOut;
-	final ToolItem undo;
-	final ToolItem redo;
-	final ToolItem save;
-	final ToolItem open;
-	final ToolItem goEast;
-	final ToolItem goWest;
-	final ToolItem goNorth;
-	final ToolItem goSouth;
+	final Action home;
+	final Action tZoomIn;
+	final Action tZoomOut;
+	final Action pZoomIn;
+	final Action pZoomOut;
+	final Action undo;
+	final Action redo;
+	final Action save;
+	final Action open;
+	final Action goEast;
+	final Action goWest;
+	final Action goNorth;
+	final Action goSouth;
 	
-	public TraceCoolBar(Composite parent, final ITraceViewAction action, int style) {
-		super(parent, style);
-
-		final CoolBar coolBar = new CoolBar(this, SWT.NONE);
-
-		final ToolBar toolBar = new ToolBar(coolBar, SWT.FLAT);
+	private void createAction(IToolBarManager toolbar, Action action, String sDesc) {
+		action.setToolTipText(sDesc);
+		action.setEnabled(false);
+		toolbar.add(action);
+	}
+	
+	public TraceCoolBar(final IToolBarManager toolbar, final ITraceViewAction action, int style) {
 		
 		/***************************************************
 		 * Buttons
 		 **************************************************/
 
 		
-		home = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor homeSamp = ImageDescriptor.createFromFile(this.getClass(), "home-screen.png");
-		Image homeScreen = homeSamp.createImage();
-		home.setImage(homeScreen);
-		home.setToolTipText("Reset the view to display the whole trace");
-		home.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+		final ImageDescriptor homeSamp = ImageDescriptor.createFromFile(this.getClass(), "home-screen.png");
+		home = new Action(null, homeSamp) {
+			public void run() {
 				action.home();
 			}
-		});
-		home.setEnabled(true);
+		};
+		this.createAction(toolbar, home, "Reset the view to display the whole trace");
 		
-		new ToolItem(toolBar, SWT.SEPARATOR);
+		toolbar.add(new Separator());
 		
-		tZoomIn = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor zoomInTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-time.png");
-		Image zoomInTime = zoomInTim.createImage();
-		tZoomIn.setImage(zoomInTime);
-		tZoomIn.setToolTipText("Zoom in along the time axis");
-		tZoomIn.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+		final ImageDescriptor zoomInTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-time.png");
+		tZoomIn = new Action(null, zoomInTim) {
+			public void run() {
 				action.timeZoomIn();
-			}
-		});
-		tZoomIn.setEnabled(true);
-
-		tZoomOut = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor zoomOutTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-time.png");
-		Image zoomOutTime = zoomOutTim.createImage();
-		tZoomOut.setImage(zoomOutTime);
-		tZoomOut.setToolTipText("Zoom out along the time axis");
-		tZoomOut.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+			}		
+		};
+		this.createAction(toolbar, tZoomIn, "Zoom in along the time axis");
+		
+		final ImageDescriptor zoomOutTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-time.png");
+		tZoomOut = new Action(null, zoomOutTim) {
+			public void run() {
 				action.timeZoomOut();
-			}
-		});
-		tZoomOut.setEnabled(false);
-
-		pZoomIn = new ToolItem(toolBar, SWT.PUSH);
+			}		
+		};
+		this.createAction(toolbar, tZoomOut, "Zoom out along the time axis");
+		
 		ImageDescriptor zoomInProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-process.png");
-		Image zoomInProcess = zoomInProc.createImage();
-		pZoomIn.setImage(zoomInProcess);
-		pZoomIn.setToolTipText("Zoom in along the process axis");
-		pZoomIn.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+		pZoomIn = new Action(null, zoomInProc) {
+			public void run() {
 				action.processZoomIn();
-			}
-		});
-		pZoomIn.setEnabled(true);
-
-		pZoomOut = new ToolItem(toolBar, SWT.PUSH);
+			}		
+		};
+		this.createAction(toolbar, pZoomIn, "Zoom in along the process axis");
+		
 		ImageDescriptor zoomOutProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-process.png");
-		Image zoomOutProcess = zoomOutProc.createImage();
-		pZoomOut.setImage(zoomOutProcess);
-		pZoomOut.setToolTipText("Zoom out along the process axis");
-		pZoomOut.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+		pZoomOut = new Action(null, zoomOutProc) {
+			public void run() {
 				action.processZoomOut();
-			}
-		});
-		pZoomOut.setEnabled(false);
-				
-		new ToolItem(toolBar, SWT.SEPARATOR);
+			}		
+		};
+		this.createAction(toolbar, pZoomOut, "Zoom out along the process axis");
 
 
-		goEast = new ToolItem(toolBar, SWT.PUSH);
+		toolbar.add(new Separator());
+
+		
 		final ImageDescriptor eastDesc = ImageDescriptor.createFromFile(getClass(), "go-east.png");
-		goEast.setImage(eastDesc.createImage());
-		goEast.setToolTipText("Scroll left one step along the time axis");
-		goEast.addListener(SWT.Selection, new Listener(){
-
-			public void handleEvent(Event event) {
+		goEast = new Action(null, eastDesc) {
+			public void run() {
 				action.goEast();
-			}
-			
-		});
-		
-		goWest = new ToolItem(toolBar, SWT.PUSH);
+			}		
+		};
+		this.createAction(toolbar, goEast, "Scroll left one step along the time axis");
+
 		final ImageDescriptor westDesc = ImageDescriptor.createFromFile(getClass(), "go-west.png");
-		goWest.setImage(westDesc.createImage());
-		goWest.setToolTipText("Scroll right one step along the time axis");
-		goWest.addListener(SWT.Selection, new Listener(){
-
-			public void handleEvent(Event event) {
+		goWest = new Action(null, westDesc) {
+			public void run() {
 				action.goWest();
-			}
-			
-		});
+			}		
+		};
+		this.createAction(toolbar, goWest, "Scroll right one step along the time axis");
 		
-		goNorth = new ToolItem(toolBar, SWT.PUSH);
+
 		final ImageDescriptor northDesc = ImageDescriptor.createFromFile(getClass(), "go-north.png");
-		goNorth.setImage(northDesc.createImage());
-		goNorth.setToolTipText("Scroll up one step along the process axis");
-		goNorth.addListener(SWT.Selection, new Listener(){
-			public void handleEvent(Event event) {
+		goNorth = new Action(null, northDesc) {
+			public void run() {
 				action.goNorth();
-			}
-			
-		});
+			}		
+		};
+		this.createAction(toolbar, goNorth, "Scroll up one step along the process axis");
+
 		
-		goSouth = new ToolItem(toolBar, SWT.PUSH);
 		final ImageDescriptor southDesc = ImageDescriptor.createFromFile(getClass(), "go-south.png");
-		goSouth.setImage(southDesc.createImage());
-		goSouth.setToolTipText("Scroll down one step along the process axis");
-		goSouth.addListener(SWT.Selection, new Listener(){
-			public void handleEvent(Event event) {
+		goSouth = new Action(null, southDesc) {
+			public void run() {
 				action.goSouth();
-			}
-			
-		});
+			}		
+		};
+		this.createAction(toolbar, goSouth, "Scroll down one step along the process axis");
 		
-		new ToolItem(toolBar, SWT.SEPARATOR);
+		toolbar.add(new Separator());
 		
-		undo = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
-		Image undoArrow = undoSamp.createImage();
-		undo.setImage(undoArrow);
-		undo.setToolTipText("Undo the last action");
-		undo.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+		undo = new Action(null, undoSamp) {
+			public void run() {
 				action.undo();
-			}
-		});
-		undo.setEnabled(false);
-		
-		redo = new ToolItem(toolBar, SWT.PUSH);
-		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
-		Image redoArrow = redoSamp.createImage();
-		redo.setImage(redoArrow);
-		redo.setToolTipText("Redo the last undo");
-		redo.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
-				action.redo();
-			}
-		});
-		redo.setEnabled(false);
+			}		
+		};
+		this.createAction(toolbar, undo, "Undo the last action");
 				
-		new ToolItem(toolBar, SWT.SEPARATOR);
+		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
+		redo = new Action(null, redoSamp) {
+			public void run() {
+				action.redo();
+			}		
+		};
+		this.createAction(toolbar, redo, "Redo the last undo");
+				
+		toolbar.add(new Separator());
 		
-		save = new ToolItem(toolBar, SWT.PUSH);
 		ImageDescriptor saveSamp = ImageDescriptor.createFromFile(this.getClass(), "save.png");
-		Image saveImage = saveSamp.createImage();
-		save.setImage(saveImage);
-		save.setToolTipText("Save the current view configuration to a file");
-		save.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+		save = new Action(null, saveSamp) {
+			public void run() {
 				action.save();
-			}
-		});
-		save.setEnabled(true);
-
-		open = new ToolItem(toolBar, SWT.PUSH);
+			}		
+		};
+		this.createAction(toolbar, save, "Save the current view configuration to a file");
+				
 		ImageDescriptor openSamp = ImageDescriptor.createFromFile(this.getClass(), "open.png");
-		Image openImage = openSamp.createImage();
-		open.setImage(openImage);
-		open.setToolTipText("Open a saved view configuration");
-		open.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event)
-			{
+		open = new Action(null, openSamp) {
+			public void run() {
 				action.open();
-			}
-		});
-		open.setEnabled(true);
-
-		
-		GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 0, 0).numColumns(1).generateLayout(coolBar);
-		GridDataFactory.fillDefaults().applyTo(coolBar);
-		
-		new ToolItem(toolBar, SWT.SEPARATOR);
-
-		toolBar.pack();
-		Point size = toolBar.getSize();
-		
-		final CoolItem buttonItems = new CoolItem(coolBar, SWT.NONE);
-		buttonItems.setControl(toolBar);
-		Point preferred = buttonItems.computeSize(size.x, size.y);
-		buttonItems.setPreferredSize(preferred);
-
+			}		
+		};
+		this.createAction(toolbar, open, "Open a saved view configuration");
 	}
 }

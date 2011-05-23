@@ -22,12 +22,14 @@ public class Perspective implements IPerspectiveFactory
 			layout.createFolder("bottomLeft", IPageLayout.BOTTOM, SPACE_TIME_VIEW_HEIGHT_FRACTION, "topLeft");
 		bottomLeft.addView(HPCDepthView.ID);
 		
-		layout.addView(HPCCallStackView.ID, IPageLayout.RIGHT, CALLSTACK_VIEW_WIDTH_FRACTION, editorArea);
+		IFolderLayout right = 
+			layout.createFolder("right", IPageLayout.BOTTOM,  CALLSTACK_VIEW_WIDTH_FRACTION, editorArea);
+		right.addView(HPCCallStackView.ID);
 		
 		layout.getViewLayout(HPCTraceView.ID).setCloseable(false);
 		layout.getViewLayout(HPCDepthView.ID).setCloseable(false);
 		layout.getViewLayout(HPCCallStackView.ID).setCloseable(false);
 		
-		layout.getViewLayout(HPCCallStackView.ID).setMoveable(false);
+		//layout.getViewLayout(HPCCallStackView.ID).setMoveable(false);
 	}
 }

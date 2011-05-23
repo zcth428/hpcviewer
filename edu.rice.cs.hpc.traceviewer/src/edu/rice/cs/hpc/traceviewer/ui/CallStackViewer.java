@@ -3,11 +3,13 @@ package edu.rice.cs.hpc.traceviewer.ui;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -18,6 +20,7 @@ import org.eclipse.swt.widgets.Table;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 /**************************************************
  * A viewer for CallStackSamples.
@@ -27,10 +30,12 @@ public class CallStackViewer extends TableViewer
 	/**The SpaceTimeData associated with this CallStackViewer.*/
 	private SpaceTimeData stData;
 	
+	private final TableViewerColumn viewerColumn;
+	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, final HPCCallStackView _csview)
 	{
-		super(parent, SWT.SINGLE | SWT.V_SCROLL);
+		super(parent, SWT.SINGLE | SWT.NO_SCROLL);
 		
         final Table stack = this.getTable();
         
@@ -40,7 +45,7 @@ public class CallStackViewer extends TableViewer
         //------------------------------------------------
         // add label provider
         //------------------------------------------------
-        this.setLabelProvider(new LabelProvider() {
+ /*       this.setLabelProvider(new LabelProvider() {
         	public Image getImage(Object element) {
         		if (element instanceof String) {
         			Image img = null;
@@ -57,7 +62,7 @@ public class CallStackViewer extends TableViewer
         			return (String) element;
         		return null;
         	}
-        });
+        });*/
 
         //------------------------------------------------
         // add content provider
@@ -92,6 +97,32 @@ public class CallStackViewer extends TableViewer
 				}
 			}
 		});
+		
+		ColumnLabelProvider myLableProvider = new ColumnLabelProvider() {
+        	public Image getImage(Object element) {
+        		if (element instanceof String) {
+        			Image img = null;
+        			if (stData != null)
+        				img = stData.getColorTable().getImage((String)element);
+        			return img;
+        		}
+        		
+				return null;        		
+        	}
+        	
+        	public String getText(Object element) {
+        		if (element instanceof String)
+        			return (String) element;
+        		return null;
+        	}
+        	
+        	public Color getForeground(Object element) {
+        		return Constants.COLOR_BLACK;
+        	}
+		};
+		viewerColumn = new TableViewerColumn(this, SWT.NONE);
+		viewerColumn.setLabelProvider(myLableProvider);
+		viewerColumn.getColumn().setWidth(100);
 	}
 	
 	
@@ -152,6 +183,8 @@ public class CallStackViewer extends TableViewer
 			this.setInput(new ArrayList<String>(sampleVector));
 		
 			this.setDepth(_depth);
+			
+			viewerColumn.getColumn().pack();
 		} else {
 			System.err.println("Internal error: unable to get process " + adjustedPosition+"\tProcess range: " +
 					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());

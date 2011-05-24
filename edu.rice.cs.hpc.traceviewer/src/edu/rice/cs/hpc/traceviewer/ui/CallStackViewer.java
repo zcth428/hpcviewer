@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -20,7 +21,6 @@ import org.eclipse.swt.widgets.Table;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 /**************************************************
  * A viewer for CallStackSamples.
@@ -42,28 +42,6 @@ public class CallStackViewer extends TableViewer
         GridData data = new GridData(GridData.FILL_BOTH);
         stack.setLayoutData(data);
         
-        //------------------------------------------------
-        // add label provider
-        //------------------------------------------------
- /*       this.setLabelProvider(new LabelProvider() {
-        	public Image getImage(Object element) {
-        		if (element instanceof String) {
-        			Image img = null;
-        			if (stData != null)
-        				img = stData.getColorTable().getImage((String)element);
-        			return img;
-        		}
-        		
-				return null;        		
-        	}
-        	
-        	public String getText(Object element) {
-        		if (element instanceof String)
-        			return (String) element;
-        		return null;
-        	}
-        });*/
-
         //------------------------------------------------
         // add content provider
         //------------------------------------------------
@@ -98,7 +76,11 @@ public class CallStackViewer extends TableViewer
 			}
 		});
 		
-		ColumnLabelProvider myLableProvider = new ColumnLabelProvider() {
+        //------------------------------------------------
+        // add label provider
+        //------------------------------------------------
+
+		final ColumnLabelProvider myLableProvider = new ColumnLabelProvider() {
         	public Image getImage(Object element) {
         		if (element instanceof String) {
         			Image img = null;
@@ -116,13 +98,18 @@ public class CallStackViewer extends TableViewer
         		return null;
         	}
         	
-        	public Color getForeground(Object element) {
-        		return Constants.COLOR_BLACK;
+        	public String getToolTipText(Object element) {
+        		return this.getText(element);
+        	}
+        	
+        	public int getToolTipDisplayDelayTime(Object object) {
+        		return 200;
         	}
 		};
 		viewerColumn = new TableViewerColumn(this, SWT.NONE);
 		viewerColumn.setLabelProvider(myLableProvider);
 		viewerColumn.getColumn().setWidth(100);
+		ColumnViewerToolTipSupport.enableFor(csviewer, ToolTip.NO_RECREATE);
 	}
 	
 	
@@ -154,13 +141,8 @@ public class CallStackViewer extends TableViewer
 		// however, if the selected process is less than the start of displayed process, 
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
-		int adjustedPosition = position.processInCS; /*( process < stData.getBegProcess() ? 
-				process : process-stData.getBegProcess() );
-		
-		if (process >= stData.getNumberOfDisplayedProcesses() ) {
-			double scale = stData.getHeight() / stData.getNumberOfDisplayedProcesses();
-			adjustedPosition = (int) (process /  scale);
-		}*/
+		int adjustedPosition = position.processInCS; 
+
 		ProcessTimeline ptl;
 		ptl = stData.getProcess(adjustedPosition);
 		if (ptl != null) {

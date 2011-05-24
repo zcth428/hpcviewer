@@ -160,7 +160,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 
 	public int computePreferredSize(boolean width, int availableParallel, int availablePerpendicular, int preferredSize) 
 	{
-		return width ? 170 : availablePerpendicular;
+		return preferredSize;
 	}
 
 	public int getSizeFlags(boolean width) 

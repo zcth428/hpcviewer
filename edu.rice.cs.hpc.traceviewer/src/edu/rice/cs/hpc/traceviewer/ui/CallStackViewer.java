@@ -32,6 +32,8 @@ public class CallStackViewer extends TableViewer
 	
 	private final TableViewerColumn viewerColumn;
 	
+	private final static String EMPTY_FUNCTION = "--------------";
+	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, final HPCCallStackView _csview)
 	{
@@ -155,16 +157,18 @@ public class CallStackViewer extends TableViewer
 				// empty array of string
 				sampleVector = new Vector<String>();
 
-			int numOverDepth = 0;
 			if (sampleVector.size()<=_depth)
 			{
-				numOverDepth = _depth-sampleVector.size()+1;
+				//-----------------------------------
+				// case of over depth
+				//-----------------------------------
+				final int numOverDepth = _depth-sampleVector.size()+1;
 				for(int l = 0; l<numOverDepth; l++)
-					sampleVector.add("--------------");
+					sampleVector.add(EMPTY_FUNCTION);
 			}
 			this.setInput(new ArrayList<String>(sampleVector));
 		
-			this.setDepth(_depth);
+			this.selectDepth(_depth);
 			
 			viewerColumn.getColumn().pack();
 		} else {
@@ -179,6 +183,24 @@ public class CallStackViewer extends TableViewer
 	/**Sets the viewer's depth to _depth.*/
 	public void setDepth(int _depth)
 	{
+		final int itemCount = this.getTable().getItemCount();
+		if (itemCount<=_depth) {
+			//-----------------------------------
+			// case of over depth
+			//-----------------------------------
+			final int overDepth = _depth - itemCount + 1;
+			for (int i=0; i<overDepth; i++) {
+				this.add(EMPTY_FUNCTION);
+			}
+		}
+		this.selectDepth(_depth);
+	}
+	
+	/*****
+	 * Select a specified depth in the call path
+	 * @param _depth
+	 */
+	private void selectDepth(final int _depth) {
 		this.getTable().select(_depth);
 		this.getTable().redraw();
 	}

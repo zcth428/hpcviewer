@@ -30,7 +30,7 @@ Release 5.1.0 (C) Copyright 2011, Rice University.
    <windowImages i16="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer016.png" i32="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.png" i48="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.png" i128="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer128.png"/>
 
    <launcher name="hpctraceviewer">
-      <linux icon="/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-32x32-32bit.xpm"/>
+      <linux icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.xpm"/>
       <macosx icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer.icns"/>
       <solaris/>
       <win useIco="false">
@@ -40,7 +40,6 @@ Release 5.1.0 (C) Copyright 2011, Rice University.
             winLargeHigh="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.BMP"/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>

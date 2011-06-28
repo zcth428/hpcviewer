@@ -30,7 +30,7 @@ public class Database {
 	 * @return
 	 */
 	public Experiment getExperiment () {
-		return experiment;
+		return experiment; //this.view.getExperimentData().getExperiment(); // 
 	}
 
 	/**

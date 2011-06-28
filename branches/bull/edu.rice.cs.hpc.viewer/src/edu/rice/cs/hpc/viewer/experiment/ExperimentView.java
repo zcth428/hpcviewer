@@ -18,6 +18,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 /**
@@ -157,17 +158,23 @@ public class ExperimentView {
 	 */
 	public void generateView(Experiment experiment) {
         this.dataExperiment.setExperiment(experiment);
-
-		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(this.objPage.getWorkbenchWindow());
+        IWorkbenchWindow window = this.objPage.getWorkbenchWindow();
+		// register this new database with our viewer window
+		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
 		if (vWin == null) {
-			System.out.printf("ExperimentView.generateView: ViewerWindow class not found\n");
-			return;
+			System.out.printf("ExperimentManager.setExperiment: ViewerWindow class not found\n");
 		}
-		Database db = vWin.getDb(this);
-		if (db == null) {
-			System.out.printf("ExperimentView.generateView: Database class not found\n");
-			return;
+
+		// Create a database object to record information about this particular database 
+		// being opened.  This information is needed to be able to close and clean up 
+		// resources from this database.
+		Database db = new Database();
+		db.setExperimentView(this);
+		// add the database to this viewer window
+		if (vWin.addDatabase(db) < 0) {
+			return;     // we already issued a dialog message to notify user the open failed.
 		}
+
 		db.setExperiment(experiment);		// set the experiment class used for the database
 		String curDb = Integer.toString(1+vWin.getDbNum(experiment.getXMLExperimentFile().getPath()));
 
@@ -208,5 +215,9 @@ public class ExperimentView {
 			}
 			
 		}
+	}
+	
+	public ExperimentData getExperimentData() {
+		return this.dataExperiment;
 	}
 }

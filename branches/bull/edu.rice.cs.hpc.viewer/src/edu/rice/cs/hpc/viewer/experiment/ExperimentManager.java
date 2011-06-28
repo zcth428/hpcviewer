@@ -16,9 +16,6 @@ import edu.rice.cs.hpc.data.util.Util.FileXMLFilter;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
-import edu.rice.cs.hpc.viewer.window.Database;
-import edu.rice.cs.hpc.viewer.window.ViewerWindow;
-import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * This class manages to select, load and open a database directory
@@ -150,24 +147,6 @@ public class ExperimentManager {
 	private boolean setExperiment(String sFilename, int flag) {
 		IWorkbenchPage objPage = this.window.getActivePage();
 		ExperimentView expViewer = new ExperimentView(objPage);
-
-		// register this new database with our viewer window
-		ViewerWindowManager vwm = new ViewerWindowManager();
-		ViewerWindow vWin = vwm.getViewerWindow(window);
-		if (vWin == null) {
-			System.out.printf("ExperimentManager.setExperiment: ViewerWindow class not found\n");
-			return false;
-		}
-
-		// Create a database object to record information about this particular database 
-		// being opened.  This information is needed to be able to close and clean up 
-		// resources from this database.
-		Database db = new Database();
-		db.setExperimentView(expViewer);
-		// add the database to this viewer window
-		if (vWin.addDatabase(db) < 0) {
-			return true;     // we already issued a dialog message to notify user the open failed.
-		}
 
 		// data looks OK
 		boolean bResult;

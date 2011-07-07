@@ -176,12 +176,14 @@ public class ExperimentView {
 		}
 
 		db.setExperiment(experiment);		// set the experiment class used for the database
-		String curDb = Integer.toString(1+vWin.getDbNum(experiment.getXMLExperimentFile().getPath()));
+		// the database index has values from 1-5 and is used in view titles
+		int dbIdx = vWin.getDbNum(experiment.getXMLExperimentFile().getPath()) + 1;
+		// the view index has values from 0-4 and is used to index arrays (layout folders and possibly others)
+		String viewIdx = Integer.toString(dbIdx-1);
 
 		// next, we retrieve all children of the scope and display them in separate views
 		TreeNode []rootChildren = experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.length;
-		BaseScopeView objCCView = null;
 		arrScopeViews = new BaseScopeView[nbChildren];
 
 		for(int k=0;nbChildren>k;k++)
@@ -192,31 +194,22 @@ public class ExperimentView {
 
 				// every root scope type has its own view
 					if(child.getType() == RootScopeType.Flat) {
-						objView = (BaseScopeView) this.objPage.showView(FlatScopeView.ID, curDb, IWorkbenchPage.VIEW_VISIBLE); 
+						objView = (BaseScopeView) this.objPage.showView(FlatScopeView.ID, viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
 					} else if(child.getType() == RootScopeType.CallerTree) {
-						objView = (BaseScopeView) this.objPage.showView(CallerScopeView.ID , curDb, IWorkbenchPage.VIEW_VISIBLE); 
+						objView = (BaseScopeView) this.objPage.showView(CallerScopeView.ID , viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
 					} else {
-						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID , curDb, IWorkbenchPage.VIEW_VISIBLE); 
-						objCCView = objView;
+						// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
+						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID , viewIdx, IWorkbenchPage.VIEW_ACTIVATE); 
 					}
 				objView.setInput(experiment, child);
-				objView.setViewTitle(curDb + "-" + child.getRootName() + "(" + experiment.getName() + ")");		// use title of database number, view type name, and experiment name
+				objView.setViewTitle(dbIdx + "-" + child.getRootName() + "(" + experiment.getName() + ")");		// use title of database number, view type name, and experiment name
 				arrScopeViews[k] = objView;
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}
 		}
-		if(objCCView != null) {
-			// force to focus on calling context view
-			try {
-				this.objPage.showView(ScopeView.ID, (curDb), IWorkbenchPage.VIEW_ACTIVATE);
-			} catch (PartInitException e ) {
-				
-			}
-			
-		}
 	}
-	
+
 	public ExperimentData getExperimentData() {
 		return this.dataExperiment;
 	}

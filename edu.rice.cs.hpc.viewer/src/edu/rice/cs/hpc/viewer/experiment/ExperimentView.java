@@ -4,19 +4,21 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.framework.Activator;
-import edu.rice.cs.hpc.viewer.help.HTMLEditor;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
+import edu.rice.cs.hpc.viewer.window.Database;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 /**
@@ -156,15 +158,32 @@ public class ExperimentView {
 	 */
 	public void generateView(Experiment experiment) {
         this.dataExperiment.setExperiment(experiment);
-		// optimistic approach: hide all the visible views first
-		this.removeViews();
-		// remove the old-irrelevant editors
-		this.closeAllEditors();
-		
+        IWorkbenchWindow window = this.objPage.getWorkbenchWindow();
+		// register this new database with our viewer window
+		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
+		if (vWin == null) {
+			System.out.printf("ExperimentManager.setExperiment: ViewerWindow class not found\n");
+		}
+
+		// Create a database object to record information about this particular database 
+		// being opened.  This information is needed to be able to close and clean up 
+		// resources from this database.
+		Database db = new Database();
+		db.setExperimentView(this);
+		// add the database to this viewer window
+		if (vWin.addDatabase(db) < 0) {
+			return;     // we already issued a dialog message to notify user the open failed.
+		}
+
+		db.setExperiment(experiment);		// set the experiment class used for the database
+		// the database index has values from 1-5 and is used in view titles
+		int dbIdx = vWin.getDbNum(experiment.getXMLExperimentFile().getPath()) + 1;
+		// the view index has values from 0-4 and is used to index arrays (layout folders and possibly others)
+		String viewIdx = Integer.toString(dbIdx-1);
+
 		// next, we retrieve all children of the scope and display them in separate views
 		TreeNode []rootChildren = experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.length;
-		BaseScopeView objCCView = null;
 		arrScopeViews = new BaseScopeView[nbChildren];
 
 		for(int k=0;nbChildren>k;k++)
@@ -175,55 +194,23 @@ public class ExperimentView {
 
 				// every root scope type has its own view
 					if(child.getType() == RootScopeType.Flat) {
-						//FlatScopeView objFlatView = (FlatScopeView)this.objPage.showView(FlatScopeView.ID);
-						objView = (BaseScopeView) this.objPage.showView(FlatScopeView.ID);
+						objView = (BaseScopeView) this.objPage.showView(FlatScopeView.ID, viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
 					} else if(child.getType() == RootScopeType.CallerTree) {
-						//CallerScopeView objScopeView = (CallerScopeView) this.objPage.showView(CallerScopeView.ID);
-						objView = (BaseScopeView) this.objPage.showView(CallerScopeView.ID);
+						objView = (BaseScopeView) this.objPage.showView(CallerScopeView.ID , viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
 					} else {
-						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID); 
-						objCCView = objView;
+						// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
+						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID , viewIdx, IWorkbenchPage.VIEW_ACTIVATE); 
 					}
 				objView.setInput(experiment, child);
-				objView.setViewTitle(child.getRootName());	// update the title (do we need this ?)
+				objView.setViewTitle(dbIdx + "-" + child.getRootName() + "(" + experiment.getName() + ")");		// use title of database number, view type name, and experiment name
 				arrScopeViews[k] = objView;
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}
 		}
-		if(objCCView != null) {
-			// force to focus on calling context view
-			try {
-				this.objPage.showView(ScopeView.ID);
-			} catch (PartInitException e ) {
-				
-			}
-			
-		}
 	}
-	
-	/**
-	 * Hide the all the visible views
-	 */
-	private void removeViews() {
-		org.eclipse.ui.IViewReference views[] = this.objPage.getViewReferences();
-		int nbViews = views.length;
-		
-		for(int i=0;i<nbViews;i++)
-			this.objPage.hideView(views[i]);
-	}
-	
-	/**
-	 * Close all editors except HTML editor in the current active page
-	 */
-	private void closeAllEditors() {
-		IEditorReference editors[] = this.objPage.getEditorReferences();
-		for (IEditorReference editor: editors) {
-			IEditorPart part = editor.getEditor(false);
-			
-			if (!(part instanceof HTMLEditor)) {
-				this.objPage.closeEditor(part, false);
-			}
-		}
+
+	public ExperimentData getExperimentData() {
+		return this.dataExperiment;
 	}
 }

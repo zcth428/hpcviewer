@@ -8,8 +8,6 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -27,6 +25,7 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private ExperimentData dataEx ;
@@ -64,7 +63,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		configurer.setShowCoolBar(false);	// remove toolbar/coolbar
 		configurer.setShowStatusLine(true);	// show status bar
         configurer.setShowProgressIndicator(true);
-		configurer.setTitle("hpcviewer");	// default title (to be updated)
+
+		// tell the viewer window manager we are creating a new window
+		IWorkbenchWindow window = configurer.getWindow();
+		ViewerWindowManager vwm = new ViewerWindowManager();
+		vwm.addNewWindow(window);
+		configurer.setTitle((vwm.getWindowNumber(window)+1) + "-Hpcviewer");
 	}
 
 	/**
@@ -81,6 +85,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		.getActionBarConfigurer().getStatusLineManager();
 
 		assert (windowCurrent != null);
+		
+		// -------------------
+		// close existing views and editors in this window
+		// -------------------
+		removeViews();
+		closeAllEditors();
 
 		// -------------------
 		// set the default metric
@@ -146,7 +156,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    		}
 		    	} else {
 		    		System.err.println("File doesn't exist: " + fileStore.getName() );
-					this.hideViews();
+					this.removeViews();
 
 		    	}
 
@@ -174,7 +184,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		boolean has_database = expFile.openFileExperiment( this.getFlag(withCallerView));
 
 		if (!has_database) {
-			this.hideViews();
+			this.removeViews();
 		}
 	}
 
@@ -184,17 +194,22 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * since most action buttons assume the database is already opened, then an action of this
 	 * button while there is no database will cause chaos
 	 */
-	private void hideViews() {
-		// close views
+	private void removeViews() {
 		IWorkbenchPage page = this.workbench.getActiveWorkbenchWindow().getActivePage();
-		IViewReference refs[] = page.getViewReferences();
-		for (IViewReference ref_view: refs) {
-			IViewPart view = ref_view.getView(false);
-			if (view != null)
-				page.hideView(view);
-		}
+		org.eclipse.ui.IViewReference views[] = page.getViewReferences();
+		int nbViews = views.length;
+		
+		for(int i=0;i<nbViews;i++)
+			page.hideView(views[i]);
 	}
 	
+	/**
+	 * Close all editors in the current active page
+	 */
+	private void closeAllEditors() {
+		IWorkbenchPage page = this.workbench.getActiveWorkbenchWindow().getActivePage();
+		page.closeAllEditors(false);
+	}
 	
 	/**
 	 * return the flag to indicate if a caller view needs to be displayed or not
@@ -210,6 +225,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public boolean preWindowShellClose() {
 		this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
+
+		ViewerWindowManager vwm = new ViewerWindowManager();
+		vwm.removeWindow(this.workbench.getActiveWorkbenchWindow());
+
 		return true; // we allow app to shut down
 	}
 	

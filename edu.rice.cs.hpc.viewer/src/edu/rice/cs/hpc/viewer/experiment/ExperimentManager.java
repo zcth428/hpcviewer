@@ -38,8 +38,6 @@ public class ExperimentManager {
 	 * pointer to the current active workbench window (supposed to be only one)
 	 */
 	private IWorkbenchWindow window;
-	
-	private ExperimentView expViewer;
 	/**
 	 * flag to indicate if a caller view needs to display or not
 	 */
@@ -109,15 +107,6 @@ public class ExperimentManager {
 		return false;
 	}
 
-	/**
-	 * Retrieve the experiment view of this experiment
-	 * @return
-	 */
-	public ExperimentView getExperimentView() {
-		return this.expViewer;
-	}
-	
-	
 	//==================================================================
 	// ---------- PRIVATE PART-----------------------------------------
 	//==================================================================
@@ -144,38 +133,34 @@ public class ExperimentManager {
 	   		} else
 	   			return true;
 		}
-		MessageDialog.openError(window.getShell(), "Failed to open a database", "The directory is not a database.\n"+
-			"The database directory has to contains at least one XML file\n containing the information of the profiling.");
+		MessageDialog.openError(window.getShell(), "Failed to open a database", 
+			"Either the selected directory is not a database or the max number of databases allowed per window are already opened.\n"+
+			"A database directory must contain at least one XML file which contains profiling information.");
 		return false;
 	}
 	
 	/**
-	 * Get the experiment to be processed
+	 * Set the experiment to be processed
 	 * @param sFilename
 	 * @return
 	 */
 	private boolean setExperiment(String sFilename, int flag) {
+		IWorkbenchPage objPage = this.window.getActivePage();
+		ExperimentView expViewer = new ExperimentView(objPage);
 
-		IWorkbenchPage objPage= this.window.getActivePage();
-		// read the XML experiment file
-		this.expViewer = new ExperimentView(objPage);
-	    if(expViewer != null) {
-	    	// data looks OK
-	    	boolean bResult;
-	    	if (flag == FLAG_WITHOUT_CALLER_VIEW)  {
-	    		flagCallerView = false;
-	    		bResult = expViewer.loadExperimentAndProcess(sFilename, flagCallerView);
-	    	} else if (flag == FLAG_DEFAULT && !flagCallerView )
-	    		// use the initial flag (set by command line or preference page)
-	    		bResult = expViewer.loadExperimentAndProcess(sFilename, flagCallerView );
-	    	else
-	    		bResult = expViewer.loadExperimentAndProcess(sFilename);
-	    	
-	    	return bResult; 
-	     } else
-	    	 return false; //TODO we need to throw an exception instead
+		// data looks OK
+		boolean bResult;
+		if (flag == FLAG_WITHOUT_CALLER_VIEW)  {
+			flagCallerView = false;
+			bResult = expViewer.loadExperimentAndProcess(sFilename, flagCallerView);
+		} else if (flag == FLAG_DEFAULT && !flagCallerView )
+			// use the initial flag (set by command line or preference page)
+			bResult = expViewer.loadExperimentAndProcess(sFilename, flagCallerView );
+		else
+			bResult = expViewer.loadExperimentAndProcess(sFilename);
+
+		return bResult; 
 	}
-	
 	
 	/**
 	 * Return the list of .xml files in a directory

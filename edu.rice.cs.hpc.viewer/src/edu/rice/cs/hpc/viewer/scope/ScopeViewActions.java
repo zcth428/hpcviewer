@@ -18,10 +18,11 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.metric.*;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.window.Database;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 //math expression
 import com.graphbuilder.math.*;
 /**
@@ -364,10 +365,27 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			// add a derived metric and register it to the experiment database
 			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
 			
-			// add a new column in the table
-			ExperimentData objExpData = ExperimentData.getInstance(this.objWindow);
-			ExperimentManager objExpManager = objExpData.getExperimentManager();
-			BaseScopeView arrScopeViews[] = objExpManager.getExperimentView().getViews();
+			// get our database file and the experiment index assigned for it
+			String sFilename = exp.getXMLExperimentFile().getPath();
+			ViewerWindow vWin = ViewerWindowManager.getViewerWindow(this.objWindow);
+			if (vWin == null) {
+				System.out.printf("ScopeViewActions.addExtNewMetric: ViewerWindow class not found\n");
+				return;
+			}
+			int dbNum = vWin.getDbNum(sFilename);
+			if (dbNum < 0) {
+				System.out.printf("ScopeViewActions.addExtNewMetric: Database for path " + sFilename + " not found\n");
+				return;
+			}
+
+			// get the views created for our database
+			Database db = vWin.getDb(sFilename);
+			if (db == null) {
+				System.out.printf("ScopeViewActions.addExtNewMetric: Database class not found\n");
+				return;
+			}
+			BaseScopeView arrScopeViews[] = db.getExperimentView().getViews();
+
 			for(int i=0; i<arrScopeViews.length; i++) {
 				ScopeTreeViewer objTreeViewer = arrScopeViews[i].getTreeViewer();
 				objTreeViewer.getTree().setRedraw(false);

@@ -13,14 +13,25 @@ public class GraphEditorInput implements IEditorInput {
 	private final Experiment _experiment;
 	private final Scope _scope;
 	private final MetricRaw _metric;
+	private final int _database;
 	
 	private final GraphType.PlotType _type;
 	
-	public GraphEditorInput(Experiment experiment, Scope scope, MetricRaw metric, GraphType.PlotType type) {
+	/***
+	 * Create a new editor input for a give scope, metric, plot type and database
+	 * @param experiment
+	 * @param scope
+	 * @param metric
+	 * @param type
+	 * @param database
+	 */
+	public GraphEditorInput(Experiment experiment, Scope scope, MetricRaw metric, 
+			GraphType.PlotType type, int database) {
 		this._experiment = experiment;
 		this._scope = scope;
 		this._metric = metric;
 		this._type = type;
+		this._database = database;
 	}
 	
 	public boolean exists() {
@@ -34,26 +45,28 @@ public class GraphEditorInput implements IEditorInput {
 	}
 
 	public String getName() {
-		return getName(_scope, _metric, _type);
+		return getName(_scope, _metric, _type, _database);
 	}
 
 	public String getID() {
-		return getID(_scope, _metric, _type);
+		return getID(_scope, _metric, _type, _database);
 	}
 	
-	static public String getName(Scope scope, MetricRaw metric, GraphType.PlotType type) {
-		return "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName();
+	static public String getName(Scope scope, MetricRaw metric, GraphType.PlotType type, int database) {
+		return database + "-[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName();
 	}
 
 	/****
-	 * return the ID for the editor graph from the combination of scope, metric and graph type
+	 * return the ID for the editor graph from the combination of scope, metric, graph type and database
 	 * @param scope
 	 * @param metric
 	 * @param type
+	 * @param database
 	 * @return
 	 */
-	static public String getID(Scope scope, MetricRaw metric, GraphType.PlotType type) {
-		return GraphType.toString(type) + ":" + scope.getCCTIndex()+":" + metric.getID();
+	static public String getID(Scope scope, MetricRaw metric, GraphType.PlotType type, int database) {
+		return Integer.toString(database) + GraphType.toString(type) + ":" + 
+		scope.getCCTIndex()+":" + metric.getID();
 	}
 
 	

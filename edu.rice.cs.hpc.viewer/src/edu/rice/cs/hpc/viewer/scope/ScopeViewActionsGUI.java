@@ -35,18 +35,18 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.ColumnProperties;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.window.Database;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 
 /**
  * General actions GUI for basic scope views like caller view and calling context view
- * This GUI includes toolbar for zooms, add derived metrics, show/hide columns, and hot call path 
- * @author laksono
+ * This GUI includes tool bar for zooms, add derived metrics, show/hide columns, and hot call path 
  *
  */
 public class ScopeViewActionsGUI implements IScopeActionsGUI {
@@ -146,7 +146,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	Scope scope = nodeParent;
     	// Bug fix: avoid using list of columns from the experiment
     	// formerly: .. = this.myExperiment.getMetricCount() + 1;
-    	int nbColumns = this.colMetrics.length; 	// coloumns in base metrics
+    	int nbColumns = this.colMetrics.length; 	// columns in base metrics
     	String []sText = new String[nbColumns+1];
     	sText[0] = new String(scope.getName());
     	// --- prepare text for base metrics
@@ -295,9 +295,22 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * @param status
      */
     private void showHideColumnsAllViews(boolean []status) {
-		ExperimentData objExpData = ExperimentData.getInstance(this.objWindow);
-		ExperimentManager objExpManager = objExpData.getExperimentManager();
-		BaseScopeView arrScopeViews[] = objExpManager.getExperimentView().getViews();
+		// get our database file and the and the class that contains its information
+		String sFilename = myExperiment.getXMLExperimentFile().getPath();
+		ViewerWindowManager vwm = new ViewerWindowManager();
+		ViewerWindow vWin = vwm.getViewerWindow(this.objWindow);
+		if (vWin == null) {
+			System.out.printf("ScopeViewActionsGUI.showHideColumnsAllViews: ViewerWindow class not found\n");
+			return;
+		}
+		Database db = vWin.getDb(sFilename);
+		if (db == null) {
+			System.out.printf("ScopeViewActionsGUI.showHideColumnsAllViews: Database class not found\n");
+			return;
+		}
+
+		// get the views created for our database
+		BaseScopeView arrScopeViews[] = db.getExperimentView().getViews();
 		for(int i=0; i<arrScopeViews.length; i++) {
 			arrScopeViews[i].getViewActions().setColumnStatus(status);
 		}

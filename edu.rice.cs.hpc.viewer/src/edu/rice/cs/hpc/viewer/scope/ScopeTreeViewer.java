@@ -83,7 +83,6 @@ public class ScopeTreeViewer extends TreeViewer {
 	public TreeViewerColumn addTreeColumn(BaseMetric objMetric, boolean bSorted) {
 		// laks: addendum for column  
     	TreeViewerColumn colMetric = addTreeColumn(objMetric, bSorted, false);
-		colMetric.setLabelProvider(new MetricLabelProvider(objMetric /*, Utilities.fontMetric*/) );
 		return colMetric;
     }
     
@@ -135,7 +134,9 @@ public class ScopeTreeViewer extends TreeViewer {
     private TreeViewerColumn addTreeColumn(BaseMetric objMetric, //int iPosition, 
     		boolean bSorted, boolean bDisplayed) {
     	TreeViewerColumn colMetric = new TreeViewerColumn(this,SWT.RIGHT);	// add column
-    	TreeColumn col = colMetric.getColumn();
+		colMetric.setLabelProvider(new MetricLabelProvider(objMetric /*, Utilities.fontMetric*/) );
+
+		TreeColumn col = colMetric.getColumn();
     	col.setText(objMetric.getDisplayName());	// set the title
     	col.setWidth(120); //TODO dynamic size
 		// associate the data of this column to the metric since we

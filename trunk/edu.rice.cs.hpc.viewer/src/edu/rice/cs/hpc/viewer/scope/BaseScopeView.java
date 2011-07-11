@@ -67,8 +67,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         // Update root scope
         if (myRootScope.getChildCount() > 0) {
             treeViewer.setInput(myRootScope);
-            // update the window title
-            this.getSite().getShell().setText("hpcviewer: "+myExperiment.getName());
             
             // update the root scope of the actions !
             this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, colMetrics);

@@ -25,6 +25,8 @@ import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorPlot;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort;
 import edu.rice.cs.hpc.viewer.graph.GraphType;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * Basic class for scope views: calling context and caller view
@@ -181,15 +183,20 @@ public class ScopeView extends BaseScopeView {
 		}
     	
 		public void run() {
-			IWorkbenchPage objPage = getSite().getWorkbenchWindow().getActivePage();
+			IWorkbenchWindow window = getSite().getWorkbenchWindow();
+			IWorkbenchPage objPage = window.getActivePage();
         	Experiment exp = getExperiment();
         	
 			try {
-				String id = GraphEditorInput.getID(scope, metric, graph_type);
+				// support for multiple database in one window
+				ViewerWindow vWindow = ViewerWindowManager.getViewerWindow(window);
+				int database = 1+vWindow.getDbNum(this.scope.getExperiment().getXMLExperimentFile().getPath());
+				
+				String id = GraphEditorInput.getID(scope, metric, graph_type, database);
 	        	GraphEditorInput objInput = getGraphEditorInput(id);
 	        	
 	        	if (objInput == null) {
-	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type);
+	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type, database);
 	        	}
 	        	IEditorPart editor = null;
 	        	switch (graph_type) {

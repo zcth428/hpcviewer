@@ -33,13 +33,13 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.scope.ScopeTreeViewer;
+import edu.rice.cs.hpc.viewer.window.Database;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * Class providing auxiliary utilities methods.
@@ -157,10 +157,22 @@ public class Utilities {
 	 * @param window: the target window
 	 */
 	static private void resetAllViews(IWorkbenchWindow window) {
-		ExperimentManager objManager = ExperimentData.getInstance(window).getExperimentManager();
-		if(objManager != null) {
-			ExperimentView objView = objManager.getExperimentView();
-			final BaseScopeView arrViews[] = objView.getViews();
+		ViewerWindowManager vwm = new ViewerWindowManager();
+		ViewerWindow vWin = vwm.getViewerWindow(window);
+		if (vWin == null) {
+			System.out.printf("Utilities.resetAllViews: ViewerWindow class not found\n");
+			return;
+		}
+		
+		// find each open database so we can reset its views
+		for (int i=0 ; i<ViewerWindow.maxDbNum ; i++) {
+			// get the views created for our database
+			Database db = vWin.getDb(i);
+			if (db == null) {
+				continue;		// not open just skip it
+			}
+
+			final BaseScopeView arrViews[] = db.getExperimentView().getViews();
 			final TreeItemManager objItemManager = new TreeItemManager();
 
 			// first, we need to refresh the visible view
@@ -185,11 +197,8 @@ public class Utilities {
 					}
 				}
 			});
-		} else {
-			System.err.println("Error: cannot find experiment instance from window: " + window);
 		}
 	}
-	
 
 	/****
 	 * Find the first visible scope view (the view can be active or not)

@@ -22,6 +22,8 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * Class specifically designed to manage editor such as displaying source code editor
@@ -67,11 +69,15 @@ public class EditorManager {
 	{
 		// get the complete file name
 		if(Utilities.isFileReadable(scope)) {
+			// lets get the database number being used for this file
+			ViewerWindow vw = ViewerWindowManager.getViewerWindow(this.windowCurrent);
+			int dbNum = vw.getDbNum(scope.getExperiment().getXMLExperimentFile().getPath());
+			
 			String sLongName;
 			FileSystemSourceFile newFile = ((FileSystemSourceFile)scope.getSourceFile());
 			sLongName = newFile.getCompleteFilename();
 			int iLine = scope.getFirstLineNumber();
-			openFileEditor( sLongName, newFile.getName(), iLine );
+			openFileEditor( sLongName, newFile.getName(), iLine, dbNum );
 		}
 		//} else
 		//	System.out.println("Source file not available"+ ":"+ "("+node.getScope().getName()+")");
@@ -82,12 +88,12 @@ public class EditorManager {
 	 * The filename should be a complete absolute path to the local file
 	 * @param sFilename
 	 */
-	public void openFileEditor(String sFilename) 
+	public void openFileEditor(String sFilename, int dbNum) 
 	throws FileNotFoundException
 	{
 		java.io.File objInfo = new java.io.File(sFilename);
 		if(objInfo.exists())
-			this.openFileEditor(sFilename, objInfo.getName(), 1);
+			this.openFileEditor(sFilename, objInfo.getName(), 1, dbNum);
 		else
 			// Laks: 12.1.2008: return the filename in case the file is not found
 			throw new FileNotFoundException(sFilename);
@@ -100,7 +106,7 @@ public class EditorManager {
 	 * 			this project should be cleaned in the future !
 	 * @param sFilename the complete path of the file to display in IDE
 	 */
-	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber)
+	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber, int dbNum)
 		throws FileNotFoundException
 	{
 		// get the complete path of the file
@@ -115,7 +121,7 @@ public class EditorManager {
 	    		throw new FileNotFoundException(sFilename+": File not found.");
 	    	}
 	    	try {
-				openEditorOnFileStore(wbPage, objFile);
+				openEditorOnFileStore(wbPage, objFile, dbNum);
 		    	this.setEditorMarker(wbPage, iLineNumber);
 			} catch (PartInitException e) {
 				// TODO Auto-generated catch block
@@ -154,19 +160,28 @@ public class EditorManager {
 	 * @return
 	 * @throws PartInitException
 	 */
-	private static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore) throws PartInitException {
-        //sanity checks
-        if (page == null) {
+	private static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore, int dbNum) throws PartInitException {
+		//sanity checks
+		if (page == null) {
 			throw new IllegalArgumentException();
 		}
 
-        IEditorInput input = getEditorInput(fileStore);
-        //String editorId = getEditorId(fileStore);
-        // forbid eclipse to use an external editor
-        String editorId = edu.rice.cs.hpc.viewer.util.SourceCodeEditor.ID;
-        // open the editor on the file
-        return page.openEditor(input, editorId);
-    }
+		IEditorInput input = getEditorInput(fileStore);
+		//String editorId = getEditorId(fileStore);
+		// forbid eclipse to use an external editor
+		String editorId = edu.rice.cs.hpc.viewer.util.SourceCodeEditor.ID;
+		// open the editor on the file
+		IEditorPart iep = page.openEditor(input, editorId);
+		// if we want a database number prefix, add it to the editor title
+		if (dbNum >= 0) {
+			if (iep instanceof SourceCodeEditor) {
+				SourceCodeEditor sce = (SourceCodeEditor)iep;
+				// database numbers start with 0 but titles start with 1
+				sce.setPartNamePrefix((dbNum+1) + "-");
+			}
+		}
+		return iep;
+	}
 
     /**
      * Get the id of the editor associated with the given <code>IFileStore</code>.

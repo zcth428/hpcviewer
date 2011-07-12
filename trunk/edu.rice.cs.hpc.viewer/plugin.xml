@@ -60,13 +60,6 @@
             label="Database"
             visible="true">
             <menu
-               id="DebugMenu"
-               label="&amp;Debug">
-            	<separator
-                  name="debugGroup">
-            	</separator>
-         	</menu>
-            <menu
                id="FileMenu"
                label="&amp;File">
             	<separator
@@ -79,12 +72,6 @@
                    name="ExitGroup">
              </separator>
          	</menu>
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               label="&amp;Display a database&apos;s raw XML"
-               menubarPath="DebugMenu/debuggingGroup">
-         </action>
          <action
                class="edu.rice.cs.hpc.viewer.actions.CloseExperiment"
                id="edu.rice.cs.hpc.viewer.actions.CloseExperiment"

@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
@@ -57,8 +58,23 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 				continue;
 			}
 		
-			// close this databases metrics views
 			IWorkbenchPage curPage = window.getActivePage();
+
+			// close any open editor windows for this database
+			org.eclipse.ui.IEditorReference editors[] = curPage.getEditorReferences();
+			int nbEditors = editors.length;
+			for(int j=0;j<nbEditors;j++) {
+				String title = editors[j].getTitle();
+				// if this is for the database being closed, remove it (hiding it actually deletes it)
+				if (title.startsWith((dbNum+1) + "-")) {
+					IEditorPart edPart = editors[j].getEditor(true);
+					if (edPart != null) {
+						curPage.closeEditor(edPart, false);
+					}
+				}
+			}
+			
+			// close this databases metrics views
 			org.eclipse.ui.IViewReference views[] = curPage.getViewReferences();
 			int nbViews = views.length;
 			for(int j=0;j<nbViews;j++) {

@@ -31,6 +31,16 @@ public class SourceCodeEditor extends TextEditor {
 		return true;
 	}
 	
+	public void setPartNamePrefix(String partNamePrefix) {
+		String partName = super.getPartName();
+		if (partName.startsWith(partNamePrefix)) {
+			// this method gets called each time you click the program scope but if the source file editor is 
+			// already open we have already put the database number in the title and we do not want to do it again.
+			return;
+		}
+		super.setPartName(partNamePrefix + partName);
+		return;
+	}
 	/**
 	 * Description copied from interface: ITextEditor
 	 * Returns whether the text in this text editor can be changed by the user.

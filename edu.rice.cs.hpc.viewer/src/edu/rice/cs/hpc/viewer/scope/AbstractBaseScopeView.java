@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 //User interface
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchWindow;
 
 //SWT
 import org.eclipse.swt.*;
@@ -22,6 +23,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -35,6 +37,8 @@ import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.util.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * 
@@ -180,6 +184,38 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         acShowCode.setEnabled(scope.hasSourceCodeFile);
         mgr.add(acShowCode);
 
+		// show the database xml file
+		final IWorkbenchWindow windowCurrent = this.getSite().getWorkbenchWindow();
+		String dbXmlMenuTitle = "Display database's raw XML";
+		ScopeViewTreeAction dbShowXml = new ScopeViewTreeAction(dbXmlMenuTitle, scope){
+			public void run() {
+				if (this.scope.getExperiment() == null) {
+					MessageDialog.openError(windowCurrent.getShell(), 
+							"Error: Experiment class missing", 
+					"Unable to find the Experiment class for the selected database !");
+					return;
+				}
+
+				// get the the experiment XML file for the database this program scope is part of
+				String filePath = this.scope.getExperiment().getXMLExperimentFile().getPath();
+				// lets get the database number being used for this file
+				ViewerWindow vw = ViewerWindowManager.getViewerWindow(windowCurrent);
+				int dbNum = vw.getDbNum(filePath);
+
+				// prepare the editor
+				EditorManager editor = new EditorManager(windowCurrent);
+				try {
+					// database numbers start with 0 but titles start with 1
+					editor.openFileEditor(filePath, dbNum);
+				} catch (FileNotFoundException e) {
+					// can not find the file (or something goes wrong)
+					MessageDialog.openError(windowCurrent.getShell(), "Error: File not found", e.getMessage());
+				}
+			}
+		};
+		dbShowXml.setEnabled(true);
+		mgr.add(dbShowXml);
+
         // show the call site in case this one exists
         if(scope instanceof CallSiteScope) {
         	// get the call site scope
@@ -239,8 +275,9 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         Menu menu = menuMgr.createContextMenu(this.treeViewer.getControl());
         this.treeViewer.getControl().setMenu(menu);
         
-        // Register menu for extension.
-        getSite().registerContextMenu(menuMgr, this.treeViewer);
+        // Register menu for extension. 
+        // Using an id allows code that extends this class to add entries to this context menu.
+        getSite().registerContextMenu("edu.rice.cs.hpc.viewer.scope.ScopeView", menuMgr, this.treeViewer);
     }
     
     /**

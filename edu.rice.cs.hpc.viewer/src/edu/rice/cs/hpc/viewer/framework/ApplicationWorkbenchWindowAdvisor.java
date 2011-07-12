@@ -28,7 +28,7 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
-	private ExperimentData dataEx ;
+	private String[] sArgs = null; // command line arguments
 	private IWorkbench workbench;
 	/**
 	 * Creates a new workbench window advisor for configuring a workbench window via the given workbench window configurer
@@ -40,10 +40,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []args) {
 		super(configurer);
 		this.workbench = configurer.getWindow().getWorkbench();
-		if(args != null && args.length > 0) {
-			dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-			dataEx.setArguments(args);
-		}
+		this.sArgs = args;
 	}
 
 	/**
@@ -100,7 +97,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// -------------------
 		// see if the argument provides the database to load
 		// -------------------
-		if(this.dataEx != null) {
+		if(sArgs != null && sArgs.length > 0) {
 			// possibly we have express the experiment file in the command line
 			IWorkbenchPage pageCurrent = windowCurrent.getActivePage();
 			assert (pageCurrent != null);
@@ -108,7 +105,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			ExperimentView expViewer = new ExperimentView(pageCurrent);
 		    assert (expViewer != null); 
 
-		    String []sArgs = this.dataEx.getArguments();
 		    String sPath = null;
 		    // find the file in the list of arguments
 		    for(int i=0;i<sArgs.length;i++) {
@@ -144,9 +140,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    			System.out.println("Opening database: " + fileStore.fetchInfo().getName() + " " + withCallerView);
 		    			// bug fix: needs to treat a folder/directory
 		    			// it is a directory
-		    			this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
-		    				ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		    			ExperimentManager objManager = this.dataEx.getExperimentManager();
+		    			ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		    			ExperimentManager objManager = dataEx.getExperimentManager();
 		    			objManager.openDatabaseFromDirectory(sPath, this.getFlag(withCallerView));
 		    		} else {
 		    			File objFile = new File(sPath);
@@ -178,9 +173,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * (only the first one will be taken into account)
 	 */
 	private void openDatabase( boolean withCallerView ) {
-		this.dataEx = 
-			ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		ExperimentManager expFile = this.dataEx.getExperimentManager();
+		ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		ExperimentManager expFile = dataEx.getExperimentManager();
 		boolean has_database = expFile.openFileExperiment( this.getFlag(withCallerView));
 
 		if (!has_database) {

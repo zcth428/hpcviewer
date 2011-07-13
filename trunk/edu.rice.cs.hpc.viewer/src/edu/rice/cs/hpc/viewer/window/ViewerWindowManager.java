@@ -31,7 +31,7 @@ public class ViewerWindowManager {
 	 * Returns the index into the vWindows vector of the current window being used.
 	 * @return
 	 */
-	public int getWindowNumber (IWorkbenchWindow window) {
+	static public int getWindowNumber (IWorkbenchWindow window) {
 		for (int i=0 ; i<vWindows.size() ; i++) {
 			if (vWindows.get(i) == null) {
 				continue;
@@ -88,6 +88,19 @@ public class ViewerWindowManager {
 		return false;
 	}
 
+	/***
+	 * return the number of opened database for a specified window
+	 * @param window
+	 * @return
+	 */
+	static public int getNumberOfDatabases(IWorkbenchWindow window) {
+		ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
+		if (vw != null) {
+			return vw.getOpenDatabases();
+		}
+		return 0;
+	}
+	
 	/**
 	 * Returns the hpcviewer window class associated with the workbench window passed as an argument.
 	 */

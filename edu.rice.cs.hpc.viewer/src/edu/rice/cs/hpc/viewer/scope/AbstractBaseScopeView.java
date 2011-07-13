@@ -35,7 +35,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.viewer.util.EditorManager;
+import edu.rice.cs.hpc.viewer.editor.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;

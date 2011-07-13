@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.util;
+package edu.rice.cs.hpc.viewer.editor;
 
 import java.io.FileNotFoundException;
 
@@ -17,6 +17,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
@@ -154,7 +155,7 @@ public class EditorManager {
 		IEditorInput input = getEditorInput(fileStore);
 		//String editorId = getEditorId(fileStore);
 		// forbid eclipse to use an external editor
-		String editorId = edu.rice.cs.hpc.viewer.util.SourceCodeEditor.ID;
+		String editorId = edu.rice.cs.hpc.viewer.editor.SourceCodeEditor.ID;
 		// open the editor on the file
 		IEditorPart iep = page.openEditor(input, editorId);
 		// if we want a database number prefix, add it to the editor title

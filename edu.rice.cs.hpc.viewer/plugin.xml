@@ -140,7 +140,7 @@
    <extension
       point="org.eclipse.ui.editors">
 	   <editor
-          class="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
+          class="edu.rice.cs.hpc.viewer.editor.SourceCodeEditor"
           default="true"
           extensions="*"
           icon="icons/hpc-16x16.png"

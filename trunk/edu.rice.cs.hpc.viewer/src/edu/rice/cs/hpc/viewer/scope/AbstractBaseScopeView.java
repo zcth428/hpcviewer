@@ -171,11 +171,13 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         //--------------------------------------------------------------------------
         
         // show the editor source code
+        final String SHOW_MENU = "Show ";
+        
         String sMenuTitle ;
         if(scope instanceof FileScope) {
-        	sMenuTitle = "Show " + scope.getSourceFile().getName();
+        	sMenuTitle = SHOW_MENU + scope.getSourceFile().getName();
         } else
-        	sMenuTitle= "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
+        	sMenuTitle= SHOW_MENU +scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
         ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, scope){
         	public void run() {
         		displayFileEditor(this.scope);

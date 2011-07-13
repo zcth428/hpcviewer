@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.viewer.graph;
 
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;

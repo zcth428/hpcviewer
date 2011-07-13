@@ -497,11 +497,22 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	return this.treeViewer;
     }
 
-
-    protected Experiment getExperiment() {
+    /****
+     * get the experiment of this view
+     * @return
+     */
+    public Experiment getExperiment() {
     	return this.myExperiment;
     }
 
+    /****
+     * get the root scope (either cct, caller tree or flat tree)
+     * @return
+     */
+    public RootScope getRootScope() {
+    	return this.myRootScope;
+    }
+    
     //======================================================
     // ................ ABSTRACT...........................
     //======================================================

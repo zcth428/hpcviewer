@@ -297,8 +297,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     private void showHideColumnsAllViews(boolean []status) {
 		// get our database file and the and the class that contains its information
 		String sFilename = myExperiment.getXMLExperimentFile().getPath();
-		ViewerWindowManager vwm = new ViewerWindowManager();
-		ViewerWindow vWin = vwm.getViewerWindow(this.objWindow);
+		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(this.objWindow);
 		if (vWin == null) {
 			System.out.printf("ScopeViewActionsGUI.showHideColumnsAllViews: ViewerWindow class not found\n");
 			return;

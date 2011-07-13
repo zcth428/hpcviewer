@@ -37,12 +37,7 @@ public class ViewerWindow {
 	 * been opened in this window.
 	 */
 	Database[] dbObj = new Database[maxDbNum];
-	/**
-	 * The database currently being worked on.  This value controls the 
-	 * database on which most other methods in this class will work.  It is 
-	 * used as in index into the dbObj array to locate database class.
-	 */
-	int dbNum;
+
 
 	public IWorkbenchWindow getWinObj() {
 		return winObj;
@@ -64,6 +59,10 @@ public class ViewerWindow {
 		return -1;
 	}
 
+	public int getDbNum(Experiment experiment) {
+		return this.getDbNum(experiment.getXMLExperimentFile().getPath());
+	}
+	
 	public int getDbNum(String dbPath) {
 		for (int i=0 ; i<dbObj.length ; i++) {
 			if (dbObj[i] == null) {
@@ -179,6 +178,25 @@ public class ViewerWindow {
 		return -1;
 	}
 
+	/*****
+	 * get the opened experiment databases
+	 * @return null if there is no opened database
+	 */
+	public Experiment[] getExperiments() {
+		int numDb = getOpenDatabases();
+		if (numDb == 0)
+			return null;
+		Experiment []experiments = new Experiment[numDb];
+		
+		for (int i=0, j=0; i<maxDbNum; i++) {
+			if (dbObj[i] == null)
+				continue;
+			experiments[j] = dbObj[i].getExperiment();
+			j++;
+		}
+		return experiments;
+	}
+	
 	/**
 	 *  get the path names for each database currently opened in this window.
 	 * @param window

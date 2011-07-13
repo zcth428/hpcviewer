@@ -157,8 +157,8 @@ public class Utilities {
 	 * @param window: the target window
 	 */
 	static private void resetAllViews(IWorkbenchWindow window) {
-		ViewerWindowManager vwm = new ViewerWindowManager();
-		ViewerWindow vWin = vwm.getViewerWindow(window);
+
+		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
 		if (vWin == null) {
 			System.out.printf("Utilities.resetAllViews: ViewerWindow class not found\n");
 			return;
@@ -397,4 +397,5 @@ public class Utilities {
 		scope.iSourceCodeAvailability = Scope.SOURCE_CODE_NOT_AVAILABLE;
 		return false;
     }
+    
 }

@@ -41,12 +41,12 @@ public class SourceCodeEditor extends TextEditor {
 		super.setPartName(partNamePrefix + partName);
 		return;
 	}
+	
 	/**
 	 * Description copied from interface: ITextEditor
 	 * Returns whether the text in this text editor can be changed by the user.
 	 */
 	public boolean isEditable() {
-		super.isEditable();
 		return false;
 	}
 }

@@ -15,11 +15,10 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.editors.text.EditorsUI;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.viewer.util.Utilities;
-import edu.rice.cs.hpc.viewer.window.ViewerWindow;
-import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * Class specifically designed to manage editor such as displaying source code editor
@@ -56,14 +55,13 @@ public class EditorManager {
 		// get the complete file name
 		if(Utilities.isFileReadable(scope)) {
 			// lets get the database number being used for this file
-			ViewerWindow vw = ViewerWindowManager.getViewerWindow(this.windowCurrent);
-			int dbNum = vw.getDbNum(scope.getExperiment().getXMLExperimentFile().getPath());
+			Experiment experiment = scope.getExperiment();
 			
 			String sLongName;
 			FileSystemSourceFile newFile = ((FileSystemSourceFile)scope.getSourceFile());
 			sLongName = newFile.getCompleteFilename();
 			int iLine = scope.getFirstLineNumber();
-			openFileEditor( sLongName, newFile.getName(), iLine, dbNum );
+			openFileEditor( sLongName, newFile.getName(), iLine, experiment );
 		}
 		//} else
 		//	System.out.println("Source file not available"+ ":"+ "("+node.getScope().getName()+")");
@@ -74,12 +72,12 @@ public class EditorManager {
 	 * The filename should be a complete absolute path to the local file
 	 * @param sFilename
 	 */
-	public void openFileEditor(String sFilename, int dbNum) 
+	public void openFileEditor(String sFilename, Experiment experiment) 
 	throws FileNotFoundException
 	{
 		java.io.File objInfo = new java.io.File(sFilename);
 		if(objInfo.exists())
-			this.openFileEditor(sFilename, objInfo.getName(), 1, dbNum);
+			this.openFileEditor(sFilename, objInfo.getName(), 1, experiment);
 		else
 			// Laks: 12.1.2008: return the filename in case the file is not found
 			throw new FileNotFoundException(sFilename);
@@ -92,7 +90,7 @@ public class EditorManager {
 	 * 			this project should be cleaned in the future !
 	 * @param sFilename the complete path of the file to display in IDE
 	 */
-	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber, int dbNum)
+	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber, Experiment experiment)
 		throws FileNotFoundException
 	{
 		// get the complete path of the file
@@ -107,7 +105,7 @@ public class EditorManager {
 	    		throw new FileNotFoundException(sFilename+": File not found.");
 	    	}
 	    	try {
-				openEditorOnFileStore(wbPage, objFile, dbNum);
+				openEditorOnFileStore(wbPage, objFile, experiment);
 		    	this.setEditorMarker(wbPage, iLineNumber);
 			} catch (PartInitException e) {
 				// TODO Auto-generated catch block
@@ -146,7 +144,7 @@ public class EditorManager {
 	 * @return
 	 * @throws PartInitException
 	 */
-	private static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore, int dbNum) throws PartInitException {
+	private static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore, Experiment experiment) throws PartInitException {
 		//sanity checks
 		if (page == null) {
 			throw new IllegalArgumentException();
@@ -159,12 +157,12 @@ public class EditorManager {
 		// open the editor on the file
 		IEditorPart iep = page.openEditor(input, editorId);
 		// if we want a database number prefix, add it to the editor title
-		if (dbNum >= 0) {
-			if (iep instanceof SourceCodeEditor) {
-				SourceCodeEditor sce = (SourceCodeEditor)iep;
+		if (iep instanceof SourceCodeEditor) {
+			SourceCodeEditor sce = (SourceCodeEditor)iep;
+			sce.setExperiment(experiment);
+			sce.resetPartName();
 				// database numbers start with 0 but titles start with 1
-				sce.setPartNamePrefix((dbNum+1) + "-");
-			}
+				//sce.setPartNamePrefix((dbNum+1) + "-");
 		}
 		return iep;
 	}

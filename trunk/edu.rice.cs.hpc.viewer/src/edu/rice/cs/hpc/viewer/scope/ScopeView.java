@@ -168,6 +168,7 @@ public class ScopeView extends BaseScopeView {
 		return null;
 	}
 	
+	
     /********************************************************************************
      * class to initialize an action for displaying a graph
      ********************************************************************************/
@@ -196,7 +197,7 @@ public class ScopeView extends BaseScopeView {
 	        	GraphEditorInput objInput = getGraphEditorInput(id);
 	        	
 	        	if (objInput == null) {
-	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type, database);
+	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type, database, window);
 	        	}
 	        	IEditorPart editor = null;
 	        	switch (graph_type) {

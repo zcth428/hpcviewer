@@ -3,11 +3,13 @@ package edu.rice.cs.hpc.viewer.graph;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
 
 public class GraphEditorInput implements IEditorInput {
 	private final Experiment _experiment;
@@ -16,6 +18,7 @@ public class GraphEditorInput implements IEditorInput {
 	private final int _database;
 	
 	private final GraphType.PlotType _type;
+	private final IWorkbenchWindow _window;
 	
 	/***
 	 * Create a new editor input for a give scope, metric, plot type and database
@@ -26,12 +29,13 @@ public class GraphEditorInput implements IEditorInput {
 	 * @param database
 	 */
 	public GraphEditorInput(Experiment experiment, Scope scope, MetricRaw metric, 
-			GraphType.PlotType type, int database) {
+			GraphType.PlotType type, int database, IWorkbenchWindow window) {
 		this._experiment = experiment;
 		this._scope = scope;
 		this._metric = metric;
 		this._type = type;
 		this._database = database;
+		this._window = window;
 	}
 	
 	public boolean exists() {
@@ -52,8 +56,9 @@ public class GraphEditorInput implements IEditorInput {
 		return getID(_scope, _metric, _type, _database);
 	}
 	
-	static public String getName(Scope scope, MetricRaw metric, GraphType.PlotType type, int database) {
-		return database + "-[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName();
+	private String getName(Scope scope, MetricRaw metric, GraphType.PlotType type, int database) {
+		final String sOrignalTitle = "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName(); 
+		return WindowTitle.getTitle(_window, _experiment, sOrignalTitle);
 	}
 
 	/****

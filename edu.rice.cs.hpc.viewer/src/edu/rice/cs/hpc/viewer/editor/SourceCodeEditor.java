@@ -1,17 +1,27 @@
 package edu.rice.cs.hpc.viewer.editor;
 
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+
+import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
 /**
  * @author laksono
  *
  */
-public class SourceCodeEditor extends TextEditor {
+public class SourceCodeEditor extends TextEditor implements IViewerEditor {
 	static public String ID = "edu.rice.cs.hpc.viewer.util.SourceCodeEditor";  
+	private Experiment _experiment;
 	
 	public SourceCodeEditor() {
 		super();
+	}
+	
+	public void setExperiment(Experiment experiment) {
+		this._experiment = experiment;
 	}
 	
 	/**
@@ -48,5 +58,13 @@ public class SourceCodeEditor extends TextEditor {
 	 */
 	public boolean isEditable() {
 		return false;
+	}
+
+	public void resetPartName() {
+		final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
+		final FileStoreEditorInput input = (FileStoreEditorInput) this.getEditorInput();
+		final String name = input.getName();
+		final String title = WindowTitle.getTitle(window, _experiment, name);
+		this.setPartName(title);
 	}
 }

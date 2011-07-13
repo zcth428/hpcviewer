@@ -18,8 +18,9 @@ import org.swtchart.ext.InteractiveChart;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
 
-public abstract class GraphEditorBase extends EditorPart {
+public abstract class GraphEditorBase extends EditorPart implements IViewerEditor {
     private Chart chart;
 
 	@Override
@@ -116,6 +117,12 @@ public abstract class GraphEditorBase extends EditorPart {
 		this.plotData(exp, scope, metric);
 	}
 
+	public void resetPartName() {
+		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		final String name = input.getName();
+		this.setPartName(name);
+	}
+	
 	protected Chart getChart() {
 		return this.chart;
 	}

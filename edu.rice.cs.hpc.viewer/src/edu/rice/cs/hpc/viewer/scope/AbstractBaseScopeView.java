@@ -37,8 +37,6 @@ import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
-import edu.rice.cs.hpc.viewer.window.ViewerWindow;
-import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * 
@@ -200,15 +198,12 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 
 				// get the the experiment XML file for the database this program scope is part of
 				String filePath = this.scope.getExperiment().getXMLExperimentFile().getPath();
-				// lets get the database number being used for this file
-				ViewerWindow vw = ViewerWindowManager.getViewerWindow(windowCurrent);
-				int dbNum = vw.getDbNum(filePath);
 
 				// prepare the editor
 				EditorManager editor = new EditorManager(windowCurrent);
 				try {
 					// database numbers start with 0 but titles start with 1
-					editor.openFileEditor(filePath, dbNum);
+					editor.openFileEditor(filePath, myExperiment);
 				} catch (FileNotFoundException e) {
 					// can not find the file (or something goes wrong)
 					MessageDialog.openError(windowCurrent.getShell(), "Error: File not found", e.getMessage());

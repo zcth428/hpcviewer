@@ -1,9 +1,12 @@
 package edu.rice.cs.hpc.viewer.util;
 
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.window.Database;
@@ -86,6 +89,23 @@ public class WindowTitle {
 	}
 
 	/***
+	 * 
+	 * @param window
+	 * @param dbIndex
+	 * @param sTitle
+	 * @return
+	 */
+	static public String getTitle(IWorkbenchWindow window, int dbIndex, String sTitle) {
+		int numDB =  ViewerWindowManager.getNumberOfDatabases(window);
+		
+		if (numDB <= 1) {
+			return sTitle;
+		} else {
+			return dbIndex + "-" + sTitle ;
+		}
+	}
+
+	/***
 	 * Reset the title of the main window, views and editors
 	 * 
 	 * @param window
@@ -95,6 +115,7 @@ public class WindowTitle {
 		// refresh the main title
 		window.getShell().setText(getWindowTitle(window, experiment));
 		refreshViewTitle(window);
+		refreshEditorTitle(window);
 	}
 	
 
@@ -140,5 +161,18 @@ public class WindowTitle {
 				}
 			}
 		}
+	}
+	
+	static private void refreshEditorTitle(IWorkbenchWindow window) {
+		final IEditorReference editors[] = window.getActivePage().getEditorReferences();
+		for (IEditorReference editor: editors) {
+			IEditorPart editorPart = editor.getEditor(false);
+			if (editorPart instanceof IViewerEditor) {
+				((IViewerEditor)editorPart).resetPartName();
+			} else {
+				System.err.println("unknown editor for " + editorPart.getTitle() + ":" + editorPart.getClass());
+			}
+		}
+		
 	}
 }

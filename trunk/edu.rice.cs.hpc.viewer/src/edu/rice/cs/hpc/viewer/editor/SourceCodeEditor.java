@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.util;
+package edu.rice.cs.hpc.viewer.editor;
 
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.AbstractTextEditor;

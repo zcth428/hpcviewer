@@ -37,12 +37,10 @@ public class EditorManager {
     	String sLine = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER;
     	EditorsUI.getPreferenceStore().setValue(sLine, true);
     	this.windowCurrent = window;
-    	//this.setDefaultEditor();
     }
     
 	public EditorManager(IWorkbenchSite site) {
-		this.windowCurrent = site.getWorkbenchWindow();
-    	//this.setDefaultEditor();
+		this(site.getWorkbenchWindow());
 	}
 	
 	/**
@@ -63,8 +61,6 @@ public class EditorManager {
 			int iLine = scope.getFirstLineNumber();
 			openFileEditor( sLongName, newFile.getName(), iLine, experiment );
 		}
-		//} else
-		//	System.out.println("Source file not available"+ ":"+ "("+node.getScope().getName()+")");
 	}
 	
 	/**

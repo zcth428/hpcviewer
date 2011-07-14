@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.viewer.help;
 
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.layout.GridData;

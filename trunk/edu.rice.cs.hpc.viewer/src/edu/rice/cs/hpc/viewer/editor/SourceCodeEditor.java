@@ -67,4 +67,8 @@ public class SourceCodeEditor extends TextEditor implements IViewerEditor {
 		final String title = WindowTitle.getTitle(window, _experiment, name);
 		this.setPartName(title);
 	}
+
+	public Experiment getExperiment() {
+		return _experiment;
+	}
 }

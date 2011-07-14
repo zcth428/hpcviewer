@@ -2,14 +2,13 @@ package edu.rice.cs.hpc.viewer.util;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
-import edu.rice.cs.hpc.viewer.window.Database;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
@@ -21,17 +20,17 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 public class WindowTitle {
 	final private static String MAIN_TITLE = "hpcviewer";
 	
-	/*****
-	 * retrieve the title of a view
-	 * if the number of opened databases is more than one, we will add prefix
+	
+	/***
+	 * A simple title construction given a specified number of databases
 	 * 
 	 * @param window
 	 * @param experiment
 	 * @param sTitle
+	 * @param numDB
 	 * @return
 	 */
-	static public String getViewTitle(IWorkbenchWindow window, Experiment experiment, String sTitle) {
-		int numDB =  ViewerWindowManager.getNumberOfDatabases(window);
+	static private String getViewTitle(IWorkbenchWindow window, Experiment experiment, String sTitle, int numDB) {
 		
 		if (numDB <= 1) {
 			return sTitle;
@@ -41,7 +40,7 @@ public class WindowTitle {
 			return numDB + "-" + sTitle + "("+experiment.getName()+")";
 		}
 	}
-	
+
 	/***
 	 * Get the title of the main window
 	 * 
@@ -114,7 +113,9 @@ public class WindowTitle {
 	static public void refreshAllTitle(IWorkbenchWindow window, Experiment experiment) {
 		// refresh the main title
 		window.getShell().setText(getWindowTitle(window, experiment));
+		// refresh the view
 		refreshViewTitle(window);
+		// refresh the editors
 		refreshEditorTitle(window);
 	}
 	
@@ -134,31 +135,19 @@ public class WindowTitle {
 	 * @param window
 	 */
 	static private void refreshViewTitle(IWorkbenchWindow window) {
-		final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-		final int numDB = vw.getOpenDatabases();
 		
-		for (int i=0; i<ViewerWindow.maxDbNum; i++) {
-			final Database db = vw.getDb(i);
-			if (db != null) {
-				final ExperimentView ev = vw.getDb(i).getExperimentView();
-				final BaseScopeView views[] = ev.getViews();
-				
-				for (BaseScopeView view: views) {
-					final Experiment exp = view.getExperiment();
-					final String sOriginalTitle = view.getTitle();
-					char prefix[] = new char[2];
-					sOriginalTitle.getChars(0, 1, prefix, 0);
-					
-					if (numDB>1 && prefix[0] >= '0' && prefix[0]<='9') {
-						// it's already prefixed with database number. 
-						// do we need to refresh or just no-op ?
-					} else {
-						// the title is still in the original form
-						// need to refresh the title if necessary
-						final RootScope root = (RootScope) view.getRootScope();
-						view.setViewTitle(getViewTitle(window, exp, root.getRootName()));
-					}
-				}
+		final int numDB = ViewerWindowManager.getNumberOfDatabases(window); 
+			
+		final IViewReference viewRefs[] = window.getActivePage().getViewReferences();
+		for (IViewReference viewRef: viewRefs) {
+			
+			final IViewPart view = viewRef.getView(false);
+			if (view instanceof BaseScopeView) {
+				final BaseScopeView scopeView = (BaseScopeView) view;
+				final Experiment exp = scopeView.getExperiment();
+				final String title = getViewTitle(window, exp, 
+						((BaseScopeView) view).getRootScope().getRootName(), numDB);
+				((BaseScopeView) view).setViewTitle(title);
 			}
 		}
 	}

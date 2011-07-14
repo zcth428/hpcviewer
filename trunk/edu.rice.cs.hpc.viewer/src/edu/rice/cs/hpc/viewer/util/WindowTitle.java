@@ -163,6 +163,11 @@ public class WindowTitle {
 		}
 	}
 	
+	/***
+	 * reset the title of all editors
+	 * 
+	 * @param window
+	 */
 	static private void refreshEditorTitle(IWorkbenchWindow window) {
 		final IEditorReference editors[] = window.getActivePage().getEditorReferences();
 		for (IEditorReference editor: editors) {

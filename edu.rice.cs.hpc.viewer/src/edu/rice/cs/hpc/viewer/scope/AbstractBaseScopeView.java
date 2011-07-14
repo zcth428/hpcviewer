@@ -184,9 +184,26 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         acShowCode.setEnabled(scope.hasSourceCodeFile);
         mgr.add(acShowCode);
 
+        // show the call site in case this one exists
+        if(scope instanceof CallSiteScope) {
+        	// get the call site scope
+        	CallSiteScope callSiteScope = (CallSiteScope) scope;
+        	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
+        	// setup the menu
+        	sMenuTitle = "Callsite "+lineScope.getToolTip();
+        	ScopeViewTreeAction acShowCallsite = new ScopeViewTreeAction(sMenuTitle, lineScope){
+        		public void run() {
+        			displayFileEditor(this.scope);
+        		}
+        	}; 
+        	// do not show up in the menu context if the callsite does not exist
+        	acShowCallsite.setEnabled(Utilities.isFileReadable(lineScope));
+        	mgr.add(acShowCallsite);
+        }
+        
 		// show the database xml file
 		final IWorkbenchWindow windowCurrent = this.getSite().getWorkbenchWindow();
-		String dbXmlMenuTitle = "Display database's raw XML";
+		String dbXmlMenuTitle = "Show database's raw XML";
 		ScopeViewTreeAction dbShowXml = new ScopeViewTreeAction(dbXmlMenuTitle, scope){
 			public void run() {
 				if (this.scope.getExperiment() == null) {
@@ -213,23 +230,6 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 		dbShowXml.setEnabled(true);
 		mgr.add(dbShowXml);
 
-        // show the call site in case this one exists
-        if(scope instanceof CallSiteScope) {
-        	// get the call site scope
-        	CallSiteScope callSiteScope = (CallSiteScope) scope;
-        	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
-        	// setup the menu
-        	sMenuTitle = "Callsite "+lineScope.getToolTip();
-        	ScopeViewTreeAction acShowCallsite = new ScopeViewTreeAction(sMenuTitle, lineScope){
-        		public void run() {
-        			displayFileEditor(this.scope);
-        		}
-        	}; 
-        	// do not show up in the menu context if the callsite does not exist
-        	acShowCallsite.setEnabled(Utilities.isFileReadable(lineScope));
-        	mgr.add(acShowCallsite);
-        }
-        
         //--------------------------------------------------------------------------
         // ---------- additional context menu
         //--------------------------------------------------------------------------

@@ -123,6 +123,13 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		this.setPartName(name);
 	}
 	
+	
+	public Experiment getExperiment() {
+		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		return input.getExperiment();
+	}
+
+	
 	protected Chart getChart() {
 		return this.chart;
 	}

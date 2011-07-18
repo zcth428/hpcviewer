@@ -15,10 +15,15 @@ public class InitializeThread extends Thread
 	/**The SpaceTimeData this thread will add its line data and images to.*/
 	SpaceTimeData stData;
 	
-	/**Creates an InitializeThread with SpaceTimeData _stData.*/
+	/**The file that contains all the data for everything*/
+	File traceFile;
+	
+	/**Creates an InitializeThread with SpaceTimeData _stData*/
 	public InitializeThread(SpaceTimeData _stData)
 	{
+		System.out.println("initialize?");
 		stData = _stData;
+		traceFile = stData.getTraceFile();
 	}
 	
 	/******************************************************************************************************************
@@ -27,43 +32,61 @@ public class InitializeThread extends Thread
 	 *****************************************************************************************************************/
 	public void run()
 	{
-		File nextFile = stData.getNextFile();
-		long firstTime;
-		long lastTime;
+		System.out.println("GOING NOW!!!!");
+		RandomAccessFile in = null;
+		FileChannel f = null;
 		try
 		{
-			while(nextFile != null)
+			try
 			{
-				//long programTime = System.currentTimeMillis();
-				ByteBuffer b = ByteBuffer.allocateDirect(8);
-				ByteBuffer b2 = ByteBuffer.allocateDirect(8);
-				RandomAccessFile in = new RandomAccessFile(nextFile, "r");
-				//System.out.println("Made bytebuffer "+(System.currentTimeMillis()-programTime));
+				in = new RandomAccessFile(traceFile, "r");
+				f = in.getChannel();
+				ByteBuffer b = ByteBuffer.allocateDirect(stData.getHeight()*8);
 				
-				in.seek(ProcessTimeline.SIZE_OF_HEADER);
-				FileChannel f = in.getChannel();
+				in.seek(ProcessTimeline.SIZE_OF_MASTER_HEADER);
 				f.read(b);
 				b.flip();
-				firstTime = b.getLong();
-				//System.out.println("Read first timestamp "+(System.currentTimeMillis()-programTime));
+				long offsetToLast = b.getLong();
 				
-				in.seek(nextFile.length() - ProcessTimeline.SIZE_OF_TRACE_RECORD);
-				f = in.getChannel();
-				f.read(b2);
-				b2.flip();
-				lastTime = b2.getLong();
-				//System.out.println("Read second timestamp "+(System.currentTimeMillis()-programTime));
-				
-				stData.checkIn(firstTime, lastTime);
-				nextFile = stData.getNextFile();
-				//System.out.println(firstTime+" "+lastTime);
+				//reads through the index of .megatrace file to find first locations of individual traces
+				for(int x = 0; x <= stData.getHeight(); x++)
+				{
+					ByteBuffer b2 = ByteBuffer.allocateDirect(8);
+					
+					long offsetToFirst = offsetToLast;
+					in.seek(offsetToFirst);
+					f.read(b2);
+					b2.flip();
+					long firstTime = b2.getLong();
+					
+					offsetToLast = b.getLong();
+					in.seek(offsetToLast - ProcessTimeline.SIZE_OF_TRACE_RECORD);
+					//do we have to clear b2 here?
+					f.read(b2);
+					b2.flip();
+					long lastTime = b2.getLong();
+					
+					stData.checkIn(firstTime, lastTime);
+					
+					System.out.println(firstTime+" "+lastTime);
+				}
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		finally
+		{
+			try
+			{
 				f.close();
 				in.close();
 			}
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 }

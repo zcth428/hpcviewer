@@ -793,8 +793,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.goNorthButton.setEnabled( canGoNorth() );
 		this.goSouthButton.setEnabled( canGoSouth() );
 		
-		homeButton.setEnabled( begTime>0 || endTime<stData.getWidth() || 
-					begProcess>0 || endProcess<stData.getHeight() );
+		homeButton.setEnabled( begTime>0 || endTime<stData.getWidth() || begProcess>0 || endProcess<stData.getHeight() );
 
     }
     

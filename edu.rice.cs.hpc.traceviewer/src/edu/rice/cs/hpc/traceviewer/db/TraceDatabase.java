@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -170,7 +171,20 @@ public class TraceDatabase
 			if (experimentFile.canRead())
 			{
 				//used for when there is only one megatrace file which contains all trace files*/
-				File traceFile = new File(directory + File.separatorChar + "traces.megatrace");
+				File traceFile = new File(directory + File.separatorChar + TraceCompactor.MASTER_FILE_NAME);
+				try 
+				{
+					if(!traceFile.canRead())
+					{
+						TraceCompactor.compact(directory);
+						traceFile = new File(directory + File.separatorChar + TraceCompactor.MASTER_FILE_NAME);
+					}
+				} 
+				catch (IOException e) 
+				{
+						e.printStackTrace();
+				}
+				
 				if (traceFile.length()>MIN_TRACE_SIZE)
 				{
 					traceFiles = traceFile;

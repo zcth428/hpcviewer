@@ -152,7 +152,7 @@ public class CallStackViewer extends TableViewer
 
 			final Vector<String> sampleVector;
 			if (sample>=0)
-				sampleVector = ptl.getCallStackSample(sample).getNames();
+				sampleVector = ptl.getSample(sample).getNames();
 			else
 				// empty array of string
 				sampleVector = new Vector<String>();

@@ -1,7 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -21,28 +21,18 @@ import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
  * Class to manage trace database: opening and detecting the *.hpctrace files
  *
  */
-public class TraceDatabase
-{
+public class TraceDatabase {
 	
-	/**the minimum size a trace file must be in order to be correctly formatted*/
-	final private static int MIN_TRACE_SIZE = 4+8+ProcessTimeline.SIZE_OF_HEADER+ProcessTimeline.SIZE_OF_TRACE_RECORD*2;
-	//ProcessTimeline.SIZE_OF_HEADER + (ProcessTimeline.SIZE_OF_TRACE_RECORD * 2);
-	
-	/**a file holding an concatenated collection of all the trace files*/
-	private File traceFiles = null;
-	
-	/**a file holding the experiment data - currently .xml format*/
+	final private static int MIN_TRACE_SIZE = ProcessTimeline.SIZE_OF_HEADER + (ProcessTimeline.SIZE_OF_TRACE_RECORD * 2);
+	private ArrayList<File> traceFiles = null;
 	private File experimentFile = null;
-	
 	final private String []args;
 	
-	public TraceDatabase(String []_args)
-	{
-		args = _args;
+	public TraceDatabase(String []_args) {
+		this.args = _args;
 	}
 	
-	public boolean openDatabase(Shell shell, final IStatusLineManager statusMgr)
-	{
+	public boolean openDatabase(Shell shell, final IStatusLineManager statusMgr) {
 		
 		boolean hasDatabase = false;
 		
@@ -51,33 +41,28 @@ public class TraceDatabase
 		//---------------------------------------------------------------
 		// processing the command line argument
 		//---------------------------------------------------------------
-		if (args != null && args.length>0)
-		{
-			for(String arg: args)
-			{
-				if (arg != null && arg.charAt(0)!='-')
-				{
+		if (args != null && args.length>0) {
+			for(String arg: args) {
+				if (arg != null && arg.charAt(0)!='-') {
 					// this must be the name of the database to open
 					hasDatabase = this.isCorrectDatabase(arg);
 				}
 			}
 		}
 		
-		if (!hasDatabase)
-		{
+		if (!hasDatabase) {
 			// use dialog box to find the database
 			hasDatabase = this.open(shell);
 		}
 		
-		if (hasDatabase)
-		{
+		if (hasDatabase) {
 			
 			//---------------------------------------------------------------------
 			// Try to open the database and refresh the data
 			// ---------------------------------------------------------------------
 			
 			File experimentFile = this.getExperimentFile();
-			File traceFiles = this.getTraceFiles();
+			ArrayList<File> traceFiles = this.getTraceFiles();
 			
 			SpaceTimeData stData = new SpaceTimeData(shell.getDisplay(), experimentFile, traceFiles, statusMgr.getProgressMonitor());
 
@@ -119,83 +104,51 @@ public class TraceDatabase
 	 * @param shell
 	 * @return
 	 */
-	private boolean open(Shell shell)
-	{
+	private boolean open( Shell shell) {
 		DirectoryDialog dialog;
 
 		boolean validDatabaseFound = false;
 		dialog = new DirectoryDialog(shell);
 		dialog.setMessage("Please select the directory which holds the trace databases.");
 		dialog.setText("Select Data Directory");
-		String directory;
+		String dir;
 		while(!validDatabaseFound)
 		{
-			//traceFiles = new File();
+			traceFiles = new ArrayList<File>();
 			
-			directory = dialog.open();
+			dir = dialog.open();
 			
-			if (directory == null) 
+			if (dir == null) 
 				// user click cancel
 				return false;
 			
-			validDatabaseFound = this.isCorrectDatabase(directory);
+			validDatabaseFound = this.isCorrectDatabase(dir);
 						
 			if (!validDatabaseFound)
-				this.msgNoDatabase(dialog, directory);
+				this.msgNoDatabase(dialog, dir);
 		}
 		
 		return validDatabaseFound;
 	}
 	
 	
-	public File getTraceFiles()
-	{
+	public ArrayList<File> getTraceFiles() {
 		return this.traceFiles;
 	}
 	
-	public File getExperimentFile()
-	{
+	public File getExperimentFile() {
 		return this.experimentFile;
 	}
 	
 	
-	private boolean isCorrectDatabase(String directory)
-	{
+	private boolean isCorrectDatabase(String directory) {
 		File dirFile = new File(directory);
 		String[] databases = dirFile.list();
 		
-		if (databases != null)
-		{
+		if (databases != null) {
 			experimentFile = new File(directory+File.separatorChar+"experiment.xml");
 			
-			if (experimentFile.canRead())
-			{
-				//used for when there is only one megatrace file which contains all trace files*/
-				File traceFile = new File(directory + File.separatorChar + TraceCompactor.MASTER_FILE_NAME);
-				try 
-				{
-					if(!traceFile.canRead())
-					{
-						TraceCompactor.compact(directory);
-						traceFile = new File(directory + File.separatorChar + TraceCompactor.MASTER_FILE_NAME);
-					}
-				} 
-				catch (IOException e) 
-				{
-						e.printStackTrace();
-				}
-				
-				if (traceFile.length()>MIN_TRACE_SIZE)
-				{
-					traceFiles = traceFile;
-					return true;
-				}
-				else
-				{
-					System.err.println("Warning! Trace file size " + traceFile.length() +" is too small: " + traceFile.getName());
-					return false;
-				}
-				/*used for when there were individual .hpctrace files
+			if (experimentFile.canRead()) {
 				//--------------------------------------------------------------
 				// Forcing to sort alphabetically the file name. Here we do not
 				//	parse the string to grab the process rank, but instead we
@@ -206,11 +159,9 @@ public class TraceDatabase
 				java.util.Arrays.sort(databases);
 				
 				ArrayList<File> listOfFiles = new ArrayList<File>();
-				for(String db: databases)
-				{
+				for(String db: databases) {
 					String traceFile = directory + File.separatorChar + db;
-					if (traceFile.contains(".hpctrace"))
-					{
+					if (traceFile.contains(".hpctrace")) {
 						File file = new File(traceFile);
 						
 						//-----------------------------------------------------------------------------
@@ -224,12 +175,10 @@ public class TraceDatabase
 							System.err.println("Warning! Trace file size " + file.length() +" is too small: " + file.getName());
 					}
 				}
-				if (listOfFiles.size()>0)
-				{
+				if (listOfFiles.size()>0) {
 					this.traceFiles = listOfFiles;
 					return true;
 				}
-				*/
 			}
 		}
 		return false;

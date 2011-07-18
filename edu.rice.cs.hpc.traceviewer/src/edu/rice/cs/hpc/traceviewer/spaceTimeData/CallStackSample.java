@@ -24,7 +24,7 @@ public class CallStackSample
 	}
 	
 	/**Adds a function to this sample.*/
-	public void addFunction(String name)
+	public void addFunction(String name) 
 	{
 		sampleNames.addElement(name);
 	}

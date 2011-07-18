@@ -1,11 +1,17 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
+
 /***********************************************************
  * A thread that reads in the data for one line, 
  * draws that line to its own image and adds the data
@@ -18,6 +24,9 @@ public class TimelineThread extends Thread
 {
 	/**The SpaceTimeData that this thread gets its files from and adds it data and images to.*/
 	private SpaceTimeData stData;
+	
+	/**The master trace file that holds all the data to be read in from*/
+	private File traceFile;
 	
 	/**Stores whether or not the bounds have been changed*/
 	private boolean changedBounds;
@@ -46,10 +55,11 @@ public class TimelineThread extends Thread
 	 ***********************************************************************************************************/
 	//The reason so many things are passed is because of ThreadInvalidAccessExceptions that
 	//get thrown when it tries to access them from SpaceTimeData
-	public TimelineThread(SpaceTimeData _stData, boolean _changedBounds, Canvas _canvas, int _width, double _scaleX, double _scaleY)
+	public TimelineThread(SpaceTimeData _stData, File _traceFile, boolean _changedBounds, Canvas _canvas, int _width, double _scaleX, double _scaleY)
 	{
 		super();
 		stData = _stData;
+		traceFile = _traceFile;
 		changedBounds = _changedBounds;
 		canvas = _canvas;
 		width = _width;
@@ -66,60 +76,78 @@ public class TimelineThread extends Thread
 	 ***************************************************************/
 	public void run()
 	{
-		if (detailPaint)
+		RandomAccessFile inFile = null;
+		FileChannel f = null;
+		try
 		{
-			ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
-			while(nextTrace != null)
+			inFile = new RandomAccessFile(traceFile, "r");
+			f = inFile.getChannel();
+		}
+		catch (IOException e)
+		{
+			System.err.println("Something is up...");
+		}
+		try
+		{
+			if (detailPaint)
 			{
-				if(changedBounds)
+				ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
+				while(nextTrace != null)
 				{
-					nextTrace.readInData();
-					stData.addNextTrace(nextTrace);
+					if(changedBounds)
+					{
+						nextTrace.readInData(inFile, f, stData.getHeight());
+						stData.addNextTrace(nextTrace);
+					}
+					
+					int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
+					if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
+						imageHeight--;
+					else
+						imageHeight++;
+					
+					Image line = new Image(canvas.getDisplay(), width, imageHeight);
+					GC gc = new GC(line);
+					SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
+					stData.paintDetailLine(spp, stData.getDepth(), nextTrace.line(), imageHeight, changedBounds);
+					gc.dispose();
+					
+					stData.addNextImage(line, nextTrace.line());
+					nextTrace = stData.getNextTrace(changedBounds);
 				}
-				
-				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-					imageHeight--;
-				else
-					imageHeight++;
-				
-				Image line = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
-				stData.paintDetailLine(spp, stData.getDepth(), nextTrace.line(), imageHeight, changedBounds);
-				gc.dispose();
-				
-				stData.addNextImage(line, nextTrace.line());
-				nextTrace = stData.getNextTrace(changedBounds);
+			}
+			else
+			{
+				ProcessTimeline nextTrace = stData.getNextDepthTrace();
+				while (nextTrace != null)
+				{
+					int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
+					if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
+						imageHeight--;
+					else
+						imageHeight++;
+					
+					Image line = new Image(canvas.getDisplay(), width, imageHeight);
+					GC gc = new GC(line);
+					SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
+					stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
+					gc.dispose();
+					
+					stData.addNextImage(line, nextTrace.line());
+					nextTrace = stData.getNextDepthTrace();
+				}
 			}
 		}
-		else
+		finally
 		{
-			ProcessTimeline nextTrace = stData.getNextDepthTrace();
-			while (nextTrace != null)
+			try
 			{
-				/*if (nextTrace.line()==0)
-				{
-					nextTrace.readInData();
-					nextTrace.shiftTimeBy(stData.getLowestStartingTime());
-					stData.setDepthTrace(nextTrace);
-					stData.wakeUpThreads();
-				}*/
-				
-				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-					imageHeight--;
-				else
-					imageHeight++;
-				
-				Image line = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
-				stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
-				gc.dispose();
-				
-				stData.addNextImage(line, nextTrace.line());
-				nextTrace = stData.getNextDepthTrace();
+				f.close();
+				inFile.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
 			}
 		}
 	}

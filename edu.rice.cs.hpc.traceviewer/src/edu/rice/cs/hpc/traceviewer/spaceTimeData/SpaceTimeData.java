@@ -339,7 +339,6 @@ public class SpaceTimeData extends TraceEvents
 			
 			compositeLines = new Image[linesToPaint];
 			lineNum = 0;
-			//TODO: traceFiles.get(dtProcess); and comments below
 			depthTrace = new ProcessTimeline(lineNum, scopeMap, traceFile, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
 			
 			
@@ -525,7 +524,6 @@ public class SpaceTimeData extends TraceEvents
 		if(lineNum < Math.min(numPixelsV, endProcess-begProcess))
 		{
 			lineNum++;
-			//TODO: was traceFiles.get(lineToPaint(lineNum-1))
 			if(changedBounds)
 				return new ProcessTimeline(lineNum-1, scopeMap, traceFile, lineToPaint(lineNum-1), numPixelsH, endTime-begTime, minBegTime + begTime);
 			else
@@ -548,7 +546,6 @@ public class SpaceTimeData extends TraceEvents
 				lineNum++;
 				return depthTrace;
 			}
-			//TODO: traceFiles.get(dtProcess)
 			ProcessTimeline toDonate = new ProcessTimeline(lineNum, scopeMap, traceFile, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
 			toDonate.times = depthTrace.times;
 			toDonate.timeLine = depthTrace.timeLine;
@@ -559,29 +556,11 @@ public class SpaceTimeData extends TraceEvents
 			return null;
 	}
 	
-	/**Returns the next available File during initialization - used by InitializeThreads.*/
-	/*TODO: get rid of because there is only one file now
-	public synchronized File getNextFile()
-	{
-		if(fileNum < traceFiles.size())
-		{
-			fileNum++;
-			return traceFiles.get(fileNum - 1);
-		}
-		else
-			return null;
-	}*/
-	
 	/**Adds a filled ProcessTimeline to traces - used by TimelineThreads.*/
 	public synchronized void addNextTrace(ProcessTimeline nextPtl)
 	{
 		traces[nextPtl.line()] = nextPtl;
 	}
-	
-	/*public synchronized void setDepthTrace(ProcessTimeline ptl)
-	{
-		depthTrace = ptl;
-	}*/
 	
 	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
 	public synchronized void addNextImage(Image line, int index)

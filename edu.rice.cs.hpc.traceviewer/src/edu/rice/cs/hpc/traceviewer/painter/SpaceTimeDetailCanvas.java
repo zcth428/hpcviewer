@@ -192,10 +192,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		addKeyListener( new KeyListener(){
 
-			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void keyPressed(KeyEvent e) {}
 
 			public void keyReleased(KeyEvent e) {
 				switch (e.keyCode) {

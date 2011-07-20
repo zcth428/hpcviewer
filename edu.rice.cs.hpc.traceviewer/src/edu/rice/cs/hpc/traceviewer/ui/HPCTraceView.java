@@ -17,6 +17,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
@@ -64,7 +65,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/*************************************************************************
 	 * update new data
 	 *************************************************************************/
-	public void updateData(SpaceTimeData _stData) {
+	public void updateData(SpaceTimeData _stData)
+	{
 		this.stData = _stData;
 		this.detailCanvas.updateData(_stData);
 		
@@ -100,7 +102,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		detailCanvas.csViewer = csview.csViewer;
 	}
 
-	public void setPosition(Position position) {
+	public void setPosition(Position position)
+	{
 		this.detailCanvas.setCrossHair(position.time, position.process);
 	}
 	

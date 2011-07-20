@@ -29,7 +29,7 @@ public class TraceDatabase
 	//ProcessTimeline.SIZE_OF_HEADER + (ProcessTimeline.SIZE_OF_TRACE_RECORD * 2);
 	
 	/**a file holding an concatenated collection of all the trace files*/
-	private File traceFiles = null;
+	private File traceFile = null;
 	
 	/**a file holding the experiment data - currently .xml format*/
 	private File experimentFile = null;
@@ -43,7 +43,6 @@ public class TraceDatabase
 	
 	public boolean openDatabase(Shell shell, final IStatusLineManager statusMgr)
 	{
-		
 		boolean hasDatabase = false;
 		
 		statusMgr.setMessage("Opening database...");
@@ -77,9 +76,9 @@ public class TraceDatabase
 			// ---------------------------------------------------------------------
 			
 			File experimentFile = this.getExperimentFile();
-			File traceFiles = this.getTraceFiles();
+			File traceFile = this.getTraceFile();
 			
-			SpaceTimeData stData = new SpaceTimeData(shell.getDisplay(), experimentFile, traceFiles, statusMgr.getProgressMonitor());
+			SpaceTimeData stData = new SpaceTimeData(shell.getDisplay(), experimentFile, traceFile, statusMgr.getProgressMonitor());
 
 			try {
 				//---------------------------------------------------------------------
@@ -148,9 +147,9 @@ public class TraceDatabase
 	}
 	
 	
-	public File getTraceFiles()
+	public File getTraceFile()
 	{
-		return this.traceFiles;
+		return this.traceFile;
 	}
 	
 	public File getExperimentFile()
@@ -187,7 +186,7 @@ public class TraceDatabase
 				
 				if (traceFile.length()>MIN_TRACE_SIZE)
 				{
-					traceFiles = traceFile;
+					this.traceFile = traceFile;
 					return true;
 				}
 				else

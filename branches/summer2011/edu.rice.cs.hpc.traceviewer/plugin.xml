@@ -71,7 +71,12 @@
       <command
             defaultHandler="edu.rice.cs.hpc.traceviewer.actions.OpenDatabase"
             id="edu.rice.cs.hpc.traceviewer.openDatabase"
-            name="Open database">
+            name="Open Database">
+      </command>
+      <command
+      		defaultHandler="edu.rice.cs.hpc.traceviewer.actions.ResetViews"
+      		id="edu.rice.cs.hpc.traceviewer.resetViews"
+      		name="Reset Views">
       </command>
    </extension>
    <extension
@@ -87,10 +92,10 @@
                tooltip="File database menu">
             <command
                   commandId="edu.rice.cs.hpc.traceviewer.openDatabase"
-                  label="Open database"
+                  label="Open Database"
                   mnemonic="O"
                   style="push"
-                  tooltip="Open a new database (the existing database will be replaced)">
+                  tooltip="Open a new database (the existing database will be replaced).">
             </command>
             <command
                   commandId="org.eclipse.ui.file.exit"
@@ -98,6 +103,19 @@
                   mnemonic="x"
                   style="push"
                   tooltip="Exit the application">
+            </command>
+         </menu>
+         <menu
+               id="edu.rice.cs.hpc.traceviewer.menu.window"
+               label="Window"
+               mnemonic="W"
+               tooltip="Window menu">
+            <command
+                  commandId="edu.rice.cs.hpc.traceviewer.resetViews"
+                  label="Reset Views"
+                  mnemonic="R"
+                  style="push"
+                  tooltip="Resets the setup of the program to its original view configuration.">
             </command>
          </menu>
       </menuContribution>

@@ -1,19 +1,23 @@
+/**
+ * 
+ */
 package edu.rice.cs.hpc.viewer.actions;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jface.action.IAction;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -22,14 +26,21 @@ import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
-public class CloseExperiment implements IWorkbenchWindowActionDelegate {
-	private IWorkbenchWindow window;
+/**
+ * @author laksonoadhianto
+ *
+ */
+public class CloseDatabase extends AbstractHandler {
 
-	public void run(IAction action) {
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+	 */
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		// get an array of open databases for this window
 		final ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
 		if ( vWin == null) {
-			return;		// get method already issued error dialog
+			return null;		// get method already issued error dialog
 		}
 		
 		final String[] dbArray = vWin.getDatabasePaths();
@@ -37,7 +48,7 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 			MessageDialog.openError(window.getShell(), 
 					"Error: No Open Database's Found.", 
 					"There are no databases in this window which can be closed.");
-			return;		// set method already issued error dialog
+			return null;		// set method already issued error dialog
 		}
 
 		List<String> dbList = Arrays.asList(dbArray);
@@ -50,7 +61,7 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 		Object[] selectedDatabases = dlg.getResult();
 
 		if ((selectedDatabases == null) || (selectedDatabases.length <= 0)) {
-			return;
+			return null;
 		}
 		
 		String[] selectedStrings = new String[selectedDatabases.length];
@@ -101,17 +112,7 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 		}
 		
 		WindowTitle.refreshAllTitle(window);
+		return null;
 	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
-		// TODO Auto-generated method stub
-	}
-
-	public void dispose() {
-		// TODO Auto-generated method stub
-	}
-
-	public void init(IWorkbenchWindow window) {
-		this.window = window;
-	}
 }

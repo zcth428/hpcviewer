@@ -33,7 +33,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private Hashtable<Integer, LoadModuleScope> htFlatLoadModuleScope;
 	private Hashtable<Integer, FileScope> htFlatFileScope;
 	private HashMap<String, FlatScopeInfo> htFlatScope;
-	private HashMap<String, Scope[]> htFlatCostAdded;
+	private Stack<ArrayList<Scope>> stackCostAdded;
 	
 	private Experiment experiment;
 	private RootScope root_ft;
@@ -41,7 +41,6 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private InclusiveOnlyMetricPropagationFilter inclusive_filter;
 	private ExclusiveOnlyMetricPropagationFilter exclusive_filter;
 	
-	private boolean debug = false;
 	
 	/****---------------------------------------------------------------------------------------------****
 	 * Constructor
@@ -54,7 +53,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		this.htFlatLoadModuleScope = new Hashtable<Integer, LoadModuleScope>();
 		this.htFlatFileScope = new Hashtable<Integer, FileScope>();
 		this.htFlatScope     = new HashMap<String, FlatScopeInfo>();
-		this.htFlatCostAdded = new HashMap<String, Scope[]>();
+		this.stackCostAdded = new Stack<ArrayList<Scope>>();
 		
 		this.root_ft = root;
 		
@@ -100,38 +99,38 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//--------------------------------------------------------------------------
 			// Pre-visit
 			//--------------------------------------------------------------------------
-			Scope flat_info[] = this.htFlatCostAdded.get( id );
-			if (flat_info != null) {
-				this.htFlatCostAdded.remove(id);
-			}
-			
-			FlatScopeInfo objFlat = this.getFlatCounterPart(scope, scope, id);
+			ArrayList<Scope> listOfAddedCost = new ArrayList<Scope>();
+			FlatScopeInfo objFlat = this.getFlatCounterPart(scope, scope, id, listOfAddedCost);
 			
 			//--------------------------------------------------------------------------
 			// Aggregating metrics to load module and flat scope
 			// Notes: this is not correct for Derived incremental metrics
 			//--------------------------------------------------------------------------
-			addCostIfNecessary(id, objFlat.flat_lm, scope, add_inclusive, add_exclusive);
-			addCostIfNecessary(id, objFlat.flat_file, scope, add_inclusive, add_exclusive);
+			addCostIfNecessary(id, objFlat.flat_lm, scope, add_inclusive, add_exclusive, listOfAddedCost);
+			addCostIfNecessary(id, objFlat.flat_file, scope, add_inclusive, add_exclusive, listOfAddedCost);
 
 			//--------------------------------------------------------------------------
 			// For call site, we need also to create its procedure scope
 			//--------------------------------------------------------------------------
 			if (scope instanceof CallSiteScope) {
 				ProcedureScope proc_cct_s = ((CallSiteScope) scope).getProcedureScope();
-				this.getFlatCounterPart(proc_cct_s, scope, id);
+				this.getFlatCounterPart(proc_cct_s, scope, id, listOfAddedCost);
 			}
+			this.stackCostAdded.add(listOfAddedCost);
 
 		} else {
 			
 			//--------------------------------------------------------------------------
 			// Post visit
 			//--------------------------------------------------------------------------
-			Scope flat_info[] = this.htFlatCostAdded.get( id );
-			if (flat_info != null)
-				for (int i=0; i<flat_info.length; i++) {
-					this.decrementCounter(flat_info[i]);
+			final ArrayList<Scope> listOfAddedCost = this.stackCostAdded.pop();
+			if (listOfAddedCost != null) {
+				final int numScopes = listOfAddedCost.size();
+				for (int i=0; i<numScopes; i++) {
+					final Scope scopeCost = listOfAddedCost.get(i);
+					this.decrementCounter(scopeCost);
 				}
+			}			
 		}
 	}
 	
@@ -321,7 +320,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @param proc_cct_s
 	 * @return
 	 **-----------------------------------------------------------------------------------**/
-	private FlatScopeInfo getFlatCounterPart( Scope cct_s, Scope cct_s_metrics, String id) {
+	private FlatScopeInfo getFlatCounterPart( Scope cct_s, Scope cct_s_metrics, String id,
+			ArrayList<Scope> listOfAddedCost) {
 		// -----------------------------------------------------------------------------
 		// Get the flat scope of the parent 	
 		// -----------------------------------------------------------------------------
@@ -359,7 +359,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		if (flat_enc_s != null)
 			this.addToTree(flat_enc_s, objFlat.flat_s);
 
-		this.addCostIfNecessary(id, objFlat.flat_s, cct_s_metrics, true, true);
+		this.addCostIfNecessary(id, objFlat.flat_s, cct_s_metrics, true, true, listOfAddedCost);
 		return objFlat;
 		
 	}
@@ -476,7 +476,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @param flat_s
 	 * @param cct_s
 	 **------------------------------------------------------------------------------**/
-	private void addCostIfNecessary( String objCode, Scope flat_s, Scope cct_s, boolean add_inclusive, boolean add_exclusive ) {
+	private void addCostIfNecessary( String objCode, Scope flat_s, Scope cct_s, 
+			boolean add_inclusive, boolean add_exclusive, ArrayList<Scope> listOfAddedScopes) {
 		if (flat_s == null)
 			return;
 		
@@ -492,21 +493,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		//-----------------------------------------------------------------------
 		// store the flat scopes that have been updated  
 		//-----------------------------------------------------------------------
-		Scope arr_new_scopes[]; 
-		Scope scope_added[] = htFlatCostAdded.get( objCode );
-		if (scope_added != null) {
-			int nb_scopes = scope_added.length;
-			arr_new_scopes = new Scope[nb_scopes+1];
-			System.arraycopy(scope_added, 0, arr_new_scopes, 0, nb_scopes);
-			arr_new_scopes[nb_scopes] = flat_s;
-		} else {
-			arr_new_scopes = new Scope[1];
-			arr_new_scopes[0] = flat_s;
-		}
-		htFlatCostAdded.put(objCode, arr_new_scopes);
-
+		listOfAddedScopes.add(flat_s);
 	}
-	//int iline = 0; 
 
 	
 	/*************************************************************************

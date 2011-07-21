@@ -58,11 +58,17 @@ public class ProcessTimeline
 	/**The number of horizontal pixels in the viewer.*/
 	private int numPixelH;
 	
+	/**The ID used in the fileName that correlates to the ID of the processor*/
+	public int processID;
+	
+	/**The ID used in the fileName that correlates to the ID of the thread*/
+	public int threadID;
+	
 	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
 	public final static byte SIZE_OF_TRACE_RECORD = 12;
 	
-	/**The new format for trace files has a 24-byte header (if 0, we were most recently testing old data).*/
-	public final static byte SIZE_OF_HEADER = 24;
+	/**The new format for trace files has a 32-byte header (if 24, we were most recently testing old data).*/
+	public final static byte SIZE_OF_HEADER = 32;
 	
 	/**The size of the header for the entire .megatrace file*/
 	public final static byte SIZE_OF_MASTER_HEADER = 4;
@@ -107,6 +113,7 @@ public class ProcessTimeline
 		ByteBuffer indexBuffer = ByteBuffer.allocate(8);
 		try
 		{
+			//reads in the bounding locations where the data is located for this entire process
 			f.read(indexBuffer, SIZE_OF_MASTER_HEADER+processNumber*8);
 			indexBuffer.flip();
 			minimumLocation = indexBuffer.getLong();
@@ -118,25 +125,20 @@ public class ProcessTimeline
 				f.read(indexBuffer, SIZE_OF_MASTER_HEADER+(processNumber+1)*8);
 				indexBuffer.flip();
 				maximumLocation = indexBuffer.getLong()-SIZE_OF_TRACE_RECORD;
+				indexBuffer.clear();
 			}
 			
-			/*TODO: remove this
-			if (minimumLocation==1305108)
-			{
-				long location = minimumLocation;
-				while (location != 1492368)
-				{
-					f.read(b, location);
-					b.flip();
-					System.out.println(b.getLong());
-					b.clear();
-					location+=SIZE_OF_TRACE_RECORD;
-				}
-			}*/
+			//reads in the ID values from the header
+			f.read(indexBuffer, minimumLocation);
+			indexBuffer.flip();
+			processID = indexBuffer.getInt();
+			threadID = indexBuffer.getInt();
 			
+			//reads in the bounding locations where the data is located for the range of data to be viewed for this process
 			long maxLoc = Math.min(findLocBeforeRAF(timeRange+startingTime, f, b)+SIZE_OF_TRACE_RECORD, traceFile.length()-SIZE_OF_TRACE_RECORD);
 			long minLoc = findLocBeforeRAF(startingTime, f, b);
 			
+			//fills in the rest of the data for this process timeline
 			binaryFill(minLoc, maxLoc, 0, numPixelH, 0, f, b, cacheBuffer);
 			
 			b.clear();

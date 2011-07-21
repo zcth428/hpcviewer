@@ -155,7 +155,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void updateData(SpaceTimeData _stData) {
 		this.setSpaceTimeData(_stData);
 		
-		if (mouseState == MouseState.ST_MOUSE_INIT) {
+		if (mouseState == MouseState.ST_MOUSE_INIT)
+		{
 			mouseState = MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
@@ -641,16 +642,19 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     {
         timeLabel.setText("Time Range: " + ((long)(begTime/1000))/1000.0 + "s |" + ((long)endTime/1000)/1000.0 +  "s");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-       
-        processLabel.setText("Process Range: " + ((long)(begProcess*1000))/1000.0 + "|"+((long)(endProcess*1000))/1000.0);
+        
+        String begProcessLabel = "("+stData.getProcess(0).processID+"-"+stData.getProcess(0).threadID+")";
+        String endProcessLabel = "("+stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).processID+"-"+stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).threadID+")";
+        processLabel.setText("Process Range: " + begProcessLabel + "|" + endProcessLabel);
         processLabel.setSize(processLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         if(stData == null)
             crossHairLabel.setText("Select Sample For Cross Hair");
-        else {
+        else
+        {
     		long selectedTime = stData.getPosition().time;
-    		int selectedProcess = stData.getPosition().process;
-        	crossHairLabel.setText("Cross Hair: (" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcess + ")");
+    		String selectedProcessLabel = "("+stData.depthTrace.processID+"-"+stData.depthTrace.threadID+")";
+        	crossHairLabel.setText("Cross Hair: {" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcessLabel + "}");
         }
         
         labelGroup.setSize(labelGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));

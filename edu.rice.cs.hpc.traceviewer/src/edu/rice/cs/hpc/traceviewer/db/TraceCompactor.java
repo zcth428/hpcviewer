@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 
 public class TraceCompactor {
@@ -39,13 +40,19 @@ public class TraceCompactor {
 		long offset = traces.length*SIZEOF_LONG + SIZEOF_INT;
 		for(int i = 0; i < traces.length; ++i) {
 			dos.writeLong(offset);
-			offset += traces[i].length();
+			offset += traces[i].length() + 2*SIZEOF_INT;
 		}
 		
 		//copy the traces
 		for(int i = 0; i < traces.length; ++i) {
 			DataInputStream dis = new DataInputStream(new FileInputStream(traces[i]));
 			byte[] data = new byte[PAGE_SIZE_GUESS];
+			
+			//get the core number and thread number
+			StringTokenizer st = new StringTokenizer(traces[i].getName(), "-");
+			st.nextToken();
+			dos.writeInt(Integer.parseInt(st.nextToken()));
+			dos.writeInt(Integer.parseInt(st.nextToken()));
 			int numRead = dis.read(data);
 			while(numRead > 0) {
 				dos.write(data, 0, numRead);

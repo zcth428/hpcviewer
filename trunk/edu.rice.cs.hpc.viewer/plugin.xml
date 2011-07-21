@@ -199,6 +199,18 @@
             </command>
          </menu>
          <menu
+               label="Window"
+               mnemonic="W"
+               tooltip="Window menus">
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.resetPerspective"
+                  label="Reset layout"
+                  mnemonic="R"
+                  style="push"
+                  tooltip="Reset the current window layout to the default settings">
+            </command>
+         </menu>
+         <menu
                label="Help"
                mnemonic="h"
                tooltip="Help menu">
@@ -246,6 +258,11 @@
             defaultHandler="edu.rice.cs.hpc.viewer.actions.CloseWindow"
             id="edu.rice.cs.hpc.viewer.command.closeWindow"
             name="Close window">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.ResetPerspective"
+            id="edu.rice.cs.hpc.viewer.command.resetPerspective"
+            name="Reset layout">
       </command>
    </extension>
 </plugin>

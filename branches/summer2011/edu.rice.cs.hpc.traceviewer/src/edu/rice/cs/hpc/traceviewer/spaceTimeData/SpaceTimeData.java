@@ -38,7 +38,7 @@ public class SpaceTimeData extends TraceEvents
 	 * HashMap is a map between that line and the ProcessTimeline.*/
 	private ProcessTimeline traces[];
 	
-	private ProcessTimeline depthTrace;
+	public ProcessTimeline depthTrace;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	private Image[] compositeLines;
@@ -488,7 +488,7 @@ public class SpaceTimeData extends TraceEvents
 
 	public int getNumberOfDisplayedProcesses()
 	{
-		return this.traces.length;
+		return traces.length;
 	}
 	 
 	

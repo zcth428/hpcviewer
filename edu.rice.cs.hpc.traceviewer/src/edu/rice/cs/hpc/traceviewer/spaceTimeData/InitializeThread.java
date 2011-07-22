@@ -49,7 +49,7 @@ public class InitializeThread extends Thread
 				long offsetToLast = b.getLong();
 				
 				//reads through the index of .megatrace file to find first locations of individual traces
-				for(int x = 0; x <= stData.getHeight(); x++)
+				for(int x = 0; x < stData.getHeight(); x++)
 				{
 					ByteBuffer b2 = ByteBuffer.allocateDirect(8);
 					

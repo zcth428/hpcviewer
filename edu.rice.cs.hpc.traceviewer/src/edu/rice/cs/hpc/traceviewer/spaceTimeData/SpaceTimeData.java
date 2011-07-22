@@ -194,7 +194,7 @@ public class SpaceTimeData extends TraceEvents
 	 ******************************************************************************/
 	public int getHeight()
 	{
-		return height-1;
+		return height;
 	}
 	
 	/*************************************************************************

@@ -23,12 +23,10 @@ public class TraceCompactor {
 		
 		DataOutputStream dos = new DataOutputStream(new FileOutputStream(directory + File.separatorChar + MASTER_FILE_NAME));
 		
-		//select the (non-buggy) trace files
-		//TODO: this won't work when there are multiple threads running on a core,
-		//the contains at the end of this filter is just a hack to get around a bug
+		//select the trace files
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return !name.startsWith(".") && name.endsWith(".hpctrace") && name.contains("-000-");
+				return !name.startsWith(".") && name.endsWith(".hpctrace");
 			}
 		};
 		

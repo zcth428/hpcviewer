@@ -7,7 +7,8 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: Rice University
 Import-Package: org.apache.xerces.parsers,
  org.eclipse.jface.viewers
-Export-Package: com.graphbuilder.math,
+Export-Package: com.google.protobuf,
+ com.graphbuilder.math,
  com.graphbuilder.math.func,
  com.graphbuilder.struc,
  edu.rice.cs.hpc.data.experiment,

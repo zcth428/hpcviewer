@@ -467,7 +467,7 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		Scope callersViewRootScope = null;
 		if (callerView) {
-			callersViewRootScope = createCallersView(callingContextViewRootScope);
+			//callersViewRootScope = createCallersView(callingContextViewRootScope);
 		}
 		
 		//----------------------------------------------------------------------------------------------
@@ -476,28 +476,28 @@ public void postprocess(boolean callerView) {
 		Scope flatViewRootScope = null;
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
-		flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);
+		//flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);
 
 		//----------------------------------------------------------------------------------------------
 		// FINALIZATION
 		//----------------------------------------------------------------------------------------------
 		AbstractFinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
 
-		this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
+		//this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
 		
 		diVisitor = new FinalizeMetricVisitorWithBackup(this.getMetrics());
 		
 		if (callerView)	{												// caller view
-			this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
+			//this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
 			// bug fix 2010.06.17: move the percent after finalization
-			addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
+			//addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
 		}
 		
 		this.finalizeAggregateMetrics(callingContextViewRootScope, diVisitor);		// cct
 		
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
-		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
+		//addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
 		
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);
@@ -709,6 +709,13 @@ public BaseMetric getMetric(int index)
 	
 public BaseMetric getMetric(String name)
 {
+	/*Iterator i=this.metricMap.entrySet().iterator();
+	System.out.println("M size: "+this.metricMap.size());
+	while(i.hasNext())
+	{
+		Map.Entry pair =(Map.Entry)i.next();
+		System.out.println(pair.getKey()+"="+pair.getValue());
+	}*/
 	BaseMetric metric = (BaseMetric) this.metricMap.get(name);
 	
 	if (metric == null) {

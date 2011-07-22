@@ -19,8 +19,6 @@ import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-
-
 //////////////////////////////////////////////////////////////////////////
 //	CLASS PARSER							//
 //////////////////////////////////////////////////////////////////////////
@@ -117,7 +115,7 @@ public Parser(String inputName, InputStream inputStream, Builder builder)
  *	Parses the XML file sending parse actions to the builder.
  * @throws Exception 
  ************************************************************************/
-	
+
 public void parse()
 throws
 	Exception

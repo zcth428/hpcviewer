@@ -121,7 +121,7 @@ throws
 	
         name = this.file.toString();
         stream = new FileInputStream(this.file);
-    
+    /*
 	// parse the stream
 	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
         Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
@@ -146,10 +146,21 @@ throws
                 	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
         	}
         }
+        ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream(new File(name)),experiment);
         if( builder.getParseOK() == Builder.PARSER_OK ) {
         	// parsing is done successfully
         } else
-        	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
+        	throw new InvalExperimentException(builder.getParseErrorLineNumber());  */  
+        File tempFile = new File(name);
+        tempFile = tempFile.getParentFile();
+        File []listFile =tempFile.listFiles();
+        int iterator=0;
+        while(!listFile[iterator].getName().equals("test123"))
+        {
+        	iterator++;
+        }
+        ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
+        		(listFile[iterator]),experiment);
 	}
 
 }

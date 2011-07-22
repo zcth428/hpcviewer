@@ -175,7 +175,7 @@ public abstract class BaseMetric {
 	 * @param mv: the value of a metric
 	 *************************************************************************/
 	public String getMetricTextValue(MetricValue mv) {
-		String sText;
+		String sText;mv.getValue();
 		if(mv.value == 0.0 || mv == MetricValue.NONE || !mv.isAvailable() ) sText = "";
 		else{
 			sText = getDisplayFormat().format(mv);

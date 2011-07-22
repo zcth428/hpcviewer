@@ -12,6 +12,7 @@ import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 /**A data structure that stores one line of timestamp-cpid data.*/
 //cpid stands for Call Path ID and it's the id used to identify the call path at that cpid's timestamp
 public class ProcessTimeline
@@ -118,7 +119,7 @@ public class ProcessTimeline
 			indexBuffer.flip();
 			minimumLocation = indexBuffer.getLong();
 			indexBuffer.clear();
-			if (processNumber == totalProcesses)
+			if (processNumber == totalProcesses-1)
 				maximumLocation = inFile.length();
 			else
 			{
@@ -133,6 +134,23 @@ public class ProcessTimeline
 			indexBuffer.flip();
 			processID = indexBuffer.getInt();
 			threadID = indexBuffer.getInt();
+			if (SpaceTimeDetailCanvas.datatype != SpaceTimeDetailCanvas.DataType.ProcessAndThreads)
+			{
+				if (processID!=0)
+				{
+					if (SpaceTimeDetailCanvas.datatype == SpaceTimeDetailCanvas.DataType.ThreadsOnly)
+						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessAndThreads;
+					else
+						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessOnly;
+				}
+				if (threadID != 0)
+				{
+					if (SpaceTimeDetailCanvas.datatype == SpaceTimeDetailCanvas.DataType.ProcessOnly)
+						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessAndThreads;
+					else
+						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ThreadsOnly;
+				}
+			}
 			
 			//reads in the bounding locations where the data is located for the range of data to be viewed for this process
 			long maxLoc = Math.min(findLocBeforeRAF(timeRange+startingTime, f, b)+SIZE_OF_TRACE_RECORD, traceFile.length()-SIZE_OF_TRACE_RECORD);

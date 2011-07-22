@@ -34,6 +34,9 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
 public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
 {
 	
+	/**an enum used for deciding what type of data we have*/
+	public enum DataType {Uninitialized, ProcessOnly, ThreadsOnly, ProcessAndThreads};
+	
 	private static final long serialVersionUID = 1L;
 	
 	/**The buffer image that is copied onto the actual canvas.*/
@@ -125,6 +128,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     
     /**The min number of process units you can zoom in.*/
     private final static int MIN_PROC_DISP = 1;
+    
+    /**The type of data we're displaying*/
+    public static DataType datatype;
 	
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
 	public SpaceTimeDetailCanvas(Composite _composite)
@@ -141,6 +147,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		selectionBottomRightX = 0;
 		selectionBottomRightY = 0;
 		
+		
+		SpaceTimeDetailCanvas.datatype = DataType.Uninitialized;
 		if (this.stData != null) {
 			this.addCanvasListener();
 		}
@@ -643,8 +651,26 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         timeLabel.setText("Time Range: " + ((long)(begTime/1000))/1000.0 + "s |" + ((long)endTime/1000)/1000.0 +  "s");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-        String begProcessLabel = "("+stData.getProcess(0).processID+"-"+stData.getProcess(0).threadID+")";
-        String endProcessLabel = "("+stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).processID+"-"+stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).threadID+")";
+        String begProcessLabel = "";
+        String endProcessLabel = "";
+        switch(datatype)
+        {
+        case ProcessOnly:
+        	begProcessLabel = String.valueOf(stData.getProcess(0).processID);
+        	endProcessLabel = String.valueOf(stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).processID);
+        	break;
+        case ThreadsOnly:
+        	begProcessLabel = String.valueOf(stData.getProcess(0).threadID);
+        	endProcessLabel = String.valueOf(stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).threadID);
+        	break;
+        case ProcessAndThreads:
+        	begProcessLabel = "("+stData.getProcess(0).processID+"."+stData.getProcess(0).threadID+")";
+        	endProcessLabel = "("+stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).processID+"."+stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).threadID+")";
+        	break;
+        default:
+        	System.out.println("PANIC - DATATYPE IS NOT AVAILABLE!");
+        }
+        
         processLabel.setText("Process Range: " + begProcessLabel + "|" + endProcessLabel);
         processLabel.setSize(processLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
@@ -653,7 +679,21 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         else
         {
     		long selectedTime = stData.getPosition().time;
-    		String selectedProcessLabel = "("+stData.depthTrace.processID+"-"+stData.depthTrace.threadID+")";
+    		String selectedProcessLabel = "";
+    		switch(datatype)
+            {
+            case ProcessOnly:
+            	selectedProcessLabel = String.valueOf(stData.depthTrace.processID);
+            	break;
+            case ThreadsOnly:
+            	selectedProcessLabel = String.valueOf(stData.depthTrace.threadID);
+            	break;
+            case ProcessAndThreads:
+            	selectedProcessLabel = "("+stData.depthTrace.processID+"."+stData.depthTrace.threadID+")";
+            	break;
+            default:
+            	System.out.println("PANIC - DATATYPE IS NOT AVAILABLE!");
+            }
         	crossHairLabel.setText("Cross Hair: {" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcessLabel + "}");
         }
         

@@ -9,6 +9,7 @@ import java.nio.channels.FileChannel;
  * A thread that gets first and last timestamps from the files in a SpaceTimeData
  * and checks them into SpaceTimeData.
  * @author Reed Landrum
+ * @deprecated - no longer used for new megatrace files
  ***********************************************************************/
 public class InitializeThread extends Thread 
 {
@@ -32,7 +33,7 @@ public class InitializeThread extends Thread
 	 *****************************************************************************************************************/
 	public void run()
 	{
-		System.out.println("GOING NOW!!!!");
+		System.out.println("Initializing right now!!!!");
 		RandomAccessFile in = null;
 		FileChannel f = null;
 		try

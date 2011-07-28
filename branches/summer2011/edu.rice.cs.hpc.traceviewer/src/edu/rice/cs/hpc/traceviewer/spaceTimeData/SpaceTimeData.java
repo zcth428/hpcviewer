@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Display;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
@@ -50,7 +49,7 @@ public class SpaceTimeData extends TraceEvents
 	private ColorTable colorTable;
 	
 	/**The map between the nodes and the cpid's.*/
-	private HashMap<Integer, Scope> scopeMap;
+	private HashMap<Integer, CallPath> scopeMap;
 	
 	/**The total number of traces.*/
 	private int height;
@@ -104,7 +103,7 @@ public class SpaceTimeData extends TraceEvents
 		colorTable = new ColorTable(display);
 		
 		//Initializes the CSS that represents time values outside of the time-line.
-		colorTable.addProcedure(CallStackSample.NULL_FUNCTION); 
+		colorTable.addProcedure(CallPath.NULL_FUNCTION); 
 		traceFile = _traceFile;
 		
 		System.out.println("Reading experiment database file '" + expFile.getPath() + "'");
@@ -125,7 +124,7 @@ public class SpaceTimeData extends TraceEvents
 			return;
 		}
 		
-		scopeMap = new HashMap<Integer, Scope>();
+		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);	
 		maxDepth = exp.getRootScope().dfsSetup(visitor, colorTable, 1);
 		

@@ -14,7 +14,6 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 /**A data structure that stores one line of timestamp-cpid data.*/
-//cpid stands for Call Path ID and it's the id used to identify the call path at that cpid's timestamp
 public class ProcessTimeline
 {
 	/**The list of cpids that correspond to this ProcessTimeline's timestamps.*/
@@ -24,10 +23,7 @@ public class ProcessTimeline
 	public Vector<Double> times;
 	
 	/**The mapping between the cpid's and the actual scopes.*/
-	private HashMap<Integer, Scope> scopeMap;
-	
-	/**A CallStackSample to represent null.*/
-	private CallStackSample outsideTimeline;
+	private HashMap<Integer, CallPath> scopeMap;
 	
 	/**The file that everything will get read from.*/
 	private File traceFile;
@@ -87,7 +83,7 @@ public class ProcessTimeline
 	 ************************************************************************/
 	
 	/**Creates a new ProcessTimeline with the given parameters.*/
-	public ProcessTimeline(int _lineNum, HashMap<Integer, Scope> _scopeMap, File _traceFile, int _processNumber, int _numPixelH, double _timeRange, double _startingTime)
+	public ProcessTimeline(int _lineNum, HashMap<Integer, CallPath> _scopeMap, File _traceFile, int _processNumber, int _numPixelH, double _timeRange, double _startingTime)
 	{
 		lineNum = _lineNum;
 		scopeMap = _scopeMap;
@@ -96,8 +92,6 @@ public class ProcessTimeline
 		numPixelH = _numPixelH;
 		timeRange = _timeRange;
 		startingTime = _startingTime;
-		outsideTimeline = new CallStackSample();
-		outsideTimeline.addFunction(CallStackSample.NULL_FUNCTION);
 		
 		times = new Vector<Double>(numPixelH);
 		timeLine = new Vector<Integer>(numPixelH);
@@ -271,7 +265,7 @@ public class ProcessTimeline
 	}
 	
 	/**Gets the CallStackSample that the cpid at index sample corresponds to.*/
-	public CallStackSample getCallStackSample(int sample)
+	/*public CallStackSample getCallStackSample(int sample)
 	{
 		if(sample == -1)
 			return outsideTimeline;
@@ -289,36 +283,47 @@ public class ProcessTimeline
 			getPath(css, cpscope);
 			return css;
 		}
-	}
+	}*/
 	
-	/**Gets the name of the function at depth and the cpid at index sample corresponds to.*/
-	//TODO: make this method work s.t. it returns single string of sample
-	public String getSample(int sample, int depth)
+	/**returns the call path corresponding to the sample and depth given*/
+	public CallPath getCallPath(int sample, int depth)
 	{
-		if(sample == -1)
-			return CallStackSample.NULL_FUNCTION;
+		if (sample == -1)
+		{
+			System.out.println("getCallPath() fail");
+			return null;
+		}
 		else
 		{
 			int cpid = getCpid(sample);
-			//System.out.println(cpid);
-			CallStackSample css = new CallStackSample();
-			Scope cpscope = scopeMap.get(cpid);
+			CallPath cp = scopeMap.get(cpid);
+			cp.updateCurrentDepth(depth);
+			return cp;
+		}
+	}
+	
+	/**Gets the name of the function at depth and the cpid at index sample corresponds to.*/
+	public String getSampleAtDepth(int sample, int depth)
+	{
+		if(sample == -1)
+		{
+			System.out.println("getSampleAtDepth() fail");
+			return null;
+		}
+		else
+		{
+			int cpid = getCpid(sample);
+			CallPath cp = scopeMap.get(cpid);
+			cp.updateCurrentDepth(depth);
+			
+			Scope cpscope = cp.getCurrentDepthScope();
 			if (cpscope == null)
 			{
 				//this is a quick fix for a specific 256-processor set of data used as of June 30, 2010
-				cpscope = scopeMap.get(29);
+				//cpscope = scopeMap.get(29);
 				System.out.println("No scope found for cpid " + cpid);
 			}
-			Scope parent = cpscope.getParentScope();
-			while (parent != null && !(parent instanceof RootScope))
-			{
-				depth--;
-				parent = cpscope.getParentScope();
-			}
-			if (depth == 0)
-				return cpscope.getName();
-			else
-				return "DERP";
+			return cpscope.getName();
 		}
 	}
 	

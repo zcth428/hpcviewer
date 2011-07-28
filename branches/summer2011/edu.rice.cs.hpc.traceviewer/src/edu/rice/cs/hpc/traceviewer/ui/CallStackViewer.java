@@ -131,7 +131,7 @@ public class CallStackViewer extends TableViewer
 	 * that most closely corresponds to (closeTime, process). Additionally,
 	 * sets the depth to _depth.
 	 *********************************************************************/
-	public void setSample(Position position, int _depth)
+	public void setSample(Position position, int depth)
 	{
 		if (position.time == -20)
 			return;
@@ -152,23 +152,23 @@ public class CallStackViewer extends TableViewer
 
 			final Vector<String> sampleVector;
 			if (sample>=0)
-				sampleVector = ptl.getCallStackSample(sample).getNames();
+				sampleVector = ptl.getCallPath(sample, depth).getAllNames();
 			else
 				// empty array of string
 				sampleVector = new Vector<String>();
 
-			if (sampleVector.size()<=_depth)
+			if (sampleVector.size()<=depth)
 			{
 				//-----------------------------------
 				// case of over depth
 				//-----------------------------------
-				final int numOverDepth = _depth-sampleVector.size()+1;
+				final int numOverDepth = depth-sampleVector.size()+1;
 				for(int l = 0; l<numOverDepth; l++)
 					sampleVector.add(EMPTY_FUNCTION);
 			}
 			this.setInput(new ArrayList<String>(sampleVector));
 		
-			this.selectDepth(_depth);
+			this.selectDepth(depth);
 			
 			viewerColumn.getColumn().pack();
 		} else {

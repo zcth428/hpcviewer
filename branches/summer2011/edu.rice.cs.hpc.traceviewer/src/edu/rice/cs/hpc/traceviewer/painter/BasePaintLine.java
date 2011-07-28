@@ -2,7 +2,7 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.swt.graphics.Color;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallStackSample;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 
@@ -41,9 +41,12 @@ public abstract class BasePaintLine
 	public void paint()
 	{
 		int succSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-		CallStackSample succSample = ptl.getCallStackSample(0);
-		int succDepth = Math.min(depth, succSample.getSize()-1);
-		String succFunction = succSample.getFunctionName(succDepth);
+		//CallStackSample succSample = ptl.getCallStackSample(0);
+		//int succDepth = Math.min(depth, succSample.getSize()-1);
+		//String succFunction = succSample.getFunctionName(succDepth);
+		CallPath cp = ptl.getCallPath(0, depth);
+		int succDepth = cp.getCurrentDepth();
+		String succFunction = cp.getCurrentDepthScope().getName();
 		Color succColor = colorTable.getColor(succFunction);
 
 		for (int index = 0; index < ptl.size(); index++)
@@ -59,14 +62,15 @@ public abstract class BasePaintLine
 			final String functionName = succFunction;
 			final Color currColor = succColor;
 			
-			while(still_the_same && (indexSucc < ptl.size()-1)) {
+			while(still_the_same && (indexSucc < ptl.size()-1))
+			{
 				indexSucc++;
-				succSample = ptl.getCallStackSample(indexSucc);
-				succDepth = Math.min(depth, succSample.getSize()-1);
-				succFunction = succSample.getFunctionName(succDepth);
-				succColor = this.colorTable.getColor(succFunction);
+				cp = ptl.getCallPath(indexSucc, depth);
+				succDepth = cp.getCurrentDepth();
+				succFunction = cp.getCurrentDepthScope().getName();
+				succColor = colorTable.getColor(succFunction);
 				
-				still_the_same = (succDepth == currDepth) && (succColor==currColor);
+				still_the_same = (succDepth == currDepth) && (succColor.equals(currColor));
 				if (still_the_same)
 					index = indexSucc;
 			};

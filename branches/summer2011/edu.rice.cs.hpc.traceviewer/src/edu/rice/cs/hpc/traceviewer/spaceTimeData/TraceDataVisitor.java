@@ -17,9 +17,9 @@ import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 
 public class TraceDataVisitor implements IScopeVisitor {
-	protected HashMap<Integer, Scope> map;
+	protected HashMap<Integer, CallPath> map;
 
-	public TraceDataVisitor(HashMap<Integer,Scope> _map) {
+	public TraceDataVisitor(HashMap<Integer, CallPath> _map) {
 		map = _map;
 	}
 
@@ -37,9 +37,19 @@ public class TraceDataVisitor implements IScopeVisitor {
 	public void visit(LineScope scope, ScopeVisitType vt) { 
 		if (vt == ScopeVisitType.PreVisit) {
 			int cpid = scope.getCpid();
-			//int cpid = Integer.valueOf(scope.getShortName());
-			if (cpid > 0) {
-				this.map.put(cpid, scope);
+			if (cpid > 0)
+			{
+				Scope cur = scope;
+				int depth = 0;
+				do
+				{
+					Scope parent = cur.getParentScope();
+					if((cur instanceof CallSiteScope) || (cur instanceof ProcedureScope))
+						++depth;
+					cur = parent;
+				}
+				while(cur != null && !(cur instanceof RootScope));
+				this.map.put(cpid, new CallPath(scope, depth));
 			}
 		}
 	}
@@ -58,7 +68,8 @@ public class TraceDataVisitor implements IScopeVisitor {
 	
 	public void visit(GroupScope scope, ScopeVisitType vt) { }
 
-	public HashMap<Integer,Scope> getMap(){
+	public HashMap<Integer, CallPath> getMap()
+	{
 		return map;
 	}
 }

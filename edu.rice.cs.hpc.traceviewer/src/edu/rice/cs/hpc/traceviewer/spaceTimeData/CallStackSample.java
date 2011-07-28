@@ -8,9 +8,6 @@ public class CallStackSample
 	/**The actual names of the functions stored in this CallStackSample.*/
 	Vector<String> sampleNames;
 	
-	/**A null function - used for debugging.*/
-	public static final String NULL_FUNCTION = "-Outside Timeline-";
-	
 	/**Creates a new CallStackSample.*/
 	public CallStackSample() 
 	{

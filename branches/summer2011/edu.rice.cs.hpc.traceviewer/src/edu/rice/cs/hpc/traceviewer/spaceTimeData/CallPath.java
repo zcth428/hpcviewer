@@ -41,7 +41,7 @@ public class CallPath
 		leafScope = _leafScope;
 		maxDepth = _maxDepth;
 		currentDepth = maxDepth;
-		currentDepthScope = leafScope;
+		currentDepthScope = null;
 		functionNames = new Vector<String>();
 	}
 	
@@ -50,25 +50,22 @@ public class CallPath
 	{
 		if (depth < 0)
 			return null;
-		if (depth == currentDepth)
+		if (depth == currentDepth && currentDepthScope != null)
 			return currentDepthScope;
 		
-		int cDepth = currentDepth;
-		Scope cDepthScope = currentDepthScope;
-		if (depth > currentDepth)
+		int cDepth = maxDepth;
+		Scope cDepthScope = leafScope;
+		if (depth < currentDepth && currentDepthScope != null)
 		{
-			cDepth = maxDepth;
-			cDepthScope = leafScope;
+			cDepth = currentDepth;
+			cDepthScope = currentDepthScope;
 		}
 		while(!(cDepthScope.getParentScope() instanceof RootScope) && (cDepth > depth || !(cDepthScope instanceof CallSiteScope || cDepthScope instanceof ProcedureScope)))
 		{
 			cDepthScope = cDepthScope.getParentScope();
 			if((cDepthScope instanceof CallSiteScope) || (cDepthScope instanceof ProcedureScope))
 				cDepth--;
-			if (cDepthScope.getName().equals("Experiment Aggregate Metrics"))
-				System.out.println("wtf");
 		}
-		return cDepthScope;
 		/*Vector<Scope> path = new Vector<Scope>();
 		Scope s = leafScope;
 		do
@@ -81,7 +78,14 @@ public class CallPath
 			s = parent;
 		}
 		while(s != null && !(s instanceof RootScope));
-		return path.get(depth >= maxDepth ? maxDepth-1 : depth);*/
+		
+		Scope cDepthScope = path.get(depth >= maxDepth ? maxDepth-1 : depth);*/
+		
+		if (!(cDepthScope instanceof CallSiteScope || cDepthScope instanceof ProcedureScope))
+			System.out.println("wtf how");
+		if (cDepthScope.getName().equals("~unknown-file~0"))
+			System.out.println("ACHA! you a line scope?");
+		return cDepthScope;
 	}
 	
 	public Scope getBottomScope()

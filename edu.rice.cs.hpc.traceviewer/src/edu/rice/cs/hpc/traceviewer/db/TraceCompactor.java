@@ -26,7 +26,8 @@ public class TraceCompactor {
 		//select the trace files
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return !name.startsWith(".") && name.endsWith(".hpctrace");
+				//uncomment this last line to make it work with old buggy data (traces cut short)
+				return !name.startsWith(".") && name.endsWith(".hpctrace");// && name.contains("-000-");
 			}
 		};
 		

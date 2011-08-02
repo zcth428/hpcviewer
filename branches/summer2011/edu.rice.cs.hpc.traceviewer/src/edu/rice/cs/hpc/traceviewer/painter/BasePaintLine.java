@@ -66,13 +66,16 @@ public abstract class BasePaintLine
 			{
 				indexSucc++;
 				cp = ptl.getCallPath(indexSucc, depth);
-				succDepth = cp.getCurrentDepth();
-				succFunction = cp.getCurrentDepthScope().getName();
-				succColor = colorTable.getColor(succFunction);
-				
-				still_the_same = (succDepth == currDepth) && (succColor.equals(currColor));
-				if (still_the_same)
-					index = indexSucc;
+				if(cp != null)
+				{
+					succDepth = cp.getCurrentDepth();
+					succFunction = cp.getCurrentDepthScope().getName();
+					succColor = colorTable.getColor(succFunction);
+					
+					still_the_same = (succDepth == currDepth) && (succColor.equals(currColor));
+					if (still_the_same)
+						index = indexSucc;
+				}
 			};
 			
 			if (index<ptl.size()-1)

@@ -203,22 +203,15 @@ public class ProcessTimeline
 	/**Adds a sample to times and timeLine.*/
 	public void addSample(int cpid, double timestamp, int index)
 	{
-		if (cpid == 1918985061)
+		if (index == times.size())
 		{
-			System.out.println("ADDING THIS ONE RANDOM FAILBLOG ENTRY "+cpid);
+			times.add(timestamp);
+			timeLine.add(cpid);
 		}
 		else
 		{
-			if (index == times.size())
-			{
-				times.add(timestamp);
-				timeLine.add(cpid);
-			}
-			else
-			{
-				times.add(index, timestamp);
-				timeLine.add(index, cpid);
-			}
+			times.add(index, timestamp);
+			timeLine.add(index, cpid);
 		}
 		this.debug("add_sample " + index + ": " + cpid + "\ttime: " + timestamp);
 	}
@@ -297,7 +290,13 @@ public class ProcessTimeline
 		{
 			int cpid = getCpid(sample);
 			CallPath cp = scopeMap.get(cpid);
-			cp.updateCurrentDepth(depth);
+			if(cp != null)
+				cp.updateCurrentDepth(depth);
+			else
+			{
+				System.err.println("ERROR: No sample found for cpid " + cpid + ".");
+				System.err.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
+			}
 			return cp;
 		}
 	}

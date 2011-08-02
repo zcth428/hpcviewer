@@ -9,12 +9,15 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
+
 
 public class TraceCompactor {
 	
 	public static final int SIZEOF_LONG = 8;
 	public static final int SIZEOF_INT = 4;
 	public static final int PAGE_SIZE_GUESS = 4096;
+	public static final int MIN_SIZE_OF_TRACE_FILE = ProcessTimeline.SIZE_OF_HEADER + (ProcessTimeline.SIZE_OF_TRACE_RECORD * 2);
 	public static final String MASTER_FILE_NAME = "SingleTraceFile.megatrace";
 	
 	public static void compact(String directory) throws IOException {
@@ -37,7 +40,8 @@ public class TraceCompactor {
 		
 		//write the index
 		long offset = traces.length*SIZEOF_LONG + SIZEOF_INT;
-		for(int i = 0; i < traces.length; ++i) {
+		for(int i = 0; i < traces.length; ++i)
+		{
 			dos.writeLong(offset);
 			offset += traces[i].length() + 2*SIZEOF_INT;
 		}

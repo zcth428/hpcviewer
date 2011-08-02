@@ -25,8 +25,7 @@ public class TraceDatabase
 {
 	
 	/**the minimum size a trace file must be in order to be correctly formatted*/
-	final private static int MIN_TRACE_SIZE = 4+8+ProcessTimeline.SIZE_OF_HEADER+ProcessTimeline.SIZE_OF_TRACE_RECORD*2;
-	//ProcessTimeline.SIZE_OF_HEADER + (ProcessTimeline.SIZE_OF_TRACE_RECORD * 2);
+	final private static int MIN_TRACE_SIZE = ProcessTimeline.SIZE_OF_MASTER_HEADER+8+ProcessTimeline.SIZE_OF_HEADER+ProcessTimeline.SIZE_OF_TRACE_RECORD*2;
 	
 	/**a file holding an concatenated collection of all the trace files*/
 	private File traceFile = null;

@@ -35,7 +35,7 @@ public class CallStackViewer extends TableViewer
 	private final static String EMPTY_FUNCTION = "--------------";
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
-	public CallStackViewer(Composite parent, final HPCCallStackView _csview)
+	public CallStackViewer(Composite parent, final HPCCallStackView csview)
 	{
 		super(parent, SWT.SINGLE | SWT.NO_SCROLL);
 		
@@ -72,7 +72,7 @@ public class CallStackViewer extends TableViewer
 				int depth = stack.getSelectionIndex(); 
 				if(depth !=-1 && depth != stData.getDepth()) {
 					// ask the depth editor to update the depth and launch the updateDepth event
-					_csview.depthEditor.setSelection(depth);
+					csview.depthEditor.setSelection(depth);
 					stData.updateDepth(depth, csviewer);
 				}
 			}
@@ -94,17 +94,20 @@ public class CallStackViewer extends TableViewer
 				return null;        		
         	}
         	
-        	public String getText(Object element) {
+        	public String getText(Object element)
+        	{
         		if (element instanceof String)
         			return (String) element;
         		return null;
         	}
         	
-        	public String getToolTipText(Object element) {
+        	public String getToolTipText(Object element)
+        	{
         		return this.getText(element);
         	}
         	
-        	public int getToolTipDisplayDelayTime(Object object) {
+        	public int getToolTipDisplayDelayTime(Object object)
+        	{
         		return 200;
         	}
 		};
@@ -119,7 +122,8 @@ public class CallStackViewer extends TableViewer
 	 * set new database
 	 * @param _stData
 	 */
-	public void updateData(SpaceTimeData _stData) {
+	public void updateData(SpaceTimeData _stData) 
+	{
 		this.stData = _stData;
 
 		this.setSample(stData.getPosition(), this.stData.getDepth());
@@ -171,25 +175,27 @@ public class CallStackViewer extends TableViewer
 			this.selectDepth(depth);
 			
 			viewerColumn.getColumn().pack();
-		} else {
+		}
+		else
+		{
 			System.err.println("Internal error: unable to get process " + adjustedPosition+"\tProcess range: " +
 					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
 			Debugger.printTrace("CSV traces: ");
 		}
 	}
 	
-
-	
 	/**Sets the viewer's depth to _depth.*/
 	public void setDepth(int _depth)
 	{
 		final int itemCount = this.getTable().getItemCount();
-		if (itemCount<=_depth) {
+		if (itemCount<=_depth)
+		{
 			//-----------------------------------
 			// case of over depth
 			//-----------------------------------
 			final int overDepth = _depth - itemCount + 1;
-			for (int i=0; i<overDepth; i++) {
+			for (int i=0; i<overDepth; i++) 
+			{
 				this.add(EMPTY_FUNCTION);
 			}
 		}
@@ -200,9 +206,9 @@ public class CallStackViewer extends TableViewer
 	 * Select a specified depth in the call path
 	 * @param _depth
 	 */
-	private void selectDepth(final int _depth) {
+	private void selectDepth(final int _depth)
+	{
 		this.getTable().select(_depth);
 		this.getTable().redraw();
 	}
-	
 }

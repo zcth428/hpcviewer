@@ -66,25 +66,9 @@ public class CallPath
 			if((cDepthScope instanceof CallSiteScope) || (cDepthScope instanceof ProcedureScope))
 				cDepth--;
 		}
-		/*Vector<Scope> path = new Vector<Scope>();
-		Scope s = leafScope;
-		do
-		{
-			Scope parent = s.getParentScope();
-			if ((s instanceof CallSiteScope) || (s instanceof ProcedureScope))
-			{
-				path.add(0, s);
-			}
-			s = parent;
-		}
-		while(s != null && !(s instanceof RootScope));
-		
-		Scope cDepthScope = path.get(depth >= maxDepth ? maxDepth-1 : depth);*/
 		
 		if (!(cDepthScope instanceof CallSiteScope || cDepthScope instanceof ProcedureScope))
 			System.out.println("wtf how");
-		if (cDepthScope.getName().equals("~unknown-file~0"))
-			System.out.println("ACHA! you a line scope?");
 		return cDepthScope;
 	}
 	
@@ -115,19 +99,8 @@ public class CallPath
 	
 	public void updateCurrentDepth(int newDepth)
 	{
-		/*if (newDepth > maxDepth)
-		{
-			currentDepthScope = leafScope;
-			currentDepth = maxDepth;
-			return;
-		}
-		if (newDepth != currentDepth)
-		{
-			currentDepthScope = getScopeAt(newDepth);
-			currentDepth = newDepth;
-		}*/
 		currentDepthScope = getScopeAt(newDepth);
-		currentDepth = newDepth > maxDepth ? maxDepth : newDepth;
+		currentDepth = newDepth > maxDepth-1 ? maxDepth-1 : newDepth;
 	}
 	
 	public Vector<String> getAllNames()

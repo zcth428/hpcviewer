@@ -1,18 +1,11 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Vector;
 
-import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
-import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
+
 /**A data structure that stores one line of timestamp-cpid data.*/
 public class ProcessTimeline
 {
@@ -25,8 +18,8 @@ public class ProcessTimeline
 	/**The mapping between the cpid's and the actual scopes.*/
 	private HashMap<Integer, CallPath> scopeMap;
 	
-	/**The file that everything will get read from.*/
-	private File traceFile;
+	/**The ByteBuffer that contains the entire traceFile*/
+	private LargeByteBuffer masterBuff;
 	
 	/**The process belongs to this timeline*/
 	private int processNumber;
@@ -48,9 +41,6 @@ public class ProcessTimeline
 	
 	/**The amount of time that each pixel on the screen correlates to.*/
 	private double pixelLength;
-	
-	/**The average time between timestamps.*/
-	private double averageTimestampLength;
 	
 	/**The number of horizontal pixels in the viewer.*/
 	private int numPixelH;
@@ -83,11 +73,11 @@ public class ProcessTimeline
 	 ************************************************************************/
 	
 	/**Creates a new ProcessTimeline with the given parameters.*/
-	public ProcessTimeline(int _lineNum, HashMap<Integer, CallPath> _scopeMap, File _traceFile, int _processNumber, int _numPixelH, double _timeRange, double _startingTime)
+	public ProcessTimeline(int _lineNum, HashMap<Integer, CallPath> _scopeMap, LargeByteBuffer _masterBuff, int _processNumber, int _numPixelH, double _timeRange, double _startingTime)
 	{
 		lineNum = _lineNum;
 		scopeMap = _scopeMap;
-		traceFile = _traceFile;
+		masterBuff = _masterBuff;
 		processNumber = _processNumber;
 		numPixelH = _numPixelH;
 		timeRange = _timeRange;
@@ -97,107 +87,63 @@ public class ProcessTimeline
 		timeLine = new Vector<Integer>(numPixelH);
 		
 		pixelLength = timeRange/(double)numPixelH;
-		averageTimestampLength = timeRange/(getElementCount());
 	}
 	
 	/**Fills the ProcessTimeline with data from the file.*/
-	public void readInData(RandomAccessFile inFile, FileChannel f, int totalProcesses)
+	public void readInData(int totalProcesses)
 	{
-		ByteBuffer b = ByteBuffer.allocateDirect(SIZE_OF_TRACE_RECORD);
-		ByteBuffer cacheBuffer = ByteBuffer.allocate(SIZE_OF_TRACE_RECORD*129 - 4);
-		ByteBuffer indexBuffer = ByteBuffer.allocate(8);
-		try
+		//gets bounding locations where the data is stored for this entire process
+		minimumLocation = masterBuff.getLong(SIZE_OF_MASTER_HEADER+processNumber*8);
+		if (processNumber == totalProcesses-1)
+			maximumLocation = masterBuff.size()-1;
+		else
 		{
-			//reads in the bounding locations where the data is located for this entire process
-			f.read(indexBuffer, SIZE_OF_MASTER_HEADER+processNumber*8);
-			indexBuffer.flip();
-			minimumLocation = indexBuffer.getLong();
-			indexBuffer.clear();
-			if (processNumber == totalProcesses-1)
-				maximumLocation = inFile.length();
-			else
+			maximumLocation = masterBuff.getLong(SIZE_OF_MASTER_HEADER + (processNumber+1)*8)-SIZE_OF_TRACE_RECORD;
+		}
+		
+		//reads in the ID values from the header
+		processID = masterBuff.getInt(minimumLocation);
+		threadID = masterBuff.getInt(minimumLocation+4);
+		
+		if (SpaceTimeDetailCanvas.datatype != SpaceTimeDetailCanvas.DataType.ProcessAndThreads)
+		{
+			if (processID!=0)
 			{
-				f.read(indexBuffer, SIZE_OF_MASTER_HEADER+(processNumber+1)*8);
-				indexBuffer.flip();
-				maximumLocation = indexBuffer.getLong()-SIZE_OF_TRACE_RECORD;
-				indexBuffer.clear();
-			}
-			
-			//reads in the ID values from the header
-			f.read(indexBuffer, minimumLocation);
-			indexBuffer.flip();
-			processID = indexBuffer.getInt();
-			threadID = indexBuffer.getInt();
-			if (SpaceTimeDetailCanvas.datatype != SpaceTimeDetailCanvas.DataType.ProcessAndThreads)
-			{
-				if (processID!=0)
-				{
-					if (SpaceTimeDetailCanvas.datatype == SpaceTimeDetailCanvas.DataType.ThreadsOnly)
-						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessAndThreads;
-					else
-						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessOnly;
-				}
-				if (threadID != 0)
-				{
-					if (SpaceTimeDetailCanvas.datatype == SpaceTimeDetailCanvas.DataType.ProcessOnly)
-						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessAndThreads;
-					else
-						SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ThreadsOnly;
-				}
-			}
-			
-			//reads in the bounding locations where the data is located for the range of data to be viewed for this process
-			long maxLoc = Math.min(findLocBeforeRAF(timeRange+startingTime, f, b)+SIZE_OF_TRACE_RECORD, traceFile.length()-SIZE_OF_TRACE_RECORD);
-			long minLoc = findLocBeforeRAF(startingTime, f, b);
-			
-			//fills in the rest of the data for this process timeline
-			binaryFill(minLoc, maxLoc, 0, numPixelH, 0, f, b, cacheBuffer);
-			
-			b.clear();
-			f.read(b, maxLoc);
-			b.flip();
-
-			//-----------------------------------------------------------------------------
-			// Hack: if the trace has no data at all, we give up and quit
-			//-----------------------------------------------------------------------------
-			if (b.remaining()>=8)
-			{
-				double nextTime = b.getLong();
-				int cpid = b.getInt();
-				addSample(cpid, nextTime, times.size());
-				
-				b = (ByteBuffer)b.clear();
-				f.read(b, minLoc);
-				b.flip();
-				
-				//-----------------------------------------------------------------------------
-				// Hack: if the trace has no pair data, we give up, and do not add sample
-				//-----------------------------------------------------------------------------
-				if (b.remaining()>=8)
-				{
-					nextTime = b.getLong();
-					if (!times.firstElement().equals(nextTime))
-					{
-						cpid = b.getInt();
-						addSample(cpid, nextTime, 0);
-					}
-				}
+				if (SpaceTimeDetailCanvas.datatype == SpaceTimeDetailCanvas.DataType.ThreadsOnly)
+					SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessAndThreads;
 				else
-				{
-					this.debug("Warning: no pair data value for file: " + this.traceFile );
-				}
-				
-				postProcess();
+					SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessOnly;
 			}
-			else
+			if (threadID != 0)
 			{
-				this.debug("Warning: no data value for file " + this.traceFile);
+				if (SpaceTimeDetailCanvas.datatype == SpaceTimeDetailCanvas.DataType.ProcessOnly)
+					SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ProcessAndThreads;
+				else
+					SpaceTimeDetailCanvas.datatype = SpaceTimeDetailCanvas.DataType.ThreadsOnly;
 			}
 		}
-		catch (IOException e)
+		
+		//reads in the bounding locations where the data is located for the range of data to be viewed for this process
+		long maxLoc = Math.min(findLocBeforeRAF(timeRange+startingTime)+SIZE_OF_TRACE_RECORD, masterBuff.size()-SIZE_OF_TRACE_RECORD);
+		long minLoc = findLocBeforeRAF(startingTime);
+		
+		//fills in the rest of the data for this process timeline
+		binaryFill(minLoc, maxLoc, 0, numPixelH, 0);
+		
+		//adds in the first and last data points
+		double nextTime = masterBuff.getLong(maxLoc);
+		int cpid = masterBuff.getInt(maxLoc+8);
+		addSample(cpid, nextTime, times.size());
+		
+		nextTime = masterBuff.getLong(minLoc);
+		if (!times.firstElement().equals(nextTime))
 		{
-			e.printStackTrace();
+			cpid = masterBuff.getInt(minLoc+8);
+			addSample(cpid, nextTime, 0);
 		}
+		
+		//TODO: no longer have hack that detects if there is any data at all or no pair data.  Should just error if this is true
+		postProcess();
 	}
 	
 	/**Adds a sample to times and timeLine.*/
@@ -225,22 +171,6 @@ public class ProcessTimeline
 		}
 	}
 	
-	/*************************************************************************************
-	 * Fills the CallStackSample c with the function names you get as you go up the
-	 * scope tree starting at s.
-	 ************************************************************************************/
-	public void getPath(CallStackSample c, Scope s)
-	{
-		Scope parent = s.getParentScope();
-		if (parent != null && !(parent instanceof RootScope))
-			getPath(c, parent);
-		
-		if ((s instanceof CallSiteScope) || (s instanceof ProcedureScope))
-		{
-			c.addFunction(s.getName());
-		}
-	}
-	
 	/**Gets the time that corresponds to the index sample in times.*/
 	public double getTime(int sample)
 	{
@@ -256,27 +186,6 @@ public class ProcessTimeline
 	{
 		return timeLine.elementAt(sample);
 	}
-	
-	/**Gets the CallStackSample that the cpid at index sample corresponds to.*/
-	/*public CallStackSample getCallStackSample(int sample)
-	{
-		if(sample == -1)
-			return outsideTimeline;
-		else
-		{
-			int cpid = getCpid(sample);
-			Scope cpscope = scopeMap.get(cpid);
-			if (cpscope == null)
-			{
-				//this is a quick fix for a specific 1024-processor set of data used as of July 15, 2011
-				cpscope = scopeMap.get(25);
-				System.err.println("No scope found for cpid " + cpid);
-			}
-			CallStackSample css = new CallStackSample();
-			getPath(css, cpscope);
-			return css;
-		}
-	}*/
 	
 	/**returns the call path corresponding to the sample and depth given*/
 	public CallPath getCallPath(int sample, int depth)
@@ -294,35 +203,10 @@ public class ProcessTimeline
 				cp.updateCurrentDepth(depth);
 			else
 			{
-				System.err.println("ERROR: No sample found for cpid " + cpid + ".");
+				System.err.println("ERROR: No sample found for cpid " + cpid + " in trace "+processID+"-"+threadID+".");
 				System.err.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
 			}
 			return cp;
-		}
-	}
-	
-	/**Gets the name of the function at depth and the cpid at index sample corresponds to.*/
-	public String getSampleAtDepth(int sample, int depth)
-	{
-		if(sample == -1)
-		{
-			System.out.println("getSampleAtDepth() fail");
-			return null;
-		}
-		else
-		{
-			int cpid = getCpid(sample);
-			CallPath cp = scopeMap.get(cpid);
-			cp.updateCurrentDepth(depth);
-			
-			Scope cpscope = cp.getCurrentDepthScope();
-			if (cpscope == null)
-			{
-				//this is a quick fix for a specific 256-processor set of data used as of June 30, 2010
-				//cpscope = scopeMap.get(29);
-				System.out.println("No scope found for cpid " + cpid);
-			}
-			return cpscope.getName();
 		}
 	}
 	
@@ -355,7 +239,7 @@ public class ProcessTimeline
 	 ************************************************************************/
 	public long getElementCount()
 	{
-		return (traceFile.length() - SIZE_OF_HEADER)/SIZE_OF_TRACE_RECORD;
+		return (masterBuff.size() - SIZE_OF_HEADER)/SIZE_OF_TRACE_RECORD;
 	}
 	
 	/****************************************************************************
@@ -409,6 +293,29 @@ public class ProcessTimeline
 			return low;
 	}
 	
+	/*************************************************************************
+	 *	Returns the location in the traceFile of the trace data (time stamp and cpid).
+	 ************************************************************************/
+	public long findLocBeforeRAF(double time)
+	{
+		long low = 0;
+		long high = (maximumLocation-minimumLocation-SIZE_OF_HEADER)/SIZE_OF_TRACE_RECORD;
+		long mid = (low + high)/2;
+		
+		long temp = 0;
+		while (low < mid)
+		{
+			temp = masterBuff.getLong(mid*SIZE_OF_TRACE_RECORD+minimumLocation+SIZE_OF_HEADER);
+			if (time > temp)
+				low = mid;
+			else
+				high = mid;
+			
+			mid = (low+high)/2;
+		}
+		return low*SIZE_OF_TRACE_RECORD+minimumLocation+SIZE_OF_HEADER;
+	}
+	
 	/*******************************************************************************************
 	 * Recursive method that fills in times and timeLine with the correct data from the file.
 	 * Takes in two pixel locations as endpoints and finds the timestamp that owns the pixel
@@ -422,224 +329,49 @@ public class ProcessTimeline
 	 * @param startPixel The beginning pixel in the image that corresponds to minLoc.
 	 * @param endPixel The end pixel in the image that corresponds to maxLoc.
 	 * @param minIndex An index used for calculating the index in which the data is to be inserted.
-	 * @param f The channel of the file that it's searching in.
-	 * @param b The ByteBuffer the channel will read into.
-	 * @param cacheBuffer The ByteBuffer that information will be cached into when the binary 
-	 * search range gets small enough.
 	 * @return Returns the index that shows the size of the recursive subtree that has been read.
 	 * Used for calculating the index in which the data is to be inserted.
 	 ******************************************************************************************/
-	public int binaryFill(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex, FileChannel f, ByteBuffer b, ByteBuffer cacheBuffer)
+	public int binaryFill(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex)
 	{
-		int midPixel = (startPixel + endPixel)/2;
+		int midPixel = (startPixel+endPixel)/2;
 		if (midPixel == startPixel)
 			return 0;
-		try
-		{
-			cacheBuffer = (ByteBuffer)cacheBuffer.clear();
-			b.clear();
-			
-			long loc = findBoundedLocRAF(midPixel*pixelLength + startingTime, f, b, cacheBuffer, minLoc, maxLoc);
-			f.read(b, loc);
-			b.flip();
-			
-			double nextTime = b.getLong();
-			int cpid = b.getInt();
-			
-			if (cpid==1918985061)
-				System.out.println("fml");
-			
-			addSample(cpid, nextTime, minIndex);
-			int addedLeft = binaryFill(minLoc, loc, startPixel, midPixel, minIndex, f, b, cacheBuffer);
-			int addedRight = binaryFill(loc, maxLoc, midPixel, endPixel, minIndex+addedLeft+1, f, b, cacheBuffer);
-			return (addedLeft+addedRight+1);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return -1;
-		}
-	}
-	
-	/***********************************************************************************
-	 * Searches through the data cached in a ByteBuffer 'b' with 'size' number of bytes
-	 * of data in it for the entry 'time'. 
-	 * @param time
-	 * @param b
-	 * @param size
-	 **********************************************************************************/
-	public int findBoundedLocCached(double time, ByteBuffer b)
-	{
-		b.flip();
-		int low = 0;
-		int high = b.remaining()/SIZE_OF_TRACE_RECORD - 1;
-		int mid = (low + high)/2;
-		//int size = high;
-		double temp = 0;
-		while(low < mid)
-		{
-			b.position(mid*SIZE_OF_TRACE_RECORD);
-
-			temp = b.getLong();
-			if(time > temp)
-				low = mid;
-			else
-				high = mid;
-			mid = (low + high)/2;
-		}
-		return low*SIZE_OF_TRACE_RECORD;
-		/*if(high*SIZE_OF_TRACE_RECORD == size)
-			return low*SIZE_OF_TRACE_RECORD;
-		else
-		{
-			b.position(low*SIZE_OF_TRACE_RECORD);
-			double tempLower = b.getLong();
-			if(Math.abs(temp-time) < Math.abs(time-tempLower))
-				return low*SIZE_OF_TRACE_RECORD;
-			else
-				return (low+1)*SIZE_OF_TRACE_RECORD;
-		}*/
+		
+		long loc = findBoundedLocRAF(midPixel*pixelLength+startingTime, minLoc, maxLoc);
+		double nextTime = masterBuff.getLong(loc);
+		int cpid = masterBuff.getInt(loc+8);
+		
+		addSample(cpid, nextTime, minIndex);
+		int addedLeft = binaryFill(minLoc, loc, startPixel, midPixel, minIndex);
+		int addedRight = binaryFill(loc, maxLoc, midPixel, endPixel, minIndex+addedLeft+1);
+		return (addedLeft+addedRight+1);
 	}
 	
 	/*********************************************************************************
 	 *	Returns the location in the traceFile of the trace data (time stamp and cpid)
 	 *	Precondition: the location of the trace data is between minLoc and maxLoc.
-	 ********************************************************************************/	
-	public long findBoundedLocRAF(double time, FileChannel f, ByteBuffer b, ByteBuffer cacheBuffer, long minLoc, long maxLoc)
-		throws Exception
+	 ********************************************************************************/
+	public long findBoundedLocRAF(double time, long minLoc, long maxLoc)
 	{
 		if (minLoc == maxLoc)
 			return minLoc;
 		long low = (minLoc-minimumLocation-SIZE_OF_HEADER)/SIZE_OF_TRACE_RECORD;
 		long high = (maxLoc-minimumLocation-SIZE_OF_HEADER)/SIZE_OF_TRACE_RECORD;
-		long mid = (low + high)/2;
-		try
+		long mid = (low+high)/2;
+		
+		double temp = 0;
+		while(low < mid)
 		{
-			//optimum cache size found by trial and error - the minus four
-			//at the end is because we don't need that last cpid for this
-			//(we don't need any cpid's, actually, but it's faster to read
-			//everything in rather than pick out the timestamps)
-			int cacheSize = SIZE_OF_TRACE_RECORD*129-4;
-			long guessLoc = (long)((time-startingTime)/(averageTimestampLength)) + SIZE_OF_HEADER/SIZE_OF_TRACE_RECORD;
-			double temp = 0;
-			while((high - low + 1)*SIZE_OF_TRACE_RECORD > cacheSize)
-			{
-				b.clear();
-				f.read(b, mid*SIZE_OF_TRACE_RECORD + SIZE_OF_HEADER+minimumLocation);
-				b.flip();
-				temp = b.getLong();
-				if( time > temp ) 
-					low = mid;
-	            else 
-	            	high = mid;
-				if(low <= guessLoc && guessLoc <= high)
-				{
-					mid = closestFraction(guessLoc, 8, low, high);
-					if(mid - low < high - mid)
-						mid += 60;
-					else
-						mid -= 60;
-				}
-				else
-					mid = ( low + high ) / 2;
-			}
-			b.clear();
-			//changing the size of the bytebuffer is slow
-			f.read(cacheBuffer, low*SIZE_OF_TRACE_RECORD + SIZE_OF_HEADER+minimumLocation);
-			int localLoc = findBoundedLocCached(time, cacheBuffer);
-			long loc = Math.min(low*SIZE_OF_TRACE_RECORD + localLoc+minimumLocation+SIZE_OF_HEADER, maxLoc);
-			return loc;
+			temp = masterBuff.getLong(mid*SIZE_OF_TRACE_RECORD+SIZE_OF_HEADER+minimumLocation);
+			if (time > temp)
+				low = mid;
+			else
+				high = mid;
+			
+			mid = (low+high)/2;
 		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-		return -1;
-	}
-	
-	/*************************************************************************
-	 *	Returns the location in the traceFile of the trace data (time stamp and cpid).
-	 ************************************************************************/	
-	public long findLocBeforeRAF(double time, FileChannel f, ByteBuffer b)
-	{
-		long low = 0;
-		long high = (maximumLocation-minimumLocation-SIZE_OF_HEADER)/SIZE_OF_TRACE_RECORD;
-		long mid = (low + high)/2;
-		try
-		{
-			//int cacheSize = SIZE_OF_TRACE_RECORD*129-4;
-			long temp = 0;
-			while(low < mid)
-			{
-				b.clear();
-				f.read(b, mid*SIZE_OF_TRACE_RECORD+minimumLocation+SIZE_OF_HEADER);
-				b.flip();
-				temp = b.getLong();
-				if( time > temp )
-					low = mid;
-	            else
-	            	high = mid;
-	            
-				mid = ( low + high ) / 2;
-			}
-			b.clear();
-			return low*SIZE_OF_TRACE_RECORD+minimumLocation+SIZE_OF_HEADER;
-			/*
-			//cacheSize = ((int)(high - low + 1))*SIZE_OF_TRACE_RECORD;
-			b = (ByteBuffer)b.clear();
-			//changing the size of the bytebuffer is slow
-			//ByteBuffer b2 = ByteBuffer.allocate(cacheSize);
-			f.read(cacheBuffer,low*SIZE_OF_TRACE_RECORD);
-			int localLoc = findLocBeforeCached(time, cacheBuffer, cacheSize);
-			long loc = localLoc + low*SIZE_OF_TRACE_RECORD;
-			return loc;*/
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-		return -1;
-	}
-	
-	/**Returns the closest frac-th of the range specified by min and max to guessLoc.*/
-	public static long closestFraction(long guessLoc, int frac, long min, long max)
-	{
-		int closest = 0;
-		long closestDist = Long.MAX_VALUE;
-		long range = max - min;
-		for(int i = 1; i < frac; i++)
-		{
-			if(Math.abs(min + i*range/frac - guessLoc) < closestDist)
-			{
-				closestDist = Math.abs(min + i*range/frac - guessLoc);
-				closest = i;
-			}
-		}
-		return min + closest*range/frac;
-	}
-	
-	/**Converts a byte array to a long.*/
-	public static long longFromBArray(byte[] barray, int index)
-	{
-		long sum = 0;
-		for(int i = 0; i < 8; i++)
-		{
-			sum <<= 8;
-			sum+=barray[index+i];
-		}
-		return sum;
-	}
-	
-	/**Converts a byte array to an int.*/
-	public static int intFromBArray(byte[] barray, int index)
-	{
-		int sum = 0;
-		for(int i = 0; i < 4; i++)
-		{
-			sum <<= 8;
-			sum+=barray[index+i];
-		}
-		return sum;
+		return low*SIZE_OF_TRACE_RECORD+minimumLocation+SIZE_OF_HEADER;
 	}
 	
 	/*********************************************************************************************

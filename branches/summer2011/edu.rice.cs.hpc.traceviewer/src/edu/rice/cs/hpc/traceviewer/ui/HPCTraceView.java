@@ -17,7 +17,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
@@ -39,8 +38,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
-	
-	private HPCCallStackView csview;
 	
 	/*************************************************************************
 	 *	Creates the view.
@@ -94,12 +91,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	public SpaceTimeData getData()
 	{
 		return stData;
-	}
-	
-	public void setCSView(HPCCallStackView _csview)
-	{
-		csview = _csview;
-		detailCanvas.csViewer = csview.csViewer;
 	}
 
 	public void setPosition(Position position)

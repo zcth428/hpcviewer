@@ -324,7 +324,6 @@ public class SpaceTimeData extends TraceEvents
 			depthTrace = new ProcessTimeline(lineNum, scopeMap, masterBuff, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
 			
 			depthTrace.readInData(getHeight());
-			//depthTrace.readInData(inFile, f, getHeight());
 			depthTrace.shiftTimeBy(minBegTime);
 			
 			

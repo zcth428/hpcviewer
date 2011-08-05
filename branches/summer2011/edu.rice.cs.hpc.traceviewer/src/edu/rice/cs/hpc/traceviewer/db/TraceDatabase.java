@@ -13,6 +13,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
+import edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
 
 
@@ -87,6 +88,9 @@ public class TraceDatabase
 				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
 				tview.updateData(stData);
 
+				HPCSummaryView sview = (HPCSummaryView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCSummaryView.ID);
+				sview.updateData(stData);
+				
 				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
 				dview.updateData(stData);
 				

@@ -59,6 +59,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	/** The left/right point that you selected.*/
 	long leftSelection;
 	long rightSelection;
+	
+	private int currentProcess = -1;
     
     public SpaceTimeDetailCanvas detailCanvas;
     
@@ -80,11 +82,13 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	}
 	
 	
-	public void updateData(SpaceTimeData _stData) {
+	public void updateData(SpaceTimeData _stData)
+	{
 		this.stData = _stData;
 		this.maxDepth = _stData.getMaxDepth();
 		
-		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT) {
+		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT)
+		{
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
@@ -111,7 +115,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 				}
 			}
 		});
-
 	}
 	
 	public void paintControl(PaintEvent event)
@@ -124,14 +127,17 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 
-		try {
+		try
+		{
 			event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			// An exception "Illegal argument" will be raised if the resize method is not "fast" enough to create the image
 			//		buffer before the painting is called. Thus, it causes inconsistency between the size of the image buffer
 			//		and the size of client area. 
 			//		If this happens, either we wait for the creation of image buffer, or do nothing. 
-			//		I prefer to do nothing for the scalability reason.
+			//		I prefer to do nothing because of scalability concerns.
 			return;
 		}
  		//paints the selection currently being made
@@ -147,8 +153,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		event.gc.fillRectangle(topPixelCrossHairX-8,selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth)-1,20,4);
-		
-		System.gc();
 	}
 	
 	public void home()
@@ -156,7 +160,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		setTimeZoom(0, (long)stData.getWidth());
 	}
 	
-	private int currentProcess = -1;
 	/**************************************************************************
 	 * Sets the location of the crosshair to (_selectedTime, _selectedProcess).
 	 * Also updates the rest of the program to know that this is the selected
@@ -232,11 +235,13 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	}
 	
 	//---------------------------------------------------------------------------------------
-	// PRIVATE CLASSES
+	// PRIVATE CLASS
 	//---------------------------------------------------------------------------------------
 
-	private class DepthBufferPaint implements BufferPaint {
-		public void rebuffering() {
+	private class DepthBufferPaint implements BufferPaint
+	{
+		public void rebuffering()
+		{
 			rebuffer();
 		}
 	}

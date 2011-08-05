@@ -21,6 +21,7 @@ public class Perspective implements IPerspectiveFactory
 		IFolderLayout bottomLeft = 
 			layout.createFolder("bottomLeft", IPageLayout.BOTTOM, SPACE_TIME_VIEW_HEIGHT_FRACTION, "topLeft");
 		bottomLeft.addView(HPCDepthView.ID);
+		bottomLeft.addView(HPCSummaryView.ID);
 		
 		IFolderLayout right = 
 			layout.createFolder("right", IPageLayout.BOTTOM,  CALLSTACK_VIEW_WIDTH_FRACTION, editorArea);
@@ -29,7 +30,6 @@ public class Perspective implements IPerspectiveFactory
 		layout.getViewLayout(HPCTraceView.ID).setCloseable(false);
 		layout.getViewLayout(HPCDepthView.ID).setCloseable(false);
 		layout.getViewLayout(HPCCallStackView.ID).setCloseable(false);
-		
-		//layout.getViewLayout(HPCCallStackView.ID).setMoveable(false);
+		layout.getViewLayout(HPCSummaryView.ID).setCloseable(false);
 	}
 }

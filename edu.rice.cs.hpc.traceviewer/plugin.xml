@@ -36,10 +36,16 @@
             name="Depth View">
 	  </view>
 	  <view
-         class="edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView"
-         icon="icons/trace-callpath.png"
-         id="hpccallstackview.view"
-         name="Call Path">
+         	class="edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView"
+        	icon="icons/trace-callpath.png"
+         	id="hpccallstackview.view"
+         	name="Call Path">
+	  </view>
+	  <view
+         	class="edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView"
+        	icon="icons/trace-callpath.png"
+         	id="hpcsummaryview.view"
+         	name="Summary View">
 	  </view>
    </extension>
    <extension

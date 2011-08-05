@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
-import edu.rice.cs.hpc.traceviewer.ui.CallStackViewer;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
@@ -41,12 +40,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	
 	/**The buffer image that is copied onto the actual canvas.*/
 	Image imageBuffer;
-	
-	/** Stores whether the Detail Panel has changed screens from the first frame or not.*/
-	//boolean homeScreen;
-	
-	/** The CallStackViewer that is controlled by this SpaceTimeDetailCanvas.*/
-	public CallStackViewer csViewer;
 	
 	/** The number of time units being displayed on the Detail View.*/
 	long numTimeUnitsDisp;
@@ -86,7 +79,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	SpaceTimeMiniCanvas miniCanvas;
 	
+	/** The DepthTimeCanvas that is changed by the detailCanvas.*/
 	DepthTimeCanvas depthCanvas = null;
+	
+	/** The SummaryTimeCanvas that is changed by the detailCanva.*/
+	SummaryTimeCanvas summaryCanvas = null;
 	
 	/** Relates to the condition that the mouse is in.*/
 	MouseState mouseState;
@@ -1048,13 +1045,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		depthCanvas = _depthCanvas;
 	}
 	
+	public void setSummaryCanvas(SummaryTimeCanvas _summaryCanvas)
+	{
+		summaryCanvas = _summaryCanvas;
+	}
 
 	/***********************************************************************************
 	 * Forcing to create image buffer
 	 * Attention: this method will take some time to generate an image buffer, so
 	 * 	please do not call this if not necessary
 	 ***********************************************************************************/
-	private void rebuffer() {
+	public void rebuffer() {
 		//Debugger.printTrace("STDC rebuffer");
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
@@ -1070,7 +1071,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			viewWidth = this.getClientArea().width;
 			viewHeight = this.getClientArea().height;
 		}
-
+		
 		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 		GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
@@ -1080,10 +1081,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		bufferGC.dispose();
 		redraw();
 		
+		// forces all other views to refresh with the new region
 		depthCanvas.refresh(begTime, endTime);
-		
-		// forcing the minimap to refresh with the new region
 		miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
+		if (summaryCanvas != null)	
+			summaryCanvas.refresh(imageBuffer.getImageData());
 	}
-	
 }

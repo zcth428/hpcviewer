@@ -11,7 +11,7 @@ public class Constants {
 
 	/**The darkest color for black over depth text (switch to white if the sum of the 
 	 * R, G, and B components is less than this number).*/
-	public final static short DARKEST_COLOR = 384;
+	public final static short DARKEST_COLOR_FOR_BLACK_TEXT = 384;
 
 	
 }

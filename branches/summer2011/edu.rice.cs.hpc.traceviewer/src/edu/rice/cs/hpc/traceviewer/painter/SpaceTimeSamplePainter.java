@@ -54,20 +54,25 @@ public class SpaceTimeSamplePainter
 	
 	/**Gets the correct color to paint the over depth text and then paints the text, centered, on the process/time block.*/
 	public void paintOverDepthText(int odInitPixel, int odFinalPixel, int depth, String function)
-	{
-		Color bgColor = colorTable.getColor(function);
-		gc.setBackground(bgColor);
-		
-		//Sets the color that the over depth text should be
-		if (bgColor.getRed()+bgColor.getBlue()+bgColor.getGreen()>Constants.DARKEST_COLOR)
-			gc.setForeground(Constants.COLOR_BLACK);
-		else
-			gc.setForeground(Constants.COLOR_WHITE);
-		
+	{	
 		String overDepthText = String.valueOf(depth);
 		Point textSize = gc.textExtent(overDepthText);
-		Point rectangleSize = new Point(odFinalPixel - odInitPixel,(int)Math.floor(canvasScaleY));
-		if((rectangleSize.x - textSize.x) > 1 && (rectangleSize.y - textSize.y) > 1)
-			gc.drawText(overDepthText, odInitPixel+((rectangleSize.x - textSize.x)/2), ((rectangleSize.y - textSize.y)/2));
+		int box_width = odFinalPixel - odInitPixel;
+		if((box_width - textSize.x) > 1) {
+			int box_height = (int) Math.floor(canvasScaleY);
+			if ((box_height - textSize.y) > 1) {
+				Color bgColor = colorTable.getColor(function);
+				gc.setBackground(bgColor);
+
+				// Pick the color of the text indicating sample depth. 
+				// If the background is suffciently light, pick black, otherwise white
+				if (bgColor.getRed()+bgColor.getBlue()+bgColor.getGreen()>Constants.DARKEST_COLOR_FOR_BLACK_TEXT)
+					gc.setForeground(Constants.COLOR_BLACK);
+				else
+					gc.setForeground(Constants.COLOR_WHITE);
+				gc.drawText(overDepthText, odInitPixel+((box_width - textSize.x)/2), ((box_height - textSize.y)/2));
+			}
+		}
+
 	}
 }

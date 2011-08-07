@@ -329,6 +329,7 @@ public class SpaceTimeData extends TraceEvents
 			
 			TimelineThread[] threads;
 			threads = new TimelineThread[Math.min(linesToPaint, Runtime.getRuntime().availableProcessors())];
+			// System.out.println("Painting window with "+threads.length+" threads\n");
 			
 			for (int threadNum = 0; threadNum < threads.length; threadNum++)
 			{

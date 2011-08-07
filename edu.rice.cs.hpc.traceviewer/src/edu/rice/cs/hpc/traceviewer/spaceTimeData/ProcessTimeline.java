@@ -381,16 +381,19 @@ public class ProcessTimeline
 	 ********************************************************************************************/
 	public void postProcess()
 	{
-		for(int i = 0; i < times.size()-2; i+=2)
+		int len = times.size();
+		for(int i = 0; i < len-2; i+=2)
 		{
-			while(i < times.size()-1 && times.get(i).equals(times.get(i+1)))
+			while(i < len-1 && times.get(i).equals(times.get(i+1)))
 			{
 				times.remove(i+1);
+				len--;
 				timeLine.remove(i+1);
 			}
-			while(i < times.size()-2 && timeLine.get(i).equals(timeLine.get(i+1)) && timeLine.get(i+1).equals(timeLine.get(i+2)))
+			while(i < len-2 && timeLine.get(i).equals(timeLine.get(i+1)) && timeLine.get(i+1).equals(timeLine.get(i+2)))
 			{
 				times.remove(i+1);
+				len--;
 				timeLine.remove(i+1);
 			}
 		}

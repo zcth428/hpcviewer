@@ -1,8 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 

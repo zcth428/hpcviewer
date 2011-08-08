@@ -113,7 +113,11 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		//---------------------------------------------------------------------------
 		for (int x = 0; x < detailData.width; ++x)
 		{
-			HashMap<Integer, Integer> colorMap = new HashMap<Integer, Integer>();
+			//---------------------------------------------------------------------------
+			// use tree map to sort the key of color map
+			// without sort, it can be confusing
+			//---------------------------------------------------------------------------
+			TreeMap<Integer, Integer> sortedColorMap = new TreeMap<Integer, Integer>();
 			int nonWhite = 0;
 			for (int y = 0; y < detailData.height; ++y)
 			{
@@ -121,18 +125,13 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 				if (pixelValue != PIXEL_WHITE && pixelValue != PIXEL_BLACK)
 				{
 					nonWhite++;
-					if (colorMap.containsKey(pixelValue))
-						colorMap.put( pixelValue , colorMap.get(pixelValue)+1 );
+					if (sortedColorMap.containsKey(pixelValue))
+						sortedColorMap.put( pixelValue , sortedColorMap.get(pixelValue)+1 );
 					else
-						colorMap.put( pixelValue , 1);
+						sortedColorMap.put( pixelValue , 1);
 				}
 			}
 			
-			//---------------------------------------------------------------------------
-			// use tree map to sort the key of color map
-			// without sort, it can be confusing
-			//---------------------------------------------------------------------------
-			Map<Integer, Integer> sortedColorMap = new TreeMap<Integer, Integer>(colorMap);
 			Set<Integer> set = sortedColorMap.keySet();
 			int yOffset = 0;
 			
@@ -142,7 +141,7 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 			//---------------------------------------------------------------------------
 			for (Iterator<Integer> it = set.iterator(); it.hasNext(); ) {
 				Integer color = it.next();
-				int height = (int)(colorMap.get(color)/((double)nonWhite)*viewHeight);
+				int height = (int)(sortedColorMap.get(color)/((double)nonWhite)*viewHeight);
 				for (int y = 0; y < height; ++y)
 				{
 					newImage.setPixel(x, yOffset+y, color);

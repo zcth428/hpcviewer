@@ -5,10 +5,8 @@ import java.util.HashMap;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -19,24 +17,16 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
 public class SummaryTimeCanvas extends Canvas implements PaintListener
 {
 	
-	private SpaceTimeDetailCanvas detailCanvas;
-	
 	/**image data that describes current image in detail canvas*/
 	private ImageData detailData;
 	
 	private Image imageBuffer;
-	
-	/**the time where the cross hair will be located*/
-	private long selectedTime;
 	
 	public SummaryTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas)
     {
 		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
 		
 		detailData = null;
-		detailCanvas = _detailCanvas;
-		selectedTime = -20;
-		
 		this.getVerticalBar().setVisible(false);
 		this.getHorizontalBar().setVisible(false);
 		
@@ -92,7 +82,6 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 
 	public void setPosition(Position position)
 	{
-		selectedTime = position.time;
 	}
 	
 	/*rebuffers the data in the summary time canvas and then asks receiver to paint it again*/
@@ -108,15 +97,10 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 			viewHeight = 10;
 		}
 
-		/*paints the current screen with a white background
-		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-		GC bufferGC = new GC(imageBuffer);
-		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
-		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
-		bufferGC.dispose();*/
-		
 		//sets up newImage based on how detailCanvas currently looks
 		ImageData newImage = detailData.scaledTo(viewWidth, viewHeight);
+		final int PIXEL_WHITE = detailData.palette.getPixel(Constants.COLOR_WHITE.getRGB());
+		final int PIXEL_BLACK = detailData.palette.getPixel(Constants.COLOR_BLACK.getRGB());
 		
 		for (int x = 0; x < detailData.width; ++x)
 		{
@@ -125,7 +109,7 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 			for (int y = 0; y < detailData.height; ++y)
 			{
 				int pixelValue = detailData.getPixel(x,y);
-				if (pixelValue != detailData.palette.getPixel(Constants.COLOR_WHITE.getRGB()) && pixelValue != detailData.palette.getPixel(Constants.COLOR_BLACK.getRGB()))
+				if (pixelValue != PIXEL_WHITE && pixelValue != PIXEL_BLACK)
 				{
 					nonWhite++;
 					if (colorMap.containsKey(pixelValue))

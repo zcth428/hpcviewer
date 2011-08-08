@@ -1,6 +1,10 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintListener;
@@ -102,6 +106,11 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		final int PIXEL_WHITE = detailData.palette.getPixel(Constants.COLOR_WHITE.getRGB());
 		final int PIXEL_BLACK = detailData.palette.getPixel(Constants.COLOR_BLACK.getRGB());
 		
+		//---------------------------------------------------------------------------
+		// needs to be optimized:
+		// for every pixel along the width, check the pixel, group them based on color,
+		//   count the amount of each group, and draw the pixel
+		//---------------------------------------------------------------------------
 		for (int x = 0; x < detailData.width; ++x)
 		{
 			HashMap<Integer, Integer> colorMap = new HashMap<Integer, Integer>();
@@ -118,9 +127,21 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 						colorMap.put( pixelValue , 1);
 				}
 			}
+			
+			//---------------------------------------------------------------------------
+			// use tree map to sort the key of color map
+			// without sort, it can be confusing
+			//---------------------------------------------------------------------------
+			Map<Integer, Integer> sortedColorMap = new TreeMap<Integer, Integer>(colorMap);
+			Set<Integer> set = sortedColorMap.keySet();
 			int yOffset = 0;
-			for (Integer color : colorMap.keySet())
-			{
+			
+			//---------------------------------------------------------------------------
+			// needs to be optimized:
+			// for every color draw the pixels according to its length
+			//---------------------------------------------------------------------------
+			for (Iterator<Integer> it = set.iterator(); it.hasNext(); ) {
+				Integer color = it.next();
 				int height = (int)(colorMap.get(color)/((double)nonWhite)*viewHeight);
 				for (int y = 0; y < height; ++y)
 				{

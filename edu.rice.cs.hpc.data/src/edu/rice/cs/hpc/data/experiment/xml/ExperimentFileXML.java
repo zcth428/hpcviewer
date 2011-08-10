@@ -121,46 +121,50 @@ throws
 	
         name = this.file.toString();
         stream = new FileInputStream(this.file);
-    /*
-	// parse the stream
-	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
-        Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
-        Parser parser = new Parser(name, stream, builder);
-        try {
-            parser.parse();
-        } catch (java.lang.Exception e) {
-        	Throwable err = e.getCause();
-        	if ( (err instanceof OldXMLFormatException) || (e instanceof OldXMLFormatException) ) {
-            	// check the old xml ?
-            	builder = new ExperimentBuilder(experiment, name);
-            	// for unknown reason, the variable streat is reset here by JVM. So we need to allocate again
-                stream = new FileInputStream(this.file);
-            	parser = new Parser(name, stream, builder);
-                try {
-					parser.parse();
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-                if( builder.getParseOK() != Builder.PARSER_OK )
-                	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
-        	}
-        }
-        ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream(new File(name)),experiment);
-        if( builder.getParseOK() == Builder.PARSER_OK ) {
-        	// parsing is done successfully
-        } else
-        	throw new InvalExperimentException(builder.getParseErrorLineNumber());  */  
-        File tempFile = new File(name);
-        tempFile = tempFile.getParentFile();
-        File []listFile =tempFile.listFiles();
-        int iterator=0;
-        while(!listFile[iterator].getName().equals("test123"))
-        {
-        	iterator++;
-        }
-        ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
-        		(listFile[iterator]),experiment);
+	    if(name.matches(".*.xml"))
+	    {
+		// parse the stream
+		//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
+	        Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
+	        Parser parser = new Parser(name, stream, builder);
+	        try {
+	            parser.parse();
+	        } catch (java.lang.Exception e) {
+	        	Throwable err = e.getCause();
+	        	if ( (err instanceof OldXMLFormatException) || (e instanceof OldXMLFormatException) ) {
+	            	// check the old xml ?
+	            	builder = new ExperimentBuilder(experiment, name);
+	            	// for unknown reason, the variable streat is reset here by JVM. So we need to allocate again
+	                stream = new FileInputStream(this.file);
+	            	parser = new Parser(name, stream, builder);
+	                try {
+						parser.parse();
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+	                if( builder.getParseOK() != Builder.PARSER_OK )
+	                	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
+	        	}
+	        }
+	    }
+	    else if(name.matches(".*.pb"))
+	    {
+	        /*
+	        File tempFile = new File(name);
+	        tempFile = tempFile.getParentFile();
+	        File []listFile =tempFile.listFiles();
+	        int iterator=0;
+	        while(!listFile[iterator].getName().equals("experiment.pb"))
+	        {
+	        	iterator++;
+	        }
+	        ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
+	        		(listFile[iterator]),experiment);
+	        */
+	    	ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
+	        		(this.file),experiment);
+	    }
 	}
 
 }

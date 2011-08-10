@@ -34,6 +34,8 @@ public class ExperimentBuilder3
 	private HashMap<Integer, String> hashProcedureTable;
 	private HashMap<Integer, LoadModuleScope> hashLoadModuleTable;
 	private Scope rootScope;
+	private int current_cs_id = Integer.MAX_VALUE - 1;
+	private HashMap<Integer, Scope> hashCallSiteTable;
 	
 	//Constructor Declaration
 	public ExperimentBuilder3(InputStream input,Experiment exp)throws IOException
@@ -48,6 +50,7 @@ public class ExperimentBuilder3
 		this.experiment.setFileTable(this.hashSourceFileTable);
 		this.rootScope=new RootScope(this.experiment,this.configuration.getName(),"Invisible Outer Root Scope",
 				RootScopeType.Invisible);
+		this.hashCallSiteTable=new HashMap<Integer,Scope>();
 		if(metrics_needed)
 		{
 			metricList=new ArrayList<BaseMetric>();
@@ -55,10 +58,10 @@ public class ExperimentBuilder3
 		metricRawList=new ArrayList<MetricRaw>();
 		try
 		{
-			N.Name name=N.Name.parseDelimitedFrom(input);
+			NameVersionPB.Name name=NameVersionPB.Name.parseDelimitedFrom(input);
 			this.experiment.setVersion(name.getVersion());
 			this.configuration.setName(name.getName());
-			Sec.SectionHeader metricMgrData=Sec.SectionHeader.parseDelimitedFrom(input);
+			SectionHeaderPB.SectionHeader metricMgrData=SectionHeaderPB.SectionHeader.parseDelimitedFrom(input);
 			setMetricTable(metricMgrData.getMTable());
 			if (metrics_needed)
 				this.experiment.setMetrics(this.metricList);
@@ -67,7 +70,7 @@ public class ExperimentBuilder3
 			{
 				setTraceDB(metricMgrData.getTDbTable().getTraceDbList(0));
 			}
-			TreeRoot.Type nextNodeType=TreeRoot.Type.parseDelimitedFrom(input);
+			StructTreePB.Type nextNodeType=StructTreePB.Type.parseDelimitedFrom(input);
 			final int NODE_TERMINATOR=9;
 			while(nextNodeType.getType()!=NODE_TERMINATOR)
 			{
@@ -107,7 +110,7 @@ public class ExperimentBuilder3
 				default:
 					System.out.println("This shouldn't happen");
 				}
-				nextNodeType=TreeRoot.Type.parseDelimitedFrom(input);
+				nextNodeType=StructTreePB.Type.parseDelimitedFrom(input);
 			}
 			this.experiment.setFileTable(this.hashSourceFileTable);
 			this.experiment.finalizeDatabase();
@@ -120,16 +123,16 @@ public class ExperimentBuilder3
 					doCCTRoot(cctNode);
 					break;
 				case 1:							//ProcFrm
-					doCCTProcFrm(cctNode);
+					doCCTProc(cctNode);
 					break;
 				case 2:							//Proc
-					doCCTProcFrm(cctNode);
+					doCCTProc(cctNode);
 					break;
 				case 3:							//Loop
 					doCCTLoop(cctNode);
 					break;
 				case 4:							//Call
-					doCCTCall(cctNode);
+					doCCTCall(cctNode,input);
 					break;
 				case 5:							//Stmt
 					doCCTStmt(cctNode);
@@ -180,7 +183,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root node=TreeRoot.Root.parseDelimitedFrom(input);
+			StructTreePB.Root node=StructTreePB.Root.parseDelimitedFrom(input);
 			this.structTreeMap.put(node.getId(),node);
 		}
 		catch(IOException e)
@@ -195,7 +198,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.Group node=TreeRoot.Root.Group.parseDelimitedFrom(input);
+			StructTreePB.Root.Group node=StructTreePB.Root.Group.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 		}
 		catch(IOException e)
@@ -210,7 +213,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.LM node=TreeRoot.Root.LM.parseDelimitedFrom(input);
+			StructTreePB.Root.LM node=StructTreePB.Root.LM.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 			LoadModuleScope lmScope = new LoadModuleScope(this.experiment, node.getName(), null, node.getId());
 			this.hashLoadModuleTable.put(node.getId(), lmScope);
@@ -226,7 +229,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.File node=TreeRoot.Root.File.parseDelimitedFrom(input);
+			StructTreePB.Root.File node=StructTreePB.Root.File.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 			if(node.hasId()&&node.hasName()){
 				SourceFile sourceFile = this.getOrCreateSourceFile(node.getName(), node.getId());
@@ -243,7 +246,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.Proc node=TreeRoot.Root.Proc.parseDelimitedFrom(input);
+			StructTreePB.Root.Proc node=StructTreePB.Root.Proc.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 			if(node.hasId()&&node.hasName()){
 				this.hashProcedureTable.put(node.getId(), node.getName());
@@ -260,7 +263,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.Alien node=TreeRoot.Root.Alien.parseDelimitedFrom(input);
+			StructTreePB.Root.Alien node=StructTreePB.Root.Alien.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 			if(node.hasId()&&node.hasName()){
 				SourceFile sourceFile = this.getOrCreateSourceFile(node.getName(), node.getId());
@@ -277,7 +280,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.Loop node=TreeRoot.Root.Loop.parseDelimitedFrom(input);
+			StructTreePB.Root.Loop node=StructTreePB.Root.Loop.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 		}
 		catch(IOException e)
@@ -291,7 +294,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.Stmt node=TreeRoot.Root.Stmt.parseDelimitedFrom(input);
+			StructTreePB.Root.Stmt node=StructTreePB.Root.Stmt.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 		}
 		catch(IOException e)
@@ -306,7 +309,7 @@ public class ExperimentBuilder3
 	{
 		try
 		{
-			TreeRoot.Root.Ref node=TreeRoot.Root.Ref.parseDelimitedFrom(input);
+			StructTreePB.Root.Ref node=StructTreePB.Root.Ref.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
 		}
 		catch(IOException e)
@@ -330,16 +333,29 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private void doCCTProcFrm(CCTTreePB.GenNode node)
+	private  ProcedureScope doCCTProcFrm(CCTTreePB.GenNode node)
 	{
 		SourceFile srcf=getOrCreateSourceFile(""+node.getFile(),node.getFile());
-		LoadModuleScope objLoadMod=getLoadModule(node.getStaticScopeId(),node.getParentId());
-		StatementRange stmtR=new StatementRange(((TreeRoot.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
+		LoadModuleScope objLoadMod=getLoadModule(node.getLoadModule(),node.getParentId());
+		StatementRange stmtR=new StatementRange(((StructTreePB.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
+		ProcedureScope procScope=new ProcedureScope(this.experiment,objLoadMod,srcf,stmtR.getFirstLine()-1,
+				stmtR.getLastLine()-1,getProcedureName(node.getStaticScopeId()),false,node.getId(),node.getStaticScopeId());
+		/*for(int i=0;i<node.getMetricValuesCount();i++)
+		{
+			doMetric(node.getMetricValues(i),procScope);
+		}*/
+		return procScope;
+	}
+	
+	
+	private void doCCTProc(CCTTreePB.GenNode node)
+	{
+		SourceFile srcf=getOrCreateSourceFile(""+node.getFile(),node.getFile());
+		LoadModuleScope objLoadMod=getLoadModule(node.getLoadModule(),node.getParentId());
+		StatementRange stmtR=new StatementRange(((StructTreePB.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
 		Scope scope=new ProcedureScope(this.experiment,objLoadMod,srcf,stmtR.getFirstLine()-1,
 				stmtR.getLastLine()-1,getProcedureName(node.getStaticScopeId()),false,node.getId(),node.getStaticScopeId());
-		cctNodeMap.put(node.getId(),scope);
-		cctNodeMap.get(node.getParentId()).addSubscope(scope);
-		scope.setParentScope(cctNodeMap.get(node.getParentId()));
+		attatchToParent(scope,node.getParentId());
 		for(int i=0;i<node.getMetricValuesCount();i++)
 		{
 			doMetric(node.getMetricValues(i),scope);
@@ -349,13 +365,11 @@ public class ExperimentBuilder3
 	
 	private void doCCTLoop(CCTTreePB.GenNode node)
 	{	
-		StatementRange objRange = new StatementRange(((TreeRoot.Root.Proc)structTreeMap.get
+		StatementRange objRange = new StatementRange(((StructTreePB.Root.Proc)structTreeMap.get
 				(node.getStaticScopeId())).getLineRange());
 		Scope scope=new LoopScope(this.experiment,null,objRange.getFirstLine()-1,objRange.getLastLine()-1,
 				node.getId(),node.getStaticScopeId());
-		cctNodeMap.put(node.getId(),scope);
-		cctNodeMap.get(node.getParentId()).addSubscope(scope);
-		scope.setParentScope(cctNodeMap.get(node.getParentId()));
+		attatchToParent(scope,node.getParentId());
 		for(int i=0;i<node.getMetricValuesCount();i++)
 		{
 			doMetric(node.getMetricValues(i),scope);
@@ -363,27 +377,40 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private void doCCTCall(CCTTreePB.GenNode node)
+	private void doCCTCall(CCTTreePB.GenNode node,InputStream input)
 	{
 		StatementRange objRange;
 		if(structTreeMap.get(node.getStaticScopeId())!=null)
 		{
-			objRange = new StatementRange(((TreeRoot.Root.Stmt)structTreeMap.get
+			objRange = new StatementRange(((StructTreePB.Root.Stmt)structTreeMap.get
 				(node.getStaticScopeId())).getLineRange());
 		}
 		else
 		{
 			objRange = new StatementRange("0");
 		}	
-		Scope scope=new LineScope(this.experiment,null,objRange.getFirstLine()-1,node.getId(),node.getStaticScopeId());
-		Scope parentScope=cctNodeMap.get(node.getParentId());
-		cctNodeMap.put(node.getId(),parentScope);
-		//parentScope.addSubscope(scope);
-		//scope.setParentScope(parentScope);
+		LineScope lineScope=new LineScope(this.experiment,null,objRange.getFirstLine()-1,node.getId(),node.getStaticScopeId());
+		CCTTreePB.GenNode procFrm=null;
+		try
+		{
+			procFrm=CCTTreePB.GenNode.parseDelimitedFrom(input);
+		}
+		catch(IOException e)
+		{
+			System.out.println("Unexpected End of File.  Expected ProcFrm");
+		}
+		ProcedureScope procScope=doCCTProcFrm(procFrm);
+		CallSiteScope scope=new CallSiteScope(lineScope,procScope,CallSiteScopeType.CALL_TO_PROCEDURE,procFrm.getId(),this.getCallSiteID(lineScope,procScope));
+		this.cctNodeMap.put(node.getId(),scope);
 		for(int i=0;i<node.getMetricValuesCount();i++)
 		{
-			doMetric(node.getMetricValues(i),parentScope);
+			doMetric(node.getMetricValues(i),lineScope);
 		}
+		for(int i=0;i<procFrm.getMetricValuesCount();i++)
+		{
+			doMetric(procFrm.getMetricValues(i),scope);
+		}
+		this.attatchToParent(scope, node.getParentId());
 	}
 	
 	
@@ -392,7 +419,7 @@ public class ExperimentBuilder3
 		StatementRange objRange;
 		if(structTreeMap.get(node.getStaticScopeId())!=null)
 		{
-			objRange = new StatementRange(((TreeRoot.Root.Stmt)structTreeMap.get
+			objRange = new StatementRange(((StructTreePB.Root.Stmt)structTreeMap.get
 				(node.getStaticScopeId())).getLineRange());
 		}
 		else
@@ -401,9 +428,7 @@ public class ExperimentBuilder3
 		}
 		SourceFile srcf=(SourceFile) this.hashSourceFileTable.get(node.getFile());
 		Scope scope=new LineScope(this.experiment,srcf,objRange.getFirstLine()-1,node.getId(),node.getStaticScopeId());
-		cctNodeMap.put(node.getId(),scope);
-		cctNodeMap.get(node.getParentId()).addSubscope(scope);
-		scope.setParentScope(cctNodeMap.get(node.getParentId()));
+		attatchToParent(scope, node.getParentId());
 		for(int i=0;i<node.getMetricValuesCount();i++)
 		{
 			doMetric(node.getMetricValues(i),scope);
@@ -411,7 +436,7 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private void setMetricTable(Sec.SectionHeader.MetricTable mTable) 
+	private void setMetricTable(SectionHeaderPB.SectionHeader.MetricTable mTable) 
 {
 		if (!metrics_needed)
 			return;
@@ -432,7 +457,7 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private void setMetric(Sec.SectionHeader.MetricTable.Metric metricPB)
+	private void setMetric(SectionHeaderPB.SectionHeader.MetricTable.Metric metricPB)
 	{
 		if (!metrics_needed)
 			return;
@@ -572,7 +597,7 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private void setMetricFormula(Sec.SectionHeader.MetricTable.Metric.MetricFormula mf) 
+	private void setMetricFormula(SectionHeaderPB.SectionHeader.MetricTable.Metric.MetricFormula mf) 
 	{
 		if (!metrics_needed)
 			return;
@@ -588,7 +613,7 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private void setMetricRaw(Sec.SectionHeader.MetricDBTable.MetricDB metricDB)
+	private void setMetricRaw(SectionHeaderPB.SectionHeader.MetricDBTable.MetricDB metricDB)
 	{
 		int ID = 0;
 		String title = null;
@@ -612,7 +637,7 @@ public class ExperimentBuilder3
 	}
 
 	
-	public void setMetricRawTable(Sec.SectionHeader.MetricDBTable mDBTable)
+	public void setMetricRawTable(SectionHeaderPB.SectionHeader.MetricDBTable mDBTable)
 	{
 		for(int i=0;i<mDBTable.getMetricDbListCount();i++){
 			this.setMetricRaw(mDBTable.getMetricDbList(i));
@@ -625,7 +650,7 @@ public class ExperimentBuilder3
 	}
 
 	
-	public void setTraceDB(Sec.SectionHeader.TraceDBTable.TraceDB traceDB)
+	public void setTraceDB(SectionHeaderPB.SectionHeader.TraceDBTable.TraceDB traceDB)
 	{
 		// tallent: Note that the DTD currently only permits one instance of <TraceDB>
 		if(traceDB.hasDbMinTime()){
@@ -777,6 +802,57 @@ public class ExperimentBuilder3
 		if(parent==null)
 			return new LoadModuleScope(this.experiment,""+ssid,null,ssid);
 		return getLoadModule(parent.getFlatIndex(),parent.getParentScope().getCCTIndex());
+	}
+	
+	private void attatchToParent(Scope scope,int parentID)
+	{
+		cctNodeMap.put(scope.getCCTIndex(),scope);
+		if(checkUp(scope,cctNodeMap.get(parentID)))
+		{
+			cctNodeMap.get(parentID).addSubscope(scope);
+			scope.setParentScope(cctNodeMap.get(parentID));
+		}
+		else
+		{
+			System.out.println("Looping Tree");
+		}
+	}
+	
+	private boolean checkUp(Scope checkingScope,Scope parentScope)
+	{
+		if(parentScope==null)
+			return true;
+		if(parentScope==checkingScope)
+			return false;
+		return checkUp(checkingScope,parentScope.getParentScope());
+	}
+	
+	private int getCallSiteID ( LineScope ls, ProcedureScope cs ) {
+		LoadModuleScope module = cs.getLoadModule();
+		String sName = ls.getName() + "/" + cs.getName();
+		// in case of the same file and the same procedure with different module name
+		// this should fix where we have ~unknown-file~ and ~unknown-procedure~ in 
+		// different modules
+		if (module != null) {
+			sName = module.getModuleName()+ "/" + sName;
+		}
+		int scope_id = sName.hashCode();
+		System.out.println(sName);
+		System.out.println(scope_id);
+		Scope s_old = this.hashCallSiteTable.get( Integer.valueOf(scope_id) );
+		if (s_old != null) {
+			if (s_old.getName().equals(cs.getName())) {
+				// the same line, the same ID, the same calls
+			} else {
+				// the same line, different calls. We need to create a new ID
+				scope_id = this.current_cs_id;
+				this.hashCallSiteTable.put(Integer.valueOf(scope_id), cs);
+				this.current_cs_id--;
+			}
+		} else {
+			this.hashCallSiteTable.put(Integer.valueOf(scope_id), cs);
+		}
+		return scope_id;
 	}
 	
 }

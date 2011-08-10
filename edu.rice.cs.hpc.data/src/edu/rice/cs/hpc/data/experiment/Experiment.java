@@ -327,6 +327,7 @@ public void beginScope(Scope scope)
 
 protected RootScope createCallersView(Scope callingContextViewRootScope)
 {
+	testRecurs(callingContextViewRootScope);
 	EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
 
 	RootScope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallerTree);
@@ -437,10 +438,19 @@ public RootScope getCallerTreeRoot() {
  *  - compute inclusive metrics for X
  *  Step 2: create call view (if enabled) and flat view
  */
+private void testRecurs(Scope s)
+{
+	for (int i=0; i< s.getSubscopeCount(); i++) {
+		Scope childScope = s.getSubscope(i);
+		testRecurs(childScope);
+	}
+}
 public void postprocess(boolean callerView) {
-	if (this.rootScope.getSubscopeCount() <= 0) return;
+
 	// Get first scope subtree: CCT or Flat
 	Scope firstSubTree = this.rootScope.getSubscope(0);
+	testRecurs(firstSubTree);
+	System.out.println("Checking");
 	if (!(firstSubTree instanceof RootScope)) return;
 	RootScopeType firstRootType = ((RootScope)firstSubTree).getType();
 	
@@ -456,18 +466,28 @@ public void postprocess(boolean callerView) {
 		//----------------------------------------------------------------------------------------------
 		if (this.inclusiveNeeded()) {
 			// TODO: if the metric is a derived metric then DO NOT do this process !
+			testRecurs(callingContextViewRootScope);
+			System.out.println("Checking");
 			addInclusiveMetrics(callingContextViewRootScope, rootInclProp);
+			testRecurs(callingContextViewRootScope);
+			System.out.println("Checking");
 			this.computeExclusiveMetrics(callingContextViewRootScope);
+			testRecurs(callingContextViewRootScope);
+			System.out.println("Checking");
 		}
 
 		copyMetricsToPartner(callingContextViewRootScope, MetricType.INCLUSIVE, emptyFilter);
+		testRecurs(callingContextViewRootScope);
+		System.out.println("Checking");
 
 		//----------------------------------------------------------------------------------------------
 		// Callers View
 		//----------------------------------------------------------------------------------------------
 		Scope callersViewRootScope = null;
 		if (callerView) {
-			//callersViewRootScope = createCallersView(callingContextViewRootScope);
+			callersViewRootScope = createCallersView(callingContextViewRootScope);			//
+			testRecurs(callingContextViewRootScope);
+			System.out.println("Checking");
 		}
 		
 		//----------------------------------------------------------------------------------------------
@@ -476,28 +496,30 @@ public void postprocess(boolean callerView) {
 		Scope flatViewRootScope = null;
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
-		//flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);
+		flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);		//
+		testRecurs(callingContextViewRootScope);
+		System.out.println("Checking");
 
 		//----------------------------------------------------------------------------------------------
 		// FINALIZATION
 		//----------------------------------------------------------------------------------------------
 		AbstractFinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
 
-		//this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
+		this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view		//
 		
 		diVisitor = new FinalizeMetricVisitorWithBackup(this.getMetrics());
 		
 		if (callerView)	{												// caller view
-			//this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
+			this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
 			// bug fix 2010.06.17: move the percent after finalization
-			//addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
+			addPercents(callersViewRootScope, (RootScope) callersViewRootScope);			//
 		}
 		
 		this.finalizeAggregateMetrics(callingContextViewRootScope, diVisitor);		// cct
 		
 		// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
 		addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
-		//addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
+		addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);			//
 		
 	} else if (firstRootType.equals(RootScopeType.Flat)) {
 		addPercents(firstSubTree, (RootScope) firstSubTree);

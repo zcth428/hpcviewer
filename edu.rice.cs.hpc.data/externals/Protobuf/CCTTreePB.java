@@ -49,17 +49,17 @@ public final class CCTTreePB {
     boolean hasDepth();
     int getDepth();
     
-    // optional int32 load_module = 9;
-    boolean hasLoadModule();
-    int getLoadModule();
-    
-    // optional int32 file = 10;
+    // optional int32 file = 9;
     boolean hasFile();
     int getFile();
     
-    // optional int32 line_range = 11;
+    // optional int32 line_range = 10;
     boolean hasLineRange();
     int getLineRange();
+    
+    // optional int32 load_module = 11;
+    boolean hasLoadModule();
+    int getLoadModule();
   }
   public static final class GenNode extends
       com.google.protobuf.GeneratedMessage
@@ -181,34 +181,34 @@ public final class CCTTreePB {
       return depth_;
     }
     
-    // optional int32 load_module = 9;
-    public static final int LOAD_MODULE_FIELD_NUMBER = 9;
-    private int loadModule_;
-    public boolean hasLoadModule() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
-    }
-    public int getLoadModule() {
-      return loadModule_;
-    }
-    
-    // optional int32 file = 10;
-    public static final int FILE_FIELD_NUMBER = 10;
+    // optional int32 file = 9;
+    public static final int FILE_FIELD_NUMBER = 9;
     private int file_;
     public boolean hasFile() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     public int getFile() {
       return file_;
     }
     
-    // optional int32 line_range = 11;
-    public static final int LINE_RANGE_FIELD_NUMBER = 11;
+    // optional int32 line_range = 10;
+    public static final int LINE_RANGE_FIELD_NUMBER = 10;
     private int lineRange_;
     public boolean hasLineRange() {
-      return ((bitField0_ & 0x00000200) == 0x00000200);
+      return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     public int getLineRange() {
       return lineRange_;
+    }
+    
+    // optional int32 load_module = 11;
+    public static final int LOAD_MODULE_FIELD_NUMBER = 11;
+    private int loadModule_;
+    public boolean hasLoadModule() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    public int getLoadModule() {
+      return loadModule_;
     }
     
     private void initFields() {
@@ -220,9 +220,9 @@ public final class CCTTreePB {
       type_ = 0;
       traceId_ = 0;
       depth_ = 0;
-      loadModule_ = 0;
       file_ = 0;
       lineRange_ = 0;
+      loadModule_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -275,13 +275,13 @@ public final class CCTTreePB {
         output.writeInt32(8, depth_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeInt32(9, loadModule_);
+        output.writeInt32(9, file_);
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        output.writeInt32(10, file_);
+        output.writeInt32(10, lineRange_);
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        output.writeInt32(11, lineRange_);
+        output.writeInt32(11, loadModule_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -326,15 +326,15 @@ public final class CCTTreePB {
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(9, loadModule_);
+          .computeInt32Size(9, file_);
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(10, file_);
+          .computeInt32Size(10, lineRange_);
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(11, lineRange_);
+          .computeInt32Size(11, loadModule_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -481,11 +481,11 @@ public final class CCTTreePB {
         bitField0_ = (bitField0_ & ~0x00000040);
         depth_ = 0;
         bitField0_ = (bitField0_ & ~0x00000080);
-        loadModule_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000100);
         file_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000100);
         lineRange_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        loadModule_ = 0;
         bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
@@ -565,15 +565,15 @@ public final class CCTTreePB {
         if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000080;
         }
-        result.loadModule_ = loadModule_;
+        result.file_ = file_;
         if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
           to_bitField0_ |= 0x00000100;
         }
-        result.file_ = file_;
+        result.lineRange_ = lineRange_;
         if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
           to_bitField0_ |= 0x00000200;
         }
-        result.lineRange_ = lineRange_;
+        result.loadModule_ = loadModule_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -637,14 +637,14 @@ public final class CCTTreePB {
         if (other.hasDepth()) {
           setDepth(other.getDepth());
         }
-        if (other.hasLoadModule()) {
-          setLoadModule(other.getLoadModule());
-        }
         if (other.hasFile()) {
           setFile(other.getFile());
         }
         if (other.hasLineRange()) {
           setLineRange(other.getLineRange());
+        }
+        if (other.hasLoadModule()) {
+          setLoadModule(other.getLoadModule());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -734,17 +734,17 @@ public final class CCTTreePB {
             }
             case 72: {
               bitField0_ |= 0x00000100;
-              loadModule_ = input.readInt32();
+              file_ = input.readInt32();
               break;
             }
             case 80: {
               bitField0_ |= 0x00000200;
-              file_ = input.readInt32();
+              lineRange_ = input.readInt32();
               break;
             }
             case 88: {
               bitField0_ |= 0x00000400;
-              lineRange_ = input.readInt32();
+              loadModule_ = input.readInt32();
               break;
             }
           }
@@ -1086,65 +1086,65 @@ public final class CCTTreePB {
         return this;
       }
       
-      // optional int32 load_module = 9;
-      private int loadModule_ ;
-      public boolean hasLoadModule() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
-      }
-      public int getLoadModule() {
-        return loadModule_;
-      }
-      public Builder setLoadModule(int value) {
-        bitField0_ |= 0x00000100;
-        loadModule_ = value;
-        onChanged();
-        return this;
-      }
-      public Builder clearLoadModule() {
-        bitField0_ = (bitField0_ & ~0x00000100);
-        loadModule_ = 0;
-        onChanged();
-        return this;
-      }
-      
-      // optional int32 file = 10;
+      // optional int32 file = 9;
       private int file_ ;
       public boolean hasFile() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       public int getFile() {
         return file_;
       }
       public Builder setFile(int value) {
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000100;
         file_ = value;
         onChanged();
         return this;
       }
       public Builder clearFile() {
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000100);
         file_ = 0;
         onChanged();
         return this;
       }
       
-      // optional int32 line_range = 11;
+      // optional int32 line_range = 10;
       private int lineRange_ ;
       public boolean hasLineRange() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       public int getLineRange() {
         return lineRange_;
       }
       public Builder setLineRange(int value) {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000200;
         lineRange_ = value;
         onChanged();
         return this;
       }
       public Builder clearLineRange() {
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000200);
         lineRange_ = 0;
+        onChanged();
+        return this;
+      }
+      
+      // optional int32 load_module = 11;
+      private int loadModule_ ;
+      public boolean hasLoadModule() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      public int getLoadModule() {
+        return loadModule_;
+      }
+      public Builder setLoadModule(int value) {
+        bitField0_ |= 0x00000400;
+        loadModule_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearLoadModule() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        loadModule_ = 0;
         onChanged();
         return this;
       }
@@ -1594,8 +1594,8 @@ public final class CCTTreePB {
       "d\030\001 \001(\005\022\027\n\017static_scope_id\030\002 \001(\005\022\021\n\tpare" +
       "nt_id\030\003 \002(\005\022\014\n\004name\030\004 \001(\005\022$\n\rmetric_valu" +
       "es\030\005 \003(\0132\r.Nodes.Metric\022\014\n\004type\030\006 \002(\005\022\020\n" +
-      "\010trace_id\030\007 \001(\005\022\r\n\005depth\030\010 \001(\005\022\023\n\013load_m" +
-      "odule\030\t \001(\005\022\014\n\004file\030\n \001(\005\022\022\n\nline_range\030" +
+      "\010trace_id\030\007 \001(\005\022\r\n\005depth\030\010 \001(\005\022\014\n\004file\030\t" +
+      " \001(\005\022\022\n\nline_range\030\n \001(\005\022\023\n\013load_module\030" +
       "\013 \001(\005\"%\n\006Metric\022\014\n\004name\030\001 \002(\005\022\r\n\005value\030\002" +
       " \002(\001B\025\n\010ProtobufB\tCCTTreePB"
     };
@@ -1609,7 +1609,7 @@ public final class CCTTreePB {
           internal_static_Nodes_GenNode_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Nodes_GenNode_descriptor,
-              new java.lang.String[] { "Id", "StaticScopeId", "ParentId", "Name", "MetricValues", "Type", "TraceId", "Depth", "LoadModule", "File", "LineRange", },
+              new java.lang.String[] { "Id", "StaticScopeId", "ParentId", "Name", "MetricValues", "Type", "TraceId", "Depth", "File", "LineRange", "LoadModule", },
               Protobuf.CCTTreePB.GenNode.class,
               Protobuf.CCTTreePB.GenNode.Builder.class);
           internal_static_Nodes_Metric_descriptor =

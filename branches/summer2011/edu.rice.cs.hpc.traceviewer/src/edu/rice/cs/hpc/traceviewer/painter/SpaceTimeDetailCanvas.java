@@ -36,8 +36,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/**an enum used for deciding what type of data we have*/
 	public enum DataType {Uninitialized, ProcessOnly, ThreadsOnly, ProcessAndThreads};
 	
-	private static final long serialVersionUID = 1L;
-	
 	/**The buffer image that is copied onto the actual canvas.*/
 	Image imageBuffer;
 	
@@ -224,16 +222,36 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			
 		});
 				
-		//A listener for resizing the the window.		
-		//FIXME: Every time the window is resized just a tiny bit, the program rebuffers
-		//(goes out and gets the data again). It would be better to have a listener for
-		//when the user stops resizing before rebuffering or something...
+		// ------------------------------------------------------------------------------------
+		// A listener for resizing the the window.
+		// In order to get the last resize position, we will use timer to check if the current
+		//  resize event is invoked "long" enough to the first resize event.
+		// If this is the case, then run rebuffering, otherwise just no-op.
+		// ------------------------------------------------------------------------------------
 		addListener(SWT.Resize, new Listener(){
+			private long lastTime = 0;
+			
+			// subjectively the difference between the first event and the current one
+			// please modify this constant if you think it is too long or too short 
+			final static private long TIME_DIFF = 400;
+			
 			public void handleEvent(Event event)
-			{				
-				viewWidth = getClientArea().width;
-				viewHeight = getClientArea().height;
-				getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
+			{	
+				Rectangle r = getClientArea();
+				if (r.width == viewWidth && r.height == viewHeight)
+					return;
+				final long currentTime = System.currentTimeMillis();
+				if ((currentTime - lastTime)<TIME_DIFF) 
+				{   
+					// the current event is too short with the first one
+					return;
+				} else {
+					lastTime = currentTime;
+					viewWidth = r.width;
+					viewHeight = r.height;
+					getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
+				}
+				
 			}
 		});
 	}

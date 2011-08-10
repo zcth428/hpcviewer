@@ -7,8 +7,11 @@ import java.util.TreeMap;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -99,30 +102,42 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 			viewHeight = 10;
 		}
 
-		//sets up newImage based on how detailCanvas currently looks
-		ImageData newImage = detailData.scaledTo(viewWidth, viewHeight);
+		// ------------------------------------------------------------------------------------------
+		// scale the original "detail" image according to the size of summary view. 
+		// we will use this "scaled" image to scan all pixels and compute the statistics.
+		// NOTE: if the original image is much larger than the summary view (which is most of the case)
+		//  we can gain the speed. 
+		// ------------------------------------------------------------------------------------------
+		ImageData scaledImage = detailData.scaledTo(viewWidth, viewHeight);
+		
 		final int PIXEL_WHITE = detailData.palette.getPixel(Constants.COLOR_WHITE.getRGB());
 		final int PIXEL_BLACK = detailData.palette.getPixel(Constants.COLOR_BLACK.getRGB());
-		
+
+		// ------------------------------------------------------------------------------------------
+		// let use GC instead of ImageData since GC allows us to draw lines and rectangles
+		// ------------------------------------------------------------------------------------------
+		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		GC buffer = new GC(imageBuffer);
+		buffer.setBackground(Constants.COLOR_WHITE);
+		buffer.fillRectangle(0, 0, viewWidth, viewHeight);
+
 		//---------------------------------------------------------------------------
 		// needs to be optimized:
 		// for every pixel along the width, check the pixel, group them based on color,
 		//   count the amount of each group, and draw the pixel
 		//---------------------------------------------------------------------------
-		for (int x = 0; x < detailData.width; ++x)
+		for (int x = 0; x < scaledImage.width; ++x)
 		{
 			//---------------------------------------------------------------------------
 			// use tree map to sort the key of color map
 			// without sort, it can be confusing
 			//---------------------------------------------------------------------------
 			TreeMap<Integer, Integer> sortedColorMap = new TreeMap<Integer, Integer>();
-			int nonWhite = 0;
-			for (int y = 0; y < detailData.height; ++y)
+			for (int y = 0; y < scaledImage.height; ++y)
 			{
-				int pixelValue = detailData.getPixel(x,y);
+				int pixelValue = scaledImage.getPixel(x,y);
 				if (pixelValue != PIXEL_WHITE && pixelValue != PIXEL_BLACK)
 				{
-					nonWhite++;
 					if (sortedColorMap.containsKey(pixelValue))
 						sortedColorMap.put( pixelValue , sortedColorMap.get(pixelValue)+1 );
 					else
@@ -131,23 +146,26 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 			}
 			
 			Set<Integer> set = sortedColorMap.keySet();
-			int yOffset = 0;
+			int yOffset = viewHeight;
 			
 			//---------------------------------------------------------------------------
-			// needs to be optimized:
-			// for every color draw the pixels according to its length
+			// draw the line of a specific color with a specific length from bottom to the top
+			// note: the coordinates 0,0 starts from the top-left corner !
 			//---------------------------------------------------------------------------
-			for (Iterator<Integer> it = set.iterator(); it.hasNext(); ) {
-				Integer color = it.next();
-				int height = (int)(sortedColorMap.get(color)/((double)nonWhite)*viewHeight);
-				for (int y = 0; y < height; ++y)
-				{
-					newImage.setPixel(x, yOffset+y, color);
-				}
-				yOffset+=height;
+			for (Iterator<Integer> it = set.iterator(); it.hasNext(); ) 
+			{
+				final Integer pixel = it.next();
+				final RGB rgb = scaledImage.palette.getRGB(pixel);
+				final Color c = new Color(getDisplay(), rgb);
+				final int height = (int)(sortedColorMap.get(pixel));
+				
+				buffer.setForeground(c);
+				buffer.drawLine(x, yOffset, x, yOffset-height);
+				
+				yOffset -= height;
 			}
 		}
-		imageBuffer = new Image(getDisplay(), newImage);
+		buffer.dispose();
 		
 		redraw();
 	}

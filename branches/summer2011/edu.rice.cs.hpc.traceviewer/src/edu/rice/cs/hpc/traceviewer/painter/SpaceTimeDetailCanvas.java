@@ -248,19 +248,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				final long currentTime = System.currentTimeMillis();
 				if ((currentTime - lastTime)<TIME_DIFF) 
 				{   
-					// the current event is too short with the first one
+					// let Eclipse scale the image for first impression.
+					rescaling(r);
 					return;
+					
 				} else {
 					lastTime = currentTime;
 					if ( (viewWidth+SIZE_DIFF) >= r.width && (viewHeight+SIZE_DIFF) >= r.height) 
 					{   // just scale it, no need to recompute the data
-						ImageData imgData = imageBuffer.getImageData();
-						ImageData scaledImage = imgData.scaledTo(r.width, r.height);
-						imageBuffer = new Image(getDisplay(), scaledImage);
-
-						viewWidth = r.width;
-						viewHeight = r.height;
-						redraw();
+						rescaling(r);
+						
 					} else {
 						// resize to bigger region: needs to recompute the data
 						viewWidth = r.width;
@@ -269,6 +266,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 					}
 				}
 				
+			}
+			
+			private void rescaling(Rectangle r) {
+				ImageData imgData = imageBuffer.getImageData();
+				ImageData scaledImage = imgData.scaledTo(r.width, r.height);
+				imageBuffer = new Image(getDisplay(), scaledImage);
+
+				viewWidth = r.width;
+				viewHeight = r.height;
+				redraw();
 			}
 		});
 	}

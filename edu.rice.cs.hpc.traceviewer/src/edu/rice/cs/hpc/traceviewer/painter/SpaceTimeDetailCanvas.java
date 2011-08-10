@@ -13,6 +13,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
@@ -235,6 +236,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			// please modify this constant if you think it is too long or too short 
 			final static private long TIME_DIFF = 400;
 			
+			// subjectively the difference between the new size and the old size
+			// if the difference is within the range, we scale. Otherwise recompute
+			final static private int SIZE_DIFF = 10;
+			
 			public void handleEvent(Event event)
 			{	
 				Rectangle r = getClientArea();
@@ -247,9 +252,21 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 					return;
 				} else {
 					lastTime = currentTime;
-					viewWidth = r.width;
-					viewHeight = r.height;
-					getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
+					if ( (viewWidth+SIZE_DIFF) >= r.width && (viewHeight+SIZE_DIFF) >= r.height) 
+					{   // just scale it, no need to recompute the data
+						ImageData imgData = imageBuffer.getImageData();
+						ImageData scaledImage = imgData.scaledTo(r.width, r.height);
+						imageBuffer = new Image(getDisplay(), scaledImage);
+
+						viewWidth = r.width;
+						viewHeight = r.height;
+						redraw();
+					} else {
+						// resize to bigger region: needs to recompute the data
+						viewWidth = r.width;
+						viewHeight = r.height;
+						getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
+					}
 				}
 				
 			}

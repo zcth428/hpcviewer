@@ -79,7 +79,7 @@ public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber)
 public String getName()
 {
 	if (this.sourceFile==null) {
-		return "unknown file:" + this.lastLineNumber;
+		return "~unknown-file~: 0";//changed from "unknown file:"+this.firstLineNumber
 	}
 	return this.getSourceCitation();
 }

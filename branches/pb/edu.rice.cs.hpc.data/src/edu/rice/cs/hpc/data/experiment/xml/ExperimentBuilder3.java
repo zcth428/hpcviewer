@@ -837,8 +837,6 @@ public class ExperimentBuilder3
 			sName = module.getModuleName()+ "/" + sName;
 		}
 		int scope_id = sName.hashCode();
-		System.out.println(sName);
-		System.out.println(scope_id);
 		Scope s_old = this.hashCallSiteTable.get( Integer.valueOf(scope_id) );
 		if (s_old != null) {
 			if (s_old.getName().equals(cs.getName())) {

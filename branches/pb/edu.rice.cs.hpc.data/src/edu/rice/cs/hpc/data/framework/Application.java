@@ -120,9 +120,24 @@ public class Application {
 		print_msg.println("Opening database " + sFilename);
 		
 		if (objFile.isDirectory()) {
-			File files[] = Util.getListOfXMLFiles(sFilename);
-			for (int i=0; i<files.length && !done; i++) {
-				done = objApp.openExperiment(objPrint, files[i]);
+			try{
+				File files[] = Util.getListOfXMLFiles(sFilename);
+				for (int i=0; i<files.length && !done; i++) {
+					if(files[i].getName().equals("experiment.xml"))
+						done = objApp.openExperiment(new PrintStream(new File(sFilename+"/XMLout.xml")), files[i]);
+				}
+				File possiblePBs []=files[0].getParentFile().listFiles();
+				int iterator=0;
+				while(!possiblePBs[iterator].getName().equals("experiment.pb"))
+				{
+					iterator++;
+				}
+				
+				objApp.openExperiment(new PrintStream(new File(sFilename+"/PBout.xml")),possiblePBs[iterator]);
+			}
+			catch(IOException e)
+			{
+				System.out.println("Error in Application.java");
 			}
 		} else {
 			done = objApp.openExperiment(objPrint, objFile);

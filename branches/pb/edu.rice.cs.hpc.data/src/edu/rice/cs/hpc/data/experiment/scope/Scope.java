@@ -27,6 +27,7 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilte
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.IProcedureTable;
+import java.util.HashMap;
 //import edu.rice.cs.hpc.data.util.*;
 //import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
 
@@ -855,13 +856,13 @@ colorTable.addProcedure(this.getName());*/
 //////////////////////////////////////////////////////////////////////////
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////
-
 public void dfsVisitScopeTree(IScopeVisitor sv) {
 	accept(sv, ScopeVisitType.PreVisit);
 	int nKids = getSubscopeCount();
 	for (int i=0; i< nKids; i++) {
 		Scope childScope = getSubscope(i);
 		childScope.dfsVisitScopeTree(sv);
+		
 	}
 	accept(sv, ScopeVisitType.PostVisit);
 }

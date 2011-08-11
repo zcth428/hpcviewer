@@ -109,7 +109,8 @@ public ExperimentFileXML(File filename)
  *								not a valid experiment.
  *
  ************************************************************************/
-	
+
+//This implementation of parse is for use with Application.java
 public void parse(Experiment experiment, boolean need_metrics)
 throws
 	IOException,
@@ -150,22 +151,32 @@ throws
 	    }
 	    else if(name.matches(".*.pb"))
 	    {
-	        /*
-	        File tempFile = new File(name);
-	        tempFile = tempFile.getParentFile();
-	        File []listFile =tempFile.listFiles();
-	        int iterator=0;
-	        while(!listFile[iterator].getName().equals("experiment.pb"))
-	        {
-	        	iterator++;
-	        }
-	        ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
-	        		(listFile[iterator]),experiment);
-	        */
 	    	ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
 	        		(this.file),experiment);
 	    }
 	}
+
+
+/*
+//This implementation of parse is for use with HPCViewer 
+public void parse(Experiment experiment, boolean need_metrics)throws
+IOException,
+InvalExperimentException
+{
+	String name = this.file.toString();
+    InputStream stream = new FileInputStream(this.file);
+	File tempFile = new File(name);
+	tempFile = tempFile.getParentFile();
+	File []listFile =tempFile.listFiles();
+	int iterator=0;
+	while(!listFile[iterator].getName().equals("experiment.pb"))
+	{
+		iterator++;
+	}
+	ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
+			(listFile[iterator]),experiment);
+}
+*/
 
 }
 

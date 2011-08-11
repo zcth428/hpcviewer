@@ -336,14 +336,10 @@ public class ExperimentBuilder3
 	private  ProcedureScope doCCTProcFrm(CCTTreePB.GenNode node)
 	{
 		SourceFile srcf=getOrCreateSourceFile(""+node.getFile(),node.getFile());
-		LoadModuleScope objLoadMod=getLoadModule(node.getLoadModule(),node.getParentId());
+		LoadModuleScope objLoadMod=getLoadModule(node.getStaticScopeId());
 		StatementRange stmtR=new StatementRange(((StructTreePB.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
 		ProcedureScope procScope=new ProcedureScope(this.experiment,objLoadMod,srcf,stmtR.getFirstLine()-1,
 				stmtR.getLastLine()-1,getProcedureName(node.getStaticScopeId()),false,node.getId(),node.getStaticScopeId());
-		/*for(int i=0;i<node.getMetricValuesCount();i++)
-		{
-			doMetric(node.getMetricValues(i),procScope);
-		}*/
 		return procScope;
 	}
 	
@@ -351,7 +347,7 @@ public class ExperimentBuilder3
 	private void doCCTProc(CCTTreePB.GenNode node)
 	{
 		SourceFile srcf=getOrCreateSourceFile(""+node.getFile(),node.getFile());
-		LoadModuleScope objLoadMod=getLoadModule(node.getLoadModule(),node.getParentId());
+		LoadModuleScope objLoadMod=getLoadModule(node.getStaticScopeId());
 		StatementRange stmtR=new StatementRange(((StructTreePB.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
 		Scope scope=new ProcedureScope(this.experiment,objLoadMod,srcf,stmtR.getFirstLine()-1,
 				stmtR.getLastLine()-1,getProcedureName(node.getStaticScopeId()),false,node.getId(),node.getStaticScopeId());
@@ -793,16 +789,30 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private LoadModuleScope getLoadModule(int ssid,int parentId)
+	private LoadModuleScope getLoadModule(int ssid)
 	{
-		LoadModuleScope loadModule=(LoadModuleScope) this.hashLoadModuleTable.get(ssid);
-		if(loadModule!=null)
-			return loadModule;
-		Scope parent=this.cctNodeMap.get(parentId);
-		if(parent==null)
-			return new LoadModuleScope(this.experiment,""+ssid,null,ssid);
-		return getLoadModule(parent.getFlatIndex(),parent.getParentScope().getCCTIndex());
+		StructTreePB.Root.Proc proc=null;
+		StructTreePB.Root.File file=null;
+		try
+		{
+			proc=(StructTreePB.Root.Proc)this.structTreeMap.get(ssid);
+			if(proc!=null)
+			{
+				file=(StructTreePB.Root.File)this.structTreeMap.get(proc.getParentId());
+			}
+		}
+		catch(ClassCastException e)
+		{
+			System.out.println("This method is being called by something other than doCCTProcFrm or doCCTProc");
+		}
+		if(proc==null||file==null)
+		{
+			return null;
+		}
+		LoadModuleScope loadModule= this.hashLoadModuleTable.get(file.getParentId());
+		return loadModule;
 	}
+	
 	
 	private void attatchToParent(Scope scope,int parentID)
 	{
@@ -818,6 +828,7 @@ public class ExperimentBuilder3
 		}
 	}
 	
+	
 	private boolean checkUp(Scope checkingScope,Scope parentScope)
 	{
 		if(parentScope==null)
@@ -826,6 +837,7 @@ public class ExperimentBuilder3
 			return false;
 		return checkUp(checkingScope,parentScope.getParentScope());
 	}
+	
 	
 	private int getCallSiteID ( LineScope ls, ProcedureScope cs ) {
 		LoadModuleScope module = cs.getLoadModule();

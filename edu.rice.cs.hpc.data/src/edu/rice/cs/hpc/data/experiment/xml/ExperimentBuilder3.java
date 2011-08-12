@@ -36,6 +36,8 @@ public class ExperimentBuilder3
 	private Scope rootScope;
 	private int current_cs_id = Integer.MAX_VALUE - 1;
 	private HashMap<Integer, Scope> hashCallSiteTable;
+	private HashMap<Integer,LineScope> callMap;
+	private HashMap<Integer,CCTTreePB.GenNode> callProtoMap;
 	
 	//Constructor Declaration
 	public ExperimentBuilder3(InputStream input,Experiment exp)throws IOException
@@ -51,6 +53,8 @@ public class ExperimentBuilder3
 		this.rootScope=new RootScope(this.experiment,this.configuration.getName(),"Invisible Outer Root Scope",
 				RootScopeType.Invisible);
 		this.hashCallSiteTable=new HashMap<Integer,Scope>();
+		this.callMap=new HashMap<Integer,LineScope>();
+		this.callProtoMap=new HashMap<Integer,CCTTreePB.GenNode>();
 		if(metrics_needed)
 		{
 			metricList=new ArrayList<BaseMetric>();
@@ -123,16 +127,16 @@ public class ExperimentBuilder3
 					doCCTRoot(cctNode);
 					break;
 				case 1:							//ProcFrm
-					doCCTProc(cctNode);
+					doCCTProcFrm(cctNode);
 					break;
 				case 2:							//Proc
-					doCCTProc(cctNode);
+					doCCTProc(cctNode,true);
 					break;
 				case 3:							//Loop
 					doCCTLoop(cctNode);
 					break;
 				case 4:							//Call
-					doCCTCall(cctNode,input);
+					doCCTCall(cctNode);
 					break;
 				case 5:							//Stmt
 					doCCTStmt(cctNode);
@@ -265,9 +269,13 @@ public class ExperimentBuilder3
 		{
 			StructTreePB.Root.Alien node=StructTreePB.Root.Alien.parseDelimitedFrom(input);
 			structTreeMap.put(node.getId(),node);
-			if(node.hasId()&&node.hasName()){
-				SourceFile sourceFile = this.getOrCreateSourceFile(node.getName(), node.getId());
+			if(node.hasId()&&node.hasFileName()){
+				SourceFile sourceFile = this.getOrCreateSourceFile(node.getFileName(), node.getId());
 			}
+			if(node.hasId()&&node.hasName()){
+				this.hashProcedureTable.put(node.getId(), node.getName());
+			}
+			
 		}
 		catch(IOException e)
 		{
@@ -333,24 +341,50 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private  ProcedureScope doCCTProcFrm(CCTTreePB.GenNode node)
+	private  void doCCTProcFrm(CCTTreePB.GenNode node)
 	{
+		if(this.callMap.get(node.getParentId())==null)
+		{
+			doCCTProc(node,false);
+			return;
+		}
 		SourceFile srcf=getOrCreateSourceFile(""+node.getFile(),node.getFile());
 		LoadModuleScope objLoadMod=getLoadModule(node.getStaticScopeId());
 		StatementRange stmtR=new StatementRange(((StructTreePB.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
 		ProcedureScope procScope=new ProcedureScope(this.experiment,objLoadMod,srcf,stmtR.getFirstLine()-1,
 				stmtR.getLastLine()-1,getProcedureName(node.getStaticScopeId()),false,node.getId(),node.getStaticScopeId());
-		return procScope;
+		LineScope lineScope=this.callMap.get(node.getParentId());
+		CallSiteScope scope=new CallSiteScope(lineScope,procScope,CallSiteScopeType.CALL_TO_PROCEDURE,node.getId(),this.getCallSiteID(lineScope,procScope));
+		CCTTreePB.GenNode call=this.callProtoMap.get(node.getParentId());
+		this.cctNodeMap.put(call.getId(),scope);
+		for(int i=0;i<node.getMetricValuesCount();i++)
+		{
+			doMetric(node.getMetricValues(i),scope);
+		}
+		this.attatchToParent(scope, call.getParentId());
 	}
 	
 	
-	private void doCCTProc(CCTTreePB.GenNode node)
+	private void doCCTProc(CCTTreePB.GenNode node,boolean is_alien)
 	{
 		SourceFile srcf=getOrCreateSourceFile(""+node.getFile(),node.getFile());
 		LoadModuleScope objLoadMod=getLoadModule(node.getStaticScopeId());
-		StatementRange stmtR=new StatementRange(((StructTreePB.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
+		int flat_id=node.getStaticScopeId();
+		if(is_alien)
+		{
+			flat_id=Integer.MAX_VALUE^flat_id;
+		}
+		StatementRange stmtR=null;
+		try
+		{
+			stmtR=new StatementRange(((StructTreePB.Root.Proc)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
+		}
+		catch(ClassCastException e)
+		{
+			stmtR=new StatementRange(((StructTreePB.Root.Alien)this.structTreeMap.get(node.getStaticScopeId())).getLineRange());
+		}
 		Scope scope=new ProcedureScope(this.experiment,objLoadMod,srcf,stmtR.getFirstLine()-1,
-				stmtR.getLastLine()-1,getProcedureName(node.getStaticScopeId()),false,node.getId(),node.getStaticScopeId());
+				stmtR.getLastLine()-1,getProcedureName(node.getStaticScopeId()),is_alien,node.getId(),flat_id);
 		attatchToParent(scope,node.getParentId());
 		for(int i=0;i<node.getMetricValuesCount();i++)
 		{
@@ -361,9 +395,8 @@ public class ExperimentBuilder3
 	
 	private void doCCTLoop(CCTTreePB.GenNode node)
 	{	
-		StatementRange objRange = new StatementRange(((StructTreePB.Root.Proc)structTreeMap.get
-				(node.getStaticScopeId())).getLineRange());
-		Scope scope=new LoopScope(this.experiment,null,objRange.getFirstLine()-1,objRange.getLastLine()-1,
+		StatementRange objRange = new StatementRange(""+node.getLineRange());
+		Scope scope=new LoopScope(this.experiment,getSourceFile(this.cctNodeMap.get(node.getParentId())),objRange.getFirstLine()-1,objRange.getLastLine()-1,
 				node.getId(),node.getStaticScopeId());
 		attatchToParent(scope,node.getParentId());
 		for(int i=0;i<node.getMetricValuesCount();i++)
@@ -373,7 +406,7 @@ public class ExperimentBuilder3
 	}
 	
 	
-	private void doCCTCall(CCTTreePB.GenNode node,InputStream input)
+	private void doCCTCall(CCTTreePB.GenNode node)
 	{
 		StatementRange objRange;
 		if(structTreeMap.get(node.getStaticScopeId())!=null)
@@ -386,7 +419,11 @@ public class ExperimentBuilder3
 			objRange = new StatementRange("0");
 		}	
 		LineScope lineScope=new LineScope(this.experiment,null,objRange.getFirstLine()-1,node.getId(),node.getStaticScopeId());
-		CCTTreePB.GenNode procFrm=null;
+		for(int i=0;i<node.getMetricValuesCount();i++)
+		{
+			doMetric(node.getMetricValues(i),lineScope);
+		}
+		/*CCTTreePB.GenNode procFrm=null;
 		try
 		{
 			procFrm=CCTTreePB.GenNode.parseDelimitedFrom(input);
@@ -398,15 +435,13 @@ public class ExperimentBuilder3
 		ProcedureScope procScope=doCCTProcFrm(procFrm);
 		CallSiteScope scope=new CallSiteScope(lineScope,procScope,CallSiteScopeType.CALL_TO_PROCEDURE,procFrm.getId(),this.getCallSiteID(lineScope,procScope));
 		this.cctNodeMap.put(node.getId(),scope);
-		for(int i=0;i<node.getMetricValuesCount();i++)
-		{
-			doMetric(node.getMetricValues(i),lineScope);
-		}
 		for(int i=0;i<procFrm.getMetricValuesCount();i++)
 		{
 			doMetric(procFrm.getMetricValues(i),scope);
 		}
-		this.attatchToParent(scope, node.getParentId());
+		this.attatchToParent(scope, node.getParentId());*/
+		this.callMap.put(node.getId(),lineScope);
+		this.callProtoMap.put(node.getId(),node);
 	}
 	
 	
@@ -793,19 +828,26 @@ public class ExperimentBuilder3
 	{
 		StructTreePB.Root.Proc proc=null;
 		StructTreePB.Root.File file=null;
-		try
+		StructTreePB.Root.Alien alien=null;
+		if(this.structTreeMap.get(ssid) instanceof StructTreePB.Root.Alien)
+		{
+			alien=(StructTreePB.Root.Alien)this.structTreeMap.get(ssid);
+			ssid=alien.getParentId();
+		}
+		if(this.structTreeMap.get(ssid) instanceof StructTreePB.Root.Proc)
 		{
 			proc=(StructTreePB.Root.Proc)this.structTreeMap.get(ssid);
 			if(proc!=null)
 			{
+				com.google.protobuf.GeneratedMessage genMess=this.structTreeMap.get(proc.getParentId());
+				if(!(genMess instanceof StructTreePB.Root.File))
+				{
+					System.out.println("Whyyyyyyyyyy?");
+				}
 				file=(StructTreePB.Root.File)this.structTreeMap.get(proc.getParentId());
 			}
 		}
-		catch(ClassCastException e)
-		{
-			System.out.println("This method is being called by something other than doCCTProcFrm or doCCTProc");
-		}
-		if(proc==null||file==null)
+		if(file==null)
 		{
 			return null;
 		}
@@ -865,4 +907,9 @@ public class ExperimentBuilder3
 		return scope_id;
 	}
 	
+	
+	private SourceFile getSourceFile(Scope parent)
+	{
+		return parent.getSourceFile();
+	}
 }

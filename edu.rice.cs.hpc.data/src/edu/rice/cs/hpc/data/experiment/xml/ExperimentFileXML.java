@@ -109,7 +109,7 @@ public ExperimentFileXML(File filename)
  *								not a valid experiment.
  *
  ************************************************************************/
-
+/*
 //This implementation of parse is for use with Application.java
 public void parse(Experiment experiment, boolean need_metrics)
 throws
@@ -155,9 +155,9 @@ throws
 	        		(this.file),experiment);
 	    }
 	}
+*/
 
 
-/*
 //This implementation of parse is for use with HPCViewer 
 public void parse(Experiment experiment, boolean need_metrics)throws
 IOException,
@@ -169,14 +169,53 @@ InvalExperimentException
 	tempFile = tempFile.getParentFile();
 	File []listFile =tempFile.listFiles();
 	int iterator=0;
-	while(!listFile[iterator].getName().equals("experiment.pb"))
+	while(iterator<listFile.length&&!listFile[iterator].getName().equals("experiment.pb"))
 	{
 		iterator++;
 	}
-	ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
-			(listFile[iterator]),experiment);
+	if(iterator<listFile.length)
+	{
+		ExperimentBuilder3 expBuild=new ExperimentBuilder3(new FileInputStream
+				(listFile[iterator]),experiment);
+	}
+	else
+	{
+		iterator=0;
+		while(iterator<listFile.length&&!listFile[iterator].getName().equals("experiment.xml"))
+		{
+			iterator++;
+		}
+		if(iterator<listFile.length)
+		{
+	        name=listFile[iterator].getAbsolutePath();
+			stream=new FileInputStream(new File(name));
+			
+			Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
+	        Parser parser = new Parser(name, stream, builder);
+	        try {
+	            parser.parse();
+	        } catch (java.lang.Exception e) {
+	        	Throwable err = e.getCause();
+	        	if ( (err instanceof OldXMLFormatException) || (e instanceof OldXMLFormatException) ) {
+	            	// check the old xml ?
+	            	builder = new ExperimentBuilder(experiment, name);
+	            	// for unknown reason, the variable streat is reset here by JVM. So we need to allocate again
+	                stream = new FileInputStream(this.file);
+	            	parser = new Parser(name, stream, builder);
+	                try {
+						parser.parse();
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+	                if( builder.getParseOK() != Builder.PARSER_OK )
+	                	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
+	        	}
+	        }
+		}
+	}
 }
-*/
+
 
 }
 

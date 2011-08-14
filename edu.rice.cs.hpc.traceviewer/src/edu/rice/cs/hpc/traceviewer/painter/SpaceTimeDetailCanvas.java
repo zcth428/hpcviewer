@@ -240,6 +240,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			// if the difference is within the range, we scale. Otherwise recompute
 			final static private int SIZE_DIFF = 10;
 			
+			static final int MIN_WIDTH = 2;
+			static final int MIN_HEIGHT = 2;
+
 			public void handleEvent(Event event)
 			{	
 				Rectangle r = getClientArea();
@@ -269,7 +272,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			}
 			
 			private void rescaling(Rectangle r) {
+				
 				ImageData imgData = imageBuffer.getImageData();
+				
+				// ------------------------------------------------------------------
+				// quick hack: do not rescaling if we try to minimize the image
+				// An image is "accidently" minimized, if another view is maximized
+				// ------------------------------------------------------------------
+				
+				if (r.width<MIN_WIDTH && r.height < MIN_HEIGHT)
+					return; // just do nothing to preserve the image
+
 				ImageData scaledImage = imgData.scaledTo(r.width, r.height);
 				imageBuffer = new Image(getDisplay(), scaledImage);
 
@@ -286,6 +299,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 	}
 
+	
 	/*************************************************************************
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.

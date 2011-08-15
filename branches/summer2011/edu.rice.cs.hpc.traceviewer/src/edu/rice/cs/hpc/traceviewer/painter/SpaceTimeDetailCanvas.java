@@ -238,42 +238,47 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			
 			// subjectively the difference between the new size and the old size
 			// if the difference is within the range, we scale. Otherwise recompute
-			final static private int SIZE_DIFF = 10;
+			final static private float SIZE_DIFF = (float) 0.08;
 			
 			static final int MIN_WIDTH = 2;
 			static final int MIN_HEIGHT = 2;
 
 			public void handleEvent(Event event)
 			{	
-				Rectangle r = getClientArea();
-				if (r.width == viewWidth && r.height == viewHeight)
-					return;
-				final long currentTime = System.currentTimeMillis();
-				if ((currentTime - lastTime)<TIME_DIFF) 
-				{   
-					// let Eclipse scale the image for first impression.
+				final Rectangle r = getClientArea();
+
+				if (!needToRebuffer(r))
+				{	// no need to rebuffer, just scaling
 					rescaling(r);
 					return;
 					
 				} else {
-					lastTime = currentTime;
-					if ( (viewWidth+SIZE_DIFF) >= r.width && (viewHeight+SIZE_DIFF) >= r.height) 
-					{   // just scale it, no need to recompute the data
-						rescaling(r);
-						
-					} else {
-						// resize to bigger region: needs to recompute the data
-						viewWidth = r.width;
-						viewHeight = r.height;
-						getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
-					}
-				}
+					// resize to bigger region: needs to recompute the data
+					viewWidth = r.width;
+					viewHeight = r.height;
+					getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
+				}				
+			}
+			
+			private boolean needToRebuffer(Rectangle r ) {
+				final ImageData imgData = imageBuffer.getImageData();
 				
+				// we just scale the image if the current size is smaller than the original one
+				if (r.width<=imgData.width && r.height<=imgData.height)
+					return false; // no need to rebuffer
+				
+				// we scale the image if the difference is relatively "small" between
+				// the original and the current image
+				
+				final float diffx = (float)Math.abs(imgData.width-r.width) / (float)Math.max(r.width, imgData.width);
+				final float diffy = (float)Math.abs(imgData.height-r.height) / (float)Math.max(r.height, imgData.height);
+
+				return (diffx>SIZE_DIFF || diffy>SIZE_DIFF);
 			}
 			
 			private void rescaling(Rectangle r) {
 				
-				ImageData imgData = imageBuffer.getImageData();
+				final ImageData imgData = imageBuffer.getImageData();
 				
 				// ------------------------------------------------------------------
 				// quick hack: do not rescaling if we try to minimize the image

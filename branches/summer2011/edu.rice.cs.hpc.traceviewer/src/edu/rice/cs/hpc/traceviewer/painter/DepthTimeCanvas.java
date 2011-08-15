@@ -8,6 +8,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
@@ -316,8 +317,9 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 
-		//paints the current screen
-		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		if (viewWidth>0 && viewHeight>0)
+			//paints the current screen
+			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 		GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);

@@ -48,7 +48,8 @@ public abstract class BasePaintLine
 		int succDepth = cp.getCurrentDepth();
 		String succFunction = cp.getCurrentDepthScope().getName();
 		Color succColor = colorTable.getColor(succFunction);
-
+		int last_ptl_index = ptl.size() - 1;
+		
 		for (int index = 0; index < ptl.size(); index++)
 		{
 			int currDepth = succDepth;
@@ -62,9 +63,8 @@ public abstract class BasePaintLine
 			final String functionName = succFunction;
 			final Color currColor = succColor;
 			
-			while(still_the_same && (indexSucc < ptl.size()-1))
+			while (still_the_same && (++indexSucc < last_ptl_index))
 			{
-				indexSucc++;
 				cp = ptl.getCallPath(indexSucc, depth);
 				if(cp != null)
 				{
@@ -78,7 +78,7 @@ public abstract class BasePaintLine
 				}
 			};
 			
-			if (index<ptl.size()-1)
+			if (index < last_ptl_index)
 			{
 				// --------------------------------------------------------------------
 				// start and middle samples: the rightmost point is the midpoint between

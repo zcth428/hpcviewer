@@ -263,10 +263,12 @@ public class SpaceTimeData extends TraceEvents
 		compositeLines = new Image[linesToPaint];
 		lineNum = 0;
 		TimelineThread[] threads = new TimelineThread[num_threads];
+		double xscale = canvas.getScaleX();
+		double yscale = Math.max(canvas.getScaleY(), 1);
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++)
 		{
-			threads[threadNum] = new TimelineThread(this, changedBounds, canvas, numPixelsH, canvas.getScaleX(), Math.max(canvas.getScaleY(), 1));
+			threads[threadNum] = new TimelineThread(this, changedBounds, canvas, numPixelsH, xscale, yscale);
 			threads[threadNum].start();
 			monitor.worked(1);
 		}
@@ -287,8 +289,10 @@ public class SpaceTimeData extends TraceEvents
 
 		for (int i = 0; i < linesToPaint; i++)
 		{
-			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, compositeLines[i].getBounds().height, 0, (int)Math.round(i*Math.max(canvas.getScaleY(),1)), 
-					compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
+			int width = compositeLines[i].getBounds().width;
+			int height = compositeLines[i].getBounds().height;
+			int yposition = (int) Math.round(i * yscale);
+			masterGC.drawImage(compositeLines[i], 0, 0, width, height, 0, yposition, width, height);
 			monitor.worked(1);
 		}
 		monitor.done();
@@ -465,8 +469,9 @@ public class SpaceTimeData extends TraceEvents
 	/**Returns the index of the file to which the line-th line corresponds.*/
 	public int lineToPaint(int line)
 	{
-		if(endProcess-begProcess > numPixelsV)
-			return begProcess + (line*(endProcess-begProcess))/(numPixelsV);
+		int numTimelinesToPaint = endProcess - begProcess;
+		if(numTimelinesToPaint > numPixelsV)
+			return begProcess + (line * numTimelinesToPaint)/(numPixelsV);
 		else
 			return begProcess + line;
 	}

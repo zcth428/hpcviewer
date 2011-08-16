@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.HashMap;
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +8,7 @@ import java.io.RandomAccessFile;
 import java.lang.Math;
 import java.nio.channels.FileChannel;
 
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -21,6 +23,7 @@ import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /*************************************************************************
  * 
@@ -91,13 +94,18 @@ public class SpaceTimeData extends TraceEvents
 	final private boolean debug =  true;
 	
 	private final IProgressMonitor monitor;
+	private IStatusLineManager statusMgr;
+	
+	AtomicInteger progress = new AtomicInteger(0);
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
-	public SpaceTimeData(Display display, File expFile, File traceFile, IProgressMonitor _monitor)
+	public SpaceTimeData(Display display, File expFile, File traceFile, IStatusLineManager _statusMgr)
 	{
-		this.monitor = _monitor;
+		statusMgr = _statusMgr;
+		
+		this.monitor = statusMgr.getProgressMonitor();
 		
 		colorTable = new ColorTable(display);
 		
@@ -224,6 +232,31 @@ public class SpaceTimeData extends TraceEvents
 		return maxDepth;
 	}
 	
+	public void beginProgress(int totalWork)
+	{
+		progress.set(0);
+		statusMgr.setMessage("Rendering space time view...");
+		monitor.beginTask("Trace painting", totalWork);
+	}
+	
+	public void announceProgress()
+	{
+		progress.getAndIncrement();
+	}
+	
+	public void reportProgress()
+	{
+		int workDone = progress.getAndSet(0);
+		if (workDone > 0)
+			monitor.worked(workDone);
+	}
+	
+	public void endProgress()
+	{
+		monitor.done();
+		statusMgr.setMessage(null);
+	}
+	
 	/**********************************************************************************
 	 *	Paints the specified time units and processes at the specified depth
 	 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
@@ -240,7 +273,8 @@ public class SpaceTimeData extends TraceEvents
 	 ***********************************************************************************/
 	public void paintDetailViewport(GC masterGC, SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{
-		//long programTime = System.currentTimeMillis();
+		boolean detailCanvas = canvas instanceof SpaceTimeDetailCanvas;
+		
 		boolean changedBounds = true;
 		if (begTime == _begTime && endTime == _endTime && begProcess == _begProcess && endProcess == _endProcess && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
 			changedBounds = false;
@@ -254,11 +288,11 @@ public class SpaceTimeData extends TraceEvents
 		numPixelsH = _numPixelsH;
 		numPixelsV = _numPixelsV;
 		
-		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processor
+		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processors
 		int linesToPaint = Math.min(numPixelsV, endProcess - begProcess);
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
-
-		monitor.beginTask("Trace painting", (2 * num_threads) + linesToPaint);
+		
+		if (detailCanvas) beginProgress(linesToPaint);
 		
 		compositeLines = new Image[linesToPaint];
 		lineNum = 0;
@@ -266,36 +300,29 @@ public class SpaceTimeData extends TraceEvents
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 		
-		for (int threadNum = 0; threadNum < threads.length; threadNum++)
-		{
+		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 			threads[threadNum] = new TimelineThread(this, changedBounds, canvas, numPixelsH, xscale, yscale);
 			threads[threadNum].start();
-			monitor.worked(1);
 		}
 		
-		try
-		{
-			for (int threadNum = 0; threadNum < threads.length; threadNum++)
-			{
-				if (threads[threadNum].isAlive())
-					threads[threadNum].join();
-				monitor.worked(1);
+		try {
+			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
+				while (threads[threadNum].isAlive()) {
+					Thread.sleep(30);
+					if (detailCanvas) reportProgress();
+				}
 			}
 		}
-		catch (InterruptedException e)
-		{
+		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-		for (int i = 0; i < linesToPaint; i++)
-		{
-			int width = compositeLines[i].getBounds().width;
-			int height = compositeLines[i].getBounds().height;
+		
+		for (int i = 0; i < linesToPaint; i++) {
 			int yposition = (int) Math.round(i * yscale);
-			masterGC.drawImage(compositeLines[i], 0, 0, width, height, 0, yposition, width, height);
-			monitor.worked(1);
+			masterGC.drawImage(compositeLines[i], 0, yposition);
 		}
-		monitor.done();
+		
+		if (detailCanvas) endProgress();
 	}
 	
 	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)

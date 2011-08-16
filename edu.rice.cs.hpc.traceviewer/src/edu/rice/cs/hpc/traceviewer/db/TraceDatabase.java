@@ -78,7 +78,7 @@ public class TraceDatabase
 			File experimentFile = this.getExperimentFile();
 			File traceFile = this.getTraceFile();
 			
-			SpaceTimeData stData = new SpaceTimeData(shell.getDisplay(), experimentFile, traceFile, statusMgr.getProgressMonitor());
+			SpaceTimeData stData = new SpaceTimeData(shell.getDisplay(), experimentFile, traceFile, statusMgr);
 
 			try {
 				//---------------------------------------------------------------------

@@ -24,6 +24,8 @@ public class SpaceTimeSamplePainter
 	/**The GC that the painter paints the samples onto.*/
 	private final GC gc;
 	
+	private final Point minimumWidthForText;
+	
 	/*****************************************************************************************************
 	 * Creates a SpaceTimeSamplePainter that will draw to the GC _gc, with the master canvas 'canvas' and
 	 * scales in the x and y directions as scaleX and scaleY, respectively.
@@ -33,6 +35,7 @@ public class SpaceTimeSamplePainter
 		gc = _gc;
 		canvasScaleY = scaleY;
 		colorTable = _colorTable;
+		minimumWidthForText = gc.textExtent("1");
 	}
 	
 	/**********************************************************************************
@@ -55,9 +58,13 @@ public class SpaceTimeSamplePainter
 	/**Gets the correct color to paint the over depth text and then paints the text, centered, on the process/time block.*/
 	public void paintOverDepthText(int odInitPixel, int odFinalPixel, int depth, String function)
 	{	
+		int box_width = odFinalPixel - odInitPixel;
+		
+		if (box_width < minimumWidthForText.x) return;
+		
 		String overDepthText = String.valueOf(depth);
 		Point textSize = gc.textExtent(overDepthText);
-		int box_width = odFinalPixel - odInitPixel;
+
 		if((box_width - textSize.x) > 1) {
 			int box_height = (int) Math.floor(canvasScaleY);
 			if ((box_height - textSize.y) > 1) {

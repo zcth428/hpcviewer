@@ -89,6 +89,9 @@ public class TimelineThread extends Thread
 				gc.dispose();
 				
 				stData.addNextImage(line, nextTrace.line());
+				
+				stData.announceProgress();
+				
 				nextTrace = stData.getNextTrace(changedBounds);
 			}
 		}

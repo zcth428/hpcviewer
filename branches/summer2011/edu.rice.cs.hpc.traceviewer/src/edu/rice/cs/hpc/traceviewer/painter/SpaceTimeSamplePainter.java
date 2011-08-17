@@ -24,7 +24,7 @@ public class SpaceTimeSamplePainter
 	/**The GC that the painter paints the samples onto.*/
 	private final GC gc;
 	
-	private final Point minimumWidthForText;
+	private final int minimumWidthForText;
 	
 	/*****************************************************************************************************
 	 * Creates a SpaceTimeSamplePainter that will draw to the GC _gc, with the master canvas 'canvas' and
@@ -35,7 +35,7 @@ public class SpaceTimeSamplePainter
 		gc = _gc;
 		canvasScaleY = scaleY;
 		colorTable = _colorTable;
-		minimumWidthForText = gc.textExtent("1");
+		minimumWidthForText = gc.textExtent("0").x;
 	}
 	
 	/**********************************************************************************
@@ -60,14 +60,16 @@ public class SpaceTimeSamplePainter
 	{	
 		int box_width = odFinalPixel - odInitPixel;
 		
-		if (box_width < minimumWidthForText.x) return;
+		if (box_width < minimumWidthForText) return;
 		
 		String overDepthText = String.valueOf(depth);
 		Point textSize = gc.textExtent(overDepthText);
 
-		if((box_width - textSize.x) > 1) {
+		// want 2 pixels on either side
+		if((box_width - textSize.x) >= 4) {
 			int box_height = (int) Math.floor(canvasScaleY);
-			if ((box_height - textSize.y) > 1) {
+			// want 2 pixels on above and below
+			if ((box_height - textSize.y) >= 4) {
 				Color bgColor = colorTable.getColor(function);
 				gc.setBackground(bgColor);
 

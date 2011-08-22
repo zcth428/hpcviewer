@@ -510,7 +510,7 @@ public boolean hasNonzeroMetrics() {
 	if (this.hasMetrics())
 		for (int i = 0; i< this.metrics.length; i++) {
 			MetricValue m = this.getMetricValue(i);
-			if (!m.isZero())
+			if (!MetricValue.isZero(m))
 				return true;
 		}
 	return false;
@@ -556,11 +556,11 @@ public MetricValue getMetricValue(BaseMetric metric)
 
 		// compute percentage if necessary
 		Scope root = this.experiment.getRootScope();
-		if((this != root) && (! value.isPercentAvailable()))
+		if((this != root) && (! MetricValue.isPercentAvailable(value)))
 		{
 			MetricValue total = root.getMetricValue(metric);
-			if(total.isAvailable())
-				value.setPercentValue(value.getValue()/total.getValue());
+			if(MetricValue.isAvailable(total))
+				MetricValue.setPercentValue(value, MetricValue.getValue(value)/MetricValue.getValue(total));
 		} 
 
 	}
@@ -613,8 +613,8 @@ public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter,
 public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, this, src_i, targ_i)) {
 		MetricValue m = source.getMetricValue(src_i);
-		if (m != MetricValue.NONE && m.getValue() != 0.0) {
-			this.accumulateMetricValue(targ_i, m.getValue());
+		if (m != MetricValue.NONE && MetricValue.getValue(m) != 0.0) {
+			this.accumulateMetricValue(targ_i, MetricValue.getValue(m));
 		}
 	}
 }
@@ -635,7 +635,7 @@ public void accumulateMetricValue(int index, double value)
 		this.metrics[index] = new MetricValue(value);
 	} else {
 		// TODO Could do non-additive accumulations here?
-		m.setValue(m.getValue() + value);
+		MetricValue.setValue(m, MetricValue.getValue(m) + value);
 	}
 
 }
@@ -657,13 +657,15 @@ public void backupMetricValues() {
 		// if the value is not availabe we do NOT store it but instead we
 		//    assign to MetricValue.NONE
 		//------------------------------------------------------------------
-		if (value.isAvailable()) {
+		if (MetricValue.isAvailable(value)) {
 			//----------------------------------------------------------------------
 			// derived incremental metric type needs special treatment: 
 			//	their value changes in finalization phase, while others don't
 			//----------------------------------------------------------------------
 			if (metric instanceof AggregateMetric)
-				this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
+				this.combinedMetrics[i] = 
+					new MetricValue(MetricValue.getValue(value), 
+							MetricValue.getPercentValue(value));
 			else 
 				this.combinedMetrics[i] = value;
 		} else {
@@ -804,12 +806,12 @@ public void copyMetrics(Scope targetScope) {
 		for (int k=0; k<this.metrics.length && k<targetScope.metrics.length; k++) {
 			MetricValue mine = null;
 			MetricValue crtMetric = this.metrics[k];
-			if ( crtMetric.isAvailable() && crtMetric.getValue() != 0.0) { // there is something to copy
+			if ( MetricValue.isAvailable(crtMetric) && MetricValue.getValue(crtMetric) != 0.0) { // there is something to copy
 				mine = new MetricValue();
-				mine.setValue(crtMetric.getValue());
+				MetricValue.setValue(mine, MetricValue.getValue(crtMetric));
 
-				if (crtMetric.isPercentAvailable()) {
-					mine.setPercentValue(crtMetric.getPercentValue());
+				if (MetricValue.isPercentAvailable(crtMetric)) {
+					MetricValue.setPercentValue(mine, MetricValue.getPercentValue(crtMetric));
 				} 
 			} else {
 				mine = MetricValue.NONE;

@@ -78,8 +78,8 @@ public class MetricVarMap extends VarMap {
 				throw new RuntimeException("metric doesn't exist: " + sIndex);
 			if (scope != null) {
 				MetricValue value = metric.getValue(scope);
-				if(value.isAvailable())
-					return value.getValue();
+				if(MetricValue.isAvailable(value))
+					return MetricValue.getValue(value);
 			}
 			return 0.0;
 			
@@ -96,7 +96,7 @@ public class MetricVarMap extends VarMap {
 					throw new RuntimeException("Unrecognize metric ID: " + varName);
 
 				RootScope root = (RootScope) this.experiment.getRootScopeChildren()[0];
-				return metric.getValue(root).getValue();
+				return MetricValue.getValue(metric.getValue(root));
 
 			} catch (java.lang.Exception e) {
 				throw new RuntimeException("Unrecognize variable: " + varName);

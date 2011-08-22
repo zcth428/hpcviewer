@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
+import edu.rice.cs.hpc.data.util.FileMerger;
 import edu.rice.cs.hpc.data.util.Util;
 
 /***
@@ -112,6 +113,28 @@ public class ThreadLevelDataManager {
 		if (this.data_file == null)
 			return null;
 		
+		if (false) {
+		File directory = new File(experiment.getXMLExperimentFile().getPath());
+		if (directory.isFile())
+			directory = new File(directory.getParent());
+		
+		MetricFileMerger mfm = new MetricFileMerger();
+		File mergedMetricFile = null; 
+
+		try {
+			String dirName = directory.getCanonicalPath();
+			String mfm_name = dirName + File.separatorChar + mfm.mergedMetricFilename();
+			mergedMetricFile = new File(mfm_name);
+			if (!mergedMetricFile.canRead()) {
+				mfm.merge(dirName, metric);
+				mergedMetricFile = new File(mfm_name);
+			}
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+		
 		int metric_glob_id = metric.getID();
 		
 		if (data_file[metric_glob_id] == null) {
@@ -179,13 +202,12 @@ public class ThreadLevelDataManager {
 			return; // it has been initialized
 		
 		
-		File files = new File(experiment.getXMLExperimentFile().getPath());
-		if (files.isFile())
-			files = new File(files.getParent());
+		File directory = new File(experiment.getXMLExperimentFile().getPath());
+		if (directory.isFile())
+			directory = new File(directory.getParent());
 		
 		MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
-		File filesThreadsData[] = files.listFiles(new Util.FileThreadsMetricFilter( metric.getGlob()));
-		data_file[metric_raw_id] = new ThreadLevelDataFile(filesThreadsData);
+		data_file[metric_raw_id] = new ThreadLevelDataFile(directory, metric);
 		application_type = data_file[metric_raw_id].getApplicationType();
 	}
 
@@ -200,6 +222,21 @@ public class ThreadLevelDataManager {
 	private void debug(PrintStream stream, String s) {
 		if (flag_debug) {
 			stream.print(s);
+		}
+	}
+	
+	public class MetricFileMerger {
+		public void merge(String directory, MetricRaw metric) throws IOException {
+			String resultFileName = mergedMetricFilename();
+			File dir = new File(directory);
+			File files[] = dir.listFiles(new Util.FileThreadsMetricFilter(metric.getGlob()));
+
+			FileMerger.merge(directory, resultFileName, files);
+		}
+		
+		public String mergedMetricFilename() {
+			String resultFileName = "experiment.mdb";
+			return resultFileName;
 		}
 	}
 	

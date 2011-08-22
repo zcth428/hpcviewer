@@ -165,11 +165,11 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 		int nbMetrics = objExperiment.getMetricCount();
 		for (int i=0; i<nbMetrics; i++) {
 			MetricValue value = scope.getMetricValue(i);
-			if (value.isAvailable()) {
+			if (MetricValue.isAvailable(value)) {
 				BaseMetric m = objExperiment.getMetric(i);
 				this.objOutputStream.print(indent + "<M");
 				PrintFileXML.printAttribute(this.objOutputStream, "n", m.getIndex());
-				PrintFileXML.printAttribute(this.objOutputStream, "v", value.getValue());
+				PrintFileXML.printAttribute(this.objOutputStream, "v", MetricValue.getValue(value));
 				this.objOutputStream.print("/>");
 			}
 		}

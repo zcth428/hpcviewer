@@ -1,6 +1,11 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.File;
+import java.io.IOException;
+
+import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
+import edu.rice.cs.hpc.data.util.FileMerger;
+import edu.rice.cs.hpc.data.util.Util;
 
 
 /*****************************************
@@ -32,7 +37,10 @@ public class ThreadLevelDataFile {
 	/**
 	 * constructor: initialize all data
 	 */
-	public ThreadLevelDataFile(File files[]) {
+	public ThreadLevelDataFile(File directory, MetricRaw m) {
+		
+		
+		File files[] = directory.listFiles(new Util.FileThreadsMetricFilter(m.getGlob()));
 		
 		FILE_VERSION = 1;
 		
@@ -52,7 +60,7 @@ public class ThreadLevelDataFile {
 				FILE_VERSION = 0;
 			}
 			
-			this.setData(files);
+			this.setData(files, m.getID());
 
 		}
 	}
@@ -102,7 +110,7 @@ public class ThreadLevelDataFile {
 	 * assign data
 	 * @param f: array of files
 	 */
-	private void setData(File f[]) {
+	private void setData(File f[], int metricID) {
 		
 		this.type = this.checkApplicationType(f);
 		
@@ -154,19 +162,19 @@ public class ThreadLevelDataFile {
 	 * @return
 	 */
 	private ApplicationType checkApplicationType(File files[]) {
-		boolean with_all_processes = false; 
-		boolean with_all_threads = false; 
+		boolean multiple_processes = false; 
+		boolean multiple_threads = false; 
 
 		for(int i=0; i<files.length; i++) {
 			FileNameComposition file_composition = this.getFileComposition(files[i]);
-			with_all_processes |= (file_composition.rank>0);
-			with_all_threads   |= (file_composition.thread>0);
+			multiple_processes |= (file_composition.rank > 0);
+			multiple_threads   |= (file_composition.thread > 0);
 			
-			if (with_all_processes && with_all_threads)
+			if (multiple_processes && multiple_threads)
 				return ApplicationType.HYBRID;
 		}
 		
-		if (with_all_processes)
+		if (multiple_processes)
 			return ApplicationType.MULTI_PROCESSES;
 		else 
 			return ApplicationType.MULTI_THREADING;
@@ -220,4 +228,7 @@ public class ThreadLevelDataFile {
 			this.file = f;
 		}
 	}
+
+	
+
 }

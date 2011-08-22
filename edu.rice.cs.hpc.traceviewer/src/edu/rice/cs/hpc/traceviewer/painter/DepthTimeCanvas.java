@@ -40,7 +40,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	long numTimeUnitsDisp;
 	
 	/**The min number of time units you can zoom in*/
-    private final static int MIN_TIME_UNITS_DISP = 50000;
+    private final static int MIN_TIME_UNITS_DISP = 1;
 	
 	/**The selected time that is open in the csViewer.*/
 	double selectedTime;

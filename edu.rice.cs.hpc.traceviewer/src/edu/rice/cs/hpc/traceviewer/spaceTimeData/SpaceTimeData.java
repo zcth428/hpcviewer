@@ -461,7 +461,9 @@ public class SpaceTimeData extends TraceEvents
 		{
 			case 0:
 			case 1:
-				this.printDebug("Warning! incorrect timestamp size in detailPaint: " + ptl.size() );
+				// this.printDebug("Warning! incorrect timestamp size in detailPaint: " + ptl.size() );
+				// johnmc: a trace may contain zero or 1 samples; in this case, we
+				//         can't render it.
 				break;
 			default:
 			{

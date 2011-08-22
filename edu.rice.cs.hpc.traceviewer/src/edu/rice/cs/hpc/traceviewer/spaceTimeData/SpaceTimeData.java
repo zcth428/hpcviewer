@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
@@ -95,19 +96,21 @@ public class SpaceTimeData extends TraceEvents
 	
 	private final IProgressMonitor monitor;
 	private IStatusLineManager statusMgr;
+	private Shell shell;
 	
 	AtomicInteger progress = new AtomicInteger(0);
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
-	public SpaceTimeData(Display display, File expFile, File traceFile, IStatusLineManager _statusMgr)
+	public SpaceTimeData(Shell _shell, File expFile, File traceFile, IStatusLineManager _statusMgr)
 	{
+		shell = _shell;
 		statusMgr = _statusMgr;
-		
+
 		this.monitor = statusMgr.getProgressMonitor();
 		
-		colorTable = new ColorTable(display);
+		colorTable = new ColorTable(shell.getDisplay());
 		
 		//Initializes the CSS that represents time values outside of the time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
@@ -236,6 +239,7 @@ public class SpaceTimeData extends TraceEvents
 	{
 		progress.set(0);
 		statusMgr.setMessage("Rendering space time view...");
+		// shell.update();
 		monitor.beginTask("Trace painting", totalWork);
 	}
 	
@@ -255,6 +259,7 @@ public class SpaceTimeData extends TraceEvents
 	{
 		monitor.done();
 		statusMgr.setMessage(null);
+		// shell.update();
 	}
 	
 	/**********************************************************************************

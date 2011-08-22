@@ -308,7 +308,7 @@ protected void accumulateMetricsFromKids(Scope target, Scope source, MetricValue
 protected void copyMetric(Scope target, Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, target, src_i, targ_i)) {
 		MetricValue mv = source.getMetricValue(src_i);
-		if (mv != MetricValue.NONE && mv.getValue() != 0.0) {
+		if (mv != MetricValue.NONE && MetricValue.getValue(mv) != 0.0) {
 			target.setMetricValue(targ_i, mv);
 		}
 	}

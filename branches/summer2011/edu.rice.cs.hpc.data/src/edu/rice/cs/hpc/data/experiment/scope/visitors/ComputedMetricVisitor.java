@@ -49,16 +49,16 @@ public class ComputedMetricVisitor implements IScopeVisitor {
 			int cmi = scope.getExperiment().getMetricCount() - n;
 			
 			for (int i=0; i<n; i++) {
-				double mv1 = scope.getMetricValue(exp1+i).getValue();
-				double mv2 = scope.getMetricValue(exp2+i).getValue();
-				double t2 = totals[i].getValue();
+				double mv1 = MetricValue.getValue(scope.getMetricValue(exp1+i));
+				double mv2 = MetricValue.getValue(scope.getMetricValue(exp2+i));
+				double t2 = MetricValue.getValue(totals[i]);
 				if (mv2 < 0 || t2 <= 0) break;
 				if (mv1 < 0) mv1 = 0.0;
 					
 				double value = computeScalability(mv1,mv2,scaling,t2);
 
 				MetricValue val = new MetricValue();
-				val.setValue(value);
+				MetricValue.setValue(val, value);
 				scope.setMetricValue(cmi+i, val);
 			}
 		}

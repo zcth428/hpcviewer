@@ -63,7 +63,7 @@ public abstract class BasePaintLine
 			final String functionName = succFunction;
 			final Color currColor = succColor;
 			
-			while (still_the_same && (++indexSucc < last_ptl_index))
+			while (still_the_same && (++indexSucc <= last_ptl_index))
 			{
 				cp = ptl.getCallPath(indexSucc, depth);
 				if(cp != null)
@@ -93,7 +93,9 @@ public abstract class BasePaintLine
 				// for the last iteration (or last sample), we don't have midpoint
 				// 	so the rightmost point will be the time of the last sample
 				// --------------------------------------------------------------------
-				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength));
+				// succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength)); 
+				// johnmc: replaced above because it doesn't seem correct
+				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index)-begTime)/pixelLength)); 
 			}
 			
 			//Debugger.printTrace(" i: " + index + "\tcs: " + currSampleMidpoint + "\tss: " + succSampleMidpoint + "\td: " + currDepth);

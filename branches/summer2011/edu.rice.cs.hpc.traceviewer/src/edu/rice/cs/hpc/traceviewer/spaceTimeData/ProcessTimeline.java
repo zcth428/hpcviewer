@@ -124,7 +124,7 @@ public class ProcessTimeline
 		}
 		
 		//reads in the bounding locations where the data is located for the range of data to be viewed for this process
-		long maxLoc = Math.min(findLocBeforeRAF(timeRange+startingTime)+SIZE_OF_TRACE_RECORD, masterBuff.size()-SIZE_OF_TRACE_RECORD);
+		long maxLoc = Math.min(findLocBeforeRAF(timeRange+startingTime)+SIZE_OF_TRACE_RECORD, maximumLocation); // johnmc
 		long minLoc = findLocBeforeRAF(startingTime);
 		
 		//fills in the rest of the data for this process timeline

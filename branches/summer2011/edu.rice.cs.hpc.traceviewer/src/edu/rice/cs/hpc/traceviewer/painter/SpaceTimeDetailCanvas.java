@@ -120,7 +120,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     public Label crossHairLabel;
         
     /**The min number of time units you can zoom in.*/
-    private final static long MIN_TIME_UNITS_DISP = 50000;
+    private final static long MIN_TIME_UNITS_DISP = 1;
     
     /**The min number of process units you can zoom in.*/
     private final static int MIN_PROC_DISP = 1;

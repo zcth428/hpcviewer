@@ -1,11 +1,11 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
-import edu.rice.cs.hpc.data.util.FileMerger;
-import edu.rice.cs.hpc.data.util.Util;
+import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 
 
 /*****************************************
@@ -19,49 +19,41 @@ public class ThreadLevelDataFile {
 	//-----------------------------------------------------------
 	// CONSTANTS
 	//-----------------------------------------------------------
-	private int FILE_VERSION;		// version of the raw metric file 
-	final private String FILE_SEPARATOR = "-";		// common separator for the filename
-	final private int POSITION_PROC_ID[] = {5,6};	// position of the process ID in the filename
-	final private int POSITION_THREAD_ID[] = {4,5};	// position of the thread ID in the filename
 	
+	static public final int MULTI_PROCESSES = 1;
+	static public final int MULTI_THREADING = 2;
+
+	public static final int SIZEOF_LONG = 8;
+	public static final int SIZEOF_INT = 4;
+	// header bytes to skip
+	static private final int HEADER_LONG	=	32;
+
+	//-----------------------------------------------------------
+	// Global variables
+	//-----------------------------------------------------------
 	
-	public enum ApplicationType {MULTI_PROCESSES, MULTI_THREADING, HYBRID};
-	private ApplicationType type = ApplicationType.HYBRID;
+	private int type = MULTI_PROCESSES | MULTI_THREADING; // default is hybrid
 	
-	/**
-	 * list of x axis names (process.thread) and its files
-	 */
-	private DataFile []data;
+	private LargeByteBuffer masterBuff;
 	
-	
+	private int numFiles = 0;
+	private String valuesX[];
+	private long offsets[];
+
 	/**
 	 * constructor: initialize all data
+	 * @throws IOException 
 	 */
-	public ThreadLevelDataFile(File directory, MetricRaw m) {
+	public ThreadLevelDataFile(String filename, MetricRaw m) throws IOException {
 		
 		
-		File files[] = directory.listFiles(new Util.FileThreadsMetricFilter(m.getGlob()));
-		
-		FILE_VERSION = 1;
-		
-		if (files != null  &&  files.length>0 ) {
+		if (filename != null) {
 			
 			//---------------------------------------------
 			// test file version
 			//---------------------------------------------
-			String filename = files[0].getName();
-			String items[] = filename.split(FILE_SEPARATOR);
-
-			try {
-				Double.valueOf(items[items.length-3]);
-				
-			} catch (Exception e) {
-				// old version of the metric file
-				FILE_VERSION = 0;
-			}
 			
-			this.setData(files, m.getID());
-
+			this.setData(filename, m.getID());
 		}
 	}
 
@@ -70,79 +62,68 @@ public class ThreadLevelDataFile {
 	 * @return
 	 */
 	public int size() {
-		if (data == null)
-			return 0;
+		return numFiles;
+	}
+	
 		
-		return data.length;
-	}
-	
-	
-	/******
-	 * retrieve the file 
-	 * @param rank sequence id (not the process ID)
-	 * @return file descriptor that contains the raw metric
-	 */
-	public File getFile(int id) {
-		if (data != null) {
-			return data[id].file;
-		}
-		return null;
-	}
-	
 	
 	/***
 	 * retrieve the array of process IDs
 	 * @return
 	 */
 	public String []getValuesX() {
-		if (data != null) {
-			String []values = new String[size()];
-			for (int i=0; i<size(); i++) {
-				values[i] = data[i].x_value;
-			}
-			return values;
-		}
-		return null;
+		return valuesX;
 	}
 	
 	
 	/***
 	 * assign data
 	 * @param f: array of files
+	 * @throws IOException 
 	 */
-	private void setData(File f[], int metricID) {
+	private void setData(String filename, int metricID) throws IOException {
 		
-		this.type = this.checkApplicationType(f);
-		
-		this.data = new DataFile[f.length];
+		final FileChannel f = new RandomAccessFile(filename, "r").getChannel();
+		masterBuff = new LargeByteBuffer(f);
 
-		for(int i=0; i<f.length; i++) {
-			FileNameComposition composition = this.getFileComposition(f[i]);
+		this.type = masterBuff.getInt(0);
+		this.numFiles = masterBuff.getInt(SIZEOF_INT);
+		
+		valuesX = new String[numFiles];
+		offsets = new long[numFiles];
+		
+		long current_pos = SIZEOF_INT * 2;
+		
+		// get the procs and threads IDs
+		for(int i=0; i<numFiles; i++) {
+
+			final int proc_id = masterBuff.getInt(current_pos);
+			current_pos += SIZEOF_INT;
+			final int thread_id = masterBuff.getInt(current_pos);
+			current_pos += SIZEOF_INT;
 			
-			if (composition != null) {
-				
-				//--------------------------------------------------------------------
-				// adding list of x-axis 
-				//--------------------------------------------------------------------			
-				
-				String x_val;
-				switch (this.type) {
-					case HYBRID:
-						x_val = String.valueOf(composition.rank) + "." + String.valueOf(composition.thread);
-						break;
-					case MULTI_PROCESSES:
-						x_val = String.valueOf(composition.rank);
-						break;
-					case MULTI_THREADING:
-						x_val = String.valueOf(composition.thread);
-						break;
-					default:
-						x_val = "unknown";
-							
-				}
-				this.data[i] = new DataFile(f[i], x_val);
-				
+			offsets[i] = masterBuff.getLong(current_pos);
+			current_pos += SIZEOF_LONG;
+			
+			//--------------------------------------------------------------------
+			// adding list of x-axis 
+			//--------------------------------------------------------------------			
+			
+			String x_val;
+			if (this.isHybrid()) 
+			{
+				x_val = String.valueOf(proc_id) + "." + String.valueOf(thread_id);
+			} else if (isMultiProcess()) 
+			{
+				x_val = String.valueOf(proc_id);					
+			} else if (isMultiThreading()) 
+			{
+				x_val = String.valueOf(thread_id);
+			} else {
+				x_val = "unknown";
 			}
+			
+			valuesX[i] = x_val;
 		}
 	}
 
@@ -151,84 +132,47 @@ public class ThreadLevelDataFile {
 	 * retrieve the type of application (hybrid, mpi or openmp)
 	 * @return ApplicationType
 	 */
-	public ApplicationType getApplicationType() {
+	public int getApplicationType() {
 		return this.type;
 	}
 	
+	public boolean isMultiProcess() {
+		return (type & MULTI_PROCESSES) != 0;
+	}
 	
-	/****
-	 * check the type of the application (mpi, openmp or hybrid)
-	 * @param files
-	 * @return
-	 */
-	private ApplicationType checkApplicationType(File files[]) {
-		boolean multiple_processes = false; 
-		boolean multiple_threads = false; 
+	public boolean isMultiThreading() {
+		return (type & MULTI_THREADING) != 0;
+	}
+	
+	public boolean isHybrid() {
+		return (isMultiProcess() && isMultiThreading());
+	}
 
-		for(int i=0; i<files.length; i++) {
-			FileNameComposition file_composition = this.getFileComposition(files[i]);
-			multiple_processes |= (file_composition.rank > 0);
-			multiple_threads   |= (file_composition.thread > 0);
+	public double[] getMetrics(long nodeIndex, int metricIndex, int numMetrics) {
+	
+		double []metrics = new double[this.numFiles];
+		
+		for (int i=0; i<this.numFiles; i++) {
 			
-			if (multiple_processes && multiple_threads)
-				return ApplicationType.HYBRID;
+			final long pos_relative = getFilePosition(nodeIndex, metricIndex, numMetrics);
+			final long pos_absolute = offsets[i] + pos_relative;
+			metrics[i] = (double)masterBuff.getDouble(pos_absolute);
 		}
-		
-		if (multiple_processes)
-			return ApplicationType.MULTI_PROCESSES;
-		else 
-			return ApplicationType.MULTI_THREADING;
+		return metrics;
 	}
 	
-	
-	/****
-	 * get the composition of the raw metric file
-	 * @param file
+	/**
+	 * get a position for a specific node index and metric index
+	 * @param nodeIndex
+	 * @param metricIndex
+	 * @param num_metrics
 	 * @return
 	 */
-	private FileNameComposition getFileComposition(File file) {
-		String s = file.getName();
-		String parts[] = s.split(FILE_SEPARATOR);
-		if (parts.length > 4) {
-			return new FileNameComposition(Integer.valueOf(parts[parts.length - POSITION_PROC_ID[FILE_VERSION] ]),
-										 Integer.valueOf(parts[parts.length - POSITION_THREAD_ID[FILE_VERSION]]));
-		}
-		return null;
+	private long getFilePosition(long nodeIndex, int metricIndex, int num_metrics) {
+		return ((nodeIndex-1) * num_metrics * SIZEOF_LONG) + (metricIndex * SIZEOF_LONG) +
+			// header to skip
+			HEADER_LONG;
 	}
-	
-	
-	/*******************************************************************
-	 * Composition of the raw metric file class
-	 * @author laksonoadhianto
-	 *
-	 *******************************************************************/
-	private class FileNameComposition {
-		public int thread;
-		public int rank;
-		
-		FileNameComposition(int rank, int thread) {
-			this.rank = rank;
-			this.thread = thread;
-		}
-	}
-	
-	
-	/*******************************************************************
-	 * 
-	 * @author laksonoadhianto
-	 *
-	 *******************************************************************/
-	private class DataFile {
-		
-		public String x_value;	// value of x axis
-		public File file;		// file
-		
-		public DataFile(File f, String v) {
-			this.x_value = v;
-			this.file = f;
-		}
-	}
-
 	
 
 }

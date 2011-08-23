@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
-import edu.rice.cs.hpc.data.util.FileMerger;
-import edu.rice.cs.hpc.data.util.Util;
 
 /***
  * 
@@ -15,14 +13,13 @@ import edu.rice.cs.hpc.data.util.Util;
  */
 public class ThreadLevelDataManager {
 
-	private boolean flag_debug = false;
+	final private boolean flag_debug = false;
 
 	private ThreadLevelDataFile data_file[];
 	private Experiment experiment;
-	private ThreadLevelDataFile.ApplicationType application_type;
 	
 	public ThreadLevelDataManager(Experiment exp) {
-		MetricRaw []metrics = exp.getMetricRaw();
+		final MetricRaw []metrics = exp.getMetricRaw();
 		data_file = new ThreadLevelDataFile[metrics.length];
 		this.experiment = exp;
 	}
@@ -42,10 +39,6 @@ public class ThreadLevelDataManager {
 		return false;
 	}
 	
-	
-	public ThreadLevelDataFile.ApplicationType getApplicationType() {
-		return this.application_type;
-	}
 	
 	
 	/**
@@ -112,29 +105,7 @@ public class ThreadLevelDataManager {
 			throws IOException {
 		if (this.data_file == null)
 			return null;
-		
-		if (false) {
-		File directory = new File(experiment.getXMLExperimentFile().getPath());
-		if (directory.isFile())
-			directory = new File(directory.getParent());
-		
-		MetricFileMerger mfm = new MetricFileMerger();
-		File mergedMetricFile = null; 
-
-		try {
-			String dirName = directory.getCanonicalPath();
-			String mfm_name = dirName + File.separatorChar + mfm.mergedMetricFilename();
-			mergedMetricFile = new File(mfm_name);
-			if (!mergedMetricFile.canRead()) {
-				mfm.merge(dirName, metric);
-				mergedMetricFile = new File(mfm_name);
-			}
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-		
+			
 		int metric_glob_id = metric.getID();
 		
 		if (data_file[metric_glob_id] == null) {
@@ -142,54 +113,12 @@ public class ThreadLevelDataManager {
 		}
 		
 		ThreadLevelDataFile data = this.data_file[metric_glob_id];
-		
-		int data_size = data.size();
-		double[] metrics = new double[data_size];
-		
-		ThreadLevelData objData = new ThreadLevelData();
-		
-		debugln(System.out, "Series: " +  metric_glob_id + " node: " + node_index + " metric: " + metric.getRawID());
-		String x[] = data.getValuesX();
-
-		for(int i=0; i<data_size; i++) {
-			metrics[i] = objData.getMetric(data.getFile(i).getAbsolutePath(), node_index, metric.getRawID(), 
-					metric.getSize());
-			debugln(System.out, "\t"+i + " " +  x[i] +"\t:"+metrics[i]);
-
-		}
-		debugln(System.out, "\nsize: " + data_size);
-		return metrics;
+		return data.getMetrics(node_index, metric.getRawID(), metric.getSize());
 	}
 
 	
-	public double getMetric(int rank_sequence, MetricRaw metric, long node_index)
-	throws IOException {
-		
-		double value;
-		ThreadLevelData objData = new ThreadLevelData();
-
-		ThreadLevelDataFile data = this.data_file[ metric.getID() ];
-		value = objData.getMetric( data.getFile(rank_sequence).getAbsolutePath(), node_index, 
-					metric.getRawID(), metric.getSize() );
-		
-		return value;
-	}
-	
-	
-	public double[] getMetric(int rank_sequence, long node_index) throws IOException {
-		
-		MetricRaw metrics[] = experiment.getMetricRaw();
-		double values[] = new double[metrics.length];
-		ThreadLevelData objData = new ThreadLevelData();
-
-		for (int i=0; i<metrics.length; i++) {
-			MetricRaw metric = metrics[i];
-			ThreadLevelDataFile data = this.data_file[ metric.getID() ];
-			values[i] = objData.getMetric( data.getFile(rank_sequence).getAbsolutePath(), node_index, 
-					metric.getRawID(), metric.getSize() );
-		}
-		
-		return values;
+	public ThreadLevelDataFile getThreadLevelDataFile(int metric_id) {
+		return this.data_file[metric_id];
 	}
 	
 	//==============================================================================================
@@ -207,8 +136,15 @@ public class ThreadLevelDataManager {
 			directory = new File(directory.getParent());
 		
 		MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
-		data_file[metric_raw_id] = new ThreadLevelDataFile(directory, metric);
-		application_type = data_file[metric_raw_id].getApplicationType();
+		
+		try {
+			final String file = MergeDataFiles.compact(directory, metric.getGlob());
+			data_file[metric_raw_id] = new ThreadLevelDataFile(file, metric);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 
@@ -216,27 +152,6 @@ public class ThreadLevelDataManager {
 	private void debugln(PrintStream stream, String s) {
 		if (flag_debug) {
 			stream.println(s);
-		}
-	}
-	
-	private void debug(PrintStream stream, String s) {
-		if (flag_debug) {
-			stream.print(s);
-		}
-	}
-	
-	public class MetricFileMerger {
-		public void merge(String directory, MetricRaw metric) throws IOException {
-			String resultFileName = mergedMetricFilename();
-			File dir = new File(directory);
-			File files[] = dir.listFiles(new Util.FileThreadsMetricFilter(metric.getGlob()));
-
-			FileMerger.merge(directory, resultFileName, files);
-		}
-		
-		public String mergedMetricFilename() {
-			String resultFileName = "experiment.mdb";
-			return resultFileName;
 		}
 	}
 	

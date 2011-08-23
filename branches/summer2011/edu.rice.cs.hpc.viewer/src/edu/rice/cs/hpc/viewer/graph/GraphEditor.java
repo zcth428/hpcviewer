@@ -118,9 +118,8 @@ public abstract class GraphEditor extends GraphEditorBase {
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
 
-		ThreadLevelDataFile.ApplicationType type = objDataManager.getApplicationType();
 		
-		String axis_x = this.getXAxisTitle(type);
+		String axis_x = this.getXAxisTitle(objDataManager.getThreadLevelDataFile(metric.getID()));
 		chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );
 		chart.getAxisSet().getYAxis(0).getTitle().setText( "Metrics" );
 	}
@@ -130,7 +129,7 @@ public abstract class GraphEditor extends GraphEditorBase {
 	 * @param type
 	 * @return
 	 */
-	protected abstract String getXAxisTitle(ThreadLevelDataFile.ApplicationType type);
+	protected abstract String getXAxisTitle(ThreadLevelDataFile data);
 
 	/*****
 	 * retrieve the value of Xs

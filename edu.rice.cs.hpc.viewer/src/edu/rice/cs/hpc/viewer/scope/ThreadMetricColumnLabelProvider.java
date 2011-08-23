@@ -23,19 +23,19 @@ public class ThreadMetricColumnLabelProvider extends BaseMetricColumnProvider {
 	public String getText(Object element) {
 		String text = null; 
 
-		if ((_metric != null) && (element instanceof Scope)) {
+/*		if ((_metric != null) && (element instanceof Scope)) {
 			
 			Scope node = (Scope) element;
 			try {
-				double value = dataManager.getMetric(_rank_sequence, _metric, node.getCCTIndex());
-				text = String.valueOf(value);
+				//double value = dataManager.getMetric(_rank_sequence, _metric, node.getCCTIndex());
+				//text = String.valueOf(value);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
 			
-		}
+		}*/
 		return text;
 
 	}

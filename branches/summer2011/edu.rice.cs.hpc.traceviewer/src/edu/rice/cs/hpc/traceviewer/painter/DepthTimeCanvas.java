@@ -39,9 +39,6 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	/** The number of time units being displayed on the Detail View.*/
 	long numTimeUnitsDisp;
 	
-	/**The min number of time units you can zoom in*/
-    private final static int MIN_TIME_UNITS_DISP = 1;
-	
 	/**The selected time that is open in the csViewer.*/
 	double selectedTime;
 	
@@ -258,10 +255,10 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		
 		assertTimeBounds();
 		
-		if (numTimeUnitsDisp < MIN_TIME_UNITS_DISP)
+		if (numTimeUnitsDisp < Constants.MIN_TIME_UNITS_DISP)
 		{
-			begTime += (numTimeUnitsDisp - MIN_TIME_UNITS_DISP)/2;
-			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
+			begTime += (numTimeUnitsDisp - Constants.MIN_TIME_UNITS_DISP)/2;
+			numTimeUnitsDisp = Constants.MIN_TIME_UNITS_DISP;
 			endTime = begTime + numTimeUnitsDisp;
 			assertTimeBounds();
 		}
@@ -370,7 +367,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			else
 			{
 				//If we're zoomed in all the way don't do anything
-				if(numTimeUnitsDisp > MIN_TIME_UNITS_DISP)
+				if(numTimeUnitsDisp > Constants.MIN_TIME_UNITS_DISP)
 				{
 					//pushUndo();
 					adjustSelection(mouseDown,mouseUp);

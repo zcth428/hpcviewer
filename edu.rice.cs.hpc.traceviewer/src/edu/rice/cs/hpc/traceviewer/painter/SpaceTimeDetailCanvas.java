@@ -119,9 +119,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     /**The Label with the current cross hair information.*/
     public Label crossHairLabel;
         
-    /**The min number of time units you can zoom in.*/
-    private final static long MIN_TIME_UNITS_DISP = 1;
-    
     /**The min number of process units you can zoom in.*/
     private final static int MIN_PROC_DISP = 1;
     
@@ -319,10 +316,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		assertProcessBounds();
 		assertTimeBounds();
 		
-		if (numTimeUnitsDisp < MIN_TIME_UNITS_DISP)
+		if (numTimeUnitsDisp < Constants.MIN_TIME_UNITS_DISP)
 		{
-			begTime += (numTimeUnitsDisp - MIN_TIME_UNITS_DISP) / 2;
-			numTimeUnitsDisp = MIN_TIME_UNITS_DISP;
+			begTime += (numTimeUnitsDisp - Constants.MIN_TIME_UNITS_DISP) / 2;
+			numTimeUnitsDisp = Constants.MIN_TIME_UNITS_DISP;
 			endTime = begTime + numTimeUnitsDisp;
 		}
 		
@@ -881,7 +878,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.undoButton.setEnabled( this.undoStack.size()>0 );
 		this.redoButton.setEnabled( this.redoStack.size()>0 );
 		
-		this.tZoomInButton.setEnabled( numTimeUnitsDisp > MIN_TIME_UNITS_DISP );
+		this.tZoomInButton.setEnabled( numTimeUnitsDisp > Constants.MIN_TIME_UNITS_DISP );
 		this.tZoomOutButton.setEnabled(this.begTime>0 || this.endTime<stData.getWidth() );
 		
 		this.pZoomInButton.setEnabled( numProcessDisp > MIN_PROC_DISP );
@@ -1062,7 +1059,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			else
 			{
 				//If we're zoomed in all the way don't do anything
-				if(numTimeUnitsDisp == MIN_TIME_UNITS_DISP)
+				if(numTimeUnitsDisp == Constants.MIN_TIME_UNITS_DISP)
 				{
 					if(numProcessDisp > MIN_PROC_DISP)
 					{

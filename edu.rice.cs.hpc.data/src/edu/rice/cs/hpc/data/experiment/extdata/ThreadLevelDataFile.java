@@ -5,6 +5,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
+import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 
 
@@ -16,15 +17,6 @@ import edu.rice.cs.hpc.data.util.LargeByteBuffer;
  */
 public class ThreadLevelDataFile {
 
-	//-----------------------------------------------------------
-	// CONSTANTS
-	//-----------------------------------------------------------
-	
-	static public final int MULTI_PROCESSES = 1;
-	static public final int MULTI_THREADING = 2;
-
-	public static final int SIZEOF_LONG = 8;
-	public static final int SIZEOF_INT = 4;
 	// header bytes to skip
 	static private final int HEADER_LONG	=	32;
 
@@ -32,7 +24,7 @@ public class ThreadLevelDataFile {
 	// Global variables
 	//-----------------------------------------------------------
 	
-	private int type = MULTI_PROCESSES | MULTI_THREADING; // default is hybrid
+	private int type = Constants.MULTI_PROCESSES | Constants.MULTI_THREADING; // default is hybrid
 	
 	private LargeByteBuffer masterBuff;
 	
@@ -79,23 +71,23 @@ public class ThreadLevelDataFile {
 		masterBuff = new LargeByteBuffer(f);
 
 		this.type = masterBuff.getInt(0);
-		this.numFiles = masterBuff.getInt(SIZEOF_INT);
+		this.numFiles = masterBuff.getInt(Constants.SIZEOF_INT);
 		
 		valuesX = new String[numFiles];
 		offsets = new long[numFiles];
 		
-		long current_pos = SIZEOF_INT * 2;
+		long current_pos = Constants.SIZEOF_INT * 2;
 		
 		// get the procs and threads IDs
 		for(int i=0; i<numFiles; i++) {
 
 			final int proc_id = masterBuff.getInt(current_pos);
-			current_pos += SIZEOF_INT;
+			current_pos += Constants.SIZEOF_INT;
 			final int thread_id = masterBuff.getInt(current_pos);
-			current_pos += SIZEOF_INT;
+			current_pos += Constants.SIZEOF_INT;
 			
 			offsets[i] = masterBuff.getLong(current_pos);
-			current_pos += SIZEOF_LONG;
+			current_pos += Constants.SIZEOF_LONG;
 			
 			//--------------------------------------------------------------------
 			// adding list of x-axis 
@@ -125,7 +117,7 @@ public class ThreadLevelDataFile {
 	 * @return true if this is the case
 	 */
 	public boolean isMultiProcess() {
-		return (type & MULTI_PROCESSES) != 0;
+		return (type & Constants.MULTI_PROCESSES) != 0;
 	}
 	
 	/**
@@ -134,7 +126,7 @@ public class ThreadLevelDataFile {
 	 * @return
 	 */
 	public boolean isMultiThreading() {
-		return (type & MULTI_THREADING) != 0;
+		return (type & Constants.MULTI_THREADING) != 0;
 	}
 	
 	/***
@@ -175,7 +167,7 @@ public class ThreadLevelDataFile {
 	 * @return
 	 */
 	private long getFilePosition(long nodeIndex, int metricIndex, int num_metrics) {
-		return ((nodeIndex-1) * num_metrics * SIZEOF_LONG) + (metricIndex * SIZEOF_LONG) +
+		return ((nodeIndex-1) * num_metrics * Constants.SIZEOF_LONG) + (metricIndex * Constants.SIZEOF_LONG) +
 			// header to skip
 			HEADER_LONG;
 	}

@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 
@@ -12,8 +11,6 @@ import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
  *
  */
 public class ThreadLevelDataManager {
-
-	final private boolean flag_debug = false;
 
 	private ThreadLevelDataFile data_file[];
 	private Experiment experiment;
@@ -99,6 +96,7 @@ public class ThreadLevelDataManager {
 	 * retrive an array of raw metric value of a given node and raw metric
 	 * @param metric: raw metric
 	 * @param node_index: normalized node index
+	 * 
 	 * @return array of doubles of metric value
 	 */
 	public double[] getMetrics(MetricRaw metric, long node_index)
@@ -138,7 +136,10 @@ public class ThreadLevelDataManager {
 		MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
 		
 		try {
+			// the compact method will return the name of the compacted files.
+			// if the file doesn't exist, it will be created automatically
 			final String file = MergeDataFiles.compact(directory, metric.getGlob());
+			
 			data_file[metric_raw_id] = new ThreadLevelDataFile(file, metric);
 			
 		} catch (IOException e) {
@@ -147,13 +148,5 @@ public class ThreadLevelDataManager {
 		}
 	}
 
-
-	
-	private void debugln(PrintStream stream, String s) {
-		if (flag_debug) {
-			stream.println(s);
-		}
-	}
-	
 
 } 

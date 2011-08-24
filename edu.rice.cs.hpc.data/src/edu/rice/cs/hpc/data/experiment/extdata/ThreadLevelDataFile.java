@@ -46,7 +46,6 @@ public class ThreadLevelDataFile {
 	 */
 	public ThreadLevelDataFile(String filename, MetricRaw m) throws IOException {
 		
-		
 		if (filename != null) {
 			
 			//---------------------------------------------
@@ -56,19 +55,12 @@ public class ThreadLevelDataFile {
 			this.setData(filename, m.getID());
 		}
 	}
-
-	/****
-	 * retrieve the number of datas (x values)
-	 * @return
-	 */
-	public int size() {
-		return numFiles;
-	}
 	
 		
 	
 	/***
 	 * retrieve the array of process IDs
+	 * 
 	 * @return
 	 */
 	public String []getValuesX() {
@@ -127,27 +119,41 @@ public class ThreadLevelDataFile {
 		}
 	}
 
-	
-	/****
-	 * retrieve the type of application (hybrid, mpi or openmp)
-	 * @return ApplicationType
+	/**
+	 * Check if the application is a multi-processing program (like MPI)
+	 * 
+	 * @return true if this is the case
 	 */
-	public int getApplicationType() {
-		return this.type;
-	}
-	
 	public boolean isMultiProcess() {
 		return (type & MULTI_PROCESSES) != 0;
 	}
 	
+	/**
+	 * Check if the application is a multi-threading program (OpenMP for instance)
+	 * 
+	 * @return
+	 */
 	public boolean isMultiThreading() {
 		return (type & MULTI_THREADING) != 0;
 	}
 	
+	/***
+	 * Check if the application is a hybrid program (MPI+OpenMP)
+	 * 
+	 * @return
+	 */
 	public boolean isHybrid() {
 		return (isMultiProcess() && isMultiThreading());
 	}
 
+	/**
+	 * return all metric values of a specified node and metric index
+	 * 
+	 * @param nodeIndex: normalized node index 
+	 * @param metricIndex: the index of the metrics
+	 * @param numMetrics: the number of metrics in the experiment
+	 * @return
+	 */
 	public double[] getMetrics(long nodeIndex, int metricIndex, int numMetrics) {
 	
 		double []metrics = new double[this.numFiles];

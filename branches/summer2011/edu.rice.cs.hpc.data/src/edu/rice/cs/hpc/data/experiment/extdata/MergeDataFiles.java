@@ -20,8 +20,8 @@ import edu.rice.cs.hpc.data.util.Util;
  * 
  * Example of output file:
  * 
- * Single.hpctrace
- * Single.metric-db
+ * data.hpctrace.single
+ * data.metric-db.single
  * 
  * @author laksono 
  *
@@ -33,6 +33,16 @@ public class MergeDataFiles {
 	private static final int PROC_POS = 5;
 	private static final int THREAD_POS = 4;
 	
+	
+	/***
+	 * create a single file from multiple data files
+	 * 
+	 * @param directory
+	 * @param globInputFile
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	public static String compact(File directory, String globInputFile) throws IOException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
@@ -50,11 +60,9 @@ public class MergeDataFiles {
 		DataOutputStream dos = new DataOutputStream(fos);
 		
 		//-----------------------------------------------------
-		//write the header:
+		// 1. write the header:
 		//  int type (0: unknown, 1: mpi, 2: openmp, 3: hybrid, ...
 		//	int num_files
-		//  for all files:
-		//		int proc-id, int thread-id, long offset
 		//-----------------------------------------------------
 
 		int type = 0;
@@ -70,7 +78,13 @@ public class MergeDataFiles {
 		final long num_metric_index  = file_metric.length * (ThreadLevelDataFile.SIZEOF_LONG + 2 * ThreadLevelDataFile.SIZEOF_INT );
 		long offset = num_metric_header + num_metric_index;
 
-		//write the index
+		//-----------------------------------------------------
+		// 2. Record the process ID, thread ID and the offset 
+		//   It will also detect if the application is mp, mt, or hybrid
+		//	 no accelator is supported
+		//  for all files:
+		//		int proc-id, int thread-id, long offset
+		//-----------------------------------------------------
 		for(int i = 0; i < file_metric.length; ++i)
 		{
 			//get the core number and thread number
@@ -95,7 +109,9 @@ public class MergeDataFiles {
 			offset += file_metric[i].length();
 		}
 		
-		//copy the traces
+		//-----------------------------------------------------
+		// 3. Copy all data from the multiple files into one file
+		//-----------------------------------------------------
 		for(int i = 0; i < file_metric.length; ++i) {
 			DataInputStream dis = new DataInputStream(new FileInputStream(file_metric[i]));
 			byte[] data = new byte[PAGE_SIZE_GUESS];
@@ -111,7 +127,10 @@ public class MergeDataFiles {
 		
 		dos.close();
 		
-		// write the type of the application
+		//-----------------------------------------------------
+		// 4. write the type of the application
+		//  	the type of the application is computed in step 2
+		//-----------------------------------------------------
 		RandomAccessFile f = new RandomAccessFile(outputFile, "rw");
 		f.writeInt(type);
 		f.close();

@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.data.experiment.extdata;
+package edu.rice.cs.hpc.data.util;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -7,7 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import edu.rice.cs.hpc.data.util.Util;
+
 
 
 /*****
@@ -74,8 +74,8 @@ public class MergeDataFiles {
 		
 		dos.writeInt(file_metric.length);
 		
-		final long num_metric_header = 2 * ThreadLevelDataFile.SIZEOF_INT;
-		final long num_metric_index  = file_metric.length * (ThreadLevelDataFile.SIZEOF_LONG + 2 * ThreadLevelDataFile.SIZEOF_INT );
+		final long num_metric_header = 2 * Constants.SIZEOF_INT;
+		final long num_metric_index  = file_metric.length * (Constants.SIZEOF_LONG + 2 * Constants.SIZEOF_INT );
 		long offset = num_metric_header + num_metric_index;
 
 		//-----------------------------------------------------
@@ -97,12 +97,12 @@ public class MergeDataFiles {
 			final int proc = Integer.parseInt(tokens[num_tokens-PROC_POS]);
 			dos.writeInt(proc);
 			if (proc != 0)
-				type |= ThreadLevelDataFile.MULTI_PROCESSES;
+				type |= Constants.MULTI_PROCESSES;
 			
 			final int thread = Integer.parseInt(tokens[num_tokens-THREAD_POS]);
 			dos.writeInt(thread);
 			if (thread != 0)
-				type |= ThreadLevelDataFile.MULTI_THREADING;
+				type |= Constants.MULTI_THREADING;
 			
 
 			dos.writeLong(offset);

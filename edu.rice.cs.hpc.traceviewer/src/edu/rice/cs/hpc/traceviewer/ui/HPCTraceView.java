@@ -44,7 +44,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	 ************************************************************************/
 	public void createPartControl(Composite master)
 	{
-		this.getViewSite().getShell().setMaximized(true);
+		// Laksono: do NOT maximize. On Linux with some WM, you can't restore it back !
+		//this.getViewSite().getShell().setMaximized(true);
 		/*************************************************************************
 		 * Master Composite
 		 ************************************************************************/

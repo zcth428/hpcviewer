@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
@@ -34,15 +35,33 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 			return;		// get method already issued error dialog
 		}
 		
+		final IWorkbenchPage curPage = window.getActivePage();
 		final String[] dbArray = vWin.getDatabasePaths();
+		
 		if (dbArray.length == 0) {
 			MessageDialog.openError(window.getShell(), 
 					"Error: No Open Database's Found.", 
 					"There are no databases in this window which can be closed.");
 			return;		// set method already issued error dialog
+			
+		} else if (dbArray.length == 1) {
+			
+			// ------------------------------------------------------------
+			// if only one database is opened, we just close everything
+			//	no need to ask which database to close !
+			// ------------------------------------------------------------
+			curPage.closeAllEditors(false);
+			final IViewReference viewRefs[] = curPage.getViewReferences();
+			
+			for (IViewReference viewRef: viewRefs) {
+				curPage.hideView(viewRef);
+			}
+			
+			vWin.removeDatabase(dbArray[0]);
+			return;
 		}
 
-		List<String> dbList = Arrays.asList(dbArray);
+		final List<String> dbList = Arrays.asList(dbArray);
 
 		// put up a dialog with the open databases in the current window in a drop down selection box
 		ListSelectionDialog dlg = new ListSelectionDialog(window.getShell(), dbList, 
@@ -56,6 +75,10 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 		}
 		
 		String[] selectedStrings = new String[selectedDatabases.length];
+		
+		// -----------------------------------------------------------------------
+		// close the databases, and all editors and views associated with them
+		// -----------------------------------------------------------------------
 		for (int i=0 ; i<selectedDatabases.length ; i++) {
 			selectedStrings[i] = selectedDatabases[i].toString();
 			
@@ -67,7 +90,6 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 				continue;
 			}
 		
-			IWorkbenchPage curPage = window.getActivePage();
 
 			// close any open editor windows for this database
 			final org.eclipse.ui.IEditorReference editors[] = curPage.getEditorReferences();

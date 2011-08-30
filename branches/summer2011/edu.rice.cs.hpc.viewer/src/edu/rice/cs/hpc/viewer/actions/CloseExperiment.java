@@ -88,7 +88,7 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 					// at the moment we don't have mechanism to compare database
 					// thus, we just compare the path 
 					// ----------------------------------------------------------
-					if (dir.getAbsolutePath().startsWith(selectedStrings[i])) {
+					if (dir.getAbsolutePath().equals(selectedStrings[i])) {
 						curPage.closeEditor(edPart, false);
 					}
 				}

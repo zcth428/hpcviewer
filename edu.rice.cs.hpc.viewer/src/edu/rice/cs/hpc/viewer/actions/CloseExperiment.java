@@ -9,6 +9,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -17,6 +18,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
 import edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
@@ -68,14 +70,25 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 			IWorkbenchPage curPage = window.getActivePage();
 
 			// close any open editor windows for this database
-			org.eclipse.ui.IEditorReference editors[] = curPage.getEditorReferences();
-			int nbEditors = editors.length;
-			for(int j=0;j<nbEditors;j++) {
-				String title = editors[j].getTitle();
-				// if this is for the database being closed, remove it (hiding it actually deletes it)
-				if (title.startsWith((dbNum+1) + "-")) {
-					IEditorPart edPart = editors[j].getEditor(true);
-					if (edPart != null) {
+			final org.eclipse.ui.IEditorReference editors[] = curPage.getEditorReferences();
+			for (IEditorReference editor: editors) {
+				IEditorPart edPart = editor.getEditor(false);
+				
+				// ----------------------------------------------------------
+				// if the editor is an instance of hpcviewer's editor, then we close it
+				// 		if the database associated with it is the same as the database we
+				//		want to close
+				// ----------------------------------------------------------
+				if (edPart instanceof IViewerEditor) {
+					final IViewerEditor viewerEditor = (IViewerEditor) edPart;
+					final Experiment exp = viewerEditor.getExperiment();
+					final File dir = exp.getDefaultDirectory();
+					
+					// ----------------------------------------------------------
+					// at the moment we don't have mechanism to compare database
+					// thus, we just compare the path 
+					// ----------------------------------------------------------
+					if (dir.getAbsolutePath().startsWith(selectedStrings[i])) {
 						curPage.closeEditor(edPart, false);
 					}
 				}

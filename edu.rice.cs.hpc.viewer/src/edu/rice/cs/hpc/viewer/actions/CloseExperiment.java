@@ -12,7 +12,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
@@ -37,6 +36,7 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 		
 		final IWorkbenchPage curPage = window.getActivePage();
 		final String[] dbArray = vWin.getDatabasePaths();
+		Object[] databasesToClose;
 		
 		if (dbArray.length == 0) {
 			MessageDialog.openError(window.getShell(), 
@@ -50,41 +50,35 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 			// if only one database is opened, we just close everything
 			//	no need to ask which database to close !
 			// ------------------------------------------------------------
-			curPage.closeAllEditors(false);
-			final IViewReference viewRefs[] = curPage.getViewReferences();
+
+			databasesToClose = dbArray;
+		} else {
 			
-			for (IViewReference viewRef: viewRefs) {
-				curPage.hideView(viewRef);
+			final List<String> dbList = Arrays.asList(dbArray);
+
+			// put up a dialog with the open databases in the current window in a drop down selection box
+			ListSelectionDialog dlg = new ListSelectionDialog(window.getShell(), dbList, 
+				new ArrayContentProvider(), new LabelProvider(), "Select the databases to close:");
+			dlg.setTitle("Select Databases");
+			dlg.open();
+			Object[] selectedDatabases = dlg.getResult();
+
+			if ((selectedDatabases == null) || (selectedDatabases.length <= 0)) {
+				return;
 			}
+			databasesToClose = selectedDatabases;
 			
-			vWin.removeDatabase(dbArray[0]);
-			return;
 		}
 
-		final List<String> dbList = Arrays.asList(dbArray);
-
-		// put up a dialog with the open databases in the current window in a drop down selection box
-		ListSelectionDialog dlg = new ListSelectionDialog(window.getShell(), dbList, 
-			new ArrayContentProvider(), new LabelProvider(), "Select the databases to close:");
-		dlg.setTitle("Select Databases");
-		dlg.open();
-		Object[] selectedDatabases = dlg.getResult();
-
-		if ((selectedDatabases == null) || (selectedDatabases.length <= 0)) {
-			return;
-		}
-		
-		String[] selectedStrings = new String[selectedDatabases.length];
 		
 		// -----------------------------------------------------------------------
 		// close the databases, and all editors and views associated with them
 		// -----------------------------------------------------------------------
-		for (int i=0 ; i<selectedDatabases.length ; i++) {
-			selectedStrings[i] = selectedDatabases[i].toString();
+		for (Object selectedDatabase: databasesToClose) {
 			
-			vWin.getDb(selectedStrings[i]);
+			vWin.getDb(selectedDatabase.toString());
 			// remove the database from our database manager information
-			int dbNum = vWin.removeDatabase(selectedStrings[i]);
+			int dbNum = vWin.removeDatabase(selectedDatabase.toString());
 			if (dbNum < 0) {
 				// can close views for an entry we could not find
 				continue;
@@ -110,7 +104,7 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 					// at the moment we don't have mechanism to compare database
 					// thus, we just compare the path 
 					// ----------------------------------------------------------
-					if (dir.getAbsolutePath().equals(selectedStrings[i])) {
+					if (dir.getAbsolutePath().equals(selectedDatabase)) {
 						curPage.closeEditor(edPart, false);
 					}
 				}
@@ -128,7 +122,7 @@ public class CloseExperiment implements IWorkbenchWindowActionDelegate {
 					final int dbDir = xmlFileName.lastIndexOf(File.separator);
 					xmlFileName = xmlFileName.substring(0, dbDir);
 					
-					if (selectedStrings[i].equals(xmlFileName)) {
+					if (selectedDatabase.equals(xmlFileName)) {
 						curPage.hideView(objView);
 					}
 				}

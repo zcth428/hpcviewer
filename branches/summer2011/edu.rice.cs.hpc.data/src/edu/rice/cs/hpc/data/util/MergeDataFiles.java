@@ -53,8 +53,14 @@ public class MergeDataFiles {
 		final File fout = new File(outputFile);
 		
 		// check if the file already exists
-		if (fout.canRead())
-			return outputFile;
+		if (fout.canRead() )
+		{
+			if (isMergedFileCorrect(outputFile))			
+				return outputFile;
+			
+			// the file exists but corrupted. In this case, we have to remove and create a new one
+			fout.delete();
+		}
 		
 		FileOutputStream fos = new FileOutputStream(outputFile);
 		DataOutputStream dos = new DataOutputStream(fos);
@@ -137,6 +143,7 @@ public class MergeDataFiles {
 			dis.close();
 			
 		}		
+		insertMarker(dos);
 		
 		dos.close();
 		
@@ -150,5 +157,39 @@ public class MergeDataFiles {
 		
 		return outputFile;
 
+	}
+	
+	
+	/** Magic marker for the end of the file **/
+	static private long MARKER_END_MERGED_FILE = 0xDEADF00D;
+	
+	
+	/***
+	 * insert a marker at the end of the file
+	 * @param dos: output stream. It has to be the end of the file
+	 * @throws IOException
+	 */
+	static private void insertMarker(DataOutputStream dos) throws IOException
+	{
+		dos.writeLong(MARKER_END_MERGED_FILE);
+	}
+	
+	
+	/***
+	 * Check if a file is a good merged file
+	 * @param filename
+	 * @return
+	 * @throws IOException
+	 */
+	static private boolean isMergedFileCorrect(String filename) throws IOException
+	{
+		RandomAccessFile f = new RandomAccessFile(filename, "r");
+		
+		final long pos = f.length() - Constants.SIZEOF_LONG;
+		f.seek(pos);
+		final long marker = f.readLong();
+		f.close();
+		
+		return (marker == MARKER_END_MERGED_FILE);
 	}
 }

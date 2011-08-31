@@ -296,7 +296,7 @@ public class TraceDataByRank {
 	 * @author laksonoadhianto
 	 *
 	 */
-	static public class TimeCPID 
+	private class TimeCPID 
 	{
 		public double timestamp;
 		public int cpid;

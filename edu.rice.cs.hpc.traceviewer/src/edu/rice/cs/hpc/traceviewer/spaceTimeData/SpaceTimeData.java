@@ -4,27 +4,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.HashMap;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.lang.Math;
-import java.nio.channels.FileChannel;
-
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.util.LargeByteBuffer;
+import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /*************************************************************************
  * 
@@ -45,17 +40,11 @@ public class SpaceTimeData extends TraceEvents
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	private Image[] compositeLines;
 	
-	/**The byte buffer that contains all the data from the trace file*/
-	public LargeByteBuffer masterBuff;
-	
 	/** Stores the color to function name assignments for all of the functions in all of the processes.*/
 	private ColorTable colorTable;
 	
 	/**The map between the nodes and the cpid's.*/
 	private HashMap<Integer, CallPath> scopeMap;
-	
-	/**The total number of traces.*/
-	private int height;
 	
 	/**The maximum depth of any single CallStackSample in any trace.*/
 	private int maxDepth;
@@ -98,8 +87,10 @@ public class SpaceTimeData extends TraceEvents
 	private IStatusLineManager statusMgr;
 	private Shell shell;
 	
-	AtomicInteger progress = new AtomicInteger(0);
+	private BaseDataFile dataTrace;
+	private final AtomicInteger progress = new AtomicInteger(0);
 	
+	 
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
@@ -116,8 +107,7 @@ public class SpaceTimeData extends TraceEvents
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
 		try
 		{
-			FileChannel f = new RandomAccessFile(traceFile, "r").getChannel();
-			masterBuff = new LargeByteBuffer(f);
+			dataTrace = new BaseDataFile(traceFile.getAbsolutePath());
 		}
 		catch (IOException e)
 		{
@@ -150,8 +140,6 @@ public class SpaceTimeData extends TraceEvents
 		
 		minBegTime = exp.trace_minBegTime;
 		maxEndTime = exp.trace_maxEndTime;
-		
-		height = masterBuff.getInt(0);
 		
 		// default position
 		this.currentPosition = new Position(0,0);
@@ -188,7 +176,7 @@ public class SpaceTimeData extends TraceEvents
 	 ******************************************************************************/
 	public int getHeight()
 	{
-		return height;
+		return dataTrace.getNumberOfFiles();
 	}
 	
 	/*************************************************************************
@@ -277,9 +265,7 @@ public class SpaceTimeData extends TraceEvents
 	 *  @param numPixelsV		 The number of vertical pixels to be painted.
 	 ***********************************************************************************/
 	public void paintDetailViewport(GC masterGC, SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
-	{
-		boolean detailCanvas = canvas instanceof SpaceTimeDetailCanvas;
-		
+	{	
 		boolean changedBounds = true;
 		if (begTime == _begTime && endTime == _endTime && begProcess == _begProcess && endProcess == _endProcess && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
 			changedBounds = false;
@@ -297,7 +283,7 @@ public class SpaceTimeData extends TraceEvents
 		int linesToPaint = Math.min(numPixelsV, endProcess - begProcess);
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
 		
-		if (detailCanvas) beginProgress(linesToPaint);
+		beginProgress(linesToPaint);
 		
 		compositeLines = new Image[linesToPaint];
 		lineNum = 0;
@@ -314,7 +300,7 @@ public class SpaceTimeData extends TraceEvents
 			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 				while (threads[threadNum].isAlive()) {
 					Thread.sleep(30);
-					if (detailCanvas) reportProgress();
+					reportProgress();
 				}
 			}
 		}
@@ -327,7 +313,7 @@ public class SpaceTimeData extends TraceEvents
 			masterGC.drawImage(compositeLines[i], 0, yposition);
 		}
 		
-		if (detailCanvas) endProgress();
+		endProgress();
 	}
 	
 	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
@@ -357,7 +343,7 @@ public class SpaceTimeData extends TraceEvents
 			
 			compositeLines = new Image[linesToPaint];
 			lineNum = 0;
-			depthTrace = new ProcessTimeline(lineNum, scopeMap, masterBuff, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
+			depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
 			
 			depthTrace.readInData(getHeight());
 			depthTrace.shiftTimeBy(minBegTime);
@@ -521,7 +507,7 @@ public class SpaceTimeData extends TraceEvents
 		{
 			lineNum++;
 			if(changedBounds)
-				return new ProcessTimeline(lineNum-1, scopeMap, masterBuff, lineToPaint(lineNum-1), numPixelsH, endTime-begTime, minBegTime + begTime);
+				return new ProcessTimeline(lineNum-1, scopeMap, dataTrace, lineToPaint(lineNum-1), numPixelsH, endTime-begTime, minBegTime + begTime);
 			else
 				return traces[lineNum-1];
 		}
@@ -542,9 +528,9 @@ public class SpaceTimeData extends TraceEvents
 				lineNum++;
 				return depthTrace;
 			}
-			ProcessTimeline toDonate = new ProcessTimeline(lineNum, scopeMap, masterBuff, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
-			toDonate.times = depthTrace.times;
-			toDonate.timeLine = depthTrace.timeLine;
+			ProcessTimeline toDonate = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
+			toDonate.copyData(depthTrace);
+			
 			lineNum++;
 			return toDonate;
 		}
@@ -584,6 +570,12 @@ public class SpaceTimeData extends TraceEvents
 	public Position getPosition()
 	{
 		return this.currentPosition;
+	}
+	
+	
+	public BaseDataFile getTraceData()
+	{
+		return this.dataTrace;
 	}
 	
 	private void printDebug(String str)

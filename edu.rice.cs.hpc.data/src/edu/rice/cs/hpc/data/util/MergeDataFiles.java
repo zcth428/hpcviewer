@@ -43,12 +43,12 @@ public class MergeDataFiles {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String compact(File directory, String globInputFile) throws IOException {
+	public static String compact(File directory, String globInputFile, String newSuffix) throws IOException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
 		final String suffix = globInputFile.substring(last_dot);
 
-		final String outputFile = directory.getAbsolutePath() + File.separatorChar + "data" + suffix + ".single";
+		final String outputFile = directory.getAbsolutePath() + File.separatorChar + "experiment." + newSuffix;
 		
 		final File fout = new File(outputFile);
 		
@@ -74,10 +74,12 @@ public class MergeDataFiles {
 		
 		dos.writeInt(file_metric.length);
 		
-		final long num_metric_header = 2 * Constants.SIZEOF_INT;
+		final long num_metric_header = 2 * Constants.SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes) 
 		final long num_metric_index  = file_metric.length * (Constants.SIZEOF_LONG + 2 * Constants.SIZEOF_INT );
 		long offset = num_metric_header + num_metric_index;
 
+		int name_format = 0;  // FIXME hack:some hpcprof revisions have different format name !!
+		
 		//-----------------------------------------------------
 		// 2. Record the process ID, thread ID and the offset 
 		//   It will also detect if the application is mp, mt, or hybrid
@@ -94,12 +96,23 @@ public class MergeDataFiles {
 			String []tokens = basic_name.split("-");
 			
 			final int num_tokens = tokens.length;
-			final int proc = Integer.parseInt(tokens[num_tokens-PROC_POS]);
+			if (num_tokens < PROC_POS)
+				// if it is wrong file with the right extension, we skip 
+				continue;
+			
+			int proc ;
+			try {
+				proc = Integer.parseInt(tokens[name_format + num_tokens-PROC_POS]);
+			} catch (NumberFormatException e) {
+				// old version of name format
+				name_format = 1; 
+				proc = Integer.parseInt(tokens[name_format + num_tokens-PROC_POS]);
+			}
 			dos.writeInt(proc);
 			if (proc != 0)
 				type |= Constants.MULTI_PROCESSES;
 			
-			final int thread = Integer.parseInt(tokens[num_tokens-THREAD_POS]);
+			final int thread = Integer.parseInt(tokens[name_format + num_tokens-THREAD_POS]);
 			dos.writeInt(thread);
 			if (thread != 0)
 				type |= Constants.MULTI_THREADING;

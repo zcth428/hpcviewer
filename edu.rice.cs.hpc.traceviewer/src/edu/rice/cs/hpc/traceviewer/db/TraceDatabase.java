@@ -9,7 +9,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
+import edu.rice.cs.hpc.data.util.MergeDataFiles;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
@@ -26,7 +26,7 @@ public class TraceDatabase
 {
 	
 	/**the minimum size a trace file must be in order to be correctly formatted*/
-	final private static int MIN_TRACE_SIZE = ProcessTimeline.SIZE_OF_MASTER_HEADER+8+ProcessTimeline.SIZE_OF_HEADER+ProcessTimeline.SIZE_OF_TRACE_RECORD*2;
+	final private static int MIN_TRACE_SIZE = 32+8+TraceDataByRank.SIZE_OF_HEADER+TraceDataByRank.SIZE_OF_TRACE_RECORD*2;
 	
 	/**a file holding an concatenated collection of all the trace files*/
 	private File traceFile = null;
@@ -167,27 +167,25 @@ public class TraceDatabase
 			experimentFile = new File(directory + File.separatorChar + "experiment.xml");
 			
 			if (experimentFile.canRead()) {
-				File traceFile = new File(directory + File.separatorChar + TraceMerger.RESULT_FILE_NAME);
 				try {
-					if (!traceFile.canRead()) {
-						statusMgr.setMessage("Merging traces ...");
-						shell.update();
-						TraceMerger.merge(directory);
-						traceFile = new File(directory + File.separatorChar + TraceMerger.RESULT_FILE_NAME);
+					statusMgr.setMessage("Merging traces ...");
+					final String traceFilename = MergeDataFiles.compact(dirFile, "*.hpctrace", "mt");
+					final File traceFile = new File(traceFilename);
+
+					if (traceFile.length() > MIN_TRACE_SIZE) {
+						this.traceFile = traceFile;
+						return true;
+					} else {
+						System.err.println("Warning! Trace file " + traceFile.getName() + " is too small: " 
+								+ traceFile.length() + "bytes .");
+						return false;
 					}
+
 				} 
 				catch (IOException e) {
 					e.printStackTrace();
 				}
 				
-				if (traceFile.length() > MIN_TRACE_SIZE) {
-					this.traceFile = traceFile;
-					return true;
-				} else {
-					System.err.println("Warning! Trace file " + traceFile.getName() + " is too small: " 
-							+ traceFile.length() + "bytes .");
-					return false;
-				}
 			}
 		}
 		return false;

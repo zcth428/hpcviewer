@@ -98,7 +98,6 @@ public abstract class BasePaintLine
 				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index)-begTime)/pixelLength)); 
 			}
 			
-			//Debugger.printTrace(" i: " + index + "\tcs: " + currSampleMidpoint + "\tss: " + succSampleMidpoint + "\td: " + currDepth);
 			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName);
 		}			
 	}

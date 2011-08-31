@@ -20,6 +20,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+
+import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
@@ -122,9 +124,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     /**The min number of process units you can zoom in.*/
     private final static int MIN_PROC_DISP = 1;
     
-    /**The type of data we're displaying*/
-    public static DataType datatype;
-	
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
 	public SpaceTimeDetailCanvas(Composite _composite)
 	{
@@ -139,9 +138,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		selectionTopLeftY = 0;
 		selectionBottomRightX = 0;
 		selectionBottomRightY = 0;
-		
-		
-		SpaceTimeDetailCanvas.datatype = DataType.Uninitialized;
+				
 		if (this.stData != null) {
 			this.addCanvasListener();
 		}
@@ -706,27 +703,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         timeLabel.setText("Time Range: [" + ((long)(begTime/1000))/1000.0 + "s ," + ((long)endTime/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-        String begProcessLabel = "";
-        String endProcessLabel = "";
-        switch(datatype)
-        {
-        case ProcessOnly:
-        	begProcessLabel = String.valueOf(stData.getProcess(0).processID);
-        	endProcessLabel = String.valueOf(stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).processID);
-        	break;
-        case ThreadsOnly:
-        	begProcessLabel = String.valueOf(stData.getProcess(0).threadID);
-        	endProcessLabel = String.valueOf(stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).threadID);
-        	break;
-        case ProcessAndThreads:
-        	begProcessLabel = stData.getProcess(0).processID+"."+stData.getProcess(0).threadID;
-        	endProcessLabel = stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).processID+"."+stData.getProcess(stData.getNumberOfDisplayedProcesses()-1).threadID;
-        	break;
-        default:
-        	System.out.println("PANIC - DATATYPE IS NOT AVAILABLE!");
-        }
+        final BaseDataFile traceData = this.stData.getTraceData();
         
-        processLabel.setText("Process Range: [" + begProcessLabel + "," + endProcessLabel+"]");
+        final String processes[] = traceData.getValuesX();
+        processLabel.setText("Process Range: [" + processes[0] + "," + processes[processes.length-1]+"]");
         processLabel.setSize(processLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         if(stData == null)
@@ -735,20 +715,24 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         {
     		long selectedTime = stData.getPosition().time;
     		String selectedProcessLabel = "";
-    		switch(datatype)
+    		
+            if (traceData.isMultiProcess())
             {
-            case ProcessOnly:
             	selectedProcessLabel = String.valueOf(stData.depthTrace.processID);
-            	break;
-            case ThreadsOnly:
+            	
+            } else if (traceData.isMultiThreading())
+            {
             	selectedProcessLabel = String.valueOf(stData.depthTrace.threadID);
-            	break;
-            case ProcessAndThreads:
+            	
+            } else if (traceData.isHybrid())
+            {
             	selectedProcessLabel = stData.depthTrace.processID+"."+stData.depthTrace.threadID;
-            	break;
-            default:
+            	
+            } else 
+            {
             	System.out.println("PANIC - DATATYPE IS NOT AVAILABLE!");
             }
+            
         	crossHairLabel.setText("Cross Hair: (" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcessLabel + ")");
         }
         

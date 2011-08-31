@@ -279,15 +279,9 @@ public class TraceDataByRank {
 	private void postProcess()
 	{
 		int len = listcpid.size();
-		for(int i = 0; i < len-2; i+=2)
+		for(int i = 0; i < len-2; i++)
 		{
 			while(i < len-1 && listcpid.get(i).timestamp==(listcpid.get(i+1).timestamp))
-			{
-				listcpid.remove(i+1);
-				len--;
-			}
-			while(i < len-2 && listcpid.get(i).timestamp==(listcpid.get(i+1).timestamp) 
-					&& listcpid.get(i+1).timestamp==(listcpid.get(i+2).timestamp))
 			{
 				listcpid.remove(i+1);
 				len--;

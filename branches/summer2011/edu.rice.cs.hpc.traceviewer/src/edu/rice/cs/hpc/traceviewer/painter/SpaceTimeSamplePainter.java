@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;

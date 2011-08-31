@@ -38,11 +38,7 @@ public class CallPath
 	
 	public CallPath(Scope _leafScope, int _maxDepth)
 	{
-		leafScope = _leafScope;
-		maxDepth = _maxDepth;
-		currentDepth = maxDepth;
-		currentDepthScope = null;
-		functionNames = new Vector<String>();
+		this(_leafScope, _maxDepth, null, _maxDepth);
 	}
 	
 	/**returns the scope at the given depth that's along the path between the root scope and the leafScope*/

@@ -706,7 +706,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         final BaseDataFile traceData = this.stData.getTraceData();
         
         final String processes[] = traceData.getValuesX();
-        processLabel.setText("Process Range: [" + processes[0] + "," + processes[processes.length-1]+"]");
+        final int proc_start = (int)this.begProcess;
+        int proc_end   = (int)Math.ceil(this.endProcess);
+        if (proc_end>=processes.length)
+        	proc_end = processes.length-1;
+        
+        processLabel.setText("Process Range: [" + processes[proc_start] + "," + processes[proc_end]+"]");
         processLabel.setSize(processLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         if(stData == null)

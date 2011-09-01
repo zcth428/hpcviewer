@@ -1123,15 +1123,21 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
-		stData.paintDetailViewport(bufferGC, this, (int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
+		
+		Image imageOrig = new Image(getDisplay(), viewWidth, viewHeight);
+		GC origGC = new GC(imageOrig);
+		bufferGC.setBackground(Constants.COLOR_WHITE);
+		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		stData.paintDetailViewport(bufferGC, origGC, this, (int)begProcess, (int)Math.ceil(endProcess), begTime, endTime, viewWidth, viewHeight);
 		
 		bufferGC.dispose();
+		origGC.dispose();
 		redraw();
 		
 		// forces all other views to refresh with the new region
 		depthCanvas.refresh(begTime, endTime);
 		miniCanvas.setBox(begTime, begProcess, endTime, endProcess);
 		if (summaryCanvas != null)	
-			summaryCanvas.refresh(imageBuffer.getImageData());
+			summaryCanvas.refresh(imageOrig.getImageData());
 	}
 }

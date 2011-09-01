@@ -17,6 +17,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
@@ -38,7 +39,10 @@ public class SpaceTimeData extends TraceEvents
 	public ProcessTimeline depthTrace;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
-	private Image[] compositeLines;
+	private Image[] compositeFinalLines;
+	
+	/**The composite images created by painting all of the samples in a given line to it.*/
+	private Image[] compositeOrigLines;
 	
 	/** Stores the color to function name assignments for all of the functions in all of the processes.*/
 	private ColorTable colorTable;
@@ -264,7 +268,7 @@ public class SpaceTimeData extends TraceEvents
 	 *  @param numPixelsH		 The number of horizontal pixels to be painted.
 	 *  @param numPixelsV		 The number of vertical pixels to be painted.
 	 ***********************************************************************************/
-	public void paintDetailViewport(GC masterGC, SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	public void paintDetailViewport(GC masterGC, GC origGC, SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{	
 		boolean changedBounds = true;
 		if (begTime == _begTime && endTime == _endTime && begProcess == _begProcess && endProcess == _endProcess && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
@@ -285,7 +289,8 @@ public class SpaceTimeData extends TraceEvents
 		
 		beginProgress(linesToPaint);
 		
-		compositeLines = new Image[linesToPaint];
+		compositeOrigLines = new Image[linesToPaint];
+		compositeFinalLines = new Image[linesToPaint];
 		lineNum = 0;
 		TimelineThread[] threads = new TimelineThread[num_threads];
 		double xscale = canvas.getScaleX();
@@ -310,7 +315,8 @@ public class SpaceTimeData extends TraceEvents
 		
 		for (int i = 0; i < linesToPaint; i++) {
 			int yposition = (int) Math.round(i * yscale);
-			masterGC.drawImage(compositeLines[i], 0, yposition);
+			origGC.drawImage(compositeOrigLines[i], 0, yposition);
+			masterGC.drawImage(compositeFinalLines[i], 0, yposition);
 		}
 		
 		endProgress();
@@ -341,7 +347,7 @@ public class SpaceTimeData extends TraceEvents
 			numPixelsH = _numPixelsH;
 			numPixelsV = _numPixelsV;
 			
-			compositeLines = new Image[linesToPaint];
+			compositeFinalLines = new Image[linesToPaint];
 			lineNum = 0;
 			depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
 			
@@ -374,9 +380,9 @@ public class SpaceTimeData extends TraceEvents
 		}
 		for (int i = 0; i < linesToPaint; i++)
 		{
-			masterGC.drawImage(compositeLines[i], 0, 0, compositeLines[i].getBounds().width, 
-					compositeLines[i].getBounds().height, 0,(int)Math.round(i*numPixelsV/(float)maxDepth), 
-					compositeLines[i].getBounds().width, compositeLines[i].getBounds().height);
+			masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
+					compositeFinalLines[i].getBounds().height, 0,(int)Math.round(i*numPixelsV/(float)maxDepth), 
+					compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
 		}
 	}
 	
@@ -434,42 +440,29 @@ public class SpaceTimeData extends TraceEvents
 	
 	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, boolean changedBounds)
 	{
-		//System.out.println("I'm painting process "+process+" at depth "+depth);
 		ProcessTimeline ptl = traces[process];
-		if (ptl == null)
+		if (ptl == null || ptl.size()<2 )
 			return;
 		
 		if (changedBounds)
 			ptl.shiftTimeBy(minBegTime);
 		double pixelLength = (endTime - begTime)/(double)numPixelsH;
-		//Reed - special cases were giving me a headache, so I threw them in a switch
-		switch(ptl.size())
+		
+		// do the paint
+		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, begTime, currentDepth, height, pixelLength)
 		{
-			case 0:
-			case 1:
-				// this.printDebug("Warning! incorrect timestamp size in detailPaint: " + ptl.size() );
-				// johnmc: a trace may contain zero or 1 samples; in this case, we
-				//         can't render it.
-				break;
-			default:
+			@Override
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
 			{
-				// do the paint
-				BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, begTime, currentDepth, height, pixelLength)
+				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
+				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);			
+				if (currDepth < depth)
 				{
-					@Override
-					public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
-					{
-						spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);			
-						if (currDepth < depth)
-						{
-							spp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, numPixelsH), currDepth, functionName);
-						}
-					}
-				};
-				detailPaint.paint();
+					dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, numPixelsH), currDepth, functionName);
+				}
 			}
-			break;
-		}
+		};
+		detailPaint.paint();
 	}
 
 	/*************************************************************************
@@ -547,7 +540,14 @@ public class SpaceTimeData extends TraceEvents
 	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
 	public synchronized void addNextImage(Image line, int index)
 	{
-		compositeLines[index] = line;
+		compositeFinalLines[index] = line;
+	}
+	
+	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
+	public synchronized void addNextImage(Image imgOriginal, Image imgFinal, int index)
+	{
+		compositeOrigLines[index] = imgOriginal;
+		compositeFinalLines[index] = imgFinal;
 	}
 	
 	public int getBegProcess()

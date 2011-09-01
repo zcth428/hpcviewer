@@ -4,6 +4,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
+import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 
@@ -82,13 +83,18 @@ public class TimelineThread extends Thread
 				else
 					imageHeight++;
 				
-				Image line = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
-				stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
-				gc.dispose();
+				Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
+				Image lineOriginal = new Image(canvas.getDisplay(), width, imageHeight);
+				GC gcFinal = new GC(lineFinal);
+				GC gcOriginal = new GC(lineOriginal);
 				
-				stData.addNextImage(line, nextTrace.line());
+				SpaceTimeSamplePainter spp = new DetailSpaceTimePainter(gcOriginal, gcFinal, stData.getColorTable(), scaleX, scaleY);
+				stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
+				
+				gcFinal.dispose();
+				gcOriginal.dispose();
+				
+				stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
 				
 				stData.announceProgress();
 				
@@ -108,7 +114,16 @@ public class TimelineThread extends Thread
 				
 				Image line = new Image(canvas.getDisplay(), width, imageHeight);
 				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
+				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY) {
+
+					@Override
+					public void paintSample(int startPixel, int endPixel,
+							int height, String function) {
+
+						this.internalPaint(gc, startPixel, endPixel, height, function);
+					}
+				};
+				
 				stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
 				gc.dispose();
 				

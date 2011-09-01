@@ -56,11 +56,6 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		});
 	}
 	
-	public void updateData(ImageData _detailData)
-	{
-		detailData = _detailData;
-	}
-	
 	public void paintControl(PaintEvent event)
 	{
 		if (detailData == null || imageBuffer == null)
@@ -111,7 +106,8 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		ImageData scaledImage = detailData.scaledTo(viewWidth, viewHeight);
 		
 		final int PIXEL_WHITE = detailData.palette.getPixel(Constants.COLOR_WHITE.getRGB());
-		final int PIXEL_BLACK = detailData.palette.getPixel(Constants.COLOR_BLACK.getRGB());
+		final int PIXEL_LIGHT = detailData.palette.getPixel(Constants.COLOR_LIGHT.getRGB());
+		final int PIXEL_DARK = detailData.palette.getPixel(Constants.COLOR_DARK.getRGB());
 
 		// ------------------------------------------------------------------------------------------
 		// let use GC instead of ImageData since GC allows us to draw lines and rectangles
@@ -133,16 +129,25 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 			// without sort, it can be confusing
 			//---------------------------------------------------------------------------
 			TreeMap<Integer, Integer> sortedColorMap = new TreeMap<Integer, Integer>();
+			int prevPixel = 0;
 			for (int y = 0; y < scaledImage.height; ++y)
 			{
 				int pixelValue = scaledImage.getPixel(x,y);
-				if (pixelValue != PIXEL_WHITE && pixelValue != PIXEL_BLACK)
+				if (pixelValue == PIXEL_LIGHT || pixelValue == PIXEL_DARK)
 				{
-					if (sortedColorMap.containsKey(pixelValue))
-						sortedColorMap.put( pixelValue , sortedColorMap.get(pixelValue)+1 );
-					else
-						sortedColorMap.put( pixelValue , 1);
+					pixelValue = prevPixel;
+				} 
+				else if (pixelValue == PIXEL_WHITE)
+				{
+					continue;
+				} else
+				{
+					prevPixel = pixelValue;
 				}
+				if (sortedColorMap.containsKey(pixelValue))
+					sortedColorMap.put( pixelValue , sortedColorMap.get(pixelValue)+1 );
+				else
+					sortedColorMap.put( pixelValue , 1);
 			}
 			
 			Set<Integer> set = sortedColorMap.keySet();

@@ -54,9 +54,9 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 				// Pick the color of the text indicating sample depth. 
 				// If the background is suffciently light, pick black, otherwise white
 				if (bgColor.getRed()+bgColor.getBlue()+bgColor.getGreen()>Constants.DARKEST_COLOR_FOR_BLACK_TEXT)
-					gcFinal.setForeground(Constants.COLOR_DARK);
+					gcFinal.setForeground(Constants.COLOR_BLACK);
 				else
-					gcFinal.setForeground(Constants.COLOR_LIGHT);
+					gcFinal.setForeground(Constants.COLOR_WHITE);
 				gcFinal.drawText(overDepthText, odInitPixel+((box_width - textSize.x)/2), ((box_height - textSize.y)/2));
 			}
 		}

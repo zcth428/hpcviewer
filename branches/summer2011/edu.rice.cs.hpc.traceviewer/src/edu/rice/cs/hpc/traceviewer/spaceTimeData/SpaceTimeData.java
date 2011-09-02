@@ -16,8 +16,10 @@ import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
+import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
@@ -35,7 +37,7 @@ public class SpaceTimeData extends TraceEvents
 	 * So, each ProcessTimeline now knows which line it is, and the
 	 * HashMap is a map between that line and the ProcessTimeline.*/
 	private ProcessTimeline traces[];
-	
+
 	public ProcessTimeline depthTrace;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
@@ -57,26 +59,13 @@ public class SpaceTimeData extends TraceEvents
 	private long minBegTime;
 	private long maxEndTime;
 	
-	/**The beginning/end of the process range on the viewer.*/
-	private int begProcess;
-	private int endProcess;
+	final public ImageTraceAttributes attributes;
+	
+	final private ImageTraceAttributes oldAttributes;
 	
 	/**The process to be painted in the depth time viewer.*/
 	private int dtProcess;
-	
-	/**The beginning/end of the time range on the viewer.*/
-	private long begTime;
-	private long endTime;
-	
-	/** The width of the detail canvas in pixels.*/
-	private int numPixelsH;
-	
-	/** The height of the detail canvas in pixels.*/
-	private int numPixelsV;
-	
-	/**The number of the line that's being processed (for threads).*/
-	private int lineNum;
-	
+		
 	/** Stores the current depth that is being displayed.*/
 	private int currentDepth;
 	
@@ -93,7 +82,6 @@ public class SpaceTimeData extends TraceEvents
 	
 	private BaseDataFile dataTrace;
 	private final AtomicInteger progress = new AtomicInteger(0);
-	
 	 
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
@@ -103,6 +91,9 @@ public class SpaceTimeData extends TraceEvents
 		shell = _shell;
 		statusMgr = _statusMgr;
 
+		attributes = new ImageTraceAttributes();
+		oldAttributes = new ImageTraceAttributes();
+		
 		this.monitor = statusMgr.getProgressMonitor();
 		
 		colorTable = new ColorTable(shell.getDisplay());
@@ -210,12 +201,12 @@ public class SpaceTimeData extends TraceEvents
 	
 	public long getViewTimeBegin()
 	{
-		return this.begTime;
+		return attributes.begTime;
 	}
 	
 	public long getViewTimeEnd()
 	{
-		return this.endTime;
+		return attributes.endTime;
 	}
 
 	/*************************************************************************
@@ -268,122 +259,93 @@ public class SpaceTimeData extends TraceEvents
 	 *  @param numPixelsH		 The number of horizontal pixels to be painted.
 	 *  @param numPixelsV		 The number of vertical pixels to be painted.
 	 ***********************************************************************************/
-	public void paintDetailViewport(GC masterGC, GC origGC, SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	public void paintDetailViewport(final GC masterGC, final GC origGC, SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{	
-		boolean changedBounds = true;
-		if (begTime == _begTime && endTime == _endTime && begProcess == _begProcess && endProcess == _endProcess && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
-			changedBounds = false;
-		else
-			traces = new ProcessTimeline[Math.min(_numPixelsV, _endProcess - _begProcess)];
+		boolean changedBounds = !attributes.sameTrace(oldAttributes);
 
-		begTime = _begTime;
-		endTime = _endTime;
-		begProcess = _begProcess;
-		endProcess = _endProcess;
-		numPixelsH = _numPixelsH;
-		numPixelsV = _numPixelsV;
+		attributes.numPixelsH = _numPixelsH;
+		attributes.numPixelsV = _numPixelsV;
 		
-		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processors
-		int linesToPaint = Math.min(numPixelsV, endProcess - begProcess);
-		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
+		oldAttributes.copy(attributes);
+
+		attributes.lineNum = 0;
 		
-		beginProgress(linesToPaint);
-		
-		compositeOrigLines = new Image[linesToPaint];
-		compositeFinalLines = new Image[linesToPaint];
-		lineNum = 0;
-		TimelineThread[] threads = new TimelineThread[num_threads];
-		double xscale = canvas.getScaleX();
-		double yscale = Math.max(canvas.getScaleY(), 1);
-		
-		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			threads[threadNum] = new TimelineThread(this, changedBounds, canvas, numPixelsH, xscale, yscale);
-			threads[threadNum].start();
-		}
-		
-		try {
-			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-				while (threads[threadNum].isAlive()) {
-					Thread.sleep(30);
-					reportProgress();
+		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.monitor) {
+
+			@Override
+			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
+				compositeOrigLines = new Image[linesToPaint];
+				compositeFinalLines = new Image[linesToPaint];
+
+				if (changedBounds) {
+					final int num_traces = Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
+					traces = new ProcessTimeline[ num_traces ];
+				}
+				return true;
+			}
+
+			@Override
+			protected void endPainting(int linesToPaint, double xscale, double yscale) {
+				for (int i = 0; i < linesToPaint; i++) {
+					int yposition = (int) Math.round(i * yscale);
+					origGC.drawImage(compositeOrigLines[i], 0, yposition);
+					masterGC.drawImage(compositeFinalLines[i], 0, yposition);
 				}
 			}
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+
+			@Override
+			protected int getNumberOfLines() {
+				return Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
+			}
+		};
 		
-		for (int i = 0; i < linesToPaint; i++) {
-			int yposition = (int) Math.round(i * yscale);
-			origGC.drawImage(compositeOrigLines[i], 0, yposition);
-			masterGC.drawImage(compositeFinalLines[i], 0, yposition);
-		}
-		
-		endProgress();
+		detailPaint.paint(canvas);
 	}
 	
-	public void paintDepthViewport(GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	public void paintDepthViewport(final GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{
-		boolean changedBounds = true;
-		int process = this.currentPosition.process;
+		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
+
+		attributes.lineNum = 0;
+		attributes.numPixelsDepthV = _numPixelsV;
+		attributes.setTime(_begTime, _endTime);
 		
-		if (begTime == _begTime && endTime == _endTime && dtProcess == process && numPixelsH == _numPixelsH && numPixelsV == _numPixelsV)
-		{
-			changedBounds = false;
-		}
-		else
-		{
-			depthTrace = null;
-		}
+		dtProcess = currentPosition.process;
+		oldAttributes.copy(attributes);
 		
-		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processor
-		//long programTime = System.currentTimeMillis();
-		int linesToPaint = Math.min(_numPixelsV, maxDepth);
-		if (changedBounds)
-		{
-			begTime = _begTime;
-			endTime = _endTime;
-			dtProcess = process;
-			numPixelsH = _numPixelsH;
-			numPixelsV = _numPixelsV;
-			
-			compositeFinalLines = new Image[linesToPaint];
-			lineNum = 0;
-			depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
-			
-			depthTrace.readInData(getHeight());
-			depthTrace.shiftTimeBy(minBegTime);
-			
-			
-			TimelineThread[] threads;
-			threads = new TimelineThread[Math.min(linesToPaint, Runtime.getRuntime().availableProcessors())];
-			// System.out.println("Painting window with "+threads.length+" threads\n");
-			
-			for (int threadNum = 0; threadNum < threads.length; threadNum++)
-			{
-				threads[threadNum] = new TimelineThread(this, false, canvas, numPixelsH, canvas.getScaleX(), Math.max(numPixelsV/(double)maxDepth, 1));
-				threads[threadNum].start();
+		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.monitor) {
+
+			@Override
+			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
+				depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, 
+						attributes.numPixelsH, attributes.endTime-attributes.begTime, minBegTime+attributes.begTime);
+				
+				depthTrace.readInData(getHeight());
+				depthTrace.shiftTimeBy(minBegTime);
+				compositeFinalLines = new Image[linesToPaint];
+
+				return changedBounds;
 			}
-			
-			try
-			{
-				for (int threadNum = 0; threadNum < threads.length; threadNum++)
+
+			@Override
+			protected void endPainting(int linesToPaint, double xscale,
+					double yscale) {
+
+				for (int i = 0; i < linesToPaint; i++)
 				{
-					if (threads[threadNum].isAlive())
-						threads[threadNum].join();
+					masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
+							compositeFinalLines[i].getBounds().height, 0,(int)Math.round(i*attributes.numPixelsDepthV/(float)maxDepth), 
+							compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
 				}
 			}
-			catch(InterruptedException e)
-			{
-				e.printStackTrace();
+
+			@Override
+			protected int getNumberOfLines() {
+				return Math.min(attributes.numPixelsDepthV, maxDepth);
 			}
-		}
-		for (int i = 0; i < linesToPaint; i++)
-		{
-			masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
-					compositeFinalLines[i].getBounds().height, 0,(int)Math.round(i*numPixelsV/(float)maxDepth), 
-					compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
-		}
+		};
+		
+		depthPaint.paint(canvas);
 	}
 	
 
@@ -407,7 +369,7 @@ public class SpaceTimeData extends TraceEvents
 		//System.out.println("I'm painting process "+process+" at depth "+depth);
 		ProcessTimeline ptl = depthTrace;
 
-		double pixelLength = (endTime - begTime)/(double)numPixelsH;
+		double pixelLength = (attributes.endTime - attributes.begTime)/(double)attributes.numPixelsH;
 		//Reed - special cases were giving me a headache, so I threw them in a switch
 		switch(ptl.size())
 		{
@@ -418,7 +380,7 @@ public class SpaceTimeData extends TraceEvents
 
 			default:
 			{
-				BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, begTime, depth, height, pixelLength)
+				BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, depth, height, pixelLength)
 				{
 					@Override
 					public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
@@ -446,10 +408,10 @@ public class SpaceTimeData extends TraceEvents
 		
 		if (changedBounds)
 			ptl.shiftTimeBy(minBegTime);
-		double pixelLength = (endTime - begTime)/(double)numPixelsH;
+		double pixelLength = (attributes.endTime - attributes.begTime)/(double)attributes.numPixelsH;
 		
 		// do the paint
-		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, begTime, currentDepth, height, pixelLength)
+		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, currentDepth, height, pixelLength)
 		{
 			@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
@@ -458,7 +420,7 @@ public class SpaceTimeData extends TraceEvents
 				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);			
 				if (currDepth < depth)
 				{
-					dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, numPixelsH), currDepth, functionName);
+					dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attributes.numPixelsH), currDepth, functionName);
 				}
 			}
 		};
@@ -482,11 +444,11 @@ public class SpaceTimeData extends TraceEvents
 	/**Returns the index of the file to which the line-th line corresponds.*/
 	public int lineToPaint(int line)
 	{
-		int numTimelinesToPaint = endProcess - begProcess;
-		if(numTimelinesToPaint > numPixelsV)
-			return begProcess + (line * numTimelinesToPaint)/(numPixelsV);
+		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
+		if(numTimelinesToPaint > attributes.numPixelsV)
+			return attributes.begProcess + (line * numTimelinesToPaint)/(attributes.numPixelsV);
 		else
-			return begProcess + line;
+			return attributes.begProcess + line;
 	}
 	
 	/***********************************************************************
@@ -496,13 +458,15 @@ public class SpaceTimeData extends TraceEvents
 	 **********************************************************************/
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds)
 	{
-		if(lineNum < Math.min(numPixelsV, endProcess-begProcess))
+		if(attributes.lineNum < Math.min(attributes.numPixelsV, attributes.endProcess-attributes.begProcess))
 		{
-			lineNum++;
+			attributes.lineNum++;
 			if(changedBounds)
-				return new ProcessTimeline(lineNum-1, scopeMap, dataTrace, lineToPaint(lineNum-1), numPixelsH, endTime-begTime, minBegTime + begTime);
+				return new ProcessTimeline(attributes.lineNum-1, scopeMap, dataTrace, 
+						lineToPaint(attributes.lineNum-1), attributes.numPixelsH, 
+						attributes.endTime-attributes.begTime, minBegTime + attributes.begTime);
 			else
-				return traces[lineNum-1];
+				return traces[attributes.lineNum-1];
 		}
 		else
 			return null;
@@ -514,17 +478,18 @@ public class SpaceTimeData extends TraceEvents
 	 **********************************************************************/
 	public synchronized ProcessTimeline getNextDepthTrace()
 	{
-		if (lineNum < Math.min(numPixelsV, maxDepth))
+		if (attributes.lineNum < Math.min(attributes.numPixelsDepthV, maxDepth))
 		{
-			if (lineNum==0)
+			if (attributes.lineNum==0)
 			{
-				lineNum++;
+				attributes.lineNum++;
 				return depthTrace;
 			}
-			ProcessTimeline toDonate = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, numPixelsH, endTime-begTime, minBegTime+begTime);
+			ProcessTimeline toDonate = new ProcessTimeline(attributes.lineNum, scopeMap, dataTrace, dtProcess, 
+					attributes.numPixelsH, attributes.endTime-attributes.begTime, minBegTime+attributes.begTime);
 			toDonate.copyData(depthTrace);
 			
-			lineNum++;
+			attributes.lineNum++;
 			return toDonate;
 		}
 		else
@@ -552,13 +517,13 @@ public class SpaceTimeData extends TraceEvents
 	
 	public int getBegProcess()
 	{
-		return this.begProcess;
+		return attributes.begProcess;
 	}
 	
 	
 	public int getEndProcess()
 	{
-		return this.endProcess;
+		return attributes.endProcess;
 	}
 	
 	@Override

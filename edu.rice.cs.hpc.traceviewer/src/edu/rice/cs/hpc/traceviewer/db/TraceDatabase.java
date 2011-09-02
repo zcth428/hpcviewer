@@ -89,11 +89,11 @@ public class TraceDatabase
 				// Tell all views that we have the data, and they need to refresh their content
 				// ---------------------------------------------------------------------				
 
-				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-				tview.updateData(stData);
-
 				HPCSummaryView sview = (HPCSummaryView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCSummaryView.ID);
 				sview.updateData(stData);
+
+				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
+				tview.updateData(stData);
 				
 				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
 				dview.updateData(stData);

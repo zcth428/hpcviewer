@@ -166,7 +166,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		
 		detailCanvas.pushUndo();
 		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
-		setBox(detailCanvas.begTime, detailCanvas.begProcess, detailCanvas.endTime, detailCanvas.endProcess);
+		setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
 	}
 	
 	/**Updates the selectionBox on the MiniMap to have corners at p1 and p2.*/

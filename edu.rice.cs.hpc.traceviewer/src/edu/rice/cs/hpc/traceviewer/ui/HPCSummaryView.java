@@ -69,7 +69,7 @@ public class HPCSummaryView extends ViewPart implements ITracePosition
 	{
 		//stData.addPositionListener(this);
 		summaryCanvas.setVisible(true);
-		traceview.detailCanvas.rebuffer();
+		//traceview.detailCanvas.rebuffer();
 	}
 	
 	public void setFocus() 

@@ -10,9 +10,6 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
  *****************************************************************/
 public abstract class SpaceTimeCanvas extends Canvas
 {
-	private static final long serialVersionUID = 1L;
-	
-	
 	enum MouseState { ST_MOUSE_INIT, ST_MOUSE_NONE, ST_MOUSE_DOWN };
 
 	
@@ -29,16 +26,6 @@ public abstract class SpaceTimeCanvas extends Canvas
 	long topLeftPixelX;
 	/**The top left pixel's y location.*/
 	long topLeftPixelY;
-    
-    /**The beginning/end time being viewed now.*/
-    long begTime;
-    long endTime;
-    
-    /**The first process being viewed now.*/
-    double begProcess;
-    /**The last process being viewed now.*/
-    double endProcess;
-	
     
     /**Creates a SpaceTimeCanvas with the data _stData and Composite _composite.*/
     public SpaceTimeCanvas(Composite _composite)

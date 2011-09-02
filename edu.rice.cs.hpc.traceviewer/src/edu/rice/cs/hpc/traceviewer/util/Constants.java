@@ -9,9 +9,6 @@ public class Constants {
 	public final static Color COLOR_WHITE = Display.getCurrent().getSystemColor(SWT.COLOR_WHITE);
     public final static Color COLOR_BLACK = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
     
-    public final static Color COLOR_DARK = COLOR_BLACK;
-	public final static Color COLOR_LIGHT = COLOR_WHITE;
-
 	/**The darkest color for black over depth text (switch to white if the sum of the 
 	 * R, G, and B components is less than this number).*/
 	public final static short DARKEST_COLOR_FOR_BLACK_TEXT = 384;

@@ -10,6 +10,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -20,7 +21,7 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**A view for displaying the depthview.*/
 //all the GUI setup for the depth view is here
-public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveListener, PaintListener
+public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
 {
 	
 	int maxDepth;
@@ -65,7 +66,7 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 	
 	public DepthTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas, int _process)
     {
-		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
+		super(composite);
 		detailCanvas = _detailCanvas;
 
 		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
@@ -75,8 +76,8 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		leftSelection = 0;
 		rightSelection = 0;
 		
-		this.getVerticalBar().setVisible(false);
-		this.getHorizontalBar().setVisible(false);
+		//this.getVerticalBar().setVisible(false);
+		//this.getHorizontalBar().setVisible(false);
 	}
 	
 	
@@ -231,7 +232,13 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 
 		return (double)viewWidth / (double)numTimeUnitsDisp;
 	}
-	
+
+	@Override
+	public double getScaleY() {
+		final Rectangle r = this.getClientArea();
+		return Math.max(r.height/(double)maxDepth, 1);
+	}
+
 	//---------------------------------------------------------------------------------------
 	// PRIVATE CLASS
 	//---------------------------------------------------------------------------------------
@@ -320,6 +327,9 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 		GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		
+		this.stData.attributes.numPixelsDepthV = viewHeight;
+		
 		try
 		{
 			stData.paintDepthViewport(bufferGC, this, begTime, endTime, viewWidth, viewHeight);
@@ -386,4 +396,5 @@ public class DepthTimeCanvas extends Canvas implements MouseListener, MouseMoveL
 			redraw();
 		}
 	}
+
 }

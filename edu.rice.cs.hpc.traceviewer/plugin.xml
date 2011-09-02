@@ -43,7 +43,7 @@
 	  </view>
 	  <view
          	class="edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView"
-        	icon="icons/trace-callpath.png"
+        	icon="icons/trace-summary.png"
          	id="hpcsummaryview.view"
          	name="Summary View">
 	  </view>

@@ -1,10 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IStatusLineManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.TimelineThread;
 
 
@@ -19,13 +17,11 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.TimelineThread;
  *******************************************************/
 public abstract class BaseViewPaint {
 	
-	private AtomicInteger progress;
-	private IStatusLineManager statusMgr;
-	private IProgressMonitor monitor;
-	
 	private ImageTraceAttributes attributes;
 	private SpaceTimeData data;
 	private boolean changedBounds;
+	
+	final private TimelineProgressMonitor monitor;
 	
 	protected int lineNum;
 	
@@ -40,14 +36,12 @@ public abstract class BaseViewPaint {
 	 * @param _monitor: progress monitor
 	 */
 	public BaseViewPaint(SpaceTimeData _data, ImageTraceAttributes _attributes, boolean _changeBound, 
-			IStatusLineManager _statusMgr, IProgressMonitor _monitor) 
+			IStatusLineManager _statusMgr) 
 	{
 		data = _data;
-		progress = new AtomicInteger();
-		statusMgr = _statusMgr;
-		monitor = _monitor;
 		attributes = _attributes;
 		changedBounds = _changeBound;
+		monitor = new TimelineProgressMonitor(_statusMgr );
 	}
 	
 	/**********************************************************************************
@@ -64,7 +58,7 @@ public abstract class BaseViewPaint {
 		int linesToPaint = getNumberOfLines();
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
 		
-		beginProgress(linesToPaint);
+		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting");
 
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
@@ -81,7 +75,8 @@ public abstract class BaseViewPaint {
 		double yscale = Math.max(canvas.getScaleY(), 1);
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			threads[threadNum] = new TimelineThread(data, changedBounds, canvas, attributes.numPixelsH, xscale, yscale);
+			threads[threadNum] = new TimelineThread(data, changedBounds, canvas, attributes.numPixelsH, 
+					xscale, yscale, monitor);
 			threads[threadNum].start();
 		}
 		
@@ -89,7 +84,7 @@ public abstract class BaseViewPaint {
 			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 				while (threads[threadNum].isAlive()) {
 					Thread.sleep(30);
-					reportProgress();
+					monitor.reportProgress();
 				}
 			}
 		}
@@ -102,37 +97,9 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		endPainting(linesToPaint, xscale, yscale);
 		
-		endProgress();
+		monitor.endProgress();
 	}
 
-	
-	
-	private void beginProgress(int totalWork)
-	{
-		progress.set(0);
-		statusMgr.setMessage("Rendering space time view...");
-		// shell.update();
-		monitor.beginTask("Trace painting", totalWork);
-	}
-	
-	private void announceProgress()
-	{
-		progress.getAndIncrement();
-	}
-	
-	private void reportProgress()
-	{
-		int workDone = progress.getAndSet(0);
-		if (workDone > 0)
-			monitor.worked(workDone);
-	}
-	
-	private void endProgress()
-	{
-		monitor.done();
-		statusMgr.setMessage(null);
-		// shell.update();
-	}
 
 	//------------------------------------------------------------------------------------------------
 	// abstract methods 

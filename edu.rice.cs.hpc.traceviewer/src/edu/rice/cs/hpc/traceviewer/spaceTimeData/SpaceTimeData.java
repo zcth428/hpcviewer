@@ -1,12 +1,10 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.HashMap;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
@@ -76,13 +74,12 @@ public class SpaceTimeData extends TraceEvents
 	
 	final private boolean debug =  true;
 	
-	private final IProgressMonitor monitor;
 	private IStatusLineManager statusMgr;
 	private Shell shell;
 	
 	private BaseDataFile dataTrace;
-	private final AtomicInteger progress = new AtomicInteger(0);
-	 
+	
+	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
@@ -94,7 +91,7 @@ public class SpaceTimeData extends TraceEvents
 		attributes = new ImageTraceAttributes();
 		oldAttributes = new ImageTraceAttributes();
 		
-		this.monitor = statusMgr.getProgressMonitor();
+		statusMgr.getProgressMonitor();
 		
 		colorTable = new ColorTable(shell.getDisplay());
 		
@@ -218,32 +215,6 @@ public class SpaceTimeData extends TraceEvents
 		return maxDepth;
 	}
 	
-	public void beginProgress(int totalWork)
-	{
-		progress.set(0);
-		statusMgr.setMessage("Rendering space time view...");
-		// shell.update();
-		monitor.beginTask("Trace painting", totalWork);
-	}
-	
-	public void announceProgress()
-	{
-		progress.getAndIncrement();
-	}
-	
-	public void reportProgress()
-	{
-		int workDone = progress.getAndSet(0);
-		if (workDone > 0)
-			monitor.worked(workDone);
-	}
-	
-	public void endProgress()
-	{
-		monitor.done();
-		statusMgr.setMessage(null);
-		// shell.update();
-	}
 	
 	/**********************************************************************************
 	 *	Paints the specified time units and processes at the specified depth
@@ -270,7 +241,7 @@ public class SpaceTimeData extends TraceEvents
 
 		attributes.lineNum = 0;
 		
-		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.monitor) {
+		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr) {
 
 			@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
@@ -313,7 +284,7 @@ public class SpaceTimeData extends TraceEvents
 		dtProcess = currentPosition.process;
 		oldAttributes.copy(attributes);
 		
-		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.monitor) {
+		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr) {
 
 			@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {

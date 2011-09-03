@@ -42,11 +42,14 @@ public class TimelineThread extends Thread
 	/**The minimum height the samples need to be in order to paint the white separator lines.*/
 	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 	
+	final private TimelineProgressMonitor monitor;
+	
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	public TimelineThread(SpaceTimeData _stData, boolean _changedBounds, Canvas _canvas, int _width, double _scaleX, double _scaleY)
+	public TimelineThread(SpaceTimeData _stData, boolean _changedBounds, Canvas _canvas, int _width, 
+			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
 		stData = _stData;
@@ -56,6 +59,8 @@ public class TimelineThread extends Thread
 		scaleX = _scaleX;
 		scaleY = _scaleY;
 		detailPaint = canvas instanceof SpaceTimeDetailCanvas;
+		
+		monitor = _monitor;
 	}
 	
 	/***************************************************************
@@ -96,7 +101,7 @@ public class TimelineThread extends Thread
 				
 				stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
 				
-				stData.announceProgress();
+				monitor.announceProgress();
 				
 				nextTrace = stData.getNextTrace(changedBounds);
 			}

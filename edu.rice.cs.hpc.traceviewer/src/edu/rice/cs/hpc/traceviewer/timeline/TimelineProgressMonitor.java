@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.spaceTimeData;
+package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

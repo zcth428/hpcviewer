@@ -1,9 +1,10 @@
-package edu.rice.cs.hpc.traceviewer.spaceTimeData;
+package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.HashMap;
 
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 
 /**A data structure that stores one line of timestamp-cpid data.*/
 public class ProcessTimeline

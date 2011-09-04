@@ -4,7 +4,7 @@ import org.eclipse.swt.graphics.Color;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
 /***********************************************************************
  * 

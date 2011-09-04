@@ -2,8 +2,8 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.TimelineProgressMonitor;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.TimelineThread;
+import edu.rice.cs.hpc.traceviewer.timeline.TimelineProgressMonitor;
+import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
 
 /******************************************************

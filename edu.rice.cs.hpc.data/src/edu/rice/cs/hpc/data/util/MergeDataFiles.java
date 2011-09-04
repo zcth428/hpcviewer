@@ -43,7 +43,7 @@ public class MergeDataFiles {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String compact(File directory, String globInputFile, String newSuffix) throws IOException {
+	public static String merge(File directory, String globInputFile, String newSuffix) throws IOException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
 		final String suffix = globInputFile.substring(last_dot);
@@ -148,12 +148,18 @@ public class MergeDataFiles {
 		dos.close();
 		
 		//-----------------------------------------------------
-		// 4. write the type of the application
+		// 4. FIXME: write the type of the application
 		//  	the type of the application is computed in step 2
+		//		Ideally, this step has to be in the beginning !
 		//-----------------------------------------------------
 		RandomAccessFile f = new RandomAccessFile(outputFile, "rw");
 		f.writeInt(type);
 		f.close();
+		
+		//-----------------------------------------------------
+		// 5. remove old files
+		//-----------------------------------------------------
+		removeFiles(file_metric);
 		
 		return outputFile;
 
@@ -191,5 +197,16 @@ public class MergeDataFiles {
 		f.close();
 		
 		return (marker == MARKER_END_MERGED_FILE);
+	}
+	
+	static private boolean removeFiles(File files[])
+	{
+		boolean success = true;
+		
+		for(File file: files) {
+			success &= file.delete();
+		}
+		
+		return success;
 	}
 }

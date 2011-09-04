@@ -169,7 +169,7 @@ public class TraceDatabase
 			if (experimentFile.canRead()) {
 				try {
 					statusMgr.setMessage("Merging traces ...");
-					final String traceFilename = MergeDataFiles.compact(dirFile, "*.hpctrace", "mt");
+					final String traceFilename = MergeDataFiles.merge(dirFile, "*.hpctrace", "mt");
 					final File traceFile = new File(traceFilename);
 
 					if (traceFile.length() > MIN_TRACE_SIZE) {

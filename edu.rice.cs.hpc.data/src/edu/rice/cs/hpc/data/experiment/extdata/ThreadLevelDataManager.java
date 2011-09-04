@@ -139,7 +139,7 @@ public class ThreadLevelDataManager {
 		try {
 			// the compact method will return the name of the compacted files.
 			// if the file doesn't exist, it will be created automatically
-			final String file = MergeDataFiles.compact(directory, metric.getGlob(), "mdb");
+			final String file = MergeDataFiles.merge(directory, metric.getGlob(), "mdb");
 			
 			data_file[metric_raw_id] = new ThreadLevelDataFile(file);
 			

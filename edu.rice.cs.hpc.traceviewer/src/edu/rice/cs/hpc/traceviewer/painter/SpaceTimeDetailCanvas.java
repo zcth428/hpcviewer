@@ -36,84 +36,81 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
 public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
 {
 	
-	/**an enum used for deciding what type of data we have*/
-	public enum DataType {Uninitialized, ProcessOnly, ThreadsOnly, ProcessAndThreads};
-	
 	/**The buffer image that is copied onto the actual canvas.*/
-	Image imageBuffer;
+	private Image imageBuffer;
 	
 	/**Triggers zoom back to beginning view screen.*/
-	Action homeButton;
+	private Action homeButton;
 	
 	/**Triggers open function to open previously saved frame.*/
-	Action openButton;
+	private Action openButton;
 	
 	/**Triggers save function to save current frame to file.*/
-	Action saveButton;
+	private Action saveButton;
 	
 	/**Triggers undo of screen.*/
-	Action undoButton;
+	private Action undoButton;
 	
 	/**Triggers screen re-do.*/
-	Action redoButton;
+	private Action redoButton;
 	
 	/** Triggers zoom-in on the time axis.*/
-	Action tZoomInButton;
+	private Action tZoomInButton;
 	
 	/** Triggers zoom-out on the time axis.*/
-	Action tZoomOutButton;
+	private Action tZoomOutButton;
 	
 	/** Triggers zoom-in on the process axis.*/
-	Action pZoomInButton;
+	private Action pZoomInButton;
 	
 	/** Triggers zoom-out on the process axis.*/
-	Action pZoomOutButton;
+	private Action pZoomOutButton;
 
-	Action goEastButton, goNorthButton, goWestButton, goSouthButton;
+	private Action goEastButton, goNorthButton, goWestButton, goSouthButton;
 	
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
-	SpaceTimeMiniCanvas miniCanvas;
+	private SpaceTimeMiniCanvas miniCanvas;
 	
 	/** The DepthTimeCanvas that is changed by the detailCanvas.*/
-	DepthTimeCanvas depthCanvas = null;
+	private DepthTimeCanvas depthCanvas = null;
 	
 	/** The SummaryTimeCanvas that is changed by the detailCanva.*/
-	SummaryTimeCanvas summaryCanvas = null;
+	private SummaryTimeCanvas summaryCanvas = null;
 	
 	/** Relates to the condition that the mouse is in.*/
-	MouseState mouseState;
+	private MouseState mouseState;
 	
 	/** The point at which the mouse was clicked.*/
-	Point mouseDown;
+	private Point mouseDown;
 	
 	/** The point at which the mouse was released.*/
-	Point mouseUp;
+	private Point mouseUp;
 	
 	/** The top-left point that you selected.*/
-	long selectionTopLeftX;
-	long selectionTopLeftY;
+	private long selectionTopLeftX;
+	private long selectionTopLeftY;
 	
 	/** The bottom-right point that you selected.*/
-	long selectionBottomRightX;
-	long selectionBottomRightY;
+	private long selectionBottomRightX;
+	private long selectionBottomRightY;
 	
 	/**The stack holding all the frames previously done.*/
-	Stack<Frame> undoStack;
+	private Stack<Frame> undoStack;
 	
 	/**The stack holding all the frames previously undone.*/
-	Stack<Frame> redoStack;
+	private Stack<Frame> redoStack;
 	
 	/**The Group containing the labels. labelGroup.redraw() is called from the Detail Canvas.*/
-    Composite labelGroup;
+	private Composite labelGroup;
    
     /**The Label with the time boundaries.*/
-    public Label timeLabel;
+	private Label timeLabel;
    
     /**The Label with the process boundaries.*/
-    public Label processLabel;
+	private Label processLabel;
     
     /**The Label with the current cross hair information.*/
-    public Label crossHairLabel;
+	private Label crossHairLabel;
         
     /**The min number of process units you can zoom in.*/
     private final static int MIN_PROC_DISP = 1;

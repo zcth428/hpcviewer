@@ -131,8 +131,8 @@ public class SpaceTimeData extends TraceEvents
 		
 		colorTable.setColorTable();
 		
-		minBegTime = exp.trace_minBegTime;
-		maxEndTime = exp.trace_maxEndTime;
+		minBegTime = exp.getTraceAttribute().dbTimeMin;
+		maxEndTime = exp.getTraceAttribute().dbTimeMax;
 		
 		// default position
 		this.currentPosition = new Position(0,0);

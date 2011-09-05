@@ -544,13 +544,24 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		//zoom out works as follows: find mid point of times (yMid).
 		//Add/Subtract 1/2 of the scaled numProcessDisp to yMid to get new endProcess and begProcess
-		double yMid = (stData.attributes.endProcess + stData.attributes.begProcess)/2.0;
+		double yMid = ((double)stData.attributes.endProcess + (double)stData.attributes.begProcess)/2.0;
 		
 		final double numProcessDisp = stData.attributes.endProcess - stData.attributes.begProcess;
 		
-		double p2 = Math.ceil( yMid+numProcessDisp*SCALE );
-		double p1 = Math.floor( yMid-numProcessDisp*SCALE );
+		double p2 = Math.min( stData.getHeight(), Math.ceil( yMid+numProcessDisp*SCALE ) );
+		double p1 = Math.max( 0, Math.floor( yMid-numProcessDisp*SCALE ) );
 		
+		if(p2 == stData.attributes.endProcess && p1 == stData.attributes.begProcess)
+		{
+			if(numProcessDisp == 2)
+				p2++;
+			else if(numProcessDisp > 2)
+			{
+				p2++;
+				p1--;
+			}
+		}
+
 		this.setDetailZoom(stData.attributes.begTime, p1, stData.attributes.endTime, p2);
 	}
 
@@ -587,8 +598,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		//Add/Subtract 1/2 of the scaled numTimeUnitsDisp to xMid to get new endTime and begTime
 		long xMid = (stData.attributes.endTime + stData.attributes.begTime) / 2;
 		
-		long t2 = xMid + (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
-		long t1 = xMid - (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
+		final long td2 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE); 
+		long t2 = Math.min( stData.getWidth(), xMid + td2);
+		final long td1 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
+		long t1 = Math.max(0, xMid - td1);
 		
 		this.setDetailZoom(t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
 	}

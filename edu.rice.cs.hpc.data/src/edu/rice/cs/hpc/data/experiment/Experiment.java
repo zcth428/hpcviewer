@@ -16,6 +16,7 @@ package edu.rice.cs.hpc.data.experiment;
 
 
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
@@ -85,9 +86,7 @@ private ThreadLevelDataManager threadsData = null;
 
 private boolean metrics_needed = true;
 
-//FIXME:tallent: temporary interface
-public long trace_minBegTime;
-public long trace_maxEndTime;
+private TraceAttribute attribute;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -798,6 +797,14 @@ public ThreadLevelDataManager getThreadLevelDataManager() {
 	return this.threadsData;
 }
 
+
+public void setTraceAttribute(TraceAttribute _attribute) {
+	this.attribute = _attribute;
+}
+
+public TraceAttribute getTraceAttribute() {
+	return this.attribute;
+}
 
 //======================================================================================
 //	UNIT TEST

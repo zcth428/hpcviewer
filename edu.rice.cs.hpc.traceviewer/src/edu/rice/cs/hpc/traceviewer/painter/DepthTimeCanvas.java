@@ -8,10 +8,8 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -36,9 +34,6 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	/**The first/last time being viewed now*/
     long begTime;
     long endTime;
-	
-	/** The number of time units being displayed on the Detail View.*/
-	long numTimeUnitsDisp;
 	
 	/**The selected time that is open in the csViewer.*/
 	double selectedTime;
@@ -230,7 +225,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	{
 		final int viewWidth = getClientArea().width;
 
-		return (double)viewWidth / (double)numTimeUnitsDisp;
+		return (double)viewWidth / (double)getNumTimeDisplayed();
 	}
 
 	@Override
@@ -255,6 +250,11 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	// PRIVATE METHODS
 	//---------------------------------------------------------------------------------------
 
+	private long getNumTimeDisplayed()
+	{
+		return (this.endTime - this.begTime);
+	}
+	
 	private void setTimeZoom(long leftTime, long rightTime)
 	{
 		begTime = leftTime;
@@ -262,11 +262,10 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		
 		assertTimeBounds();
 		
-		if (numTimeUnitsDisp < Constants.MIN_TIME_UNITS_DISP)
+		if (getNumTimeDisplayed() < Constants.MIN_TIME_UNITS_DISP)
 		{
-			begTime += (numTimeUnitsDisp - Constants.MIN_TIME_UNITS_DISP)/2;
-			numTimeUnitsDisp = Constants.MIN_TIME_UNITS_DISP;
-			endTime = begTime + numTimeUnitsDisp;
+			begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
+			endTime = begTime + getNumTimeDisplayed();
 			assertTimeBounds();
 		}
 		
@@ -279,8 +278,6 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 			begTime = 0;
 		if (endTime > (long)stData.getWidth())
 			endTime = (long)stData.getWidth();
-		
-		numTimeUnitsDisp = endTime - begTime;
 	}
     
     private void setDetail()
@@ -377,7 +374,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 			else
 			{
 				//If we're zoomed in all the way don't do anything
-				if(numTimeUnitsDisp > Constants.MIN_TIME_UNITS_DISP)
+				if(getNumTimeDisplayed() > Constants.MIN_TIME_UNITS_DISP)
 				{
 					//pushUndo();
 					adjustSelection(mouseDown,mouseUp);

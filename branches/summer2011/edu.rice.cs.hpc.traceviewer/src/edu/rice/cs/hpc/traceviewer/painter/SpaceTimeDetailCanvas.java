@@ -302,6 +302,20 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		stData.attributes.setTime(_topLeftTime, _bottomRightTime);
 		stData.attributes.setProcess((int)_topLeftProcess, (int)_bottomRightProcess);
 		
+		final long numTimeDisplayed = this.getNumTimeUnitDisplayed();
+		if (numTimeDisplayed < Constants.MIN_TIME_UNITS_DISP)
+		{
+			stData.attributes.begTime += (numTimeDisplayed - Constants.MIN_TIME_UNITS_DISP) / 2;
+			stData.attributes.endTime = stData.attributes.begTime + Constants.MIN_TIME_UNITS_DISP;
+		}
+		
+		final double numProcessDisp = this.getNumProcessesDisplayed();
+		if (numProcessDisp < MIN_PROC_DISP)
+		{
+			stData.attributes.begProcess = (int)stData.attributes.begProcess;
+			stData.attributes.endProcess = stData.attributes.begProcess+MIN_PROC_DISP;
+		}
+		
 		this.rebuffer();
 		
 		this.updateButtonStates();

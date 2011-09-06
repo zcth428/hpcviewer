@@ -32,8 +32,8 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	long topLeftPixelX;
 	
 	/**The first/last time being viewed now*/
-    long begTime;
-    long endTime;
+    long oldBegTime;
+    long oldEndTime;
 	
 	/**The selected time that is open in the csViewer.*/
 	double selectedTime;
@@ -102,7 +102,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 				final int viewWidth = getClientArea().width;
 				final int viewHeight = getClientArea().height;
 
-				assertTimeBounds();
+				//assertTimeBounds();
 				
 				if (viewWidth > 0 && viewHeight > 0) {
 					getDisplay().asyncExec(new ResizeThread( new DepthBufferPaint()));
@@ -116,7 +116,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		if (this.stData == null || imageBuffer == null)
 			return;
 		
-		topLeftPixelX = Math.round(begTime*getScaleX());
+		topLeftPixelX = Math.round(stData.attributes.begTime*getScaleX());
 		
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
@@ -200,10 +200,10 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     	// if it is the same then repaint the canvas, otherwise we have to 
     	//	create a new image buffer
     	//------------------------------------------------------
-    	if (begTime != _begTime || endTime != _endTime)
+    	if (oldBegTime != _begTime && oldEndTime != _endTime) {
     		// different time range. Needs to create a new image buffer
     		setTimeZoom(_begTime, _endTime);
-    	else
+    	} else
     		this.redraw();
     }
     
@@ -212,7 +212,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     	if(mouseDown == null)
     		return;
 
-    	long closeTime = begTime + (long)((double)mouseDown.x / getScaleX());
+    	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
     	
     	Position currentPosition = stData.getPosition();
     	Position position = new Position(closeTime, currentPosition.process);
@@ -252,33 +252,30 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 
 	private long getNumTimeDisplayed()
 	{
-		return (this.endTime - this.begTime);
+		return (stData.attributes.endTime - stData.attributes.begTime);
 	}
 	
 	private void setTimeZoom(long leftTime, long rightTime)
 	{
-		begTime = leftTime;
-		endTime = rightTime;
+		stData.attributes.begTime= leftTime;
+		stData.attributes.endTime = rightTime;
 		
-		assertTimeBounds();
+		stData.attributes.assertTimeBounds(stData.getWidth());
 		
 		if (getNumTimeDisplayed() < Constants.MIN_TIME_UNITS_DISP)
 		{
-			begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
-			endTime = begTime + getNumTimeDisplayed();
-			assertTimeBounds();
+			stData.attributes.begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
+			stData.attributes.endTime = stData.attributes.begTime + getNumTimeDisplayed();
+			
+			stData.attributes.assertTimeBounds(stData.getWidth());
 		}
 		
 		rebuffer();
+		
+		oldBegTime = stData.attributes.begTime;
+		oldEndTime = stData.attributes.endTime;
 	}
 
-	private void assertTimeBounds()
-	{
-		if (begTime < 0)
-			begTime = 0;
-		if (endTime > (long)stData.getWidth())
-			endTime = (long)stData.getWidth();
-	}
     
     private void setDetail()
     {
@@ -325,11 +322,12 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 		
-		this.stData.attributes.numPixelsDepthV = viewHeight;
+		stData.attributes.numPixelsDepthV = viewHeight;
 		
 		try
 		{
-			stData.paintDepthViewport(bufferGC, this, begTime, endTime, viewWidth, viewHeight);
+			stData.paintDepthViewport(bufferGC, this, 
+					stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight);
 		}
 		catch(Exception e)
 		{

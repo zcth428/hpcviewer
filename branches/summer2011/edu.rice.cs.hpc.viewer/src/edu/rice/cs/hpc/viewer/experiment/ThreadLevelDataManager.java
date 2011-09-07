@@ -1,9 +1,20 @@
-package edu.rice.cs.hpc.data.experiment.extdata;
+package edu.rice.cs.hpc.viewer.experiment;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
+import edu.rice.cs.hpc.data.util.IProgressReport;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 
 /***
@@ -135,11 +146,24 @@ public class ThreadLevelDataManager {
 			directory = new File(directory.getParent());
 		
 		MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
+		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		final IWorkbenchPartSite site = window.getActivePage().getActivePart().getSite();
+		
+		IStatusLineManager statusLine = null;
+		
+		// --------------------------------------------------------------
+		// the current active site can be either editor or view
+		// if none of them is active, then we have nothing
+		// --------------------------------------------------------------
+		if (site instanceof IViewSite)
+			statusLine = ((IViewSite)site).getActionBars().getStatusLineManager();
+		else if (site instanceof IEditorPart)
+			statusLine = ((IEditorSite)site).getActionBars().getStatusLineManager();
 		
 		try {
 			// the compact method will return the name of the compacted files.
 			// if the file doesn't exist, it will be created automatically
-			final String file = MergeDataFiles.merge(directory, metric.getGlob(), "mdb");
+			final String file = MergeDataFiles.merge(directory, metric.getGlob(), "mdb", new ProgressReport(statusLine));
 			
 			data_file[metric_raw_id] = new ThreadLevelDataFile(file);
 			
@@ -148,5 +172,33 @@ public class ThreadLevelDataManager {
 		}
 	}
 
+	/*******************
+	 * Progress bar
+	 * @author laksonoadhianto
+	 *
+	 */
+	private class ProgressReport implements IProgressReport 
+	{
+		final private IStatusLineManager statusLine;
+
+		public ProgressReport(IStatusLineManager statusMgr)
+		{
+			statusLine = statusMgr;
+		}
+		
+		public void begin(String title, int num_tasks) {
+			statusLine.setMessage("Starting " + title);
+			statusLine.getProgressMonitor().beginTask(title, num_tasks);
+		}
+
+		public void advance() {
+			statusLine.getProgressMonitor().worked(1);
+		}
+
+		public void end() {
+			statusLine.getProgressMonitor().done();
+		}
+		
+	}
 
 } 

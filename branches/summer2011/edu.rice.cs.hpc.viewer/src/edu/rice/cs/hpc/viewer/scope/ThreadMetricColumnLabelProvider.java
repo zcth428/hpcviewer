@@ -3,9 +3,9 @@ package edu.rice.cs.hpc.viewer.scope;
 import java.io.IOException;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 
 public class ThreadMetricColumnLabelProvider extends BaseMetricColumnProvider {
 
@@ -16,7 +16,7 @@ public class ThreadMetricColumnLabelProvider extends BaseMetricColumnProvider {
 	public ThreadMetricColumnLabelProvider( Experiment experiment, int rank_sequence, MetricRaw metric ) {
 		super();
 		_metric = metric;
-		dataManager = experiment.getThreadLevelDataManager();
+		//dataManager = experiment.getThreadLevelDataManager();
 	}
 	
 	

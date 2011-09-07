@@ -6,7 +6,6 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
@@ -89,12 +88,7 @@ public class GraphEditorInput implements IEditorInput {
 		return null;
 	}
 	
-	
-	
-	public ThreadLevelDataManager getThreadLevelDataManager() {
-		return _experiment.getThreadLevelDataManager();
-	}
-	
+		
 	public GraphType.PlotType getType() {
 		return this._type;
 	}

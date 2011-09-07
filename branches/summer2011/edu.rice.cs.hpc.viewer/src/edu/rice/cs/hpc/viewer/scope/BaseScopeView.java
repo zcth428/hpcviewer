@@ -2,9 +2,11 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 
 /**
  * 
@@ -19,8 +21,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     //======================================================
 	
 	protected boolean hasThreadsLevelData = false;
-
-    
+    private ExperimentData dataExperiment;
 
     //======================================================
     // ................ UPDATE ............................
@@ -33,7 +34,9 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         if (myExperiment == null)
         	return;
         
-        this.hasThreadsLevelData = (myExperiment.getThreadLevelDataManager() != null);
+        final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
+        dataExperiment = ExperimentData.getInstance(window);
+        hasThreadsLevelData = dataExperiment.getThreadLevelDataManager() != null;
         
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
@@ -91,6 +94,11 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         this.updateDatabase(myExperiment);
    	}
 
+	protected ExperimentData getExperimentData()
+	{
+		return this.dataExperiment;
+	}
+	
     /**
      * Tell children to update the content with the new database
      * @param new_database

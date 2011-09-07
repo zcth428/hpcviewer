@@ -15,7 +15,6 @@
 package edu.rice.cs.hpc.data.experiment;
 
 
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
@@ -82,7 +81,6 @@ protected HashMap metricMap;
 // thread level database
 //------------------------------------------------------------
 private MetricRaw[] metrics_raw;
-private ThreadLevelDataManager threadsData = null;
 
 private boolean metrics_needed = true;
 
@@ -783,8 +781,6 @@ public File getXMLExperimentFile() {
 
 public void setMetricRaw(MetricRaw []metrics) {
 	this.metrics_raw = metrics;
-	if (this.metrics_raw != null)
-		this.threadsData = new ThreadLevelDataManager(this);
 }
 
 
@@ -793,9 +789,6 @@ public MetricRaw[] getMetricRaw() {
 }
 
 
-public ThreadLevelDataManager getThreadLevelDataManager() {
-	return this.threadsData;
-}
 
 
 public void setTraceAttribute(TraceAttribute _attribute) {

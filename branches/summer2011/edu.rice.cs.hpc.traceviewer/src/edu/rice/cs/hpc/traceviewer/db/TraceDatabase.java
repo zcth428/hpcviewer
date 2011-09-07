@@ -26,8 +26,8 @@ import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
 public class TraceDatabase
 {
 	
-	/**the minimum size a trace file must be in order to be correctly formatted*/
-	final private static int MIN_TRACE_SIZE = 32+8+TraceDataByRank.SIZE_OF_HEADER+TraceDataByRank.SIZE_OF_TRACE_RECORD*2;
+	/** heuristically, the minimum size a trace file must be in order to be correctly formatted*/
+	final private static int MIN_TRACE_SIZE = 32+8+24+TraceDataByRank.SIZE_OF_TRACE_RECORD*2;
 	
 	/**a file holding an concatenated collection of all the trace files*/
 	private File traceFile = null;

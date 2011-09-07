@@ -44,7 +44,7 @@ public class ProcessTimeline
 	
 	/**Creates a new ProcessTimeline with the given parameters.*/
 	public ProcessTimeline(int _lineNum, HashMap<Integer, CallPath> _scopeMap, BaseDataFile dataTrace, 
-			int _processNumber, int _numPixelH, double _timeRange, double _startingTime)
+			int _processNumber, int _numPixelH, double _timeRange, double _startingTime, final int header_size)
 	{
 		lineNum = _lineNum;
 		scopeMap = _scopeMap;
@@ -54,7 +54,7 @@ public class ProcessTimeline
 				
 		pixelLength = timeRange/(double)_numPixelH;
 		
-		data = new TraceDataByRank(dataTrace, _processNumber, _numPixelH);
+		data = new TraceDataByRank(dataTrace, _processNumber, _numPixelH, header_size);
 	}
 	
 	/**Fills the ProcessTimeline with data from the file.*/

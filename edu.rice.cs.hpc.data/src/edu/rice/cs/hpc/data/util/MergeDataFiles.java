@@ -43,7 +43,7 @@ public class MergeDataFiles {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String merge(File directory, String globInputFile, String newSuffix) throws IOException {
+	public static String merge(File directory, String globInputFile, String newSuffix, IProgressReport progress) throws IOException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
 		final String suffix = globInputFile.substring(last_dot);
@@ -78,6 +78,8 @@ public class MergeDataFiles {
 		if (file_metric == null)
 			return null;
 		
+		progress.begin("Merging files", file_metric.length);
+		
 		dos.writeInt(file_metric.length);
 		
 		final long num_metric_header = 2 * Constants.SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes) 
@@ -85,7 +87,7 @@ public class MergeDataFiles {
 		long offset = num_metric_header + num_metric_index;
 
 		int name_format = 0;  // FIXME hack:some hpcprof revisions have different format name !!
-		
+				
 		//-----------------------------------------------------
 		// 2. Record the process ID, thread ID and the offset 
 		//   It will also detect if the application is mp, mt, or hybrid
@@ -126,6 +128,7 @@ public class MergeDataFiles {
 
 			dos.writeLong(offset);
 			offset += file_metric[i].length();
+
 		}
 		
 		//-----------------------------------------------------
@@ -142,6 +145,7 @@ public class MergeDataFiles {
 			}
 			dis.close();
 			
+			progress.advance();
 		}		
 		insertMarker(dos);
 		
@@ -160,6 +164,8 @@ public class MergeDataFiles {
 		// 5. remove old files
 		//-----------------------------------------------------
 		removeFiles(file_metric);
+		
+		progress.end();
 		
 		return outputFile;
 

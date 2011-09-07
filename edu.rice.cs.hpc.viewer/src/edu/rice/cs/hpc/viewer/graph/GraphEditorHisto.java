@@ -12,7 +12,6 @@ import org.swtchart.IBarSeries;
 import org.swtchart.ISeries.SeriesType;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
@@ -24,11 +23,10 @@ public class GraphEditorHisto extends GraphEditorBase {
 	@Override
 	protected void plotData(Experiment exp, Scope scope, MetricRaw metric) {
 		final int bins = 10;
-		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
 		
 		double y_values[], x_values[];
 		try {
-			y_values = objDataManager.getMetrics(metric, scope.getCCTIndex());
+			y_values = this.threadData.getMetrics(metric, scope.getCCTIndex());
 
 		} catch (IOException e) {
 			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());

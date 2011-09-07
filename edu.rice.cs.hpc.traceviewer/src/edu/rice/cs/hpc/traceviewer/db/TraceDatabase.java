@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import edu.rice.cs.hpc.data.util.IProgressReport;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
@@ -36,6 +37,8 @@ public class TraceDatabase
 	
 	final private String []args;
 	
+	private IStatusLineManager _statusMgr;
+	
 	public TraceDatabase(String []_args)
 	{
 		args = _args;
@@ -45,6 +48,7 @@ public class TraceDatabase
 	{
 		boolean hasDatabase = false;
 		
+		_statusMgr = statusMgr;
 		statusMgr.setMessage("Select a directory containing traces");
 		
 		//---------------------------------------------------------------
@@ -169,7 +173,8 @@ public class TraceDatabase
 			if (experimentFile.canRead()) {
 				try {
 					statusMgr.setMessage("Merging traces ...");
-					final String traceFilename = MergeDataFiles.merge(dirFile, "*.hpctrace", "mt");
+					final String traceFilename = MergeDataFiles.merge(dirFile, "*.hpctrace", "mt", 
+							new TraceProgressReport(_statusMgr));
 					final File traceFile = new File(traceFilename);
 
 					if (traceFile.length() > MIN_TRACE_SIZE) {
@@ -195,6 +200,29 @@ public class TraceDatabase
 		
 		dialog.setMessage("The directory selected contains no traces:\n\t" + str + 
 				"\nPlease select a directory that contains traces.");
+	}
+	
+	private class TraceProgressReport implements IProgressReport 
+	{
+		final private IStatusLineManager _statusMgr;
+		
+		public TraceProgressReport(IStatusLineManager statusMgr )
+		{
+			this._statusMgr = statusMgr;
+		}
+		
+		public void begin(String title, int num_tasks) {
+			_statusMgr.setMessage(title);
+			_statusMgr.getProgressMonitor().beginTask("Starting: "+title, num_tasks);
+		}
+
+		public void advance() {
+			_statusMgr.getProgressMonitor().worked(1);
+		}
+
+		public void end() {
+			_statusMgr.getProgressMonitor().done();
+		}
 		
 	}
 }

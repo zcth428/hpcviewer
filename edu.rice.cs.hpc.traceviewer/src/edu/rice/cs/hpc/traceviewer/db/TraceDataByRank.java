@@ -11,9 +11,6 @@ public class TraceDataByRank {
 
 	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
 	public final static byte SIZE_OF_TRACE_RECORD = 12;
-	
-	/**The new format for trace files has a 24-byte header.*/
-	public final static byte SIZE_OF_HEADER = 24;
 
 	
 	final private BaseDataFile data;
@@ -31,13 +28,13 @@ public class TraceDataByRank {
 	 * @param _rank
 	 * @param _numPixelH
 	 */
-	public TraceDataByRank(BaseDataFile _data, int _rank, int _numPixelH)
+	public TraceDataByRank(BaseDataFile _data, int _rank, int _numPixelH, final int header_size)
 	{
 		data = _data;
 		rank = _rank;
 		
 		final long offsets[] = data.getOffsets();
-		minloc = offsets[rank] + SIZE_OF_HEADER;
+		minloc = offsets[rank] + header_size;
 		maxloc = ( (rank+1<data.getNumberOfFiles())? offsets[rank+1] : data.getMasterBuffer().size()-1 )
 				- SIZE_OF_TRACE_RECORD;
 		

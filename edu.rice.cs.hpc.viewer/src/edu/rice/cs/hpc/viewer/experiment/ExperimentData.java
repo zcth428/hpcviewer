@@ -22,6 +22,8 @@ public class ExperimentData {
     private IWorkbenchWindow window;
     private ExperimentManager expManager;
     
+    private ThreadLevelDataManager threadsData = null;
+
     static private java.util.HashMap<IWorkbenchWindow, ExperimentData> mapData = 
     	new java.util.HashMap<IWorkbenchWindow, ExperimentData>(3);
 	
@@ -69,6 +71,7 @@ public class ExperimentData {
 	 */
 	public void setExperiment(Experiment experiment) {
 		this.experimentActive = experiment;
+		threadsData = new ThreadLevelDataManager(experiment);
 	}
 	
 	/**
@@ -85,5 +88,9 @@ public class ExperimentData {
 	 */
 	public String getFilename() {
 		return this.experimentActive.getXMLExperimentFile().getAbsolutePath();
+	}
+	
+	public ThreadLevelDataManager getThreadLevelDataManager() {
+		return this.threadsData;
 	}
 }

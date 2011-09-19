@@ -33,7 +33,7 @@ public class MetricValuePredefinedFormat implements IMetricValueFormat {
 				
 			} else*/ 
 			{
-				format_str = format_str.format(format, value.getValue());
+				format_str = format_str.format(format, MetricValue.getValue(value));
 			}
 
 			if (format_str != null) {
@@ -42,7 +42,7 @@ public class MetricValuePredefinedFormat implements IMetricValueFormat {
 				return "";
 			}
 		} catch (java.util.IllegalFormatConversionException e) {
-			System.err.println("Illegal format conversion: " + format.toString() + "\tFrom value: " + value.getValue());
+			System.err.println("Illegal format conversion: " + format.toString() + "\tFrom value: " + MetricValue.getValue(value));
 			e.printStackTrace();
 		}
 		return "";

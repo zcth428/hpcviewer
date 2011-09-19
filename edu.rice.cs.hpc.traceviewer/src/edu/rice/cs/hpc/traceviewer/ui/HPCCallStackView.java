@@ -130,9 +130,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		miniCanvas.setDetailCanvas(traceview.detailCanvas);
 		traceview.detailCanvas.setMiniCanvas(miniCanvas);
 		
-		traceview.setCSView(this);
-		depthview.setCSView(this);
-		
 		miniCanvas.setVisible(false);
 	}
 	

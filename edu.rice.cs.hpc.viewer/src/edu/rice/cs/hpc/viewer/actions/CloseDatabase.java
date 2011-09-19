@@ -14,6 +14,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -21,6 +22,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
 import edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
@@ -43,50 +45,77 @@ public class CloseDatabase extends AbstractHandler {
 			return null;		// get method already issued error dialog
 		}
 		
+		final IWorkbenchPage curPage = window.getActivePage();
 		final String[] dbArray = vWin.getDatabasePaths();
+		Object[] databasesToClose;
+		
 		if (dbArray.length == 0) {
 			MessageDialog.openError(window.getShell(), 
 					"Error: No Open Database's Found.", 
 					"There are no databases in this window which can be closed.");
 			return null;		// set method already issued error dialog
-		}
-
-		List<String> dbList = Arrays.asList(dbArray);
-
-		// put up a dialog with the open databases in the current window in a drop down selection box
-		ListSelectionDialog dlg = new ListSelectionDialog(window.getShell(), dbList, 
-			new ArrayContentProvider(), new LabelProvider(), "Select the databases to close:");
-		dlg.setTitle("Select Databases");
-		dlg.open();
-		Object[] selectedDatabases = dlg.getResult();
-
-		if ((selectedDatabases == null) || (selectedDatabases.length <= 0)) {
-			return null;
-		}
-		
-		String[] selectedStrings = new String[selectedDatabases.length];
-		for (int i=0 ; i<selectedDatabases.length ; i++) {
-			selectedStrings[i] = selectedDatabases[i].toString();
 			
-			vWin.getDb(selectedStrings[i]);
+		} else if (dbArray.length == 1) {
+			
+			// ------------------------------------------------------------
+			// if only one database is opened, we just close everything
+			//	no need to ask which database to close !
+			// ------------------------------------------------------------
+
+			databasesToClose = dbArray;
+		} else {
+			
+			final List<String> dbList = Arrays.asList(dbArray);
+
+			// put up a dialog with the open databases in the current window in a drop down selection box
+			ListSelectionDialog dlg = new ListSelectionDialog(window.getShell(), dbList, 
+				new ArrayContentProvider(), new LabelProvider(), "Select the databases to close:");
+			dlg.setTitle("Select Databases");
+			dlg.open();
+			Object[] selectedDatabases = dlg.getResult();
+
+			if ((selectedDatabases == null) || (selectedDatabases.length <= 0)) {
+				return null;
+			}
+			databasesToClose = selectedDatabases;
+			
+		}
+
+		
+		// -----------------------------------------------------------------------
+		// close the databases, and all editors and views associated with them
+		// -----------------------------------------------------------------------
+		for (Object selectedDatabase: databasesToClose) {
+			
+			vWin.getDb(selectedDatabase.toString());
 			// remove the database from our database manager information
-			int dbNum = vWin.removeDatabase(selectedStrings[i]);
+			int dbNum = vWin.removeDatabase(selectedDatabase.toString());
 			if (dbNum < 0) {
 				// can close views for an entry we could not find
 				continue;
 			}
 		
-			IWorkbenchPage curPage = window.getActivePage();
 
 			// close any open editor windows for this database
-			org.eclipse.ui.IEditorReference editors[] = curPage.getEditorReferences();
-			int nbEditors = editors.length;
-			for(int j=0;j<nbEditors;j++) {
-				String title = editors[j].getTitle();
-				// if this is for the database being closed, remove it (hiding it actually deletes it)
-				if (title.startsWith((dbNum+1) + "-")) {
-					IEditorPart edPart = editors[j].getEditor(true);
-					if (edPart != null) {
+			final org.eclipse.ui.IEditorReference editors[] = curPage.getEditorReferences();
+			for (IEditorReference editor: editors) {
+				IEditorPart edPart = editor.getEditor(false);
+				
+				// ----------------------------------------------------------
+				// if the editor is an instance of hpcviewer's editor, then we close it
+				// 		if the database associated with it is the same as the database we
+				//		want to close
+				// ----------------------------------------------------------
+				if (edPart instanceof IViewerEditor) {
+					final IViewerEditor viewerEditor = (IViewerEditor) edPart;
+					final Experiment exp = viewerEditor.getExperiment();
+					final File dir = exp.getDefaultDirectory();
+					
+					// ----------------------------------------------------------
+					// at the moment we don't have mechanism to compare database
+					// thus, we just compare the path 
+					// ----------------------------------------------------------
+					if (dir.getAbsolutePath().equals(selectedDatabase)) {
 						curPage.closeEditor(edPart, false);
 					}
 				}
@@ -104,7 +133,7 @@ public class CloseDatabase extends AbstractHandler {
 					final int dbDir = xmlFileName.lastIndexOf(File.separator);
 					xmlFileName = xmlFileName.substring(0, dbDir);
 					
-					if (selectedStrings[i].equals(xmlFileName)) {
+					if (selectedDatabase.equals(xmlFileName)) {
 						curPage.hideView(objView);
 					}
 				}

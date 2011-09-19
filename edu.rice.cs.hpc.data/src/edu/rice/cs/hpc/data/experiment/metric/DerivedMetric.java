@@ -117,7 +117,7 @@ public class DerivedMetric extends BaseMetric {
 			dVal = objVal.doubleValue();
 		}
 		if(this.getPercent()){
-			return new MetricValue(dVal,dVal/this.dRootValue);
+			return new MetricValue(dVal, ((float) dVal/this.dRootValue));
 		} else {
 			return new MetricValue(dVal);
 		}

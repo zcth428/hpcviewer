@@ -29,15 +29,15 @@ public class TestMetricFormat {
 		MetricValue mv8 = new MetricValue(0.955, -0.095005);
 		MetricValue mv9 = new MetricValue(0.9992, -0.095505);
 		
-		System.out.println("test 1: "+mv.getValue() +"\t= '"+baseMetric.getDisplayFormat().format(mv) +"'");
-		System.out.println("test 2: "+mv2.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv2)+"'");
-		System.out.println("test 3: "+mv3.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv3)+"'");
-		System.out.println("test 4: "+mv4.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv4)+"'");
-		System.out.println("test 5: "+mv5.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv5)+"'");
-		System.out.println("test 6: "+mv6.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv6)+"'");
-		System.out.println("test 7: "+mv7.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv7)+"'");
-		System.out.println("test 8: "+mv8.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv8)+"'");
-		System.out.println("test 9: "+mv9.getValue()+"\t= '"+baseMetric.getDisplayFormat().format(mv9)+"'");
+		System.out.println("test 1: "+MetricValue.getValue(mv) +"\t= '"+baseMetric.getDisplayFormat().format(mv) +"'");
+		System.out.println("test 2: "+MetricValue.getValue(mv2)+"\t= '"+baseMetric.getDisplayFormat().format(mv2)+"'");
+		System.out.println("test 3: "+MetricValue.getValue(mv3)+"\t= '"+baseMetric.getDisplayFormat().format(mv3)+"'");
+		System.out.println("test 4: "+MetricValue.getValue(mv4)+"\t= '"+baseMetric.getDisplayFormat().format(mv4)+"'");
+		System.out.println("test 5: "+MetricValue.getValue(mv5)+"\t= '"+baseMetric.getDisplayFormat().format(mv5)+"'");
+		System.out.println("test 6: "+MetricValue.getValue(mv6)+"\t= '"+baseMetric.getDisplayFormat().format(mv6)+"'");
+		System.out.println("test 7: "+MetricValue.getValue(mv7)+"\t= '"+baseMetric.getDisplayFormat().format(mv7)+"'");
+		System.out.println("test 8: "+MetricValue.getValue(mv8)+"\t= '"+baseMetric.getDisplayFormat().format(mv8)+"'");
+		System.out.println("test 9: "+MetricValue.getValue(mv9)+"\t= '"+baseMetric.getDisplayFormat().format(mv9)+"'");
 	}
 
 }

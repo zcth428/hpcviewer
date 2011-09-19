@@ -60,9 +60,9 @@ public class PercentScopeVisitor implements IScopeVisitor {
 			MetricValue m = scope.getMetricValue(i);
 			MetricValue root_value = root.getMetricValue(i);
 			if (m != MetricValue.NONE && root_value != MetricValue.NONE) {
-				double myValue = m.getValue();
-				double total = root_value.getValue();
-				if (total != 0.0) m.setPercentValue(myValue/total);
+				double myValue = MetricValue.getValue(m);
+				double total = MetricValue.getValue(root_value);
+				if (total != 0.0) MetricValue.setPercentValue(m, myValue/total);
 			}
 
 		}

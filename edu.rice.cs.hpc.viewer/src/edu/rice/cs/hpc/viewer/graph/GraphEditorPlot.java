@@ -7,10 +7,10 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.swtchart.IAxisSet;
 import org.swtchart.IAxisTick;
 
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile.ApplicationType;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 
 public class GraphEditorPlot extends GraphEditor {
 
@@ -43,24 +43,23 @@ public class GraphEditorPlot extends GraphEditor {
 
 
 	@Override
-	protected String getXAxisTitle(ApplicationType type) {
+	protected String getXAxisTitle(ThreadLevelDataFile data) {
 		String axis_x;
 		IAxisSet axisSet = this.getChart().getAxisSet();
 		IAxisTick xTick = axisSet.getXAxis(0).getTick();
 
-		switch (type) {
-		case MULTI_PROCESSES:
-			axis_x = "Processes";
-			xTick.setFormat(new DecimalFormat("##########"));
-			break;
-		case MULTI_THREADING:
+		axis_x = "Processes";
+		xTick.setFormat(new DecimalFormat("##########"));
+
+		if (data.isHybrid()) 
+		{
+			axis_x = "Process.Thread";
+			xTick.setFormat(new DecimalFormat("######00.00##"));			
+		} else if (data.isMultiThreading()) {
 			axis_x = "Threads";
 			xTick.setFormat(new DecimalFormat("##########"));
-			break;
-		default:
-			axis_x = "Process.Thread";
-			xTick.setFormat(new DecimalFormat("######00.00##"));
 		}
+
 		return axis_x;
 	}
 

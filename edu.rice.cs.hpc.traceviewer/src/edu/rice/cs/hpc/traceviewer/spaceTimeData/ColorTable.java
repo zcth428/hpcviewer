@@ -71,10 +71,13 @@ public class ColorTable implements IProcedureTable
 		{
 			String procName = procNames.get(l);
 
-			if(procName!=CallStackSample.NULL_FUNCTION) {
+			if(procName!=CallPath.NULL_FUNCTION)
+			{
 				Color c = new Color(display, red.nextInt(200),green.nextInt(200),blue.nextInt(200));
 				colorMatcher.put(procName, new ColorImagePair(c));
-			} else {
+			}
+			else
+			{
 				colorMatcher.put(procName, IMAGE_WHITE);
 			}
 		}

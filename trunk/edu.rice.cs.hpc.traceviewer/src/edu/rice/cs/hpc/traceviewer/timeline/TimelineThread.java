@@ -1,11 +1,14 @@
-package edu.rice.cs.hpc.traceviewer.spaceTimeData;
+package edu.rice.cs.hpc.traceviewer.timeline;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
+import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+
 /***********************************************************
  * A thread that reads in the data for one line, 
  * draws that line to its own image and adds the data
@@ -40,13 +43,14 @@ public class TimelineThread extends Thread
 	/**The minimum height the samples need to be in order to paint the white separator lines.*/
 	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 	
+	final private TimelineProgressMonitor monitor;
+	
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	//The reason so many things are passed is because of ThreadInvalidAccessExceptions that
-	//get thrown when it tries to access them from SpaceTimeData
-	public TimelineThread(SpaceTimeData _stData, boolean _changedBounds, Canvas _canvas, int _width, double _scaleX, double _scaleY)
+	public TimelineThread(SpaceTimeData _stData, boolean _changedBounds, Canvas _canvas, int _width, 
+			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
 		stData = _stData;
@@ -56,6 +60,8 @@ public class TimelineThread extends Thread
 		scaleX = _scaleX;
 		scaleY = _scaleY;
 		detailPaint = canvas instanceof SpaceTimeDetailCanvas;
+		
+		monitor = _monitor;
 	}
 	
 	/***************************************************************
@@ -73,7 +79,7 @@ public class TimelineThread extends Thread
 			{
 				if(changedBounds)
 				{
-					nextTrace.readInData();
+					nextTrace.readInData(stData.getHeight());
 					stData.addNextTrace(nextTrace);
 				}
 				
@@ -83,13 +89,21 @@ public class TimelineThread extends Thread
 				else
 					imageHeight++;
 				
-				Image line = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
-				stData.paintDetailLine(spp, stData.getDepth(), nextTrace.line(), imageHeight, changedBounds);
-				gc.dispose();
+				Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
+				Image lineOriginal = new Image(canvas.getDisplay(), width, imageHeight);
+				GC gcFinal = new GC(lineFinal);
+				GC gcOriginal = new GC(lineOriginal);
 				
-				stData.addNextImage(line, nextTrace.line());
+				SpaceTimeSamplePainter spp = new DetailSpaceTimePainter(gcOriginal, gcFinal, stData.getColorTable(), scaleX, scaleY);
+				stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
+				
+				gcFinal.dispose();
+				gcOriginal.dispose();
+				
+				stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
+				
+				monitor.announceProgress();
+				
 				nextTrace = stData.getNextTrace(changedBounds);
 			}
 		}
@@ -98,14 +112,6 @@ public class TimelineThread extends Thread
 			ProcessTimeline nextTrace = stData.getNextDepthTrace();
 			while (nextTrace != null)
 			{
-				/*if (nextTrace.line()==0)
-				{
-					nextTrace.readInData();
-					nextTrace.shiftTimeBy(stData.getLowestStartingTime());
-					stData.setDepthTrace(nextTrace);
-					stData.wakeUpThreads();
-				}*/
-				
 				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
 				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
 					imageHeight--;
@@ -114,7 +120,16 @@ public class TimelineThread extends Thread
 				
 				Image line = new Image(canvas.getDisplay(), width, imageHeight);
 				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY);
+				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY) {
+
+					@Override
+					public void paintSample(int startPixel, int endPixel,
+							int height, String function) {
+
+						this.internalPaint(gc, startPixel, endPixel, height, function);
+					}
+				};
+				
 				stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
 				gc.dispose();
 				

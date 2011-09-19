@@ -16,10 +16,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.editor.BaseEditorManager;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorBase;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorHisto;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
@@ -74,8 +74,8 @@ public class ScopeView extends BaseScopeView {
 	@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
 		if (scope != null && this.hasThreadsLevelData) {
-			Experiment exp = this.getExperiment();
-			ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
+
+			ThreadLevelDataManager objDataManager = this.getExperimentData().getThreadLevelDataManager();
 
 			// return immediately if the experiment doesn't contain thread level data
 			if (!objDataManager.isDataAvailable())

@@ -11,10 +11,11 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
-public class OpenDatabase extends AbstractHandler {
-
-
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+public class OpenDatabase extends AbstractHandler
+{
+	
+	public Object execute(ExecutionEvent event) throws ExecutionException
+	{
 		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		final Shell shell = window.getShell();
 		final IWorkbenchPartSite site = window.getActivePage().getActivePart().getSite();
@@ -22,9 +23,6 @@ public class OpenDatabase extends AbstractHandler {
 
 		TraceDatabase trace_db = new TraceDatabase(null);
 		trace_db.openDatabase(shell, vSite.getActionBars().getStatusLineManager());
-		
 		return null;
 	}
-
-
 }

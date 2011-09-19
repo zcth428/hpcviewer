@@ -17,8 +17,6 @@ package edu.rice.cs.hpc.data.experiment.metric;
 
 import edu.rice.cs.hpc.data.util.*;
 
-import java.lang.Comparable;
-
 
 
 
@@ -33,26 +31,29 @@ import java.lang.Comparable;
  */
 
 
-public class MetricValue extends Object
-implements
-	Comparable
+public final class MetricValue 
 {
 
+	/** The actual value if available. */
+	protected float value;
+	
+	/** The actual percentage value if available. */
+	protected float percent;
+	
+	protected byte flags;
+	
+	protected static final byte VALUE_IS_AVAILABLE = 1;
+	protected static final byte PERCENT_IS_AVAILABLE = 2;
+	
+	/** Whether the actual value is available. */
+	// protected boolean available;
 
-/** Whether the actual value is available. */
-protected boolean available;
+	/** Whether the percentage value is available. */
+	// protected boolean percentAvailable;
 
-/** The actual value if available. */
-protected double value;
 
-/** Whether the percentage value is available. */
-protected boolean percentAvailable;
-
-/** The actual percentage value if available. */
-protected double percent;
-
-/** The distinguished metric value indicating no data. */
-public static final MetricValue NONE = new MetricValue(-1);
+	/** The distinguished metric value indicating no data. */
+	public static final MetricValue NONE = new MetricValue(-1);
 
 
 
@@ -70,8 +71,8 @@ public static final MetricValue NONE = new MetricValue(-1);
 	
 public MetricValue()
 {
-	this.available = false;
-	this.percentAvailable = false;
+	setAvailable(this, false);
+	setPercentAvailable(this, false);
 }
 
 
@@ -83,8 +84,8 @@ public MetricValue()
 	
 public MetricValue(double value, double percent)
 {
-	this.setValue(value);
-	this.setPercentValue(percent);
+	setValue(this, value);
+	setPercentValue(this, ((float)percent));
 }
 
 
@@ -96,9 +97,10 @@ public MetricValue(double value, double percent)
 	
 public MetricValue(double value)
 {
-	this.setValue(value);
+	setValue(this, value);
+	setAvailable(this, true);
+	setPercentAvailable(this, false);
 }
-
 
 
 
@@ -106,16 +108,48 @@ public MetricValue(double value)
 //	ACCESS TO VALUE														//
 //////////////////////////////////////////////////////////////////////////
 
-
-
-
 /*************************************************************************
  *	Returns whether the actual value is available.
  ************************************************************************/
 	
-public boolean isAvailable()
+private static boolean getAvailable(MetricValue m)
 {
-	return ( (this != MetricValue.NONE) && this.available && (this.value != 0.0) );
+	boolean available = (m.flags & VALUE_IS_AVAILABLE) == VALUE_IS_AVAILABLE;
+	return available;
+}
+
+private static void setAvailable(MetricValue m, boolean status)
+{
+	if (status) {
+		m.flags |= VALUE_IS_AVAILABLE;
+	} else {
+		m.flags &= ~VALUE_IS_AVAILABLE;
+	}	
+}
+
+
+private static boolean getPercentAvailable(MetricValue m)
+{
+	boolean available = (m.flags & PERCENT_IS_AVAILABLE) == PERCENT_IS_AVAILABLE;
+	return available;
+}
+
+private static void setPercentAvailable(MetricValue m, boolean status)
+{
+	if (status) {
+		m.flags |= PERCENT_IS_AVAILABLE;
+	} else {
+		m.flags &= ~PERCENT_IS_AVAILABLE;
+	}	
+}
+
+/*************************************************************************
+ *	Returns whether the metric value is available.
+ ************************************************************************/
+	
+public static boolean isAvailable(MetricValue m)
+{
+	return ( (m != MetricValue.NONE) && getAvailable(m) && (m.value != 0.0) );
 }
 
 
@@ -125,10 +159,11 @@ public boolean isAvailable()
  *	Returns the actual value if available.
  ************************************************************************/
 	
-public double getValue()
+public static double getValue(MetricValue m)
 {
-	Dialogs.Assert(this.available, "MetricValue::getValue");
-	return this.value;
+	boolean available = (m.flags & VALUE_IS_AVAILABLE) == VALUE_IS_AVAILABLE;
+	Dialogs.Assert(available, "MetricValue::getValue");
+	return m.value;
 }
 
 
@@ -138,10 +173,10 @@ public double getValue()
  *	Makes the given actual value available.
  ************************************************************************/
 	
-public void setValue(double value)
+public static void setValue(MetricValue m, double value)
 {
-	this.available = true;
-	this.value = value;
+	setAvailable(m, true);
+	m.value = (float) value;
 }
 
 
@@ -151,9 +186,9 @@ public void setValue(double value)
  *	Returns whether the percentage value is available.
  ************************************************************************/
 	
-public boolean isPercentAvailable()
+public static boolean isPercentAvailable(MetricValue m)
 {
-	return (this != MetricValue.NONE) && this.percentAvailable;
+	return (m != MetricValue.NONE) && getPercentAvailable(m);
 }
 
 
@@ -163,11 +198,11 @@ public boolean isPercentAvailable()
  *	Returns the percentage value if available.
  ************************************************************************/
 	
-public double getPercentValue()
+public static float getPercentValue(MetricValue m)
 {
 	// Laks: I think it is normal not to have percent available
 	//Dialogs.Assert(this.percentAvailable, "MetricValue::getPercentValue");
-	return this.percent;
+	return m.percent;
 }
 
 
@@ -176,18 +211,25 @@ public double getPercentValue()
 /*************************************************************************
  *	Makes the given percentage value available.
  ************************************************************************/
-	
-public void setPercentValue(double percent)
+
+public static void setPercentValue(MetricValue m, double percent)
 {
-	this.percentAvailable = true;
-	this.percent = percent;
+	setPercentAvailable(m, true);
+	m.percent = (float) percent;
+}
+
+	
+public static void setPercentValue(MetricValue m, float percent)
+{
+	setPercentAvailable(m, true);
+	m.percent = percent;
 }
 
 
-public boolean isZero() 
+public static boolean isZero(MetricValue m) 
 {
-	if (this != MetricValue.NONE) {
-		return ( Double.compare(0.0, value) == 0 );
+	if (m != MetricValue.NONE) {
+		return ( Double.compare(0.0, m.value) == 0 );
 	}
 	return true;
 }
@@ -200,25 +242,22 @@ public boolean isZero()
  *
  ************************************************************************/
 	
-public int compareTo(Object other)
+public static int compareTo(MetricValue left, MetricValue right)
 {
-	Dialogs.Assert(other instanceof MetricValue, "MetricValue::compareTo");
-	MetricValue otherMetricValue = (MetricValue) other;
-
 	int result;
 	
-	if( this.isAvailable() && otherMetricValue.isAvailable() )
+	if( MetricValue.isAvailable(left) && MetricValue.isAvailable(right) )
 	{
-		if( this.value > otherMetricValue.value )
+		if( left.value > right.value )
 			result = +1;
-		else if( this.value < otherMetricValue.value )
+		else if( left.value < right.value )
 			result = -1;
 		else
 			result = 0;
 	}
-	else if( this.isAvailable() )
+	else if( MetricValue.isAvailable(left) )
 		result = +1;
-	else if( otherMetricValue.isAvailable() )
+	else if( MetricValue.isAvailable(right) )
 		result = -1;
 	else
 		result = 0;

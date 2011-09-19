@@ -1,9 +1,5 @@
 package edu.rice.cs.hpc.data.experiment.metric;
 
-import java.io.IOException;
-
-import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /****************************************
@@ -76,7 +72,7 @@ public class MetricRaw  extends BaseMetric {
 		return null;
 	}
 	
-	public MetricValue getValue(Scope scope, int rank_sequence) {
+/*	public MetricValue getValue(Scope scope, int rank_sequence) {
 		
 		Experiment experiment = scope.getExperiment();
 		ThreadLevelDataManager threadManager = experiment.getThreadLevelDataManager();
@@ -91,5 +87,5 @@ public class MetricRaw  extends BaseMetric {
 		}
 		
 		return MetricValue.NONE;
-	}
+	}*/
 }

@@ -127,7 +127,7 @@ public class AggregateMetric extends BaseMetric {
 	 **------------------------------------------------------------------------****/
 	public void combine(Scope s_source, Scope s_target) {
 		MetricValue value = s_target.getMetricValue(this); 
-		if (value.isAvailable()) {
+		if (MetricValue.isAvailable(value)) {
 			//--------------------------------------------------------------------------
 			// the target has the metric. we need to "combine" it with the source
 			//--------------------------------------------------------------------------

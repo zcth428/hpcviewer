@@ -125,8 +125,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 
 				MetricValue mvParent = metric.getValue(scope);
 				MetricValue mvChild = metric.getValue(scopeChild);
-				double dParent = mvParent.getValue();
-				double dChild = mvChild.getValue();
+				double dParent = MetricValue.getValue(mvParent);
+				double dChild = MetricValue.getValue(mvChild);
 				
 				// simple comparison: if the child has "significant" difference compared to its parent
 				// then we consider it as hot path node.

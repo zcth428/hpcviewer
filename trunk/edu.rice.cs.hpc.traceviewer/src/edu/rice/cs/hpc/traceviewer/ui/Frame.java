@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.Serializable;
 
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 
 public class Frame implements Serializable
@@ -20,13 +21,13 @@ public class Frame implements Serializable
 	/**The depth of the frame saved*/
 	public int depth;
 	
-	public Frame(long _begTime, long _endTime, double _begProcess, double _endProcess,
+	public Frame(ImageTraceAttributes attributes,
 			int _depth, long _selectedTime, int _selectedProcess)
 	{
-		begTime = _begTime;
-		endTime = _endTime;
-		begProcess = _begProcess;
-		endProcess = _endProcess;
+		begTime = attributes.begTime;
+		endTime = attributes.endTime;
+		begProcess = attributes.begProcess;
+		endProcess = attributes.endProcess;
 		depth = _depth;
 		
 		position = new Position(_selectedTime, _selectedProcess);

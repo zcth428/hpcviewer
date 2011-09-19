@@ -15,9 +15,9 @@ import org.swtchart.ISeries.SeriesType;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
@@ -95,12 +95,10 @@ public abstract class GraphEditor extends GraphEditorBase {
 	 */
 	protected void plotData(Experiment exp, Scope scope, MetricRaw metric ) {
 		
-		ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
-
-		double y_values[] = this.getValuesY(objDataManager, scope, metric);
+		double y_values[] = this.getValuesY(threadData, scope, metric);
 		double []x_values;
 
-		x_values = this.getValuesX(objDataManager, scope, metric);
+		x_values = this.getValuesX(threadData, scope, metric);
 
 		Chart chart = this.getChart();
 
@@ -118,9 +116,8 @@ public abstract class GraphEditor extends GraphEditorBase {
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
 
-		ThreadLevelDataFile.ApplicationType type = objDataManager.getApplicationType();
 		
-		String axis_x = this.getXAxisTitle(type);
+		String axis_x = this.getXAxisTitle( threadData.getThreadLevelDataFile(metric.getID()) );
 		chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );
 		chart.getAxisSet().getYAxis(0).getTitle().setText( "Metrics" );
 	}
@@ -130,7 +127,7 @@ public abstract class GraphEditor extends GraphEditorBase {
 	 * @param type
 	 * @return
 	 */
-	protected abstract String getXAxisTitle(ThreadLevelDataFile.ApplicationType type);
+	protected abstract String getXAxisTitle(ThreadLevelDataFile data);
 
 	/*****
 	 * retrieve the value of Xs

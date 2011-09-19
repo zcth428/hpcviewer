@@ -2,9 +2,9 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.swt.graphics.Color;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallStackSample;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
 /***********************************************************************
  * 
@@ -15,7 +15,8 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
  * 	trace view
  * 
  ***********************************************************************/
-public abstract class BasePaintLine {
+public abstract class BasePaintLine
+{
 	protected ProcessTimeline ptl;
 	protected SpaceTimeSamplePainter spp;
 	protected int depth;
@@ -25,7 +26,8 @@ public abstract class BasePaintLine {
 	private long begTime;
 		
 	public BasePaintLine(ColorTable _colorTable, ProcessTimeline _ptl, SpaceTimeSamplePainter _spp, 
-			long _begTime, int _depth, int _height, double _pixelLength) {
+			long _begTime, int _depth, int _height, double _pixelLength)
+	{
 		this.ptl = _ptl;
 		this.spp = _spp;
 		this.depth = _depth;
@@ -35,16 +37,19 @@ public abstract class BasePaintLine {
 		this.begTime = _begTime;
 	}
 	
-	/***
-	 * Painting action
-	 */
-	public void paint() {
+	/**Painting action*/
+	public void paint()
+	{
 		int succSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-		CallStackSample succSample = ptl.getSample(0);
-		int succDepth = Math.min(depth, succSample.getSize()-1);
-		String succFunction = succSample.getFunctionName(succDepth);
+		//CallStackSample succSample = ptl.getCallStackSample(0);
+		//int succDepth = Math.min(depth, succSample.getSize()-1);
+		//String succFunction = succSample.getFunctionName(succDepth);
+		CallPath cp = ptl.getCallPath(0, depth);
+		int succDepth = cp.getCurrentDepth();
+		String succFunction = cp.getCurrentDepthScope().getName();
 		Color succColor = colorTable.getColor(succFunction);
-
+		int last_ptl_index = ptl.size() - 1;
+		
 		for (int index = 0; index < ptl.size(); index++)
 		{
 			int currDepth = succDepth;
@@ -58,34 +63,41 @@ public abstract class BasePaintLine {
 			final String functionName = succFunction;
 			final Color currColor = succColor;
 			
-			while(still_the_same && (indexSucc < ptl.size()-1)) {
-				indexSucc++;
-				succSample = ptl.getSample(indexSucc);
-				succDepth = Math.min(depth, succSample.getSize()-1);
-				succFunction = succSample.getFunctionName(succDepth);
-				succColor = this.colorTable.getColor(succFunction);
-				
-				still_the_same = (succDepth == currDepth) && (succColor==currColor);
-				if (still_the_same)
-					index = indexSucc;
+			while (still_the_same && (++indexSucc <= last_ptl_index))
+			{
+				cp = ptl.getCallPath(indexSucc, depth);
+				if(cp != null)
+				{
+					succDepth = cp.getCurrentDepth();
+					succFunction = cp.getCurrentDepthScope().getName();
+					succColor = colorTable.getColor(succFunction);
+					
+					still_the_same = (succDepth == currDepth) && (succColor.equals(currColor));
+					if (still_the_same)
+						index = indexSucc;
+				}
 			};
 			
-			if (index<ptl.size()-1) {
+			if (index < last_ptl_index)
+			{
 				// --------------------------------------------------------------------
 				// start and middle samples: the rightmost point is the midpoint between
 				// 	the two samples
 				// --------------------------------------------------------------------
 				succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(index),ptl.getTime(index+1))-begTime)/pixelLength));
 
-			} else {
+			}
+			else
+			{
 				// --------------------------------------------------------------------
 				// for the last iteration (or last sample), we don't have midpoint
 				// 	so the rightmost point will be the time of the last sample
 				// --------------------------------------------------------------------
-				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength));
+				// succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength)); 
+				// johnmc: replaced above because it doesn't seem correct
+				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index)-begTime)/pixelLength)); 
 			}
 			
-			//Debugger.printTrace(" i: " + index + "\tcs: " + currSampleMidpoint + "\tss: " + succSampleMidpoint + "\td: " + currDepth);
 			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName);
 		}			
 	}

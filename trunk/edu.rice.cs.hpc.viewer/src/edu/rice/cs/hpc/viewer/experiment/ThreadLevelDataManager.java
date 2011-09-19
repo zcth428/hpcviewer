@@ -29,7 +29,8 @@ public class ThreadLevelDataManager {
 	
 	public ThreadLevelDataManager(Experiment exp) {
 		final MetricRaw []metrics = exp.getMetricRaw();
-		data_file = new ThreadLevelDataFile[metrics.length];
+		if (metrics!=null)
+			data_file = new ThreadLevelDataFile[metrics.length];
 		this.experiment = exp;
 	}
 	

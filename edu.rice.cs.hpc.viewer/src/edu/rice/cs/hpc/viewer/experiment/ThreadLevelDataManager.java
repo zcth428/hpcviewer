@@ -138,10 +138,6 @@ public class ThreadLevelDataManager {
 
 	private void checkThreadsMetricDataFiles(int metric_raw_id) {
 		
-		if (data_file[metric_raw_id] != null)
-			return; // it has been initialized
-		
-		
 		File directory = new File(experiment.getXMLExperimentFile().getPath());
 		if (directory.isFile())
 			directory = new File(directory.getParent());

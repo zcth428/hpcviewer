@@ -30,7 +30,9 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	private String[] sArgs = null; // command line arguments
-	private IWorkbench workbench;
+	final private IWorkbench workbench;
+	final private IWorkbenchWindowConfigurer configurer;
+	
 	/**
 	 * Creates a new workbench window advisor for configuring a workbench window via the given workbench window configurer
 	 * Retrieve the RCP's arguments and verify if it contains database to open
@@ -42,6 +44,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		super(configurer);
 		this.workbench = configurer.getWindow().getWorkbench();
 		this.sArgs = args;
+		this.configurer = configurer;
 	}
 
 	/**
@@ -219,10 +222,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Performs arbitrary actions as the window's shell is being closed directly, and possibly veto the close.
 	 */
 	public boolean preWindowShellClose() {
-		this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
+		
+		// ----------------------------------------------------------------------------------------------
+		// get "my" window from the configurer instead of from the active window
+		// in some platforms such as Mac OS, in order to close window, we don't need to activate it first.
+		// ----------------------------------------------------------------------------------------------
+		IWorkbenchWindow window = this.configurer.getWindow();
+		window.getActivePage().closeAllEditors(false);
 
 		ViewerWindowManager vwm = new ViewerWindowManager();
-		vwm.removeWindow(this.workbench.getActiveWorkbenchWindow());
+		vwm.removeWindow(window);
 
 		return true; // we allow app to shut down
 	}

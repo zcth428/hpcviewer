@@ -495,6 +495,14 @@ public class SpaceTimeData extends TraceEvents
 		compositeFinalLines[index] = imgFinal;
 	}
 	
+	/****
+	 * dispose allocated native resources (image, colors, ...)
+	 */
+	public void dispose() 
+	{
+		this.colorTable.dispose();
+	}
+	
 	public int getBegProcess()
 	{
 		return attributes.begProcess;

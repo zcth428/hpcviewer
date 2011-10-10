@@ -97,8 +97,8 @@ public class ProcessTimeline
 				cp.updateCurrentDepth(depth);
 			else
 			{
-				System.err.println("ERROR: No sample found for cpid " + cpid + " in trace "+processID+"-"+threadID+"-"+sample+".");
-				System.err.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
+				System.err.println("ERROR: cpid " + cpid + " is inexistant in XML file.");
+				//System.err.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
 			}
 			return cp;
 		}

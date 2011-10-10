@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
@@ -154,12 +155,12 @@ public class CallStackViewer extends TableViewer
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time);
 
-			final Vector<String> sampleVector;
-			if (sample>=0)
-				sampleVector = ptl.getCallPath(sample, depth).getAllNames();
-			else
-				// empty array of string
-				sampleVector = new Vector<String>();
+			Vector<String> sampleVector = new Vector<String>();
+			if (sample>=0) {
+				CallPath cp = ptl.getCallPath(sample, depth);
+				if (cp != null)
+					sampleVector = cp.getAllNames();
+			}
 
 			if (sampleVector.size()<=depth)
 			{

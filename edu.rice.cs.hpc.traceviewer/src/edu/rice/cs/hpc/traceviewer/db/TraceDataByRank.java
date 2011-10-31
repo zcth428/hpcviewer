@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
-import java.util.ArrayList;
 import java.util.Vector;
 
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;

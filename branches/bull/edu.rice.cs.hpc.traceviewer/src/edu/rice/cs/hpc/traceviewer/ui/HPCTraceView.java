@@ -39,14 +39,13 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
 	
-	private HPCCallStackView csview;
-	
 	/*************************************************************************
 	 *	Creates the view.
 	 ************************************************************************/
 	public void createPartControl(Composite master)
 	{
-
+		// Laksono: do NOT maximize. On Linux with some WM, you can't restore it back !
+		//this.getViewSite().getShell().setMaximized(true);
 		/*************************************************************************
 		 * Master Composite
 		 ************************************************************************/
@@ -64,7 +63,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/*************************************************************************
 	 * update new data
 	 *************************************************************************/
-	public void updateData(SpaceTimeData _stData) {
+	public void updateData(SpaceTimeData _stData)
+	{
 		this.stData = _stData;
 		this.detailCanvas.updateData(_stData);
 		
@@ -93,14 +93,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	{
 		return stData;
 	}
-	
-	public void setCSView(HPCCallStackView _csview)
-	{
-		csview = _csview;
-		detailCanvas.csViewer = csview.csViewer;
-	}
 
-	public void setPosition(Position position) {
+	public void setPosition(Position position)
+	{
 		this.detailCanvas.setCrossHair(position.time, position.process);
 	}
 	

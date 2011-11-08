@@ -9,6 +9,7 @@ import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.Database;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
@@ -177,9 +178,9 @@ public class ExperimentView {
 
 		db.setExperiment(experiment);		// set the experiment class used for the database
 		// the database index has values from 1-5 and is used in view titles
-		int dbIdx = vWin.getDbNum(experiment.getXMLExperimentFile().getPath()) + 1;
+		final int dbIdx = vWin.getDbNum(experiment);
 		// the view index has values from 0-4 and is used to index arrays (layout folders and possibly others)
-		String viewIdx = Integer.toString(dbIdx-1);
+		final String viewIdx = Integer.toString(dbIdx);
 
 		// next, we retrieve all children of the scope and display them in separate views
 		TreeNode []rootChildren = experiment.getRootScopeChildren();
@@ -202,12 +203,14 @@ public class ExperimentView {
 						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID , viewIdx, IWorkbenchPage.VIEW_ACTIVATE); 
 					}
 				objView.setInput(experiment, child);
-				objView.setViewTitle(dbIdx + "-" + child.getRootName() + "(" + experiment.getName() + ")");		// use title of database number, view type name, and experiment name
 				arrScopeViews[k] = objView;
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}
 		}
+		
+		// update the window title if necessary
+		WindowTitle.refreshAllTitle(window, experiment);
 	}
 
 	public ExperimentData getExperimentData() {

@@ -16,9 +16,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.editor.BaseEditorManager;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorBase;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorHisto;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
@@ -73,8 +74,8 @@ public class ScopeView extends BaseScopeView {
 	@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
 		if (scope != null && this.hasThreadsLevelData) {
-			Experiment exp = this.getExperiment();
-			ThreadLevelDataManager objDataManager = exp.getThreadLevelDataManager();
+
+			ThreadLevelDataManager objDataManager = this.getExperimentData().getThreadLevelDataManager();
 
 			// return immediately if the experiment doesn't contain thread level data
 			if (!objDataManager.isDataAvailable())
@@ -168,6 +169,7 @@ public class ScopeView extends BaseScopeView {
 		return null;
 	}
 	
+	
     /********************************************************************************
      * class to initialize an action for displaying a graph
      ********************************************************************************/
@@ -188,15 +190,20 @@ public class ScopeView extends BaseScopeView {
         	Experiment exp = getExperiment();
         	
 			try {
+				final Experiment experiment = this.scope.getExperiment();
+				
+				// prepare to split the editor pane
+				boolean needNewPartition = BaseEditorManager.splitBegin(objPage, experiment);
+				
 				// support for multiple database in one window
 				ViewerWindow vWindow = ViewerWindowManager.getViewerWindow(window);
-				int database = 1+vWindow.getDbNum(this.scope.getExperiment().getXMLExperimentFile().getPath());
+				int database = 1+vWindow.getDbNum(experiment.getXMLExperimentFile().getPath());
 				
 				String id = GraphEditorInput.getID(scope, metric, graph_type, database);
 	        	GraphEditorInput objInput = getGraphEditorInput(id);
 	        	
 	        	if (objInput == null) {
-	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type, database);
+	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type, database, window);
 	        	}
 	        	IEditorPart editor = null;
 	        	switch (graph_type) {
@@ -214,6 +221,9 @@ public class ScopeView extends BaseScopeView {
 	        	if (editor instanceof GraphEditorBase) {
 	        		((GraphEditorBase)editor).finalize();
 	        	}
+	        	
+	        	// finalize the pane splitting if needed
+	        	BaseEditorManager.splitEnd(needNewPartition, editor);
 				
 			} catch (PartInitException e) {
 				e.printStackTrace();

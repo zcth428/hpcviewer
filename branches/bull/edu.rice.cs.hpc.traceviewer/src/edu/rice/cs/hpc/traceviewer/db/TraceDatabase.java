@@ -1,19 +1,23 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.HashMap;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ProcessTimeline;
+import edu.rice.cs.hpc.data.util.MergeDataFiles;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
+import edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
+import edu.rice.cs.hpc.traceviewer.util.TraceProgressReport;
 
 
 /*************
@@ -21,23 +25,63 @@ import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
  * Class to manage trace database: opening and detecting the *.hpctrace files
  *
  */
-public class TraceDatabase {
+public class TraceDatabase
+{
 	
-	final private static int MIN_TRACE_SIZE = ProcessTimeline.SIZE_OF_HEADER + (ProcessTimeline.SIZE_OF_TRACE_RECORD * 2);
-	private ArrayList<File> traceFiles = null;
-	private File experimentFile = null;
-	final private String []args;
+	/** heuristically, the minimum size a trace file must be in order to be correctly formatted*/
+	final private static int MIN_TRACE_SIZE = 32+8+24+TraceDataByRank.SIZE_OF_TRACE_RECORD*2;
+				
+	static private HashMap<IWorkbenchWindow, TraceDatabase> listOfDatabases = null;
+	private SpaceTimeData dataTraces = null;
 	
-	public TraceDatabase(String []_args) {
-		this.args = _args;
+	/***
+	 * get the instance of this class
+	 * @param _window
+	 * @return
+	 */
+	static public TraceDatabase getInstance(IWorkbenchWindow _window) {
+		if (listOfDatabases == null) {
+			listOfDatabases = new HashMap<IWorkbenchWindow, TraceDatabase>();
+			TraceDatabase data = new TraceDatabase();
+			listOfDatabases.put(_window, data);
+			return data;
+		} else {
+			TraceDatabase data = listOfDatabases.get(_window);
+			if (data == null) {
+				data = new TraceDatabase();
+				listOfDatabases.put(_window, data);
+			}
+			return data;
+		}
 	}
 	
-	public boolean openDatabase(Shell shell, final IStatusLineManager statusMgr) {
+	/**
+	 * remove instance and its resources
+	 */
+	static public void removeInstance(IWorkbenchWindow _window) {
 		
+		if (listOfDatabases != null) {
+			final TraceDatabase data = listOfDatabases.get(_window);
+			data.dataTraces.dispose();
+			listOfDatabases.remove(_window);
+		}
+	}
+		
+	/***
+	 * static function to load a database and display the views
+	 * @param window
+	 * @param args
+	 * @param statusMgr
+	 * @return
+	 */
+	static public boolean openDatabase(IWorkbenchWindow window, final String []args, final IStatusLineManager statusMgr)
+	{
 		boolean hasDatabase = false;
-		
-		statusMgr.setMessage("Opening database...");
-		
+
+		final Shell shell = window.getShell();
+
+		statusMgr.setMessage("Select a directory containing traces");
+		FileData location = new FileData();
 		//---------------------------------------------------------------
 		// processing the command line argument
 		//---------------------------------------------------------------
@@ -45,52 +89,69 @@ public class TraceDatabase {
 			for(String arg: args) {
 				if (arg != null && arg.charAt(0)!='-') {
 					// this must be the name of the database to open
-					hasDatabase = this.isCorrectDatabase(arg);
+					hasDatabase = TraceDatabase.isCorrectDatabase(arg, statusMgr, location);
 				}
 			}
 		}
 		
 		if (!hasDatabase) {
 			// use dialog box to find the database
-			hasDatabase = this.open(shell);
+			hasDatabase = open(shell, statusMgr, location);
 		}
 		
 		if (hasDatabase) {
-			
 			//---------------------------------------------------------------------
 			// Try to open the database and refresh the data
 			// ---------------------------------------------------------------------
 			
-			File experimentFile = this.getExperimentFile();
-			ArrayList<File> traceFiles = this.getTraceFiles();
+			statusMgr.setMessage("Opening trace data ...");
+			shell.update();
 			
-			SpaceTimeData stData = new SpaceTimeData(shell.getDisplay(), experimentFile, traceFiles, statusMgr.getProgressMonitor());
+			TraceDatabase database = TraceDatabase.getInstance(window);
+			
+			// ---------------------------------------------------------------------
+			// dispose resources if the data has been allocated
+			// 	unfortunately, some colors are allocated from window handle,
+			//	some are allocated dynamically. At the moment we can't dispose
+			//	all colors
+			// ---------------------------------------------------------------------
+			//if (database.dataTraces != null)
+			//	database.dataTraces.dispose();
+			
+			database.dataTraces = new SpaceTimeData(shell, location.fileXML, location.fileTrace, statusMgr);
+			
+			statusMgr.setMessage("Rendering trace data ...");
+			shell.update();
 
 			try {
+				//---------------------------------------------------------------------
+				// Update the title of the application
+				//---------------------------------------------------------------------
+				shell.setText("hpctraceviewer: " + database.dataTraces.getName());
+				
 				//---------------------------------------------------------------------
 				// Tell all views that we have the data, and they need to refresh their content
 				// ---------------------------------------------------------------------				
 
-				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-				tview.updateData(stData);
+				HPCSummaryView sview = (HPCSummaryView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCSummaryView.ID);
+				sview.updateData(database.dataTraces);
 
+				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
+				tview.updateData(database.dataTraces);
+				
 				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
-				dview.updateData(stData);
+				dview.updateData(database.dataTraces);
 				
 				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
-				cview.updateData(stData);
+				cview.updateData(database.dataTraces);
 
-				//---------------------------------------------------------------------
-				// Update the title of the application
-				//---------------------------------------------------------------------
-				shell.setText("hpctraceviewer: " + stData.getName());
 				return true;
 				
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}
 		}
-		statusMgr.setMessage("");
+
 		
 		return false;
 
@@ -104,90 +165,88 @@ public class TraceDatabase {
 	 * @param shell
 	 * @return
 	 */
-	private boolean open( Shell shell) {
+	static private boolean open(Shell shell, final IStatusLineManager statusMgr,
+			FileData location)
+	{
 		DirectoryDialog dialog;
 
 		boolean validDatabaseFound = false;
 		dialog = new DirectoryDialog(shell);
-		dialog.setMessage("Please select the directory which holds the trace databases.");
+		dialog.setMessage("Please select a directory containing execution traces.");
 		dialog.setText("Select Data Directory");
-		String dir;
-		while(!validDatabaseFound)
-		{
-			traceFiles = new ArrayList<File>();
+		String directory;
+		while(!validDatabaseFound) {
 			
-			dir = dialog.open();
+			directory = dialog.open();
 			
-			if (dir == null) 
+			if (directory == null) 
 				// user click cancel
 				return false;
 			
-			validDatabaseFound = this.isCorrectDatabase(dir);
+			validDatabaseFound = isCorrectDatabase(directory, statusMgr, location);
 						
 			if (!validDatabaseFound)
-				this.msgNoDatabase(dialog, dir);
+				msgNoDatabase(dialog, directory);
 		}
 		
 		return validDatabaseFound;
 	}
 	
 	
-	public ArrayList<File> getTraceFiles() {
-		return this.traceFiles;
-	}
 	
-	public File getExperimentFile() {
-		return this.experimentFile;
-	}
-	
-	
-	private boolean isCorrectDatabase(String directory) {
+	/****
+	 * Check if the directory is correct or not. If it is correct, it returns the XML file and the trace file
+	 * 
+	 * @param directory (in): the input directory
+	 * @param statusMgr (in): status bar
+	 * @param experimentFile (out): XML file
+	 * @param traceFile (out): trace file
+	 * @return true if the directory is valid, false otherwise
+	 * 
+	 */
+	static private boolean isCorrectDatabase(String directory, final IStatusLineManager statusMgr,
+			FileData location)
+	{
 		File dirFile = new File(directory);
-		String[] databases = dirFile.list();
 		
-		if (databases != null) {
-			experimentFile = new File(directory+File.separatorChar+"experiment.xml");
+		if (dirFile.exists() && dirFile.isDirectory()) {
+			location.fileXML = new File(directory + File.separatorChar + "experiment.xml");
 			
-			if (experimentFile.canRead()) {
-				//--------------------------------------------------------------
-				// Forcing to sort alphabetically the file name. Here we do not
-				//	parse the string to grab the process rank, but instead we
-				//	assume the order of file is equivalent with the order of line
-				//	in the trace view.
-				// On Linux, the files are not sorted alphabetically
-				//--------------------------------------------------------------
-				java.util.Arrays.sort(databases);
-				
-				ArrayList<File> listOfFiles = new ArrayList<File>();
-				for(String db: databases) {
-					String traceFile = directory + File.separatorChar + db;
-					if (traceFile.contains(".hpctrace")) {
-						File file = new File(traceFile);
-						
-						//-----------------------------------------------------------------------------
-						// check if the trace file size is correct.
-						// 	the min size of trace file is HEADER + TWO_SAMPLE
-						//	Where TWO_SAMPLE = RECORD_SIZE x 2
-						//-----------------------------------------------------------------------------
-						if (file.length()>MIN_TRACE_SIZE)
-							listOfFiles.add(file);
-						else
-							System.err.println("Warning! Trace file size " + file.length() +" is too small: " + file.getName());
+			if (location.fileXML.canRead()) {
+				try {
+					statusMgr.setMessage("Merging traces ...");
+					
+					final TraceProgressReport traceReport = new TraceProgressReport(statusMgr);
+					final String traceFilename = MergeDataFiles.merge(dirFile, "*.hpctrace", "mt", traceReport);
+					location.fileTrace = new File(traceFilename);
+
+					if (location.fileTrace.length() > MIN_TRACE_SIZE) {
+						return true;
+					} else {
+						System.err.println("Warning! Trace file " + location.fileTrace.getName() + " is too small: " 
+								+ location.fileTrace.length() + "bytes .");
+						return false;
 					}
+
+				} 
+				catch (IOException e) {
+					e.printStackTrace();
 				}
-				if (listOfFiles.size()>0) {
-					this.traceFiles = listOfFiles;
-					return true;
-				}
+				
 			}
 		}
 		return false;
 	}
 	
-	private void msgNoDatabase(DirectoryDialog dialog, String str) {
+	/***
+	 * show message in directory dialog box
+	 * @param dialog
+	 * @param str
+	 */
+	private static void msgNoDatabase(DirectoryDialog dialog, String str) {
 		
-		dialog.setMessage("The directory selected contains no trace databases:\n\t" + str + 
-		"\nPlease select the directory which holds the trace databases.");
-		
+		dialog.setMessage("The directory selected contains no traces:\n\t" + str + 
+				"\nPlease select a directory that contains traces.");
 	}
+
 }

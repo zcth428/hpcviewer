@@ -19,10 +19,11 @@ import org.eclipse.ui.IWorkbenchWindow;
  */
 public class ExperimentData {
     private Experiment experimentActive;	// experiment data
-    private String[] args; // command line arguments
     private IWorkbenchWindow window;
     private ExperimentManager expManager;
     
+    private ThreadLevelDataManager threadsData = null;
+
     static private java.util.HashMap<IWorkbenchWindow, ExperimentData> mapData = 
     	new java.util.HashMap<IWorkbenchWindow, ExperimentData>(3);
 	
@@ -37,18 +38,6 @@ public class ExperimentData {
 	public ExperimentData(IWorkbenchWindow w) {
 		this.window = w;
 	}
-	/**
-	 * Get the single instance of this class. If the object is already created, then 
-	 * return the object.
-	 * @return
-	 */
-	/*
-	static public ExperimentData getInstance(IWorkbenchWindow w) {
-		if(ExperimentData._singleton == null) {
-			ExperimentData._singleton = new ExperimentData(w);
-		}
-		return ExperimentData._singleton;
-	}*/
 	
 	/**
 	 * Retrieve a global experiment data of a given workbench window
@@ -82,6 +71,7 @@ public class ExperimentData {
 	 */
 	public void setExperiment(Experiment experiment) {
 		this.experimentActive = experiment;
+		threadsData = new ThreadLevelDataManager(experiment);
 	}
 	
 	/**
@@ -100,19 +90,7 @@ public class ExperimentData {
 		return this.experimentActive.getXMLExperimentFile().getAbsolutePath();
 	}
 	
-	/**
-	 * Update the commmand line argument
-	 * @param arguments
-	 */
-	public void setArguments(String []arguments) {
-		this.args = arguments;
-	}
-	
-	/**
-	 * Retrieve the application command line arguments
-	 * @return
-	 */
-	public String[] getArguments() {
-		return this.args;
+	public ThreadLevelDataManager getThreadLevelDataManager() {
+		return this.threadsData;
 	}
 }

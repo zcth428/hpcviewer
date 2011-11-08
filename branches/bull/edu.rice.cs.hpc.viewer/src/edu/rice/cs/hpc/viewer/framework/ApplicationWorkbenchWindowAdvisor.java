@@ -25,11 +25,14 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
-	private ExperimentData dataEx ;
-	private IWorkbench workbench;
+	private String[] sArgs = null; // command line arguments
+	final private IWorkbench workbench;
+	final private IWorkbenchWindowConfigurer configurer;
+	
 	/**
 	 * Creates a new workbench window advisor for configuring a workbench window via the given workbench window configurer
 	 * Retrieve the RCP's arguments and verify if it contains database to open
@@ -40,10 +43,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []args) {
 		super(configurer);
 		this.workbench = configurer.getWindow().getWorkbench();
-		if(args != null && args.length > 0) {
-			dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-			dataEx.setArguments(args);
-		}
+		this.sArgs = args;
+		this.configurer = configurer;
 	}
 
 	/**
@@ -68,7 +69,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchWindow window = configurer.getWindow();
 		ViewerWindowManager vwm = new ViewerWindowManager();
 		vwm.addNewWindow(window);
-		configurer.setTitle((vwm.getWindowNumber(window)+1) + "-Hpcviewer");
+		configurer.setTitle(WindowTitle.getWindowTitle(window, null));
 	}
 
 	/**
@@ -100,7 +101,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// -------------------
 		// see if the argument provides the database to load
 		// -------------------
-		if(this.dataEx != null) {
+		if(sArgs != null && sArgs.length > 0) {
 			// possibly we have express the experiment file in the command line
 			IWorkbenchPage pageCurrent = windowCurrent.getActivePage();
 			assert (pageCurrent != null);
@@ -108,7 +109,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			ExperimentView expViewer = new ExperimentView(pageCurrent);
 		    assert (expViewer != null); 
 
-		    String []sArgs = this.dataEx.getArguments();
 		    String sPath = null;
 		    // find the file in the list of arguments
 		    for(int i=0;i<sArgs.length;i++) {
@@ -144,9 +144,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    			System.out.println("Opening database: " + fileStore.fetchInfo().getName() + " " + withCallerView);
 		    			// bug fix: needs to treat a folder/directory
 		    			// it is a directory
-		    			this.dataEx = //new ExperimentData(this.workbench.getActiveWorkbenchWindow());
-		    				ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		    			ExperimentManager objManager = this.dataEx.getExperimentManager();
+		    			ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		    			ExperimentManager objManager = dataEx.getExperimentManager();
 		    			objManager.openDatabaseFromDirectory(sPath, this.getFlag(withCallerView));
 		    		} else {
 		    			File objFile = new File(sPath);
@@ -178,9 +177,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * (only the first one will be taken into account)
 	 */
 	private void openDatabase( boolean withCallerView ) {
-		this.dataEx = 
-			ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		ExperimentManager expFile = this.dataEx.getExperimentManager();
+		ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		ExperimentManager expFile = dataEx.getExperimentManager();
 		boolean has_database = expFile.openFileExperiment( this.getFlag(withCallerView));
 
 		if (!has_database) {
@@ -224,10 +222,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Performs arbitrary actions as the window's shell is being closed directly, and possibly veto the close.
 	 */
 	public boolean preWindowShellClose() {
-		this.workbench.getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
+		
+		// ----------------------------------------------------------------------------------------------
+		// get "my" window from the configurer instead of from the active window
+		// in some platforms such as Mac OS, in order to close window, we don't need to activate it first.
+		// ----------------------------------------------------------------------------------------------
+		IWorkbenchWindow window = this.configurer.getWindow();
+		window.getActivePage().closeAllEditors(false);
 
 		ViewerWindowManager vwm = new ViewerWindowManager();
-		vwm.removeWindow(this.workbench.getActiveWorkbenchWindow());
+		vwm.removeWindow(window);
 
 		return true; // we allow app to shut down
 	}

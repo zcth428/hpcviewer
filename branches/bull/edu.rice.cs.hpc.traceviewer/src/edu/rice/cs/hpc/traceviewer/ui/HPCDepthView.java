@@ -27,9 +27,6 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 	/** Paints and displays the detail view. */
 	DepthTimeCanvas depthCanvas;
 	
-	/** Determines whether this view has been setup.*/
-	//boolean initialized = false;
-	
 	HPCTraceView traceview;
 	
 	public void createPartControl(Composite _master)
@@ -67,9 +64,12 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		depthCanvas.setLayout(new GridLayout());
 		depthCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		depthCanvas.setVisible(false);
+		
+		traceview.detailCanvas.setDepthCanvas(depthCanvas);
 	}
 	
-	public void updateData(SpaceTimeData _stData) {
+	public void updateData(SpaceTimeData _stData)
+	{
 		this.depthCanvas.updateData(_stData);
 		_stData.addDepthListener(this);
 		_stData.addPositionListener(this);
@@ -78,12 +78,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 
 	public void setFocus()
 	{
-		
-	}
-		
-	public void setCSView(HPCCallStackView _csview)
-	{
-		traceview.detailCanvas.setDepthCanvas(depthCanvas);
+		this.depthCanvas.setFocus();
 	}
 
 	public void setDepth(int new_depth) {

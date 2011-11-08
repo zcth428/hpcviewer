@@ -1,14 +1,10 @@
-package edu.rice.cs.hpc.viewer.util;
+package edu.rice.cs.hpc.viewer.editor;
 
-import java.util.ArrayList;
 import java.io.FileNotFoundException;
 
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -16,32 +12,23 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.editors.text.EditorsUI;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 
 /**
  * Class specifically designed to manage editor such as displaying source code editor
  * @author la5
  *
  */
-public class EditorManager {
+public class EditorManager extends BaseEditorManager{
     private IWorkbenchWindow windowCurrent;
 
-    /*
-    private void setDefaultEditor() {
-    	IEditorRegistry objRegistry;
-    	if(this.windowCurrent != null)
-    		objRegistry = this.windowCurrent.getWorkbench().getEditorRegistry();
-    	else
-    		objRegistry = PlatformUI.getWorkbench().getEditorRegistry();
-    	String sEditor = org.eclipse.ui.editors.text.TextEditor.class.toString();
-    	objRegistry.setDefaultEditor("*", sEditor);
-    	objRegistry.setDefaultEditor("*.f*", sEditor);
-    } */
+
     /**
      * 
      * @param window
@@ -50,12 +37,10 @@ public class EditorManager {
     	String sLine = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER;
     	EditorsUI.getPreferenceStore().setValue(sLine, true);
     	this.windowCurrent = window;
-    	//this.setDefaultEditor();
     }
     
 	public EditorManager(IWorkbenchSite site) {
-		this.windowCurrent = site.getWorkbenchWindow();
-    	//this.setDefaultEditor();
+		this(site.getWorkbenchWindow());
 	}
 	
 	/**
@@ -67,14 +52,15 @@ public class EditorManager {
 	{
 		// get the complete file name
 		if(Utilities.isFileReadable(scope)) {
+			// lets get the database number being used for this file
+			Experiment experiment = scope.getExperiment();
+			
 			String sLongName;
 			FileSystemSourceFile newFile = ((FileSystemSourceFile)scope.getSourceFile());
 			sLongName = newFile.getCompleteFilename();
 			int iLine = scope.getFirstLineNumber();
-			openFileEditor( sLongName, newFile.getName(), iLine );
+			openFileEditor( sLongName, newFile.getName(), iLine, experiment );
 		}
-		//} else
-		//	System.out.println("Source file not available"+ ":"+ "("+node.getScope().getName()+")");
 	}
 	
 	/**
@@ -82,16 +68,15 @@ public class EditorManager {
 	 * The filename should be a complete absolute path to the local file
 	 * @param sFilename
 	 */
-	public void openFileEditor(String sFilename) 
+	public void openFileEditor(String sFilename, Experiment experiment) 
 	throws FileNotFoundException
 	{
 		java.io.File objInfo = new java.io.File(sFilename);
 		if(objInfo.exists())
-			this.openFileEditor(sFilename, objInfo.getName(), 1);
+			this.openFileEditor(sFilename, objInfo.getName(), 1, experiment);
 		else
 			// Laks: 12.1.2008: return the filename in case the file is not found
 			throw new FileNotFoundException(sFilename);
-			//throw new FileNotFoundException("File not found: "+sFilename);
 	}
 	
 	/**
@@ -100,7 +85,7 @@ public class EditorManager {
 	 * 			this project should be cleaned in the future !
 	 * @param sFilename the complete path of the file to display in IDE
 	 */
-	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber)
+	private void openFileEditor(String sLongFilename, String sFilename, int iLineNumber, Experiment experiment)
 		throws FileNotFoundException
 	{
 		// get the complete path of the file
@@ -115,7 +100,7 @@ public class EditorManager {
 	    		throw new FileNotFoundException(sFilename+": File not found.");
 	    	}
 	    	try {
-				openEditorOnFileStore(wbPage, objFile);
+				openEditorOnFileStore(wbPage, objFile, experiment);
 		    	this.setEditorMarker(wbPage, iLineNumber);
 			} catch (PartInitException e) {
 				// TODO Auto-generated catch block
@@ -154,43 +139,31 @@ public class EditorManager {
 	 * @return
 	 * @throws PartInitException
 	 */
-	private static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore) throws PartInitException {
-        //sanity checks
-        if (page == null) {
-			throw new IllegalArgumentException();
+	private static IEditorPart openEditorOnFileStore(IWorkbenchPage page, IFileStore fileStore, Experiment experiment) throws PartInitException {
+
+		boolean needNewPartition = BaseEditorManager.splitBegin(page, experiment);
+		
+		IEditorInput input = getEditorInput(fileStore);
+		//String editorId = getEditorId(fileStore);
+		// forbid eclipse to use an external editor
+		String editorId = edu.rice.cs.hpc.viewer.editor.SourceCodeEditor.ID;
+		// open the editor on the file
+		IEditorPart iep = page.openEditor(input, editorId);
+		// if we want a database number prefix, add it to the editor title
+		if (iep instanceof SourceCodeEditor) {
+			SourceCodeEditor sce = (SourceCodeEditor)iep;
+			sce.setExperiment(experiment);
+			sce.resetPartName();
+				// database numbers start with 0 but titles start with 1
+				//sce.setPartNamePrefix((dbNum+1) + "-");
 		}
 
-        IEditorInput input = getEditorInput(fileStore);
-        //String editorId = getEditorId(fileStore);
-        // forbid eclipse to use an external editor
-        String editorId = edu.rice.cs.hpc.viewer.util.SourceCodeEditor.ID;
-        // open the editor on the file
-        return page.openEditor(input, editorId);
-    }
-
-    /**
-     * Get the id of the editor associated with the given <code>IFileStore</code>.
-     * 
-	 * @param workbench
-	 * 	         the Workbench to use to determine the appropriate editor's id 
-     * @param fileStore
-     *           the <code>IFileStore</code> representing the file for which the editor id is desired
-	 * @return the id of the appropriate editor
-	 * @since 3.3
-	 */
-	/*
-	private static String getEditorId(IFileStore fileStore) {
-		IEditorDescriptor descriptor;
-		try {
-			descriptor = IDE.getEditorDescriptor(fileStore.getName());
-		} catch (PartInitException e) {
-			return null;
-		}
-		if (descriptor != null)
-			return descriptor.getId();
-		return null;
+		BaseEditorManager.splitEnd(needNewPartition, iep);
+		
+		return iep;
 	}
-*/
+
+
 	/**
 	 * Create the Editor Input appropriate for the given <code>IFileStore</code>.
 	 * The result is a normal file editor input if the file exists in the
@@ -202,53 +175,9 @@ public class EditorManager {
 	 * @return The editor input associated with the given file store
 	 */
 	private static IEditorInput getEditorInput(IFileStore fileStore) {
-		IFile workspaceFile = getWorkspaceFile(fileStore);
-		if (workspaceFile != null)
-			return new FileEditorInput(workspaceFile);
 		return new FileStoreEditorInput(fileStore);
 	}
 
-	/**
-	 * Determine whether or not the <code>IFileStore</code> represents a file
-	 * currently in the workspace.
-	 * 
-	 * @param fileStore
-	 *            The <code>IFileStore</code> to test
-	 * @return The workspace's <code>IFile</code> if it exists or
-	 *         <code>null</code> if not
-	 */
-	private static IFile getWorkspaceFile(IFileStore fileStore) {
-		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		IFile[] files = root.findFilesForLocationURI(fileStore.toURI());
-		files = filterNonExistentFiles(files);
-		if (files == null || files.length == 0)
-			return null;
-
-		// for now only return the first file
-		return files[0];
-	}
-
-	/**
-	 * Filter the incoming array of <code>IFile</code> elements by removing
-	 * any that do not currently exist in the workspace.
-	 * 
-	 * @param files
-	 *            The array of <code>IFile</code> elements
-	 * @return The filtered array
-	 */
-	private static IFile[] filterNonExistentFiles(IFile[] files) {
-		if (files == null)
-			return null;
-
-		int length = files.length;
-		ArrayList<IFile> existentFiles = new ArrayList<IFile>(length);
-		for (int i = 0; i < length; i++) {
-			if (files[i].exists())
-				existentFiles.add(files[i]);
-		}
-		return (IFile[]) existentFiles.toArray(new IFile[existentFiles.size()]);
-	}
 	//-------========================= END TAKEN FROM IDE ===============
-
 
 }

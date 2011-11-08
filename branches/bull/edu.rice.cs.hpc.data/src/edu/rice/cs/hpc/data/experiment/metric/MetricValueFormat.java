@@ -452,7 +452,7 @@ public String format(MetricValue value)
 	// append formatted actual value if wanted
 	if( this.showValue )
 	{
-		double number = value.getValue();
+		double number = MetricValue.getValue(value);
 		String string = this.formatDouble(number, this.valueFormatter, this.valueStyle);
 		formatted.append(string);
 	}
@@ -464,9 +464,9 @@ public String format(MetricValue value)
 	// append formatted percentage value if wanted
 	if( this.showPercent )
 	{
-		if( value.isPercentAvailable() )
+		if( MetricValue.isPercentAvailable(value) )
 		{
-			double number = value.getPercentValue();
+			double number = MetricValue.getPercentValue(value);
 			if (number == 1.0) {    // johnmc
 				formatted.append("100 %");
 				// Laks 2009.02.12: dirty hack to solve the problem when a small negative percentage occurs

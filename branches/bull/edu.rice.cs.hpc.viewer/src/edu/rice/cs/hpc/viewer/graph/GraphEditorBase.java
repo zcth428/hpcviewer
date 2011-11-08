@@ -7,6 +7,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.swtchart.IAxisSet;
@@ -18,9 +19,13 @@ import org.swtchart.ext.InteractiveChart;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
+import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 
-public abstract class GraphEditorBase extends EditorPart {
+public abstract class GraphEditorBase extends EditorPart implements IViewerEditor {
     private Chart chart;
+	protected ThreadLevelDataManager threadData;
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -40,6 +45,10 @@ public abstract class GraphEditorBase extends EditorPart {
 
 		this.setSite(site);
 		this.setInput(input);
+				
+		final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
+		final ExperimentData data = ExperimentData.getInstance(window);
+		threadData = data.getThreadLevelDataManager();
 	}
 
 	@Override
@@ -116,6 +125,19 @@ public abstract class GraphEditorBase extends EditorPart {
 		this.plotData(exp, scope, metric);
 	}
 
+	public void resetPartName() {
+		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		final String name = input.getName();
+		this.setPartName(name);
+	}
+	
+	
+	public Experiment getExperiment() {
+		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		return input.getExperiment();
+	}
+
+	
 	protected Chart getChart() {
 		return this.chart;
 	}

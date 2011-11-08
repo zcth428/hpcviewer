@@ -49,14 +49,14 @@ public class ColumnProperties extends TitleAreaDialog {
 	static final private String HISTORY_COLUMN_PROPERTY = "column_property";
 	static final private String HISTORY_APPLY_ALL = "apply-all";
 	
-	private ColumnCheckTableViewer objCheckBoxTable ;
-	private TreeViewerColumn []objColumns;
-	private boolean []results;
-	private Button btnApplyToAllViews;
-	private boolean isAppliedToAllViews = false;
-	private Text objSearchText;
+	protected ColumnCheckTableViewer objCheckBoxTable ;
+	protected TreeViewerColumn []objColumns;
+	protected boolean []results;
+	protected Button btnApplyToAllViews;
+	protected boolean isAppliedToAllViews = false;
+	protected Text objSearchText;
 
-	private PropertiesModel arrElements[];
+	protected PropertiesModel arrElements[];
 
 	//--------------------------------------------------
 	// CONSTRUCTOR
@@ -221,7 +221,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * 
 	 * @return
 	 */
-	private Object[] getCheckedItemsFromGlobalVariable () {
+	protected Object[] getCheckedItemsFromGlobalVariable () {
 		int nb = this.arrElements.length;
 		ArrayList<PropertiesModel> arrCheckedElements = new ArrayList<PropertiesModel>();
 
@@ -237,7 +237,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * get the user preference of "apply-all"
 	 * @return
 	 */
-	private boolean getHistory() {
+	protected boolean getHistory() {
 		return UserInputHistory.getPreference(HISTORY_COLUMN_PROPERTY).getBoolean(HISTORY_APPLY_ALL, true);
 	}
 	
@@ -245,7 +245,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * set the user preference of "apply-all"
 	 * @param value
 	 */
-	private void setHistory( boolean value ) {
+	protected void setHistory( boolean value ) {
 		Preferences pref = UserInputHistory.getPreference(HISTORY_COLUMN_PROPERTY);
 		pref.putBoolean(HISTORY_APPLY_ALL, value);
 		UserInputHistory.setPreference(pref);
@@ -331,7 +331,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @author laksono
 	 *
 	 */
-	private class CheckLabelProvider implements ILabelProvider {
+	protected class CheckLabelProvider implements ILabelProvider {
 		public void addListener(ILabelProviderListener arg0) {
 			// Throw it away
 		}
@@ -360,7 +360,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @author laksono
 	 *
 	 */
-	private class PropertiesModel {
+	protected class PropertiesModel {
 		public boolean isVisible;
 		public String sTitle;
 		public int iIndex;
@@ -375,7 +375,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	/**
 	 * Class to filter the content of the table of columns
 	 */
-	private class ColumnFilter extends ViewerFilter {
+	protected class ColumnFilter extends ViewerFilter {
 		// the key to be matched
 		private String sKeyToMatch;
 		@Override
@@ -407,7 +407,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @author laksonoadhianto
 	 *
 	 */
-	private class ColumnCheckTableViewer extends CheckboxTableViewer {
+	protected class ColumnCheckTableViewer extends CheckboxTableViewer {
 
 		/**
 		 * constructor: link to a table

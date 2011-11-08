@@ -1,13 +1,12 @@
-//////////////////////////////////////////////////////////////////////////
-//									//
-//	Scope.java							//
-//									//
-//	experiment.scope.Scope -- a scope in an experiment		//
-//	Last edited: October 10, 2001 at 4:03 pm			//
-//									//
-//	(c) Copyright 2001 Rice University. All rights reserved.	//
-//									//
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//																//
+//	Scope.java													//
+//																//
+//																//
+//	(c) Copyright 2011 Rice University. All rights reserved.	//
+//																//
+//	$LastChangedDate: 2011-11-08 16:22:33 -0600 (Tue, 08 Nov 2011) $		$LastChangedBy: laksono $ 					//
+//////////////////////////////////////////////////////////////////
 
 
 
@@ -15,22 +14,15 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
-//import java.util.ArrayList;
-
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-//import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.IProcedureTable;
-//import edu.rice.cs.hpc.data.util.*;
-//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
-
-//import sun.tools.tree.ThisExpression;
 
 
  
@@ -74,11 +66,12 @@ protected int lastLineNumber;
 protected MetricValue[] metrics;
 protected MetricValue[] combinedMetrics;
 
+/** The number of metrics needed by this view in each program scope. */
+protected int viewMetricsCount = -1;
+
 /** source citation */
 protected String srcCitation;
 
-/** special marker used for halting during debugging. */
-protected boolean stop;
 
 /**
  * This public variable indicates if the node contains information about the source code file.
@@ -133,7 +126,6 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int cc
 	this.firstLineNumber = first;
 	this.lastLineNumber = last;
 
-	this.stop = false;
 	this.srcCitation = null;
 	this.flat_node_index = flat_id;
 	this.cct_node_index = cct_id;
@@ -510,20 +502,12 @@ public boolean hasNonzeroMetrics() {
 	if (this.hasMetrics())
 		for (int i = 0; i< this.metrics.length; i++) {
 			MetricValue m = this.getMetricValue(i);
-			if (!m.isZero())
+			if (!MetricValue.isZero(m))
 				return true;
 		}
 	return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
-//   DEBUGGING HOOK 													//
-//////////////////////////////////////////////////////////////////////////
-
-public boolean stopHere()
-{
-	return stop;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // EXPERIMENT DATABASE 													//
@@ -542,6 +526,24 @@ public void setExperiment(Experiment exp) {
 //===================================================================
 
 /*************************************************************************
+ * Get the count of how many metric values this scope needs.
+ ************************************************************************/
+
+public int getViewMetricsCount() {
+	return this.viewMetricsCount;
+}
+
+/*************************************************************************
+ * Sets the number of metrics needed in a scope metrics array (if not set, 
+ * uses number metrics in an experiment).
+ ************************************************************************/
+
+public void setViewMetricsCount(int count) {
+	this.viewMetricsCount = count + 1;
+	return;
+}
+
+/*************************************************************************
  *	Returns the value of a given metric at this scope.
  ************************************************************************/
 	
@@ -556,11 +558,11 @@ public MetricValue getMetricValue(BaseMetric metric)
 
 		// compute percentage if necessary
 		Scope root = this.experiment.getRootScope();
-		if((this != root) && (! value.isPercentAvailable()))
+		if((this != root) && (! MetricValue.isPercentAvailable(value)))
 		{
 			MetricValue total = root.getMetricValue(metric);
-			if(total.isAvailable())
-				value.setPercentValue(value.getValue()/total.getValue());
+			if(MetricValue.isAvailable(total))
+				MetricValue.setPercentValue(value, MetricValue.getValue(value)/MetricValue.getValue(total));
 		} 
 
 	}
@@ -613,8 +615,8 @@ public void accumulateMetrics(Scope source, MetricValuePropagationFilter filter,
 public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, this, src_i, targ_i)) {
 		MetricValue m = source.getMetricValue(src_i);
-		if (m != MetricValue.NONE && m.getValue() != 0.0) {
-			this.accumulateMetricValue(targ_i, m.getValue());
+		if (m != MetricValue.NONE && MetricValue.getValue(m) != 0.0) {
+			this.accumulateMetricValue(targ_i, MetricValue.getValue(m));
 		}
 	}
 }
@@ -635,7 +637,7 @@ public void accumulateMetricValue(int index, double value)
 		this.metrics[index] = new MetricValue(value);
 	} else {
 		// TODO Could do non-additive accumulations here?
-		m.setValue(m.getValue() + value);
+		MetricValue.setValue(m, MetricValue.getValue(m) + value);
 	}
 
 }
@@ -657,13 +659,15 @@ public void backupMetricValues() {
 		// if the value is not availabe we do NOT store it but instead we
 		//    assign to MetricValue.NONE
 		//------------------------------------------------------------------
-		if (value.isAvailable()) {
+		if (MetricValue.isAvailable(value)) {
 			//----------------------------------------------------------------------
 			// derived incremental metric type needs special treatment: 
 			//	their value changes in finalization phase, while others don't
 			//----------------------------------------------------------------------
 			if (metric instanceof AggregateMetric)
-				this.combinedMetrics[i] = new MetricValue(value.getValue(), value.getPercentValue());
+				this.combinedMetrics[i] = 
+					new MetricValue(MetricValue.getValue(value), 
+							MetricValue.getPercentValue(value));
 			else 
 				this.combinedMetrics[i] = value;
 		} else {
@@ -764,10 +768,16 @@ public void safeCombine(Scope source, MetricValuePropagationFilter filter) {
 	
 protected void ensureMetricStorage()
 {
+	int metricsNeeded;
+	if (this.viewMetricsCount > 0) {
+		metricsNeeded = this.viewMetricsCount;
+	} else {
+		metricsNeeded = experiment.getMetricCount();
+	}
 	if(this.metrics == null)
 		this.metrics = this.makeMetricValueArray();
 	// Expand if metrics not as big as experiment's (latest) metricCount
-	if(this.metrics.length < this.experiment.getMetricCount()) {
+	if(this.metrics.length < metricsNeeded) {
 		MetricValue[] newMetrics = this.makeMetricValueArray();
 		for(int i=0; i<this.metrics.length; i++)
 			newMetrics[i] = metrics[i];
@@ -784,9 +794,14 @@ protected void ensureMetricStorage()
 	
 protected MetricValue[] makeMetricValueArray()
 {
-	int count = this.experiment.getMetricCount();
-	MetricValue[] array = new MetricValue[count];
-	for(int k = 0; k < count; k++)
+	int metricsNeeded;
+	if (this.viewMetricsCount > 0) {
+		metricsNeeded = this.viewMetricsCount;
+	} else {
+		metricsNeeded = experiment.getMetricCount();
+	}
+	MetricValue[] array = new MetricValue[metricsNeeded];
+	for(int k = 0; k < metricsNeeded; k++)
 		array[k] = MetricValue.NONE;
 	return array;
 }
@@ -804,12 +819,12 @@ public void copyMetrics(Scope targetScope) {
 		for (int k=0; k<this.metrics.length && k<targetScope.metrics.length; k++) {
 			MetricValue mine = null;
 			MetricValue crtMetric = this.metrics[k];
-			if ( crtMetric.isAvailable() && crtMetric.getValue() != 0.0) { // there is something to copy
+			if ( MetricValue.isAvailable(crtMetric) && MetricValue.getValue(crtMetric) != 0.0) { // there is something to copy
 				mine = new MetricValue();
-				mine.setValue(crtMetric.getValue());
+				MetricValue.setValue(mine, MetricValue.getValue(crtMetric));
 
-				if (crtMetric.isPercentAvailable()) {
-					mine.setPercentValue(crtMetric.getPercentValue());
+				if (MetricValue.isPercentAvailable(crtMetric)) {
+					MetricValue.setPercentValue(mine, MetricValue.getPercentValue(crtMetric));
 				} 
 			} else {
 				mine = MetricValue.NONE;

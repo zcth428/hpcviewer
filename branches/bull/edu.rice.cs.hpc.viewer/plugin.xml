@@ -2,7 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="edu.rice.cs.hpc.viewer"
+         id="application"
          name="hpcviewer"
          point="org.eclipse.core.runtime.applications">
       <application
@@ -54,75 +54,10 @@
       </view>
    </extension>
    <extension
-         point="org.eclipse.ui.actionSets">
-      <actionSet
-            id="edu.rice.cs.hpc.actionSet"
-            label="Database"
-            visible="true">
-            <menu
-               id="DebugMenu"
-               label="&amp;Debug">
-            	<separator
-                  name="debugGroup">
-            	</separator>
-         	</menu>
-            <menu
-               id="FileMenu"
-               label="&amp;File">
-            	<separator
-                  name="databaseGroup">
-            	</separator>
-             <separator
-                   name="PreferenceGroup">
-             </separator>
-             <separator
-                   name="ExitGroup">
-             </separator>
-         	</menu>
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               id="edu.rice.cs.hpc.viewer.actions.DisplayExperiment"
-               label="&amp;Display a database&apos;s raw XML"
-               menubarPath="DebugMenu/debuggingGroup">
-         </action>
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.CloseExperiment"
-               id="edu.rice.cs.hpc.viewer.actions.CloseExperiment"
-               label="Close database"
-               menubarPath="FileMenu/databaseGroup"
-               style="push">
-         </action>
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
-               id="edu.rice.cs.hpc.viewer.actions.LoadExperiment"
-               label="&amp;Open database..."
-               menubarPath="FileMenu/databaseGroup">
-         </action>
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.NewWindow"
-               id="edu.rice.cs.hpc.viewer.actions.NewWindow"
-               label="&amp;New Window"
-               menubarPath="FileMenu/databaseGroup">
-         </action>
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.Preferences"
-               id="edu.rice.cs.hpc.viewer.actions.preferences"
-               label="Preferences..."
-               menubarPath="FileMenu/PreferenceGroup">
-         </action>
-         <action
-               class="edu.rice.cs.hpc.viewer.actions.Quit"
-               id="edu.rice.cs.hpc.viewer.actions.Quit"
-               label="&amp;Exit"
-               menubarPath="FileMenu/ExitGroup">
-         </action>
-      </actionSet>
-   </extension>
-   <extension
-         id="hpcviewer"
+         id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            application="edu.rice.cs.hpc.viewer"
+            application="edu.rice.cs.hpc.viewer.application"
             name="hpcviewer">
          <property
                name="appName"
@@ -134,7 +69,7 @@
          </property>
          <property
                name="aboutText"
-               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;Release 5.1.0 (C) Copyright 2011, Rice University.">
+               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;Release 5.2.0 (C) Copyright 2011, Rice University.">
          </property>
          <property
                name="windowImages"
@@ -153,7 +88,7 @@
    <extension
       point="org.eclipse.ui.editors">
 	   <editor
-          class="edu.rice.cs.hpc.viewer.util.SourceCodeEditor"
+          class="edu.rice.cs.hpc.viewer.editor.SourceCodeEditor"
           default="true"
           extensions="*"
           icon="icons/hpc-16x16.png"
@@ -206,10 +141,160 @@
       </initializer>
    </extension>
    <extension
-         point="org.eclipse.ui.actionSets">
-      <actionSet
-            id="edu.rice.cs.hpc.viewer.action.graph.threadMetrics"
-            label="label">
-      </actionSet>
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu">
+         <menu
+               label="File"
+               mnemonic="f"
+               tooltip="File menu">
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.newWindow"
+                  label="New window"
+                  style="push">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.openDatabase"
+                  label="Open database"
+                  mnemonic="O"
+                  style="push"
+                  tooltip="Open a database">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.closeDatabase"
+                  label="Close database"
+                  mnemonic="C"
+                  style="push"
+                  tooltip="Close database(s)">
+            </command>
+            <separator
+                  name="edu.rice.cs.hpc.viewer.separator1"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.window.preferences"
+                  label="Preferences"
+                  mnemonic="p"
+                  style="push"
+                  tooltip="Set the preferences and hpcviewer settings">
+            </command>
+            <separator
+                  name="edu.rice.cs.hpc.viewer.separator2"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.closeWindow"
+                  label="Close window"
+                  mnemonic="c"
+                  style="push"
+                  tooltip="Closing a window (it also closes the application if only one window is created)">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.exit"
+                  label="Exit hpcviewer"
+                  mnemonic="x"
+                  style="push"
+                  tooltip="Exit the application">
+            </command>
+         </menu>
+         <menu
+               label="Window"
+               mnemonic="W"
+               tooltip="Window menus">
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.resetPerspective"
+                  label="Reset layout"
+                  mnemonic="R"
+                  style="push"
+                  tooltip="Reset the current window layout to the default settings">
+            </command>
+         </menu>
+         <menu
+               label="Help"
+               mnemonic="h"
+               tooltip="Help menu">
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
+                  label="About"
+                  mnemonic="a"
+                  style="push"
+                  tooltip="About hpcviewer">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.manual"
+                  label="Help manual"
+                  mnemonic="m"
+                  style="push"
+                  tooltip="Display the manual">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.OpenDatabase"
+            description="Opening a database"
+            id="edu.rice.cs.hpc.viewer.command.openDatabase"
+            name="Open database">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.NewWindow"
+            id="edu.rice.cs.hpc.viewer.command.newWindow"
+            name="New window">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.CloseDatabase"
+            id="edu.rice.cs.hpc.viewer.command.closeDatabase"
+            name="Close database">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.HelpManual"
+            id="edu.rice.cs.hpc.viewer.command.manual"
+            name="Help manual">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.CloseWindow"
+            id="edu.rice.cs.hpc.viewer.command.closeWindow"
+            name="Close window">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.ResetPerspective"
+            id="edu.rice.cs.hpc.viewer.command.resetPerspective"
+            name="Reset layout">
+      </command>
+   </extension>
+   <extension
+         id="hpcviewer"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="edu.rice.cs.hpc.viewer.application"
+            name="hpcviewer">
+         <property
+               name="windowImages"
+               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
+         </property>
+         <property
+               name="aboutText"
+               value="hpcviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpcviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute.&#x0A;&#x0A;Release 5.2.0 (C) Copyright 2011, Rice University.">
+         </property>
+         <property
+               name="aboutImage"
+               value="icons/hpcviewerEclipseShadow128.png">
+         </property>
+         <property
+               name="startupProgressRect"
+               value="1,273,245,7">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+         <property
+               name="appName"
+               value="hpcviewer">
+         </property>
+      </product>
    </extension>
 </plugin>

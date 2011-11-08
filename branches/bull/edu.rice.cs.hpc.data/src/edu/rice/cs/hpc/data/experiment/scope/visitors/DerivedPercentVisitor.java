@@ -60,11 +60,11 @@ public class DerivedPercentVisitor implements IScopeVisitor {
 	private void setPercent (Scope scope, int iMetricPosition, MetricValue objAggregate) {
 		MetricValue m = scope.getMetricValue(iMetricPosition);
 		if ( (m != MetricValue.NONE) && objAggregate != MetricValue.NONE ) {
-			double value = m.getValue();
-			double total = objAggregate.getValue();
+			double value = MetricValue.getValue(m);
+			double total = MetricValue.getValue(objAggregate);
 			
 			if ( total != 0.0 )
-				m.setPercentValue(value/total);
+				MetricValue.setPercentValue(m, value/total);
 		}
 	}
 }

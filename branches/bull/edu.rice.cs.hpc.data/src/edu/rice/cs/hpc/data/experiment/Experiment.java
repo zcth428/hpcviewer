@@ -15,7 +15,7 @@
 package edu.rice.cs.hpc.data.experiment;
 
 
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
@@ -81,13 +81,10 @@ protected HashMap metricMap;
 // thread level database
 //------------------------------------------------------------
 private MetricRaw[] metrics_raw;
-private ThreadLevelDataManager threadsData = null;
 
 private boolean metrics_needed = true;
 
-//FIXME:tallent: temporary interface
-public long trace_minBegTime;
-public long trace_maxEndTime;
+private TraceAttribute attribute;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -308,7 +305,7 @@ protected void accumulateMetricsFromKids(Scope target, Scope source, MetricValue
 protected void copyMetric(Scope target, Scope source, int src_i, int targ_i, MetricValuePropagationFilter filter) {
 	if (filter.doPropagation(source, target, src_i, targ_i)) {
 		MetricValue mv = source.getMetricValue(src_i);
-		if (mv != MetricValue.NONE && mv.getValue() != 0.0) {
+		if (mv != MetricValue.NONE && MetricValue.getValue(mv) != 0.0) {
 			target.setMetricValue(targ_i, mv);
 		}
 	}
@@ -784,8 +781,6 @@ public File getXMLExperimentFile() {
 
 public void setMetricRaw(MetricRaw []metrics) {
 	this.metrics_raw = metrics;
-	if (this.metrics_raw != null)
-		this.threadsData = new ThreadLevelDataManager(this);
 }
 
 
@@ -794,10 +789,15 @@ public MetricRaw[] getMetricRaw() {
 }
 
 
-public ThreadLevelDataManager getThreadLevelDataManager() {
-	return this.threadsData;
+
+
+public void setTraceAttribute(TraceAttribute _attribute) {
+	this.attribute = _attribute;
 }
 
+public TraceAttribute getTraceAttribute() {
+	return this.attribute;
+}
 
 //======================================================================================
 //	UNIT TEST

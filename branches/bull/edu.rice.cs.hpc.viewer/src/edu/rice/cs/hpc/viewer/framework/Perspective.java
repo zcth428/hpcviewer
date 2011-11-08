@@ -1,16 +1,25 @@
 package edu.rice.cs.hpc.viewer.framework;
 
+import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
-import org.eclipse.ui.IPlaceholderFolderLayout;
-
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 
+
+/*****
+ * 
+ * Default perspective for the viewer
+ *
+ */
 public class Perspective implements IPerspectiveFactory {
-	private IPlaceholderFolderLayout[] objLayout = new IPlaceholderFolderLayout[ViewerWindow.maxDbNum];
+	
+	final private static String FOLDER_ID = "metricViews";
+	
+	// we have to use IFoderLayout instead of IPlaceFolderLayout since its states will be stored. 
+	private IFolderLayout[] objLayout = new IFolderLayout[ViewerWindow.maxDbNum];
 
 	public void createInitialLayout(IPageLayout layout) {
 		// get the main area
@@ -22,13 +31,13 @@ public class Perspective implements IPerspectiveFactory {
 		// this will group the views for each database so they can be treated as a one thing (minimize, restore, resizing, relocating)
 		for (int i=0 ; i<ViewerWindow.maxDbNum ; i++) {
 			if (i==0) {
-				objLayout[i] = layout.createPlaceholderFolder("metricViews" + i, IPageLayout.BOTTOM, 0.6f, editorArea);
+				objLayout[i] = layout.createFolder(FOLDER_ID + i, IPageLayout.BOTTOM, 0.6f, editorArea);
 			} else {
-				objLayout[i] = layout.createPlaceholderFolder("metricViews" + i, IPageLayout.RIGHT, 0.3f, "metricViews"+ (i-1));
+				objLayout[i] = layout.createFolder(FOLDER_ID + i, IPageLayout.RIGHT, 0.3f, "metricViews"+ (i-1));
 			}
-			objLayout[i].addPlaceholder(ScopeView.ID + ":" + i);
-			objLayout[i].addPlaceholder(CallerScopeView.ID + ":" + i);
-			objLayout[i].addPlaceholder(FlatScopeView.ID + ":" + i);
+			objLayout[i].addView(ScopeView.ID + ":" + i);
+			objLayout[i].addView(CallerScopeView.ID + ":" + i);
+			objLayout[i].addView(FlatScopeView.ID + ":" + i);
 		}
 	}
 	

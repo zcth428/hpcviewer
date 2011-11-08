@@ -16,6 +16,7 @@ package edu.rice.cs.hpc.data.experiment.xml;
 
 
 import edu.rice.cs.hpc.data.experiment.*;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
@@ -1564,17 +1565,25 @@ public class ExperimentBuilder2 extends Builder
 	 */
 	private void do_TraceDB(String[] attributes, String[] values)
 	{
+		TraceAttribute attribute = new TraceAttribute();
 		// tallent: Note that the DTD currently only permits one instance of <TraceDB>
 		for (int i=0; i<attributes.length; i++) {
+			
 			if (attributes[i].charAt(0) == 'i') {
 			} else if (attributes[i].equals("db-glob")) {
+				attribute.dbGlob = values[i];
+				
 			} else if (attributes[i].equals("db-min-time")) {
-				experiment.trace_minBegTime = Long.valueOf(values[i]);
+				attribute.dbTimeMin = Long.valueOf(values[i]);
+				
 			} else if (attributes[i].equals("db-max-time")) {
-				experiment.trace_maxEndTime = Long.valueOf(values[i]);
+				attribute.dbTimeMax = Long.valueOf(values[i]);
+
 			} else if (attributes[i].equals("db-header-sz")) {
+				attribute.dbHeaderSize = Integer.valueOf(values[i]);
 			}
 		}
+		this.experiment.setTraceAttribute(attribute);
 	}
 
 

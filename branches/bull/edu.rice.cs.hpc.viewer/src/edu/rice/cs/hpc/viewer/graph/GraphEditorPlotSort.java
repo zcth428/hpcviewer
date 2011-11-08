@@ -4,10 +4,10 @@ import java.io.IOException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile.ApplicationType;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataManager;
+import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 
 public class GraphEditorPlotSort extends GraphEditor {
 
@@ -49,7 +49,7 @@ public class GraphEditorPlotSort extends GraphEditor {
 
 
 	@Override
-	protected String getXAxisTitle(ApplicationType type) {
+	protected String getXAxisTitle(ThreadLevelDataFile data) {
 		return "Rank sequence";
 	}
 

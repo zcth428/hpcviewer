@@ -49,11 +49,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// once the widgets have been created, we ask user a database to open
 		// ---------------------------------------------------------------------
 		
-		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
-		IStatusLineManager status = configurer.getActionBarConfigurer().getStatusLineManager();
+		final IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
+		final IStatusLineManager status = configurer.getActionBarConfigurer().getStatusLineManager();
 		
-		TraceDatabase trace_db = new TraceDatabase(this.args);
-		trace_db.openDatabase(configurer.getWindow().getShell(), status);
+		TraceDatabase.openDatabase(configurer.getWindow(), args, status);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowClose()
+	 */
+	public void postWindowClose() {
+
+		// remove all the allocated resources of this window
+		TraceDatabase.removeInstance(this.getWindowConfigurer().getWindow());
+	}
 }

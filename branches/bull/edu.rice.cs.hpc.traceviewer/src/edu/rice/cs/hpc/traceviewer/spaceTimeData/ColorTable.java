@@ -39,6 +39,15 @@ public class ColorTable implements IProcedureTable
 		IMAGE_WHITE = new ColorImagePair(display.getSystemColor(SWT.COLOR_WHITE));
 	}
 	
+	/**
+	 * Dispose the allocated resources
+	 */
+	public void dispose() {
+		for (ColorImagePair pair: colorMatcher.values()) {
+			pair.dispose();
+		}
+	}
+	
 	/**Returns the color in the colorMatcher that corresponds to name.*/
 	public Color getColor(String name)
 	{
@@ -71,10 +80,13 @@ public class ColorTable implements IProcedureTable
 		{
 			String procName = procNames.get(l);
 
-			if(procName!=CallStackSample.NULL_FUNCTION) {
+			if(procName!=CallPath.NULL_FUNCTION)
+			{
 				Color c = new Color(display, red.nextInt(200),green.nextInt(200),blue.nextInt(200));
 				colorMatcher.put(procName, new ColorImagePair(c));
-			} else {
+			}
+			else
+			{
 				colorMatcher.put(procName, IMAGE_WHITE);
 			}
 		}
@@ -128,6 +140,11 @@ public class ColorTable implements IProcedureTable
 		 */
 		public Image getImage() {
 			return this.image;
+		}
+		
+		public void dispose() {
+			this.color.dispose();
+			this.image.dispose();
 		}
 	}
 }

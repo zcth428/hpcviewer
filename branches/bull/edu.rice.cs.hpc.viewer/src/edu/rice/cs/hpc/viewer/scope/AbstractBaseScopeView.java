@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 //User interface
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchWindow;
 
 //SWT
 import org.eclipse.swt.*;
@@ -22,6 +23,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -33,7 +35,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.viewer.util.EditorManager;
+import edu.rice.cs.hpc.viewer.editor.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
 /**
@@ -167,11 +169,13 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         //--------------------------------------------------------------------------
         
         // show the editor source code
+        final String SHOW_MENU = "Show ";
+        
         String sMenuTitle ;
         if(scope instanceof FileScope) {
-        	sMenuTitle = "Show " + scope.getSourceFile().getName();
+        	sMenuTitle = SHOW_MENU + scope.getSourceFile().getName();
         } else
-        	sMenuTitle= "Show "+scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
+        	sMenuTitle= SHOW_MENU +scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
         ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, scope){
         	public void run() {
         		displayFileEditor(this.scope);
@@ -197,6 +201,35 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         	mgr.add(acShowCallsite);
         }
         
+		// show the database xml file
+		final IWorkbenchWindow windowCurrent = this.getSite().getWorkbenchWindow();
+		String dbXmlMenuTitle = "Show database's raw XML";
+		ScopeViewTreeAction dbShowXml = new ScopeViewTreeAction(dbXmlMenuTitle, scope){
+			public void run() {
+				if (this.scope.getExperiment() == null) {
+					MessageDialog.openError(windowCurrent.getShell(), 
+							"Error: Experiment class missing", 
+					"Unable to find the Experiment class for the selected database !");
+					return;
+				}
+
+				// get the the experiment XML file for the database this program scope is part of
+				String filePath = this.scope.getExperiment().getXMLExperimentFile().getPath();
+
+				// prepare the editor
+				EditorManager editor = new EditorManager(windowCurrent);
+				try {
+					// database numbers start with 0 but titles start with 1
+					editor.openFileEditor(filePath, myExperiment);
+				} catch (FileNotFoundException e) {
+					// can not find the file (or something goes wrong)
+					MessageDialog.openError(windowCurrent.getShell(), "Error: File not found", e.getMessage());
+				}
+			}
+		};
+		dbShowXml.setEnabled(true);
+		mgr.add(dbShowXml);
+
         //--------------------------------------------------------------------------
         // ---------- additional context menu
         //--------------------------------------------------------------------------
@@ -239,8 +272,9 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         Menu menu = menuMgr.createContextMenu(this.treeViewer.getControl());
         this.treeViewer.getControl().setMenu(menu);
         
-        // Register menu for extension.
-        getSite().registerContextMenu(menuMgr, this.treeViewer);
+        // Register menu for extension. 
+        // Using an id allows code that extends this class to add entries to this context menu.
+        getSite().registerContextMenu("edu.rice.cs.hpc.viewer.scope.ScopeView", menuMgr, this.treeViewer);
     }
     
     /**
@@ -460,11 +494,22 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	return this.treeViewer;
     }
 
-
-    protected Experiment getExperiment() {
+    /****
+     * get the experiment of this view
+     * @return
+     */
+    public Experiment getExperiment() {
     	return this.myExperiment;
     }
 
+    /****
+     * get the root scope (either cct, caller tree or flat tree)
+     * @return
+     */
+    public RootScope getRootScope() {
+    	return this.myRootScope;
+    }
+    
     //======================================================
     // ................ ABSTRACT...........................
     //======================================================

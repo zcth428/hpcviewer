@@ -5,7 +5,6 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 
 public class Database {
 	private int winIndex;
-	private int dbIndex;
 	private Experiment experiment;
 	private ExperimentView view;
 
@@ -17,13 +16,6 @@ public class Database {
 		return winIndex;
 	}
 
-	/**
-	 *  get the index of which database in a window this object represents.
-	 * @return
-	 */
-	public int getDatabaseIndex () {
-		return dbIndex;
-	}
 
 	/**
 	 *  get the Experiment class used for this database
@@ -50,14 +42,6 @@ public class Database {
 		return; 
 	}
 
-	/**
-	 *  set the database index to record which database in a window this object represents.
-	 * @param index
-	 */
-	public void setDatabaseIndex (int index) {
-		dbIndex = index;
-		return; 
-	}
 
 	/**
 	 *  set the Experiment class used for this database

@@ -57,18 +57,18 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     //======================================================
 	// GUI STUFFs
     protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
-    private ScopeViewActions objViewActions;
-    private TreeViewerColumn []colMetrics;	// metric columns
-    private Shell shell;
-    private IWorkbenchWindow objWindow;
+	protected ScopeViewActions objViewActions;
+	protected TreeViewerColumn []colMetrics;	// metric columns
+	protected Shell shell;
+	protected IWorkbenchWindow objWindow;
 
     // variable declaration uniquely for coolbar
-	private ToolItem tiZoomin;		// zoom-in button
-	private ToolItem tiZoomout ;	// zoom-out button
-	private ToolItem tiColumns ;	// show/hide button
-	private ToolItem tiHotCallPath;
-	private ToolItem tiAddExtMetric;
-	private Label lblMessage;
+	protected ToolItem tiZoomin;		// zoom-in button
+	protected ToolItem tiZoomout ;	// zoom-out button
+	protected ToolItem tiColumns ;	// show/hide button
+	protected ToolItem tiHotCallPath;
+	protected ToolItem tiAddExtMetric;
+	protected Label lblMessage;
 	
 	//------------------------------------DATA
 	protected Scope nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
@@ -76,7 +76,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	protected RootScope 		myRootScope;		// the root scope of this view
 
     // ----------------------------------- CONSTANTS
-    private Color clrGREEN, clrYELLOW, clrRED, clrNORMAL;
+	protected Color clrGREEN, clrYELLOW, clrRED, clrNORMAL;
     
     /**
      * Constructor initializing the data
@@ -273,7 +273,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     /**
      * Show column properties (hidden, visible ...)
      */
-    private void showColumnsProperties() {
+    protected void showColumnsProperties() {
     	ColumnProperties objProp = new ColumnProperties(this.objWindow.getShell(), this.colMetrics);
     	objProp.open();
     	if(objProp.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.OK_ID) {
@@ -536,7 +536,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     /**
      * Method to export the displayed items in the current view into a CSV format file
      */
-	private void exportCSV() {
+	protected void exportCSV() {
 		FileDialog fileDlg = new FileDialog(this.shell, SWT.SAVE);
 		fileDlg.setFileName(this.myExperiment.getName() + ".csv");
 		fileDlg.setFilterExtensions(new String [] {"*.csv", "*.*"});

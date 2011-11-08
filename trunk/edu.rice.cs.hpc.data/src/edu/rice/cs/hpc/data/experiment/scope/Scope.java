@@ -1,13 +1,12 @@
-//////////////////////////////////////////////////////////////////////////
-//									//
-//	Scope.java							//
-//									//
-//	experiment.scope.Scope -- a scope in an experiment		//
-//	Last edited: October 10, 2001 at 4:03 pm			//
-//									//
-//	(c) Copyright 2001 Rice University. All rights reserved.	//
-//									//
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//																//
+//	Scope.java													//
+//																//
+//																//
+//	(c) Copyright 2011 Rice University. All rights reserved.	//
+//																//
+//	$LastChangedDate$			 								//
+//////////////////////////////////////////////////////////////////
 
 
 
@@ -15,22 +14,15 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
-//import java.util.ArrayList;
-
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-//import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.IProcedureTable;
-//import edu.rice.cs.hpc.data.util.*;
-//import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric; // laks: add derived metric feature
-
-//import sun.tools.tree.ThisExpression;
 
 
  
@@ -77,8 +69,6 @@ protected MetricValue[] combinedMetrics;
 /** source citation */
 protected String srcCitation;
 
-/** special marker used for halting during debugging. */
-protected boolean stop;
 
 /**
  * This public variable indicates if the node contains information about the source code file.
@@ -133,7 +123,6 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int cc
 	this.firstLineNumber = first;
 	this.lastLineNumber = last;
 
-	this.stop = false;
 	this.srcCitation = null;
 	this.flat_node_index = flat_id;
 	this.cct_node_index = cct_id;
@@ -516,14 +505,6 @@ public boolean hasNonzeroMetrics() {
 	return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
-//   DEBUGGING HOOK 													//
-//////////////////////////////////////////////////////////////////////////
-
-public boolean stopHere()
-{
-	return stop;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // EXPERIMENT DATABASE 													//

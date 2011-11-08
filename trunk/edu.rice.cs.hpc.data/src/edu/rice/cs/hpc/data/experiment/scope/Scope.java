@@ -5,7 +5,7 @@
 //																//
 //	(c) Copyright 2011 Rice University. All rights reserved.	//
 //																//
-//	$LastChangedDate$			 								//
+//	$LastChangedDate$		$LastChangedBy$ 					//
 //////////////////////////////////////////////////////////////////
 
 

@@ -17,6 +17,7 @@ package edu.rice.cs.hpc.data.experiment;
 
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
+import edu.rice.cs.hpc.data.experiment.xml.OldXMLFormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,13 +87,14 @@ public static ExperimentFile makeFile(File filename)
  *	@exception				IOException if experiment file can't be read.
  *	@exception				InvalExperimentException if file contents are
  *								not a valid experiment.
+ * @throws OldXMLFormatException 
+ * @throws Exception 
  *
  ************************************************************************/
 	
 public abstract void parse(Experiment experiment, boolean need_metrics)
 throws
-	IOException,
-	InvalExperimentException;
+	Exception;
 
 
 

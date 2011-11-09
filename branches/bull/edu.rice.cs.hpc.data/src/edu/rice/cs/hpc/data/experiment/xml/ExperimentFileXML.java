@@ -104,16 +104,13 @@ public ExperimentFileXML(File filename)
  *	The subparts are returned by adding them to given lists.
  *
  *	@param	experiment		Experiment object to own the parsed subparts.
- *	@exception				IOException if file can't be read.
- *	@exception				InvalExperimentException if file contents are
- *								not a valid experiment.
+ * @throws Exception 
  *
  ************************************************************************/
 	
 public void parse(Experiment experiment, boolean need_metrics)
 throws
-	IOException,
-	InvalExperimentException
+	Exception
 	{
 	// get an appropriate input stream
 	String name;
@@ -126,26 +123,8 @@ throws
 	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
         Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
         Parser parser = new Parser(name, stream, builder);
-        try {
-            parser.parse();
-        } catch (java.lang.Exception e) {
-        	Throwable err = e.getCause();
-        	if ( (err instanceof OldXMLFormatException) || (e instanceof OldXMLFormatException) ) {
-            	// check the old xml ?
-            	builder = new ExperimentBuilder(experiment, name);
-            	// for unknown reason, the variable streat is reset here by JVM. So we need to allocate again
-                stream = new FileInputStream(this.file);
-            	parser = new Parser(name, stream, builder);
-                try {
-					parser.parse();
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-                if( builder.getParseOK() != Builder.PARSER_OK )
-                	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
-        	}
-        }
+        parser.parse();
+
         if( builder.getParseOK() == Builder.PARSER_OK ) {
         	// parsing is done successfully
         } else

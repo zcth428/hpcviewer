@@ -107,7 +107,7 @@ public class ExperimentView {
 	 * @param sFilename: the xml experiment file
 	 */
 	public Experiment loadExperiment(String sFilename) {
-		Experiment experiment;
+		Experiment experiment = null;
 		// first view: usually already created by default by the perspective
 		org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
 		try
@@ -141,6 +141,9 @@ public class ExperimentView {
 			MessageDialog.openError(objShell, "File is invalid", "File has null pointer:"
 					+sFilename + ":"+npe.getMessage());
 			experiment = null;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return experiment;
 	}

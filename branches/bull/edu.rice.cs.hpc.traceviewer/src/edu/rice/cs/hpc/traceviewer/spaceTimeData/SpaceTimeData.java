@@ -116,15 +116,15 @@ public class SpaceTimeData extends TraceEvents
 		{
 			exp.open(false);
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 		catch (InvalExperimentException e)
 		{
 			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
 			e.printStackTrace();
 			return;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
 		}
 		
 		scopeMap = new HashMap<Integer, CallPath>();

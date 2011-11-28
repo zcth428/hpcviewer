@@ -3,9 +3,9 @@
 //	ExperimentFileXML.java						//
 //									//
 //	experiment.ExperimentFileXML -- a file containing an experiment	//
-//	Last edited: October 14, 2001 at 7:15 pm			//
+//	Last edited: November 28, 2001 at 1:15 pm			//
 //									//
-//	(c) Copyright 2001 Rice University. All rights reserved.	//
+//	(c) Copyright 2011 Rice University. All rights reserved.	//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
@@ -21,7 +21,6 @@ import edu.rice.cs.hpc.data.util.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.IOException;
 
 
 
@@ -70,17 +69,10 @@ public ExperimentFileXML()
  *	Creates an an XML experiment file with a given filename.
  *
  *	@param filename		A path to the file.
- *	@exception			IOException if file can't be opened for reading.
- *	@exception			InvalExperimentException if file contents are
- *							not a valid experiment.
  *
  ************************************************************************/
 	
 public ExperimentFileXML(File filename)
-// laks: no need to throw exception
-/*throws
-	IOException,
-	InvalExperimentException  */ 
 {
 	Dialogs.temporary("ExperimentFileXML(File) constructor");
 
@@ -109,34 +101,24 @@ public ExperimentFileXML(File filename)
  ************************************************************************/
 	
 public void parse(Experiment experiment, boolean need_metrics)
-throws
-	Exception
-	{
+		throws	Exception
+		{
 	// get an appropriate input stream
 	String name;
 	InputStream stream;
-	
-        name = this.file.toString();
-        stream = new FileInputStream(this.file);
-    
-	// parse the stream
-	//ExperimentBuilder builder = new ExperimentBuilder(experiment, name);
-        Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
-        Parser parser = new Parser(name, stream, builder);
-        parser.parse();
 
-        if( builder.getParseOK() == Builder.PARSER_OK ) {
-        	// parsing is done successfully
-        } else
-        	throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
-	}
+	name = this.file.toString();
+	stream = new FileInputStream(this.file);
+
+	// parse the stream
+	Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
+	Parser parser = new Parser(name, stream, builder);
+	parser.parse();
+
+	if( builder.getParseOK() == Builder.PARSER_OK ) {
+		// parsing is done successfully
+	} else
+		throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
+		}
 
 }
-
-
-
-
-
-
-
-

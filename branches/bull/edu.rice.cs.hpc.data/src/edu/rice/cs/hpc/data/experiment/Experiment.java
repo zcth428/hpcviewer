@@ -46,8 +46,6 @@ import com.graphbuilder.math.*;
 public class Experiment
 {
 
-/** The file containing the experiment. */
-protected ExperimentFile experimentFile;
 
 /** The directory from which to resolve relative source file paths. */
 protected File defaultDirectory;
@@ -103,7 +101,6 @@ private TraceAttribute attribute;
 	
 public Experiment(File filename)
 {
-	this.experimentFile   = new ExperimentFileXML();
 	this.fileExperiment = filename;
 	// protect ourselves against filename being `foo' with no parent
 	// information whatsoever.
@@ -118,7 +115,6 @@ public Experiment(Experiment exp)
 {
 	this.configuration = exp.configuration;
 	this.defaultDirectory = exp.getDefaultDirectory();
-	this.experimentFile = null;
 	this.fileExperiment = exp.getXMLExperimentFile();
 }
 
@@ -138,7 +134,7 @@ throws
 {
 	this.metrics_needed = need_metrics;
 	// parsing may throw exceptions
-	this.experimentFile.parse(this.fileExperiment, this, need_metrics);
+	new ExperimentFileXML().parse(this.fileExperiment, this, need_metrics);
 }
 
 
@@ -164,7 +160,7 @@ throws
 	Exception
 {
 	// parsing may throw exceptions
-	this.experimentFile.parse(this.fileExperiment, this, true);
+	new ExperimentFileXML().parse(this.fileExperiment, this, true);
 }
 
 

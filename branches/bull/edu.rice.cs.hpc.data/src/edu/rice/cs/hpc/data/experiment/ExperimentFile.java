@@ -54,17 +54,9 @@ public abstract class ExperimentFile
  *
  *	Currently the only available subclass is <code>ExperimentFileXML</code>.
  *
- *	@exception			IOException if experiment file can't be read.
- *	@exception			InvalExperimentException if file contents are
- *							not a valid experiment.
- *
  ************************************************************************/
 	
 public static ExperimentFile makeFile(File filename)
-// laks: no need exception
-/*throws
-	IOException,
-	InvalExperimentException*/
 {
 	return new ExperimentFileXML(filename);
 }

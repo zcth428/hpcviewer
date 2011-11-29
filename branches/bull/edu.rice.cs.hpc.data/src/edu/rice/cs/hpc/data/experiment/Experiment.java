@@ -21,6 +21,7 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.experiment.source.*;
+import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.util.*;
 
 import java.io.File;
@@ -97,15 +98,12 @@ private TraceAttribute attribute;
  *	Creates an Experiment object from a file.
  *
  *	@param filename		A path to the file containing the experiment.
- *	@exception			IOException if file can't be opened for reading.
- *	@exception			InvalExperimentException if file contents are
- *							not a valid experiment.
  *
  ************************************************************************/
 	
 public Experiment(File filename)
 {
-	this.experimentFile   = ExperimentFile.makeFile(filename);
+	this.experimentFile   = new ExperimentFileXML(filename);
 	this.fileExperiment = filename;
 	// protect ourselves against filename being `foo' with no parent
 	// information whatsoever.

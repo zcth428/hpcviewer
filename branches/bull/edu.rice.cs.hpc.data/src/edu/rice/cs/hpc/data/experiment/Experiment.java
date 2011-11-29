@@ -103,7 +103,7 @@ private TraceAttribute attribute;
 	
 public Experiment(File filename)
 {
-	this.experimentFile   = new ExperimentFileXML(filename);
+	this.experimentFile   = new ExperimentFileXML();
 	this.fileExperiment = filename;
 	// protect ourselves against filename being `foo' with no parent
 	// information whatsoever.
@@ -138,7 +138,7 @@ throws
 {
 	this.metrics_needed = need_metrics;
 	// parsing may throw exceptions
-	this.experimentFile.parse(this, need_metrics);
+	this.experimentFile.parse(this.fileExperiment, this, need_metrics);
 }
 
 
@@ -164,7 +164,7 @@ throws
 	Exception
 {
 	// parsing may throw exceptions
-	this.experimentFile.parse(this, true);
+	this.experimentFile.parse(this.fileExperiment, this, true);
 }
 
 

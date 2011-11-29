@@ -16,7 +16,6 @@ package edu.rice.cs.hpc.data.experiment;
 
 
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.experiment.xml.OldXMLFormatException;
 
 import java.io.File;
@@ -49,21 +48,6 @@ public abstract class ExperimentFile
 
 
 
-/*************************************************************************
- *	Creates an experiment file object of an appropriate subclass.
- *
- *	Currently the only available subclass is <code>ExperimentFileXML</code>.
- *
- ************************************************************************/
-	
-public static ExperimentFile makeFile(File filename)
-{
-	return new ExperimentFileXML(filename);
-}
-
-
-
-
 //////////////////////////////////////////////////////////////////////////
 //	ACCESS TO FILE CONTENTS												//
 //////////////////////////////////////////////////////////////////////////
@@ -76,15 +60,11 @@ public static ExperimentFile makeFile(File filename)
  *	The subparts are returned by adding them to given lists.
  *
  *	@param	experiment		Experiment object to own the parsed subparts.
- *	@exception				IOException if experiment file can't be read.
- *	@exception				InvalExperimentException if file contents are
- *								not a valid experiment.
- * @throws OldXMLFormatException 
  * @throws Exception 
  *
  ************************************************************************/
 	
-public abstract void parse(Experiment experiment, boolean need_metrics)
+public abstract void parse(File file, Experiment experiment, boolean need_metrics)
 throws
 	Exception;
 

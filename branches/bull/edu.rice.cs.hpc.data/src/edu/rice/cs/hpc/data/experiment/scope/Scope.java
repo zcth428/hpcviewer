@@ -5,7 +5,7 @@
 //																//
 //	(c) Copyright 2011 Rice University. All rights reserved.	//
 //																//
-//	$LastChangedDate: 2011-11-08 16:22:33 -0600 (Tue, 08 Nov 2011) $		$LastChangedBy: laksono $ 					//
+//	$LastChangedDate$		$LastChangedBy: laksono $ 					//
 //////////////////////////////////////////////////////////////////
 
 

@@ -3,7 +3,7 @@
 //	ExperimentFileXML.java						//
 //									//
 //	experiment.ExperimentFileXML -- a file containing an experiment	//
-//	Last edited: November 28, 2001 at 1:15 pm			//
+//	$LastChangedDate$			//
 //									//
 //	(c) Copyright 2011 Rice University. All rights reserved.	//
 //									//
@@ -16,7 +16,6 @@ package edu.rice.cs.hpc.data.experiment.xml;
 
 
 import edu.rice.cs.hpc.data.experiment.*;
-import edu.rice.cs.hpc.data.util.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,47 +39,6 @@ public class ExperimentFileXML extends ExperimentFile
 {
 
 
-/** The file containing the experiment. */
-protected File file;
-
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//	INITIALIZATION														//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-
-/*************************************************************************
- *	Creates an XML experiment file with a new temporary filename.
- ************************************************************************/
-	
-public ExperimentFileXML()
-{
-	Dialogs.notImplemented("ExperimentFileXML() constructor");
-}
-
-
-
-
-/*************************************************************************
- *	Creates an an XML experiment file with a given filename.
- *
- *	@param filename		A path to the file.
- *
- ************************************************************************/
-	
-public ExperimentFileXML(File filename)
-{
-	Dialogs.temporary("ExperimentFileXML(File) constructor");
-
-	this.file = filename;
-
-	// check for existence etc...
-}
-
 
 
 
@@ -100,15 +58,15 @@ public ExperimentFileXML(File filename)
  *
  ************************************************************************/
 	
-public void parse(Experiment experiment, boolean need_metrics)
+public void parse(File file, Experiment experiment, boolean need_metrics)
 		throws	Exception
 		{
 	// get an appropriate input stream
 	String name;
 	InputStream stream;
 
-	name = this.file.toString();
-	stream = new FileInputStream(this.file);
+	name = file.toString();
+	stream = new FileInputStream(file);
 
 	// parse the stream
 	Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);

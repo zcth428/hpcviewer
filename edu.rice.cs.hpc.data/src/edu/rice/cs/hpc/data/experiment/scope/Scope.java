@@ -5,7 +5,7 @@
 //																//
 //	(c) Copyright 2011 Rice University. All rights reserved.	//
 //																//
-//	$LastChangedDate$		$LastChangedBy$ 					//
+//	$LastChangedDate$			 								//
 //////////////////////////////////////////////////////////////////
 
 
@@ -65,9 +65,6 @@ protected int lastLineNumber;
 /** The metric values associated with this scope. */
 protected MetricValue[] metrics;
 protected MetricValue[] combinedMetrics;
-
-/** The number of metrics needed by this view in each program scope. */
-protected int viewMetricsCount = -1;
 
 /** source citation */
 protected String srcCitation;
@@ -526,24 +523,6 @@ public void setExperiment(Experiment exp) {
 //===================================================================
 
 /*************************************************************************
- * Get the count of how many metric values this scope needs.
- ************************************************************************/
-
-public int getViewMetricsCount() {
-	return this.viewMetricsCount;
-}
-
-/*************************************************************************
- * Sets the number of metrics needed in a scope metrics array (if not set, 
- * uses number metrics in an experiment).
- ************************************************************************/
-
-public void setViewMetricsCount(int count) {
-	this.viewMetricsCount = count + 1;
-	return;
-}
-
-/*************************************************************************
  *	Returns the value of a given metric at this scope.
  ************************************************************************/
 	
@@ -768,16 +747,10 @@ public void safeCombine(Scope source, MetricValuePropagationFilter filter) {
 	
 protected void ensureMetricStorage()
 {
-	int metricsNeeded;
-	if (this.viewMetricsCount > 0) {
-		metricsNeeded = this.viewMetricsCount;
-	} else {
-		metricsNeeded = experiment.getMetricCount();
-	}
 	if(this.metrics == null)
 		this.metrics = this.makeMetricValueArray();
 	// Expand if metrics not as big as experiment's (latest) metricCount
-	if(this.metrics.length < metricsNeeded) {
+	if(this.metrics.length < this.experiment.getMetricCount()) {
 		MetricValue[] newMetrics = this.makeMetricValueArray();
 		for(int i=0; i<this.metrics.length; i++)
 			newMetrics[i] = metrics[i];
@@ -794,14 +767,9 @@ protected void ensureMetricStorage()
 	
 protected MetricValue[] makeMetricValueArray()
 {
-	int metricsNeeded;
-	if (this.viewMetricsCount > 0) {
-		metricsNeeded = this.viewMetricsCount;
-	} else {
-		metricsNeeded = experiment.getMetricCount();
-	}
-	MetricValue[] array = new MetricValue[metricsNeeded];
-	for(int k = 0; k < metricsNeeded; k++)
+	int count = this.experiment.getMetricCount();
+	MetricValue[] array = new MetricValue[count];
+	for(int k = 0; k < count; k++)
 		array[k] = MetricValue.NONE;
 	return array;
 }

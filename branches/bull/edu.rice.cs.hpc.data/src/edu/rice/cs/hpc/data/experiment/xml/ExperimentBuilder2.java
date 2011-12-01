@@ -130,12 +130,6 @@ public class ExperimentBuilder2 extends Builder
 	 *
 	 ************************************************************************/
 
-	public ExperimentBuilder2(Experiment experiment, String defaultName)
-	{
-		super();
-		init(experiment, defaultName, true);
-	}
-
 
 	public ExperimentBuilder2(Experiment experiment, String defaultName, boolean need_metrics) {
 		super();

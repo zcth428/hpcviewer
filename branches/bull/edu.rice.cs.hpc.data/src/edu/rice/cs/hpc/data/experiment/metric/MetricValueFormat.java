@@ -503,6 +503,12 @@ protected String formatDouble(double d, DecimalFormat formatter, Style style)
 	
 	if( kind == FLOAT )
 	{
+		// hpcrun can generate incorrect metrics which are incredibly huge 
+		// converted in Java it becomes infinity
+		
+		if (d == Float.POSITIVE_INFINITY)
+			return "Inf" ;
+					
 		int exponent = 0;
 		// laks: if d = 9.999, the formatter will force to round it to 10.00
 		// 	since I don't know how to prevent the rounding, let make a dirty solution here

@@ -66,9 +66,6 @@ protected int lastLineNumber;
 protected MetricValue[] metrics;
 protected MetricValue[] combinedMetrics;
 
-/** The number of metrics needed by this view in each program scope. */
-protected int viewMetricsCount = -1;
-
 /** source citation */
 protected String srcCitation;
 
@@ -525,23 +522,6 @@ public void setExperiment(Experiment exp) {
 //						METRICS
 //===================================================================
 
-/*************************************************************************
- * Get the count of how many metric values this scope needs.
- ************************************************************************/
-
-public int getViewMetricsCount() {
-	return this.viewMetricsCount;
-}
-
-/*************************************************************************
- * Sets the number of metrics needed in a scope metrics array (if not set, 
- * uses number metrics in an experiment).
- ************************************************************************/
-
-public void setViewMetricsCount(int count) {
-	this.viewMetricsCount = count + 1;
-	return;
-}
 
 /*************************************************************************
  *	Returns the value of a given metric at this scope.
@@ -768,12 +748,8 @@ public void safeCombine(Scope source, MetricValuePropagationFilter filter) {
 	
 protected void ensureMetricStorage()
 {
-	int metricsNeeded;
-	if (this.viewMetricsCount > 0) {
-		metricsNeeded = this.viewMetricsCount;
-	} else {
-		metricsNeeded = experiment.getMetricCount();
-	}
+	int metricsNeeded= experiment.getMetricCount();
+	
 	if(this.metrics == null)
 		this.metrics = this.makeMetricValueArray();
 	// Expand if metrics not as big as experiment's (latest) metricCount
@@ -794,12 +770,8 @@ protected void ensureMetricStorage()
 	
 protected MetricValue[] makeMetricValueArray()
 {
-	int metricsNeeded;
-	if (this.viewMetricsCount > 0) {
-		metricsNeeded = this.viewMetricsCount;
-	} else {
-		metricsNeeded = experiment.getMetricCount();
-	}
+	int metricsNeeded= experiment.getMetricCount();
+
 	MetricValue[] array = new MetricValue[metricsNeeded];
 	for(int k = 0; k < metricsNeeded; k++)
 		array[k] = MetricValue.NONE;

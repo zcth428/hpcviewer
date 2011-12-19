@@ -5,7 +5,7 @@
 //																//
 //	(c) Copyright 2011 Rice University. All rights reserved.	//
 //																//
-//	$LastChangedDate$			 								//
+//	$LastChangedDate$		$LastChangedBy$ 					//
 //////////////////////////////////////////////////////////////////
 
 
@@ -522,6 +522,7 @@ public void setExperiment(Experiment exp) {
 //						METRICS
 //===================================================================
 
+
 /*************************************************************************
  *	Returns the value of a given metric at this scope.
  ************************************************************************/
@@ -747,10 +748,11 @@ public void safeCombine(Scope source, MetricValuePropagationFilter filter) {
 	
 protected void ensureMetricStorage()
 {
+	
 	if(this.metrics == null)
 		this.metrics = this.makeMetricValueArray();
 	// Expand if metrics not as big as experiment's (latest) metricCount
-	if(this.metrics.length < this.experiment.getMetricCount()) {
+	if(this.metrics.length < experiment.getMetricCount()) {
 		MetricValue[] newMetrics = this.makeMetricValueArray();
 		for(int i=0; i<this.metrics.length; i++)
 			newMetrics[i] = metrics[i];
@@ -767,9 +769,10 @@ protected void ensureMetricStorage()
 	
 protected MetricValue[] makeMetricValueArray()
 {
-	int count = this.experiment.getMetricCount();
-	MetricValue[] array = new MetricValue[count];
-	for(int k = 0; k < count; k++)
+	final int metricsNeeded= experiment.getMetricCount();
+
+	MetricValue[] array = new MetricValue[metricsNeeded];
+	for(int k = 0; k < metricsNeeded; k++)
 		array[k] = MetricValue.NONE;
 	return array;
 }

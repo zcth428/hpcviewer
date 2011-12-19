@@ -62,13 +62,14 @@ public Metric(String shortName, String nativeName, String displayName,
     this.partnerIndex = partnerIndex;
 }
 
+
 /**
  * Construct a metric using a predefined sample period
- * @param experiment
  * @param shortName
  * @param nativeName
  * @param displayName
  * @param displayed
+ * @param format
  * @param percent
  * @param sampleperiod
  * @param metricType

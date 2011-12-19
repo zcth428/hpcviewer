@@ -21,6 +21,7 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.experiment.source.*;
+import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.util.*;
 
 import java.io.File;
@@ -45,8 +46,6 @@ import com.graphbuilder.math.*;
 public class Experiment
 {
 
-/** The file containing the experiment. */
-protected ExperimentFile experimentFile;
 
 /** The directory from which to resolve relative source file paths. */
 protected File defaultDirectory;
@@ -75,7 +74,7 @@ protected Vector<BaseMetric> metricList;
 protected Scope rootScope;
 
 /** A mapping from internal name strings to metric objects. */
-protected HashMap metricMap;
+protected HashMap<String, BaseMetric> metricMap;
 
 //------------------------------------------------------------
 // thread level database
@@ -97,15 +96,11 @@ private TraceAttribute attribute;
  *	Creates an Experiment object from a file.
  *
  *	@param filename		A path to the file containing the experiment.
- *	@exception			IOException if file can't be opened for reading.
- *	@exception			InvalExperimentException if file contents are
- *							not a valid experiment.
  *
  ************************************************************************/
 	
 public Experiment(File filename)
 {
-	this.experimentFile   = ExperimentFile.makeFile(filename);
 	this.fileExperiment = filename;
 	// protect ourselves against filename being `foo' with no parent
 	// information whatsoever.
@@ -120,7 +115,6 @@ public Experiment(Experiment exp)
 {
 	this.configuration = exp.configuration;
 	this.defaultDirectory = exp.getDefaultDirectory();
-	this.experimentFile = null;
 	this.fileExperiment = exp.getXMLExperimentFile();
 }
 
@@ -136,12 +130,11 @@ public Experiment(Experiment exp)
 	
 public void open(boolean need_metrics)
 throws
-	IOException,
-	InvalExperimentException
+	Exception
 {
 	this.metrics_needed = need_metrics;
 	// parsing may throw exceptions
-	this.experimentFile.parse(this, need_metrics);
+	new ExperimentFileXML().parse(this.fileExperiment, this, need_metrics);
 }
 
 
@@ -164,11 +157,10 @@ throws
 	
 public void open()
 throws
-	IOException,
-	InvalExperimentException
+	Exception
 {
 	// parsing may throw exceptions
-	this.experimentFile.parse(this, true);
+	new ExperimentFileXML().parse(this.fileExperiment, this, true);
 }
 
 
@@ -207,16 +199,16 @@ public void setConfiguration(ExperimentConfiguration configuration)
  *
  ************************************************************************/
 	
-public void setMetrics(List metricList)
+public void setMetrics(List<BaseMetric> metricList)
 {
 	if (!metrics_needed)
 		return;
 	
-	this.metricList = new Vector(metricList);
+	this.metricList = new Vector<BaseMetric>(metricList);
 
 	// initialize metric access data structures
 	int count = metricList.size();
-	this.metricMap = new HashMap(count);
+	this.metricMap = new HashMap<String, BaseMetric>(count);
 	for( int k = 0;  k < count;  k++ )
 	{	
 		BaseMetric m = (BaseMetric)this.metricList.get(k);
@@ -261,7 +253,7 @@ public void finalizeDatabase()
  *
  ************************************************************************/
 	
-public void setScopes(List scopeList, Scope rootScope)
+public void setScopes(Scope rootScope)
 {
 	this.rootScope = rootScope;
 }
@@ -847,6 +839,8 @@ public TraceAttribute getTraceAttribute() {
 	      {
 	           System.err.println("$File has null pointer:" + npe.getMessage() + sFilename);
 	           experiment = null;
-	      }
+	      } catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

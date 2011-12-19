@@ -130,12 +130,6 @@ public class ExperimentBuilder2 extends Builder
 	 *
 	 ************************************************************************/
 
-	public ExperimentBuilder2(Experiment experiment, String defaultName)
-	{
-		super();
-		init(experiment, defaultName, true);
-	}
-
 
 	public ExperimentBuilder2(Experiment experiment, String defaultName, boolean need_metrics) {
 		super();
@@ -437,8 +431,7 @@ public class ExperimentBuilder2 extends Builder
 		this.configuration.setSearchPaths(this.pathList);
 		this.experiment.setConfiguration(this.configuration);
 
-		//this.experiment.setScopes(this.scopeList, this.rootScope);
-		this.experiment.setScopes(null, this.rootScope);
+		this.experiment.setScopes(this.rootScope);
 		
 		// supply defaults for missing info
 		if( this.configuration.getName() == null )

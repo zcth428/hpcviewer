@@ -150,11 +150,11 @@ public class ExpressionTree {
 					term = false;
 					signed = false;
 				}
-				else if (c != ',' && c != ')' && c != '^' && c != '*' && c != '/' && c != '+' && c != '-') {
+				else if (c != ',' && c != ')' && c != '^' && c != '*' && c != '/' && c != '+' && c != '-' && c != '=') {
 					int j = i + 1;
 					while (j < s.length()) {
 						c = s.charAt(j);
-						if (c != ',' && c != ' ' && c != '\t' && c != '\n' && c != '(' && c != ')' && c != '^' && c != '*' && c != '/' && c != '+' && c != '-')
+						if (c != ',' && c != ' ' && c != '\t' && c != '\n' && c != '(' && c != ')' && c != '^' && c != '*' && c != '/' && c != '+' && c != '-' && c != '=')
 							j++;
 						else break;
 					}
@@ -245,6 +245,16 @@ public class ExpressionTree {
 				else if (c == '^' || c == '*' || c == '/' || c == '+' || c == '-') {
 					term = true;
 					s2.push(String.valueOf(c));
+				} 
+				// comparison operator: = or ==
+				else if (c == '=') {
+					final char c_next = s.charAt(i+1);
+					// check if it is '=' or '==' symbol. we want to make it the same
+					if (c_next == '=') {
+						i++;
+					}
+					term = true;
+					s2.push(String.valueOf(c));
 				}
 				else {
 					throw new ExpressionParseException("Expected operator or close bracket but found: " + String.valueOf(c), i + indexErrorOffset);
@@ -310,6 +320,9 @@ public class ExpressionTree {
 			}
 			else if (o.equals("-")) {
 				s1.addToTail(new SubNode((Expression) o1, (Expression) o2));
+			}
+			else if (o.equals("=")) {
+				s1.addToTail(new EqualNode((Expression) o1, (Expression) o2));
 			}
 			else {
 				// should never happen

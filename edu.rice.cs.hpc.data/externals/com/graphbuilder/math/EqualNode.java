@@ -1,7 +1,13 @@
 package com.graphbuilder.math;
 
+/**
+ * check the value of comparison sign = or ==
+ * 
+ */
 public class EqualNode extends OpNode {
 
+	//private final boolean debug = true;
+	
 	public EqualNode(Expression leftChild, Expression rightChild) {
 		super(leftChild, rightChild);
 	}
@@ -13,9 +19,9 @@ public class EqualNode extends OpNode {
 
 	@Override
 	public double eval(VarMap v, FuncMap f) {
-		int a = (int) leftChild.eval(v, f);
-		int b = (int) rightChild.eval(v, f);
-		if (a==b)
+		double a = leftChild.eval(v, f);
+		double b = rightChild.eval(v, f);
+		if (Double.compare(a, b) == 0)
 			return 0.0;
 		else
 			return 1.0;

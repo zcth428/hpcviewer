@@ -19,4 +19,8 @@ public class IfFunction implements Function {
 		return (numParam==2 || numParam==3);
 	}
 
+	public String toString() {
+		return "if(condition,val_if_true,val_if_false)";
+	}
+
 }

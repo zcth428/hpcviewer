@@ -7,7 +7,6 @@ import com.graphbuilder.math.Expression;
 import com.graphbuilder.math.ExpressionTree;
 import com.graphbuilder.math.FuncMap;
 import com.graphbuilder.math.VarMap;
-import com.graphbuilder.math.func.IfFunction;
 
 public class MathTest {
 

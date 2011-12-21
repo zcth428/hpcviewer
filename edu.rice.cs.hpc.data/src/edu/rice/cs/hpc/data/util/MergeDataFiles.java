@@ -80,6 +80,9 @@ public class MergeDataFiles {
 		
 		progress.begin("Merging files", file_metric.length);
 		
+		// on linux, we have to sort the files
+		java.util.Arrays.sort(file_metric);
+		
 		dos.writeInt(file_metric.length);
 		
 		final long num_metric_header = 2 * Constants.SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes) 

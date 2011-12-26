@@ -21,20 +21,29 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
 import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 
+
+/**
+ * Base class for hpcviewer editor to display graph
+ *  
+ * The class implements IViewerEditor, so it can be renamed, manipulated and changed
+ * 	by the viewer manager
+ */
 public abstract class GraphEditorBase extends EditorPart implements IViewerEditor {
+	
+	// chart is used to plot graph or histogram on canvas. each editor has its own chart
     private Chart chart;
+    
+    // a database of an experiment containing raw metrics to plot
 	protected ThreadLevelDataManager threadData;
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void doSaveAs() {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -86,6 +95,10 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+	 */
 	public void createPartControl(Composite parent) {
 		
 		IEditorInput input = this.getEditorInput();
@@ -117,22 +130,28 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		//----------------------------------------------
 		// plot data
 		//----------------------------------------------
-		Experiment exp = editor_input.getDatabase().getExperiment();
 		Scope scope = editor_input.getScope();
 		MetricRaw metric = editor_input.getMetric();
 		
-		this.plotData(exp, scope, metric);
+		this.plotData(scope, metric);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.editor.IViewerEditor#resetPartName()
+	 */
 	public void resetPartName() {
-		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		final GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
 		final String name = input.getName();
 		this.setPartName(name);
 	}
 	
-	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.editor.IViewerEditor#getExperiment()
+	 */
 	public Experiment getExperiment() {
-		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		final GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
 		return input.getDatabase().getExperiment();
 	}
 
@@ -141,7 +160,12 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		return this.chart;
 	}
 
-	
-	protected abstract void plotData( Experiment exp, Scope scope, MetricRaw metric );
+	/**
+	 * method to plot a graph of a specific scope and metric of an experiment
+	 * 
+	 * @param scope: the scope to plot
+	 * @param metric: the raw metric to plot
+	 */
+	protected abstract void plotData(Scope scope, MetricRaw metric );
 
 }

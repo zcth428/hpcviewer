@@ -27,8 +27,6 @@ import edu.rice.cs.hpc.viewer.graph.GraphEditorPlot;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort;
 import edu.rice.cs.hpc.viewer.graph.GraphType;
 import edu.rice.cs.hpc.viewer.window.Database;
-import edu.rice.cs.hpc.viewer.window.ViewerWindow;
-import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * Basic class for scope views: calling context and caller view
@@ -195,8 +193,7 @@ public class ScopeView extends BaseScopeView {
 				// prepare to split the editor pane
 				boolean needNewPartition = BaseEditorManager.splitBegin(objPage, experiment);
 				
-				// support for multiple database in one window
-				ViewerWindow vWindow = ViewerWindowManager.getViewerWindow(window);
+				// get the database associated with this view
 				final Database database = getDatabase();
 				
 				String id = GraphEditorInput.getID(scope, metric, graph_type, database);

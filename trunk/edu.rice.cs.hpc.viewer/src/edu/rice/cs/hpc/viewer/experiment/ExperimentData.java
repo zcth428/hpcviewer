@@ -1,6 +1,6 @@
 package edu.rice.cs.hpc.viewer.experiment;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.viewer.window.Database;
 
 import org.eclipse.ui.IWorkbenchWindow;
 
@@ -18,7 +18,7 @@ import org.eclipse.ui.IWorkbenchWindow;
  *
  */
 public class ExperimentData {
-    private Experiment experimentActive;	// experiment data
+    //private Experiment experimentActive;	// experiment data
     private IWorkbenchWindow window;
     private ExperimentManager expManager;
     
@@ -43,7 +43,7 @@ public class ExperimentData {
 	 * Retrieve a global experiment data of a given workbench window
 	 * If the data doesn't exist, create it, otherwise return the existing data
 	 */
-	static public ExperimentData getInstance(IWorkbenchWindow w) {
+/*	static public ExperimentData getInstance(IWorkbenchWindow w) {
 		if (mapData.containsKey(w)) {
 			return mapData.get(w);
 		} else {
@@ -51,7 +51,7 @@ public class ExperimentData {
 			mapData.put(w, objData);
 			return objData;
 		}
-	}
+	}*/
 	/**
 	 * Retrieve the current experiment manager of this workbench window.
 	 * Remark: each workbench window has its own data and its own ExperimentManager
@@ -69,28 +69,31 @@ public class ExperimentData {
 	 * Update a new experiment data
 	 * @param experiment
 	 */
-	public void setExperiment(Experiment experiment) {
+/*	public void setExperiment(Experiment experiment) {
 		this.experimentActive = experiment;
-		threadsData = new ThreadLevelDataManager(experiment);
-	}
+	}*/
 	
 	/**
 	 * Retrieve the current active experiment
 	 * @return
 	 */
-	public Experiment getExperiment() {
+/*	public Experiment getExperiment() {
 		return this.experimentActive;
-	}
+	}*/
 	
 	/**
 	 * Get the XML filename
 	 * @return
 	 */
-	public String getFilename() {
+/*	public String getFilename() {
 		return this.experimentActive.getXMLExperimentFile().getAbsolutePath();
-	}
+	}*/
 	
 	public ThreadLevelDataManager getThreadLevelDataManager() {
 		return this.threadsData;
+	}
+	
+	public void setThreadLevelDataManager(Database database) {
+		threadsData = new ThreadLevelDataManager(database.getExperiment());
 	}
 }

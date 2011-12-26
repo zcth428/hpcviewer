@@ -5,12 +5,9 @@ import java.io.File;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.jface.dialogs.MessageDialog;
-
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 
@@ -35,8 +32,9 @@ public class MergeExperiment  implements IWorkbenchWindowActionDelegate {
 	 */
 	public void run(IAction action) {
 		// get the database to merge
-		ExperimentData expData = ExperimentData.getInstance(this.wParent);
-		ExperimentManager expManager= expData.getExperimentManager();
+		//ExperimentData expData = ExperimentData.getInstance(this.wParent);
+		final ExperimentManager expManager = new ExperimentManager(wParent); 
+				//expData.getExperimentManager();
 		File[] fileXML = expManager.getDatabaseFileList(this.wParent.getShell(),"Select a database to be augmented");
 		
 		// if the user click "Ok", then we have to find the XML file
@@ -49,7 +47,7 @@ public class MergeExperiment  implements IWorkbenchWindowActionDelegate {
 			// check if this is a valid database
 			if(exp2 != null) {
 				// create a new database by merging the current database with the new one
-				Experiment expNew = Experiment.merge(expData.getExperiment(), exp2);
+/*				Experiment expNew = Experiment.merge(expData.getExperiment(), exp2);
 				// merging process is successful ?
 				if(expNew != null) {
 					// display to user
@@ -61,7 +59,7 @@ public class MergeExperiment  implements IWorkbenchWindowActionDelegate {
 				} else {
 			    	// do not continue if the view is not available
 			    	MessageDialog.openError(this.wParent.getShell(), "Error", "Unable to merge the experiments.");
-				}
+				}*/
 			}
 		}
 	}

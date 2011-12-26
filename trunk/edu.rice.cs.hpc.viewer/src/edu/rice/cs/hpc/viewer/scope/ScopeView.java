@@ -26,6 +26,7 @@ import edu.rice.cs.hpc.viewer.graph.GraphEditorInput;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorPlot;
 import edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort;
 import edu.rice.cs.hpc.viewer.graph.GraphType;
+import edu.rice.cs.hpc.viewer.window.Database;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
@@ -75,7 +76,7 @@ public class ScopeView extends BaseScopeView {
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
 		if (scope != null && this.hasThreadsLevelData) {
 
-			ThreadLevelDataManager objDataManager = this.getExperimentData().getThreadLevelDataManager();
+			ThreadLevelDataManager objDataManager = this.database.getThreadLevelDataManager();
 
 			// return immediately if the experiment doesn't contain thread level data
 			if (!objDataManager.isDataAvailable())
@@ -187,7 +188,6 @@ public class ScopeView extends BaseScopeView {
 		public void run() {
 			IWorkbenchWindow window = getSite().getWorkbenchWindow();
 			IWorkbenchPage objPage = window.getActivePage();
-        	Experiment exp = getExperiment();
         	
 			try {
 				final Experiment experiment = this.scope.getExperiment();
@@ -197,13 +197,13 @@ public class ScopeView extends BaseScopeView {
 				
 				// support for multiple database in one window
 				ViewerWindow vWindow = ViewerWindowManager.getViewerWindow(window);
-				int database = 1+vWindow.getDbNum(experiment.getXMLExperimentFile().getPath());
+				final Database database = getDatabase();
 				
 				String id = GraphEditorInput.getID(scope, metric, graph_type, database);
 	        	GraphEditorInput objInput = getGraphEditorInput(id);
 	        	
 	        	if (objInput == null) {
-	        		objInput = new GraphEditorInput(exp, scope, metric, graph_type, database, window);
+	        		objInput = new GraphEditorInput(database, scope, metric, graph_type, window);
 	        	}
 	        	IEditorPart editor = null;
 	        	switch (graph_type) {

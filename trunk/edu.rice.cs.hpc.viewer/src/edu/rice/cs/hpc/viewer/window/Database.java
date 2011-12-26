@@ -2,11 +2,13 @@ package edu.rice.cs.hpc.viewer.window;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
+import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 
 public class Database {
 	private int winIndex;
 	private Experiment experiment;
 	private ExperimentView view;
+	private ThreadLevelDataManager dataManager;
 
 	/**
 	 *  get the index of the viewer window in which this database is displayed.
@@ -25,6 +27,14 @@ public class Database {
 		return experiment; //this.view.getExperimentData().getExperiment(); // 
 	}
 
+	/***
+	 * get the thread level data manager (used by plot graphs)
+	 * @return
+	 */
+	public ThreadLevelDataManager getThreadLevelDataManager() {
+		return dataManager;
+	}
+	
 	/**
 	 *  get the ExperimentView class used for this database
 	 * @param path
@@ -49,6 +59,7 @@ public class Database {
 	 */
 	public void setExperiment (Experiment exper) {
 		experiment = exper;
+		dataManager = new ThreadLevelDataManager(exper);
 		return;
 	}
 

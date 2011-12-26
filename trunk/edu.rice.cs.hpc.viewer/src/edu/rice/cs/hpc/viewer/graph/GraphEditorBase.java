@@ -7,7 +7,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.swtchart.IAxisSet;
@@ -20,7 +19,6 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 
 public abstract class GraphEditorBase extends EditorPart implements IViewerEditor {
@@ -45,10 +43,11 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 
 		this.setSite(site);
 		this.setInput(input);
-				
-		final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
-		final ExperimentData data = ExperimentData.getInstance(window);
-		threadData = data.getThreadLevelDataManager();
+		
+		if (input instanceof GraphEditorInput) {
+			final GraphEditorInput editorInput = (GraphEditorInput) input; 
+			threadData = editorInput.getDatabase().getThreadLevelDataManager();
+		}
 	}
 
 	@Override
@@ -118,7 +117,7 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		//----------------------------------------------
 		// plot data
 		//----------------------------------------------
-		Experiment exp = editor_input.getExperiment();
+		Experiment exp = editor_input.getDatabase().getExperiment();
 		Scope scope = editor_input.getScope();
 		MetricRaw metric = editor_input.getMetric();
 		
@@ -134,7 +133,7 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 	
 	public Experiment getExperiment() {
 		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
-		return input.getExperiment();
+		return input.getDatabase().getExperiment();
 	}
 
 	

@@ -2,11 +2,8 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 
 /**
  * 
@@ -33,7 +30,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         if (database == null)
         	return;
         
-        final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
         hasThreadsLevelData = database.getThreadLevelDataManager() != null;
         final Experiment myExperiment = database.getExperiment();
         

@@ -18,6 +18,8 @@ import edu.rice.cs.hpc.data.util.IProgressReport;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 
 /***
+ * manager class to handle raw metrics and its read to file
+ * All access to raw metrics (aka thread level data) has to use this file
  * 
  * @author laksonoadhianto
  *

@@ -13,7 +13,6 @@ import org.swtchart.ISeriesSet;
 import org.swtchart.LineStyle;
 import org.swtchart.ISeries.SeriesType;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -93,7 +92,7 @@ public abstract class GraphEditor extends GraphEditorBase {
 	 * @param scope
 	 * @param metric
 	 */
-	protected void plotData(Experiment exp, Scope scope, MetricRaw metric ) {
+	protected void plotData(Scope scope, MetricRaw metric ) {
 		
 		double y_values[] = this.getValuesY(threadData, scope, metric);
 		double []x_values;

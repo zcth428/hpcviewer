@@ -11,7 +11,6 @@ import org.swtchart.IAxisTick;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries.SeriesType;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
@@ -21,7 +20,7 @@ public class GraphEditorHisto extends GraphEditorBase {
     
 
 	@Override
-	protected void plotData(Experiment exp, Scope scope, MetricRaw metric) {
+	protected void plotData(Scope scope, MetricRaw metric) {
 		final int bins = 10;
 		
 		double y_values[], x_values[];

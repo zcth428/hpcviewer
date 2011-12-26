@@ -144,8 +144,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    			System.out.println("Opening database: " + fileStore.fetchInfo().getName() + " " + withCallerView);
 		    			// bug fix: needs to treat a folder/directory
 		    			// it is a directory
-		    			ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		    			ExperimentManager objManager = dataEx.getExperimentManager();
+		    			//ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		    			final ExperimentManager objManager = new ExperimentManager(this.workbench.getActiveWorkbenchWindow()); // dataEx.getExperimentManager();
 		    			objManager.openDatabaseFromDirectory(sPath, this.getFlag(withCallerView));
 		    		} else {
 		    			File objFile = new File(sPath);
@@ -177,8 +177,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * (only the first one will be taken into account)
 	 */
 	private void openDatabase( boolean withCallerView ) {
-		ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		ExperimentManager expFile = dataEx.getExperimentManager();
+		//ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
+		final ExperimentManager expFile = new ExperimentManager(this.workbench.getActiveWorkbenchWindow()); // dataEx.getExperimentManager();
 		boolean has_database = expFile.openFileExperiment( this.getFlag(withCallerView));
 
 		if (!has_database) {

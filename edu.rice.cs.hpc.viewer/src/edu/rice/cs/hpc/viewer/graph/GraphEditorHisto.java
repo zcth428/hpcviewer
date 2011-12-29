@@ -59,7 +59,7 @@ public class GraphEditorHisto extends GraphEditorBase {
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
 
-		chart.getAxisSet().getXAxis(0).getTitle().setText( "Metrics" );
+		chart.getAxisSet().getXAxis(0).getTitle().setText( "Metric Value" );
 		chart.getAxisSet().getYAxis(0).getTitle().setText( "Frequency" );
 	}
 

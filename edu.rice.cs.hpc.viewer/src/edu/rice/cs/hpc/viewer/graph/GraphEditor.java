@@ -118,7 +118,7 @@ public abstract class GraphEditor extends GraphEditorBase {
 		
 		String axis_x = this.getXAxisTitle( threadData.getThreadLevelDataFile(metric.getID()) );
 		chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );
-		chart.getAxisSet().getYAxis(0).getTitle().setText( "Metrics" );
+		chart.getAxisSet().getYAxis(0).getTitle().setText( "Metric Value" );
 	}
 
 	/***

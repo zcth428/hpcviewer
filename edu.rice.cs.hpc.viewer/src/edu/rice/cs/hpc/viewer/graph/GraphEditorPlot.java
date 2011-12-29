@@ -48,7 +48,7 @@ public class GraphEditorPlot extends GraphEditor {
 		IAxisSet axisSet = this.getChart().getAxisSet();
 		IAxisTick xTick = axisSet.getXAxis(0).getTick();
 
-		axis_x = "Processes";
+		axis_x = "Process";
 		xTick.setFormat(new DecimalFormat("##########"));
 
 		if (data.isHybrid()) 
@@ -56,7 +56,7 @@ public class GraphEditorPlot extends GraphEditor {
 			axis_x = "Process.Thread";
 			xTick.setFormat(new DecimalFormat("######00.00##"));			
 		} else if (data.isMultiThreading()) {
-			axis_x = "Threads";
+			axis_x = "Thread";
 			xTick.setFormat(new DecimalFormat("##########"));
 		}
 

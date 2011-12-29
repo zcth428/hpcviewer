@@ -50,7 +50,7 @@ public class GraphEditorPlotSort extends GraphEditor {
 
 	@Override
 	protected String getXAxisTitle(ThreadLevelDataFile data) {
-		return "Rank sequence";
+		return "Rank in Sorted Order";
 	}
 
 	

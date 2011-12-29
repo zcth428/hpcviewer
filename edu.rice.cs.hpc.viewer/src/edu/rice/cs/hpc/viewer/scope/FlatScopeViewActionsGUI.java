@@ -48,7 +48,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 */
 	public Composite buildGUI(Composite parent, CoolBar coolbar) {
 		// add toobar actions for flatten and unflatten
-		Composite c =  addTooBarAction(coolbar);
+		Composite c =  addToolBarAction(coolbar);
 		super.finalizeToolBar(parent, coolbar);
 		return c;
 	}
@@ -75,7 +75,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 * @param parent
 	 * @return
 	 */
-	public Composite addTooBarAction(CoolBar parent)  {
+	public Composite addToolBarAction(CoolBar parent)  {
     	// prepare the toolbar
     	ToolBar toolbar = new ToolBar(parent, SWT.FLAT);
     	Icons iconsCollection = Icons.getInstance();
@@ -110,7 +110,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 
     	// we need to add the parent's default actions
     	// Without this statement, the default actions disappear
-		Composite objComposite = super.addTooBarAction(parent);
+		Composite objComposite = super.addToolBarAction(parent);
     	
 		return objComposite;
 	}

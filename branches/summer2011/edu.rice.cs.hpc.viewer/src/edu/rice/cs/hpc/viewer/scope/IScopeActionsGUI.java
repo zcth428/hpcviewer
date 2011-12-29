@@ -29,7 +29,7 @@ public interface IScopeActionsGUI {
 	 * @param parent
 	 * @return
 	 */
-	public Composite addTooBarAction(CoolBar parent) ;
+	public Composite addToolBarAction(CoolBar parent) ;
 	
 	/**
 	 * IMPORTANT: need to call this method once the content of tree is changed !

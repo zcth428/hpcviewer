@@ -104,7 +104,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 * @return
 	 */
 	public Composite buildGUI(Composite parent, CoolBar coolbar) {
-		Composite newParent = this.addTooBarAction(coolbar);
+		Composite newParent = this.addToolBarAction(coolbar);
 		this.finalizeToolBar(parent, coolbar);
 		return newParent;
 	}
@@ -433,7 +433,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * @param aParent
      * @return Composite of the view. The tree should be based on this composite.
      */
-    public Composite addTooBarAction(CoolBar coolbar) {
+    public Composite addToolBarAction(CoolBar coolbar) {
     	// prepare the toolbar
     	ToolBar toolbar = new ToolBar(coolbar, SWT.FLAT);
     	Icons iconsCollection = Icons.getInstance();

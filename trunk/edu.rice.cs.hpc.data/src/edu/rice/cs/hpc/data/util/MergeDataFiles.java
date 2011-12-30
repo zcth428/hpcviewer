@@ -38,18 +38,17 @@ public class MergeDataFiles {
 	 * create a single file from multiple data files
 	 * 
 	 * @param directory
-	 * @param globInputFile
+	 * @param globInputFile: glob pattern
+	 * @param outputFile: output filename
 	 * 
 	 * @return
 	 * @throws IOException
 	 */
-	public static String merge(File directory, String globInputFile, String newSuffix, IProgressReport progress) throws IOException {
+	public static String merge(File directory, String globInputFile, String outputFile, IProgressReport progress) throws IOException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
 		final String suffix = globInputFile.substring(last_dot);
 
-		final String outputFile = directory.getAbsolutePath() + File.separatorChar + "experiment." + newSuffix;
-		
 		final File fout = new File(outputFile);
 		
 		// check if the file already exists
@@ -198,14 +197,18 @@ public class MergeDataFiles {
 	 */
 	static private boolean isMergedFileCorrect(String filename) throws IOException
 	{
-		RandomAccessFile f = new RandomAccessFile(filename, "r");
+		final RandomAccessFile f = new RandomAccessFile(filename, "r");
+		boolean isCorrect = false;
 		
 		final long pos = f.length() - Constants.SIZEOF_LONG;
-		f.seek(pos);
-		final long marker = f.readLong();
+		if (pos>0) {
+			f.seek(pos);
+			final long marker = f.readLong();
+			
+			isCorrect = (marker == MARKER_END_MERGED_FILE);
+		}
 		f.close();
-		
-		return (marker == MARKER_END_MERGED_FILE);
+		return isCorrect;
 	}
 	
 	static private boolean removeFiles(File files[])

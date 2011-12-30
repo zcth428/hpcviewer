@@ -217,7 +217,8 @@ public class TraceDatabase
 					statusMgr.setMessage("Merging traces ...");
 					
 					final TraceProgressReport traceReport = new TraceProgressReport(statusMgr);
-					final String traceFilename = MergeDataFiles.merge(dirFile, "*.hpctrace", "mt", traceReport);
+					final String outputFile = dirFile.getAbsolutePath() + File.separatorChar + "experiment.mt";
+					final String traceFilename = MergeDataFiles.merge(dirFile, "*.hpctrace", outputFile, traceReport);
 					location.fileTrace = new File(traceFilename);
 
 					if (location.fileTrace.length() > MIN_TRACE_SIZE) {

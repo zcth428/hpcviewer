@@ -2,8 +2,10 @@ package edu.rice.cs.hpc.viewer.experiment;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IViewSite;
@@ -28,12 +30,16 @@ public class ThreadLevelDataManager {
 
 	private ThreadLevelDataFile data_file[];
 	private Experiment experiment;
-	
+	private ThreadLevelDataCompatibility thread_data;
+
 	public ThreadLevelDataManager(Experiment exp) {
 		final MetricRaw []metrics = exp.getMetricRaw();
 		if (metrics!=null)
 			data_file = new ThreadLevelDataFile[metrics.length];
 		this.experiment = exp;
+		
+		thread_data = new ThreadLevelDataCompatibility();
+
 	}
 	
 	
@@ -137,40 +143,109 @@ public class ThreadLevelDataManager {
 	//==============================================================================================
 	// PRIVATE METHODS
 	//==============================================================================================
-
 	private void checkThreadsMetricDataFiles(int metric_raw_id) {
 		
 		File directory = new File(experiment.getXMLExperimentFile().getPath());
 		if (directory.isFile())
 			directory = new File(directory.getParent());
-		
-		MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
-		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		final IWorkbenchPartSite site = window.getActivePage().getActivePart().getSite();
-		
-		IStatusLineManager statusLine = null;
-		
-		// --------------------------------------------------------------
-		// the current active site can be either editor or view
-		// if none of them is active, then we have nothing
-		// --------------------------------------------------------------
-		if (site instanceof IViewSite)
-			statusLine = ((IViewSite)site).getActionBars().getStatusLineManager();
-		else if (site instanceof IEditorPart)
-			statusLine = ((IEditorSite)site).getActionBars().getStatusLineManager();
-		
+
 		try {
-			// the compact method will return the name of the compacted files.
-			// if the file doesn't exist, it will be created automatically
-			final String file = MergeDataFiles.merge(directory, metric.getGlob(), "mdb", new ProgressReport(statusLine));
-			
+			String file = thread_data.getMergedFile(directory, metric_raw_id);
+			// keep it for later uses
 			data_file[metric_raw_id] = new ThreadLevelDataFile(file);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+			
 	}
 
+	
+	/**
+	 * class to cache the name of merged thread-level data files. 
+	 * We will ask A LOT the name of merged files, thus keeping in cache will avoid us to check to often
+	 * if the merged file already exist or not
+	 * 
+	 * The class also check compatibility with the old version.
+	 *
+	 */
+	private class ThreadLevelDataCompatibility {
+		
+		private HashMap<String, String> listOfFiles;
+		
+		public ThreadLevelDataCompatibility() {
+			listOfFiles = new HashMap<String, String>();
+		}
+		
+		/**
+		 * method to find the name of file for a given metric ID. 
+		 * If the files are not merged, it will be merged automatically
+		 * 
+		 * The name of the merge file will depend on the glob pattern
+		 * 
+		 * @param directory
+		 * @param metric_raw_id
+		 * @return
+		 * @throws IOException
+		 */
+		public String getMergedFile(File directory, int metric_raw_id) throws IOException {
+			
+			final MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
+			final String globInputFile = metric.getGlob();
+			
+			final int firstStar = globInputFile.indexOf('*');
+			final String outputFile = directory.getAbsolutePath() + File.separatorChar + 
+					"experiment-" + globInputFile.substring(0, firstStar) + "mdb";
+
+			String cacheFileName = this.listOfFiles.get(outputFile);
+			
+			if (cacheFileName == null) {
+				
+				final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+
+				// check with the old version of thread level data
+				this.checkOldVersionOfData(directory);
+
+				final IWorkbenchPartSite site = window.getActivePage().getActivePart().getSite();
+				
+				IStatusLineManager statusLine = null;
+				
+				// --------------------------------------------------------------
+				// the current active site can be either editor or view
+				// if none of them is active, then we have nothing
+				// --------------------------------------------------------------
+				if (site instanceof IViewSite)
+					statusLine = ((IViewSite)site).getActionBars().getStatusLineManager();
+				else if (site instanceof IEditorPart)
+					statusLine = ((IEditorSite)site).getActionBars().getStatusLineManager();
+				
+				// the compact method will return the name of the compacted files.
+				// if the file doesn't exist, it will be created automatically
+				cacheFileName = MergeDataFiles.merge(directory, globInputFile, outputFile, new ProgressReport(statusLine));
+				
+				if (cacheFileName != null)
+					this.listOfFiles.put(outputFile, cacheFileName);
+
+			}
+			return cacheFileName;
+		}
+		
+		private void checkOldVersionOfData(File directory) {
+			
+			String oldFile = directory.getAbsolutePath() + File.separatorChar + "experiment.mdb"; 
+			File file = new File(oldFile);
+			
+			if (file.canRead()) {
+				// old file already exist, needs to warn the user
+				final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				MessageDialog.openWarning(window.getShell(), "Warning ! Old version of metric data file",
+						"hpcviewer has detected the presence of an old version of metric data file:\n 'experiment.mdb'\n in the directory:\n "
+						+ directory.getPath() + "\nIt is highly suggested to remove the file and replace it with the original *.metric-db files from hpcprof-mpi.");
+			}
+		}
+	}
+	
+	
 	/*******************
 	 * Progress bar
 	 * @author laksonoadhianto
@@ -186,16 +261,20 @@ public class ThreadLevelDataManager {
 		}
 		
 		public void begin(String title, int num_tasks) {
-			statusLine.setMessage("Starting " + title);
-			statusLine.getProgressMonitor().beginTask(title, num_tasks);
+			if (statusLine != null) {
+				statusLine.setMessage("Starting " + title);
+				statusLine.getProgressMonitor().beginTask(title, num_tasks);
+			}
 		}
 
 		public void advance() {
-			statusLine.getProgressMonitor().worked(1);
+			if (statusLine != null) 
+				statusLine.getProgressMonitor().worked(1);
 		}
 
 		public void end() {
-			statusLine.getProgressMonitor().done();
+			if (statusLine != null) 
+				statusLine.getProgressMonitor().done();
 		}
 		
 	}

@@ -218,15 +218,19 @@ public class TraceDatabase
 					
 					final TraceProgressReport traceReport = new TraceProgressReport(statusMgr);
 					final String outputFile = dirFile.getAbsolutePath() + File.separatorChar + "experiment.mt";
-					final String traceFilename = MergeDataFiles.merge(dirFile, "*.hpctrace", outputFile, traceReport);
-					location.fileTrace = new File(traceFilename);
+					final MergeDataFiles.MergeDataAttribute att = MergeDataFiles.merge(dirFile, "*.hpctrace", outputFile, traceReport);
+					if (att != MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA) {
+						location.fileTrace = new File(outputFile);
 
-					if (location.fileTrace.length() > MIN_TRACE_SIZE) {
-						return true;
+						if (location.fileTrace.length() > MIN_TRACE_SIZE) {
+							return true;
+						} else {
+							System.err.println("Warning! Trace file " + location.fileTrace.getName() + " is too small: " 
+									+ location.fileTrace.length() + "bytes .");
+							return false;
+						}
 					} else {
-						System.err.println("Warning! Trace file " + location.fileTrace.getName() + " is too small: " 
-								+ location.fileTrace.length() + "bytes .");
-						return false;
+						System.err.println("Error: trace file(s) does not exist or fail to open " + outputFile);
 					}
 
 				} 

@@ -194,7 +194,7 @@ public class ThreadLevelDataManager {
 			final String globInputFile = metric.getGlob();
 			
 			final int firstStar = globInputFile.indexOf('*');
-			final String outputFile = directory.getAbsolutePath() + File.separatorChar + 
+			String outputFile = directory.getAbsolutePath() + File.separatorChar + 
 					"experiment-" + globInputFile.substring(0, firstStar) + "mdb";
 
 			String cacheFileName = this.listOfFiles.get(outputFile);
@@ -219,12 +219,22 @@ public class ThreadLevelDataManager {
 				else if (site instanceof IEditorPart)
 					statusLine = ((IEditorSite)site).getActionBars().getStatusLineManager();
 				
+				final ProgressReport progress= new ProgressReport(statusLine);
+				
 				// the compact method will return the name of the compacted files.
 				// if the file doesn't exist, it will be created automatically
-				cacheFileName = MergeDataFiles.merge(directory, globInputFile, outputFile, new ProgressReport(statusLine));
+				MergeDataFiles.MergeDataAttribute att = MergeDataFiles.merge(directory, 
+						globInputFile, outputFile, progress);
 				
-				if (cacheFileName != null)
-					this.listOfFiles.put(outputFile, cacheFileName);
+				if (att == MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA) {
+					// the data doesn't exist. Let's try to use experiment.mdb for compatibility with the old version
+					outputFile = "experiment.mdb";
+					att = MergeDataFiles.merge(directory, globInputFile, outputFile, progress);
+					
+					if (att == MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA)
+						return null;
+				}
+				this.listOfFiles.put(outputFile, cacheFileName);
 
 			}
 			return cacheFileName;

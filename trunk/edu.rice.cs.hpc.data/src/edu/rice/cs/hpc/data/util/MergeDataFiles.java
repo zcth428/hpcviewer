@@ -33,6 +33,7 @@ public class MergeDataFiles {
 	private static final int PROC_POS = 5;
 	private static final int THREAD_POS = 4;
 	
+	public enum MergeDataAttribute {SUCCESS_MERGED, SUCCESS_ALREADY_CREATED, FAIL_NO_DATA};
 	
 	/***
 	 * create a single file from multiple data files
@@ -44,7 +45,7 @@ public class MergeDataFiles {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String merge(File directory, String globInputFile, String outputFile, IProgressReport progress) throws IOException {
+	static public MergeDataAttribute merge(File directory, String globInputFile, String outputFile, IProgressReport progress) throws IOException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
 		final String suffix = globInputFile.substring(last_dot);
@@ -55,7 +56,7 @@ public class MergeDataFiles {
 		if (fout.canRead() )
 		{
 			if (isMergedFileCorrect(outputFile))			
-				return outputFile;
+				return MergeDataAttribute.SUCCESS_ALREADY_CREATED;
 			
 			// the file exists but corrupted. In this case, we have to remove and create a new one
 			fout.delete();
@@ -75,7 +76,7 @@ public class MergeDataFiles {
 		
 		File[] file_metric = directory.listFiles( new Util.FileThreadsMetricFilter(globInputFile) );
 		if (file_metric == null)
-			return null;
+			return MergeDataAttribute.FAIL_NO_DATA;
 		
 		progress.begin("Merging files", file_metric.length);
 		
@@ -169,7 +170,7 @@ public class MergeDataFiles {
 		
 		progress.end();
 		
-		return outputFile;
+		return MergeDataAttribute.SUCCESS_MERGED;
 
 	}
 	

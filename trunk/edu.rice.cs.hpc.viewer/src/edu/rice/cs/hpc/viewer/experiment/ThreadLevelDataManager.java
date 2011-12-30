@@ -151,6 +151,9 @@ public class ThreadLevelDataManager {
 
 		try {
 			String file = thread_data.getMergedFile(directory, metric_raw_id);
+			if (file == null)
+				throw new IOException("Trace file does not exist in " + directory.getAbsolutePath());
+			
 			// keep it for later uses
 			data_file[metric_raw_id] = new ThreadLevelDataFile(file);
 			
@@ -193,14 +196,29 @@ public class ThreadLevelDataManager {
 			final MetricRaw metric = experiment.getMetricRaw()[metric_raw_id];
 			final String globInputFile = metric.getGlob();
 			
-			final int firstStar = globInputFile.indexOf('*');
-			String outputFile = directory.getAbsolutePath() + File.separatorChar + 
-					"experiment-" + globInputFile.substring(0, firstStar) + "mdb";
+			// assuming the number of merged experiments is less than 10
+			final char experiment_char = globInputFile.charAt(0);
+			int experiment_id = 1;
+			
+			if (experiment_char>='0' && experiment_char<='9') {
+				experiment_id = Integer.valueOf(experiment_char);
+			}
+			
+			// ------------------------------------------------------------------------------------
+			// given the metric raw id, reconstruct the name of raw metric data file
+			// for instance, if raw metric id = 1, then the file should be experiment-1.mdb
+			// ------------------------------------------------------------------------------------
+			final String outputFile = directory.getAbsolutePath() + File.separatorChar + 
+					"experiment-" + experiment_id + ".mdb";
 
+			// check if the file is already merged
 			String cacheFileName = this.listOfFiles.get(outputFile);
 			
 			if (cacheFileName == null) {
 				
+				// ----------------------------------------------------------
+				// the file doesn't exist, we need to merge metric-db files
+				// ----------------------------------------------------------
 				final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
 				// check with the old version of thread level data
@@ -221,18 +239,24 @@ public class ThreadLevelDataManager {
 				
 				final ProgressReport progress= new ProgressReport(statusLine);
 				
+				// ------------------------------------------------------------------------------------
 				// the compact method will return the name of the compacted files.
 				// if the file doesn't exist, it will be created automatically
+				// ------------------------------------------------------------------------------------
 				MergeDataFiles.MergeDataAttribute att = MergeDataFiles.merge(directory, 
 						globInputFile, outputFile, progress);
 				
 				if (att == MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA) {
+					// ------------------------------------------------------------------------------------
 					// the data doesn't exist. Let's try to use experiment.mdb for compatibility with the old version
-					outputFile = "experiment.mdb";
-					att = MergeDataFiles.merge(directory, globInputFile, outputFile, progress);
+					// ------------------------------------------------------------------------------------
+					cacheFileName =  directory.getAbsolutePath() + File.separatorChar + "experiment.mdb";
+					att = MergeDataFiles.merge(directory, globInputFile, cacheFileName, progress);
 					
 					if (att == MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA)
 						return null;
+				} else {
+					cacheFileName = outputFile;
 				}
 				this.listOfFiles.put(outputFile, cacheFileName);
 

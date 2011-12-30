@@ -32,6 +32,7 @@ public class MergeDataFiles {
 	
 	private static final int PROC_POS = 5;
 	private static final int THREAD_POS = 4;
+	private static final int MIN_FILE_SIZE = Constants.SIZEOF_LONG + (Constants.SIZEOF_INT*4);
 	
 	public enum MergeDataAttribute {SUCCESS_MERGED, SUCCESS_ALREADY_CREATED, FAIL_NO_DATA};
 	
@@ -62,6 +63,11 @@ public class MergeDataFiles {
 			fout.delete();
 		}
 		
+		// check if the files in glob patterns is correct
+		File[] file_metric = directory.listFiles( new Util.FileThreadsMetricFilter(globInputFile) );
+		if (file_metric == null || file_metric.length<1)
+			return MergeDataAttribute.FAIL_NO_DATA;
+		
 		FileOutputStream fos = new FileOutputStream(outputFile);
 		DataOutputStream dos = new DataOutputStream(fos);
 		
@@ -73,10 +79,6 @@ public class MergeDataFiles {
 
 		int type = 0;
 		dos.writeInt(type);
-		
-		File[] file_metric = directory.listFiles( new Util.FileThreadsMetricFilter(globInputFile) );
-		if (file_metric == null)
-			return MergeDataAttribute.FAIL_NO_DATA;
 		
 		progress.begin("Merging files", file_metric.length);
 		
@@ -200,6 +202,11 @@ public class MergeDataFiles {
 	{
 		final RandomAccessFile f = new RandomAccessFile(filename, "r");
 		boolean isCorrect = false;
+		
+		final long len = f.length();
+		
+		if (len<MIN_FILE_SIZE)
+			return false;
 		
 		final long pos = f.length() - Constants.SIZEOF_LONG;
 		if (pos>0) {

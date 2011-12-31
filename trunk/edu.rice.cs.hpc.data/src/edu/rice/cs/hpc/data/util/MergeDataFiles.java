@@ -80,7 +80,7 @@ public class MergeDataFiles {
 		int type = 0;
 		dos.writeInt(type);
 		
-		progress.begin("Merging files", file_metric.length);
+		progress.begin("Merging data files ...", file_metric.length);
 		
 		// on linux, we have to sort the files
 		java.util.Arrays.sort(file_metric);

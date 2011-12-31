@@ -201,7 +201,7 @@ public class ThreadLevelDataManager {
 			int experiment_id = 1;
 			
 			if (experiment_char>='0' && experiment_char<='9') {
-				experiment_id = Integer.valueOf(experiment_char);
+				experiment_id = experiment_char - '0';
 			}
 			
 			// ------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer.app" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer.application" version="5.2.0" useFeatures="false" includeLaunchers="true">
+<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer.app" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer.application" version="5.2.1" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="icons/hpcviewerEclipseShadow128.png"/>
@@ -42,7 +42,6 @@ Release 5.2.0 (C) Copyright 2011, Rice University.
             winLargeHigh="/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>

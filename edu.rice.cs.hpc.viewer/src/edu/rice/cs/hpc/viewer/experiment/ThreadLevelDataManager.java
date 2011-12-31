@@ -296,7 +296,8 @@ public class ThreadLevelDataManager {
 		
 		public void begin(String title, int num_tasks) {
 			if (statusLine != null) {
-				statusLine.setMessage("Starting " + title);
+				statusLine.setMessage(title);
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().update();
 				statusLine.getProgressMonitor().beginTask(title, num_tasks);
 			}
 		}

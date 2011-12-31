@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.util;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.ui.PlatformUI;
 
 import edu.rice.cs.hpc.data.util.IProgressReport;
 
@@ -15,6 +16,7 @@ public class TraceProgressReport implements IProgressReport
 	
 	public void begin(String title, int num_tasks) {
 		_statusMgr.setMessage(title);
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().update();
 		_statusMgr.getProgressMonitor().beginTask("Starting: "+title, num_tasks);
 	}
 

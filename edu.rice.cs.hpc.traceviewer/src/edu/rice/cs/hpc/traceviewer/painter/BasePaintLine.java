@@ -45,6 +45,9 @@ public abstract class BasePaintLine
 		//int succDepth = Math.min(depth, succSample.getSize()-1);
 		//String succFunction = succSample.getFunctionName(succDepth);
 		CallPath cp = ptl.getCallPath(0, depth);
+		if (cp==null)
+			return;
+		
 		int succDepth = cp.getCurrentDepth();
 		String succFunction = cp.getCurrentDepthScope().getName();
 		Color succColor = colorTable.getColor(succFunction);

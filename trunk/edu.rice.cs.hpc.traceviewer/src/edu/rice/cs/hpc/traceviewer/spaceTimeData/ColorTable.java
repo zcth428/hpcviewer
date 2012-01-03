@@ -72,22 +72,42 @@ public class ColorTable implements IProcedureTable
 		//This is where the data file is converted to the colorTable using colorMatcher.
 		//creates name-function-color colorMatcher for each function.
 		colorMatcher = new HashMap<String,ColorImagePair>();
-		Random red = new Random((long)612543231);
-		Random blue = new Random((long)91028735);
-		Random green = new Random((long)19238479);
-		
-		for(int l=0;l<procNames.size();l++)
-		{
-			String procName = procNames.get(l);
-
-			if(procName!=CallPath.NULL_FUNCTION)
-			{
-				Color c = new Color(display, red.nextInt(200),green.nextInt(200),blue.nextInt(200));
-				colorMatcher.put(procName, new ColorImagePair(c));
+		if (true) {
+			// rework the color assignment to use a single random number stream
+			Random r = new Random((long)612543231);
+			int cmin = 16;
+			int cmax = 200 - cmin;
+			for (int l=0; l<procNames.size(); l++) {
+				String procName = procNames.get(l);
+				if (procName != CallPath.NULL_FUNCTION) {
+					Color c = new Color(display, 
+								cmin + r.nextInt(cmax), 
+								cmin + r.nextInt(cmax), 
+								cmin + r.nextInt(cmax));
+					colorMatcher.put(procName, new ColorImagePair(c));
+				} else {
+					colorMatcher.put(procName, IMAGE_WHITE);
+				}
 			}
-			else
+
+		} else {
+			Random red = new Random((long)612543231);
+			Random blue = new Random((long)91028735);
+			Random green = new Random((long)19238479);
+
+			for(int l=0;l<procNames.size();l++)
 			{
-				colorMatcher.put(procName, IMAGE_WHITE);
+				String procName = procNames.get(l);
+
+				if(procName!=CallPath.NULL_FUNCTION)
+				{
+					Color c = new Color(display, red.nextInt(200),green.nextInt(200),blue.nextInt(200));
+					colorMatcher.put(procName, new ColorImagePair(c));
+				}
+				else
+				{
+					colorMatcher.put(procName, IMAGE_WHITE);
+				}
 			}
 		}
 	}

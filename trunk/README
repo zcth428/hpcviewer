@@ -48,19 +48,19 @@ More information can be found at
 
 Download required software:
 
-    * Eclipse at least 3.6 (Helios) version
+    * Eclipse at least 3.7 (Indigo) version
           o RCP package is necessary  
-    * Either subclipse or subversive (recommended):
+    * Either subclipse or subversive (the latter is recommended):
           o Subclipse (ver. 1.6 or above) depending the subversion client version
           o Subversive 
-    * Java JDK (ver 1.5 or above). SUN or IBM JDK is recommended
+    * Java JDK (ver 1.5 or above). SUN or IBM (IceTea) JDK is recommended
 
 
-Install Eclipse subversion subclipse (or subversive):
+Install Eclipse subversion plugin (or subversive):
     o (If you use subclipse, see the subclipse installation website for more details)
-    o Go to *Help - Software updates - Find and Install*
-    o Choose *Search for new features to install*, then click Next
-    o Click *New remote site*, and set the URL as http://subclipse.tigris.org/update_1.6.x
+    o Go to *Help* - *Install New Software ...* menu
+    o On Work with combobox, choose *Indigo - http://download.eclipse.org/releases/indigo*
+    o Check the node Collaboration - Subversive SVN Team Developer
     o Go *Next*, then confirm the license aggreement and click *Finish*. 
 
 Check out the source code
@@ -96,7 +96,8 @@ Exporting hpcviewer
 
     * Under edu.rice.cs.hpc.viewer project, open the product configuration: hpcviewer.product
     * Fill the Root directory and Destination directory fields, then click Finish 
-
+    * To export to another platform, you need Eclipse delta pack. A How-to of delta pack installation
+	can be seen at http://www.vogella.de/articles/EclipsePDEBuild/ar01s02.html
 
 Installing hpcviewer
 ===================

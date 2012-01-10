@@ -104,7 +104,10 @@ public class BaseDataFile {
 			{
 				x_val = String.valueOf(thread_id);
 			} else {
-				x_val = "unknown";
+				// temporary fix: if the application is neither hybrid nor multiproc nor multithreads,
+				// we just print whatever the order of file name alphabetically
+				// this is not the ideal solution, but we cannot trust the value of proc_id and thread_id
+				x_val = String.valueOf(i);
 			}
 			
 			valuesX[i] = x_val;

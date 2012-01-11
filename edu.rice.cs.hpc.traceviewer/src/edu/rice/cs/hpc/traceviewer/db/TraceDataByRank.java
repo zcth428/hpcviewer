@@ -75,23 +75,28 @@ public class TraceDataByRank {
 			//fills in the rest of the data for this process timeline
 			this.binaryFill(startLoc, endLoc, 0, numPixelH, 0, pixelLength, timeStart);
 			
-			// get the last data
-			final TimeCPID dataLast = this.getData(endLoc);
-			this.addSample(listcpid.size(), dataLast);
-			
-			// get the first data if necessary
-			final TimeCPID dataFirst = this.getData(startLoc);
-			if (listcpid.get(0).timestamp != dataFirst.timestamp) {
-				this.addSample(0, dataFirst);
-			}
 		}
 		
+		// --------------------------------------------------------------------------------------------------
+		// get the last data if necessary: the rightmost time is still less then the upper limit
+		// 	I think we can add the rightmost data into the list of samples
+		// --------------------------------------------------------------------------------------------------
+		if (endLoc < this.maxloc) {
+			final TimeCPID dataLast = this.getData(endLoc);
+			this.addSample(listcpid.size(), dataLast);
+		}
+		
+		// --------------------------------------------------------------------------------------------------
+		// get the first data if necessary: the leftmost time is still bigger than the lower limit
+		//	similarly, we add to the list 
+		// --------------------------------------------------------------------------------------------------
+		if ( startLoc>minloc ) {
+			final TimeCPID dataFirst = this.getData(startLoc-SIZE_OF_TRACE_RECORD);
+			this.addSample(0, dataFirst);
+		}
+
 		postProcess();
 		
-		debugPrint("getData(): t1: "+timeStart+", tr: "+timeRange+", numPixelH: " + numPixelH +
-				", pixelLength: " + pixelLength + ", numRec: " + numRec);
-		//dump();
-		//dumpFile(startLoc, endLoc);
 	}
 	
 	
@@ -243,7 +248,21 @@ public class TraceDataByRank {
 			
 			mid = (low+high)/2;
 		}
-		return getAbsoluteLocation(low);
+		// check the closest midpoint
+		final long low_abs = getAbsoluteLocation(low);
+		final long high_abs = getAbsoluteLocation(high);
+		
+		final double low_time = masterBuff.getLong(low_abs);
+		final double high_time = masterBuff.getLong(high_abs);
+		
+		final boolean is_left_closer = Math.abs(time-low_time) < Math.abs(high_time-time);
+
+		if ( is_left_closer )
+			return low_abs;
+		else if (high_abs < this.maxloc)
+			return high_abs;
+		else
+			return this.maxloc;
 	}
 	
 	
@@ -290,6 +309,8 @@ public class TraceDataByRank {
 		final double time = masterBuff.getLong(location);
 		final int cpid = masterBuff.getInt(location+Constants.SIZEOF_LONG);
 
+		if (cpid < 0)
+			System.err.println();
 		return new TimeCPID(time,cpid);
 	}
 	
@@ -314,31 +335,7 @@ public class TraceDataByRank {
 			}
 		}
 	}
-	
-
-	private void dump() {
-		System.out.println("DumpCPID");
-		for (int i=0; i<this.listcpid.size(); i++) {
-			final TimeCPID cpid = this.listcpid.get(i);
-			System.out.println(cpid.timestamp+"\t" + cpid.cpid);
-		}
-	}
-	
-	private void dumpFile(long start, long end) {
-		System.out.println("dumpAllFile");
-		for(long i=start;i<end; ) {
-			TimeCPID tcpid = getData(i);
-			System.out.println(tcpid.timestamp + "\t" + tcpid.cpid);
-			i =  i + Constants.SIZEOF_INT + Constants.SIZEOF_LONG;
-		}
-	}
-	
-	private void debugPrint(String sMsg) {
-		if (debug) {
-			System.out.println(sMsg);
-		}
-	}
-	
+		
 	/***
 	 * struct object of time and CPID pair
 	 * 

@@ -10,8 +10,6 @@ public class TraceDataByRank {
 
 	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
 	public final static byte SIZE_OF_TRACE_RECORD = 12;
-
-	final private boolean debug = false;
 	
 	final private BaseDataFile data;
 	final private int rank;
@@ -309,8 +307,6 @@ public class TraceDataByRank {
 		final double time = masterBuff.getLong(location);
 		final int cpid = masterBuff.getInt(location+Constants.SIZEOF_LONG);
 
-		if (cpid < 0)
-			System.err.println();
 		return new TimeCPID(time,cpid);
 	}
 	

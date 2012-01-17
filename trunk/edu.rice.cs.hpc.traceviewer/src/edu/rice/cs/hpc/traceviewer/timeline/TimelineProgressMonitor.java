@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.swt.widgets.Shell;
 
 public class TimelineProgressMonitor {
 
@@ -19,11 +20,15 @@ public class TimelineProgressMonitor {
 		progress = new AtomicInteger();
 	}
 	
-	public void beginProgress(int totalWork, String sMessage, String sTask)
+	public void beginProgress(int totalWork, String sMessage, String sTask, Shell shell)
 	{
 		progress.set(0);
 		statusMgr.setMessage(sMessage);
-		// shell.update();
+		
+		// quick fix to force UI to show the message.
+		// we need a smarter way to do this. If the work is small, no need to refresh UI
+		shell.update();
+		
 		monitor.beginTask(sTask, totalWork);
 	}
 	

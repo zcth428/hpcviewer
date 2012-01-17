@@ -247,7 +247,7 @@ public class SpaceTimeData extends TraceEvents
 
 		attributes.lineNum = 0;
 		
-		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr) {
+		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.shell) {
 
 			@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
@@ -290,7 +290,7 @@ public class SpaceTimeData extends TraceEvents
 		dtProcess = currentPosition.process;
 		oldAttributes.copy(attributes);
 		
-		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr) {
+		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.shell) {
 
 			@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {

@@ -1,6 +1,8 @@
-package edu.rice.cs.hpc.data.experiment.extdata;
+package edu.rice.cs.hpc.viewer.metric;
 
 import java.io.IOException;
+
+import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 

@@ -2,7 +2,7 @@ package edu.rice.cs.hpc.viewer.window;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
-import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
 
 public class Database {
 	private int winIndex;

@@ -19,7 +19,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
-import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
 
 
 /**

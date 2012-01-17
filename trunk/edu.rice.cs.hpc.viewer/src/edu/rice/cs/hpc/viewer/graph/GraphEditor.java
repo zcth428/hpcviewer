@@ -13,11 +13,11 @@ import org.swtchart.ISeriesSet;
 import org.swtchart.LineStyle;
 import org.swtchart.ISeries.SeriesType;
 
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
 import edu.rice.cs.hpc.viewer.framework.Activator;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataFile;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
 
 public abstract class GraphEditor extends GraphEditorBase {

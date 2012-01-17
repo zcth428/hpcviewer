@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.experiment;
+package edu.rice.cs.hpc.viewer.metric;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.util.IProgressReport;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;

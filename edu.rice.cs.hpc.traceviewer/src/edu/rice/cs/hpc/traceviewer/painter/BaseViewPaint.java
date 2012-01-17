@@ -1,6 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.swt.widgets.Shell;
+
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
@@ -24,7 +26,7 @@ public abstract class BaseViewPaint {
 	final private TimelineProgressMonitor monitor;
 	
 	protected int lineNum;
-	
+	private final Shell _shell;
 	
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -36,12 +38,13 @@ public abstract class BaseViewPaint {
 	 * @param _monitor: progress monitor
 	 */
 	public BaseViewPaint(SpaceTimeData _data, ImageTraceAttributes _attributes, boolean _changeBound, 
-			IStatusLineManager _statusMgr) 
+			IStatusLineManager _statusMgr, Shell shell) 
 	{
 		data = _data;
 		attributes = _attributes;
 		changedBounds = _changeBound;
 		monitor = new TimelineProgressMonitor(_statusMgr );
+		_shell = shell;
 	}
 	
 	/**********************************************************************************
@@ -58,8 +61,8 @@ public abstract class BaseViewPaint {
 		int linesToPaint = getNumberOfLines();
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
 		
-		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting");
-
+		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting", _shell);
+		
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------

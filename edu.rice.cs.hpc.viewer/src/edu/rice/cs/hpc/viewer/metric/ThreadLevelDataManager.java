@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.util.IProgressReport;
@@ -131,7 +132,7 @@ public class ThreadLevelDataManager {
 		}
 		
 		ThreadLevelDataFile data = this.data_file[metric_glob_id];
-		return data.getMetrics(node_index, metric.getRawID(), metric.getSize());
+		return data.getMetrics(node_index, metric.getRawID(), metric.getSize(), Util.getActiveStatusLineManager());
 	}
 
 	
@@ -162,6 +163,7 @@ public class ThreadLevelDataManager {
 			
 	}
 
+	
 	
 	/**
 	 * class to cache the name of merged thread-level data files. 
@@ -218,25 +220,10 @@ public class ThreadLevelDataManager {
 				// ----------------------------------------------------------
 				// the file doesn't exist, we need to merge metric-db files
 				// ----------------------------------------------------------
-				final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-
 				// check with the old version of thread level data
 				this.checkOldVersionOfData(directory);
-
-				final IWorkbenchPartSite site = window.getActivePage().getActivePart().getSite();
 				
-				IStatusLineManager statusLine = null;
-				
-				// --------------------------------------------------------------
-				// the current active site can be either editor or view
-				// if none of them is active, then we have nothing
-				// --------------------------------------------------------------
-				if (site instanceof IViewSite)
-					statusLine = ((IViewSite)site).getActionBars().getStatusLineManager();
-				else if (site instanceof IEditorPart)
-					statusLine = ((IEditorSite)site).getActionBars().getStatusLineManager();
-				
-				final ProgressReport progress= new ProgressReport(statusLine);
+				final ProgressReport progress= new ProgressReport( Util.getActiveStatusLineManager() );
 				
 				// ------------------------------------------------------------------------------------
 				// the compact method will return the name of the compacted files.

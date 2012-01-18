@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.core.filesystem,
+Import-Package: edu.rice.cs.hpc.common.ui,
+ org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.jface.util,
  org.eclipse.swt.graphics,

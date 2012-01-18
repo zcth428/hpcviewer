@@ -6,10 +6,6 @@ import java.util.HashMap;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
@@ -132,7 +128,10 @@ public class ThreadLevelDataManager {
 		}
 		
 		ThreadLevelDataFile data = this.data_file[metric_glob_id];
-		return data.getMetrics(node_index, metric.getRawID(), metric.getSize(), Util.getActiveStatusLineManager());
+		if (data != null)
+			return data.getMetrics(node_index, metric.getRawID(), metric.getSize(), Util.getActiveStatusLineManager());
+		else
+			return null;
 	}
 
 	
@@ -152,7 +151,7 @@ public class ThreadLevelDataManager {
 		try {
 			String file = thread_data.getMergedFile(directory, metric_raw_id);
 			if (file == null)
-				throw new IOException("Trace file does not exist in " + directory.getAbsolutePath());
+				throw new IOException("Data file does not exist in " + directory.getAbsolutePath());
 			
 			// keep it for later uses
 			data_file[metric_raw_id] = new ThreadLevelDataFile(file);

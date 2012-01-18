@@ -24,8 +24,9 @@ Contents:
 
 hpcviewer is the presentation layer of HPCToolkit which is a suite of tools
 for measurement and analysis of program performance.
-hpcviewer contains three plug-in projects:
+hpcviewer contains four plug-in projects:
 
+ edu.rice.cs.hpc.common (common plugin for hpcviewer and hpctraceviewer)
  edu.rice.cs.hpc.data (hpcdata)
  edu.rice.cs.hpc.viewer (hpcviewer)
  edu.rice.cs.hpc.traceviewer (hpctraceviewer)
@@ -74,6 +75,7 @@ Check out the source code
     * When the window "Check out as" appears, check the option "Find projects in the children of the selected resource"
     * Make sure all three projects are selected: 
 
+    edu.rice.cs.hpc.common
     edu.rice.cs.hpc.data 
     edu.rice.cs.hpc.viewer 
     edu.rice.cs.hpc.traceviewer 
@@ -172,6 +174,6 @@ Documentation:
   N.B.: See especially the "Quick Start" chapter of the Users Manual.
 
 Email (for compliments, complaints and cash):
-  hpc <at> cs.rice.edu
+  hpctoolkit-team <at> mailman.rice.edu 
 
 

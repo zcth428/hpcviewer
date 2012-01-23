@@ -32,35 +32,41 @@ public class MergeDataFiles {
 	
 	private static final int PROC_POS = 5;
 	private static final int THREAD_POS = 4;
+	private static final int MIN_FILE_SIZE = Constants.SIZEOF_LONG + (Constants.SIZEOF_INT*4);
 	
+	public enum MergeDataAttribute {SUCCESS_MERGED, SUCCESS_ALREADY_CREATED, FAIL_NO_DATA};
 	
 	/***
 	 * create a single file from multiple data files
 	 * 
 	 * @param directory
-	 * @param globInputFile
+	 * @param globInputFile: glob pattern
+	 * @param outputFile: output filename
 	 * 
 	 * @return
 	 * @throws IOException
 	 */
-	public static String merge(File directory, String globInputFile, String newSuffix, IProgressReport progress) throws IOException {
+	static public MergeDataAttribute merge(File directory, String globInputFile, String outputFile, IProgressReport progress) throws IOException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
 		final String suffix = globInputFile.substring(last_dot);
 
-		final String outputFile = directory.getAbsolutePath() + File.separatorChar + "experiment." + newSuffix;
-		
 		final File fout = new File(outputFile);
 		
 		// check if the file already exists
 		if (fout.canRead() )
 		{
 			if (isMergedFileCorrect(outputFile))			
-				return outputFile;
+				return MergeDataAttribute.SUCCESS_ALREADY_CREATED;
 			
 			// the file exists but corrupted. In this case, we have to remove and create a new one
 			fout.delete();
 		}
+		
+		// check if the files in glob patterns is correct
+		File[] file_metric = directory.listFiles( new Util.FileThreadsMetricFilter(globInputFile) );
+		if (file_metric == null || file_metric.length<1)
+			return MergeDataAttribute.FAIL_NO_DATA;
 		
 		FileOutputStream fos = new FileOutputStream(outputFile);
 		DataOutputStream dos = new DataOutputStream(fos);
@@ -74,11 +80,10 @@ public class MergeDataFiles {
 		int type = 0;
 		dos.writeInt(type);
 		
-		File[] file_metric = directory.listFiles( new Util.FileThreadsMetricFilter(globInputFile) );
-		if (file_metric == null)
-			return null;
+		progress.begin("Merging data files ...", file_metric.length);
 		
-		progress.begin("Merging files", file_metric.length);
+		// on linux, we have to sort the files
+		java.util.Arrays.sort(file_metric);
 		
 		dos.writeInt(file_metric.length);
 		
@@ -167,7 +172,7 @@ public class MergeDataFiles {
 		
 		progress.end();
 		
-		return outputFile;
+		return MergeDataAttribute.SUCCESS_MERGED;
 
 	}
 	
@@ -195,14 +200,23 @@ public class MergeDataFiles {
 	 */
 	static private boolean isMergedFileCorrect(String filename) throws IOException
 	{
-		RandomAccessFile f = new RandomAccessFile(filename, "r");
+		final RandomAccessFile f = new RandomAccessFile(filename, "r");
+		boolean isCorrect = false;
+		
+		final long len = f.length();
+		
+		if (len<MIN_FILE_SIZE)
+			return false;
 		
 		final long pos = f.length() - Constants.SIZEOF_LONG;
-		f.seek(pos);
-		final long marker = f.readLong();
+		if (pos>0) {
+			f.seek(pos);
+			final long marker = f.readLong();
+			
+			isCorrect = (marker == MARKER_END_MERGED_FILE);
+		}
 		f.close();
-		
-		return (marker == MARKER_END_MERGED_FILE);
+		return isCorrect;
 	}
 	
 	static private boolean removeFiles(File files[])

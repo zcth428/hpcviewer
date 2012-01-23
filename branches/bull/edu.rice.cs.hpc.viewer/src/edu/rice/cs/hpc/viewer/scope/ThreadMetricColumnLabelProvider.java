@@ -5,7 +5,7 @@ import java.io.IOException;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
 
 public class ThreadMetricColumnLabelProvider extends BaseMetricColumnProvider {
 

@@ -145,8 +145,8 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	lbl.setText("There are two kinds of metric variables: point-wise and aggregate.  The former is like a spreadsheet cell, the "
 						+ "latter is like a spreadsheet-column sum.  To form a variable, prepend '$' and '@', respectively, to a metric id.  "
 						+ "For instance, the formula\n"
-						+ "    (($2 - $1) * 100.0) / @2\n"
-						+ "divides the scaled difference of the point-wise metrics 2 and 1 by the aggregate value of metric 2.");
+						+ "    (($2 - $1) * 100.0) / @1\n"
+						+ "divides the scaled difference of the point-wise metrics 2 and 1 by the aggregate value of metric 1.");
 	    	
 	    	expression_position = new Point(0,0);
 	    	cbExpression.addKeyListener( new KeyAdapter(){

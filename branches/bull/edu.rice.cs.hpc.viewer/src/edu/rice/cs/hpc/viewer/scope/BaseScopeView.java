@@ -2,11 +2,8 @@ package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
 
 /**
  * 
@@ -21,7 +18,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     //======================================================
 	
 	protected boolean hasThreadsLevelData = false;
-    private ExperimentData dataExperiment;
 
     //======================================================
     // ................ UPDATE ............................
@@ -31,12 +27,11 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	 * Update the content of the tree view when a new experiment is loaded
 	 */
 	protected void updateDisplay() {
-        if (myExperiment == null)
+        if (database == null)
         	return;
         
-        final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
-        dataExperiment = ExperimentData.getInstance(window);
-        hasThreadsLevelData = dataExperiment.getThreadLevelDataManager() != null;
+        hasThreadsLevelData = database.getThreadLevelDataManager() != null;
+        final Experiment myExperiment = database.getExperiment();
         
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
@@ -72,7 +67,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
             treeViewer.setInput(myRootScope);
             
             // update the root scope of the actions !
-            this.objViewActions.updateContent(this.myExperiment, (RootScope)this.myRootScope, colMetrics);
+            this.objViewActions.updateContent(myExperiment, (RootScope)this.myRootScope, colMetrics);
             // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
             // so we need to do it here, manually ... sigh
             this.objViewActions.resizeColumns();	// resize the column to fit all metrics
@@ -94,10 +89,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         this.updateDatabase(myExperiment);
    	}
 
-	protected ExperimentData getExperimentData()
-	{
-		return this.dataExperiment;
-	}
 	
     /**
      * Tell children to update the content with the new database

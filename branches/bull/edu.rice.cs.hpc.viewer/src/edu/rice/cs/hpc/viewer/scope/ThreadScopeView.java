@@ -31,7 +31,7 @@ public class ThreadScopeView extends AbstractBaseScopeView {
         	metrics.add(metric);    		
     	}
 
-    	super.setInput(ex, scope);
+    	//super.setInput(ex, scope);
     	this.setPartName( ex.getName() + ": " + rank);
 
     }
@@ -70,10 +70,10 @@ public class ThreadScopeView extends AbstractBaseScopeView {
 
 	@Override
 	protected void updateDisplay() {
-        if (myExperiment == null)
+        if (database == null)
         	return;
 	
-        MetricRaw metrics[] = this.myExperiment.getMetricRaw();
+        MetricRaw metrics[] = database.getExperiment().getMetricRaw();
         Object columns[] = this.treeViewer.getColumnProperties();
         int num_columns = 0;
         if (columns != null) {

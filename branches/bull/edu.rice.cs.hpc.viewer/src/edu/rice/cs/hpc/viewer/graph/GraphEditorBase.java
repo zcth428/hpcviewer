@@ -7,7 +7,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.swtchart.IAxisSet;
@@ -20,23 +19,31 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentData;
-import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
 
+
+/**
+ * Base class for hpcviewer editor to display graph
+ *  
+ * The class implements IViewerEditor, so it can be renamed, manipulated and changed
+ * 	by the viewer manager
+ */
 public abstract class GraphEditorBase extends EditorPart implements IViewerEditor {
+	
+	// chart is used to plot graph or histogram on canvas. each editor has its own chart
     private Chart chart;
+    
+    // a database of an experiment containing raw metrics to plot
 	protected ThreadLevelDataManager threadData;
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void doSaveAs() {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -45,10 +52,11 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 
 		this.setSite(site);
 		this.setInput(input);
-				
-		final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
-		final ExperimentData data = ExperimentData.getInstance(window);
-		threadData = data.getThreadLevelDataManager();
+		
+		if (input instanceof GraphEditorInput) {
+			final GraphEditorInput editorInput = (GraphEditorInput) input; 
+			threadData = editorInput.getDatabase().getThreadLevelDataManager();
+		}
 	}
 
 	@Override
@@ -87,6 +95,10 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+	 */
 	public void createPartControl(Composite parent) {
 		
 		IEditorInput input = this.getEditorInput();
@@ -118,23 +130,29 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		//----------------------------------------------
 		// plot data
 		//----------------------------------------------
-		Experiment exp = editor_input.getExperiment();
 		Scope scope = editor_input.getScope();
 		MetricRaw metric = editor_input.getMetric();
 		
-		this.plotData(exp, scope, metric);
+		this.plotData(scope, metric);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.editor.IViewerEditor#resetPartName()
+	 */
 	public void resetPartName() {
-		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		final GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
 		final String name = input.getName();
 		this.setPartName(name);
 	}
 	
-	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.editor.IViewerEditor#getExperiment()
+	 */
 	public Experiment getExperiment() {
-		GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
-		return input.getExperiment();
+		final GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
+		return input.getDatabase().getExperiment();
 	}
 
 	
@@ -142,7 +160,12 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		return this.chart;
 	}
 
-	
-	protected abstract void plotData( Experiment exp, Scope scope, MetricRaw metric );
+	/**
+	 * method to plot a graph of a specific scope and metric of an experiment
+	 * 
+	 * @param scope: the scope to plot
+	 * @param metric: the raw metric to plot
+	 */
+	protected abstract void plotData(Scope scope, MetricRaw metric );
 
 }

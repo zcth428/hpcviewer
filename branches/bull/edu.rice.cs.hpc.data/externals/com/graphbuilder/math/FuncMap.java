@@ -139,6 +139,9 @@ public class FuncMap {
 
 		// 1 or 2 parameters
 		setFunction("log", new LogFunction());
+		
+		// 2 or 3 parameters
+		setFunction("if", new IfFunction());
 	}
 
 	/**

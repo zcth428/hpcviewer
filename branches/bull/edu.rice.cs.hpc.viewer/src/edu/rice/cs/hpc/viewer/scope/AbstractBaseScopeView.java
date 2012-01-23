@@ -37,6 +37,7 @@ import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.window.Database;
 
 /**
  * 
@@ -47,7 +48,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 
 	protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     
-	protected Experiment 	myExperiment;		// experiment data	
+	protected Database 	database;		// experiment data	
 	protected RootScope 		myRootScope;		// the root scope of this view
 	protected ColumnViewerSorter sorterTreeColumn;	// sorter for the tree
     protected ScopeViewActions objViewActions;	// actions for this scope view
@@ -220,7 +221,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 				EditorManager editor = new EditorManager(windowCurrent);
 				try {
 					// database numbers start with 0 but titles start with 1
-					editor.openFileEditor(filePath, myExperiment);
+					editor.openFileEditor(filePath, database.getExperiment());
 				} catch (FileNotFoundException e) {
 					// can not find the file (or something goes wrong)
 					MessageDialog.openError(windowCurrent.getShell(), "Error: File not found", e.getMessage());
@@ -458,8 +459,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     /**
      * Update the data input for Scope View, depending also on the scope
      */
-    public void setInput(Experiment ex, RootScope scope) {
-    	myExperiment = ex;
+    public void setInput(Database db, RootScope scope) {
+    	database = db;
     	myRootScope = scope;// try to get the aggregate value
 
         // tell the action class that we have built the tree
@@ -499,7 +500,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * @return
      */
     public Experiment getExperiment() {
-    	return this.myExperiment;
+    	return database.getExperiment();
     }
 
     /****
@@ -510,6 +511,9 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	return this.myRootScope;
     }
     
+    protected Database getDatabase() {
+    	return database;
+    }
     //======================================================
     // ................ ABSTRACT...........................
     //======================================================

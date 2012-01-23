@@ -507,7 +507,7 @@ protected String formatDouble(double d, DecimalFormat formatter, Style style)
 		// converted in Java it becomes infinity
 		
 		if (d == Float.POSITIVE_INFINITY)
-			return "Inf" ;
+			return "" ;
 					
 		int exponent = 0;
 		// laks: if d = 9.999, the formatter will force to round it to 10.00

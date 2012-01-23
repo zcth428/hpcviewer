@@ -11,7 +11,6 @@ import org.swtchart.IAxisTick;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries.SeriesType;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
@@ -21,7 +20,7 @@ public class GraphEditorHisto extends GraphEditorBase {
     
 
 	@Override
-	protected void plotData(Experiment exp, Scope scope, MetricRaw metric) {
+	protected void plotData(Scope scope, MetricRaw metric) {
 		final int bins = 10;
 		
 		double y_values[], x_values[];
@@ -60,7 +59,7 @@ public class GraphEditorHisto extends GraphEditorBase {
 		scatterSeries.setXSeries(x_values);
 		scatterSeries.setYSeries(y_values);
 
-		chart.getAxisSet().getXAxis(0).getTitle().setText( "Metrics" );
+		chart.getAxisSet().getXAxis(0).getTitle().setText( "Metric Value" );
 		chart.getAxisSet().getYAxis(0).getTitle().setText( "Frequency" );
 	}
 

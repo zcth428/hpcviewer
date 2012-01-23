@@ -7,10 +7,10 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.swtchart.IAxisSet;
 import org.swtchart.IAxisTick;
 
-import edu.rice.cs.hpc.data.experiment.extdata.ThreadLevelDataFile;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.experiment.ThreadLevelDataManager;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataFile;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
 
 public class GraphEditorPlot extends GraphEditor {
 
@@ -48,7 +48,7 @@ public class GraphEditorPlot extends GraphEditor {
 		IAxisSet axisSet = this.getChart().getAxisSet();
 		IAxisTick xTick = axisSet.getXAxis(0).getTick();
 
-		axis_x = "Processes";
+		axis_x = "Rank Sequence";
 		xTick.setFormat(new DecimalFormat("##########"));
 
 		if (data.isHybrid()) 
@@ -56,8 +56,10 @@ public class GraphEditorPlot extends GraphEditor {
 			axis_x = "Process.Thread";
 			xTick.setFormat(new DecimalFormat("######00.00##"));			
 		} else if (data.isMultiThreading()) {
-			axis_x = "Threads";
+			axis_x = "Thread";
 			xTick.setFormat(new DecimalFormat("##########"));
+		} else if (data.isMultiProcess()) {
+			axis_x = "Process";
 		}
 
 		return axis_x;

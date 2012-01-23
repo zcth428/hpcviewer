@@ -25,5 +25,27 @@ public class MathTest {
 
 		vm.setValue("r", 10);
 		System.out.println(x.eval(vm, fm)); // 314.1592653589793
+		
+		x = ExpressionTree.parse("4==1");
+		final double r = x.eval(vm, fm);
+		System.out.println("4 == 1 --> " + r);
+
+		x = ExpressionTree.parse("4==4");
+		System.out.println("4 == 4 --> " + x.eval(vm, fm));
+
+		x = ExpressionTree.parse("r==5");
+		System.out.println("r<-10; r == 5 --> " + x.eval(vm, fm));
+
+		x = ExpressionTree.parse("r==10");
+		System.out.println("r<-10; r == 10 --> " + x.eval(vm, fm));
+		
+		fm = new FuncMap();
+		fm.loadDefaultFunctions();
+		
+		x = ExpressionTree.parse("if(r==10,10.0,-10.0)");
+		System.out.println("if(r==10,10.0,-10.0) --> " + x.eval(vm, fm));
+
+		x = ExpressionTree.parse("if(r==1,10.0,-10.0)");
+		System.out.println("if(r==1,10.0,-10.0) --> " + x.eval(vm, fm));
 	}
 }

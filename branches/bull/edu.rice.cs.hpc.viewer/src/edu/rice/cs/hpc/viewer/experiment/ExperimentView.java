@@ -29,7 +29,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
  *
  */
 public class ExperimentView {
-	private ExperimentData dataExperiment;
+	//private ExperimentData dataExperiment;
 	private org.eclipse.ui.IWorkbenchPage objPage;		// workbench current page
 	/**
 	 * List of registered views in the current experiment
@@ -37,9 +37,9 @@ public class ExperimentView {
 	protected BaseScopeView []arrScopeViews;
 	
 	private void init() {
-		if(this.dataExperiment == null) {
+/*		if(this.dataExperiment == null) {
 			this.dataExperiment = ExperimentData.getInstance(this.objPage.getWorkbenchWindow());
-		}
+		}*/
 	}
 	/**
 	 * Constructor for Data experiment. Needed to link with the view
@@ -161,7 +161,7 @@ public class ExperimentView {
 	 * @param experiment Experiment data
 	 */
 	public void generateView(Experiment experiment) {
-        this.dataExperiment.setExperiment(experiment);
+		
         IWorkbenchWindow window = this.objPage.getWorkbenchWindow();
 		// register this new database with our viewer window
 		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
@@ -180,6 +180,7 @@ public class ExperimentView {
 		}
 
 		db.setExperiment(experiment);		// set the experiment class used for the database
+        
 		// the database index has values from 1-5 and is used in view titles
 		final int dbIdx = vWin.getDbNum(experiment);
 		// the view index has values from 0-4 and is used to index arrays (layout folders and possibly others)
@@ -205,7 +206,7 @@ public class ExperimentView {
 						// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
 						objView = (BaseScopeView)this.objPage.showView(ScopeView.ID , viewIdx, IWorkbenchPage.VIEW_ACTIVATE); 
 					}
-				objView.setInput(experiment, child);
+				objView.setInput(db, child);
 				arrScopeViews[k] = objView;
 			} catch (PartInitException e) {
 				e.printStackTrace();
@@ -214,9 +215,5 @@ public class ExperimentView {
 		
 		// update the window title if necessary
 		WindowTitle.refreshAllTitle(window, experiment);
-	}
-
-	public ExperimentData getExperimentData() {
-		return this.dataExperiment;
 	}
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer.app" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer.application" version="5.2.0" useFeatures="false" includeLaunchers="true">
+<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer.app" id="edu.rice.cs.hpc.viewer.hpcviewer" application="edu.rice.cs.hpc.viewer.application" version="5.2.1" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="icons/hpcviewerEclipseShadow128.png"/>
@@ -14,7 +14,7 @@ HPCToolkit is principally funded by the Department of Energy&apos;s Office of
 Science as part of the SciDAC Center for Scalable Application Development
 Software and the Performance Engineering Research Institute.
 
-Release 5.2.0 (C) Copyright 2011, Rice University.
+Release 5.2.1 (C) Copyright 2011, Rice University.
       </text>
    </aboutInfo>
 
@@ -84,6 +84,7 @@ if advised of the possibility of such damage.
 
    <plugins>
       <plugin id="com.ibm.icu"/>
+      <plugin id="edu.rice.cs.hpc.common"/>
       <plugin id="edu.rice.cs.hpc.data"/>
       <plugin id="edu.rice.cs.hpc.viewer"/>
       <plugin id="javax.xml"/>
@@ -131,6 +132,7 @@ if advised of the possibility of such damage.
       <plugin id="org.eclipse.equinox.security"/>
       <plugin id="org.eclipse.equinox.security.macosx" fragment="true"/>
       <plugin id="org.eclipse.equinox.security.win32.x86" fragment="true"/>
+      <plugin id="org.eclipse.equinox.security.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.help"/>
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
@@ -141,6 +143,9 @@ if advised of the possibility of such damage.
       <plugin id="org.eclipse.swt.carbon.macosx" fragment="true"/>
       <plugin id="org.eclipse.swt.cocoa.macosx" fragment="true"/>
       <plugin id="org.eclipse.swt.cocoa.macosx.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.aix.ppc" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.aix.ppc64" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.hpux.ia64_32" fragment="true"/>
       <plugin id="org.eclipse.swt.gtk.linux.ppc" fragment="true"/>
       <plugin id="org.eclipse.swt.gtk.linux.ppc64" fragment="true"/>
       <plugin id="org.eclipse.swt.gtk.linux.s390" fragment="true"/>

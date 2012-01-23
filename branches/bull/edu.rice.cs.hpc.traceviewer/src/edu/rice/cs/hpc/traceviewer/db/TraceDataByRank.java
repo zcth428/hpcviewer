@@ -10,7 +10,6 @@ public class TraceDataByRank {
 
 	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
 	public final static byte SIZE_OF_TRACE_RECORD = 12;
-
 	
 	final private BaseDataFile data;
 	final private int rank;
@@ -50,21 +49,52 @@ public class TraceDataByRank {
 		// get the end location
 		final double endTime = timeStart + timeRange;
 		final long endLoc = Math.min(this.findBoundedLocRAF(endTime, minloc, maxloc)+SIZE_OF_TRACE_RECORD, maxloc );
+
+		// get the number of records data to display
+		final long numRec = 1+this.getNumberOfRecords(startLoc, endLoc);
 		
-		//fills in the rest of the data for this process timeline
-		this.binaryFill(startLoc, endLoc, 0, numPixelH, 0, pixelLength, timeStart);
+		// --------------------------------------------------------------------------------------------------
+		// if the data-to-display is fit in the display zone, we don't need to use recursive binary search
+		//	we just simply display everything from the file
+		// --------------------------------------------------------------------------------------------------
+		if (numRec<=numPixelH) {
+			
+			// display all the records
+			for(long i=startLoc;i<=endLoc; ) {
+				listcpid.add(getData(i));
+				// one record of data contains of an integer (cpid) and a long (time)
+				i =  i + Constants.SIZEOF_INT + Constants.SIZEOF_LONG;
+			}
+			
+		} else {
+			
+			// the data is too big: try to fit the "big" data into the display
+			
+			//fills in the rest of the data for this process timeline
+			this.binaryFill(startLoc, endLoc, 0, numPixelH, 0, pixelLength, timeStart);
+			
+		}
 		
-		// get the last data
-		final TimeCPID dataLast = this.getData(endLoc);
-		this.addSample(listcpid.size(), dataLast);
+		// --------------------------------------------------------------------------------------------------
+		// get the last data if necessary: the rightmost time is still less then the upper limit
+		// 	I think we can add the rightmost data into the list of samples
+		// --------------------------------------------------------------------------------------------------
+		if (endLoc < this.maxloc) {
+			final TimeCPID dataLast = this.getData(endLoc);
+			this.addSample(listcpid.size(), dataLast);
+		}
 		
-		// get the first data if necessary
-		final TimeCPID dataFirst = this.getData(startLoc);
-		if (listcpid.get(0).timestamp != dataFirst.timestamp) {
+		// --------------------------------------------------------------------------------------------------
+		// get the first data if necessary: the leftmost time is still bigger than the lower limit
+		//	similarly, we add to the list 
+		// --------------------------------------------------------------------------------------------------
+		if ( startLoc>minloc ) {
+			final TimeCPID dataFirst = this.getData(startLoc-SIZE_OF_TRACE_RECORD);
 			this.addSample(0, dataFirst);
 		}
-		postProcess();
 
+		postProcess();
+		
 	}
 	
 	
@@ -216,7 +246,21 @@ public class TraceDataByRank {
 			
 			mid = (low+high)/2;
 		}
-		return getAbsoluteLocation(low);
+		// check the closest midpoint
+		final long low_abs = getAbsoluteLocation(low);
+		final long high_abs = getAbsoluteLocation(high);
+		
+		final double low_time = masterBuff.getLong(low_abs);
+		final double high_time = masterBuff.getLong(high_abs);
+		
+		final boolean is_left_closer = Math.abs(time-low_time) < Math.abs(high_time-time);
+
+		if ( is_left_closer )
+			return low_abs;
+		else if (high_abs < this.maxloc)
+			return high_abs;
+		else
+			return this.maxloc;
 	}
 	
 	
@@ -266,6 +310,9 @@ public class TraceDataByRank {
 		return new TimeCPID(time,cpid);
 	}
 	
+	private long getNumberOfRecords(long start, long end) {
+		return (end-start)/(Constants.SIZEOF_INT+Constants.SIZEOF_LONG);
+	}
 
 	/*********************************************************************************************
 	 * Removes unnecessary samples:
@@ -284,8 +331,7 @@ public class TraceDataByRank {
 			}
 		}
 	}
-	
-
+		
 	/***
 	 * struct object of time and CPID pair
 	 * 

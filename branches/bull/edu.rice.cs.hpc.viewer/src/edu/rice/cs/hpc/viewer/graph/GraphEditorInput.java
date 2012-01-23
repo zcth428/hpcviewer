@@ -5,16 +5,15 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
+import edu.rice.cs.hpc.viewer.window.Database;
 
 public class GraphEditorInput implements IEditorInput {
-	private final Experiment _experiment;
+	private final Database _database;
 	private final Scope _scope;
 	private final MetricRaw _metric;
-	private final int _database;
 	
 	private final GraphType.PlotType _type;
 	private final IWorkbenchWindow _window;
@@ -27,9 +26,8 @@ public class GraphEditorInput implements IEditorInput {
 	 * @param type
 	 * @param database
 	 */
-	public GraphEditorInput(Experiment experiment, Scope scope, MetricRaw metric, 
-			GraphType.PlotType type, int database, IWorkbenchWindow window) {
-		this._experiment = experiment;
+	public GraphEditorInput(Database database, Scope scope, MetricRaw metric, 
+			GraphType.PlotType type, IWorkbenchWindow window) {
 		this._scope = scope;
 		this._metric = metric;
 		this._type = type;
@@ -55,9 +53,9 @@ public class GraphEditorInput implements IEditorInput {
 		return getID(_scope, _metric, _type, _database);
 	}
 	
-	private String getName(Scope scope, MetricRaw metric, GraphType.PlotType type, int database) {
+	private String getName(Scope scope, MetricRaw metric, GraphType.PlotType type, Database database) {
 		final String sOrignalTitle = "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName(); 
-		return WindowTitle.getTitle(_window, _experiment, sOrignalTitle);
+		return WindowTitle.getTitle(_window, database.getExperiment(), sOrignalTitle);
 	}
 
 	/****
@@ -68,8 +66,8 @@ public class GraphEditorInput implements IEditorInput {
 	 * @param database
 	 * @return
 	 */
-	static public String getID(Scope scope, MetricRaw metric, GraphType.PlotType type, int database) {
-		return Integer.toString(database) + GraphType.toString(type) + ":" + 
+	static public String getID(Scope scope, MetricRaw metric, GraphType.PlotType type, Database database) {
+		return Integer.toString(database.getWindowIndex()) + GraphType.toString(type) + ":" + 
 		scope.getCCTIndex()+":" + metric.getID();
 	}
 
@@ -93,8 +91,8 @@ public class GraphEditorInput implements IEditorInput {
 		return this._type;
 	}
 
-	public Experiment getExperiment() {
-		return this._experiment;
+	public Database getDatabase() {
+		return this._database;
 	}
 	
 	public Scope getScope() {

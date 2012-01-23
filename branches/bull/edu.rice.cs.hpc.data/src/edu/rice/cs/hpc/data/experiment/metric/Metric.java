@@ -50,41 +50,51 @@ public final static int NO_PARTNER_INDEX = -1;
  *	Creates a Metric.
  ************************************************************************/
 	
-public Metric(String shortName, String nativeName, String displayName,
-              boolean displayed, String format, boolean percent,String sampleperiod, MetricType metricType, 
-              int partnerIndex)
+/**
+ * Construct a metric using a "String" sample period
+ * @param shortName
+ * @param nativeName
+ * @param displayName
+ * @param displayed
+ * @param format
+ * @param annotationType
+ * @param sampleperiod
+ * @param metricType
+ * @param partnerIndex
+ */
+public Metric(String shortName, String nativeName, String displayName, boolean displayed, 
+              String format, AnnotationType annotationType, String samplePeriod, MetricType metricType, int partnerIndex)
 {
-	super(shortName, displayName, displayed, format, percent, 0, metricType);
+	super(shortName, displayName, displayed, format, annotationType, 0, metricType);
 	// creation arguments
 	this.nativeName  = nativeName;
-    this.sampleperiod  = this.convertSamplePeriode(sampleperiod);
+    this.sampleperiod  = this.convertSamplePeriode(samplePeriod);
     this.metricType     = metricType;
     this.partnerIndex = partnerIndex;
 }
 
 
 /**
- * Construct a metric using a predefined sample period
+ * Construct a metric using a "double" sample period
  * @param shortName
  * @param nativeName
  * @param displayName
  * @param displayed
  * @param format
- * @param percent
+ * @param annotationType
  * @param sampleperiod
  * @param metricType
  * @param partnerIndex
  */
-public Metric( String shortName, String nativeName, String displayName,
-        boolean displayed, String format, boolean percent, double sampleperiod, MetricType metricType, 
-        int partnerIndex)
+public Metric( String shortName, String nativeName, String displayName, boolean displayed, 
+               String format, AnnotationType annotationType, double samplePeriod, MetricType metricType, int partnerIndex)
 {
-super(shortName, displayName, displayed, format, percent, 0, metricType);
-// creation arguments
-this.nativeName  = nativeName;
-this.sampleperiod  = sampleperiod;
-this.metricType     = metricType;
-this.partnerIndex = partnerIndex;
+	super(shortName, displayName, displayed, format, annotationType, 0, metricType);
+	// creation arguments
+	this.nativeName  = nativeName;
+	this.sampleperiod  = samplePeriod;
+	this.metricType     = metricType;
+	this.partnerIndex = partnerIndex;
 }
 
 /*************************************************************************

@@ -538,11 +538,11 @@ public MetricValue getMetricValue(BaseMetric metric)
 
 		// compute percentage if necessary
 		Scope root = this.experiment.getRootScope();
-		if((this != root) && (! MetricValue.isPercentAvailable(value)))
+		if((this != root) && (! MetricValue.isAnnotationAvailable(value)))
 		{
 			MetricValue total = root.getMetricValue(metric);
 			if(MetricValue.isAvailable(total))
-				MetricValue.setPercentValue(value, MetricValue.getValue(value)/MetricValue.getValue(total));
+				MetricValue.setAnnotationValue(value, MetricValue.getValue(value)/MetricValue.getValue(total));
 		} 
 
 	}
@@ -647,7 +647,7 @@ public void backupMetricValues() {
 			if (metric instanceof AggregateMetric)
 				this.combinedMetrics[i] = 
 					new MetricValue(MetricValue.getValue(value), 
-							MetricValue.getPercentValue(value));
+							MetricValue.getAnnotationValue(value));
 			else 
 				this.combinedMetrics[i] = value;
 		} else {
@@ -794,8 +794,8 @@ public void copyMetrics(Scope targetScope) {
 				mine = new MetricValue();
 				MetricValue.setValue(mine, MetricValue.getValue(crtMetric));
 
-				if (MetricValue.isPercentAvailable(crtMetric)) {
-					MetricValue.setPercentValue(mine, MetricValue.getPercentValue(crtMetric));
+				if (MetricValue.isAnnotationAvailable(crtMetric)) {
+					MetricValue.setAnnotationValue(mine, MetricValue.getAnnotationValue(crtMetric));
 				} 
 			} else {
 				mine = MetricValue.NONE;

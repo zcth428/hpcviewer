@@ -37,20 +37,13 @@ public final class MetricValue
 	/** The actual value if available. */
 	protected float value;
 	
-	/** The actual percentage value if available. */
-	protected float percent;
-	
+	/** The annotation value if available. */
+	protected float annotation;
+
 	protected byte flags;
 	
 	protected static final byte VALUE_IS_AVAILABLE = 1;
-	protected static final byte PERCENT_IS_AVAILABLE = 2;
-	
-	/** Whether the actual value is available. */
-	// protected boolean available;
-
-	/** Whether the percentage value is available. */
-	// protected boolean percentAvailable;
-
+	protected static final byte ANNOTATION_IS_AVAILABLE = 2;
 
 	/** The distinguished metric value indicating no data. */
 	public static final MetricValue NONE = new MetricValue(-1);
@@ -72,20 +65,20 @@ public final class MetricValue
 public MetricValue()
 {
 	setAvailable(this, false);
-	setPercentAvailable(this, false);
+	setAnnotationAvailable(this, false);
 }
 
 
 
 
 /*************************************************************************
- *	Creates an available MetricValue with a given value and percentage value.
+ *	Creates an available MetricValue with a given value and annotation value.
  ************************************************************************/
 	
-public MetricValue(double value, double percent)
+public MetricValue(double value, double annotation)
 {
 	setValue(this, value);
-	setPercentValue(this, ((float)percent));
+	setAnnotationValue(this, ((float)annotation));
 }
 
 
@@ -99,7 +92,7 @@ public MetricValue(double value)
 {
 	setValue(this, value);
 	setAvailable(this, true);
-	setPercentAvailable(this, false);
+	setAnnotationAvailable(this, false);
 }
 
 
@@ -128,18 +121,18 @@ private static void setAvailable(MetricValue m, boolean status)
 }
 
 
-private static boolean getPercentAvailable(MetricValue m)
+private static boolean getAnnotationAvailable(MetricValue m)
 {
-	boolean available = (m.flags & PERCENT_IS_AVAILABLE) == PERCENT_IS_AVAILABLE;
+	boolean available = (m.flags & ANNOTATION_IS_AVAILABLE) == ANNOTATION_IS_AVAILABLE;
 	return available;
 }
 
-private static void setPercentAvailable(MetricValue m, boolean status)
+private static void setAnnotationAvailable(MetricValue m, boolean status)
 {
 	if (status) {
-		m.flags |= PERCENT_IS_AVAILABLE;
+		m.flags |= ANNOTATION_IS_AVAILABLE;
 	} else {
-		m.flags &= ~PERCENT_IS_AVAILABLE;
+		m.flags &= ~ANNOTATION_IS_AVAILABLE;
 	}	
 }
 
@@ -183,46 +176,44 @@ public static void setValue(MetricValue m, double value)
 
 
 /*************************************************************************
- *	Returns whether the percentage value is available.
+ *	Returns whether the annotation value is available.
  ************************************************************************/
 	
-public static boolean isPercentAvailable(MetricValue m)
+public static boolean isAnnotationAvailable(MetricValue m)
 {
-	return (m != MetricValue.NONE) && getPercentAvailable(m);
+	return (m != MetricValue.NONE) && getAnnotationAvailable(m);
 }
 
 
 
 
 /*************************************************************************
- *	Returns the percentage value if available.
+ *	Returns the annotation value if available.
  ************************************************************************/
 	
-public static float getPercentValue(MetricValue m)
+public static float getAnnotationValue(MetricValue m)
 {
-	// Laks: I think it is normal not to have percent available
-	//Dialogs.Assert(this.percentAvailable, "MetricValue::getPercentValue");
-	return m.percent;
+	return m.annotation;
 }
 
 
 
 
 /*************************************************************************
- *	Makes the given percentage value available.
+ *	Makes the given annotation value available.
  ************************************************************************/
 
-public static void setPercentValue(MetricValue m, double percent)
+public static void setAnnotationValue(MetricValue m, double annotation)
 {
-	setPercentAvailable(m, true);
-	m.percent = (float) percent;
+	setAnnotationAvailable(m, true);
+	m.annotation = (float) annotation;
 }
 
-	
-public static void setPercentValue(MetricValue m, float percent)
+
+public static void setAnnotationValue(MetricValue m, float annotation)
 {
-	setPercentAvailable(m, true);
-	m.percent = percent;
+	setAnnotationAvailable(m, true);
+	m.annotation = annotation;
 }
 
 
@@ -238,7 +229,7 @@ public static boolean isZero(MetricValue m)
  *	Compares the metric value to another one.
  *
  *	Unavailable or nonexistent values are treated as less than available values.
- *	Percentage values are ignored.
+ *	Annotation values are ignored.
  *
  ************************************************************************/
 	
@@ -269,11 +260,3 @@ public static int compareTo(MetricValue left, MetricValue right)
 
 
 }
-
-
-
-
-
-
-
-

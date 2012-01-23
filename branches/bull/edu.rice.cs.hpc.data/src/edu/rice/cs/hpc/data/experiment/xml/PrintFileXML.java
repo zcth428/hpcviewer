@@ -9,6 +9,7 @@ import java.io.PrintStream;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
@@ -98,7 +99,7 @@ public class PrintFileXML {
 				printAttribute(objPrint, "v", "final");				
 				printAttribute(objPrint, "t", getMetricType(m) );				
 				printAttribute(objPrint, "show", booleanToInt(m.getDisplayed()) );
-				printAttribute(objPrint, "show-percent", booleanToInt(m.getPercent()) );
+				printAttribute(objPrint, "annotation", getAnnotationType(m) );
 			}
 			objPrint.print(">");
 
@@ -119,6 +120,22 @@ public class PrintFileXML {
 		else if (m.getMetricType() == MetricType.INCLUSIVE )
 			return "inclusive";
 		return "nil";
+	}
+	
+	
+	/**--------------------------------------------------------------------------------**
+	 * 
+	 * @param m
+	 * @return
+	 **--------------------------------------------------------------------------------**/
+	private String getAnnotationType (BaseMetric m) {
+		if (m.getAnnotationType() == AnnotationType.NONE )
+			return "none";
+		if (m.getAnnotationType() == AnnotationType.PERCENT )
+			return "percent";
+		if (m.getAnnotationType() == AnnotationType.PROCESS )
+			return "process";
+		return "undefined";
 	}
 	
 	

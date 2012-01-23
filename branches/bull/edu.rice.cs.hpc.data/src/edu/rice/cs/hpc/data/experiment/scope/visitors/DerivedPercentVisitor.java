@@ -64,7 +64,7 @@ public class DerivedPercentVisitor implements IScopeVisitor {
 			double total = MetricValue.getValue(objAggregate);
 			
 			if ( total != 0.0 )
-				MetricValue.setPercentValue(m, value/total);
+				MetricValue.setAnnotationValue(m, value/total);
 		}
 	}
 }

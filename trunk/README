@@ -1,4 +1,5 @@
 $Id$
+$LastChangedDate$
 
 
 =============================================================================
@@ -10,8 +11,8 @@ README
 =============================================================================
 
 Contents:
-  0. What is hpcviewer
-  1. Obtaining and Installing hpcviewer
+  0. What are hpcviewers and hpctraceviewer
+  1. Obtaining and Installing hpcviewer/hpctraceviewer
   2. Building hpcdata
   3. Building hpctraceviewer
   4. For More Information
@@ -19,12 +20,16 @@ Contents:
 =============================================================================
 
 ----------------------------------------
-0. What is hpcviewer
+0. What are hpcviewer and hpctraceviewer
 ----------------------------------------
 
 hpcviewer is the presentation layer of HPCToolkit which is a suite of tools
 for measurement and analysis of program performance.
-hpcviewer contains four plug-in projects:
+hpctraceviewer is the presentation tool to visualize trace data generated
+by hpcrun if the flag "-t" is specified. For static linked program, the
+variable environment HPCRUN_TRACE has to be set. 
+
+The viewers contain four plug-in projects:
 
  edu.rice.cs.hpc.common (common plugin for hpcviewer and hpctraceviewer)
  edu.rice.cs.hpc.data (hpcdata)

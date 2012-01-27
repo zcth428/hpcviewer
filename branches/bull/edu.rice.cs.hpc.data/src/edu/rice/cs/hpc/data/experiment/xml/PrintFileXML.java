@@ -9,7 +9,6 @@ import java.io.PrintStream;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
@@ -98,8 +97,8 @@ public class PrintFileXML {
 				printAttribute(objPrint, "n", m.getDisplayName().trim());				
 				printAttribute(objPrint, "v", "final");				
 				printAttribute(objPrint, "t", getMetricType(m) );				
-				printAttribute(objPrint, "show", booleanToInt(m.getDisplayed()) );
-				printAttribute(objPrint, "annotation", getAnnotationType(m) );
+				printAttribute(objPrint, "show", booleanToInt(m.getDisplayed()));
+				printAnnotationType(objPrint, m);
 			}
 			objPrint.print(">");
 
@@ -124,18 +123,20 @@ public class PrintFileXML {
 	
 	
 	/**--------------------------------------------------------------------------------**
-	 * 
+	 * print the type of annotation
+	 * @param objPrint
 	 * @param m
-	 * @return
 	 **--------------------------------------------------------------------------------**/
-	private String getAnnotationType (BaseMetric m) {
-		if (m.getAnnotationType() == AnnotationType.NONE )
-			return "none";
-		if (m.getAnnotationType() == AnnotationType.PERCENT )
-			return "percent";
-		if (m.getAnnotationType() == AnnotationType.PROCESS )
-			return "process";
-		return "undefined";
+	private void printAnnotationType (PrintStream objPrint, BaseMetric m) {
+		
+		switch (m.getAnnotationType()) {
+		case PERCENT:
+			printAttribute(objPrint, "show-percent", "1" );
+			break;
+		case PROCESS:
+			printAttribute(objPrint, "show-process", "1" );
+			break;
+		}
 	}
 	
 	

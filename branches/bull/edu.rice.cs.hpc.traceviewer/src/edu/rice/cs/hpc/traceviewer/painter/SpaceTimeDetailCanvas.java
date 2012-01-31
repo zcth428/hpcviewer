@@ -722,8 +722,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     {
     	double topLeftProcess = (selectionTopLeftY / getScaleY());
 		long topLeftTime = (long)((double)selectionTopLeftX / getScaleX());
-		double bottomRightProcess = (selectionBottomRightY / getScaleY());
-		long bottomRightTime = (long)((double)selectionBottomRightX / getScaleX());
+		
+		// ---------------------------------------------------------------------------------------
+		// we should include the partial selection of a time or a process
+		// for instance if the user selects processes where the max process is between
+		// 	10 and 11, we should include process 11 (just like keynote selection)
+		// ---------------------------------------------------------------------------------------
+		double bottomRightProcess = Math.ceil( ((double) selectionBottomRightY / getScaleY()) );
+		long bottomRightTime = (long)Math.ceil( ((double)selectionBottomRightX / getScaleX()) );
+		
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
     

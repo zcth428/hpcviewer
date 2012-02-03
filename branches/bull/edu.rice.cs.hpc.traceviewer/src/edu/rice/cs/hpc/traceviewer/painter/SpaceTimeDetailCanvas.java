@@ -315,7 +315,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			stData.attributes.begProcess = (int)stData.attributes.begProcess;
 			stData.attributes.endProcess = stData.attributes.begProcess+MIN_PROC_DISP;
 		}
-		
+				
 		this.rebuffer();
 		
 		this.updateButtonStates();
@@ -680,7 +680,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         
         final String processes[] = traceData.getValuesX();
         final int proc_start = (int)stData.getBegProcess();
-        int proc_end   = (int)Math.ceil(stData.getEndProcess());
+        
+        // -------------------------------------------------------------------------------------------------
+        // bug fix: since the end of the process is the ceiling of the selected region,
+        //			and the range of process rendering is based on inclusive min and exclusive max, then
+        //			we need to decrement the value of max process (in the range).
+        // WARN: the display of process range should be then between inclusive min and inclusive max
+        //
+        // TODO: we should fix the rendering to inclusive min and inclusive max, otherwise it is too much
+        //		 headache to maintain
+        // -------------------------------------------------------------------------------------------------
+        int proc_end   = stData.getEndProcess() - 1;
         if (proc_end>=processes.length)
         	proc_end = processes.length-1;
         

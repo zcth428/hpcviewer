@@ -41,13 +41,13 @@ public class AggregateMetric extends BaseMetric {
 	 * @param sID: the ID of the metric (HAS TO BE REALLY SHORT !!!)
 	 * @param sDisplayName: the title of the metric
 	 * @param displayed: to show or not ?
-	 * @param percent  : to show the percent ?
+	 * @param annotationType  : to show the percent or process number ?
 	 * @param index    : metric index in the list (unused)
 	 * @param type	   : metric type
 	 ***------------------------------------------------------------------------***/
 	public AggregateMetric(String sID, String sDisplayName, boolean displayed, String format,
-			boolean percent, int index, MetricType type) {
-		super(sID, sDisplayName, displayed, format, percent, index, type);
+			AnnotationType annotationType, int index, MetricType type) {
+		super(sID, sDisplayName, displayed, format, annotationType, index, type);
 
 		this.fctMap = new FuncMap();
 		this.fctMap.loadDefaultFunctions();
@@ -59,8 +59,8 @@ public class AggregateMetric extends BaseMetric {
 	
 	
 	public AggregateMetric(String sID, String sDisplayName, boolean displayed, String format,
-			boolean percent, int index, int partner, MetricType type) {
-		this( sID, sDisplayName, displayed, format, percent, index, type);
+			AnnotationType annotationType, int index, int partner, MetricType type) {
+		this( sID, sDisplayName, displayed, format, annotationType, index, type);
 		this.partner = partner;
 	}
 

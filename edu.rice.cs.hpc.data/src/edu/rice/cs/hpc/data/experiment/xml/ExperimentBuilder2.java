@@ -18,6 +18,7 @@ package edu.rice.cs.hpc.data.experiment.xml;
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
@@ -569,7 +570,8 @@ public class ExperimentBuilder2 extends Builder
 		int partner = 0;	// 2010.06.28: new feature to add partner
 		String sDisplayName = null;
 		String sNativeName = null;
-		boolean toShow = true, percent = true;
+		boolean toShow = true;
+		AnnotationType percent = AnnotationType.NONE;
 		MetricType objType = MetricType.EXCLUSIVE;
 		boolean needPartner = this.csviewer;
 		MetricValueDesc mDesc = MetricValueDesc.Raw; // by default is a raw metric
@@ -614,8 +616,11 @@ public class ExperimentBuilder2 extends Builder
 				format = values[i];
 				
 			} else if (attributes[i].equals("show-percent")) {
-				percent = (values[i].charAt(0) == '1');
-				
+				if (values[i].charAt(0) == '1') {
+					percent = AnnotationType.PERCENT;
+				} else {
+					percent = AnnotationType.NONE;
+				}
 			} else if (attributes[i].charAt(0) == 's') {
 				// show or not ? 1=yes, 0=no
 				toShow = (values[i].charAt(0) == '1');
@@ -678,7 +683,7 @@ public class ExperimentBuilder2 extends Builder
 					sSelfName,			// short name
 					sSelfDisplayName,	// native name
 					sSelfDisplayName, 	// display name
-					toShow, format, true, 		// displayed ? percent ?
+					toShow, format, AnnotationType.PERCENT, 		// displayed ? percent ?
 					"",					// period (not defined at the moment)
 					MetricType.EXCLUSIVE, nbMetrics);
 			this.metricList.add(metricExc);

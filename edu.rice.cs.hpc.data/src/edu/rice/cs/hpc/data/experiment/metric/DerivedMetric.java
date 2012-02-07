@@ -35,11 +35,13 @@ public class DerivedMetric extends BaseMetric {
 	 * @param scopeRoot
 	 * @param e
 	 * @param sName
+	 * @param sID
 	 * @param index
-	 * @param bPercent
+	 * @param annotationType
+	 * @param objType
 	 */
-	public DerivedMetric(RootScope scopeRoot, Expression e, String sName, String sID, int index, boolean bPercent, MetricType objType) {
-		super(sID, sName, true, null, bPercent, index, objType);
+	public DerivedMetric(RootScope scopeRoot, Expression e, String sName, String sID, int index, AnnotationType annotationType, MetricType objType) {
+		super(sID, sName, true, null, annotationType, index, objType);
 		//DerivedMetric.Counter++;
 		this.expression = e;
 		//this.scopeOfTheRoot = scopeRoot;
@@ -54,7 +56,7 @@ public class DerivedMetric extends BaseMetric {
 		// Bug fix: always compute the aggregate value 
 		this.dRootValue = this.getAggregateMetrics(scopeRoot);
 		if(this.dRootValue == 0.0)
-			this.percent = false;
+			this.annotationType = AnnotationType.NONE ;
 	}
 
 
@@ -116,7 +118,7 @@ public class DerivedMetric extends BaseMetric {
 				return MetricValue.NONE;	// the value is not available !
 			dVal = objVal.doubleValue();
 		}
-		if(this.getPercent()){
+		if(this.getAnnotationType() == AnnotationType.PERCENT){
 			return new MetricValue(dVal, ((float) dVal/this.dRootValue));
 		} else {
 			return new MetricValue(dVal);

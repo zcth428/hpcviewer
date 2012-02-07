@@ -17,6 +17,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.*;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 
 import edu.rice.cs.hpc.viewer.metric.*;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -359,7 +360,11 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			// the expression is valid (already verified in the dialog box)
 			Expression expFormula = dlg.getExpression();
 			String sName = dlg.getName();					// metric name
-			boolean bPercent = dlg.getPercentDisplay();		// display the percentage ?
+			// display the percentage ?
+			AnnotationType bPercent = AnnotationType.NONE; 
+			if (dlg.getPercentDisplay() == true) {
+				bPercent = AnnotationType.PERCENT;
+			}
 
 			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database

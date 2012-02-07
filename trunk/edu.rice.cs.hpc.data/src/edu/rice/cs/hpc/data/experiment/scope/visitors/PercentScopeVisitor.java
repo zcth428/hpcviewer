@@ -62,7 +62,7 @@ public class PercentScopeVisitor implements IScopeVisitor {
 			if (m != MetricValue.NONE && root_value != MetricValue.NONE) {
 				double myValue = MetricValue.getValue(m);
 				double total = MetricValue.getValue(root_value);
-				if (total != 0.0) MetricValue.setPercentValue(m, myValue/total);
+				if (total != 0.0) MetricValue.setAnnotationValue(m, myValue/total);
 			}
 
 		}

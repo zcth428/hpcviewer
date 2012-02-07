@@ -14,6 +14,9 @@ public abstract class BaseMetric {
 	//-------------------------------------------------------------------------------
 	// DATA
 	//-------------------------------------------------------------------------------
+	/** Valid types of Annotations to be used with metric values */
+	public enum AnnotationType { NONE, PERCENT, PROCESS };
+
 	/** The short name of this metric, used within an experiment's XML file. */
 	protected String shortName;
 
@@ -26,8 +29,8 @@ public abstract class BaseMetric {
 	/** Whether this metric should be displayed. */
 	protected boolean displayed;
 
-	/** Whether this metric's display should include a percentage. */
-	protected boolean percent;
+	/** The type of annotation that should be displayed with this metric (percent or process number). */
+	protected AnnotationType annotationType = AnnotationType.NONE;
 
 	/** The index of this metric in its experiment's metric list. */
 	protected int index;
@@ -52,20 +55,25 @@ public abstract class BaseMetric {
 	 * @param sDisplayName: the name of the title
 	 * @param displayed: will metric be displayed ?
 	 * @param format: format of the display
-	 * @param percent: show the percent ?
+	 * @param annotationType: show the percent or process number ?
 	 * @param index: index in the table
 	 *************************************************************************/
 	public BaseMetric(String sID, String sDisplayName, boolean displayed, String format, 
-			boolean percent, int index, MetricType type) {
+			AnnotationType annotationType, int index, MetricType type) {
 		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;
 		this.displayed = displayed;
-		this.percent = percent;
+		this.annotationType = annotationType;
 		this.index = index;
 
 		// format
 		if (format == null) {
-			this.displayFormat = (this.percent ? MetricValueFormat.DEFAULT_PERCENT
-					: MetricValueFormat.DEFAULT_NOPERCENT);			
+			if (annotationType == AnnotationType.PERCENT) {
+				this.displayFormat = new MetricValueFormat(true, MetricValueFormat.FLOAT, 8, 2, true, MetricValueFormat.FIXED, 5, 1, "#0.0%", 1);
+			} else if (annotationType == AnnotationType.PROCESS) {
+				this.displayFormat = new MetricValueFormat(true, MetricValueFormat.FLOAT, 8, 2, true, MetricValueFormat.FIXED, 5, 0, "<0>", 1);
+			} else {
+				this.displayFormat = new MetricValueFormat(true, MetricValueFormat.FLOAT, 8, 2, false, 0, 0, 0, null, 1);
+			}
 		} else {
 			this.displayFormat = new MetricValuePredefinedFormat(format);
 		}
@@ -152,11 +160,11 @@ public abstract class BaseMetric {
 	}
 
 	/*************************************************************************
-	 *	Returns whether the metric's display should include a percentage value.
+	 *	Returns the type of annotation a metric's display should include (percent, process number, others ??).
 	 ************************************************************************/
-	public boolean getPercent()
+	public AnnotationType getAnnotationType()
 	{
-		return this.percent;
+		return this.annotationType;
 	}
 
 	/**
@@ -166,7 +174,6 @@ public abstract class BaseMetric {
 	 */
 	public String getMetricTextValue(Scope scope) {
 		MetricValue mv = this.getValue(scope);
-		// bug fix: if the percent has to be displayed BUT the value is zero, then display nothing
 		return this.getMetricTextValue(mv);
 	}
 

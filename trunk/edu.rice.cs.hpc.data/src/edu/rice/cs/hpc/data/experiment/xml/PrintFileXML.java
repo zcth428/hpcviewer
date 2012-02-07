@@ -97,8 +97,8 @@ public class PrintFileXML {
 				printAttribute(objPrint, "n", m.getDisplayName().trim());				
 				printAttribute(objPrint, "v", "final");				
 				printAttribute(objPrint, "t", getMetricType(m) );				
-				printAttribute(objPrint, "show", booleanToInt(m.getDisplayed()) );
-				printAttribute(objPrint, "show-percent", booleanToInt(m.getPercent()) );
+				printAttribute(objPrint, "show", booleanToInt(m.getDisplayed()));
+				printAnnotationType(objPrint, m);
 			}
 			objPrint.print(">");
 
@@ -119,6 +119,24 @@ public class PrintFileXML {
 		else if (m.getMetricType() == MetricType.INCLUSIVE )
 			return "inclusive";
 		return "nil";
+	}
+	
+	
+	/**--------------------------------------------------------------------------------**
+	 * print the type of annotation
+	 * @param objPrint
+	 * @param m
+	 **--------------------------------------------------------------------------------**/
+	private void printAnnotationType (PrintStream objPrint, BaseMetric m) {
+		
+		switch (m.getAnnotationType()) {
+		case PERCENT:
+			printAttribute(objPrint, "show-percent", "1" );
+			break;
+		case PROCESS:
+			printAttribute(objPrint, "show-process", "1" );
+			break;
+		}
 	}
 	
 	

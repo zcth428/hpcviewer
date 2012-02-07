@@ -51,25 +51,28 @@ public class MetricValueFormat implements IMetricValueFormat
 /** Whether to show the actual value. */
 protected boolean showValue;
 
-/** Whether to show the percentage value. */
-protected boolean showPercent;
+/** Whether to show the annotation value. */
+protected boolean showAnnotation;
 
 /** The number format to be used for the actual value. */
 protected Style valueStyle;
 
-/** The number format to be used for the percentage value. */
-protected Style percentStyle;
+/** The number format to be used for the annotation value. */
+protected Style annotationStyle;
 
-/** How many space characters separate the actual and percentage values. */
+/** The pattern to use when formatting annotation values. */
+protected String annotationFormatPattern;
+
+/** How many space characters separate the metric value and its annotation. */
 protected int separatorWidth;
 
 /** A Java formatter implementing the format specified for actual values. */
 protected DecimalFormat valueFormatter;
 
-/** A Java formatter implementing the format specified for percent values. */
-protected DecimalFormat percentFormatter;
+/** A Java formatter implementing the format specified for the metrics annotation. */
+protected DecimalFormat annotationFormatter;
 
-/** A sequence of spaces used to separate the actual and percent values. */
+/** A sequence of spaces used to separate the metric value and its annotation. */
 protected String separator;
 
 
@@ -88,28 +91,12 @@ public static int FIXED = 1;
 /** Indicates that a number should be displayed in floating point ("scientific") format. */
 public static int FLOAT = 2;
 
-/** The default metric value format. */
-public static MetricValueFormat DEFAULT_PERCENT   = new MetricValueFormat(true);
-public static MetricValueFormat DEFAULT_NOPERCENT = new MetricValueFormat(false);
-
 
 
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
 //////////////////////////////////////////////////////////////////////////
-
-
-
-
-/*************************************************************************
- *	Creates a default format.
- ************************************************************************/
-	
-public MetricValueFormat(boolean percent)
-{
-	this(true, MetricValueFormat.FLOAT, 8, 2, percent, MetricValueFormat.FIXED, 5, 1, 1);
-}
 
 
 
@@ -122,10 +109,11 @@ public MetricValueFormat(boolean showValue,
 						 int valueKind,
 						 int valueFieldWidth,
 						 int valueFractionDigits,
-						 boolean showPercent,
-						 int percentKind,
-						 int percentFieldWidth,
-						 int percentFractionDigits,
+						 boolean showAnnotation,
+						 int annotationKind,
+						 int annotationFieldWidth,
+						 int annotationFractionDigits,
+						 String annotationFormatPattern,
 						 int separatorWidth)
 {
 	// creation arguments
@@ -135,11 +123,15 @@ public MetricValueFormat(boolean showValue,
 	this.valueStyle.fieldWidth = valueFieldWidth;
 	this.valueStyle.fractionDigits = valueFractionDigits;
 	
-	this.showPercent = showPercent;
-	this.percentStyle = new MetricValueFormat.Style();
-	this.percentStyle.kind = percentKind;
-	this.percentStyle.fieldWidth = percentFieldWidth;
-	this.percentStyle.fractionDigits = percentFractionDigits;
+	this.showAnnotation = showAnnotation;
+	this.annotationStyle = new MetricValueFormat.Style();
+	this.annotationStyle.kind = annotationKind;
+	this.annotationStyle.fieldWidth = annotationFieldWidth;
+	this.annotationStyle.fractionDigits = annotationFractionDigits;
+	if (annotationFormatPattern == null) {
+		annotationFormatPattern = "#0.0%";			// need to have something so default to what is used for percent values.
+	}
+	this.annotationFormatPattern = annotationFormatPattern;
 	
 	this.separatorWidth = separatorWidth;
 	
@@ -268,12 +260,12 @@ public int getValueFractionDigits()
 
 
 /*************************************************************************
- *	Sets whether to show the percentage value.
+ *	Sets whether to show the metrics annotation.
  ************************************************************************/
 	
-public void setShowPercent(boolean showPercent)
+public void setShowAnnotation(boolean showAnnotation)
 {
-	this.showPercent = showPercent;
+	this.showAnnotation = showAnnotation;
 	this.clearFormatters();
 }
 
@@ -281,28 +273,28 @@ public void setShowPercent(boolean showPercent)
 
 
 /*************************************************************************
- *	Returns whether to show the percentage value.
+ *	Returns whether to show the metrics annotation.
  ************************************************************************/
 	
-public boolean getShowPercent()
+public boolean getShowAnnotation()
 {
-	return this.showPercent;
+	return this.showAnnotation;
 }
 
 
 
 
 /*************************************************************************
- *	Sets the kind of numeric display to be used for the percentage value.
+ *	Sets the kind of numeric display to be used with a metrics annotation.
  *	
  *	@param kind		either <code>MetricValueFormat.FIXED</code> or
  *					<code>MetricValueFormat.FLOAT</code>
  *
  ************************************************************************/
 	
-public void setPercentKind(int kind)
+public void setAnnotationKind(int kind)
 {
-	this.percentStyle.kind = kind;
+	this.annotationStyle.kind = kind;
 	this.clearFormatters();
 }
 
@@ -310,28 +302,28 @@ public void setPercentKind(int kind)
 
 
 /*************************************************************************
- *	Returns the kind of numeric display to be used for the percentage value.
+ *	Returns the kind of numeric display to be used with a metrics annotation.
  *	
  *	@return		either <code>MetricValueFormat.FIXED</code> or
  *				<code>MetricValueFormat.FLOAT</code>
  *
  ************************************************************************/
 	
-public int getPercentKind()
+public int getAnnotationKind()
 {
-	return this.percentStyle.kind;
+	return this.annotationStyle.kind;
 }
 
 
 
 
 /*************************************************************************
- *	Sets the total number of characters to be used for the percentage value.
+ *	Sets the total number of characters to be used for the metrics annotation.
  ************************************************************************/
 	
-public void setPercentFieldWidth(int fieldWidth)
+public void setAnnotationFieldWidth(int fieldWidth)
 {
-	this.percentStyle.fieldWidth = fieldWidth;
+	this.annotationStyle.fieldWidth = fieldWidth;
 	this.clearFormatters();
 }
 
@@ -339,12 +331,12 @@ public void setPercentFieldWidth(int fieldWidth)
 
 
 /*************************************************************************
- *	Returns the total number of characters to be used for the percentage value.
+ *	Returns the total number of characters to be used for the metrics annotation.
  ************************************************************************/
 	
-public int getPercentFieldWidth()
+public int getAnnotationFieldWidth()
 {
-	return this.percentStyle.fieldWidth;
+	return this.annotationStyle.fieldWidth;
 }
 
 
@@ -352,12 +344,12 @@ public int getPercentFieldWidth()
 
 /*************************************************************************
  *	Sets the number of digits to be used for the fractional part of the
- *	percentage value.
+ *	metrics annotation.
  ************************************************************************/
 	
-public void setPercentFractionDigits(int fractionDigits)
+public void setAnnotationFractionDigits(int fractionDigits)
 {
-	this.percentStyle.fractionDigits = fractionDigits;
+	this.annotationStyle.fractionDigits = fractionDigits;
 	this.clearFormatters();
 }
 
@@ -366,20 +358,20 @@ public void setPercentFractionDigits(int fractionDigits)
 
 /*************************************************************************
  *	Returns the number of digits to be used for the fractional part of the
- *	percentage value.
+ *	metrics annotation.
  ************************************************************************/
 	
-public int getPercentFractionDigits()
+public int getAnnotationFractionDigits()
 {
-	return this.percentStyle.fractionDigits;
+	return this.annotationStyle.fractionDigits;
 }
 
 
 
 
 /*************************************************************************
- *	Sets the number of space characters to separate the actual and
- *	percentage values.
+ *	Sets the number of space characters to separate the metric value and
+ *	its annotation.
  ************************************************************************/
 	
 public void setSeparatorWidth(int separatorWidth)
@@ -392,8 +384,8 @@ public void setSeparatorWidth(int separatorWidth)
 
 
 /*************************************************************************
- *	Returns the number of space characters to separate the actual and
- *	percentage values.
+ *	Returns the number of space characters to separate the metric
+ *	value and its annotation.
  ************************************************************************/
 	
 public int getSeparatorWidth()
@@ -418,8 +410,8 @@ public int getSeparatorWidth()
 public int getFormattedLength()
 {
 	int width1 = (this.showValue ? this.valueStyle.fieldWidth : 0);
-	int width2 = (this.showPercent ? this.percentStyle.fieldWidth : 0);
-	int width3 = (this.showValue && this.showPercent ? this.separatorWidth : 0);
+	int width2 = (this.showAnnotation ? this.annotationStyle.fieldWidth : 0);
+	int width3 = (this.showValue && this.showAnnotation ? this.separatorWidth : 0);
 	return width1 + width2 + width3 + 1;	// +1 for trailing space
 }
 
@@ -436,7 +428,7 @@ public String format(double value) {
 	StringBuffer formatted = new StringBuffer();
 	String string = this.formatDouble(value, this.valueFormatter, this.valueStyle);
 	formatted.append(string);
-	formatted.append(Util.spaces(this.percentStyle.fieldWidth));
+	formatted.append(Util.spaces(this.annotationStyle.fieldWidth));
 	return formatted.toString();
 }*/
 /*************************************************************************
@@ -458,30 +450,42 @@ public String format(MetricValue value)
 	}
 	
 	// append separating spaces if needed
-	if( this.showValue && this.showPercent )
+	if( this.showValue && this.showAnnotation )
 		formatted.append(this.separator);
 	
-	// append formatted percentage value if wanted
-	if( this.showPercent )
+	// append formatted annotation if wanted
+	if( this.showAnnotation )
 	{
-		if( MetricValue.isPercentAvailable(value) )
+		if( MetricValue.isAnnotationAvailable(value) )
 		{
-			double number = MetricValue.getPercentValue(value);
-			if (number == 1.0) {    // johnmc
-				formatted.append("100 %");
-				// Laks 2009.02.12: dirty hack to solve the problem when a small negative percentage occurs
-				// instead of displaying -0.0% we force to display 0.0%
-				// a better solution is by defining the proper pattern. But so far I don't see any good solution
-				// 	this hack should be a temporary fix !
-			} else if ( (number > -0.0001) && (number < 0.0) ) {
-				formatted.append(" 0.0%");
-			} else {
-				String string = this.formatDouble(number, this.percentFormatter, this.percentStyle);
-				formatted.append(string);
+			double number = MetricValue.getAnnotationValue(value);
+
+			// if the formatter pattern is set for percent values, we need to handle special values differently
+			if (this.annotationFormatPattern.contains("%")) {
+				// if value shows this used all of it, show that without decimal places
+				if (number == 1.0) {
+					formatted.append("100 %");
+					return formatted.toString();
+				}
+
+				// if value shows a small negative number, show a percent of zero
+				if ( (number > -0.0001) && (number < 0.0) ) {
+					// Laks 2009.02.12: dirty hack to solve the problem when a small negative percentage occurs
+					// instead of displaying -0.0% we force to display 0.0%
+					// a better solution is by defining the proper pattern. But so far I don't see any good solution
+					// 	this hack should be a temporary fix !
+					formatted.append(" 0.0%");
+					return formatted.toString();
+				}
 			}
+
+			// not a value that needs special treatment, just format with the specified pattern
+			String string = this.formatDouble(number, this.annotationFormatter, this.annotationStyle);
+			formatted.append(string);
+			return formatted.toString();
 		}
-		else
-			formatted.append(Util.spaces(this.percentStyle.fieldWidth));
+
+		formatted.append(Util.spaces(this.annotationStyle.fieldWidth));
 	}
 	
 	return formatted.toString();
@@ -552,7 +556,7 @@ protected String formatDouble(double d, DecimalFormat formatter, Style style)
 protected void clearFormatters()
 {
 	this.valueFormatter   = null;
-	this.percentFormatter = null;
+	this.annotationFormatter = null;
 	this.separator        = null;
 }
 
@@ -565,25 +569,24 @@ protected void clearFormatters()
 	
 protected void ensureFormatters()
 {
-	// actual value
+	// value formatter
 	if( this.valueFormatter == null )
 	{
 		String pattern = "0.";
-                
-                // use the number of fractional digits to craft the pattern
-                int decdigits = getValueFractionDigits();
-                while (decdigits-- > 0) {
-                    pattern = pattern + "0";
-                }
-                
+
+		// use the number of fractional digits to craft the pattern
+		int decdigits = getValueFractionDigits();
+		while (decdigits-- > 0) {
+		    pattern = pattern + "0";
+		}
+
 		this.valueFormatter = Util.makeDecimalFormatter(pattern);
 	}
 	
-	// percentage value
-	if( this.percentFormatter == null )
+	// annotation formatter
+	if( this.annotationFormatter == null )
 	{
-		String pattern = "#0.0%";
-		this.percentFormatter = Util.makeDecimalFormatter(pattern);
+		this.annotationFormatter = Util.makeDecimalFormatter(this.annotationFormatPattern);
 	}
 	
 	// separation between values
@@ -594,11 +597,3 @@ protected void ensureFormatters()
 
 
 }
-
-
-
-
-
-
-
-

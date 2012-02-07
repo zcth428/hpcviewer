@@ -3,6 +3,8 @@
  */
 package edu.rice.cs.hpc.data.experiment.metric;
 
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
+
 /**
  * @author laksonoadhianto
  *
@@ -15,7 +17,7 @@ public class TestMetricFormat {
 	public static void main(String[] args) {
 		
 		Metric baseMetric = new Metric("sn", "nn", "dn",
-				true, null, true, "", MetricType.INCLUSIVE, 1);
+				true, null, AnnotationType.PERCENT, "", MetricType.INCLUSIVE, 1);
 		
 		// test 1: 9.999 should be displayed as 1.0e+01 
 		MetricValue mv = new MetricValue(9.999, .999);

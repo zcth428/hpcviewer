@@ -17,6 +17,7 @@ package edu.rice.cs.hpc.data.experiment;
 
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
@@ -550,7 +551,7 @@ private boolean inclusiveNeeded() {
  * @return
  */
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
-		boolean bPercent, MetricType metricType) {
+		AnnotationType annotationType, MetricType metricType) {
 	
 	if (!metrics_needed)
 		return null;
@@ -565,7 +566,7 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 	metricLastID = String.valueOf(metricLastIndex);
 	
 	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, metricLastID, this.getMetricCount(), 
-			bPercent, MetricType.INCLUSIVE);
+			annotationType, MetricType.INCLUSIVE);
 	
 	this.metricList.add(objMetric);
 	this.metricMap.put(objMetric.getShortName(), objMetric);

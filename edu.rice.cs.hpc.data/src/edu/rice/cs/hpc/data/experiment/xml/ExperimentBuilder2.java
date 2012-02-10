@@ -432,7 +432,7 @@ public class ExperimentBuilder2 extends Builder
 		this.configuration.setSearchPaths(this.pathList);
 		this.experiment.setConfiguration(this.configuration);
 
-		this.experiment.setScopes(this.rootScope);
+		this.experiment.setRootScope(this.rootScope);
 		
 		// supply defaults for missing info
 		if( this.configuration.getName() == null )

@@ -23,7 +23,6 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
-import edu.rice.cs.hpc.data.util.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +43,7 @@ import com.graphbuilder.math.*;
  */
 
 
-public class Experiment
+public class Experiment extends BaseExperiment implements IExperiment
 {
 
 
@@ -68,11 +67,6 @@ protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 protected HashMap<Integer,SourceFile> hashFileTable;
 
 
-/** The experiment's metrics. */
-protected Vector<BaseMetric> metricList;
-
-/** The experiment's root scope. */
-protected Scope rootScope;
 
 /** A mapping from internal name strings to metric objects. */
 protected HashMap<String, BaseMetric> metricMap;
@@ -204,15 +198,16 @@ public void setMetrics(List<BaseMetric> metricList)
 {
 	if (!metrics_needed)
 		return;
-	
-	this.metricList = new Vector<BaseMetric>(metricList);
+
+	super.setMetrics(metricList);
 
 	// initialize metric access data structures
 	int count = metricList.size();
 	this.metricMap = new HashMap<String, BaseMetric>(count);
+	
 	for( int k = 0;  k < count;  k++ )
 	{	
-		BaseMetric m = (BaseMetric)this.metricList.get(k);
+		BaseMetric m = (BaseMetric)this.metrics.get(k);
 		m.setIndex(k);
 		this.metricMap.put(m.getShortName(), m);
 	}
@@ -231,9 +226,10 @@ public void finalizeDatabase()
 		return;
 	
 	this.metricMap.clear();
-	int nbMetrics = this.metricList.size();
+	int nbMetrics = this.metrics.size();
+	
 	for (int i=0; i<nbMetrics; i++) {
-		BaseMetric m = (BaseMetric) this.metricList.get(i);
+		BaseMetric m = (BaseMetric) this.metrics.get(i);
 		String 	sID;		
 		if (m instanceof AggregateMetric) {
 			// for aggregate metric we don't reorder the ID
@@ -247,17 +243,6 @@ public void finalizeDatabase()
 }
 
 
-/*************************************************************************
- *	Sets the experiment's scope list and root scope.
- *
- *	This method is to be called only once, during <code>Experiment.open</code>.
- *
- ************************************************************************/
-	
-public void setScopes(Scope rootScope)
-{
-	this.rootScope = rootScope;
-}
 
 
 public void setVersion (String v) 
@@ -273,13 +258,7 @@ public int getMajorVersion()
 	return Integer.parseInt(this.version.substring(0, ip));
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Experiment Merging													//
-//////////////////////////////////////////////////////////////////////////
-public static Experiment merge(Experiment exp1, Experiment exp2)
-{
-	return new ExperimentMerger().merge(exp1, exp2);
-}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Postprocessing														//
@@ -568,7 +547,7 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 	DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, metricLastID, this.getMetricCount(), 
 			annotationType, MetricType.INCLUSIVE);
 	
-	this.metricList.add(objMetric);
+	this.metrics.add(objMetric);
 	this.metricMap.put(objMetric.getShortName(), objMetric);
 
 	int iInclusive = this.getMetricCount() - 1;
@@ -653,8 +632,7 @@ public File getSearchPath(int index)
 	
 public BaseMetric[] getMetrics()
 {
-	return 	this.metricList.toArray(new BaseMetric[0]);
-	//return 	(Metric[])this.metricList.toArray(new Metric[0]);
+	return 	this.metrics.toArray(new BaseMetric[0]);
 }
 
 
@@ -664,7 +642,7 @@ public BaseMetric[] getMetrics()
 	
 public int getMetricCount()
 {
-	return this.metricList.size();
+	return this.metrics.size();
 }
 
 
@@ -682,7 +660,7 @@ public BaseMetric getMetric(int index)
 	BaseMetric metric;
 	// laks 2010.03.03: bug fix when the database contains no metrics
 	try {
-		metric = this.metricList.get(index);
+		metric = this.metrics.get(index);
 	} catch (Exception e) {
 		// if the metric doesn't exist or the index is out of range, return null
 		metric = null;
@@ -712,33 +690,14 @@ public BaseMetric getMetric(String name)
 
 
 
-//////////////////////////////////////////////////////////////////////////
-//	ACCESS TO SCOPES													//
-//////////////////////////////////////////////////////////////////////////
 
 
-
-
-/*************************************************************************
- *	Returns the root scope of the experiment's scope tree.
- ************************************************************************/
-	
-public Scope getRootScope()
-{
-	return this.rootScope;
-}
-
-
-public TreeNode[] getRootScopeChildren() {
-	return this.rootScope.getChildren();
-}
 
 //============================================================================
 // DICTIONARY
 //============================================================================
 public void setFileTable( HashMap<Integer, SourceFile> fileTable) {
 	this.hashFileTable = fileTable;
-	//arrSourceFiles = fileTable;
 }
 
 
@@ -792,56 +751,4 @@ public TraceAttribute getTraceAttribute() {
 	return this.attribute;
 }
 
-//======================================================================================
-//	UNIT TEST
-//======================================================================================
-
-/**
- * unit test for this class
- * @param argv
- */
-	static public void main(String argv[]) {
-       Experiment experiment;
-	   String sFilename = argv[0];
-	           // open the experiment if possible
-	    try
-	        {
-	    	   File objFile = new File(sFilename);
-	    	   if (objFile.isDirectory()) {
-	    		   File files[] = Util.getListOfXMLFiles(sFilename);
-	    		   boolean done = false;
-	    		   for (int i=0; i<files.length && !done; i++) {
-	    			   
-	    		   }
-	    	   }
-	           experiment = new Experiment(objFile);
-	           // laks: try to debug to verify if apache xml is accessible
-	           System.out.print("DataExperiment: Opening file:"+sFilename);
-	           experiment.open();
-	           System.out.println(" is succeded !");
-	           
-	      } catch(java.io.FileNotFoundException fnf)
-	      {
-	           System.err.println("$Error:File not found" + sFilename);
-	           experiment = null;
-	      }
-	      catch(java.io.IOException io)
-	      {
-	           System.err.println("$Error: Unable to read" +  sFilename);
-	           experiment = null;
-	      }
-	      catch(InvalExperimentException ex)
-	      {
-	           String where = sFilename + "  has incorrect tag at line: " + ex.getLineNumber();
-	           System.err.println("$" +  where);
-	           experiment = null;
-	      }
-	      catch(NullPointerException npe)
-	      {
-	           System.err.println("$File has null pointer:" + npe.getMessage() + sFilename);
-	           experiment = null;
-	      } catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 }

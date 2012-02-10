@@ -124,5 +124,11 @@ public class DerivedMetric extends BaseMetric {
 			return new MetricValue(dVal);
 		}
 	}
+
+
+	@Override
+	public BaseMetric duplicate() {
+		return new DerivedMetric(null, expression, displayName, shortName, index, annotationType, metricType);
+	}
 	
 }

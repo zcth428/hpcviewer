@@ -64,13 +64,6 @@ public class AggregateMetric extends BaseMetric {
 		this.partner = partner;
 	}
 
-	@Override
-	public MetricValue getValue(Scope s) {
-		MetricValue mv = null;
-		mv = s.getMetricValue(this.index);
-		return mv;
-	}
-
 
 	/****------------------------------------------------------------------------****
 	 * set the math expression
@@ -171,5 +164,19 @@ public class AggregateMetric extends BaseMetric {
 			e.printStackTrace();
 		}
 		scope.setMetricValue(this.index, mv);
+	}
+
+
+	@Override
+	public MetricValue getValue(Scope s) {
+		MetricValue mv = null;
+		mv = s.getMetricValue(this.index);
+		return mv;
+	}
+
+	@Override
+	public BaseMetric duplicate() {
+		return new AggregateMetric(shortName, displayName, displayed, 
+				null, annotationType, index, partner, metricType);
 	}
 }

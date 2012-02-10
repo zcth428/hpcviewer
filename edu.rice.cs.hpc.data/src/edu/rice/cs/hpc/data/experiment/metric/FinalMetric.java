@@ -12,13 +12,4 @@ public class FinalMetric extends Metric {
 		// TODO Auto-generated constructor stub
 	}
 
-	public FinalMetric(String shortName,
-			String nativeName, String displayName, boolean displayed, String format,
-			AnnotationType annotationType, double sampleperiod, MetricType metricType,
-			int partnerIndex) {
-		super(shortName, nativeName, displayName, displayed, format,
-				annotationType, sampleperiod, metricType, partnerIndex);
-		// TODO Auto-generated constructor stub
-	}
-
 }

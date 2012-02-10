@@ -259,6 +259,11 @@ public abstract class BaseMetric {
 	 *************************************************************************/
 	abstract public MetricValue getValue(Scope s);
 
+	/***
+	 * Method to duplicate itself (cloning)
+	 * @return
+	 */
+	abstract public BaseMetric duplicate();
 
 
 	//=================================================================================

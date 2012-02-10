@@ -64,8 +64,14 @@ public class ExperimentMerger {
 			metricList.add(m1[i]);
 		}
 		
+		final int m1_last_index = m1[m1.length-1].getIndex();
+		
 		for (int i=0; i<m2.length; i++) {
 			final BaseMetric m = m2[i].duplicate();
+			
+			// recompute the index of the metric
+			m.setIndex( m1_last_index + m.getIndex() );
+			
 			metricList.add(m);
 		}
 		

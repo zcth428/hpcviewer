@@ -57,31 +57,16 @@ public class ExperimentMerger {
 		return files;
 	}
 	
-	private List buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
-		Vector metricList = new Vector();
+	private Vector<BaseMetric> buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
+		final Vector<BaseMetric> metricList = new Vector<BaseMetric>();
+		
 		for (int i=0; i<m1.length; i++) {
-			Metric m = (Metric) m1[i];
-			// TODO [me] change (display/native) names (+ Exp#)
-			String shortName = "" + metricList.size();
-			Metric newM = new Metric(shortName, 
-					m.getNativeName(), m.getDisplayName(),
-					m.getDisplayed(), null, m.getAnnotationType(), 
-					m.getSamplePeriod(), m.getMetricType(), m.getPartnerIndex());
-			metricList.add(newM);
+			metricList.add(m1[i]);
 		}
+		
 		for (int i=0; i<m2.length; i++) {
-			Metric m = (Metric)m2[i];
-			// TODO [me] change (display/native) names (+ Exp#)
-			String shortName = "" + metricList.size();
-			MetricType metricType = m.getMetricType();
-			int partnerIndex = m.getPartnerIndex();
-			if (partnerIndex != Metric.NO_PARTNER_INDEX)
-				partnerIndex = m1.length + partnerIndex;
-			Metric newM = new Metric(shortName, 
-						m.getNativeName(), m.getDisplayName(),
-						m.getDisplayed(), null, m.getAnnotationType(), 
-						m.getSamplePeriod(), metricType, partnerIndex);
-			metricList.add(newM);
+			final BaseMetric m = m2[i].duplicate();
+			metricList.add(m);
 		}
 		
 		return metricList;

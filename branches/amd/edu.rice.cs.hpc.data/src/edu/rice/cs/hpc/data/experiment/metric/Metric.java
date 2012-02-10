@@ -74,28 +74,6 @@ public Metric(String shortName, String nativeName, String displayName, boolean d
 }
 
 
-/**
- * Construct a metric using a "double" sample period
- * @param shortName
- * @param nativeName
- * @param displayName
- * @param displayed
- * @param format
- * @param annotationType
- * @param sampleperiod
- * @param metricType
- * @param partnerIndex
- */
-public Metric( String shortName, String nativeName, String displayName, boolean displayed, 
-               String format, AnnotationType annotationType, double samplePeriod, MetricType metricType, int partnerIndex)
-{
-	super(shortName, displayName, displayed, format, annotationType, 0, metricType);
-	// creation arguments
-	this.nativeName  = nativeName;
-	this.sampleperiod  = samplePeriod;
-	this.metricType     = metricType;
-	this.partnerIndex = partnerIndex;
-}
 
 /*************************************************************************
  *	Returns the value of this metric at a given scope.
@@ -130,6 +108,12 @@ public int getPartnerIndex()
 public void setPartnerIndex(int ei)
 {
 	this.partnerIndex = ei;
+}
+
+
+@Override
+public BaseMetric duplicate() {
+	return new Metric(shortName, nativeName, displayName, displayed, null, annotationType, displayName, metricType, partnerIndex);
 }
 
 }

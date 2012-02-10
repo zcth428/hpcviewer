@@ -16,7 +16,6 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
-import edu.rice.cs.hpc.data.experiment.source.*;
 
 public class ExperimentMerger {
 	public Experiment merge(Experiment exp1, Experiment exp2) {
@@ -29,7 +28,7 @@ public class ExperimentMerger {
 		// merged.setSourceFiles(files);
 		
 		// append metricList
-		List metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
+		List<BaseMetric> metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
 		merged.setMetrics(metrics);
 
 		// union ScopeLists
@@ -46,16 +45,6 @@ public class ExperimentMerger {
 		return merged;
 	}
 	
-	private List unionSourceFiles(SourceFile[] f1, SourceFile[] f2) {
-		Vector files = new Vector();
-		List sf1 = Arrays.asList(f1);
-		List sf2 = Arrays.asList(f2);
-		// union these lists (if !contains?)
-		// TODO [me] how to handle new srcs in f2? copy to defaultDir? or use absolute path to dDir2?
-		files.addAll(sf1);
-		files.addAll(sf2);
-		return files;
-	}
 	
 	private Vector<BaseMetric> buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
 		final Vector<BaseMetric> metricList = new Vector<BaseMetric>();
@@ -78,18 +67,6 @@ public class ExperimentMerger {
 		return metricList;
 	}
 	
-	private List unionScopeLists(ScopeList s1, ScopeList s2) {
-		Vector scopes = new Vector();
-		for (int i=0; i<s1.getSize(); i++) {
-			scopes.add(s1.getScopeAt(i));
-		}
-		for (int i=0; i<s2.getSize(); i++) {
-			Scope scope = s2.getScopeAt(i);
-			if (!(scopes.contains(scope)))
-				scopes.add(scope);
-		}
-		return scopes;
-	}
 	
 	public void mergeScopeTrees(Experiment exp1, Experiment exp2, int offset) {
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();

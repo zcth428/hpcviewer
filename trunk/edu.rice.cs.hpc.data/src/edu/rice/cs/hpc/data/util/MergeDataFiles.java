@@ -32,7 +32,6 @@ public class MergeDataFiles {
 	
 	private static final int PROC_POS = 5;
 	private static final int THREAD_POS = 4;
-	private static final int MIN_FILE_SIZE = Constants.SIZEOF_LONG + (Constants.SIZEOF_INT*4);
 	
 	public enum MergeDataAttribute {SUCCESS_MERGED, SUCCESS_ALREADY_CREATED, FAIL_NO_DATA};
 	
@@ -202,11 +201,6 @@ public class MergeDataFiles {
 	{
 		final RandomAccessFile f = new RandomAccessFile(filename, "r");
 		boolean isCorrect = false;
-		
-		final long len = f.length();
-		
-		if (len<MIN_FILE_SIZE)
-			return false;
 		
 		final long pos = f.length() - Constants.SIZEOF_LONG;
 		if (pos>0) {

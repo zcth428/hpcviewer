@@ -101,7 +101,10 @@ public void setName(String name)
 	
 public int getSearchPathCount()
 {
-	return this.searchPaths.length;
+	if (this.searchPaths != null)
+		return this.searchPaths.length;
+	else
+		return 0;
 }
 
 

@@ -14,7 +14,8 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperimentWithMetrics;
 import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
@@ -46,7 +47,7 @@ public abstract class Scope extends Node
 static protected int idMax = 0;
 
 /** The experiment owning this scope. */
-protected Experiment experiment;
+protected BaseExperiment experiment;
 
 /** The source file containing this scope. */
 protected SourceFile sourceFile;
@@ -113,7 +114,7 @@ public static final int NO_LINE_NUMBER = -169; // any negative number other than
  *	Creates a Scope object with associated source line range.
  ************************************************************************/
 	
-public Scope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
+public Scope(BaseExperiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
 {
 	super(cct_id);
 	
@@ -132,7 +133,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int cc
 }
 
 
-public Scope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id, int cpid)
+public Scope(BaseExperiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id, int cpid)
 {
 	this(experiment, file, first, last, cct_id, flat_id);
 	this.cpid = cpid;
@@ -144,7 +145,7 @@ public Scope(Experiment experiment, SourceFile file, int first, int last, int cc
  *	Creates a Scope object with associated source file.
  ************************************************************************/
 	
-public Scope(Experiment experiment, SourceFile file, int scopeID)
+public Scope(BaseExperiment experiment, SourceFile file, int scopeID)
 {
 	this(experiment, file, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, scopeID, scopeID);
 }
@@ -509,11 +510,11 @@ public boolean hasNonzeroMetrics() {
 //////////////////////////////////////////////////////////////////////////
 // EXPERIMENT DATABASE 													//
 //////////////////////////////////////////////////////////////////////////
-public Experiment getExperiment() {
+public BaseExperiment getExperiment() {
 	return experiment;
 }
 
-public void setExperiment(Experiment exp) {
+public void setExperiment(BaseExperiment exp) {
 	this.experiment = exp;
 }
 
@@ -629,11 +630,14 @@ public void backupMetricValues() {
 	if (this.metrics == null)
 		return;
 	
+	if (!(experiment instanceof BaseExperimentWithMetrics))
+		return;
+	
 	this.combinedMetrics = new MetricValue[this.metrics.length];
 	
 	for(int i=0; i<this.metrics.length; i++) {
 		MetricValue value = this.metrics[i];
-		BaseMetric metric = this.experiment.getMetric(i);
+		BaseMetric metric = ((BaseExperimentWithMetrics)this.experiment).getMetric(i);
 		
 		//------------------------------------------------------------------
 		// if the value is not availabe we do NOT store it but instead we
@@ -679,11 +683,15 @@ public void setMetricValues(MetricValue values[]) {
  * @return
  ***************************************************************************/
 public MetricValue[] getCombinedValues() {
-	MetricValue [] values = new MetricValue[this.experiment.getMetricCount()];
+	
+	assert (this.isExperimentHasMetrics());
+	
+	final BaseExperimentWithMetrics _exp = (BaseExperimentWithMetrics) experiment;
+	MetricValue [] values = new MetricValue[_exp.getMetricCount()];
 	//boolean printed = false;
 
 	for (int i=0; i<values.length; i++) {
-		BaseMetric m = this.experiment.getMetric(i);
+		BaseMetric m = _exp.getMetric(i);
 		if (m instanceof AggregateMetric) {
 			if (this.combinedMetrics == null) {
 				/*if (!printed) {
@@ -710,9 +718,14 @@ public MetricValue[] getCombinedValues() {
  * @param filter
  **************************************************************************/
 public void combine(Scope source, MetricValuePropagationFilter filter) {
-	int nMetrics = this.experiment.getMetricCount();
+	
+	assert (this.isExperimentHasMetrics());
+	
+	final BaseExperimentWithMetrics _exp = (BaseExperimentWithMetrics) experiment;
+
+	int nMetrics = _exp.getMetricCount();
 	for (int i=0; i<nMetrics; i++) {
-		BaseMetric metric = this.experiment.getMetric(i);
+		BaseMetric metric = _exp.getMetric(i);
 		if (metric instanceof AggregateMetric) {
 			//--------------------------------------------------------------------
 			// aggregate metric need special treatment when combining two metrics
@@ -749,10 +762,14 @@ public void safeCombine(Scope source, MetricValuePropagationFilter filter) {
 protected void ensureMetricStorage()
 {
 	
+	assert (this.isExperimentHasMetrics());
+
+	final BaseExperimentWithMetrics _exp = (BaseExperimentWithMetrics) experiment;
+
 	if(this.metrics == null)
 		this.metrics = this.makeMetricValueArray();
 	// Expand if metrics not as big as experiment's (latest) metricCount
-	if(this.metrics.length < experiment.getMetricCount()) {
+	if(this.metrics.length < _exp.getMetricCount()) {
 		MetricValue[] newMetrics = this.makeMetricValueArray();
 		for(int i=0; i<this.metrics.length; i++)
 			newMetrics[i] = metrics[i];
@@ -769,7 +786,11 @@ protected void ensureMetricStorage()
 	
 protected MetricValue[] makeMetricValueArray()
 {
-	final int metricsNeeded= experiment.getMetricCount();
+	
+	assert (this.isExperimentHasMetrics());
+
+	final BaseExperimentWithMetrics _exp = (BaseExperimentWithMetrics) experiment;
+	final int metricsNeeded= _exp.getMetricCount();
 
 	MetricValue[] array = new MetricValue[metricsNeeded];
 	for(int k = 0; k < metricsNeeded; k++)
@@ -805,6 +826,10 @@ public void copyMetrics(Scope targetScope) {
 	}
 }
 
+protected boolean isExperimentHasMetrics()
+{
+	return (this.experiment instanceof BaseExperimentWithMetrics);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //returns maxDepth of the scope tree and fills colorTable across all scopes			//

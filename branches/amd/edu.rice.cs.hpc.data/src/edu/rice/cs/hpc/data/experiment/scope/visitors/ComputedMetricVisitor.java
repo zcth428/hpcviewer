@@ -10,6 +10,7 @@
 //////////////////////////////////////////////////////////////////////////
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 
@@ -46,7 +47,8 @@ public class ComputedMetricVisitor implements IScopeVisitor {
 		if (vt == ScopeVisitType.PreVisit) {
 			// base indices for experiments
 			int exp1 = 0, exp2 = n; 
-			int cmi = scope.getExperiment().getMetricCount() - n;
+			final Experiment exp = (Experiment) scope.getExperiment();
+			int cmi = exp.getMetricCount() - n;
 			
 			for (int i=0; i<n; i++) {
 				double mv1 = MetricValue.getValue(scope.getMetricValue(exp1+i));

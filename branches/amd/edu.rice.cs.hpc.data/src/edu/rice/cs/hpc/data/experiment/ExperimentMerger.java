@@ -17,6 +17,17 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 
+/****
+ * Merging experiments
+ *
+ * Steps:
+ * 
+ * 1. add the files path 
+ * 2. add metrics 		-->	add into metric list 
+ * 3. add raw metrics 	-->	
+ * 4. add trace data
+ *  
+ */
 public class ExperimentMerger {
 	public Experiment merge(Experiment exp1, Experiment exp2) {
 		// create new base Experiment
@@ -31,13 +42,9 @@ public class ExperimentMerger {
 		List<BaseMetric> metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
 		merged.setMetrics(metrics);
 
-		// union ScopeLists
-		// Laks 2009.01.06: get rid off unused methods and attributes
-		//List scopeList = unionScopeLists(exp1.getScopeList(), exp2.getScopeList());
-		
 		// Add tree1, walk tree2 & add; just CCT/Flat
-		//RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);
-		//merged.setScopes(scopeList, rootScope);
+		RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);
+		merged.setRootScope(rootScope);
 
 		mergeScopeTrees(merged, exp1, 0);
 		mergeScopeTrees(merged, exp2, exp1.getMetricCount());

@@ -15,13 +15,11 @@
 package edu.rice.cs.hpc.data.experiment;
 
 
-import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
-import edu.rice.cs.hpc.data.experiment.source.*;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 
 import java.io.File;
@@ -43,12 +41,9 @@ import com.graphbuilder.math.*;
  */
 
 
-public class Experiment extends BaseExperiment implements IExperiment
+public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 {
 
-
-/** The directory from which to resolve relative source file paths. */
-protected File defaultDirectory;
 
 /**
  * The experiment (XML) file 
@@ -56,29 +51,15 @@ protected File defaultDirectory;
  */
 protected File fileExperiment;
 
-/** The experiment's configuration. */
-protected ExperimentConfiguration configuration;
-
-/** version of the database **/
-protected String version;
-
 /** ----------------- DICTIONARIES -----------------  **/
 protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
-protected HashMap<Integer,SourceFile> hashFileTable;
 
-
-
-/** A mapping from internal name strings to metric objects. */
-protected HashMap<String, BaseMetric> metricMap;
 
 //------------------------------------------------------------
 // thread level database
 //------------------------------------------------------------
 private MetricRaw[] metrics_raw;
 
-private boolean metrics_needed = true;
-
-private TraceAttribute attribute;
 
 //////////////////////////////////////////////////////////////////////////
 //	INITIALIZATION														//
@@ -97,9 +78,6 @@ private TraceAttribute attribute;
 public Experiment(File filename)
 {
 	this.fileExperiment = filename;
-	// protect ourselves against filename being `foo' with no parent
-	// information whatsoever.
-	this.defaultDirectory = filename.getAbsoluteFile().getParentFile();
 }
 
 
@@ -113,24 +91,6 @@ public Experiment(Experiment exp)
 	this.fileExperiment = exp.getXMLExperimentFile();
 }
 
-
-/*************************************************************************
- *	Opens the experiment from its file.
- *
- *	@exception			IOException if experiment file can't be read.
- *	@exception			InvalExperimentException if file contents are
- *							not a valid experiment.
- *
- ************************************************************************/
-	
-public void open(boolean need_metrics)
-throws
-	Exception
-{
-	this.metrics_needed = need_metrics;
-	// parsing may throw exceptions
-	new ExperimentFileXML().parse(this.fileExperiment, this, need_metrics);
-}
 
 
 
@@ -173,19 +133,6 @@ public void close()
 
 
 
-/*************************************************************************
- *	Sets the experiment's configuration.
- *
- *	This method is to be called only once, during <code>Experiment.open</code>.
- *
- ************************************************************************/
-	
-public void setConfiguration(ExperimentConfiguration configuration)
-{
-	this.configuration = configuration;
-}
-
-
 
 /*************************************************************************
  *	Sets the experiment's metric list.
@@ -196,20 +143,16 @@ public void setConfiguration(ExperimentConfiguration configuration)
 	
 public void setMetrics(List<BaseMetric> metricList)
 {
-	if (!metrics_needed)
-		return;
 
 	super.setMetrics(metricList);
 
 	// initialize metric access data structures
 	int count = metricList.size();
-	this.metricMap = new HashMap<String, BaseMetric>(count);
 	
 	for( int k = 0;  k < count;  k++ )
 	{	
 		BaseMetric m = (BaseMetric)this.metrics.get(k);
 		m.setIndex(k);
-		this.metricMap.put(m.getShortName(), m);
 	}
 }
 
@@ -222,33 +165,9 @@ public void setMetrics(List<BaseMetric> metricList)
  *************************************************************************/
 public void finalizeDatabase()
 {
-	if (!metrics_needed)
-		return;
-	
-	this.metricMap.clear();
-	int nbMetrics = this.metrics.size();
-	
-	for (int i=0; i<nbMetrics; i++) {
-		BaseMetric m = (BaseMetric) this.metrics.get(i);
-		String 	sID;		
-		if (m instanceof AggregateMetric) {
-			// for aggregate metric we don't reorder the ID
-			sID = m.getShortName();
-		} else {
-			sID = String.valueOf(i);
-			m.setShortName(sID);				// rename the ID
-		}
-		this.metricMap.put(sID, m);			// put it back into the map
-	}
 }
 
 
-
-
-public void setVersion (String v) 
-{
-	this.version = v;
-}
 
 public int getMajorVersion()
 {
@@ -532,8 +451,6 @@ private boolean inclusiveNeeded() {
 public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
 		AnnotationType annotationType, MetricType metricType) {
 	
-	if (!metrics_needed)
-		return null;
 	
 	// laks 2010.02.27: for aggregate metric, we need to know the ID of the last metric, then increment this ID
 	//					for the new metric
@@ -548,7 +465,6 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 			annotationType, MetricType.INCLUSIVE);
 	
 	this.metrics.add(objMetric);
-	this.metricMap.put(objMetric.getShortName(), objMetric);
 
 	int iInclusive = this.getMetricCount() - 1;
 	int iExclusive = -1;		// at the moment we do not support exclusive/inclusive derived metric
@@ -585,147 +501,7 @@ public String getName()
 
 
 
-/*************************************************************************
- *	Returns the default directory from which to resolve relative paths.
- ************************************************************************/
-	
-public File getDefaultDirectory()
-{
-	return this.defaultDirectory;
-}
 
-
-
-
-/*************************************************************************
- *	Returns the number of search paths in the experiment.
- ************************************************************************/
-	
-public int getSearchPathCount()
-{
-	return this.configuration.getSearchPathCount();
-}
-
-
-
-
-
-/*************************************************************************
- *	Returns the search path with a given index.
- ************************************************************************/
-	
-public File getSearchPath(int index)
-{
-	return this.configuration.getSearchPath(index);
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//	ACCESS TO METRICS													//
-//////////////////////////////////////////////////////////////////////////
-
-
-/*************************************************************************
- *	Returns the array of metrics in the experiment.
- ************************************************************************/
-	
-public BaseMetric[] getMetrics()
-{
-	return 	this.metrics.toArray(new BaseMetric[0]);
-}
-
-
-/*************************************************************************
- *	Returns the number of metrics in the experiment.
- ************************************************************************/
-	
-public int getMetricCount()
-{
-	return this.metrics.size();
-}
-
-
-
-
-/*************************************************************************
- *	Returns the metric with a given index.
- ************************************************************************/
-	
-public BaseMetric getMetric(int index)
-{
-	if (!metrics_needed)
-		return null;
-	
-	BaseMetric metric;
-	// laks 2010.03.03: bug fix when the database contains no metrics
-	try {
-		metric = this.metrics.get(index);
-	} catch (Exception e) {
-		// if the metric doesn't exist or the index is out of range, return null
-		metric = null;
-	}
-	return metric;
-}
-
-
-
-
-/*************************************************************************
- *	Returns the metric with a given internal name.
- ************************************************************************/
-	
-public BaseMetric getMetric(String name)
-{
-	BaseMetric metric = (BaseMetric) this.metricMap.get(name);
-	
-	if (metric == null) {
-		// backward compatibility: do not throw wn exception ! some old databases 
-		//	have no partner information
-		// ... Laksono 2010.11.11: temporarily disable error message
-		// System.err.println("Unknown metric: " + name);
-	}
-	return metric;
-}
-
-
-
-
-
-
-//============================================================================
-// DICTIONARY
-//============================================================================
-public void setFileTable( HashMap<Integer, SourceFile> fileTable) {
-	this.hashFileTable = fileTable;
-}
-
-
-/*************************************************************************
- *	Returns the number of file scopes in the experiment.
- *
- *	Note that this is not the same as the number of source files, since
- *	not every source file is a scope.
- *
- ************************************************************************/
-	
-public int getFileScopeCount()
-{
-	// file scopes are exactly the immediate children of the root (program) scope
-	return this.rootScope.getSubscopeCount();
-}
-
-
-
-
-/*************************************************************************
- *	Returns the file scope with a given index.
- ************************************************************************/
-	
-public FileScope getFileScope(int index)
-{
-	return (FileScope) this.rootScope.getSubscope(index);
-}
 
 public File getXMLExperimentFile() {
 	return this.fileExperiment;
@@ -740,15 +516,5 @@ public MetricRaw[] getMetricRaw() {
 	return this.metrics_raw;
 }
 
-
-
-
-public void setTraceAttribute(TraceAttribute _attribute) {
-	this.attribute = _attribute;
-}
-
-public TraceAttribute getTraceAttribute() {
-	return this.attribute;
-}
 
 }

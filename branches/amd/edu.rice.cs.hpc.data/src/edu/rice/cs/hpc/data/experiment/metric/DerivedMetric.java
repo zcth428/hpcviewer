@@ -3,6 +3,7 @@
  */
 package edu.rice.cs.hpc.data.experiment.metric;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 
 //math expression
@@ -42,16 +43,20 @@ public class DerivedMetric extends BaseMetric {
 	 */
 	public DerivedMetric(RootScope scopeRoot, Expression e, String sName, String sID, int index, AnnotationType annotationType, MetricType objType) {
 		super(sID, sName, true, null, annotationType, index, objType);
-		//DerivedMetric.Counter++;
+		
+		assert( scopeRoot.getExperiment() instanceof Experiment);
+		
 		this.expression = e;
-		//this.scopeOfTheRoot = scopeRoot;
+
 		// set up the functions
 		this.fctMap = new ExtFuncMap();
-		BaseMetric []metrics = scopeRoot.getExperiment().getMetrics(); 
+		
+		final Experiment experiment = (Experiment)scopeRoot.getExperiment();
+		BaseMetric []metrics = experiment.getMetrics(); 
 		this.fctMap.init(metrics, scopeRoot);
 
 		// set up the variables
-		this.varMap = new MetricVarMap(scopeRoot.getExperiment());
+		this.varMap = new MetricVarMap(experiment);
 
 		// Bug fix: always compute the aggregate value 
 		this.dRootValue = this.getAggregateMetrics(scopeRoot);

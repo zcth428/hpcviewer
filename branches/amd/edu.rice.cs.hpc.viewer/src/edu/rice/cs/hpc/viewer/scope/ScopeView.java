@@ -188,7 +188,7 @@ public class ScopeView extends BaseScopeView {
 			IWorkbenchPage objPage = window.getActivePage();
         	
 			try {
-				final Experiment experiment = this.scope.getExperiment();
+				final Experiment experiment = (Experiment) this.scope.getExperiment();
 				
 				// prepare to split the editor pane
 				boolean needNewPartition = BaseEditorManager.splitBegin(objPage, experiment);

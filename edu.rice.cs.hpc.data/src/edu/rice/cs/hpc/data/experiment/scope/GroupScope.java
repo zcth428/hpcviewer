@@ -15,7 +15,7 @@
 
 package edu.rice.cs.hpc.data.experiment.scope;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 
 
@@ -53,7 +53,7 @@ protected String groupName;
  *	Creates a GroupScope.
  ************************************************************************/
 	
-public GroupScope(Experiment experiment, String groupname)
+public GroupScope(BaseExperiment experiment, String groupname)
 {
 	super(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, Scope.idMax++, Scope.idMax);
 	this.groupName = groupname;

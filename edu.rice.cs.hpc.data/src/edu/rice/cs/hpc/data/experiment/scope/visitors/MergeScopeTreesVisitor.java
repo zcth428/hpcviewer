@@ -12,16 +12,17 @@ package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
 import java.util.Stack;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
 public class MergeScopeTreesVisitor implements IScopeVisitor {
-	private Stack scopeStack;
+	private Stack<Scope> scopeStack;
 	private int metricOffset;
 	private MetricValuePropagationFilter filter;
 
 	public MergeScopeTreesVisitor(Scope newRoot, int offset, MetricValuePropagationFilter filter) {
-		scopeStack = new Stack();
+		scopeStack = new Stack<Scope>();
 		scopeStack.push(newRoot);
 		this.metricOffset = offset;
 		this.filter = filter;
@@ -103,7 +104,10 @@ public class MergeScopeTreesVisitor implements IScopeVisitor {
 	
 	// TODO [me] Remove duplicated accumulates (this one uses metricOffset...)
 	protected void accumulateMetrics(Scope target, Scope source, int offset, MetricValuePropagationFilter filter) {
-		for (int i = 0; i< source.getExperiment().getMetricCount(); i++) {
+		
+		final Experiment experiment = (Experiment)source.getExperiment();
+		
+		for (int i = 0; i< experiment.getMetricCount(); i++) {
 			target.accumulateMetric(source, i, offset+i, filter);
 		}
 	}

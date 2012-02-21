@@ -15,7 +15,7 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
@@ -50,13 +50,13 @@ public class LoopScope extends Scope
  *	Creates a LoopScope.
  ************************************************************************/
 	
-public LoopScope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
+public LoopScope(BaseExperiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
 {
 	super(experiment, file, first, last, cct_id, flat_id);
 //	this.id = "LoopScope";
 }
 
-public LoopScope(Experiment experiment, SourceFile file, int first, int last)
+public LoopScope(BaseExperiment experiment, SourceFile file, int first, int last)
 {
 	super(experiment, file, first, last, Scope.idMax, Scope.idMax);
 	Scope.idMax++;

@@ -15,7 +15,8 @@
 package edu.rice.cs.hpc.data.experiment.source;
 
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperimentWithMetrics;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.*;
 
@@ -41,7 +42,7 @@ public class FileSystemSourceFile implements SourceFile
 /** The type ID of the Source file. */
 public static final int STATICID = 1111;
 /** The experiment owning this source file. */
-protected Experiment experiment;
+protected BaseExperiment experiment;
 
 /** The filename of this source file. */
 protected File filename;
@@ -80,7 +81,7 @@ protected int id;
  *	Creates a SourceFile.
  ************************************************************************/
 	
-public FileSystemSourceFile(Experiment experiment, File filename, int idFile)
+public FileSystemSourceFile(BaseExperiment experiment, File filename, int idFile)
 {
 	super();
 
@@ -307,6 +308,8 @@ protected void requireAvailable()
 
 protected void searchForContents()
 {
+	assert (this.experiment instanceof BaseExperimentWithMetrics);
+	
 	File resolved;
 	boolean found;
 
@@ -317,10 +320,11 @@ protected void searchForContents()
 	// next look in each search path
 	if( ! found )
 	{
-		int count = this.experiment.getSearchPathCount();
+		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) this.experiment;
+		int count = exp.getSearchPathCount();
 		for( int k = 0;  (k < count) && (! found);  k++ )
 		{
-			File search = this.experiment.getSearchPath(k);
+			File search = exp.getSearchPath(k);
 			resolved    = this.makeSearchFile(search);
 			found       = resolved.exists();
 		}
@@ -347,6 +351,8 @@ protected void searchForContents()
 
 protected File makeSearchFile(File search)
 {
+	assert (this.experiment instanceof BaseExperimentWithMetrics);
+	
 	String filenamePath = this.filename.getPath();				// there is no 'File(File, File)' constructor, sigh!
 	File file;
 

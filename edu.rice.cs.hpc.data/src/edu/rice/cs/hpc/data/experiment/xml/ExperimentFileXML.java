@@ -58,7 +58,7 @@ public class ExperimentFileXML extends ExperimentFile
  *
  ************************************************************************/
 	
-public void parse(File file, Experiment experiment, boolean need_metrics)
+public void parse(File file, BaseExperiment experiment, boolean need_metrics)
 		throws	Exception
 		{
 	// get an appropriate input stream
@@ -69,7 +69,12 @@ public void parse(File file, Experiment experiment, boolean need_metrics)
 	stream = new FileInputStream(file);
 
 	// parse the stream
-	Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
+	final Builder builder;
+	if (need_metrics)
+		builder = new ExperimentBuilder2(experiment, name);
+	else
+		builder = new BaseExperimentBuilder(experiment, name);
+	
 	Parser parser = new Parser(name, stream, builder);
 	parser.parse();
 
@@ -78,5 +83,6 @@ public void parse(File file, Experiment experiment, boolean need_metrics)
 	} else
 		throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
 		}
+
 
 }

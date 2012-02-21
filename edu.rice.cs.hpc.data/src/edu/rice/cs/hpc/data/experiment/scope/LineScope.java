@@ -14,7 +14,7 @@
 
 package edu.rice.cs.hpc.data.experiment.scope;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
@@ -49,7 +49,7 @@ public class LineScope extends Scope
  *	Creates a LineScope.
  ************************************************************************/
 	
-public LineScope(Experiment experiment, SourceFile sourceFile, int lineNumber, int cct_id, int flat_id)
+public LineScope(BaseExperiment experiment, SourceFile sourceFile, int lineNumber, int cct_id, int flat_id)
 {
 	super(experiment, sourceFile, lineNumber, lineNumber, cct_id, flat_id);
 //	this.id = "LineScope";

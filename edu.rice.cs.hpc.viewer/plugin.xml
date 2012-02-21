@@ -162,6 +162,13 @@
                   tooltip="Open a database">
             </command>
             <command
+                  commandId="edu.rice.cs.hpc.viewer.command.mergeDatabase"
+                  label="Merge database"
+                  mnemonic="M"
+                  style="push"
+                  tooltip="Merging two or more databases">
+            </command>
+            <command
                   commandId="edu.rice.cs.hpc.viewer.command.closeDatabase"
                   label="Close database"
                   mnemonic="C"
@@ -263,6 +270,11 @@
             defaultHandler="edu.rice.cs.hpc.viewer.actions.ResetPerspective"
             id="edu.rice.cs.hpc.viewer.command.resetPerspective"
             name="Reset layout">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.MergeDatabase"
+            id="edu.rice.cs.hpc.viewer.command.mergeDatabase"
+            name="Merge database">
       </command>
    </extension>
 </plugin>

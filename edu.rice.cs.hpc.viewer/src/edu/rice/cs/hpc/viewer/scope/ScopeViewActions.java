@@ -351,9 +351,10 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		if (this.myRootScope == null)
 			return;
 		
+		final Experiment exp = (Experiment) this.myRootScope.getExperiment();
+		
 		// prepare the dialog box
-		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objShell, 
-				this.myRootScope.getExperiment() );
+		ExtDerivedMetricDlg dlg = new ExtDerivedMetricDlg(this.objShell, exp);
 
 		// display the dialog box
 		if(dlg.open() == Dialog.OK) {
@@ -366,7 +367,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 				bPercent = AnnotationType.PERCENT;
 			}
 
-			Experiment exp = this.myRootScope.getExperiment();
 			// add a derived metric and register it to the experiment database
 			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
 			
@@ -464,11 +464,14 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * @param sbText
 	 */
 	private void getContent( Scope objScope, TreeViewerColumn colMetrics[], String sSeparator, StringBuffer sbText ) {
-    	sbText.append( "\"" + objScope.getName() + "\"" );
+
+		sbText.append( "\"" + objScope.getName() + "\"" );
+		
+		final Experiment exp = (Experiment) objScope.getExperiment();
 		for(int j=0; j<colMetrics.length; j++) {
 			if (colMetrics[j].getColumn().getWidth()>0) {
 				// the column is not hidden
-				BaseMetric metric = objScope.getExperiment().getMetric(j);
+				BaseMetric metric = exp.getMetric(j);
 				sbText.append(sSeparator + metric.getMetricTextValue(objScope));
 			}
 		}

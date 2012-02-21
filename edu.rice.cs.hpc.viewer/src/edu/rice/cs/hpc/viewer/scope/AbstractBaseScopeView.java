@@ -214,8 +214,9 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 					return;
 				}
 
+				final Experiment experiment = (Experiment) scope.getExperiment();
 				// get the the experiment XML file for the database this program scope is part of
-				String filePath = this.scope.getExperiment().getXMLExperimentFile().getPath();
+				String filePath = experiment.getXMLExperimentFile().getPath();
 
 				// prepare the editor
 				EditorManager editor = new EditorManager(windowCurrent);

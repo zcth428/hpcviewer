@@ -126,7 +126,7 @@ public File getSearchPath(int index)
  *	Sets the experiment's search paths.
  ************************************************************************/
 	
-public void setSearchPaths(List pathList)
+public void setSearchPaths(List<File> pathList)
 {
 	this.searchPaths = (File[]) pathList.toArray(new File[0]);
 }

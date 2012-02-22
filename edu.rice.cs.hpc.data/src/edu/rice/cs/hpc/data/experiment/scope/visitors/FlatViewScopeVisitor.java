@@ -41,7 +41,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	private InclusiveOnlyMetricPropagationFilter inclusive_filter;
 	private ExclusiveOnlyMetricPropagationFilter exclusive_filter;
 	
-	private boolean debug = false;
+	//final private boolean debug = false;
 	
 	/****---------------------------------------------------------------------------------------------****
 	 * Constructor

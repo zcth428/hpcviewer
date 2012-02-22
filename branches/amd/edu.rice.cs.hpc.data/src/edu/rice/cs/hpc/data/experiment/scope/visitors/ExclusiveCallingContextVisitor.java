@@ -4,7 +4,6 @@
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
 import edu.rice.cs.hpc.data.experiment.scope.GroupScope;

@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.data.experiment;
 
+import java.io.File;
 import java.util.List;
 
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
@@ -10,6 +11,10 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
  *
  *************************************/
 public class ExperimentWithoutMetrics extends BaseExperiment {
+
+	public ExperimentWithoutMetrics(File filename) {
+		super(filename);
+	}
 
 	/*
 	 * (non-Javadoc)

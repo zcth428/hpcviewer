@@ -77,6 +77,7 @@ private MetricRaw[] metrics_raw;
 	
 public Experiment(File filename)
 {
+	super(filename);
 	this.fileExperiment = filename;
 }
 
@@ -86,6 +87,7 @@ public Experiment(File filename)
  ************************************************************************/
 public Experiment(Experiment exp) 
 {
+	super(exp.fileExperiment);
 	this.configuration = exp.configuration;
 	this.defaultDirectory = exp.getDefaultDirectory();
 	this.fileExperiment = exp.getXMLExperimentFile();

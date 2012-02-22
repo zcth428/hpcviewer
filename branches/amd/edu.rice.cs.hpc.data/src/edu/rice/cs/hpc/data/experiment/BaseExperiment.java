@@ -37,9 +37,6 @@ public abstract class BaseExperiment implements IExperiment {
 	protected File defaultDirectory;
 
 	
-	public BaseExperiment() {
-		
-	}
 	
 	public BaseExperiment(File filename) {
 		// protect ourselves against filename being `foo' with no parent

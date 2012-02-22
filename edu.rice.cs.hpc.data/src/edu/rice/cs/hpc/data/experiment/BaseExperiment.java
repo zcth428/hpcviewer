@@ -107,6 +107,19 @@ public abstract class BaseExperiment implements IExperiment {
 
 
 /*************************************************************************
+ *	Returns the name of the experiment.
+ ************************************************************************/
+	
+public String getName()
+{
+	return this.configuration.getName();
+}
+
+
+
+
+
+/*************************************************************************
  *	Sets the experiment's configuration.
  *
  *	This method is to be called only once, during <code>Experiment.open</code>.

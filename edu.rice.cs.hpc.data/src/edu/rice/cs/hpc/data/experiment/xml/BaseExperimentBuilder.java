@@ -201,7 +201,7 @@ public class BaseExperimentBuilder extends Builder {
 			break;
 			
 		case T_TRACE_DB:
-			this.do_TraceDB(attributes, values);
+			this.do_TraceDB(attributes, values); break;
 			
 			// old token from old XML
 		case T_CSPROFILE:

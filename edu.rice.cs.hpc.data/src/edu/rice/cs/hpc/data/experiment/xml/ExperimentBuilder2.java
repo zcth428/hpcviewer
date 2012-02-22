@@ -382,6 +382,8 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 				aggMetric.init(exp);
 			}
 		}
+		
+		exp.setMetrics(metricList);
 	}
 
 	/*************************************************************************

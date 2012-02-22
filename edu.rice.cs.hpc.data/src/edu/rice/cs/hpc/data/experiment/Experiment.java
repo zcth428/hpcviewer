@@ -489,19 +489,6 @@ public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula
 
 
 
-/*************************************************************************
- *	Returns the name of the experiment.
- ************************************************************************/
-	
-public String getName()
-{
-	return this.configuration.getName();
-}
-
-
-
-
-
 
 public File getXMLExperimentFile() {
 	return this.fileExperiment;

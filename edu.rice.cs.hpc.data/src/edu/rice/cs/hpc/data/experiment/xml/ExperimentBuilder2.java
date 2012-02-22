@@ -16,7 +16,6 @@ package edu.rice.cs.hpc.data.experiment.xml;
 
 
 import edu.rice.cs.hpc.data.experiment.*;
-import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
@@ -120,6 +119,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		default:
 			super.beginElement(element, attributes, values);
 		}
+		saveTokenContext(current);
 	}
 
 	/*************************************************************************

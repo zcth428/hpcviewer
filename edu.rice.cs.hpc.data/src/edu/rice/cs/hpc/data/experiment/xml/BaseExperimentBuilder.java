@@ -220,15 +220,23 @@ public class BaseExperimentBuilder extends Builder {
 			break;
 		
 		default:
-			this.error();
 			break;
 		} 
-		// laks: preserve the state of the current token for the next parsing state
-		this.previousToken = current;
-
+		saveTokenContext(current);
 	}
 
 
+	/****
+	 * all children requires to register the current context
+	 * 
+	 * @param current
+	 */
+	protected void saveTokenContext(TokenXML current) 
+	{
+		// laks: preserve the state of the current token for the next parsing state
+		this.previousToken = current;
+	}
+	
 	/*************************************************************************
 	 *	Takes notice of the ending of an element.
 	 ************************************************************************/

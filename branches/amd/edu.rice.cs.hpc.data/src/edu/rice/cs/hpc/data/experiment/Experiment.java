@@ -51,8 +51,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
  */
 protected File fileExperiment;
 
-/** ----------------- DICTIONARIES -----------------  **/
-protected Hashtable<Integer, LoadModuleScope> hashLoadModuleTable;
 
 
 //------------------------------------------------------------

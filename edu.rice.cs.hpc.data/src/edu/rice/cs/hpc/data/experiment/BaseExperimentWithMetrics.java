@@ -19,7 +19,6 @@ public abstract class BaseExperimentWithMetrics extends BaseExperiment {
 
 	public BaseExperimentWithMetrics(File filename) {
 		super(filename);
-		// TODO Auto-generated constructor stub
 	}
 
 

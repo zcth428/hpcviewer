@@ -2,12 +2,7 @@ package edu.rice.cs.hpc.data.experiment;
 
 import java.io.File;
 
-import com.graphbuilder.math.Expression;
-
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
-import edu.rice.cs.hpc.data.experiment.metric.MetricType;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
@@ -37,21 +32,41 @@ public abstract class BaseExperiment implements IExperiment {
 	protected File defaultDirectory;
 
 	
-	
+	/****
+	 * constructor to create an experiment
+	 * 
+	 * @param filename: the filename of the database (*.xml file)
+	 */
 	public BaseExperiment(File filename) {
 		// protect ourselves against filename being `foo' with no parent
 		// information whatsoever.
 		this.defaultDirectory = filename.getAbsoluteFile().getParentFile();
 	}
 	
+	
+	/***
+	 * the root scope of the experiment
+	 * 
+	 * @param the root scope
+	 */
 	public void setRootScope(Scope rootScope) {
 		this.rootScope = (RootScope) rootScope;
 	}
 
+	
+	/***
+	 * retrieve the root scope
+	 */
 	public Scope getRootScope() {
 		return rootScope;
 	}
 
+	
+	/****
+	 * retrieve the root scope of caller tree (bottom-up view)
+	 * 
+	 * @return root scope
+	 */
 	public RootScope getCallerTreeRoot() {
 		
 		if (this.rootScope.getSubscopeCount()==3) {
@@ -65,12 +80,6 @@ public abstract class BaseExperiment implements IExperiment {
 	}
 
 	
-	public DerivedMetric addDerivedMetric(RootScope scopeRoot,
-			Expression expFormula, String sName, AnnotationType annotationType,
-			MetricType metricType) {
-	
-		return null;
-	}
 
 	public TreeNode[] getRootScopeChildren() {
 		return this.rootScope.getChildren();

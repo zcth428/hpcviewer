@@ -2,6 +2,11 @@ package edu.rice.cs.hpc.data.experiment.xml;
 
 public class OldXMLFormatException extends Exception {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2318704552286306646L;
+
 	public OldXMLFormatException() {
 		// TODO Auto-generated constructor stub
 	}

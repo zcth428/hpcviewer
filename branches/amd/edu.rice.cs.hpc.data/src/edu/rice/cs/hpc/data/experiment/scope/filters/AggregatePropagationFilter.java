@@ -3,10 +3,7 @@ package edu.rice.cs.hpc.data.experiment.scope.filters;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.AggregateMetric;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.FinalMetric;
-import edu.rice.cs.hpc.data.experiment.metric.Metric;
-import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /***********************

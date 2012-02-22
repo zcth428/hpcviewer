@@ -5,7 +5,7 @@
 //	ExperimentMerger -- class to merge two Experiments					//
 //	Created: May 7, 2007 												//
 //																		//
-//	(c) Copyright 2007 Rice University. All rights reserved.			//
+//	(c) Copyright 2007-2012 Rice University. All rights reserved.		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
 package edu.rice.cs.hpc.data.experiment;
@@ -22,30 +22,34 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
  *
  * Steps:
  * 
- * 1. add the files path 
+ * 1. create the new experiment 
  * 2. add metrics 		-->	add into metric list 
- * 3. add raw metrics 	-->	
- * 4. add trace data
- *  
+ * 3. add raw metrics 	-->	add into a list
+ * 4. add trace data 	-->	add into a list
+ * 5. merge the experiments
  */
 public class ExperimentMerger {
 	public Experiment merge(Experiment exp1, Experiment exp2) {
-		// create new base Experiment
-		Experiment merged = new Experiment(exp1);
 		
-		// union SourceFile lists,
-		//  Laks 2009.01.06: get rid off unused methods and attributes
-		// List files = unionSourceFiles(exp1.files, exp2.files);
-		// merged.setSourceFiles(files);
-		
-		// append metricList
-		List<BaseMetric> metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
-		merged.setMetrics(metrics);
+		// -----------------------------------------------
+		// step 1: create new base Experiment
+		// -----------------------------------------------
+		Experiment merged = exp1.duplicate();
 
 		// Add tree1, walk tree2 & add; just CCT/Flat
 		RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);
 		merged.setRootScope(rootScope);
+				
+		// -----------------------------------------------
+		// step 2: append metricList
+		// -----------------------------------------------
+		List<BaseMetric> metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
+		merged.setMetrics(metrics);
 
+
+		// -----------------------------------------------
+		// step 5: merge the experiments
+		// -----------------------------------------------
 		mergeScopeTrees(merged, exp1, 0);
 		mergeScopeTrees(merged, exp2, exp1.getMetricCount());
 		
@@ -65,7 +69,7 @@ public class ExperimentMerger {
 		for (int i=0; i<m2.length; i++) {
 			final BaseMetric m = m2[i].duplicate();
 			
-			// recompute the index of the metric
+			// recompute the index of the metric from the second experiment
 			m.setIndex( m1_last_index + m.getIndex() );
 			
 			metricList.add(m);

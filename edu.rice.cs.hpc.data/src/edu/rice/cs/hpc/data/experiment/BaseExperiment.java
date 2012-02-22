@@ -47,7 +47,7 @@ public abstract class BaseExperiment implements IExperiment {
 	/***
 	 * the root scope of the experiment
 	 * 
-	 * @param the root scope
+	 * @pa
 	 */
 	public void setRootScope(Scope rootScope) {
 		this.rootScope = (RootScope) rootScope;

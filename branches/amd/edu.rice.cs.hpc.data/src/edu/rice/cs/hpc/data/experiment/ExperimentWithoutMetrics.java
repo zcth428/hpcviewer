@@ -14,4 +14,14 @@ public class ExperimentWithoutMetrics extends BaseExperiment {
 	}
 
 
+	public Experiment duplicate() {
+
+		Experiment copy = new Experiment(null);
+
+		copy.configuration = configuration;
+		copy.defaultDirectory = defaultDirectory;
+		
+		return copy;
+	}
+
 }

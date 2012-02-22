@@ -13,4 +13,7 @@ public interface IExperiment {
 	public RootScope getCallerTreeRoot();
 	
 	public TreeNode[] getRootScopeChildren();
+	
+	public IExperiment duplicate();
+	
 }

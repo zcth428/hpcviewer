@@ -14,7 +14,16 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 public abstract class BaseExperimentWithMetrics extends BaseExperiment {
 
 
+
 	protected List<BaseMetric> metrics;
+
+	public BaseExperimentWithMetrics(File filename) {
+		super(filename);
+		// TODO Auto-generated constructor stub
+	}
+
+
+
 
 	public void setMetrics(List<BaseMetric> metricList) {
 

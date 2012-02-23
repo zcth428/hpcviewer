@@ -1,16 +1,23 @@
 #!/bin/bash
 #
-# Launch the hpcviewer binary and set workspace directory.
+# Launch the hpcviewer/traceviewer binary and set the workspace directory.
 #
 # $Id: hpcviewer.sh 534 2010-07-21 13:15:27Z laksono $
 #
 
-workspace="${HOME}/.hpctoolkit/hpcviewer"
+name=hpcviewer
+
+workspace="${HOME}/.hpctoolkit/${name}"
 
 die()
 {
-    echo "$0: $*" 1>&2
+    echo "$0: error: $*" 1>&2
     exit 1
+}
+
+warn()
+{
+    echo "$0: warning: $*" 1>&2
 }
 
 #
@@ -22,18 +29,21 @@ if test -L "$script" ; then
 fi
 bindir=`dirname "$script"`
 bindir=`( cd "$bindir" && pwd )`
-viewer="${bindir}/../libexec/hpcviewer/hpcviewer"
-test -x "$viewer"  || die "fatal error - executable $viewer not found"
-test -n "$DISPLAY" || die "fatal error - DISPLAY variable must be set"
+viewer="${bindir}/../libexec/${name}/${name}"
+test -x "$viewer"  || die "executable $viewer not found"
+test -n "$DISPLAY" || die "DISPLAY variable is not set"
 
 #
 # Check java version.
 #
-java_version=`java -version 2>&1 | awk '{print $3}'`
-java_version=${java_version:3:1}
-if test $java_version -lt 5 ; then
-  echo "$0 fatal error - Java version $java_version is too old; please use at least Java 1.5."
-  exit
+java_version=`java -version 2>&1 | grep -i java | grep -i vers | head -1`
+if test "x$java_version" = x ; then
+    die "unable to find program 'java' on your PATH"
+fi
+minor=`expr "$java_version" : '[^.]*\.\([0-9]*\)'`
+test "$minor" -ge 5 >/dev/null 2>&1
+if test $? -ne 0 ; then
+    die "$java_version is too old, use Java 1.5 or later"
 fi
 
 #
@@ -42,6 +52,6 @@ fi
 if test -d "$HOME" ; then
     exec "$viewer" -data "$workspace" "$@"
 else
-    echo "$0 warning - HOME is not set, proceeding anyway" 1>&2
+    warn "HOME is not set, proceeding anyway"
     exec "$viewer" "$@"
 fi

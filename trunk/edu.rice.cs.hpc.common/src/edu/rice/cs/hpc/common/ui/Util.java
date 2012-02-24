@@ -16,6 +16,9 @@ public class Util {
 	
 	public static IStatusLineManager getActiveStatusLineManager() {
 		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		if (window == null) {
+			return null;
+		}
 
 		final IWorkbenchPartSite site = window.getActivePage().getActivePart().getSite();
 		

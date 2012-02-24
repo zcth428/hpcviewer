@@ -41,9 +41,7 @@ public abstract class BasePaintLine
 	public void paint()
 	{
 		int succSampleMidpoint = (int) Math.max(0, (ptl.getTime(0)-begTime)/pixelLength);
-		//CallStackSample succSample = ptl.getCallStackSample(0);
-		//int succDepth = Math.min(depth, succSample.getSize()-1);
-		//String succFunction = succSample.getFunctionName(succDepth);
+
 		CallPath cp = ptl.getCallPath(0, depth);
 		if (cp==null)
 			return;
@@ -52,7 +50,7 @@ public abstract class BasePaintLine
 		String succFunction = cp.getCurrentDepthScope().getName();
 		Color succColor = colorTable.getColor(succFunction);
 		int last_ptl_index = ptl.size() - 1;
-		double lastPixel = 0;
+
 		for (int index = 0; index < ptl.size(); index++)
 		{
 			int currDepth = succDepth;
@@ -102,15 +100,6 @@ public abstract class BasePaintLine
 			}
 			
 			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName, (int) end - index + 1);
-			if (false) {
-				for (int ii = index; ii <= end; ii++) {
-					double currentPixel =  ((ptl.getTime(ii)-begTime)/pixelLength);
-					if (currentPixel - lastPixel > 3) {
-						// paintSample(currentPixel, currentPixel, height, white);
-					}
-					lastPixel = currentPixel;
-				}
-			}
 			index = end;
 		}			
 	}

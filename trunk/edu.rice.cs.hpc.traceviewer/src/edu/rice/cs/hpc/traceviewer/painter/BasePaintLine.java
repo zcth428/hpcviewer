@@ -52,7 +52,7 @@ public abstract class BasePaintLine
 		String succFunction = cp.getCurrentDepthScope().getName();
 		Color succColor = colorTable.getColor(succFunction);
 		int last_ptl_index = ptl.size() - 1;
-		
+		double lastPixel = 0;
 		for (int index = 0; index < ptl.size(); index++)
 		{
 			int currDepth = succDepth;
@@ -63,6 +63,7 @@ public abstract class BasePaintLine
 			//-----------------------------------------------------------------------
 			boolean still_the_same = true;
 			int indexSucc = index;
+			int end = index;
 			final String functionName = succFunction;
 			final Color currColor = succColor;
 			
@@ -77,18 +78,17 @@ public abstract class BasePaintLine
 					
 					still_the_same = (succDepth == currDepth) && (succColor.equals(currColor));
 					if (still_the_same)
-						index = indexSucc;
+						end = indexSucc;
 				}
 			};
 			
-			if (index < last_ptl_index)
+			if (end < last_ptl_index)
 			{
 				// --------------------------------------------------------------------
 				// start and middle samples: the rightmost point is the midpoint between
 				// 	the two samples
 				// --------------------------------------------------------------------
-				succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(index),ptl.getTime(index+1))-begTime)/pixelLength));
-
+				succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(end),ptl.getTime(end+1))-begTime)/pixelLength));
 			}
 			else
 			{
@@ -98,10 +98,20 @@ public abstract class BasePaintLine
 				// --------------------------------------------------------------------
 				// succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index+1)-begTime)/pixelLength)); 
 				// johnmc: replaced above because it doesn't seem correct
-				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(index)-begTime)/pixelLength)); 
+				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(end)-begTime)/pixelLength)); 
 			}
 			
-			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName);
+			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName, (int) end - index + 1);
+			if (false) {
+				for (int ii = index; ii <= end; ii++) {
+					double currentPixel =  ((ptl.getTime(ii)-begTime)/pixelLength);
+					if (currentPixel - lastPixel > 3) {
+						// paintSample(currentPixel, currentPixel, height, white);
+					}
+					lastPixel = currentPixel;
+				}
+			}
+			index = end;
 		}			
 	}
 	 
@@ -120,5 +130,5 @@ public abstract class BasePaintLine
 	 * @param currDepth
 	 * @param functionName
 	 */
-	public abstract void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName);
+	public abstract void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount);
 }

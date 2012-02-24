@@ -361,7 +361,7 @@ public class SpaceTimeData extends TraceEvents
 				BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, depth, height, pixelLength)
 				{
 					@Override
-					public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
+					public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
 					{
 						if (currDepth >= depth)
 						{
@@ -392,14 +392,11 @@ public class SpaceTimeData extends TraceEvents
 		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, currentDepth, height, pixelLength)
 		{
 			@Override
-			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
 			{
 				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
 				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);			
-				if (currDepth < depth)
-				{
-					dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attributes.numPixelsH), currDepth, functionName);
-				}
+				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attributes.numPixelsH), currDepth, functionName, (currDepth < depth), sampleCount);
 			}
 		};
 		detailPaint.paint();

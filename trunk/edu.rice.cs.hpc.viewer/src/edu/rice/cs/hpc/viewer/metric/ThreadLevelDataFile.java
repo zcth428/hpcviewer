@@ -43,7 +43,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 
 		final int numWork = this.getNumberOfFiles();
 		final int num_threads = Math.min(numWork, Runtime.getRuntime().availableProcessors());
-		final int numWorkPerThreads = numWork / num_threads;
+		final int numWorkPerThreads = (int) Math.ceil((float)numWork / (float)num_threads);
 		final DataReadThread threads[] = new DataReadThread[num_threads];
 		
 		if (monitor != null) {
@@ -57,6 +57,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			
 			final int start = i * numWorkPerThreads;
 			final int end = Math.min(start+numWorkPerThreads, numWork);
+			
 			threads[i] = new DataReadThread(nodeIndex, metricIndex, numMetrics, start, end,
 					monitor, metrics);
 			threads[i].start();

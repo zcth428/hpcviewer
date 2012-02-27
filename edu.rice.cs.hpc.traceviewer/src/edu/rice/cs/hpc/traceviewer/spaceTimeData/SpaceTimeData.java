@@ -221,14 +221,15 @@ public class SpaceTimeData extends TraceEvents
 	{
 		return maxDepth;
 	}
-	
-	
-	/**********************************************************************************
+
+
+	/*************************************************************************
 	 *	Paints the specified time units and processes at the specified depth
 	 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
 	 *	the sample's max depth before becoming overDepth on samples that have gone over depth.
-	 *
+	 * 
 	 *	@param masterGC   		 The GC that will contain the combination of all the 1-line GCs.
+	 * 	@param origGC			 The original GC without texts
 	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
 	 *	@param begProcess        The first process that will be painted.
 	 *	@param endProcess 		 The last process that will be painted.
@@ -236,8 +237,9 @@ public class SpaceTimeData extends TraceEvents
 	 *	@param endTime 			 The last time unit that will be displayed.
 	 *  @param numPixelsH		 The number of horizontal pixels to be painted.
 	 *  @param numPixelsV		 The number of vertical pixels to be painted.
-	 ***********************************************************************************/
-	public void paintDetailViewport(final GC masterGC, final GC origGC, SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	 *************************************************************************/
+	public void paintDetailViewport(final GC masterGC, final GC origGC, SpaceTimeDetailCanvas canvas, 
+			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{	
 		boolean changedBounds = !attributes.sameTrace(oldAttributes);
 
@@ -280,7 +282,19 @@ public class SpaceTimeData extends TraceEvents
 		detailPaint.paint(canvas);
 	}
 	
-	public void paintDepthViewport(final GC masterGC, DepthTimeCanvas canvas, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	
+	/*************************************************************************
+	 * Paint the depth view
+	 * 
+	 * @param masterGC
+	 * @param canvas
+	 * @param _begTime
+	 * @param _endTime
+	 * @param _numPixelsH
+	 * @param _numPixelsV
+	 *************************************************************************/
+	public void paintDepthViewport(final GC masterGC, DepthTimeCanvas canvas, 
+			long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{
 		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
 
@@ -333,52 +347,40 @@ public class SpaceTimeData extends TraceEvents
 	 * Paints one "line" (the timeline for one processor) to its own image,
 	 * which is later copied to a master image with the rest of the lines.
 	 ********************************************************************/
-	/**////////////////////////////////////////////////////////////////////////////////////
-	//Because you will be painting between midpoints of samples,
-	//you need to paint from the midpoint of the two nearest samples off screen
-	//--which, when Math.max()'d with 0 will always return 0--
-	//to the midpoint of the samples straddling the edge of the screen
-	//--which, when Math.max()'d with 0 sometimes will return 0--
-	//as well as from the midpoint of the samples straddling the edge of the screen
-	//to the midpoint of the first two samples officially in the view
-	//before even entering the loop that paints samples that exist fully in view
-	////////////////////////////////////////////////////////////////////////////////////*/
 	public void paintDepthLine(SpaceTimeSamplePainter spp, int depth, int height)
 	{
 		//System.out.println("I'm painting process "+process+" at depth "+depth);
 		ProcessTimeline ptl = depthTrace;
 
+		if (ptl.size() < 2)
+			return;
+		
 		double pixelLength = (attributes.endTime - attributes.begTime)/(double)attributes.numPixelsH;
-		//Reed - special cases were giving me a headache, so I threw them in a switch
-		switch(ptl.size())
+		BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, depth, height, pixelLength)
 		{
-			case 0:
-			case 1:
-				this.printDebug("Warning! incorrect timestamp size in depthPaint: " + ptl.size() );
-				break;
-
-			default:
+			@Override
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
 			{
-				BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, depth, height, pixelLength)
+				if (currDepth >= depth)
 				{
-					@Override
-					public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
-					{
-						if (currDepth >= depth)
-						{
-							spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-						}
-					}
-				};
-				
-				// do the paint
-				depthPaint.paint();
-
+					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
+				}
 			}
-			break;
-		}
+		};
+		
+		// do the paint
+		depthPaint.paint();
 	}
+
 	
+	/*************************************************************************
+	 * paint a space time detail line 
+	 *  
+	 * @param spp
+	 * @param process
+	 * @param height
+	 * @param changedBounds
+	 *************************************************************************/
 	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, boolean changedBounds)
 	{
 		ProcessTimeline ptl = traces[process];
@@ -393,14 +395,14 @@ public class SpaceTimeData extends TraceEvents
 		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, currentDepth, height, pixelLength)
 		{
 			@Override
-			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName)
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
 			{
 				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
-				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);			
-				if (currDepth < depth)
-				{
-					dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attributes.numPixelsH), currDepth, functionName);
-				}
+				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
+				
+				// write texts (depth and number of samples) if needed
+				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attributes.numPixelsH), 
+						currDepth, functionName, (currDepth < depth), sampleCount);
 			}
 		};
 		detailPaint.paint();

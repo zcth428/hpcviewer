@@ -34,14 +34,19 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 	}
 	
 	/**Gets the correct color to paint the over depth text and then paints the text, centered, on the process/time block.*/
-	public void paintOverDepthText(int odInitPixel, int odFinalPixel, int depth, String function)
+	public void paintOverDepthText(int odInitPixel, int odFinalPixel, int depth, String function, boolean overDepth, int sampleCount)
 	{	
 		int box_width = odFinalPixel - odInitPixel;
 		
 		if (box_width < minimumWidthForText) return;
 		
-		String overDepthText = String.valueOf(depth);
-		Point textSize = gcFinal.textExtent(overDepthText);
+		String decoration = "(" + sampleCount + ")";
+		
+		if (overDepth) {
+			decoration = String.valueOf(depth) + decoration;
+		}
+		
+		Point textSize = gcFinal.textExtent(decoration);
 
 		// want 2 pixels on either side
 		if((box_width - textSize.x) >= 4) {
@@ -57,7 +62,7 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 					gcFinal.setForeground(Constants.COLOR_BLACK);
 				else
 					gcFinal.setForeground(Constants.COLOR_WHITE);
-				gcFinal.drawText(overDepthText, odInitPixel+((box_width - textSize.x)/2), ((box_height - textSize.y)/2));
+				gcFinal.drawText(decoration, odInitPixel+((box_width - textSize.x)/2), ((box_height - textSize.y)/2));
 			}
 		}
 

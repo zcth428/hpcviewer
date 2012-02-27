@@ -36,14 +36,19 @@ public class ThreadLevelDataFile extends BaseDataFile {
 	public double[] getMetrics(long nodeIndex, int metricIndex, int numMetrics, IStatusLineManager statusMgr) {
 	
 		final double []metrics = new double[this.getNumberOfFiles()];
-		final TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
+		TimelineProgressMonitor monitor = null;
+		if (statusMgr != null) {
+			monitor = new TimelineProgressMonitor(statusMgr);
+		}
 
 		final int numWork = this.getNumberOfFiles();
 		final int num_threads = Math.min(numWork, Runtime.getRuntime().availableProcessors());
-		final int numWorkPerThreads = numWork / num_threads;
+		final int numWorkPerThreads = (int) Math.ceil((float)numWork / (float)num_threads);
 		final DataReadThread threads[] = new DataReadThread[num_threads];
 		
-		monitor.beginProgress(numWork, "Reading data ...", "Metric raw data", Util.getActiveShell());
+		if (monitor != null) {
+			monitor.beginProgress(numWork, "Reading data ...", "Metric raw data", Util.getActiveShell());
+		}
 		
 		// --------------------------------------------------------------
 		// assign each thread for a range of files to gather the data
@@ -52,6 +57,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			
 			final int start = i * numWorkPerThreads;
 			final int end = Math.min(start+numWorkPerThreads, numWork);
+			
 			threads[i] = new DataReadThread(nodeIndex, metricIndex, numMetrics, start, end,
 					monitor, metrics);
 			threads[i].start();
@@ -64,7 +70,9 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 				while (threads[threadNum].isAlive()) {
 					Thread.sleep(30);
-					monitor.reportProgress();
+					if (monitor != null) {
+						monitor.reportProgress();
+					}
 				}
 			}
 		}
@@ -72,11 +80,14 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			e.printStackTrace();
 		}
 
-		monitor.endProgress();
+		if (monitor != null) {
+			monitor.endProgress();
+		}
 		
 		return metrics;
 	}
-	
+
+
 	/**
 	 * get a position for a specific node index and metric index
 	 * @param nodeIndex
@@ -139,7 +150,9 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			for (int i=_indexFileStart; i<_indexFileEnd; i++) {
 				final long pos_absolute = offsets[i] + pos_relative;
 				_metrics[i] = (double)masterBuff.getDouble(pos_absolute);
-				_monitor.announceProgress();
+				if (_monitor != null) {
+					_monitor.announceProgress();
+				}
 			}
 		}
 	}

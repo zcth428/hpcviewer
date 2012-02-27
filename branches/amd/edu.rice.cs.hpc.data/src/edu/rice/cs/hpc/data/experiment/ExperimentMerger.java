@@ -50,8 +50,7 @@ public class ExperimentMerger {
 		// -----------------------------------------------
 		// step 5: merge the experiments
 		// -----------------------------------------------
-		mergeScopeTrees(merged, exp1, 0);
-		mergeScopeTrees(merged, exp2, exp1.getMetricCount());
+		mergeScopeTrees(merged, exp2);
 		
 		return merged;
 	}
@@ -79,12 +78,12 @@ public class ExperimentMerger {
 	}
 	
 	
-	public void mergeScopeTrees(Experiment exp1, Experiment exp2, int offset) {
+	public void mergeScopeTrees(Experiment exp1, Experiment exp2) {
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		Scope root1 = exp1.getRootScope();
 		Scope root2 = exp2.getRootScope();
 		
-		MergeScopeTreesVisitor mv = new MergeScopeTreesVisitor(root1, offset, emptyFilter);
+		MergeScopeTreesVisitor mv = new MergeScopeTreesVisitor(root1, emptyFilter);
 
 		root2.dfsVisitScopeTree(mv);
 	}	

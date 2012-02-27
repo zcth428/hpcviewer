@@ -10,7 +10,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
@@ -113,7 +112,7 @@ public class SpaceTimeData extends TraceEvents
 		
 		System.out.println("Reading experiment database file '" + expFile.getPath() + "'");
 
-		BaseExperiment exp = new ExperimentWithoutMetrics();
+		BaseExperiment exp = new ExperimentWithoutMetrics(expFile);
 		try
 		{
 			exp.open(expFile);

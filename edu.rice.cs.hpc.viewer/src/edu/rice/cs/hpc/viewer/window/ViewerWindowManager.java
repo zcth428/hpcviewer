@@ -29,7 +29,8 @@ public class ViewerWindowManager {
 
 	/**
 	 * Returns the index into the vWindows vector of the current window being used.
-	 * @return
+	 * @return -1 if the window doesn't exist
+	 *  	   otherwise: the window number
 	 */
 	static public int getWindowNumber (IWorkbenchWindow window) {
 		for (int i=0 ; i<vWindows.size() ; i++) {
@@ -41,7 +42,7 @@ public class ViewerWindowManager {
 				return i;
 			}
 		}
-		return 0;
+		return -1;
 	}
 
 	/**

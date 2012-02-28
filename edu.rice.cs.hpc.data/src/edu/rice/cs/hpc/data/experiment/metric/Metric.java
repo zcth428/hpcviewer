@@ -113,7 +113,8 @@ public void setPartnerIndex(int ei)
 
 @Override
 public BaseMetric duplicate() {
-	return new Metric(shortName, nativeName, displayName, displayed, null, annotationType, displayName, metricType, partnerIndex);
+	return new Metric(shortName, nativeName, displayName, displayed, null, annotationType, 
+			String.valueOf(sampleperiod), metricType, partnerIndex);
 }
 
 }

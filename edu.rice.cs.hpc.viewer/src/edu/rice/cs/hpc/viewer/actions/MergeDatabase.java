@@ -14,7 +14,6 @@ import org.eclipse.ui.dialogs.ListSelectionDialog;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentMerger;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
-import edu.rice.cs.hpc.viewer.window.Database;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 

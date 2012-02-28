@@ -10,6 +10,7 @@
 //////////////////////////////////////////////////////////////////////////
 package edu.rice.cs.hpc.data.experiment;
 
+import java.io.File;
 import java.util.*;
 
 import edu.rice.cs.hpc.data.experiment.metric.*;
@@ -47,11 +48,22 @@ public class ExperimentMerger {
 		List<BaseMetric> metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
 		merged.setMetrics(metrics);
 
+		// -----------------------------------------------
+		// step 3: mark the new experiment file
+		// -----------------------------------------------
+		final File fileMerged  = new File(exp1.fileExperiment.getParent()+ "/merged.xml"); 
+		merged.fileExperiment = fileMerged;
+		System.out.println("EM create merged file: " + fileMerged.getAbsolutePath());
 
 		// -----------------------------------------------
-		// step 5: merge the experiments
+		// step 4: create cct root
+		// -----------------------------------------------		
+
 		// -----------------------------------------------
-		mergeScopeTrees(merged, exp2);
+		// step 5: merge the two experiments
+		// -----------------------------------------------
+		mergeScopeTrees(merged, exp1, 0);
+		mergeScopeTrees(merged, exp2, exp2.getMetricCount());
 		
 		return merged;
 	}
@@ -79,12 +91,12 @@ public class ExperimentMerger {
 	}
 	
 	
-	private static void mergeScopeTrees(Experiment exp1, Experiment exp2) {
+	private static void mergeScopeTrees(Experiment exp1, Experiment exp2, int offset) {
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
-		Scope root1 = exp1.getRootScope();
-		Scope root2 = exp2.getRootScope();
+		RootScope root1 = (RootScope) exp1.getRootScope();
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];
 		
-		MergeScopeTreesVisitor mv = new MergeScopeTreesVisitor(root1, emptyFilter);
+		MergeScopeTreesVisitor mv = new MergeScopeTreesVisitor(root1, emptyFilter, offset);
 
 		root2.dfsVisitScopeTree(mv);
 	}	

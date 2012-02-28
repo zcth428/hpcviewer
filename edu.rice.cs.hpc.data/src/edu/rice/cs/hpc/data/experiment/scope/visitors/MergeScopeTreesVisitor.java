@@ -20,6 +20,7 @@ public class MergeScopeTreesVisitor implements IScopeVisitor {
 	final private Stack<Scope> scopeStack;
 	final private MetricValuePropagationFilter filter;
 	final private int offsetMetric;
+	private int level = 0;
 
 	public MergeScopeTreesVisitor(Scope newRoot, MetricValuePropagationFilter filter, int offset) {
 		scopeStack = new Stack<Scope>();
@@ -54,8 +55,11 @@ public class MergeScopeTreesVisitor implements IScopeVisitor {
 			newParent = this.addMetricColumns(newParent, match, scope);
 			
 			scopeStack.push(newParent);
+			level++;
+			
 		} else { // PostVisit
 			scopeStack.pop();
+			level--;
 		}
 	}
 	

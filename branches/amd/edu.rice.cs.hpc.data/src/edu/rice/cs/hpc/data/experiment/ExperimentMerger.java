@@ -29,7 +29,8 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
  * 5. merge the experiments
  */
 public class ExperimentMerger {
-	public Experiment merge(Experiment exp1, Experiment exp2) {
+	
+	static public Experiment merge(Experiment exp1, Experiment exp2) {
 		
 		// -----------------------------------------------
 		// step 1: create new base Experiment
@@ -56,7 +57,7 @@ public class ExperimentMerger {
 	}
 	
 	
-	private Vector<BaseMetric> buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
+	private static Vector<BaseMetric> buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
 		final Vector<BaseMetric> metricList = new Vector<BaseMetric>();
 		
 		for (int i=0; i<m1.length; i++) {
@@ -78,7 +79,7 @@ public class ExperimentMerger {
 	}
 	
 	
-	public void mergeScopeTrees(Experiment exp1, Experiment exp2) {
+	private static void mergeScopeTrees(Experiment exp1, Experiment exp2) {
 		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
 		Scope root1 = exp1.getRootScope();
 		Scope root2 = exp2.getRootScope();

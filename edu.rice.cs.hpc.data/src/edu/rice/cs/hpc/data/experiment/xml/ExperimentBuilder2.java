@@ -399,7 +399,15 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		// add a metric value to the current scope
 		String internalName = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		String value = getAttributeByName(VALUE_ATTRIBUTE, attributes, values);
-		double actualValue  = Double.valueOf(value).doubleValue();
+		
+		Double dblValue = null;
+		try {
+			dblValue = Double.valueOf(value);
+		} catch (NumberFormatException e) {
+			// if the value of metric cannot be determined, we consider as "nan" (not a number)
+			dblValue = Double.NaN;
+		}
+		double actualValue  = dblValue.doubleValue();
 		
 		BaseMetric metric = exp.getMetric(internalName);
 		// get the sample period

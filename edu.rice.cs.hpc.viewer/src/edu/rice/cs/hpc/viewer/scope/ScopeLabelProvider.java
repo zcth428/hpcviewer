@@ -19,7 +19,7 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 public class ScopeLabelProvider extends ColumnLabelProvider {
 	final static protected Icons iconCollection = Icons.getInstance();
 	// turn the "debug" variable into "true" to show the ID of each scope
-	final static private boolean debug = false;
+	final static private boolean debug = true;
 	final private Color DARK_BLUE;
 	
 	/**

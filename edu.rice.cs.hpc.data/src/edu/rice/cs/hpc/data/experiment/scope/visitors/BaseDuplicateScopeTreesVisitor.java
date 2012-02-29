@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
 import java.util.Stack;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
 import edu.rice.cs.hpc.data.experiment.scope.GroupScope;
@@ -15,8 +14,6 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
-import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
-import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 
 public abstract class BaseDuplicateScopeTreesVisitor implements IScopeVisitor {
 	protected Stack<Scope> scopeStack;
@@ -56,7 +53,6 @@ public abstract class BaseDuplicateScopeTreesVisitor implements IScopeVisitor {
 			Scope newKid = this.addMetricColumns(newParent, kid, scope);
 			
 			scopeStack.push(newKid);
-			System.out.println("BDST [" + scopeStack.size()+ "] np: " + newParent.getName() + ", s:" + scope.getName() + ", k: " + kid +", nk: " + newKid );
 			
 		} else { // PostVisit
 			scopeStack.pop();

@@ -61,9 +61,10 @@ public class ExperimentMerger {
 		// -----------------------------------------------
 		// step 5: merge the two experiments
 		// -----------------------------------------------
-		mergeScopeTrees(merged, exp1,new DuplicateScopeTreesVisitor(rootScope), 0);
+		mergeScopeTrees(merged, exp1,new DuplicateScopeTreesVisitor(rootScope));
 		
-//		mergeScopeTrees(merged, exp2, exp1.getMetricCount());
+		final int metricCount = exp1.getMetricCount();
+		mergeScopeTrees(merged, exp2, new MergeScopeTreesVisitor(rootScope, metricCount));
 		
 		return merged;
 	}
@@ -93,7 +94,7 @@ public class ExperimentMerger {
 
 	
 	private static void mergeScopeTrees(Experiment exp1, Experiment exp2, 
-			BaseDuplicateScopeTreesVisitor visitor, int offset) {
+			BaseDuplicateScopeTreesVisitor visitor) {
 
 		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		
 

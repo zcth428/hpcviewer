@@ -109,8 +109,6 @@ public Scope duplicate() {
 				this.firstLineNumber,
 				this.lastLineNumber,
 				this.cct_node_index, this.flat_node_index);
-    // copy metrics
-    this.copyMetrics(duplicatedScope);
     return duplicatedScope;
 }
 

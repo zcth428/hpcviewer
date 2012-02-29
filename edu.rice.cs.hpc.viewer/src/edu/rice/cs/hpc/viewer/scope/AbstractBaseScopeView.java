@@ -501,7 +501,9 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * @return
      */
     public Experiment getExperiment() {
-    	return database.getExperiment();
+    	if (database != null)
+    		return database.getExperiment();
+    	return null;
     }
 
     /****

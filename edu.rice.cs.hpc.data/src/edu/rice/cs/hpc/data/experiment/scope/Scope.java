@@ -805,24 +805,27 @@ protected MetricValue[] makeMetricValueArray()
  * Used to implement duplicate() in subclasses of Scope  
  ************************************************************************/
 
-public void copyMetrics(Scope targetScope) {
-	if (this.metrics != null) {
-		targetScope.ensureMetricStorage();
-		for (int k=0; k<this.metrics.length && k<targetScope.metrics.length; k++) {
-			MetricValue mine = null;
-			MetricValue crtMetric = this.metrics[k];
-			if ( MetricValue.isAvailable(crtMetric) && MetricValue.getValue(crtMetric) != 0.0) { // there is something to copy
-				mine = new MetricValue();
-				MetricValue.setValue(mine, MetricValue.getValue(crtMetric));
+public void copyMetrics(Scope targetScope, int offset) {
 
-				if (MetricValue.isAnnotationAvailable(crtMetric)) {
-					MetricValue.setAnnotationValue(mine, MetricValue.getAnnotationValue(crtMetric));
-				} 
-			} else {
-				mine = MetricValue.NONE;
-			}
-			targetScope.metrics[k] = mine;
+	if (!this.hasMetrics())
+		return;
+	
+	targetScope.ensureMetricStorage();
+	for (int k=0; k<this.metrics.length && k<targetScope.metrics.length; k++) {
+		MetricValue mine = null;
+		MetricValue crtMetric = this.metrics[k];
+
+		if ( MetricValue.isAvailable(crtMetric) && MetricValue.getValue(crtMetric) != 0.0) { // there is something to copy
+			mine = new MetricValue();
+			MetricValue.setValue(mine, MetricValue.getValue(crtMetric));
+
+			if (MetricValue.isAnnotationAvailable(crtMetric)) {
+				MetricValue.setAnnotationValue(mine, MetricValue.getAnnotationValue(crtMetric));
+			} 
+		} else {
+			mine = MetricValue.NONE;
 		}
+		targetScope.metrics[k+offset] = mine;
 	}
 }
 

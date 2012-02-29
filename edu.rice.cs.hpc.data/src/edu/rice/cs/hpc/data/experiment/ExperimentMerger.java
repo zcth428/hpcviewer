@@ -15,7 +15,6 @@ import java.util.*;
 
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
-import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 
 /****
@@ -62,7 +61,7 @@ public class ExperimentMerger {
 		// -----------------------------------------------
 		// step 5: merge the two experiments
 		// -----------------------------------------------
-		duplicateScopeTrees(merged, exp1);
+		mergeScopeTrees(merged, exp1,new DuplicateScopeTreesVisitor(rootScope), 0);
 		
 //		mergeScopeTrees(merged, exp2, exp1.getMetricCount());
 		
@@ -91,25 +90,14 @@ public class ExperimentMerger {
 		return metricList;
 	}
 
-	
-	private static void duplicateScopeTrees(Experiment exp1, Experiment exp2) {
-		RootScope root1 = (RootScope) exp1.getRootScope();
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];
-		
-		DuplicateScopeTreesVisitor mv = new DuplicateScopeTreesVisitor(root1);
-
-		root2.dfsVisitScopeTree(mv);
-	}	
 
 	
-	private static void mergeScopeTrees(Experiment exp1, Experiment exp2, int offset) {
-		EmptyMetricValuePropagationFilter emptyFilter = new EmptyMetricValuePropagationFilter();
-		RootScope root1 = (RootScope) exp1.getRootScope();
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];
-		
-		MergeScopeTreesVisitor mv = new MergeScopeTreesVisitor(root1, emptyFilter, offset);
+	private static void mergeScopeTrees(Experiment exp1, Experiment exp2, 
+			BaseDuplicateScopeTreesVisitor visitor, int offset) {
 
-		root2.dfsVisitScopeTree(mv);
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		
+
+		root2.dfsVisitScopeTree(visitor);
 	}	
 }
 

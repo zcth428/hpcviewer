@@ -36,6 +36,10 @@ public class ExperimentMerger {
 		// step 1: create new base Experiment
 		// -----------------------------------------------
 		Experiment merged = exp1.duplicate();
+		merged.configuration = new ExperimentConfiguration();
+		merged.configuration.setName("Merged " + exp1.getName() + ":" + exp2.getName());
+		merged.configuration.searchPaths = exp1.configuration.searchPaths;
+
 
 		// Add tree1, walk tree2 & add; just CCT/Flat
 		RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);

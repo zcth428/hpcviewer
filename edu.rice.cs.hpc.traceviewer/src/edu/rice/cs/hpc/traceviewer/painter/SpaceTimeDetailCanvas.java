@@ -1113,8 +1113,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		Image imageOrig = new Image(getDisplay(), viewWidth, viewHeight);
 		GC origGC = new GC(imageOrig);
-		bufferGC.setBackground(Constants.COLOR_WHITE);
-		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		origGC.setBackground(Constants.COLOR_WHITE);
+		origGC.fillRectangle(0,0,viewWidth,viewHeight);
 		stData.paintDetailViewport(bufferGC, origGC, this, stData.attributes.begProcess, stData.attributes.endProcess, 
 				stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight);
 		

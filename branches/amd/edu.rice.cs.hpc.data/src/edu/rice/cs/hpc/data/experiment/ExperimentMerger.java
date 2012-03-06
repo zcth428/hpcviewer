@@ -13,6 +13,7 @@ package edu.rice.cs.hpc.data.experiment;
 import java.io.File;
 import java.util.*;
 
+import edu.rice.cs.hpc.data.experiment.merge.TreeSimilarity;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
@@ -65,10 +66,16 @@ public class ExperimentMerger {
 		// -----------------------------------------------
 		// step 5: merge the two experiments
 		// -----------------------------------------------
-		mergeScopeTrees(merged, exp1,new DuplicateScopeTreesVisitor(rootScope));
+
+		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope));		
+		
+		RootScope root1 = (RootScope) merged.getRootScopeChildren()[0];		
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		
 		
 		final int metricCount = exp1.getMetricCount();
-		mergeScopeTrees(merged, exp2, new MergeScopeTreesVisitor(rootScope, metricCount));
+		final TreeSimilarity similar = new TreeSimilarity(metricCount, root1, root2);
+
+		//mergeScopeTrees(merged, exp2, new MergeScopeTreesVisitor(rootScope, metricCount));
 		
 		return merged;
 	}
@@ -97,7 +104,7 @@ public class ExperimentMerger {
 
 
 	
-	private static void mergeScopeTrees(Experiment exp1, Experiment exp2, 
+	private static void mergeScopeTrees(Experiment exp2, 
 			BaseDuplicateScopeTreesVisitor visitor) {
 
 		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		

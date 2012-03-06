@@ -136,6 +136,14 @@ private static void setAnnotationAvailable(MetricValue m, boolean status)
 	}	
 }
 
+
+public float getValue()
+{
+	boolean available = (flags & VALUE_IS_AVAILABLE) == VALUE_IS_AVAILABLE;
+	Dialogs.Assert(available, "MetricValue::getValue");
+	return this.value;
+}
+
 /*************************************************************************
  *	Returns whether the metric value is available.
  ************************************************************************/
@@ -152,11 +160,9 @@ public static boolean isAvailable(MetricValue m)
  *	Returns the actual value if available.
  ************************************************************************/
 	
-public static double getValue(MetricValue m)
+public static float getValue(MetricValue m)
 {
-	boolean available = (m.flags & VALUE_IS_AVAILABLE) == VALUE_IS_AVAILABLE;
-	Dialogs.Assert(available, "MetricValue::getValue");
-	return m.value;
+	return m.getValue();
 }
 
 

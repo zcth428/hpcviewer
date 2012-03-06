@@ -74,8 +74,6 @@ public class ExperimentMerger {
 		
 		final int metricCount = exp1.getMetricCount();
 		final TreeSimilarity similar = new TreeSimilarity(metricCount, root1, root2);
-
-		//mergeScopeTrees(merged, exp2, new MergeScopeTreesVisitor(rootScope, metricCount));
 		
 		return merged;
 	}

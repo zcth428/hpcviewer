@@ -7,6 +7,7 @@ import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.DuplicateScopeTreesVisitor;
 
 /******************************************************
  * 
@@ -31,7 +32,7 @@ public class TreeSimilarity {
 	// for some application, the distance is not important (due to inlining)
 	final private float LOC_DISTANCE_WEIGHT = (float) 0.2;
 	
-	private enum SimilarityType{ SAME, SIMILARY, DIFF }
+	private enum SimilarityType{ SAME, SIMILAR, DIFF }
 	
 	
 	/********
@@ -123,8 +124,7 @@ public class TreeSimilarity {
 		{
 			if (childSource.isCounterZero())
 			{
-				final Scope child = addNode(target, childSource);
-				mergeMetrics(child, childSource, metricOffset);
+				addSubTree(target, childSource, metricOffset);
 			}
 		}
 	}
@@ -157,7 +157,7 @@ public class TreeSimilarity {
 		final Similarity similar = checkNodesSimilarity( target, source);
 		
 		if ( (similar.type == SimilarityType.SAME) ||
-				(similar.type == SimilarityType.SIMILARY && similar.score>100) )
+				(similar.type == SimilarityType.SIMILAR && similar.score>100) )
 		{
 			// merge the metric
 			mergeMetrics(target, source, metricOffset);
@@ -182,29 +182,27 @@ public class TreeSimilarity {
 	private Similarity checkNodesSimilarity( Scope s1, Scope s2)
 	{
 		// check the location
-		final boolean same_loc = s1.getFirstLineNumber() == s2.getFirstLineNumber();
+		final boolean same_loc = areSameLocation( s1, s2 );
 		
 		// check the adjacency of the location
 		final int loc_distance = Math.abs(s1.getFirstLineNumber() - s2.getFirstLineNumber());
 		final boolean similar_loc =  loc_distance < MIN_DISTANCE_LOC;
 		
 		// check the type
-		final Class<? extends Scope> c1 = s1.getClass();
-		final Class<? extends Scope> c2 = s2.getClass();
-		final boolean same_type = (c1 == c2);
+		final boolean same_type = areSameType( s1, s2 );
 		
 		// check the metrics
-		final float v1 = getAnnotationValue(s1);
-		final float v2 = getAnnotationValue(s2);
-		final float metric_distance = (float) (Math.abs(v2-v1));
-		final boolean similar_metric = ( metric_distance < MIN_DISTANCE_METRIC );
+		final float metric_distance = getMetricDistance( s1, s2 );
+		final boolean similar_metric = areSameMetric( metric_distance );
 
 		// check if it's the same name
-		final boolean same_name = s1.getName().equals(s2.getName());
+		final boolean same_name = areSameName( s1, s2 );
 		
-		final boolean same_children = checkChildrenSimilarity(s1, s2);
+		// check if the children are the same
+		final boolean same_children = areSameChildren(s1, s2);
 		
 		Similarity result = new Similarity();
+		result.type = SimilarityType.DIFF;
 
 		result.score = (int) (SCORE_INIT + (1-metric_distance) * SCORE_METRIC_INIT);
 		result.score -= (loc_distance * LOC_DISTANCE_WEIGHT);
@@ -218,18 +216,29 @@ public class TreeSimilarity {
 		{
 			// we are not confident, but it look like they are similar
 			// in this case, the caller has to check if other combinations exist
-			result.type = SimilarityType.SIMILARY;
+			result.type = SimilarityType.SIMILAR;
 		}
 		else if (same_type && similar_metric && same_name && similar_loc)
 		{
 			// not the same children, but the same location, same metric, same name
 			// probably the code has been inlined / outlined
-			result.type = SimilarityType.SIMILARY;
+			result.type = SimilarityType.SIMILAR;
 		} 
-		else
+		else if (same_type && similar_metric && similar_loc )
 		{
-			// we are sure they are not the same
-			result.type = SimilarityType.DIFF;
+			// case where there is no other siblings, but the location is strikingly similar
+			// case like this is loops that are moved or transformed or inlined. These kind of
+			//	loops (or statements) don't have the same name since the line number will 
+			//	be different
+			if (s1.getClass() == edu.rice.cs.hpc.data.experiment.scope.LoopScope.class || 
+					s1.getClass() == edu.rice.cs.hpc.data.experiment.scope.LineScope.class )
+			{
+				final int p1 = s1.getParentScope().getChildCount();
+				final int p2 = s1.getParentScope().getChildCount();
+				
+				if (p1 == 1 && p1 == p2)
+					result.type = SimilarityType.SIMILAR;
+			}
 		}
 		
 		System.out.println("TS " + s1 + " ("+ s1.getCCTIndex() +") vs. " + s2 +   " ("+ s2.getCCTIndex() 
@@ -242,6 +251,52 @@ public class TreeSimilarity {
 		return result;
 	}
 
+	private boolean areSameName( Scope s1, Scope s2 )
+	{
+		return s1.getName().equals(s2.getName());
+	}
+	
+	private boolean areSameLocation( Scope s1, Scope s2)
+	{
+		return s1.getFirstLineNumber() == s2.getFirstLineNumber();
+	}
+	
+	private boolean areSameType( Scope s1, Scope s2)
+	{
+		final Class<? extends Scope> c1 = s1.getClass();
+		final Class<? extends Scope> c2 = s2.getClass();
+		
+		return (c1 == c2); 
+	}
+	
+	private boolean areSameMetric( float metricDistance )
+	{
+		return ( metricDistance < MIN_DISTANCE_METRIC );
+	}
+	
+	private float getMetricDistance( Scope s1, Scope s2 )
+	{
+		final float v1 = getAnnotationValue(s1);
+		final float v2 = getAnnotationValue(s2);
+		return (float) (Math.abs(v2-v1));
+	}
+	
+	/****
+	 * check if the two nodes are lexicographically the same: 
+	 * 			 metric, type, name and location
+	 * warning:  this doesn't include the children
+	 * 
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	private boolean areSameNodes( Scope s1, Scope s2 )
+	{
+		final float m = getMetricDistance( s1, s2 );
+		
+		return areSameLocation( s1, s2 ) && areSameType( s1, s2 ) &&
+				areSameMetric( m ) && areSameName( s1, s2 );
+	}
 	
 	/****
 	 * check if two scopes have the same children
@@ -253,14 +308,10 @@ public class TreeSimilarity {
 	 * @param s2
 	 * @return
 	 */
-	private boolean checkChildrenSimilarity(Scope s1, Scope s2)
+	private boolean areSameChildren(Scope s1, Scope s2)
 	{
 		int c1 = s1.getChildCount();
 		int c2 = s2.getChildCount();
-		
-		// same number of children ?
-		if (c1 == c2)
-			return true;
 		
 		// is there a child that exactly the same ?
 		for (int i=0; i<c1; i++)
@@ -271,8 +322,7 @@ public class TreeSimilarity {
 			{
 				final Scope cs2 = s2.getSubscope(j);
 				
-				Similarity s = checkNodesSimilarity(cs1, cs2);
-				if (s.type == SimilarityType.SAME)
+				if (areSameNodes( cs1, cs2 ))
 					return true;
 			}
 		}
@@ -297,6 +347,18 @@ public class TreeSimilarity {
 		{
 			return MetricValue.getValue(mv);
 		}
+	}
+	
+	/****
+	 * recursively add subtree (and the metrics) to the parent
+	 * @param parent : parent target
+	 * @param node : source nodes to be copied
+	 * @param metricOffset : offset of the metric
+	 */
+	private void addSubTree(Scope parent, Scope node, int metricOffset)
+	{
+		DuplicateScopeTreesVisitor visitor = new DuplicateScopeTreesVisitor(parent, metricOffset);
+		node.dfsVisitScopeTree(visitor);
 	}
 	
 	/***
@@ -335,11 +397,16 @@ public class TreeSimilarity {
 	}
 	
 	
+	/***
+	 * Reverse order comparison to sort array of scopes based on their first metric
+	 * this comparison has problem when the two first metrics are equal, but
+	 * it's closed enough to our needs. I don't think we need more sophisticated stuff
+	 */
 	private class CompareScope implements Comparator<Scope> 
 	{
 		@Override
 		public int compare(Scope s1, Scope s2) {
-			return (int) (s1.getMetricValue(0).getValue() - s2.getMetricValue(0).getValue());
+			return (int) (s2.getMetricValue(0).getValue() - s1.getMetricValue(0).getValue());
 		}
 		
 	}

@@ -8,6 +8,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.DuplicateScopeTreesVisitor;
+import edu.rice.cs.hpc.data.util.Util;
 
 /******************************************************
  * 
@@ -17,6 +18,8 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.DuplicateScopeTreesVisitor
  ******************************************************/
 public class TreeSimilarity {
 
+	final private boolean debug = true;
+	
 	final private int MIN_DISTANCE_LOC = 3;
 	final private float MIN_DISTANCE_METRIC = (float) 0.15;
 	
@@ -241,7 +244,7 @@ public class TreeSimilarity {
 			}
 		}
 		
-		System.out.println("TS " + s1 + " ("+ s1.getCCTIndex() +") vs. " + s2 +   " ("+ s2.getCCTIndex() 
+		Util.println( debug, "TS " + s1 + " ("+ s1.getCCTIndex() +") vs. " + s2 +   " ("+ s2.getCCTIndex() 
 					+ ") : d="+loc_distance+" ("+similar_loc+")" + 
 					", c: " + same_type+ ", md: " + metric_distance+ " (" +similar_metric+")" +
 					", sn: " + same_name + ", sc: " + same_children+ " rs: " + result.score +" (" 
@@ -408,7 +411,5 @@ public class TreeSimilarity {
 		public int compare(Scope s1, Scope s2) {
 			return (int) (s2.getMetricValue(0).getValue() - s1.getMetricValue(0).getValue());
 		}
-		
-	}
-	
+	}	
 }

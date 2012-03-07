@@ -8,12 +8,13 @@
 //	(c) Copyright 2007-2012 Rice University. All rights reserved.		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-package edu.rice.cs.hpc.data.experiment;
+package edu.rice.cs.hpc.data.experiment.merge;
 
 import java.io.File;
 import java.util.*;
 
-import edu.rice.cs.hpc.data.experiment.merge.TreeSimilarity;
+import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.ExperimentConfiguration;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
@@ -37,9 +38,12 @@ public class ExperimentMerger {
 		// step 1: create new base Experiment
 		// -----------------------------------------------
 		Experiment merged = exp1.duplicate();
-		merged.configuration = new ExperimentConfiguration();
-		merged.configuration.setName("Merged " + exp1.getName() + ":" + exp2.getName());
-		merged.configuration.searchPaths = exp1.configuration.searchPaths;
+		
+		final ExperimentConfiguration configuration = new ExperimentConfiguration();
+		configuration.setName( exp1.getName() + " &  " + exp2.getName() );
+		configuration.searchPaths = exp1.getConfiguration().searchPaths;
+		
+		merged.setConfiguration( configuration );
 
 
 		// Add tree1, walk tree2 & add; just CCT/Flat
@@ -55,8 +59,9 @@ public class ExperimentMerger {
 		// -----------------------------------------------
 		// step 3: mark the new experiment file
 		// -----------------------------------------------
-		final File fileMerged  = new File(exp1.fileExperiment.getParent()+ "/merged.xml"); 
-		merged.fileExperiment = fileMerged;
+		File file1 = exp1.getXMLExperimentFile();
+		final File fileMerged  = new File( file1.getParent()+ "/merged.xml"); 
+		merged.setXMLExperimentFile( fileMerged );
 		System.out.println("EM create merged file: " + fileMerged.getAbsolutePath());
 
 		// -----------------------------------------------

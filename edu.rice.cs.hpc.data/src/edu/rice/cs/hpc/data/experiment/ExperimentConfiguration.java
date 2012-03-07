@@ -40,7 +40,7 @@ protected String name;
 
 
 /** The experiment's user visible name. */
-protected File[] searchPaths;
+public File[] searchPaths;
 
 
 

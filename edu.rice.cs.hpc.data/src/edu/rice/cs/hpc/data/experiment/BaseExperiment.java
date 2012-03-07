@@ -137,6 +137,12 @@ public void setConfiguration(ExperimentConfiguration configuration)
 	this.configuration = configuration;
 }
 
+public ExperimentConfiguration getConfiguration()
+{
+	return this.configuration;
+}
+
+
 /*************************************************************************
  *	Returns the default directory from which to resolve relative paths.
  ************************************************************************/

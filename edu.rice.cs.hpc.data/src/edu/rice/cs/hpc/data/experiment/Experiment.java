@@ -43,27 +43,16 @@ import com.graphbuilder.math.*;
 
 public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 {
+	// The experiment (XML) file 
+	private File fileExperiment;
 
-
-	/**
-	 * The experiment (XML) file 
-	 * @author laksono
-	 */
-	protected File fileExperiment;
-
-
-
-	//------------------------------------------------------------
 	// thread level database
-	//------------------------------------------------------------
 	private MetricRaw[] metrics_raw;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	//	INITIALIZATION														//
 	//////////////////////////////////////////////////////////////////////////
-
-
 
 
 	/*************************************************************************
@@ -80,13 +69,9 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	}
 
 
-
-
 	//////////////////////////////////////////////////////////////////////////
 	//	PERSISTENCE															//
 	//////////////////////////////////////////////////////////////////////////
-
-
 
 
 	/*************************************************************************
@@ -107,21 +92,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 			}
 
 
-
-
-	/*************************************************************************
-	 *	Closes the experiment.
-	 ************************************************************************/
-
-	public void close()
-	{
-		// nothing
-	}
-
-
-
-
-
 	/*************************************************************************
 	 *	Sets the experiment's metric list.
 	 *
@@ -131,7 +101,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 
 	public void setMetrics(List<BaseMetric> metricList)
 	{
-
 		super.setMetrics(metricList);
 
 		// initialize metric access data structures
@@ -144,16 +113,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 		}
 	}
 
-
-	/*************************************************************************
-	 *  finalize the database
-	 *  we will reorder the ID of metrics in order to make it more make sense
-	 *  	for users (they don't really care the value, as long as it's in 
-	 *  	good simple ordered ID)
-	 *************************************************************************/
-	public void finalizeDatabase()
-	{
-	}
 
 
 
@@ -484,6 +443,10 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 
 	public File getXMLExperimentFile() {
 		return this.fileExperiment;
+	}
+
+	public void setXMLExperimentFile(File file) {
+		this.fileExperiment = file;
 	}
 
 	public void setMetricRaw(MetricRaw []metrics) {

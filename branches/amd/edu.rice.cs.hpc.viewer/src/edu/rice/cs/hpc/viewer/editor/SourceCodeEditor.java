@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.viewer.editor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -29,7 +28,8 @@ public class SourceCodeEditor extends TextEditor implements IViewerEditor {
 	 * 	 
 	 * */
 	public boolean validateEditorInputState() {
-		return ((AbstractTextEditor)(this)).validateEditorInputState();
+		// the inpus is never validated 
+		return false;
 	}
 
 	/**

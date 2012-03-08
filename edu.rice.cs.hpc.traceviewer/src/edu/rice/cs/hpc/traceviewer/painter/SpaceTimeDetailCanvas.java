@@ -412,7 +412,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			viewWidth = 1;
 		if (viewHeight <= 0)
 			viewHeight = 1;
-		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		
+		// laksono 2012.03.07: this following line causes white paint when changing
+		//					   from home to a zoom (or another area) and vice-versa
+		//imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 
 		setDetailZoom(0, 0, stData.getWidth(), stData.getHeight());
 	}

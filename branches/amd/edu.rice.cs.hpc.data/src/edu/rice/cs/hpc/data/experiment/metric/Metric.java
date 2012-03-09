@@ -83,22 +83,6 @@ public MetricValue getValue(Scope s)
 	return s.getMetricValue(this);
 }
 
-/*************************************************************************
- *	Returns the minimum value this metric can take.
- ************************************************************************/	
-public MetricValue getMinimumValue()
-{
-	return new MetricValue(0.0);
-}
-
-/*************************************************************************
- *	Returns the maximum value this metric can take.
- ************************************************************************/
-	
-public MetricValue getMaximumValue()
-{
-	return new MetricValue(Double.MAX_VALUE);
-}
 
 public int getPartnerIndex()
 {

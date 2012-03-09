@@ -67,7 +67,7 @@ public class BaseExperimentBuilder extends Builder {
 	private boolean csviewer;
 
 	protected Token2.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
-	protected Token2.TokenXML previousState = TokenXML.T_INVALID_ELEMENT_NAME;
+	protected Token2.TokenXML elemInfoState = TokenXML.T_INVALID_ELEMENT_NAME;
 
 	//--------------------------------------------------------------------------------------
 	private HashMap<Integer, String> hashProcedureTable;
@@ -335,7 +335,7 @@ public class BaseExperimentBuilder extends Builder {
 	}
 
 	private void do_Info() {
-		this.previousState = this.previousToken;
+		this.elemInfoState = this.previousToken;
 	}
 
 	/*************************************************************************

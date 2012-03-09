@@ -27,10 +27,11 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
-public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
+public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor 
+{
 	private String[] sArgs = null; // command line arguments
 	final private IWorkbench workbench;
-	final private IWorkbenchWindowConfigurer configurer;
+	final private IWorkbenchWindow window;
 	
 	/**
 	 * Creates a new workbench window advisor for configuring a workbench window via the given workbench window configurer
@@ -41,9 +42,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []args) {
 		super(configurer);
-		this.workbench = configurer.getWindow().getWorkbench();
+		window = configurer.getWindow();
+		workbench = window.getWorkbench();
 		this.sArgs = args;
-		this.configurer = configurer;
 	}
 
 	/**
@@ -80,12 +81,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// -------------------
     	// set the status bar
 		// -------------------
-		IWorkbenchWindow windowCurrent = workbench.getActiveWorkbenchWindow(); 
 		org.eclipse.jface.action.IStatusLineManager statusline = getWindowConfigurer()
 		.getActionBarConfigurer().getStatusLineManager();
 
-		assert (windowCurrent != null);
-		
 		// -------------------
 		// close existing views and editors in this window
 		// -------------------
@@ -95,14 +93,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// -------------------
 		// set the default metric
 		// -------------------
-		Utilities.setFontMetric(windowCurrent.getShell().getDisplay());
+		Utilities.setFontMetric(window.getShell().getDisplay());
 
 		// -------------------
 		// see if the argument provides the database to load
 		// -------------------
 		if(sArgs != null && sArgs.length > 0) {
 			// possibly we have express the experiment file in the command line
-			IWorkbenchPage pageCurrent = windowCurrent.getActivePage();
+			IWorkbenchPage pageCurrent = window.getActivePage();
 			assert (pageCurrent != null);
 			
 			ExperimentView expViewer = new ExperimentView(pageCurrent);
@@ -144,7 +142,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		    			// bug fix: needs to treat a folder/directory
 		    			// it is a directory
 		    			//ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		    			final ExperimentManager objManager = new ExperimentManager(this.workbench.getActiveWorkbenchWindow()); // dataEx.getExperimentManager();
+		    			final ExperimentManager objManager = new ExperimentManager(window); // dataEx.getExperimentManager();
 		    			objManager.openDatabaseFromDirectory(sPath, this.getFlag(withCallerView));
 		    		} else {
 		    			File objFile = new File(sPath);
@@ -158,7 +156,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		    	}
 
-				this.shutdownEvent(this.workbench, windowCurrent.getActivePage());
+				this.shutdownEvent(this.workbench, window.getActivePage());
 				return;
 		    } 
 		}
@@ -168,7 +166,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// we need load the file ASAP
 		this.openDatabase(withCallerView);
 
-		this.shutdownEvent(this.workbench, windowCurrent.getActivePage());
+		this.shutdownEvent(this.workbench, window.getActivePage());
 	}
 	
 	/**
@@ -176,8 +174,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * (only the first one will be taken into account)
 	 */
 	private void openDatabase( boolean withCallerView ) {
-		//ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		final ExperimentManager expFile = new ExperimentManager(this.workbench.getActiveWorkbenchWindow()); // dataEx.getExperimentManager();
+
+		final ExperimentManager expFile = new ExperimentManager(window); 
 		boolean has_database = expFile.openFileExperiment( this.getFlag(withCallerView));
 
 		if (!has_database) {
@@ -192,7 +190,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * button while there is no database will cause chaos
 	 */
 	private void removeViews() {
-		IWorkbenchPage page = this.workbench.getActiveWorkbenchWindow().getActivePage();
+		IWorkbenchPage page = this.window.getActivePage();
 		org.eclipse.ui.IViewReference views[] = page.getViewReferences();
 		int nbViews = views.length;
 		
@@ -204,7 +202,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 * Close all editors in the current active page
 	 */
 	private void closeAllEditors() {
-		IWorkbenchPage page = this.workbench.getActiveWorkbenchWindow().getActivePage();
+		IWorkbenchPage page = this.window.getActivePage();
 		page.closeAllEditors(false);
 	}
 	
@@ -226,9 +224,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// get "my" window from the configurer instead of from the active window
 		// in some platforms such as Mac OS, in order to close window, we don't need to activate it first.
 		// ----------------------------------------------------------------------------------------------
-		IWorkbenchWindow window = this.configurer.getWindow();
-		window.getActivePage().closeAllEditors(false);
-
+		closeAllEditors();
+		removeViews();
+		
 		ViewerWindowManager vwm = new ViewerWindowManager();
 		vwm.removeWindow(window);
 

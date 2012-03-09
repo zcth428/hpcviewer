@@ -452,7 +452,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 	 ************************************************************************/
 	private void do_NV(String[] attributes, String[] values) {
 		
-		if ( (this.previousState == TokenXML.T_METRIC) || (this.previousState == TokenXML.T_METRIC_FORMULA)){
+		if ( (this.elemInfoState == TokenXML.T_METRIC) || (this.elemInfoState == TokenXML.T_METRIC_FORMULA)){
 			InfoState iState = InfoState.NULL;
 			// previous state is metric. The attribute should be about periodicity or unit
 			for (int i=0; i<attributes.length; i++) {
@@ -514,6 +514,10 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 				} else 
 					System.err.println("Warning: incorrect XML info format: " + attributes[i]+" "+ values[i]);
 			}
+		}
+		else
+		{
+			System.err.println("Warning: unknown NV from previous token: " + elemInfoState);
 		}
 	}
 	

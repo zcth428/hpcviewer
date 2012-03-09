@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
+import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
@@ -254,9 +255,36 @@ public class TreeSimilarity {
 		return result;
 	}
 
+	private boolean hasUnderscoreSuffix(String s)
+	{
+		final int l = s.length();
+		return (s.charAt( l - 1) == '_');
+	}
+	/**
+	 * check if the name of two scopes are similar 
+	 * 
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
 	private boolean areSameName( Scope s1, Scope s2 )
 	{
-		return s1.getName().equals(s2.getName());
+		if (s1 instanceof CallSiteScope && s2 instanceof CallSiteScope) 
+		{
+			final String n1 = s1.getName();
+			final String n2 = s2.getName();
+			
+			int diff = Math.abs( n1.compareTo(n2) );
+			if (diff == 1)
+			{
+				return (hasUnderscoreSuffix(n1) || hasUnderscoreSuffix(n2));
+			}
+			return (diff == 0);
+		}
+		else 
+		{
+			return s1.getName().equals(s2.getName());
+		}
 	}
 	
 	private boolean areSameLocation( Scope s1, Scope s2)

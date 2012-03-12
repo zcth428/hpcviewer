@@ -305,7 +305,6 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 
 		this.metricList.add(metricInc);
 
-		// Laks 2009.01.14: only for call path profile
 		// Laks 2009.01.14: if the database is call path database, then we need
 		//	to distinguish between exclusive and inclusive
 		if (needPartner) {
@@ -373,13 +372,38 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		
 		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
 
-		int nbMetrics = this.metricList.size();
+		boolean is_raw_metric_only = true;
+		final int nbMetrics = this.metricList.size();
 		
 		for (int i=0; i<nbMetrics; i++) {
 			BaseMetric objMetric = (BaseMetric) this.metricList.get(i);
 			if (objMetric instanceof AggregateMetric) {
 				AggregateMetric aggMetric = (AggregateMetric) objMetric;
 				aggMetric.init(exp);
+			}
+			is_raw_metric_only &= (objMetric instanceof Metric);
+		}
+		
+		if (is_raw_metric_only)
+		{
+			// ----------------------------------------------------------------------------	
+			// need to reorder the metrics: instead of 0, 10000, 1, 10001, ....
+			// 	it should be: 0, 1, 2, 3, ....
+			// our xml reader is based on old xml where the number of metrics is unknown
+			// since now we know this number, we should change the algo 
+			//	to adapt with the new one instead of hacking
+			// ----------------------------------------------------------------------------	
+			for (int i=0; i<nbMetrics; i++) 
+			{
+				Metric objMetric = (Metric) this.metricList.get(i);
+				objMetric.setIndex(i);
+				
+				// reset the short name. short name is the key used by formula
+				objMetric.setShortName(String.valueOf(i));
+				
+				// reset the partner: inclusive's partner is exclusive, and vice versa
+				final int partner = (objMetric.getMetricType() == MetricType.EXCLUSIVE) ? i-1: i+1;
+				objMetric.setPartnerIndex(partner);
 			}
 		}
 		

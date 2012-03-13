@@ -45,7 +45,12 @@ public class Util {
 
 	
 	static public Shell getActiveShell() {
-		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		final IWorkbenchWindow window = getActiveWindow();
 		return window.getShell();
+	}
+	
+	static public IWorkbenchWindow getActiveWindow() {
+		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		return window;
 	}
 }

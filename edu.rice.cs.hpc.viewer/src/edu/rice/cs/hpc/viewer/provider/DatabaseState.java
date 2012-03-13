@@ -6,7 +6,6 @@ import java.util.Map;
 import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
@@ -50,5 +49,6 @@ public class DatabaseState extends AbstractSourceProvider {
 		
 		value = num_opened_database>1 ? ENABLED : DISABLED;
 		fireSourceChanged(ISources.WORKBENCH, DATABASE_MERGE_STATE, value);
-	}	
+	}
+	
 }

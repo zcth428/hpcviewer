@@ -224,6 +224,25 @@
             </command>
          </menu>
          <menu
+               label="Debug"
+               mnemonic="d"
+               tooltip="Debug mode on/off and show some debugging information">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="edu.rice.cs.hpc.viewer.provider.data.active">
+                  <equals
+                        value="ENABLED">
+                  </equals>
+               </with>
+            </visibleWhen>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.debug.showXML"
+                  label="Show XML"
+                  style="push">
+            </command>
+         </menu>
+         <menu
                label="Window"
                mnemonic="W"
                tooltip="Window menus">
@@ -294,6 +313,11 @@
             id="edu.rice.cs.hpc.viewer.command.mergeDatabase"
             name="Merge database">
       </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.showXML"
+            id="edu.rice.cs.hpc.viewer.command.debug.showXML"
+            name="show raw XML database">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.services">
@@ -301,11 +325,11 @@
             provider="edu.rice.cs.hpc.viewer.provider.DatabaseState">
          <variable
                name="edu.rice.cs.hpc.viewer.provider.data.active"
-               priorityLevel="workbench">
+               priorityLevel="activeWorkbenchWindow">
          </variable>
          <variable
                name="edu.rice.cs.hpc.viewer.provider.data.merge"
-               priorityLevel="workbench">
+               priorityLevel="activeWorkbenchWindow">
          </variable>
       </sourceProvider>
    </extension>

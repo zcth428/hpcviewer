@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 //User interface
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchWindow;
-
 //SWT
 import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
@@ -23,7 +21,6 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -202,35 +199,6 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         	mgr.add(acShowCallsite);
         }
         
-		// show the database xml file
-		final IWorkbenchWindow windowCurrent = this.getSite().getWorkbenchWindow();
-		String dbXmlMenuTitle = "Show database's raw XML";
-		ScopeViewTreeAction dbShowXml = new ScopeViewTreeAction(dbXmlMenuTitle, scope){
-			public void run() {
-				if (this.scope.getExperiment() == null) {
-					MessageDialog.openError(windowCurrent.getShell(), 
-							"Error: Experiment class missing", 
-					"Unable to find the Experiment class for the selected database !");
-					return;
-				}
-
-				final Experiment experiment = (Experiment) scope.getExperiment();
-				// get the the experiment XML file for the database this program scope is part of
-				String filePath = experiment.getXMLExperimentFile().getPath();
-
-				// prepare the editor
-				EditorManager editor = new EditorManager(windowCurrent);
-				try {
-					// database numbers start with 0 but titles start with 1
-					editor.openFileEditor(filePath, database.getExperiment());
-				} catch (FileNotFoundException e) {
-					// can not find the file (or something goes wrong)
-					MessageDialog.openError(windowCurrent.getShell(), "Error: File not found", e.getMessage());
-				}
-			}
-		};
-		dbShowXml.setEnabled(true);
-		mgr.add(dbShowXml);
 
         //--------------------------------------------------------------------------
         // ---------- additional context menu

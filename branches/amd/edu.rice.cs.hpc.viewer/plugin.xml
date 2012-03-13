@@ -167,6 +167,15 @@
                   mnemonic="M"
                   style="push"
                   tooltip="Merging two or more databases">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="edu.rice.cs.hpc.viewer.provider.data.merge">
+                     <equals
+                           value="ENABLED">
+                     </equals>
+                  </with>
+               </visibleWhen>
             </command>
             <command
                   commandId="edu.rice.cs.hpc.viewer.command.closeDatabase"
@@ -292,6 +301,10 @@
             provider="edu.rice.cs.hpc.viewer.provider.DatabaseState">
          <variable
                name="edu.rice.cs.hpc.viewer.provider.data.active"
+               priorityLevel="workbench">
+         </variable>
+         <variable
+               name="edu.rice.cs.hpc.viewer.provider.data.merge"
                priorityLevel="workbench">
          </variable>
       </sourceProvider>

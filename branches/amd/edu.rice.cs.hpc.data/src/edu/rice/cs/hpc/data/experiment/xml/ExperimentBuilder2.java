@@ -285,7 +285,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 						sDisplayName, 	// display name
 						toShow, format, percent, 			// displayed ? percent ?
 						"",						// period (not defined at the moment)
-						objType, partner);
+						nbMetrics, objType, partner);
 				break;
 			case Derived_Incr:
 				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, percent, nbMetrics, partner, objType);
@@ -299,7 +299,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 						sDisplayName, 	// display name
 						toShow, format, percent, 			// displayed ? percent ?
 						"",						// period (not defined at the moment)
-						objType, partner);
+						nbMetrics, objType, partner);
 				break;
 		}
 
@@ -318,7 +318,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 					sSelfDisplayName, 	// display name
 					toShow, format, AnnotationType.PERCENT, 		// displayed ? percent ?
 					"",					// period (not defined at the moment)
-					MetricType.EXCLUSIVE, nbMetrics);
+					nbMetrics+1, MetricType.EXCLUSIVE, nbMetrics);
 			this.metricList.add(metricExc);
 		}
 	}

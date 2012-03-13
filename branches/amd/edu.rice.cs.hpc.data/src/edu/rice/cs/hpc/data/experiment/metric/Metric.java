@@ -63,9 +63,10 @@ public final static int NO_PARTNER_INDEX = -1;
  * @param partnerIndex
  */
 public Metric(String shortName, String nativeName, String displayName, boolean displayed, 
-              String format, AnnotationType annotationType, String samplePeriod, MetricType metricType, int partnerIndex)
+              String format, AnnotationType annotationType, String samplePeriod, 
+              int index, MetricType metricType, int partnerIndex)
 {
-	super(shortName, displayName, displayed, format, annotationType, 0, metricType);
+	super(shortName, displayName, displayed, format, annotationType, index, metricType);
 	// creation arguments
 	this.nativeName  = nativeName;
     this.sampleperiod  = this.convertSamplePeriode(samplePeriod);
@@ -98,7 +99,7 @@ public void setPartnerIndex(int ei)
 @Override
 public BaseMetric duplicate() {
 	return new Metric(shortName, nativeName, displayName, displayed, null, annotationType, 
-			String.valueOf(sampleperiod), metricType, partnerIndex);
+			String.valueOf(sampleperiod), index, metricType, partnerIndex);
 }
 
 }

@@ -84,20 +84,38 @@ public class ExperimentMerger {
 	}
 	
 	
+	/***
+	 * combine metrics from exp 1 and exp 2
+	 * 
+	 * @param exp
+	 * @param m1
+	 * @param m2
+	 * @return
+	 */
 	private static Vector<BaseMetric> buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
 		final Vector<BaseMetric> metricList = new Vector<BaseMetric>();
 		
+		// ----------------------------------------------------------------
+		// step 1: add the first metrics into the merged experiment
+		// ----------------------------------------------------------------
 		for (int i=0; i<m1.length; i++) {
 			metricList.add(m1[i]);
 		}
 		
-		final int m1_last_index = m1[m1.length-1].getIndex();
+		final int m1_last_index = m1[m1.length-1].getIndex() + 1;
 		
+		// ----------------------------------------------------------------
+		// step 2: append the second metrics, and reset the index and the key
+		// ----------------------------------------------------------------
 		for (int i=0; i<m2.length; i++) {
 			final BaseMetric m = m2[i].duplicate();
 			
 			// recompute the index of the metric from the second experiment
-			m.setIndex( m1_last_index + m.getIndex() );
+			final int index_new = m1_last_index + m.getIndex();
+			m.setIndex( index_new );
+			
+			// reset the key
+			m.setShortName( String.valueOf(index_new) );
 			
 			metricList.add(m);
 		}

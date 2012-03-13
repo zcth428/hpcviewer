@@ -19,7 +19,7 @@ import edu.rice.cs.hpc.data.util.Util;
  ******************************************************/
 public class TreeSimilarity {
 
-	final private boolean debug = true;
+	final private boolean debug = false;
 	
 	final private int MIN_DISTANCE_LOC = 3;
 	final private float MIN_DISTANCE_METRIC = (float) 0.15;

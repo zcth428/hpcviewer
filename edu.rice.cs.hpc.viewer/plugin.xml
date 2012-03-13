@@ -174,6 +174,15 @@
                   mnemonic="C"
                   style="push"
                   tooltip="Close database(s)">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="edu.rice.cs.hpc.viewer.provider.data.active">
+                     <equals
+                           value="ENABLED">
+                     </equals>
+                  </with>
+               </visibleWhen>
             </command>
             <separator
                   name="edu.rice.cs.hpc.viewer.separator1"
@@ -276,5 +285,15 @@
             id="edu.rice.cs.hpc.viewer.command.mergeDatabase"
             name="Merge database">
       </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.services">
+      <sourceProvider
+            provider="edu.rice.cs.hpc.viewer.provider.DatabaseState">
+         <variable
+               name="edu.rice.cs.hpc.viewer.provider.data.active"
+               priorityLevel="workbench">
+         </variable>
+      </sourceProvider>
    </extension>
 </plugin>

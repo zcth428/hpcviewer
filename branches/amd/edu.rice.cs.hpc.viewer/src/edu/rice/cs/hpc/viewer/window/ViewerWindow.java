@@ -46,6 +46,7 @@ public class ViewerWindow {
 	}
 	public void setWinObj(IWorkbenchWindow window) {
 		winObj = window;
+		//initSelectionListener( );
 	}
 
 	/**
@@ -246,4 +247,5 @@ public class ViewerWindow {
 				.getSourceProvider(DatabaseState.DATABASE_MERGE_STATE);
 		commandStateService.toogleEnabled(winObj);
 	}
+	
 }

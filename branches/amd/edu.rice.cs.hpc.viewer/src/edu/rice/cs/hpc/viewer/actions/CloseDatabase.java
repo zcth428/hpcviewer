@@ -29,7 +29,6 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
- * @author laksonoadhianto
  *
  */
 public class CloseDatabase extends AbstractHandler {
@@ -79,7 +78,6 @@ public class CloseDatabase extends AbstractHandler {
 				return null;
 			}
 			databasesToClose = selectedDatabases;
-			
 		}
 
 		

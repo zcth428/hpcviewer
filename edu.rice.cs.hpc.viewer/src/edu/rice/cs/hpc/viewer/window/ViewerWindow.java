@@ -4,9 +4,11 @@ import java.io.File;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
+import edu.rice.cs.hpc.viewer.provider.DatabaseState;
 
 /**
  * This class is used to record information about one hpcviewer window.  It contains information 
@@ -141,6 +143,10 @@ public class ViewerWindow {
 		for (int i=0 ; i<dbObj.length ; i++) {
 			if (dbObj[i] == null) {
 				dbObj[i] = database;
+
+				// refresh the menu state
+				checkService();
+				
 				return i;
 			}
 		}
@@ -172,6 +178,10 @@ public class ViewerWindow {
 				// compact the list, we only make this entry empty (set pointer to its 
 				// database class to null) so it can be reused if another open is done.
 				dbObj[i] = null;
+				
+				// refresh the menu state
+				checkService();
+				
 				return i;
 			}
 		}
@@ -216,5 +226,24 @@ public class ViewerWindow {
 		}
 
 		return dbArray;
+	}
+	
+	
+	/***
+	 * update the service provided by DatabaseState to ensure that the menus's state are refreshed
+	 * 
+	 */
+	private void checkService()
+	{
+		ISourceProviderService sourceProviderService = (ISourceProviderService) winObj.getService(
+						ISourceProviderService.class);
+		// Now get my service
+		DatabaseState commandStateService = (DatabaseState) sourceProviderService
+				.getSourceProvider(DatabaseState.DATABASE_ACTIVE_STATE);
+		commandStateService.toogleEnabled(winObj);
+		
+		commandStateService = (DatabaseState) sourceProviderService
+				.getSourceProvider(DatabaseState.DATABASE_MERGE_STATE);
+		commandStateService.toogleEnabled(winObj);
 	}
 }

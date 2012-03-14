@@ -60,9 +60,9 @@ public class ExperimentMerger {
 		// step 3: mark the new experiment file
 		// -----------------------------------------------
 		File file1 = exp1.getXMLExperimentFile();
-		final File fileMerged  = new File( file1.getParent()+ "/merged.xml"); 
+		String parent_dir = file1.getParentFile().getParent();
+		final File fileMerged  = new File( parent_dir + "merged/experiment.xml"); 
 		merged.setXMLExperimentFile( fileMerged );
-		System.out.println("EM create merged file: " + fileMerged.getAbsolutePath());
 
 		// -----------------------------------------------
 		// step 4: create cct root

@@ -5,11 +5,12 @@ import java.util.Comparator;
 
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
+import edu.rice.cs.hpc.data.experiment.scope.LoopScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.experiment.scope.LineScope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.DuplicateScopeTreesVisitor;
-import edu.rice.cs.hpc.data.util.Util;
 
 /******************************************************
  * 
@@ -19,22 +20,8 @@ import edu.rice.cs.hpc.data.util.Util;
  ******************************************************/
 public class TreeSimilarity {
 
-	final private boolean debug = false;
+	final private boolean debug = true;
 	
-	final private int MIN_DISTANCE_LOC = 3;
-	final private float MIN_DISTANCE_METRIC = (float) 0.15;
-	
-	// init value of score. 
-	// score can be incremented if the confidence of similarity is high,
-	// score is decreased if the confidence is lower
-	final private int SCORE_INIT = 100;
-	
-	// maximum score of metric similarity
-	final private int SCORE_METRIC_INIT = 100;
-	
-	// weight (the importance) of the distance of the location
-	// for some application, the distance is not important (due to inlining)
-	final private float LOC_DISTANCE_WEIGHT = (float) 0.2;
 	
 	private enum SimilarityType{ SAME, SIMILAR, DIFF }
 	
@@ -161,7 +148,7 @@ public class TreeSimilarity {
 		final Similarity similar = checkNodesSimilarity( target, source);
 		
 		if ( (similar.type == SimilarityType.SAME) ||
-				(similar.type == SimilarityType.SIMILAR && similar.score>100) )
+				(similar.type == SimilarityType.SIMILAR) )
 		{
 			// merge the metric
 			mergeMetrics(target, source, metricOffset);
@@ -174,6 +161,39 @@ public class TreeSimilarity {
 		return false;
 	}
 	
+	/***
+	 * check similarity between two scopes without checking the children
+	 * 
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	private int getScopeSimilarityScore ( Scope s1, Scope s2 )
+	{
+		// check the adjacency of the location
+		final int loc_distance = Math.abs(s1.getFirstLineNumber() - s2.getFirstLineNumber());
+		
+		// check the type
+		final boolean same_type = areSameType( s1, s2 );
+		
+		// check the metrics
+		final float metric_distance = getMetricDistance( s1, s2 );
+
+		// check if it's the same name
+		final boolean same_name = areSameName( s1, s2 );
+		
+		int score = (int) (Constants.SCORE_INIT + (1-metric_distance) * Constants.WEIGHT_METRIC);
+		
+		int score_loc = (int) Math.max(Constants.WEIGHT_LOCATION, loc_distance * Constants.WEIGHT_LOCATION_COEF);
+		
+		score -= score_loc;
+
+		score += (same_name ? Constants.WEIGHT_NAME : 0);
+		
+		score += (same_type ? Constants.WEIGHT_TYPE : 0);
+		
+		return score;
+	}
 	
 	/****
 	 * verify if 2 scopes are exactly the same, almost similar, or completely different.
@@ -185,73 +205,30 @@ public class TreeSimilarity {
 	 */
 	private Similarity checkNodesSimilarity( Scope s1, Scope s2)
 	{
-		// check the location
-		final boolean same_loc = areSameLocation( s1, s2 );
-		
-		// check the adjacency of the location
-		final int loc_distance = Math.abs(s1.getFirstLineNumber() - s2.getFirstLineNumber());
-		final boolean similar_loc =  loc_distance < MIN_DISTANCE_LOC;
-		
-		// check the type
-		final boolean same_type = areSameType( s1, s2 );
-		
-		// check the metrics
-		final float metric_distance = getMetricDistance( s1, s2 );
-		final boolean similar_metric = areSameMetric( metric_distance );
-
-		// check if it's the same name
-		final boolean same_name = areSameName( s1, s2 );
-		
-		// check if the children are the same
-		final boolean same_children = areSameChildren(s1, s2);
-		
 		Similarity result = new Similarity();
 		result.type = SimilarityType.DIFF;
+		result.score = getScopeSimilarityScore( s1, s2 );
+		
+		// check if the children are the same
+		result.score += getChildrenSimilarityScore( s1, s2 );
 
-		result.score = (int) (SCORE_INIT + (1-metric_distance) * SCORE_METRIC_INIT);
-		result.score -= (loc_distance * LOC_DISTANCE_WEIGHT);
-
-		if (same_type && same_name && similar_metric && same_loc && same_children)
+		if (result.score>260)
 		{
 			// we are confident enough that the two scopes are similar
 			result.type = SimilarityType.SAME;
 		}
-		else if (same_type && similar_metric && same_children)
+		else if (result.score>200)
 		{
 			// we are not confident, but it look like they are similar
 			// in this case, the caller has to check if other combinations exist
 			result.type = SimilarityType.SIMILAR;
 		}
-		else if (same_type && similar_metric && same_name && similar_loc)
+		
+		if (debug)
 		{
-			// not the same children, but the same location, same metric, same name
-			// probably the code has been inlined / outlined
-			result.type = SimilarityType.SIMILAR;
-		} 
-		else if (same_type && similar_metric && similar_loc )
-		{
-			// case where there is no other siblings, but the location is strikingly similar
-			// case like this is loops that are moved or transformed or inlined. These kind of
-			//	loops (or statements) don't have the same name since the line number will 
-			//	be different
-			if (s1.getClass() == edu.rice.cs.hpc.data.experiment.scope.LoopScope.class || 
-					s1.getClass() == edu.rice.cs.hpc.data.experiment.scope.LineScope.class )
-			{
-				final int p1 = s1.getParentScope().getChildCount();
-				final int p2 = s1.getParentScope().getChildCount();
-				
-				if (p1 == 1 && p1 == p2)
-					result.type = SimilarityType.SIMILAR;
-			}
+			System.out.println("TS " + s1 + " [" + s1.getCCTIndex()+"] \tvs.\t " +s2  + " ["+ s2.getCCTIndex()
+					+"]\t s: " + result.score +"\t t: " + result.type);
 		}
-		
-		Util.println( debug, "TS " + s1 + " ("+ s1.getCCTIndex() +") vs. " + s2 +   " ("+ s2.getCCTIndex() 
-					+ ") : d="+loc_distance+" ("+similar_loc+")" + 
-					", c: " + same_type+ ", md: " + metric_distance+ " (" +similar_metric+")" +
-					", sn: " + same_name + ", sc: " + same_children+ " rs: " + result.score +" (" 
-					+ result.type+ ")");
-	
-		
 		return result;
 	}
 
@@ -302,7 +279,7 @@ public class TreeSimilarity {
 	
 	private boolean areSameMetric( float metricDistance )
 	{
-		return ( metricDistance < MIN_DISTANCE_METRIC );
+		return ( metricDistance < Constants.MIN_DISTANCE_METRIC );
 	}
 	
 	private float getMetricDistance( Scope s1, Scope s2 )
@@ -324,9 +301,25 @@ public class TreeSimilarity {
 	private boolean areSameNodes( Scope s1, Scope s2 )
 	{
 		final float m = getMetricDistance( s1, s2 );
+		final boolean is_same_type = areSameType( s1, s2 );
+		final boolean is_same_metric = areSameMetric( m );
 		
-		return areSameLocation( s1, s2 ) && areSameType( s1, s2 ) &&
-				areSameMetric( m ) && areSameName( s1, s2 );
+		if (is_same_type && is_same_metric)
+		{
+			if ( areSameName( s1, s2 ) )
+				// same name, same type and same metric: 
+				//	definitely the same nodes
+				return true;
+			else if (s1.getClass() == LoopScope.class || 
+					 s1.getClass() == LineScope.class )
+			{
+				// the same type but different name:
+				//  check for line scope and loop scope 
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/****
@@ -358,6 +351,24 @@ public class TreeSimilarity {
 			}
 		}
 		return false;
+	}
+	
+	/****
+	 * return the score for children similarity
+	 * 
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	private int getChildrenSimilarityScore( Scope s1, Scope s2 )
+	{
+		final boolean is_same = areSameChildren( s1, s2 );
+		int score = 0;
+		if (is_same)
+		{
+			score = Constants.WEIGHT_CHILDREN;
+		}
+		return score;
 	}
 	
 	/****
@@ -439,5 +450,38 @@ public class TreeSimilarity {
 		public int compare(Scope s1, Scope s2) {
 			return (int) (s2.getMetricValue(0).getValue() - s1.getMetricValue(0).getValue());
 		}
-	}	
+	}
+	
+	private class Constants 
+	{
+		static final private float MIN_DISTANCE_METRIC = (float) 0.15;
+		
+		// init value of score. 
+		// score can be incremented if the confidence of similarity is high,
+		// score is decreased if the confidence is lower
+		static final private int SCORE_INIT = 100;
+		
+		// ------------------------------------------------------------------------
+		// weight of different parameters: metric, location, name, children, ..
+		// the higher the weight, the more important in similarity comparison
+		// ------------------------------------------------------------------------
+		// maximum score of metric similarity
+		static final private int WEIGHT_METRIC = 100;
+		
+		// score if the two scopes are the same
+		static final private int WEIGHT_NAME = 30;
+		
+		// score for the case with the same children
+		static final private int WEIGHT_CHILDREN = 80;
+		
+		static final private int WEIGHT_LINESCOPE_CHILDREN = 40;
+		
+		// same types (loop vs. loop, line vs. line, ...)
+		static final private int WEIGHT_TYPE = 20;
+		
+		// weight (the importance) of the distance of the location
+		// for some application, the distance is not important (due to inlining)
+		static final private float WEIGHT_LOCATION_COEF = (float) 0.2;
+		static final private int WEIGHT_LOCATION = 20;
+	}
 }

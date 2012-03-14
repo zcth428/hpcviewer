@@ -2,11 +2,16 @@ package edu.rice.cs.hpc.viewer.window;
 
 import java.io.File;
 
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.State;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.RegistryToggleState;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.provider.DatabaseState;
 
@@ -40,13 +45,16 @@ public class ViewerWindow {
 	 */
 	Database[] dbObj = new Database[maxDbNum];
 
+	private Command cmdDebugCCT;
+	
 
 	public IWorkbenchWindow getWinObj() {
 		return winObj;
 	}
 	public void setWinObj(IWorkbenchWindow window) {
 		winObj = window;
-		//initSelectionListener( );
+		ICommandService commandService = (ICommandService) winObj.getService(ICommandService.class);
+		cmdDebugCCT = commandService.getCommand( DebugShowCCT.commandId );
 	}
 
 	/**
@@ -248,4 +256,24 @@ public class ViewerWindow {
 		commandStateService.toogleEnabled(winObj);
 	}
 	
+	// --------------------------------------------------------------
+	// Debug mode for this window
+	// --------------------------------------------------------------
+	
+	/**
+	 * check if we are in debug mode or not 
+	 * @return true if it's in debug mode
+	 */
+	public boolean isDebugMode() 
+	{
+		boolean isDebug = false;
+		final State state = cmdDebugCCT.getState(RegistryToggleState.STATE_ID);
+		if (state != null)
+		{
+			final Boolean b = (Boolean) state.getValue();
+			isDebug = b.booleanValue();
+		}
+		return isDebug;
+	}
+		
 }

@@ -10,25 +10,28 @@ import org.eclipse.swt.SWT;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /*************
  * Generic label provider for the scope column in scope view 
  * @author laksonoadhianto
  *
  */
-public class ScopeLabelProvider extends ColumnLabelProvider {
+public class ScopeLabelProvider extends ColumnLabelProvider 
+{
 	final static protected Icons iconCollection = Icons.getInstance();
-	// turn the "debug" variable into "true" to show the ID of each scope
-	final static private boolean debug = true;
 	final private Color DARK_BLUE;
-	
+	final private ViewerWindow viewerWindow;
+
 	/**
 	 * Default constructor
 	 */
 	public ScopeLabelProvider(IWorkbenchWindow window) {
-		// TODO Auto-generated constructor stub
+
 		super();
 		this.DARK_BLUE = window.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
+		viewerWindow = ViewerWindowManager.getViewerWindow(window);
 	}
 
 	/**
@@ -45,23 +48,23 @@ public class ScopeLabelProvider extends ColumnLabelProvider {
 	/**
 	 * Return the text of the scope tree. By default is the scope name.
 	 */
-	public String getText(Object element) {
+	public String getText(Object element) 
+	{
 		String text = "";
 		if (element instanceof Scope){
 			Scope node = (Scope) element;
-			if (debug)  {
+			
+			if (viewerWindow.isDebugMode())  
+			{
 				//---------------------------------------------------------------
 				// label for debugging purpose
 				//---------------------------------------------------------------
-				if (node instanceof CallSiteScopeCallerView) {
+				if (node instanceof CallSiteScopeCallerView) 
+				{
 					CallSiteScopeCallerView caller = (CallSiteScopeCallerView) node;
 					Object merged[] = caller.getMergedScopes();
 					if (merged != null) {
 						text += merged.length+ "*";
-//						for(Object c: merged) {
-//							CallSiteScopeCallerView cv = (CallSiteScopeCallerView) c;
-//							text = text + cv.getScopeCCT().getCCTIndex() + " ";
-//						}
 					}
 					Scope cct = caller.getScopeCCT();
 					text = text + "[" + caller.getCCTIndex() +"/" + cct.getCCTIndex()  + "]" + node.getName();

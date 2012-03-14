@@ -1,8 +1,8 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import java.io.FileNotFoundException;
-
 //User interface
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 //SWT
@@ -16,6 +16,10 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -32,6 +36,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
@@ -392,6 +397,28 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 		      }
 		}); 
 		
+		// ---------------------------------------------------------------
+		// register listener to capture debugging mode
+		// ---------------------------------------------------------------
+		final ICommandService commandService = (ICommandService) this.getSite().getService(ICommandService.class);
+		commandService.addExecutionListener( new IExecutionListener(){
+
+			public void notHandled(String commandId, NotHandledException exception) {}
+			public void postExecuteFailure(String commandId, ExecutionException exception) {}
+			public void preExecute(String commandId, ExecutionEvent event) {}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.eclipse.core.commands.IExecutionListener#postExecuteSuccess(java.lang.String, java.lang.Object)
+			 */
+			public void postExecuteSuccess(String commandId, Object returnValue) 
+			{
+				if (commandId.equals(DebugShowCCT.commandId))
+				{
+					updateDisplay();
+				}
+			}
+		});
 	}
     
     /**

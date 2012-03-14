@@ -27,8 +27,7 @@ public class DebugShowCCT extends AbstractHandler {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 
 		// toggle the debug mode
-		boolean isDebug = HandlerUtil.toggleCommandState( event.getCommand() );
-		isDebug = !isDebug;
+		HandlerUtil.toggleCommandState( event.getCommand() );
 		
 		final ICommandService commandService = (ICommandService) window.getService(ICommandService.class);
 		commandService.refreshElements(commandId, null);

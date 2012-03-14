@@ -191,6 +191,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 	 */
 	private void removeViews() {
 		IWorkbenchPage page = this.window.getActivePage();
+		removeViews( page );
+	}
+	
+	private void removeViews( IWorkbenchPage page )
+	{
 		org.eclipse.ui.IViewReference views[] = page.getViewReferences();
 		int nbViews = views.length;
 		
@@ -244,9 +249,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 				// bug on Mac OS: Mac will allow user to close via menu system while hpcviewer is still displaying 
 				// 	a modal dialog box (such as  open file dialog). This will create infinite loop in the SWT events
 				//  and has to be killed 
-				if (pageCurrent != null)
+				if (pageCurrent != null){
 					// somehow, closeEditors method works better than closeAllEditors.
 					pageCurrent.closeEditors(pageCurrent.getEditorReferences(), false);
+					removeViews( pageCurrent );
+				}
 				
 				//---------------------------------------------------------------------------
 				// we need to explicitly remove all allocated native resources since Eclipse

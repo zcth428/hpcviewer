@@ -242,7 +242,7 @@ public class ViewerWindow {
 	 * update the service provided by DatabaseState to ensure that the menus's state are refreshed
 	 * 
 	 */
-	private void checkService()
+	public void checkService()
 	{
 		ISourceProviderService sourceProviderService = (ISourceProviderService) winObj.getService(
 						ISourceProviderService.class);

@@ -21,7 +21,7 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.DuplicateScopeTreesVisitor
  ******************************************************/
 public class TreeSimilarity {
 
-	final private boolean debug = true;
+	final private boolean debug = false;
 	
 	
 	private enum SimilarityType{ SAME, SIMILAR, DIFF }
@@ -103,7 +103,8 @@ public class TreeSimilarity {
 					// check if the scopes are similar
 					if (mergeNode(childTarget, childSource, metricOffset))
 					{
-						// merge the children
+						// DFS: recursively, merge the children if they are similar
+						// the recursion will stop when all children are different
 						mergeTree( childTarget, childSource, metricOffset );
 						break;
 					}

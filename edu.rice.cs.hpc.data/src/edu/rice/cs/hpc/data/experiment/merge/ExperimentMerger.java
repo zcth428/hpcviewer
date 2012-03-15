@@ -61,7 +61,7 @@ public class ExperimentMerger {
 		// -----------------------------------------------
 		File file1 = exp1.getXMLExperimentFile();
 		String parent_dir = file1.getParentFile().getParent();
-		final File fileMerged  = new File( parent_dir + "merged/experiment.xml"); 
+		final File fileMerged  = new File( parent_dir + "/merged/experiment.xml"); 
 		merged.setXMLExperimentFile( fileMerged );
 
 		// -----------------------------------------------

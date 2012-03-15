@@ -6,6 +6,7 @@ import java.util.Comparator;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.LoopScope;
+import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.LineScope;
@@ -232,11 +233,17 @@ public class TreeSimilarity {
 		return result;
 	}
 
+	/***
+	 * check if the string has an underscore suffix
+	 * @param s
+	 * @return
+	 */
 	private boolean hasUnderscoreSuffix(String s)
 	{
 		final int l = s.length();
 		return (s.charAt( l - 1) == '_');
 	}
+	
 	/**
 	 * check if the name of two scopes are similar 
 	 * 
@@ -264,11 +271,6 @@ public class TreeSimilarity {
 		}
 	}
 	
-	private boolean areSameLocation( Scope s1, Scope s2)
-	{
-		return s1.getFirstLineNumber() == s2.getFirstLineNumber();
-	}
-	
 	private boolean areSameType( Scope s1, Scope s2)
 	{
 		final Class<? extends Scope> c1 = s1.getClass();
@@ -292,7 +294,10 @@ public class TreeSimilarity {
 	/****
 	 * check if the two nodes are lexicographically the same: 
 	 * 			 metric, type, name and location
-	 * warning:  this doesn't include the children
+	 * this function is different than checkNodesSimilarity() which is
+	 * 	judged based on the similarity distance. 
+	 * 
+	 * warning:  this doesn't include the descedants
 	 * 
 	 * @param s1
 	 * @param s2
@@ -310,8 +315,9 @@ public class TreeSimilarity {
 				// same name, same type and same metric: 
 				//	definitely the same nodes
 				return true;
-			else if (s1.getClass() == LoopScope.class || 
-					 s1.getClass() == LineScope.class )
+			else if ( is_same_type &&  
+					 (s1.getClass() == LoopScope.class || 
+					  s1.getClass() == LineScope.class ) ) 
 			{
 				// the same type but different name:
 				//  check for line scope and loop scope 
@@ -332,23 +338,71 @@ public class TreeSimilarity {
 	 * @param s2
 	 * @return
 	 */
-	private boolean areSameChildren(Scope s1, Scope s2)
+	private boolean areSameChildren(Scope s1, Scope s2, int currDepth)
 	{
-		int c1 = s1.getChildCount();
-		int c2 = s2.getChildCount();
+		// check if we go too far or not
+		if (currDepth > Constants.MAX_LEN_DFS)
+			return false;
 		
-		// is there a child that exactly the same ?
-		for (int i=0; i<c1; i++)
+		// both should have the same children
+		if (s1.getChildCount()==0 || s2.getChildCount()==0)
+			return false;
+		
+		final Scope sortedS1[] = sortArrayOfNodes( s1.getChildren() );
+		final Scope sortedS2[] = sortArrayOfNodes( s2.getChildren() );
+
+		// we only check with limited number of children
+		// there's no need to check all children
+		int c1 = Math.min( Constants.MAX_LEN_BFS, sortedS1.length );
+		int c2 = Math.min( Constants.MAX_LEN_BFS, sortedS2.length );
+		
+		// is there a child that is exactly the same ?
+		for (int i=0; i<c1 ; i++)
 		{
-			final Scope cs1 = s1.getSubscope(i);
+			final Scope cs1 = sortedS1[i];
 			
 			for (int j=0; j<c2; j++) 
 			{
-				final Scope cs2 = s2.getSubscope(j);
+				final Scope cs2 = sortedS2[j];
 				
 				if (areSameNodes( cs1, cs2 ))
 					return true;
+				else 
+				{ 	// not the same nodes: check their descendants
+					// check if one (or all) of them are aliens
+					final boolean cs1_is_alien = isAlien( cs1 );
+					final boolean cs2_is_alien = isAlien( cs2 );
+					Scope next1 = s1, next2 = s2;
+					
+					// for alien procedure: we will go deep to their children
+					//	the number of depth will be limited to MAX_LEN_DFS
+					if (cs1_is_alien)
+						next1 = cs1;
+					if (cs2_is_alien)
+						next2 = cs2;
+					
+					if (cs1_is_alien || cs2_is_alien)
+					{
+						if (areSameChildren(next1, next2, currDepth + 1))
+							return true;
+					}
+				}
 			}
+		}
+		return false;
+	}
+	
+	/***
+	 * return true if the scope is an alien
+	 * 
+	 * @param scope
+	 * @return
+	 */
+	private boolean isAlien( Scope scope )
+	{
+		if (scope instanceof ProcedureScope)
+		{
+			return ((ProcedureScope) scope).isAlien();
 		}
 		return false;
 	}
@@ -362,7 +416,7 @@ public class TreeSimilarity {
 	 */
 	private int getChildrenSimilarityScore( Scope s1, Scope s2 )
 	{
-		final boolean is_same = areSameChildren( s1, s2 );
+		final boolean is_same = areSameChildren( s1, s2, 0 );
 		int score = 0;
 		if (is_same)
 		{
@@ -474,8 +528,6 @@ public class TreeSimilarity {
 		// score for the case with the same children
 		static final private int WEIGHT_CHILDREN = 80;
 		
-		static final private int WEIGHT_LINESCOPE_CHILDREN = 40;
-		
 		// same types (loop vs. loop, line vs. line, ...)
 		static final private int WEIGHT_TYPE = 20;
 		
@@ -483,5 +535,15 @@ public class TreeSimilarity {
 		// for some application, the distance is not important (due to inlining)
 		static final private float WEIGHT_LOCATION_COEF = (float) 0.2;
 		static final private int WEIGHT_LOCATION = 20;
+		
+		// ------------------------------------------------------------------------
+		// pruning the search of descendants to avoid long useless search
+		// ------------------------------------------------------------------------
+		
+		// Maximum length of breadth first search
+		static final private int MAX_LEN_BFS = 4;
+		
+		// maximum length of depth first search
+		static final private int MAX_LEN_DFS = 4;
 	}
 }

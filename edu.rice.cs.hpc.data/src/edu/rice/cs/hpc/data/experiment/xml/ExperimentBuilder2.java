@@ -1318,7 +1318,15 @@ public class ExperimentBuilder2 extends Builder
 		// add a metric value to the current scope
 		String internalName = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
 		String value = getAttributeByName(VALUE_ATTRIBUTE, attributes, values);
-		double actualValue  = Double.valueOf(value).doubleValue();
+		double actualValue;
+		
+		if (value.equals("inf")) {
+			actualValue = Double.POSITIVE_INFINITY;
+		} else if (value.equals("-inf")) {
+			actualValue = Double.NEGATIVE_INFINITY;
+		} else {
+			actualValue = Double.valueOf(value).doubleValue();
+		}
 		
 		BaseMetric metric = this.experiment.getMetric(internalName);
 		// get the sample period

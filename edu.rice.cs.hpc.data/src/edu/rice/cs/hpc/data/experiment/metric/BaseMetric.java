@@ -181,12 +181,23 @@ public abstract class BaseMetric {
 	 * Return the text to display based on the metric value
 	 * @param mv: the value of a metric
 	 *************************************************************************/
-	public String getMetricTextValue(MetricValue mv) {
+	public String getMetricTextValue(MetricValue mv_) {
 		String sText;
-		if(mv.value == 0.0 || mv == MetricValue.NONE || !MetricValue.isAvailable(mv) ) sText = "";
-		else{
+		MetricValue mv = mv_;
+		
+		// enforce bounds for presentation
+		if (mv.value > 9.99e99) mv.value = Float.POSITIVE_INFINITY;
+		if (mv.value < 1.00e-99)  mv.value = (float) 0.0;
+		
+		// if not a special case, convert the number to a string
+		if (mv.value == 0.0 || mv == MetricValue.NONE || !MetricValue.isAvailable(mv) ) sText = "";
+		else if (mv.value == Float.POSITIVE_INFINITY) sText = "Infinity";
+		else if (mv.value == Float.NEGATIVE_INFINITY) sText = "-Infinity";
+		else if (Float.isNaN(mv.value)) sText = "NaN";
+		else {
 			sText = getDisplayFormat().format(mv);
 		}
+		
 		return sText;
 	}
 

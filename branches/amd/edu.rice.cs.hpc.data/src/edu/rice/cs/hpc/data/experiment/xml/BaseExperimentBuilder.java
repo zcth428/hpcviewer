@@ -941,13 +941,16 @@ public class BaseExperimentBuilder extends Builder {
 		this.scopeStack.push(this.rootScope);	// don't use 'beginScope'
 
 		final String title;
+		final RootScopeType rootType;
 		
 		if (this.csviewer) {
 			title = "Calling Context View";
+			rootType = RootScopeType.CallingContextTree;
 		} else {
 			title = "Flat View";
+			rootType = RootScopeType.Flat;
 		}
-		this.viewRootScope[0]  = new RootScope(this.experiment, name, title, RootScopeType.CallingContextTree);
+		this.viewRootScope[0]  = new RootScope(this.experiment, name, title, rootType);
 		beginScope(this.viewRootScope[0]);
 	}
 

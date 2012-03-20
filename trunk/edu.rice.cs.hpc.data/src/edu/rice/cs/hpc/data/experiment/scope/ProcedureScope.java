@@ -14,11 +14,9 @@
 
 package edu.rice.cs.hpc.data.experiment.scope;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.AbstractFinalizeMetricVisitor;
-import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
@@ -63,7 +61,7 @@ protected LoadModuleScope objLoadModule;
  *	Creates a ProcedureScope.
  ************************************************************************/
 	
-public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, 
+public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int last, 
 		String proc, boolean _isalien, int cct_id, int flat_id)
 {
 	super(experiment, file, first, last, cct_id, flat_id);
@@ -72,7 +70,7 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
 	this.objLoadModule = null;
 }
 
-public ProcedureScope(Experiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien)
+public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien)
 {
 	this(experiment, file, first, last, proc, _isalien, Scope.idMax++, Scope.idMax);
 }
@@ -87,7 +85,7 @@ public ProcedureScope(Experiment experiment, SourceFile file, int first, int las
  * @param sid
  * @param _isalien
  */
-public ProcedureScope(Experiment experiment, LoadModuleScope loadModule, SourceFile file, 
+public ProcedureScope(BaseExperiment experiment, LoadModuleScope loadModule, SourceFile file, 
 		int first, int last, String proc, boolean _isalien, int cct_id, int flat_id)
 {
 	this(experiment, file, first, last,proc,_isalien, cct_id, flat_id);

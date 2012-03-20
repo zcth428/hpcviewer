@@ -16,6 +16,7 @@ package edu.rice.cs.hpc.data.experiment.xml;
 
 
 import edu.rice.cs.hpc.data.experiment.*;
+import edu.rice.cs.hpc.data.util.Grep;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,7 +59,7 @@ public class ExperimentFileXML extends ExperimentFile
  *
  ************************************************************************/
 	
-public void parse(File file, Experiment experiment, boolean need_metrics)
+public void parse(File file, BaseExperiment experiment, boolean need_metrics)
 		throws	Exception
 		{
 	// get an appropriate input stream
@@ -66,10 +67,34 @@ public void parse(File file, Experiment experiment, boolean need_metrics)
 	InputStream stream;
 
 	name = file.toString();
-	stream = new FileInputStream(file);
 
 	// parse the stream
-	Builder builder = new ExperimentBuilder2(experiment, name, need_metrics);
+	final Builder builder;
+	if (need_metrics)
+	{
+		stream = new FileInputStream(file);
+		builder = new ExperimentBuilder2(experiment, name);
+	}
+	else
+	{
+		// if we don't need metrics, we should look at callpath.xml
+		//	which is a light version of experiment.xml without metrics
+		// 	sax parser is not good enough in reading large xml file since
+		//	it uses old technique of reader line by line. we should come
+		//	up with a better xml parser.
+		// note: this is a quick hack to fix slow xml reader in ibm bg something
+		
+		String callpathLoc = file.getParent() + "/callpath.xml";
+		File callpathFile = new File(callpathLoc);
+		if (!callpathFile.exists())
+		{
+			Grep.grep(file.getAbsolutePath(), callpathLoc, "<M ", false);
+			callpathFile = new File(callpathLoc);
+		}
+		stream = new FileInputStream(callpathFile);
+		builder = new BaseExperimentBuilder(experiment, name);
+	}
+	
 	Parser parser = new Parser(name, stream, builder);
 	parser.parse();
 
@@ -78,5 +103,6 @@ public void parse(File file, Experiment experiment, boolean need_metrics)
 	} else
 		throw new InvalExperimentException(builder.getParseErrorLineNumber());        	
 		}
+
 
 }

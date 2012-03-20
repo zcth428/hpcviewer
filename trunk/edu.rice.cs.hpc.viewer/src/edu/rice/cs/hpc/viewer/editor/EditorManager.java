@@ -53,7 +53,7 @@ public class EditorManager extends BaseEditorManager{
 		// get the complete file name
 		if(Utilities.isFileReadable(scope)) {
 			// lets get the database number being used for this file
-			Experiment experiment = scope.getExperiment();
+			Experiment experiment = (Experiment) scope.getExperiment();
 			
 			String sLongName;
 			FileSystemSourceFile newFile = ((FileSystemSourceFile)scope.getSourceFile());

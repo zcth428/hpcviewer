@@ -71,21 +71,11 @@ public class MetricRaw  extends BaseMetric {
 	public MetricValue getValue(Scope s) {
 		return null;
 	}
-	
-/*	public MetricValue getValue(Scope scope, int rank_sequence) {
-		
-		Experiment experiment = scope.getExperiment();
-		ThreadLevelDataManager threadManager = experiment.getThreadLevelDataManager();
-		try {
-			double value = threadManager.getMetric(rank_sequence, this, scope.getCCTIndex());
-			MetricValue mv = new MetricValue(value);
-			return mv;
-			
-		} catch (IOException e) {
 
-			e.printStackTrace();
-		}
-		
-		return MetricValue.NONE;
-	}*/
+
+	@Override
+	public BaseMetric duplicate() {
+		return null;
+	}
+	
 }

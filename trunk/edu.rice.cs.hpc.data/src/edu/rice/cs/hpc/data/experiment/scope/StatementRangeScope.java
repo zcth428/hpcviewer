@@ -15,7 +15,7 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
@@ -50,7 +50,7 @@ public class StatementRangeScope extends Scope
  *	Creates a StatementRangeScope.
  ************************************************************************/
 	
-public StatementRangeScope(Experiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
+public StatementRangeScope(BaseExperiment experiment, SourceFile file, int first, int last, int cct_id, int flat_id)
 {
 	super(experiment, file, first, last, cct_id, flat_id);
 }
@@ -109,8 +109,6 @@ public Scope duplicate() {
 				this.firstLineNumber,
 				this.lastLineNumber,
 				this.cct_node_index, this.flat_node_index);
-    // copy metrics
-    this.copyMetrics(duplicatedScope);
     return duplicatedScope;
 }
 

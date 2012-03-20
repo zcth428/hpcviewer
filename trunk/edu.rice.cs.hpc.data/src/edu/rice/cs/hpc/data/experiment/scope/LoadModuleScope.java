@@ -15,6 +15,7 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
@@ -54,7 +55,7 @@ protected String loadModuleName;
  *	Creates a LoadModuleScope.
  ************************************************************************/
 	
-public LoadModuleScope(Experiment experiment, String lmname, SourceFile file, int id)
+public LoadModuleScope(BaseExperiment experiment, String lmname, SourceFile file, int id)
 {
 	super(experiment, file, id);
 	this.loadModuleName = lmname;

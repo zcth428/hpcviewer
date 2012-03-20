@@ -40,7 +40,7 @@ protected String name;
 
 
 /** The experiment's user visible name. */
-protected File[] searchPaths;
+public File[] searchPaths;
 
 
 
@@ -101,7 +101,10 @@ public void setName(String name)
 	
 public int getSearchPathCount()
 {
-	return this.searchPaths.length;
+	if (this.searchPaths != null)
+		return this.searchPaths.length;
+	else
+		return 0;
 }
 
 
@@ -123,7 +126,7 @@ public File getSearchPath(int index)
  *	Sets the experiment's search paths.
  ************************************************************************/
 	
-public void setSearchPaths(List pathList)
+public void setSearchPaths(List<File> pathList)
 {
 	this.searchPaths = (File[]) pathList.toArray(new File[0]);
 }

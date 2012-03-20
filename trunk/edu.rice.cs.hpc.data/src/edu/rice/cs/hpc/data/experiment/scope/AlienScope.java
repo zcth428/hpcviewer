@@ -14,7 +14,7 @@
 
 package edu.rice.cs.hpc.data.experiment.scope;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
@@ -52,7 +52,7 @@ protected String procedureName;
  *	Creates a AlienScope.
  ************************************************************************/
 	
-public AlienScope(Experiment experiment, SourceFile file, 
+public AlienScope(BaseExperiment experiment, SourceFile file, 
 		  String fileName, String procName, 
 		  int first, int last, int id)
 {
@@ -62,7 +62,7 @@ public AlienScope(Experiment experiment, SourceFile file,
 //	this.id = "AlienScope";
 }
 
-public AlienScope(Experiment experiment, SourceFile file, 
+public AlienScope(BaseExperiment experiment, SourceFile file, 
 		  String fileName, String procName, 
 		  int first, int last)
 {

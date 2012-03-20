@@ -270,6 +270,11 @@ public abstract class BaseMetric {
 	 *************************************************************************/
 	abstract public MetricValue getValue(Scope s);
 
+	/***
+	 * Method to duplicate itself (cloning)
+	 * @return
+	 */
+	abstract public BaseMetric duplicate();
 
 
 	//=================================================================================
@@ -298,7 +303,7 @@ public abstract class BaseMetric {
 			try {
 				period = Double.parseDouble(sPeriod);
 			} catch (java.lang.NumberFormatException e) {
-				System.err.println("The sample period is incorrect :" + this.sampleperiod);
+				System.err.println("The sample period is incorrect :" + sPeriod);
 			}
 		}
 		return period;

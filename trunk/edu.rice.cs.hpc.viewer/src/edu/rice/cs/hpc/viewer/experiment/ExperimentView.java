@@ -55,17 +55,6 @@ public class ExperimentView {
 	}
 	
 
-	/**
-	 * Asynchronously showing a processing message in the message bar and opening a database 
-	 * @param sFilename: the name of XML database file
-	 */
-	/*
-	public void asyncLoadExperimentAndProcess(String sFilename) {
-		ThrLoadProcessingThread thr = new ThrLoadProcessingThread(sFilename);
-		thr.start();
-		loadExperimentAndProcess(sFilename);
-	}
-	*/
 	
 	/**
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
@@ -214,6 +203,6 @@ public class ExperimentView {
 		}
 		
 		// update the window title if necessary
-		WindowTitle.refreshAllTitle(window, experiment);
+		WindowTitle.refreshAllTitle(window, experiment);		
 	}
 }

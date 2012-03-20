@@ -63,9 +63,10 @@ public final static int NO_PARTNER_INDEX = -1;
  * @param partnerIndex
  */
 public Metric(String shortName, String nativeName, String displayName, boolean displayed, 
-              String format, AnnotationType annotationType, String samplePeriod, MetricType metricType, int partnerIndex)
+              String format, AnnotationType annotationType, String samplePeriod, 
+              int index, MetricType metricType, int partnerIndex)
 {
-	super(shortName, displayName, displayed, format, annotationType, 0, metricType);
+	super(shortName, displayName, displayed, format, annotationType, index, metricType);
 	// creation arguments
 	this.nativeName  = nativeName;
     this.sampleperiod  = this.convertSamplePeriode(samplePeriod);
@@ -74,28 +75,6 @@ public Metric(String shortName, String nativeName, String displayName, boolean d
 }
 
 
-/**
- * Construct a metric using a "double" sample period
- * @param shortName
- * @param nativeName
- * @param displayName
- * @param displayed
- * @param format
- * @param annotationType
- * @param sampleperiod
- * @param metricType
- * @param partnerIndex
- */
-public Metric( String shortName, String nativeName, String displayName, boolean displayed, 
-               String format, AnnotationType annotationType, double samplePeriod, MetricType metricType, int partnerIndex)
-{
-	super(shortName, displayName, displayed, format, annotationType, 0, metricType);
-	// creation arguments
-	this.nativeName  = nativeName;
-	this.sampleperiod  = samplePeriod;
-	this.metricType     = metricType;
-	this.partnerIndex = partnerIndex;
-}
 
 /*************************************************************************
  *	Returns the value of this metric at a given scope.
@@ -105,22 +84,6 @@ public MetricValue getValue(Scope s)
 	return s.getMetricValue(this);
 }
 
-/*************************************************************************
- *	Returns the minimum value this metric can take.
- ************************************************************************/	
-public MetricValue getMinimumValue()
-{
-	return new MetricValue(0.0);
-}
-
-/*************************************************************************
- *	Returns the maximum value this metric can take.
- ************************************************************************/
-	
-public MetricValue getMaximumValue()
-{
-	return new MetricValue(Double.MAX_VALUE);
-}
 
 public int getPartnerIndex()
 {
@@ -130,6 +93,13 @@ public int getPartnerIndex()
 public void setPartnerIndex(int ei)
 {
 	this.partnerIndex = ei;
+}
+
+
+@Override
+public BaseMetric duplicate() {
+	return new Metric(shortName, nativeName, displayName, displayed, null, annotationType, 
+			String.valueOf(sampleperiod), index, metricType, partnerIndex);
 }
 
 }

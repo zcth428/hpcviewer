@@ -4,6 +4,7 @@ import com.graphbuilder.math.Expression;
 import com.graphbuilder.math.ExpressionParseException;
 import com.graphbuilder.math.ExpressionTree;
 
+import edu.rice.cs.hpc.data.experiment.BaseExperimentWithMetrics;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import com.graphbuilder.math.FuncMap;
@@ -36,19 +37,16 @@ public class AggregateMetric extends BaseMetric {
 	// partner of the metric. If the metric is exclusive, then its partner is the inclusive one
 	private int partner;
 
-	/***------------------------------------------------------------------------****
-	 * Constructor: create a derived incremental metric
-	 * @param sID: the ID of the metric (HAS TO BE REALLY SHORT !!!)
-	 * @param sDisplayName: the title of the metric
-	 * @param displayed: to show or not ?
-	 * @param annotationType  : to show the percent or process number ?
-	 * @param index    : metric index in the list (unused)
-	 * @param type	   : metric type
-	 ***------------------------------------------------------------------------***/
+	
+	/**
+	 * @see BaseMetric
+	 */
 	public AggregateMetric(String sID, String sDisplayName, boolean displayed, String format,
-			AnnotationType annotationType, int index, MetricType type) {
-		super(sID, sDisplayName, displayed, format, annotationType, index, type);
+			AnnotationType annotationType, int index, int partner, MetricType type) {
 
+		super( sID, sDisplayName, displayed, format, annotationType, index, type);
+		
+		this.partner = partner;
 		this.fctMap = new FuncMap();
 		this.fctMap.loadDefaultFunctions();
 		
@@ -56,27 +54,13 @@ public class AggregateMetric extends BaseMetric {
 		this.finalizeVarMap = new MetricVarMap();
 		this.combineVarMap = new CombineAggregateMetricVarMap();
 	}
-	
-	
-	public AggregateMetric(String sID, String sDisplayName, boolean displayed, String format,
-			AnnotationType annotationType, int index, int partner, MetricType type) {
-		this( sID, sDisplayName, displayed, format, annotationType, index, type);
-		this.partner = partner;
-	}
-
-	@Override
-	public MetricValue getValue(Scope s) {
-		MetricValue mv = null;
-		mv = s.getMetricValue(this.index);
-		return mv;
-	}
 
 
-	/****------------------------------------------------------------------------****
+	/****
 	 * set the math expression
 	 * @param type
 	 * @param sFormula
-	 ***------------------------------------------------------------------------****/
+	 *******/
 	public void setFormula(char type, String sFormula) {
 		assert (type == FORMULA_COMBINE || type == FORMULA_FINALIZE);
 		
@@ -92,23 +76,23 @@ public class AggregateMetric extends BaseMetric {
 	}
 	
 	
-	/*****------------------------------------------------------------------------****
+	/*********
 	 * initialize the metric.
 	 * THIS METHOD HAS TO BE CALLED before asking the value
 	 * @param type
 	 * @param exp
-	 ***------------------------------------------------------------------------****/
-	public void init(Experiment exp) {
-		this.finalizeVarMap.setExperiment(exp);
-		this.combineVarMap.setExperiment(exp);
+	 *******/
+	public void init(BaseExperimentWithMetrics exp) {
+		this.finalizeVarMap.setExperiment((Experiment)exp);
+		this.combineVarMap.setExperiment((Experiment)exp);
 	}
 	
 	
-	/****------------------------------------------------------------------------****
+	/********
 	 * Assign the value of a scope based on the formula of a given type
 	 * @param type
 	 * @param scope
-	 ***------------------------------------------------------------------------****/
+	 *******/
 	public void finalize(Scope scope) {
 		Expression exp = this.formulaFinalize;
 		
@@ -118,13 +102,13 @@ public class AggregateMetric extends BaseMetric {
 		}
 	}
 	
-	/**------------------------------------------------------------------------****
+	/******
 	 * combining the metric from another view (typically cct) to this view
 	 * if the target metric is not available (or empty) then we initialize it with
 	 * 	the value of the source
 	 * @param s_source
 	 * @param s_target
-	 **------------------------------------------------------------------------****/
+	 ******/
 	public void combine(Scope s_source, Scope s_target) {
 		MetricValue value = s_target.getMetricValue(this); 
 		if (MetricValue.isAvailable(value)) {
@@ -155,12 +139,12 @@ public class AggregateMetric extends BaseMetric {
 	}
 	
 	
-	/**------------------------------------------------------------------------****
+	/******
 	 * 
 	 * @param expression
 	 * @param var_map
 	 * @param scope
-	 **------------------------------------------------------------------------****/
+	 ******/
 	private void setScopeValue(Expression expression, MetricVarMap var_map, Scope scope) {
 		MetricValue mv;
 		try {
@@ -171,5 +155,19 @@ public class AggregateMetric extends BaseMetric {
 			e.printStackTrace();
 		}
 		scope.setMetricValue(this.index, mv);
+	}
+
+
+	@Override
+	public MetricValue getValue(Scope s) {
+		MetricValue mv = null;
+		mv = s.getMetricValue(this.index);
+		return mv;
+	}
+
+	@Override
+	public BaseMetric duplicate() {
+		return new AggregateMetric(shortName, displayName, displayed, 
+				null, annotationType, index, partner, metricType);
 	}
 }

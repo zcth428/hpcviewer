@@ -1,12 +1,10 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import java.io.FileNotFoundException;
-
 //User interface
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchWindow;
-
 //SWT
 import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
@@ -18,12 +16,15 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -35,6 +36,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
@@ -202,34 +204,6 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         	mgr.add(acShowCallsite);
         }
         
-		// show the database xml file
-		final IWorkbenchWindow windowCurrent = this.getSite().getWorkbenchWindow();
-		String dbXmlMenuTitle = "Show database's raw XML";
-		ScopeViewTreeAction dbShowXml = new ScopeViewTreeAction(dbXmlMenuTitle, scope){
-			public void run() {
-				if (this.scope.getExperiment() == null) {
-					MessageDialog.openError(windowCurrent.getShell(), 
-							"Error: Experiment class missing", 
-					"Unable to find the Experiment class for the selected database !");
-					return;
-				}
-
-				// get the the experiment XML file for the database this program scope is part of
-				String filePath = this.scope.getExperiment().getXMLExperimentFile().getPath();
-
-				// prepare the editor
-				EditorManager editor = new EditorManager(windowCurrent);
-				try {
-					// database numbers start with 0 but titles start with 1
-					editor.openFileEditor(filePath, database.getExperiment());
-				} catch (FileNotFoundException e) {
-					// can not find the file (or something goes wrong)
-					MessageDialog.openError(windowCurrent.getShell(), "Error: File not found", e.getMessage());
-				}
-			}
-		};
-		dbShowXml.setEnabled(true);
-		mgr.add(dbShowXml);
 
         //--------------------------------------------------------------------------
         // ---------- additional context menu
@@ -423,6 +397,28 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 		      }
 		}); 
 		
+		// ---------------------------------------------------------------
+		// register listener to capture debugging mode
+		// ---------------------------------------------------------------
+		final ICommandService commandService = (ICommandService) this.getSite().getService(ICommandService.class);
+		commandService.addExecutionListener( new IExecutionListener(){
+
+			public void notHandled(String commandId, NotHandledException exception) {}
+			public void postExecuteFailure(String commandId, ExecutionException exception) {}
+			public void preExecute(String commandId, ExecutionEvent event) {}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.eclipse.core.commands.IExecutionListener#postExecuteSuccess(java.lang.String, java.lang.Object)
+			 */
+			public void postExecuteSuccess(String commandId, Object returnValue) 
+			{
+				if (commandId.equals(DebugShowCCT.commandId))
+				{
+					updateDisplay();
+				}
+			}
+		});
 	}
     
     /**
@@ -500,7 +496,9 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * @return
      */
     public Experiment getExperiment() {
-    	return database.getExperiment();
+    	if (database != null)
+    		return database.getExperiment();
+    	return null;
     }
 
     /****

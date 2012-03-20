@@ -2,11 +2,18 @@ package edu.rice.cs.hpc.viewer.window;
 
 import java.io.File;
 
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.State;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.RegistryToggleState;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
+import edu.rice.cs.hpc.viewer.provider.DatabaseState;
 
 /**
  * This class is used to record information about one hpcviewer window.  It contains information 
@@ -38,12 +45,16 @@ public class ViewerWindow {
 	 */
 	Database[] dbObj = new Database[maxDbNum];
 
+	private Command cmdDebugCCT;
+	
 
 	public IWorkbenchWindow getWinObj() {
 		return winObj;
 	}
 	public void setWinObj(IWorkbenchWindow window) {
 		winObj = window;
+		ICommandService commandService = (ICommandService) winObj.getService(ICommandService.class);
+		cmdDebugCCT = commandService.getCommand( DebugShowCCT.commandId );
 	}
 
 	/**
@@ -141,6 +152,10 @@ public class ViewerWindow {
 		for (int i=0 ; i<dbObj.length ; i++) {
 			if (dbObj[i] == null) {
 				dbObj[i] = database;
+
+				// refresh the menu state
+				checkService();
+				
 				return i;
 			}
 		}
@@ -172,6 +187,10 @@ public class ViewerWindow {
 				// compact the list, we only make this entry empty (set pointer to its 
 				// database class to null) so it can be reused if another open is done.
 				dbObj[i] = null;
+				
+				// refresh the menu state
+				checkService();
+				
 				return i;
 			}
 		}
@@ -217,4 +236,44 @@ public class ViewerWindow {
 
 		return dbArray;
 	}
+	
+	
+	/***
+	 * update the service provided by DatabaseState to ensure that the menus's state are refreshed
+	 * 
+	 */
+	public void checkService()
+	{
+		ISourceProviderService sourceProviderService = (ISourceProviderService) winObj.getService(
+						ISourceProviderService.class);
+		// Now get my service
+		DatabaseState commandStateService = (DatabaseState) sourceProviderService
+				.getSourceProvider(DatabaseState.DATABASE_ACTIVE_STATE);
+		commandStateService.toogleEnabled(winObj);
+		
+		commandStateService = (DatabaseState) sourceProviderService
+				.getSourceProvider(DatabaseState.DATABASE_MERGE_STATE);
+		commandStateService.toogleEnabled(winObj);
+	}
+	
+	// --------------------------------------------------------------
+	// Debug mode for this window
+	// --------------------------------------------------------------
+	
+	/**
+	 * check if we are in debug mode or not 
+	 * @return true if it's in debug mode
+	 */
+	public boolean isDebugMode() 
+	{
+		boolean isDebug = false;
+		final State state = cmdDebugCCT.getState(RegistryToggleState.STATE_ID);
+		if (state != null)
+		{
+			final Boolean b = (Boolean) state.getValue();
+			isDebug = b.booleanValue();
+		}
+		return isDebug;
+	}
+		
 }

@@ -15,7 +15,7 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 
@@ -54,7 +54,7 @@ protected RootScopeType rootScopeType;
  *	Creates a RootScope.
  ************************************************************************/
 	
-public RootScope(Experiment experiment, String prog, String name, RootScopeType rst)
+public RootScope(BaseExperiment experiment, String prog, String name, RootScopeType rst)
 {
 	super(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, 0,0);	
 	this.programName = prog;

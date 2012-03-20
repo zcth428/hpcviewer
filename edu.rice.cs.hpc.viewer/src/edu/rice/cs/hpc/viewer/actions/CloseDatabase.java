@@ -18,8 +18,8 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
@@ -29,7 +29,6 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
- * @author laksonoadhianto
  *
  */
 public class CloseDatabase extends AbstractHandler {
@@ -37,8 +36,9 @@ public class CloseDatabase extends AbstractHandler {
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
 	 */
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+	public Object execute(ExecutionEvent event) throws ExecutionException 
+	{
+		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		// get an array of open databases for this window
 		final ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
 		if ( vWin == null) {
@@ -78,7 +78,6 @@ public class CloseDatabase extends AbstractHandler {
 				return null;
 			}
 			databasesToClose = selectedDatabases;
-			
 		}
 
 		

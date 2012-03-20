@@ -106,7 +106,10 @@ public abstract class BaseEditorManager {
 		 * currentEditorPartPane which hold the active editor
 		 */
 		PartStack newPart = createStack(editorSashContainer);
-		editorSashContainer.stack(currentEditorPartPane, newPart);
+		
+		if (editorSashContainer != null)
+			editorSashContainer.stack(currentEditorPartPane, newPart);
+
 		if (rootLayoutContainer instanceof LayoutPart) {
 			ILayoutContainer cont = ((LayoutPart) rootLayoutContainer).getContainer();
 			if (cont instanceof PartSashContainer) {

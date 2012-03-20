@@ -501,7 +501,7 @@ public class TreeSimilarity {
 	 */
 	private class CompareScope implements Comparator<Scope> 
 	{
-		@Override
+		//@Override
 		public int compare(Scope s1, Scope s2) {
 			return (int) (s2.getMetricValue(0).getValue() - s1.getMetricValue(0).getValue());
 		}

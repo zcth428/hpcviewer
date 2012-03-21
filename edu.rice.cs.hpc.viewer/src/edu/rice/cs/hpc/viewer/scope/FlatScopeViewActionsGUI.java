@@ -6,7 +6,6 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.internal.Platform;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Shell;
@@ -14,6 +13,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeViewActions;
@@ -102,7 +102,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
     	});
     	
     	// 2009.04.21: temporary solution for windowz: add space to show unflatten buttons
-    	if (Platform.PLATFORM.startsWith("win")) {
+    	if (OSValidator.isWindows()) {
         	new ToolItem(toolbar, SWT.NULL);
     	}
     	

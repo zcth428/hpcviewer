@@ -99,7 +99,9 @@ public class ExperimentMerger {
 		// step 1: add the first metrics into the merged experiment
 		// ----------------------------------------------------------------
 		for (int i=0; i<m1.length; i++) {
-			metricList.add(m1[i]);
+			BaseMetric mm = m1[i].duplicate();
+			mm.setDisplayName( "1-" + mm.getDisplayName() );
+			metricList.add(mm);
 		}
 		
 		final int m1_last_index = m1[m1.length-1].getIndex() + 1;
@@ -109,6 +111,7 @@ public class ExperimentMerger {
 		// ----------------------------------------------------------------
 		for (int i=0; i<m2.length; i++) {
 			final BaseMetric m = m2[i].duplicate();
+			m.setDisplayName( "2-" + m.getDisplayName() );
 			
 			// recompute the index of the metric from the second experiment
 			final int index_new = m1_last_index + m.getIndex();

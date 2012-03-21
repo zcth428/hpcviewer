@@ -44,6 +44,7 @@ public abstract class BaseMetric {
 
 	private char unit;
 
+	final private String EMPTY_SUFFIX = "   ";
 	//-------------------------------------------------------------------------------
 	// CONSTRUCTOR
 	//-------------------------------------------------------------------------------
@@ -59,8 +60,15 @@ public abstract class BaseMetric {
 	 * @param index: index in the table
 	 *************************************************************************/
 	public BaseMetric(String sID, String sDisplayName, boolean displayed, String format, 
-			AnnotationType annotationType, int index, MetricType type) {
-		this.displayName = sDisplayName + "   "; // johnmc - hack to leave enough room for ascending/descending triangle;
+			AnnotationType annotationType, int index, MetricType type) 
+	{
+		// in case of instantiation from duplicate() method, we need to make sure there is
+		//	no double empty suffix
+		if (sDisplayName.endsWith(EMPTY_SUFFIX))
+			this.displayName = sDisplayName;
+		else
+			this.displayName = sDisplayName + EMPTY_SUFFIX; // johnmc - hack to leave enough room for ascending/descending triangle;
+		
 		this.displayed = displayed;
 		this.annotationType = annotationType;
 		this.index = index;
@@ -140,6 +148,15 @@ public abstract class BaseMetric {
 	public String getDisplayName()
 	{
 		return this.displayName;
+	}	
+
+	/*************************************************************************
+	 * set the new display name
+	 * @param name
+	 *************************************************************************/
+	public void setDisplayName(String name)
+	{
+		displayName = name;
 	}	
 
 	/*************************************************************************

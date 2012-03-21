@@ -126,6 +126,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 			// -------------------
 		    if(sPath != null) {
 		    	IFileStore fileStore;
+		    	boolean doPrint = false;
 				try {
 					fileStore = EFS.getLocalFileSystem().getStore(new URI(sPath));
 				} catch (URISyntaxException e) {
@@ -138,7 +139,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		    	
 		    	if( objFileInfo.exists() ) {
 		    		if ( objFileInfo.isDirectory() ) {
-		    			System.out.println("Opening database: " + fileStore.fetchInfo().getName() + " " + withCallerView);
+		    			if (doPrint) System.out.println("Opening database: " + fileStore.fetchInfo().getName() + " " + withCallerView);
 		    			// bug fix: needs to treat a folder/directory
 		    			// it is a directory
 		    			//ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
@@ -147,11 +148,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		    		} else {
 		    			File objFile = new File(sPath);
 		    			EFS.getLocalFileSystem().fromLocalFile(new File(sPath));
-		    			System.out.println("Opening file: " + objFile.getAbsolutePath() + " " +  fileStore.fetchInfo().getName());
+		    			if (doPrint) System.out.println("Opening file: " + objFile.getAbsolutePath() + " " +  fileStore.fetchInfo().getName());
 		    			expViewer.loadExperimentAndProcess( objFile.getAbsolutePath(), withCallerView);
 		    		}
 		    	} else {
-		    		System.err.println("File doesn't exist: " + fileStore.getName() );
+		    		if (doPrint) System.err.println("File doesn't exist: " + fileStore.getName() );
+					this.removeViews();
+
 					this.removeViews();
 
 		    	}

@@ -32,6 +32,7 @@ import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.util.OSValidator;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.resources.Icons;
@@ -70,7 +71,13 @@ public class Utilities {
 		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
 		FontData []objFontMetric = display.getSystemFont().getFontData();
 		FontData []objFontGeneric = display.getSystemFont().getFontData();
-		objFontMetric[0].setName("Courier"); // default font for metrics
+		
+		if (OSValidator.isWindows())
+			// On Windows 7 Courier New has better look 
+			objFontMetric[0].setName("Courier New"); 
+		else
+			// For most platforms, Courier is fine 
+			objFontMetric[0].setName("Courier"); 
 
 		// get the font for metrics columns based on user preferences
 		if (objPref != null) {

@@ -94,6 +94,8 @@ public class TreeSimilarity {
 		// 3.b: check for all children in target and source if they are similar
 		for (Scope childTarget: sortedTarget) 
 		{
+			boolean isMerged = false;
+			
 			// check if one of the child in the source is similar
 			for (Scope childSource: sortedSource)
 			{				
@@ -106,10 +108,33 @@ public class TreeSimilarity {
 						// DFS: recursively, merge the children if they are similar
 						// the recursion will stop when all children are different
 						mergeTree( childTarget, childSource, metricOffset );
+						isMerged = true;
 						break;
+					} else
+					{
+						// none of the source kids are similar. possible cases:
+						//	- the childTarget is an "insert". there's nothing we can do
+						//	- the source has been transformed so much that there is no similarity
+						//	- the source has been inlined, we need to look at the children
+						final boolean source_is_inlined = isAlien( childSource );
+						final boolean target_is_inlined = isAlien( childTarget );
+						Scope s = source, t = target;
+						if (source_is_inlined)
+						{
+							s = childSource;
+						}
+						if (target_is_inlined)
+						{
+							t = childTarget;
+						}
+						final Scope scopeToAttach;
 					}
 				}
-			}			
+			}
+			if (! isMerged )
+			{
+				
+			}
 		}
 		
 		// 3.c: add the remainder scopes that are not merged

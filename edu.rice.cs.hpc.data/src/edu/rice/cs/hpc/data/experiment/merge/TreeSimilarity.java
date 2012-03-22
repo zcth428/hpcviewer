@@ -75,7 +75,7 @@ public class TreeSimilarity {
 		{
 			for (Scope childSource: sortedSource)
 			{
-				addNode(target, childSource);
+				addSubTree(target, childSource, metricOffset);
 			}
 			return;
 		}

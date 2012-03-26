@@ -62,7 +62,7 @@ public class ExperimentManager {
 	 * @return the list of XML files in the selected directory
 	 * null if the user click the "cancel" button
 	 */
-	public File[] getDatabaseFileList(Shell shell, String sTitle) {
+	private File[] getDatabaseFileList(Shell shell, String sTitle) {
 		// preparing the dialog for selecting a directory
 		Shell objShell = shell;
 		if(shell == null)
@@ -121,12 +121,17 @@ public class ExperimentManager {
 			// let's make it complicated: assuming there are more than 1 XML file in this directory,
 			// we need to test one by one if it is a valid database file.
 			// Problem: if in the directory it has two XML files, then the second one will NEVER be opened !
-			for(int i=0;i<(filesXML.length) && (bContinue);i++) {
+			for(int i=0;i<(filesXML.length) && (bContinue);i++) 
+			{
 				File objFile = filesXML[i];
 				String sFile=objFile.getAbsolutePath();
-				// we will continue to verify the content of the list of XML files
-				// until we fine the good one.
-				if(!objFile.getName().startsWith("config"))
+
+				// Since rel 5.x, the name of database is experiment.xml
+				// there is no need to maintain compatibility with hpctoolkit prior 5.x 
+				// 	where the name of database is config.xml
+				if(objFile.getName().startsWith("experiment")) 
+					// we will continue to verify the content of the list of XML files
+					// until we fine the good one.
 					bContinue = (this.setExperiment(sFile, flag) == false);
 			}
 	   		if(bContinue) {

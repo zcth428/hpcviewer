@@ -27,7 +27,7 @@ public class TimelineProgressMonitor {
 		
 		// quick fix to force UI to show the message.
 		// we need a smarter way to do this. If the work is small, no need to refresh UI
-		shell.update();
+		//shell.update();
 		
 		monitor.beginTask(sTask, totalWork);
 	}

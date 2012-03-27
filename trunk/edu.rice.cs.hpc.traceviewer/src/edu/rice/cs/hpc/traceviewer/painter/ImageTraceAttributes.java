@@ -91,4 +91,11 @@ public class ImageTraceAttributes {
 		numPixelsV = other.numPixelsV;
 		numPixelsDepthV = other.numPixelsDepthV;
 	}
+	
+	public String toString()
+	{
+		return ("T [ " + begTime + ","  + endTime+ " ]" +
+				"P [ " + begProcess + "," + endProcess + " ]" + 
+				" PH: " + numPixelsH + " , PV: " + numPixelsV );
+	}
 }

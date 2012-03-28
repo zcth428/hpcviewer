@@ -600,16 +600,23 @@ public class BaseExperimentBuilder extends Builder {
 
 	/*************************************************************************
 	 * Retrieve the ID of a call site.
+	 * Instead of using hpcprof's flat index, we reconstruct our own ID 
+	 *  (not sure if this is hpcprof's bug or not). hpcprof's flat index is not
+	 *  suitable if the same function is from the same file from different load modules
+	 *  In this case, hpcprof's flat index will be the same (which is incorrect) 
+	 *  
 	 * In normal case, the ID is the hashcode of its call site (line scope). 
 	 * But, in case of there are multiple calls in one line statement, we need
 	 * to generate different ID for each call sites.
+	 * 
 	 * @param ls
 	 * @param cs
 	 * @return
 	 *************************************************************************/
 	private int getCallSiteID ( LineScope ls, ProcedureScope cs ) {
 		LoadModuleScope module = cs.getLoadModule();
-		String sName = ls.getName() + "/" + cs.getName();
+		// add flat index if there are two calls in the same line
+		String sName = ls.getName() + "/" + cs.getName() + "/" + ls.getFlatIndex();
 		// in case of the same file and the same procedure with different module name
 		// this should fix where we have ~unknown-file~ and ~unknown-procedure~ in 
 		// different modules

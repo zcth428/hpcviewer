@@ -84,6 +84,15 @@
       		id="edu.rice.cs.hpc.traceviewer.resetViews"
       		name="Reset Views">
       </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay"
+            id="edu.rice.cs.hpc.traceviewer.showRecords"
+            name="Show number of records">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
+      </command>
    </extension>
    <extension
          id="edu.rice.cs.hpc.traceviewer.menus"
@@ -109,6 +118,20 @@
                   mnemonic="x"
                   style="push"
                   tooltip="Exit the application">
+            </command>
+         </menu>
+         <menu
+               id="edu.rice.cs.hpc.traceviewer.menu.advanced"
+               label="Advanced"
+               mnemonic="A"
+               tooltip="Menus for advanced users">
+            <command
+                  commandId="edu.rice.cs.hpc.traceviewer.showRecords"
+                  id="edu.rice.cs.hpc.traceviewer.showRecords"
+                  label="Show trace records"
+                  mnemonic="S"
+                  style="toggle"
+                  tooltip="Show the number of trace records displayed in the trace view (useful for identifying blocking operations and debugging)">
             </command>
          </menu>
          <menu

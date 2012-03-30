@@ -8,6 +8,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
@@ -78,7 +79,7 @@ public class SpaceTimeData extends TraceEvents
 	final private boolean debug =  true;
 	
 	private IStatusLineManager statusMgr;
-	private Shell shell;
+	final private IWorkbenchWindow window;
 	
 	private BaseDataFile dataTrace;
 	
@@ -87,9 +88,9 @@ public class SpaceTimeData extends TraceEvents
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 ************************************************************************/
-	public SpaceTimeData(Shell _shell, File expFile, File traceFile, IStatusLineManager _statusMgr)
+	public SpaceTimeData(IWorkbenchWindow window, File expFile, File traceFile, IStatusLineManager _statusMgr)
 	{
-		shell = _shell;
+		this.window = window;
 		statusMgr = _statusMgr;
 
 		attributes = new ImageTraceAttributes();
@@ -97,7 +98,7 @@ public class SpaceTimeData extends TraceEvents
 		
 		statusMgr.getProgressMonitor();
 		
-		colorTable = new ColorTable(shell.getDisplay());
+		colorTable = new ColorTable(window.getShell().getDisplay());
 		
 		//Initializes the CSS that represents time values outside of the time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
@@ -250,7 +251,7 @@ public class SpaceTimeData extends TraceEvents
 
 		attributes.lineNum = 0;
 		
-		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.shell) {
+		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, window) {
 
 			@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
@@ -305,7 +306,7 @@ public class SpaceTimeData extends TraceEvents
 		dtProcess = currentPosition.process;
 		oldAttributes.copy(attributes);
 		
-		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, this.shell) {
+		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, window) {
 
 			@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
@@ -400,9 +401,10 @@ public class SpaceTimeData extends TraceEvents
 				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
 				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
 				
+				final boolean isOverDepth = (currDepth < depth);
 				// write texts (depth and number of samples) if needed
 				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attributes.numPixelsH), 
-						currDepth, functionName, (currDepth < depth), sampleCount);
+						currDepth, functionName, isOverDepth, sampleCount);
 			}
 		};
 		detailPaint.paint();

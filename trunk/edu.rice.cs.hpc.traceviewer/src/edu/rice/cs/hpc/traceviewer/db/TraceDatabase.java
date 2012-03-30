@@ -118,7 +118,7 @@ public class TraceDatabase
 			//if (database.dataTraces != null)
 			//	database.dataTraces.dispose();
 			
-			database.dataTraces = new SpaceTimeData(shell, location.fileXML, location.fileTrace, statusMgr);
+			database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
 			
 			statusMgr.setMessage("Rendering trace data ...");
 			shell.update();

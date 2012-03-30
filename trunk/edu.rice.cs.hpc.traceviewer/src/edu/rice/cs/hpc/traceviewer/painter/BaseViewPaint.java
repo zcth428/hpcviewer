@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -26,7 +27,7 @@ public abstract class BaseViewPaint {
 	final private TimelineProgressMonitor monitor;
 	
 	protected int lineNum;
-	private final Shell _shell;
+	private final IWorkbenchWindow window;
 	
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -38,13 +39,13 @@ public abstract class BaseViewPaint {
 	 * @param _monitor: progress monitor
 	 */
 	public BaseViewPaint(SpaceTimeData _data, ImageTraceAttributes _attributes, boolean _changeBound, 
-			IStatusLineManager _statusMgr, Shell shell) 
+			IStatusLineManager _statusMgr, IWorkbenchWindow window) 
 	{
 		data = _data;
 		attributes = _attributes;
 		changedBounds = _changeBound;
 		monitor = new TimelineProgressMonitor(_statusMgr );
-		_shell = shell;
+		this.window = window;
 	}
 	
 	/**********************************************************************************
@@ -61,7 +62,7 @@ public abstract class BaseViewPaint {
 		int linesToPaint = getNumberOfLines();
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
 		
-		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting", _shell);
+		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting", window.getShell());
 		
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
@@ -78,7 +79,7 @@ public abstract class BaseViewPaint {
 		double yscale = Math.max(canvas.getScaleY(), 1);
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			threads[threadNum] = new TimelineThread(data, changedBounds, canvas, attributes.numPixelsH, 
+			threads[threadNum] = new TimelineThread(this.window, data, changedBounds, canvas, attributes.numPixelsH, 
 					xscale, yscale, monitor);
 			threads[threadNum].start();
 		}

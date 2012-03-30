@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
@@ -46,11 +47,14 @@ public class TimelineThread extends Thread
 	
 	final private TimelineProgressMonitor monitor;
 	
+	final private IWorkbenchWindow window;
+	
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	public TimelineThread(SpaceTimeData _stData, boolean _changedBounds, Canvas _canvas, int _width, 
+	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, 
+			boolean _changedBounds, Canvas _canvas, int _width, 
 			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
@@ -63,6 +67,7 @@ public class TimelineThread extends Thread
 		detailPaint = canvas instanceof SpaceTimeDetailCanvas;
 		
 		monitor = _monitor;
+		this.window = window;
 	}
 	
 	/***************************************************************
@@ -95,7 +100,8 @@ public class TimelineThread extends Thread
 				GC gcFinal = new GC(lineFinal);
 				GC gcOriginal = new GC(lineOriginal);
 				
-				SpaceTimeSamplePainter spp = new DetailSpaceTimePainter(gcOriginal, gcFinal, stData.getColorTable(), scaleX, scaleY);
+				SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
+						scaleX, scaleY );
 				stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
 				
 				gcFinal.dispose();

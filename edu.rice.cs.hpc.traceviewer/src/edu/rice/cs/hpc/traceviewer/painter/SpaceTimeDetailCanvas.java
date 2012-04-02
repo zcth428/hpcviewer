@@ -1087,12 +1087,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		summaryCanvas = _summaryCanvas;
 	}
 
-	/***********************************************************************************
-	 * Forcing to create image buffer
-	 * Attention: this method will take some time to generate an image buffer, so
-	 * 	please do not call this if not necessary
-	 ***********************************************************************************/
-	public void rebuffer() {
+	
+	/*********************************************************************************
+	 * Refresh the content of the canvas with new input data or boundary or parameters
+	 *  
+	 *********************************************************************************/
+	public void refresh() {
 		//Debugger.printTrace("STDC rebuffer");
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
@@ -1123,12 +1123,24 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		bufferGC.dispose();
 		origGC.dispose();
-		redraw();
+		
+		super.redraw();
+
+		if (summaryCanvas != null)	
+			summaryCanvas.refresh(imageOrig.getImageData());
+	}
+	
+	/***********************************************************************************
+	 * Forcing to create image buffer
+	 * Attention: this method will take some time to generate an image buffer, so
+	 * 	please do not call this if not necessary
+	 ***********************************************************************************/
+	public void rebuffer() {
+		
+		refresh();
 		
 		// forces all other views to refresh with the new region
 		depthCanvas.refresh(stData.attributes.begTime, stData.attributes.endTime);
 		miniCanvas.setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
-		if (summaryCanvas != null)	
-			summaryCanvas.refresh(imageOrig.getImageData());
 	}
 }

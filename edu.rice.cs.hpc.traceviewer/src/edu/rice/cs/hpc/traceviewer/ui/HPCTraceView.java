@@ -7,6 +7,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -17,8 +21,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
 import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
@@ -57,6 +63,8 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 
         GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(detailCanvas);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(detailCanvas);
+		
+		addTraceViewListener();
 	}
 
 	
@@ -100,6 +108,37 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	}
 	
 
+	/*************************************************************************
+	 * method to add listener
+	 *************************************************************************/
+	private void addTraceViewListener() {
+		// ---------------------------------------------------------------
+		// register listener to capture event in menus or commands
+		// ---------------------------------------------------------------
+		final ICommandService commandService = (ICommandService) this.getSite().getService(ICommandService.class);
+		commandService.addExecutionListener( new IExecutionListener(){
+
+			public void notHandled(String commandId, NotHandledException exception) {}
+			public void postExecuteFailure(String commandId, ExecutionException exception) {}
+			public void preExecute(String commandId, ExecutionEvent event) {}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.eclipse.core.commands.IExecutionListener#postExecuteSuccess(java.lang.String, java.lang.Object)
+			 */
+			public void postExecuteSuccess(String commandId, Object returnValue) 
+			{
+				// add listener when user change the state of "Show trace record" menu
+				if (commandId.equals(OptionRecordsDisplay.commandId))
+				{
+					// force the canvas to redraw the content
+					detailCanvas.refresh();
+				}
+			}
+		});
+
+	}
+	
 	private void createToolbar(Composite parent) {
 		
 		final IToolBarManager tbMgr = getViewSite().getActionBars().getToolBarManager();

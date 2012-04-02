@@ -126,9 +126,21 @@ public class PrintFlatViewScopeVisitor implements IScopeVisitor {
 		PrintFileXML.printAttribute(objOutputStream, "i", objScopeToPrint.hashCode());
 		
 		if (name) {
+			final String scopeName;
+			// if the scope is a file, we have to print the original path from hpcprof
+			if (objScopeToPrint instanceof FileScope) 
+			{
+				SourceFile srcFile = ((FileScope)objScopeToPrint).getSourceFile();
+				if (srcFile != null && srcFile.getFilename()!= null)
+					scopeName = srcFile.getFilename().toString();
+				else
+					scopeName = objScopeToPrint.getName();
+			} else {
+				scopeName = objScopeToPrint.getName();
+			}
 			// 2010.12.17 Ashay addition:
 			// Escape the "name" so that we conform to a valid XML syntax
-			String sName = objScopeToPrint.getName().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+			String sName = scopeName.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
 			PrintFileXML.printAttribute(objOutputStream, "n", sName);
 		}
 		

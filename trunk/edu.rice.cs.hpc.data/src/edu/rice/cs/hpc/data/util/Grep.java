@@ -5,8 +5,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.CharBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,8 +21,8 @@ import java.util.regex.Pattern;
 public class Grep 
 {
 	// Charset and decoder for ISO-8859-15
-	//private static Charset charset = Charset.forName("ISO-8859-15");
-	//private static CharsetDecoder decoder = charset.newDecoder();
+	private static Charset charset = Charset.forName("ISO-8859-15");
+	private static CharsetDecoder decoder = charset.newDecoder();
 
 	// Pattern used to parse lines
 	final private static Pattern linePattern	= Pattern.compile(".*\r?\n");
@@ -54,10 +57,10 @@ public class Grep
 	 * @param pattern
 	 * @throws IOException 
 	 */
-	private static void grep(MappedByteBuffer cbin, BufferedWriter writer, Pattern pattern, boolean isMatched)
+	private static void grep(CharBuffer cbin, BufferedWriter writer, Pattern pattern, boolean isMatched)
 			throws IOException 
 			{
-		Matcher lm = linePattern.matcher(cbin.asCharBuffer());	// Line matcher
+		Matcher lm = linePattern.matcher(cbin);	// Line matcher
 		Matcher pm = null;			// Pattern matcher
 		while (lm.find()) {
 			CharSequence cs = lm.group(); 	// The current line
@@ -101,10 +104,10 @@ public class Grep
 
 		// we don't need to decode unicode stuffs. We assume the content is just right.
 		// Decode the file into a char buffer
-		//CharBuffer cbin = decoder.decode(bbin);
+		CharBuffer cbin = decoder.decode(bbin);
 
 		// Perform the search
-		grep(bbin, bwos, Pattern.compile(pattern), isMatched);
+		grep(cbin, bwos, Pattern.compile(pattern), isMatched);
 
 		// Close the channel and the stream
 		fic.close();

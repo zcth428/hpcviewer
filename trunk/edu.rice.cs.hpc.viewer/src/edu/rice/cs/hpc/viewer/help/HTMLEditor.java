@@ -46,8 +46,8 @@ public class HTMLEditor extends EditorPart {
 	/**
 	 * The address of URL document ot display
 	 */
-	private String sURI;
-	private String sFilePath;
+	protected String sURI;
+	protected String sFilePath;
 	
 	/**
 	 * Default constructor

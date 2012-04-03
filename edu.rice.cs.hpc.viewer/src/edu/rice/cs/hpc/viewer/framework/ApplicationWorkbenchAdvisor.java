@@ -13,7 +13,7 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
-	private static final String PERSPECTIVE_ID = "edu.rice.cs.hpc.perspective";
+	public static final String PERSPECTIVE_ID = "edu.rice.cs.hpc.perspective";
 	private String[] args;
 
 	// laks: we need to save and restore the configuration

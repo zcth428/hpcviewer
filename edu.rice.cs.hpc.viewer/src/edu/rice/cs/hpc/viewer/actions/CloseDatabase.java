@@ -18,11 +18,13 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
+import edu.rice.cs.hpc.viewer.framework.ApplicationWorkbenchAdvisor;
 import edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
@@ -43,6 +45,14 @@ public class CloseDatabase extends AbstractHandler {
 		final ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
 		if ( vWin == null) {
 			return null;		// get method already issued error dialog
+		}
+		
+		// make sure the viewer perspective is the current active page
+		String perspectiveId = ApplicationWorkbenchAdvisor.PERSPECTIVE_ID;
+		try {
+			window.getWorkbench().showPerspective(perspectiveId, window);
+		} catch (WorkbenchException e) {
+			e.printStackTrace();
 		}
 		
 		final IWorkbenchPage curPage = window.getActivePage();

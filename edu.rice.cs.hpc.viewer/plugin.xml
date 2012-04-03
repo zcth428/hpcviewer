@@ -18,7 +18,7 @@
             class="edu.rice.cs.hpc.viewer.framework.Perspective"
             icon="icons/hpc-16x16.png"
             id="edu.rice.cs.hpc.perspective"
-            name="Perspective">
+            name="hpcviewer">
       </perspective>
    </extension>
    <extension
@@ -251,6 +251,7 @@
             </command>
          </menu>
          <menu
+         	   id="edu.rice.cs.hpc.viewer.menu.window"
                label="Window"
                mnemonic="W"
                tooltip="Window menus">
@@ -263,6 +264,7 @@
             </command>
          </menu>
          <menu
+               id="edu.rice.cs.hpc.viewer.menu.help"
                label="Help"
                mnemonic="h"
                tooltip="Help menu">

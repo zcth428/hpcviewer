@@ -26,5 +26,5 @@ Import-Package: edu.rice.cs.hpc.common.ui,
  org.eclipse.ui.preferences,
  org.eclipse.ui.texteditor
 Bundle-ClassPath: hpcviewer.jar,
- external-jars/org.swtchart_0.7.0.v20110128.jar,
- external-jars/org.swtchart.ext_0.7.0.v20110128.jar
+ external-jars/org.swtchart_0.8.0.v20120301.jar,
+ external-jars/org.swtchart.ext_0.8.0.v20120301.jar

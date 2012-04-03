@@ -190,7 +190,16 @@ public class TreeSimilarity {
 		
 		score -= score_loc;
 
-		score += (same_name ? Constants.WEIGHT_NAME : 0);
+		// hack: if both s1 and s2 are call sites, their name should be the same
+		//	we need to be careful with false positive where similar metric, with similar children 
+		//	and similar line number with different function name happens
+		if (same_type && (s1 instanceof CallSiteScope))
+		{
+			score += (same_name? 3:-3) * Constants.WEIGHT_NAME;
+		} else
+		{
+			score += (same_name ? Constants.WEIGHT_NAME : 0);
+		}
 		
 		score += (same_type ? Constants.WEIGHT_TYPE : 0);
 		
@@ -321,8 +330,8 @@ public class TreeSimilarity {
 					  s1.getClass() == LineScope.class ) ) 
 			{
 				// the same type but different name:
-				//  check for line scope and loop scope 
-				return true;
+				//  check for line scope and loop scope are in the same file
+				return s1.getSourceFile().getName().equals(s2.getSourceFile().getName());
 			}
 		}
 		
@@ -386,6 +395,14 @@ public class TreeSimilarity {
 					{
 						if (areSameChildren(next1, next2, currDepth + 1))
 							return true;
+					} else
+					{						
+						final boolean areLoops = (cs1 instanceof LoopScope && cs2 instanceof LoopScope);
+						if (areLoops)
+						{
+							if (areSameChildren( cs1, cs2, currDepth + 1))
+								return true;
+						}
 					}
 				}
 			}
@@ -458,23 +475,6 @@ public class TreeSimilarity {
 		node.dfsVisitScopeTree(visitor);
 	}
 	
-	/***
-	 * add a child node to the parent
-	 * @param parent
-	 * @param node
-	 * 
-	 * @return the new child
-	 */
-	private Scope addNode(Scope parent, Scope node) 
-	{
-		Scope copy = node.duplicate();
-		parent.addSubscope(copy);
-		copy.setParentScope(parent);
-		copy.setExperiment( parent.getExperiment() );
-		
-		return copy;
-	}
-	
 	/****
 	 * merging two nodes, and copy the metric
 	 * 
@@ -503,7 +503,7 @@ public class TreeSimilarity {
 	{
 		//@Override
 		public int compare(Scope s1, Scope s2) {
-			return (int) (s2.getMetricValue(0).getValue() - s1.getMetricValue(0).getValue());
+			return (int) (s1.getMetricValue(0).getValue() - s2.getMetricValue(0).getValue());
 		}
 	}
 	

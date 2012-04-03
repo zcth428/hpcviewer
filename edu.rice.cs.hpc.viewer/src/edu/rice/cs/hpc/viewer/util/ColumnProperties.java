@@ -387,7 +387,7 @@ public class ColumnProperties extends TitleAreaDialog {
 				assert (element instanceof PropertiesModel);
 				PropertiesModel objProperty = (PropertiesModel) element;
 				// simple string matching between the key and the column name
-				boolean bSelect = objProperty.sTitle.contains(sKeyToMatch);
+				boolean bSelect = objProperty.sTitle.toUpperCase().contains(sKeyToMatch);
 				return bSelect;
 			}
 			return true;
@@ -398,7 +398,7 @@ public class ColumnProperties extends TitleAreaDialog {
 		 * @param sKey
 		 */
 		public void setKey ( String sKey ) {
-			sKeyToMatch = sKey;
+			sKeyToMatch = sKey.toUpperCase();
 		}
 	}
 

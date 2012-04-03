@@ -144,7 +144,7 @@ public class ThreadLevelDataManager {
 	//==============================================================================================
 	private void checkThreadsMetricDataFiles(int metric_raw_id) {
 		
-		File directory = new File(experiment.getXMLExperimentFile().getPath());
+		File directory = experiment.getDefaultDirectory();
 		if (directory.isFile())
 			directory = new File(directory.getParent());
 

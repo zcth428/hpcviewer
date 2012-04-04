@@ -31,8 +31,17 @@ import edu.rice.cs.hpc.data.util.Constants;
  * 4. add trace data 	-->	add into a list
  * 5. merge the experiments
  */
-public class ExperimentMerger {
+public class ExperimentMerger 
+{
+	static final private boolean with_raw_metrics = false;
 	
+	/**
+	 * Merging two experiments, and return the new experiment
+	 * 
+	 * @param exp1
+	 * @param exp2
+	 * @return
+	 */
 	static public Experiment merge(Experiment exp1, Experiment exp2) {
 		
 		// -----------------------------------------------
@@ -57,8 +66,11 @@ public class ExperimentMerger {
 		List<BaseMetric> metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
 		merged.setMetrics(metrics);
 		
-		final MetricRaw metricRaw[] = buildMetricRaws( exp1.getMetricRaw(), exp2.getMetricRaw() );
-		merged.setMetricRaw(metricRaw);
+		if (with_raw_metrics)
+		{
+			final MetricRaw metricRaw[] = buildMetricRaws( exp1.getMetricRaw(), exp2.getMetricRaw() );
+			merged.setMetricRaw(metricRaw);
+		}
 
 		// -----------------------------------------------
 		// step 3: mark the new experiment file

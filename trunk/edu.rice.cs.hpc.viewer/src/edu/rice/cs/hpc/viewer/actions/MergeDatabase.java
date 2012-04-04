@@ -8,6 +8,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -42,8 +43,8 @@ public class MergeDatabase extends AbstractHandler {
 		// merge is enabled if the number of open databases is more than 1
 		if (dbArray.length > 1) 
 		{
-			Experiment db1;
-			Experiment db2;
+			final Experiment db1;
+			final Experiment db2;
 
 			// if we have 2 open database, we can go directly merging them
 			// otherwise we should ask user to select which database to be merged
@@ -71,10 +72,18 @@ public class MergeDatabase extends AbstractHandler {
 					return null;
 				}
 			}
-			final Experiment expMerged = ExperimentMerger.merge(db1, db2);
+			// try to asynchronously merge the experiments. it may take some time to finish
+			Display display = HandlerUtil.getActiveShell(event).getDisplay();
+			display.asyncExec(new Runnable(){
 
-			ExperimentView ev = new ExperimentView(window.getActivePage());
-			ev.generateView(expMerged);
+				@Override
+				public void run() {
+					final Experiment expMerged = ExperimentMerger.merge(db1, db2);
+
+					ExperimentView ev = new ExperimentView(window.getActivePage());
+					ev.generateView(expMerged);
+				}				
+			});
 		}
 		else
 		{

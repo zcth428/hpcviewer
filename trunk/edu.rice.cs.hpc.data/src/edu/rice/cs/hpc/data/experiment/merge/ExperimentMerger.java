@@ -18,6 +18,7 @@ import edu.rice.cs.hpc.data.experiment.ExperimentConfiguration;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
+import edu.rice.cs.hpc.data.util.Constants;
 
 /****
  * Merging experiments
@@ -51,17 +52,20 @@ public class ExperimentMerger {
 		merged.setRootScope(rootScope);
 				
 		// -----------------------------------------------
-		// step 2: append metricList
+		// step 2: combine all metrics
 		// -----------------------------------------------
 		List<BaseMetric> metrics = buildMetricList(merged, exp1.getMetrics(), exp2.getMetrics());
 		merged.setMetrics(metrics);
+		
+		final MetricRaw metricRaw[] = buildMetricRaws( exp1.getMetricRaw(), exp2.getMetricRaw() );
+		merged.setMetricRaw(metricRaw);
 
 		// -----------------------------------------------
 		// step 3: mark the new experiment file
 		// -----------------------------------------------
 		File file1 = exp1.getXMLExperimentFile();
 		String parent_dir = file1.getParentFile().getParent();
-		final File fileMerged  = new File( parent_dir + "/merged/experiment.xml"); 
+		final File fileMerged  = new File( parent_dir + "/merged/" + Constants.DATABASE_FILENAME); 
 		merged.setXMLExperimentFile( fileMerged );
 
 		// -----------------------------------------------
@@ -92,15 +96,18 @@ public class ExperimentMerger {
 	 * @param m2
 	 * @return
 	 */
-	private static Vector<BaseMetric> buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) {
-		final Vector<BaseMetric> metricList = new Vector<BaseMetric>();
+	private static ArrayList<BaseMetric> buildMetricList(Experiment exp, BaseMetric[] m1, BaseMetric[] m2) 
+	{
+		final ArrayList<BaseMetric> metricList = new ArrayList<BaseMetric>( m1.length + m2.length );
 		
 		// ----------------------------------------------------------------
 		// step 1: add the first metrics into the merged experiment
 		// ----------------------------------------------------------------
 		for (int i=0; i<m1.length; i++) {
 			BaseMetric mm = m1[i].duplicate();
-			mm.setDisplayName( "1-" + mm.getDisplayName() );
+			
+			setMetricCombinedName(1, mm);
+
 			metricList.add(mm);
 		}
 		
@@ -111,7 +118,8 @@ public class ExperimentMerger {
 		// ----------------------------------------------------------------
 		for (int i=0; i<m2.length; i++) {
 			final BaseMetric m = m2[i].duplicate();
-			m.setDisplayName( "2-" + m.getDisplayName() );
+
+			setMetricCombinedName(2, m);
 			
 			// recompute the index of the metric from the second experiment
 			final int index_new = m1_last_index + m.getIndex();
@@ -127,14 +135,56 @@ public class ExperimentMerger {
 	}
 
 
-	
+	/***
+	 * recursively merge trees
+	 * 
+	 * @param exp2
+	 * @param visitor
+	 */
 	private static void mergeScopeTrees(Experiment exp2, 
 			BaseDuplicateScopeTreesVisitor visitor) {
 
 		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		
 
 		root2.dfsVisitScopeTree(visitor);
-	}	
+	}
+	
+	/***
+	 * merge two metric raws
+	 * 
+	 * @param raws1
+	 * @param raws2
+	 * @return
+	 */
+	private static MetricRaw[] buildMetricRaws( MetricRaw raws1[], MetricRaw raws2[]) 
+	{
+		MetricRaw rawList[] = new MetricRaw[ raws1.length + raws2.length ];
+		
+		for (int i=0; i<raws1.length; i++)
+		{
+			rawList[i] = (MetricRaw) raws1[i].duplicate();
+			setMetricCombinedName(1, rawList[i]);
+		}
+		
+		for (int i=0; i<raws2.length; i++)
+		{
+			rawList[i + raws1.length] = (MetricRaw) raws2[i].duplicate();
+			setMetricCombinedName(2, rawList[i + raws1.length]);
+		}
+		
+		return rawList;
+	}
+
+	/***
+	 * create a new metric name based on the offset of the experiment and the metric
+	 * 
+	 * @param offset
+	 * @param m
+	 */
+	private static void setMetricCombinedName( int offset, BaseMetric m )
+	{
+		m.setDisplayName( offset + "-" + m.getDisplayName() );
+	}
 }
 
 

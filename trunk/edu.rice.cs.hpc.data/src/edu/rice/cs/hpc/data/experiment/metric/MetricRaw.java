@@ -75,7 +75,7 @@ public class MetricRaw  extends BaseMetric {
 
 	@Override
 	public BaseMetric duplicate() {
-		return null;
+		return new MetricRaw(ID, this.displayName, this.db_glob, this.db_id, this.num_metrics);
 	}
 	
 }

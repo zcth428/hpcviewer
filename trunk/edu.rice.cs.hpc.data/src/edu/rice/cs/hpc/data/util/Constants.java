@@ -12,4 +12,5 @@ public class Constants {
 	public static final int SIZEOF_LONG = 8;
 	public static final int SIZEOF_INT = 4;
 
+	static public final String DATABASE_FILENAME = "experiment.xml";
 }

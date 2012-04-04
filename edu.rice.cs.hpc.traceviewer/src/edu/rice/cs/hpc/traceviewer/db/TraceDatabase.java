@@ -11,6 +11,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
@@ -210,7 +211,7 @@ public class TraceDatabase
 		File dirFile = new File(directory);
 		
 		if (dirFile.exists() && dirFile.isDirectory()) {
-			location.fileXML = new File(directory + File.separatorChar + "experiment.xml");
+			location.fileXML = new File(directory + File.separatorChar + Constants.DATABASE_FILENAME);
 			
 			if (location.fileXML.canRead()) {
 				try {

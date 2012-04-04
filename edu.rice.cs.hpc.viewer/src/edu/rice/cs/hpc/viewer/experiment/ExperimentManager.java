@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import java.io.File;
 
+import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.Util.FileXMLFilter;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;
@@ -129,7 +130,7 @@ public class ExperimentManager {
 				// Since rel 5.x, the name of database is experiment.xml
 				// there is no need to maintain compatibility with hpctoolkit prior 5.x 
 				// 	where the name of database is config.xml
-				if(objFile.getName().startsWith("experiment")) 
+				if(objFile.getName().startsWith(Constants.DATABASE_FILENAME)) 
 					// we will continue to verify the content of the list of XML files
 					// until we fine the good one.
 					bContinue = (this.setExperiment(sFile, flag) == false);

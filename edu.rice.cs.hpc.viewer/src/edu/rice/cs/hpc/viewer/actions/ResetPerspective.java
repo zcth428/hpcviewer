@@ -9,8 +9,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView;
 
@@ -24,8 +23,8 @@ public class ResetPerspective extends AbstractHandler {
 
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		final IWorkbenchPage page = window.getActivePage();
+
+		final IWorkbenchPage page = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
 		
 		// ask to reset the layout
 		page.resetPerspective();

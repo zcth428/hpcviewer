@@ -123,7 +123,12 @@ public class ExperimentMerger
 			metricList.add(mm);
 		}
 		
-		final int m1_last_index = m1[m1.length-1].getIndex() + 1;
+		// attention: hpcprof doesn't guarantee the ID of metric starts with zero
+		//	we should make sure that the next ID for the second group of metrics is not
+		//	overlapped with the ID from the first group of metrics
+		final int m1_last = m1.length - 1;
+		final int m1_last_shortname = Integer.valueOf(m1[m1_last].getShortName());
+		int m1_last_index = Math.max(m1_last_shortname, m1[m1_last].getIndex()) + 1;
 		
 		// ----------------------------------------------------------------
 		// step 2: append the second metrics, and reset the index and the key

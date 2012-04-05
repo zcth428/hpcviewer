@@ -14,9 +14,13 @@ public class ExperimentWithoutMetrics extends BaseExperiment {
 	}
 
 
-	public Experiment duplicate() {
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.IExperiment#duplicate()
+	 */
+	public ExperimentWithoutMetrics duplicate() {
 
-		Experiment copy = new Experiment(null);
+		ExperimentWithoutMetrics copy = new ExperimentWithoutMetrics(null);
 
 		copy.configuration = configuration;
 		copy.defaultDirectory = defaultDirectory;

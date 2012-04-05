@@ -416,7 +416,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 				if (commandId.equals(DebugShowCCT.commandId))
 				{
 					// refresh the table to take into account the turn on/off debugging mode
-					treeViewer.refresh();
+					Utilities.resetView(treeViewer);
 				}
 			}
 		});

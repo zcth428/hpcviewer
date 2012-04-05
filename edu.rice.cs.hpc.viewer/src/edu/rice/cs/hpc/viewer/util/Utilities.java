@@ -226,6 +226,12 @@ public class Utilities {
 		return null;
 	}
 	
+	static public void resetView ( TreeViewer tree )
+	{
+		TreeItemManager objItem = new TreeItemManager();
+		resetView(objItem, tree);
+	}
+	
 	/**
 	 * refresh a particular view
 	 * To save memory allocation, we ask an instance of TreeItemManager

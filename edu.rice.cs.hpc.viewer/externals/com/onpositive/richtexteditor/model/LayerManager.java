@@ -200,7 +200,7 @@ public class LayerManager implements IPartitionListener, PaintObjectListener, Fo
 			this.oldOffset=caretOffset;
 		}
 
-		@Override
+		//@Override
 		protected void apply(PartitionDelta delta) {
 			try{
 			editor.setRedraw(false);
@@ -275,7 +275,7 @@ public class LayerManager implements IPartitionListener, PaintObjectListener, Fo
 			this.offset = offset;
 		}
 
-		@Override
+		//@Override
 		protected void apply(PartitionDelta delta) {
 			try {
 				//delta.setOptimizeParitions(false);

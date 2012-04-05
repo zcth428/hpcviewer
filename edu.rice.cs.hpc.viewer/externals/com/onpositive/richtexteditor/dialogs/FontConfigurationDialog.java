@@ -229,7 +229,7 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 	/** (non-Javadoc)
 	 * @see org.eclipse.jface.dialogs.Dialog#close()
 	 */
-	@Override
+	//@Override
 	public boolean close()
 	{
 		colorManager.dispose();
@@ -491,7 +491,7 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 		return resStr;
 	}
 
-	@Override
+	//@Override
 	protected void okPressed()
 	{
 		data.setResultFontRegistry(fontRegistry);
@@ -501,7 +501,7 @@ public class FontConfigurationDialog extends org.eclipse.jface.dialogs.Dialog im
 	/** (non-Javadoc)
 	 * @see org.eclipse.jface.window.Window#open()
 	 */
-	@Override
+	//@Override
 	public int open()
 	{
 		selectionChanged(new SelectionChangedEvent(viewer,new ISelection (){

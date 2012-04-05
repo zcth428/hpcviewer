@@ -50,7 +50,7 @@ public class PartitionStyleChange extends AbstractPartitionChange {
 		this.add = add;
 	}
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		partition.getBgColorRGB();
 		final FontStyle oldStyle = new FontStyle(partition);

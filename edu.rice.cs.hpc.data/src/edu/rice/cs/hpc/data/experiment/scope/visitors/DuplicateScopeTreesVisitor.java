@@ -18,7 +18,7 @@ public class DuplicateScopeTreesVisitor extends BaseDuplicateScopeTreesVisitor {
 		super( newRoot, offset );
 	}
 	
-	@Override
+	//@Override
 	protected Scope findMatch(Scope parent, Scope toMatch) {
 		// for duplication, everything matches
 		return null;

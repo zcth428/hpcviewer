@@ -40,7 +40,7 @@ public class HRPartition extends ObjectPartition
 	 *  Returns partition associated object. 
 	 *  Always null in this class
 	 */
-	@Override
+	//@Override
 	public Object getObject()
 	{
 		return null;
@@ -49,7 +49,7 @@ public class HRPartition extends ObjectPartition
 	/** (non-Javadoc)
 	 * @see com.onpositive.richtexteditor.model.partitions.ObjectPartition#setObject(java.lang.Object)
 	 */
-	@Override
+	//@Override
 	public void setObject(Object object)
 	{
 	}
@@ -59,7 +59,7 @@ public class HRPartition extends ObjectPartition
 	 * @param manager LayerManager responsible for partition handling
 	 * @return new StyleRange
 	 */
-	@Override
+	//@Override
 	public StyleRange getStyleRange(LayerManager manager)
 	{
 		StyleRange style = new StyleRange();		
@@ -74,7 +74,7 @@ public class HRPartition extends ObjectPartition
 	/**
 	 * @return True, if partition must be single partition on some line
 	 */
-	@Override
+	//@Override
 	public boolean requiresSingleLine()
 	{
 		return true;
@@ -86,7 +86,7 @@ public class HRPartition extends ObjectPartition
 	 * 
 	 * @return true if yes, false otherwise
 	 */
-	@Override
+	//@Override
 	public boolean requiresFullDeletion()
 	{
 		return true;
@@ -97,7 +97,7 @@ public class HRPartition extends ObjectPartition
 	 * 
 	 * @return true if yes, false otherwise
 	 */
-	@Override
+	//@Override
 	public boolean allowsInnerTyping()
 	{
 		return false;

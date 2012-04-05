@@ -27,29 +27,29 @@ public class FlatScopeView extends BaseScopeView {
         return new FlatScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
     }
 
-	@Override
+	//@Override
 	protected CellLabelProvider getLabelProvider() {
 		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
 	}
 
-	@Override
+	//@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
+	//@Override
 	protected void mouseDownEvent(Event event) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
+	//@Override
 	protected ScopeTreeContentProvider getScopeContentProvider() {
 		return new ScopeTreeContentProvider();
 	}
 
-	@Override
+	//@Override
 	protected void updateDatabase(Experiment newDatabase) {}
 
 

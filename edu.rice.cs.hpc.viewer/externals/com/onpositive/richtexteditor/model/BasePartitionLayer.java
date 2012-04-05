@@ -794,7 +794,7 @@ public class BasePartitionLayer extends AbstractModel implements IPartitionLayer
 
 	
 
-	@Override
+	//@Override
 	protected ILineAttributeModel getLineAttributeModel() {
 		return new ILineAttributeModel(){
 

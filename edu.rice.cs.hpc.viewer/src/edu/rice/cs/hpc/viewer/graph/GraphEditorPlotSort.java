@@ -14,7 +14,7 @@ public class GraphEditorPlotSort extends GraphEditor {
     public static final String ID = "edu.rice.cs.hpc.viewer.graph.GraphEditorPlotSort";
 
 
-	@Override
+	//@Override
 	protected double[] getValuesX(ThreadLevelDataManager objDataManager, 
 			Scope scope, MetricRaw metric) {
 
@@ -28,7 +28,7 @@ public class GraphEditorPlotSort extends GraphEditor {
 
 
 
-	@Override
+	//@Override
 	protected double[] getValuesY(ThreadLevelDataManager objDataManager, 
 			Scope scope, MetricRaw metric) {
 
@@ -48,7 +48,7 @@ public class GraphEditorPlotSort extends GraphEditor {
 
 
 
-	@Override
+	//@Override
 	protected String getXAxisTitle(ThreadLevelDataFile data) {
 		return "Rank in Sorted Order";
 	}

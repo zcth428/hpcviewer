@@ -37,18 +37,18 @@ public class ScopeView extends BaseScopeView {
 	
     public static final String ID = "edu.rice.cs.hpc.viewer.scope.ScopeView";
 	
-	@Override
+	//@Override
     protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
         return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
     }
 
-	@Override
+	//@Override
 	protected CellLabelProvider getLabelProvider() {
 		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
 	}
 
-	@Override
+	//@Override
 	protected void mouseDownEvent(Event event) {
     	this.getColumnMouseDown(event);
 		
@@ -70,7 +70,7 @@ public class ScopeView extends BaseScopeView {
     	return iPos;
     }
 
-	@Override
+	//@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
 		if (scope != null && this.hasThreadsLevelData) {
 
@@ -97,7 +97,7 @@ public class ScopeView extends BaseScopeView {
 	} 
 
 
-	@Override
+	//@Override
 	protected ScopeTreeContentProvider getScopeContentProvider() {
 		return new ScopeTreeContentProvider();
 	}
@@ -230,7 +230,7 @@ public class ScopeView extends BaseScopeView {
     }
 
 
-	@Override
+	//@Override
 	protected void updateDatabase(Experiment newDatabase) {}
     
 }

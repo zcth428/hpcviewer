@@ -39,7 +39,7 @@ public class AddRemovePartitionChange extends AbstractPartitionChange{
 
 	
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		PartitionStorage storage=delta.getStorage();
 		if (add){

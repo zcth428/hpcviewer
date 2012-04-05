@@ -12,12 +12,12 @@ public class EqualNode extends OpNode {
 		super(leftChild, rightChild);
 	}
 
-	@Override
+	//@Override
 	public String getSymbol() {
 		return "==";
 	}
 
-	@Override
+	//@Override
 	public double eval(VarMap v, FuncMap f) {
 		double a = leftChild.eval(v, f);
 		double b = rightChild.eval(v, f);

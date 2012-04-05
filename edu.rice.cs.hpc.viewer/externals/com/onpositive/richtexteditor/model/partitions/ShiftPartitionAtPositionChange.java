@@ -30,7 +30,7 @@ public class ShiftPartitionAtPositionChange extends Change {
 		this.offset = offset;
 	}
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		final PartitionStorage partitionStorage = delta.getStorage();
 		final int i = offset;
@@ -40,7 +40,7 @@ public class ShiftPartitionAtPositionChange extends Change {
 		}
 		Change change = new Change() {
 
-			@Override
+			//@Override
 			protected void apply(PartitionDelta delta) {
 
 				for (int a = i; a < partitionStorage.size(); a++) {

@@ -263,7 +263,7 @@ public class CompositeChange extends Change {
 		return null;
 	}
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		for (Change c : parts) {
 			c.apply(delta);
@@ -314,7 +314,7 @@ public class CompositeChange extends Change {
 			final int offset) {
 		add(new Change() {
 
-			@Override
+			//@Override
 			protected void apply(PartitionDelta delta) {
 				BasePartition partitionAtOffset = storage
 						.getPartitionAtOffset(startPartition.getOffset() - 1);

@@ -119,7 +119,7 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 	}
 
 	/*
-	@Override
+	//@Override
 	protected void accumulateAncestor(Scope scope, Scope parent) {
 		// TODO Auto-generated method stub
 		

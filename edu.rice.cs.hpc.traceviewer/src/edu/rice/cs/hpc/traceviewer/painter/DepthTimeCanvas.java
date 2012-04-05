@@ -228,7 +228,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		return (double)viewWidth / (double)getNumTimeDisplayed();
 	}
 
-	@Override
+	//@Override
 	public double getScaleY() {
 		final Rectangle r = this.getClientArea();
 		return Math.max(r.height/(double)maxDepth, 1);

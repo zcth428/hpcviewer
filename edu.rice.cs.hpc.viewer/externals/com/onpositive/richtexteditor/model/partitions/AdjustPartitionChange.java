@@ -34,7 +34,7 @@ public class AdjustPartitionChange extends AbstractPartitionChange{
 
 	
 
-	@Override
+	//@Override
 	
 	protected void apply(PartitionDelta delta) {		
 		int oldOffset=partition.getOffset();

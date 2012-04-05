@@ -76,7 +76,7 @@ public class MergeDatabase extends AbstractHandler {
 			Display display = HandlerUtil.getActiveShell(event).getDisplay();
 			display.asyncExec(new Runnable(){
 
-				//@Override
+				////@Override
 				public void run() {
 					final Experiment expMerged = ExperimentMerger.merge(db1, db2);
 

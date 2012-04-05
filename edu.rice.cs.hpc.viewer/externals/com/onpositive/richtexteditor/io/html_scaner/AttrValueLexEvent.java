@@ -36,7 +36,7 @@ public class AttrValueLexEvent extends LexEvent
 		this.type = type;
 	}
 	
-	@Override
+	//@Override
 	public String toString()
 	{
 		return "value = " + l;

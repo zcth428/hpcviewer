@@ -37,38 +37,38 @@ public class ThreadScopeView extends AbstractBaseScopeView {
     }
     
     
-	@Override
+	//@Override
 	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
         return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
 	}
 
-	@Override
+	//@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
+	//@Override
 	protected CellLabelProvider getLabelProvider() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
+	//@Override
 	protected ScopeTreeContentProvider getScopeContentProvider() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
+	//@Override
 	protected void mouseDownEvent(Event event) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
-	@Override
+	//@Override
 	protected void updateDisplay() {
         if (database == null)
         	return;

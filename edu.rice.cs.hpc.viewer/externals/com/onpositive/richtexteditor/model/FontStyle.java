@@ -184,7 +184,7 @@ public class FontStyle implements Cloneable
 		this.bgColor = bgColor;
 	}	
 	
-	@Override
+	//@Override
 	public boolean equals(Object obj)
 	{
 		if (!(obj instanceof FontStyle)) return false;
@@ -201,7 +201,7 @@ public class FontStyle implements Cloneable
 	/** (non-Javadoc)
 	 * @see java.lang.Object#clone()
 	 */
-	@Override
+	//@Override
 	public Object clone()
 	{
 		try
@@ -217,7 +217,7 @@ public class FontStyle implements Cloneable
 	/**
 	 * @return displayable name of style
 	 */
-	@Override
+	//@Override
 	public String toString()
 	{
 		return displayName;

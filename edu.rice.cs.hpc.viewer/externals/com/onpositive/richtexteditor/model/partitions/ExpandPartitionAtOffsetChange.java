@@ -42,7 +42,7 @@ public class ExpandPartitionAtOffsetChange extends Change {
 		this.current = currentFontPartition;
 	}
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		PartitionStorage storage = delta.getStorage();
 		PartitionStorage partitionStorage = storage;
@@ -102,7 +102,7 @@ public class ExpandPartitionAtOffsetChange extends Change {
 		}
 		Change change = new Change() {
 
-			@Override
+			//@Override
 			protected void apply(PartitionDelta delta) {
 				PartitionStorage partitionStorage = delta.getStorage();
 				if (original == null) {
@@ -189,7 +189,7 @@ public class ExpandPartitionAtOffsetChange extends Change {
 		}
 		Change change = new Change() {
 
-			@Override
+			//@Override
 			protected void apply(PartitionDelta delta) {
 				PartitionStorage partitionStorage = delta.getStorage();
 				if (original == null) {

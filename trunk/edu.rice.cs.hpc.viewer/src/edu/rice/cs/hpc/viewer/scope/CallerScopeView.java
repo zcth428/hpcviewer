@@ -24,13 +24,13 @@ public class CallerScopeView extends BaseScopeView {
 	/* (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.scope.BaseScopeView#createActions(org.eclipse.swt.widgets.Composite, org.eclipse.swt.widgets.CoolBar)
 	 */
-	@Override
+	//@Override
 	protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
         return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
 	}
 
-	@Override
+	//@Override
 	protected CellLabelProvider getLabelProvider() {
 		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
 /*		CallerScopeLabelProvider objScopeLabel = new CallerScopeLabelProvider(this.getSite().getWorkbenchWindow());
@@ -38,18 +38,18 @@ public class CallerScopeView extends BaseScopeView {
 		return objLabelProvider;
 */	}
 
-	@Override
+	//@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {}
 
-	@Override
+	//@Override
 	protected void mouseDownEvent(Event event) {}
 
-	@Override
+	//@Override
 	protected ScopeTreeContentProvider getScopeContentProvider() {
 		return new CallerViewContentProvider();
 	}
 
-	@Override
+	//@Override
 	protected void updateDatabase(Experiment newDatabase) {
 		CallerViewContentProvider objContent = (CallerViewContentProvider) this.treeViewer.getContentProvider();
 		objContent.setDatabase(newDatabase);

@@ -158,14 +158,14 @@ public class AggregateMetric extends BaseMetric {
 	}
 
 
-	@Override
+	//@Override
 	public MetricValue getValue(Scope s) {
 		MetricValue mv = null;
 		mv = s.getMetricValue(this.index);
 		return mv;
 	}
 
-	@Override
+	//@Override
 	public BaseMetric duplicate() {
 		return new AggregateMetric(shortName, displayName, displayed, 
 				null, annotationType, index, partner, metricType);

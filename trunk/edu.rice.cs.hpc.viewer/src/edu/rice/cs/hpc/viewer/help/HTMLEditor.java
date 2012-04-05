@@ -59,7 +59,7 @@ public class HTMLEditor extends EditorPart {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	@Override
+	//@Override
 	public void doSave(IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
 
@@ -68,7 +68,7 @@ public class HTMLEditor extends EditorPart {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.EditorPart#doSaveAs()
 	 */
-	@Override
+	//@Override
 	public void doSaveAs() {
 		// TODO Auto-generated method stub
 
@@ -78,7 +78,7 @@ public class HTMLEditor extends EditorPart {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
 	 */
-	@Override
+	//@Override
 	public void init(IEditorSite site, IEditorInput input)
 			throws PartInitException {
 
@@ -107,7 +107,7 @@ public class HTMLEditor extends EditorPart {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.EditorPart#isDirty()
 	 */
-	@Override
+	//@Override
 	public boolean isDirty() {
 		// TODO Auto-generated method stub
 		return false;
@@ -116,7 +116,7 @@ public class HTMLEditor extends EditorPart {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
 	 */
-	@Override
+	//@Override
 	public boolean isSaveAsAllowed() {
 		// TODO Auto-generated method stub
 		return false;
@@ -132,7 +132,7 @@ public class HTMLEditor extends EditorPart {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
 	 */
-	@Override
+	//@Override
 	public void createPartControl(Composite parent) {
 		try {
 			// attempt to instantiate browser widget
@@ -165,7 +165,7 @@ public class HTMLEditor extends EditorPart {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
 	 */
-	@Override
+	//@Override
 	public void setFocus() {
 		this.browser.setFocus();
 	}

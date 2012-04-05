@@ -92,7 +92,7 @@ public class NameDialog extends Dialog
 
 	}
 	
-	@Override
+	//@Override
 	protected void okPressed()
 	{
 		resString = nameText.getText();

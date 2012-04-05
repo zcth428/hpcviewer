@@ -89,11 +89,11 @@ public class StylingSample {
 		shell.setLayout(new GridLayout(1, true));
 		RichTextViewer richTextViewer = new RichTextViewer(shell, SWT.NONE){
 
-			@Override
+			//@Override
 			public RichTextViewerControlConfiguration getConfiguration() {
 				return new RichTextViewerControlConfiguration(){
 
-					@Override
+					//@Override
 					protected void configureLayerManager(LayerManager manager) {
 						manager.addAutoStylingStrategy(new NumberStylingStrategy());
 						super.configureLayerManager(manager);

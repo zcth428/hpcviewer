@@ -41,7 +41,7 @@ public class SetBulletChange extends Change{
 		return align;		
 	}
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		int firstLineNum=line;
 		int lastLineNum=line+count;
@@ -60,7 +60,7 @@ public class SetBulletChange extends Change{
 		lineAttributeModel.setLineBullet(line, count, bullet);
 		delta.getUndoChange().add(new Change(){
 
-			@Override
+			//@Override
 			protected void apply(PartitionDelta delta) {
 				lineAttributeModel.setLineBullet(line, count, null);
 				for (int a=0;a<bullets.length;a++){

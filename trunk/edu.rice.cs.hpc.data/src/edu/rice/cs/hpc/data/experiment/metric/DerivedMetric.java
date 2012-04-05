@@ -131,7 +131,7 @@ public class DerivedMetric extends BaseMetric {
 	}
 
 
-	@Override
+	//@Override
 	public BaseMetric duplicate() {
 		return new DerivedMetric(null, expression, displayName, shortName, index, annotationType, metricType);
 	}

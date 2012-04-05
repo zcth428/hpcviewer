@@ -19,7 +19,7 @@ public class GraphEditorHisto extends GraphEditorBase {
     public static final String ID = "edu.rice.cs.hpc.viewer.graph.GraphEditorHisto";
     
 
-	@Override
+	//@Override
 	protected void plotData(Scope scope, MetricRaw metric) {
 		final int bins = 10;
 		

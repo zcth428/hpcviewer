@@ -246,7 +246,7 @@ public class RichTextViewer extends SourceViewer {
 
 	
 
-	@Override
+	//@Override
 	protected void customizeDocumentCommand(DocumentCommand command) {
 		int offset = command.offset;
 		int length = command.length;
@@ -270,7 +270,7 @@ public class RichTextViewer extends SourceViewer {
 		super.customizeDocumentCommand(command);
 	}
 
-	@Override
+	//@Override
 	protected StyledText createTextWidget(Composite parent, int styles) {
 		try {
 			Class<?> forName = Class.forName(EXTENDED_STYLED_TEXT_CLASS);

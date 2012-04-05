@@ -253,7 +253,7 @@ public class SpaceTimeData extends TraceEvents
 		
 		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, window) {
 
-			@Override
+			//@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
 				compositeOrigLines = new Image[linesToPaint];
 				compositeFinalLines = new Image[linesToPaint];
@@ -265,7 +265,7 @@ public class SpaceTimeData extends TraceEvents
 				return true;
 			}
 
-			@Override
+			//@Override
 			protected void endPainting(int linesToPaint, double xscale, double yscale) {
 				for (int i = 0; i < linesToPaint; i++) {
 					int yposition = (int) Math.round(i * yscale);
@@ -274,7 +274,7 @@ public class SpaceTimeData extends TraceEvents
 				}
 			}
 
-			@Override
+			//@Override
 			protected int getNumberOfLines() {
 				return Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
 			}
@@ -308,7 +308,7 @@ public class SpaceTimeData extends TraceEvents
 		
 		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes, changedBounds, this.statusMgr, window) {
 
-			@Override
+			//@Override
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
 				depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, 
 						attributes.numPixelsH, attributes.endTime-attributes.begTime,
@@ -321,7 +321,7 @@ public class SpaceTimeData extends TraceEvents
 				return changedBounds;
 			}
 
-			@Override
+			//@Override
 			protected void endPainting(int linesToPaint, double xscale,
 					double yscale) {
 
@@ -333,7 +333,7 @@ public class SpaceTimeData extends TraceEvents
 				}
 			}
 
-			@Override
+			//@Override
 			protected int getNumberOfLines() {
 				return Math.min(attributes.numPixelsDepthV, maxDepth);
 			}
@@ -359,7 +359,7 @@ public class SpaceTimeData extends TraceEvents
 		double pixelLength = (attributes.endTime - attributes.begTime)/(double)attributes.numPixelsH;
 		BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, depth, height, pixelLength)
 		{
-			@Override
+			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
 			{
 				if (currDepth >= depth)
@@ -395,7 +395,7 @@ public class SpaceTimeData extends TraceEvents
 		// do the paint
 		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, currentDepth, height, pixelLength)
 		{
-			@Override
+			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
 			{
 				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
@@ -519,7 +519,7 @@ public class SpaceTimeData extends TraceEvents
 		return attributes.endProcess;
 	}
 	
-	@Override
+	//@Override
 	public void setPosition(Position position)
 	{
 		this.currentPosition = position;

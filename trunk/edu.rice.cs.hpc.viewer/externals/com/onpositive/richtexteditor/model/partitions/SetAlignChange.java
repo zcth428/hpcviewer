@@ -34,7 +34,7 @@ public class SetAlignChange extends Change{
 		this.line = line;
 	}
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		final ILineAttributeModel lineAttributeModel = delta.getStorage().getLineAttributeModel();
 		final int[]aligns=new int[count+1];
@@ -44,7 +44,7 @@ public class SetAlignChange extends Change{
 		lineAttributeModel.setLineAlign(line, count, align);
 		delta.getUndoChange().add(new Change(){
 
-			@Override
+			//@Override
 			protected void apply(PartitionDelta delta) {
 				for (int a=0;a<aligns.length;a++){
 					lineAttributeModel.setLineAlign(a+line, 0, aligns[a]);

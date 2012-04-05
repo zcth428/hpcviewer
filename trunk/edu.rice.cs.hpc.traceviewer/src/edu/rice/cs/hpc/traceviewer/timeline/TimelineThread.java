@@ -129,7 +129,7 @@ public class TimelineThread extends Thread
 				GC gc = new GC(line);
 				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY) {
 
-					@Override
+					//@Override
 					public void paintSample(int startPixel, int endPixel,
 							int height, String function) {
 

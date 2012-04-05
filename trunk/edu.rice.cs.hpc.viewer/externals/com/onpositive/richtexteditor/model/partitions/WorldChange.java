@@ -74,7 +74,7 @@ public class WorldChange extends Change{
 
 
 
-	@Override
+	//@Override
 	protected void apply(PartitionDelta delta) {
 		PartitionStorage storage = delta.getStorage();
 		final List<BasePartition> clonePartitions = storage.clonePartitions();

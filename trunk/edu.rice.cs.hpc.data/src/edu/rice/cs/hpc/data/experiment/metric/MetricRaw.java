@@ -67,13 +67,13 @@ public class MetricRaw  extends BaseMetric {
 	}
 
 
-	@Override
+	//@Override
 	public MetricValue getValue(Scope s) {
 		return null;
 	}
 
 
-	@Override
+	//@Override
 	public BaseMetric duplicate() {
 		return new MetricRaw(ID, this.displayName, this.db_glob, this.db_id, this.num_metrics);
 	}

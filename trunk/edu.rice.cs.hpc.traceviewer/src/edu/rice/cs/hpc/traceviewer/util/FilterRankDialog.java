@@ -323,7 +323,7 @@ public class FilterRankDialog extends TitleAreaDialog {
 	protected class ColumnFilter extends ViewerFilter {
 		// the key to be matched
 		private String sKeyToMatch;
-		@Override
+		//@Override
 		public boolean select(Viewer viewer, Object parentElement,
 				Object element) {
 			// check if the key exist

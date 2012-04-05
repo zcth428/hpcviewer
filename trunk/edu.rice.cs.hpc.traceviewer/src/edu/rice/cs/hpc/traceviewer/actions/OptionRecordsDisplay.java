@@ -16,11 +16,10 @@ public class OptionRecordsDisplay extends AbstractHandler {
 
 	final static public String commandId = "edu.rice.cs.hpc.traceviewer.showRecords";
 	
-	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException 
 	{
 	     Command command = event.getCommand();
-	     boolean oldValue = HandlerUtil.toggleCommandState(command);
+	     HandlerUtil.toggleCommandState(command);
 	     // use the old value and perform the operation 
 	     return null;
 	}

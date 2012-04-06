@@ -219,11 +219,12 @@ public abstract class BaseMetric {
 	}
 
 	/*************************************************************************
-	 *	Sets the metric's display format.
-	 ************************************************************************/
-	public void setDisplayFormat(MetricValueFormat displayFormat)
+	 * Sets the metric's display format.
+	 * @param format
+	 *************************************************************************/
+	public void setDisplayFormat( IMetricValueFormat format )
 	{
-		this.displayFormat = displayFormat;
+		this.displayFormat = format;
 	}
 
 	/*************************************************************************
@@ -233,7 +234,7 @@ public abstract class BaseMetric {
 	{
 		return this.displayFormat;
 	}
-
+	
 	/*************************************************************************
 	 *	MISC
 	 ************************************************************************/

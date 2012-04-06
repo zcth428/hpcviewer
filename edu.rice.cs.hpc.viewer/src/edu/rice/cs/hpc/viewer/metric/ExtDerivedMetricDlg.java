@@ -11,13 +11,17 @@ import org.eclipse.jface.layout.LayoutConstants;
 // swt
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ExpandBar;
+import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
@@ -42,12 +46,15 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	private Combo cbName;
 	private Combo cbExpression;
 	private Button btnPercent;
-
+	private Text txtFormat;
+	private Button btnFormat;
+	
 	// ------------ Metric and math variables
 	private String []arrStrMetrics;
 	private Expression expFormula;
 	private final ExtFuncMap fctMap;
 	private final MetricVarMap varMap;
+	private String sFormat;
 	
 	// ------------- Others
 	static private final String HISTORY_FORMULA = "formula";			//$NON-NLS-1$
@@ -112,6 +119,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    Composite composite = (Composite) super.createDialogArea(parent);
 	    Group grpBase = new Group(composite, SWT.NONE);
 	    grpBase.setText("Derived metric definition");
+	    
+		Point ptMargin = LayoutConstants.getMargins(); 
+		ptMargin.x = 5;
+		ptMargin.y = 5;
+
 	    Composite expressionArea = new Composite(grpBase, SWT.NONE);
 	    {
 	    	Group grpExpression = new Group(expressionArea, SWT.NONE);
@@ -268,25 +280,54 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	
 	    	GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(expressionArea);
 	    }
-		GridLayoutFactory.fillDefaults().margins(5, 5).generateLayout(grpBase);
+		GridLayoutFactory.fillDefaults().margins(ptMargin).generateLayout(grpBase);
 		
 		//-------
 		// options
 		//-------
-		Group grpOptions = new Group(composite,SWT.NONE);
+		ExpandBar barOptions = new ExpandBar(composite,SWT.V_SCROLL);
 		{
+			Composite cOptions = new Composite (barOptions, SWT.NONE);
+			GridLayoutFactory.fillDefaults().numColumns(1).margins(ptMargin).generateLayout(cOptions);
+			
 			// percent option
-			this.btnPercent = new Button(grpOptions, SWT.CHECK);
-			this.btnPercent.setText("Display metric percentage");
-			this.btnPercent.setToolTipText("For each metric value, display percentage of aggregate metric value");
+			this.btnPercent = new Button(cOptions, SWT.CHECK);
+			this.btnPercent.setText("Display metric percentage annotation");
+			this.btnPercent.setToolTipText("For each metric value, display the annotation of percentage of aggregate metric value");
 
-			grpOptions.setText("Options");
+			// format option
+			final Composite cFormat = new Composite( cOptions, SWT.NONE );
+			btnFormat = new Button(cFormat, SWT.CHECK);
+			btnFormat.setText("Custom format");
+			
+			txtFormat = new Text(cFormat, SWT.BORDER);
+			btnFormat.addSelectionListener(new SelectionListener(){
+
+				public void widgetSelected(SelectionEvent e) {
+					txtFormat.setEnabled(btnFormat.getSelection()); 
+				}
+
+				public void widgetDefaultSelected(SelectionEvent e) {}
+				
+			});
+			// make sure to initialize the state of the text
+			txtFormat.setEnabled(btnFormat.getSelection()); 
+			
+			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(cFormat);
+			
+			// item for expansion bar
+			ExpandItem eiOptions = new ExpandItem(barOptions, SWT.NONE, 0);
+			eiOptions.setText("Advanced options");
+			eiOptions.setHeight(cOptions.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+			eiOptions.setControl(cOptions);
+			// set by default we don't want users to see the advanced options
+			// it will just scare them away
+			eiOptions.setExpanded(false);
+			
+			barOptions.setToolTipText("Optional settings");
+			barOptions.setSpacing(2);
 		}
-		GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(grpOptions);
 
-		Point ptMargin = LayoutConstants.getMargins(); 
-		ptMargin.x = 5;
-		ptMargin.y = 5;
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(ptMargin).generateLayout(
 				composite);
 	    return composite;
@@ -343,9 +384,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   * @return
 	   */
 	  private boolean evaluateExpression ( Expression objExpression ) {
-			//MetricVarMap vm = new MetricVarMap(false /* case sensitive */);
-
-			// vm.setScope(null);
 			try {
 				objExpression.eval( varMap, fctMap);
 				// if there is no exception, we assume everything goes fine
@@ -397,6 +435,13 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  return this.bPercent;
 	  }
 	  
+	  /***
+	   * get the customized format (if defined)
+	   * @return
+	   */
+	  public String getFormat() {
+		  return this.sFormat;
+	  }
 
 	  /**
 	   * Call back method when the OK button is pressed
@@ -410,7 +455,12 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			// save user history
 			this.objHistoryFormula.addLine( this.cbExpression.getText() );
 			this.objHistoryName.addLine( this.cbName.getText() );
-			//this.bExclusive = this.btnExclusive.getSelection();
+
+			if (this.btnFormat.getSelection())
+				this.sFormat = this.txtFormat.getText();
+			else
+				this.sFormat = null;
+			
 			super.okPressed();
 		}
 	  }

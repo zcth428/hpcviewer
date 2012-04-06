@@ -366,10 +366,17 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			if (dlg.getPercentDisplay() == true) {
 				bPercent = AnnotationType.PERCENT;
 			}
-
+			
 			// add a derived metric and register it to the experiment database
 			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
-			
+
+			final String sFormat = dlg.getFormat();
+			if (sFormat != null) {
+				// user has specified specific format. Let's set it to the metric
+				IMetricValueFormat objFormat = new MetricValuePredefinedFormat(sFormat);
+				objMetric.setDisplayFormat(objFormat);
+			}
+						
 			// get our database file and the experiment index assigned for it
 			String sFilename = exp.getXMLExperimentFile().getPath();
 			ViewerWindow vWin = ViewerWindowManager.getViewerWindow(this.objWindow);

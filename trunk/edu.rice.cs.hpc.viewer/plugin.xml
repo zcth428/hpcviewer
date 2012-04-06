@@ -224,9 +224,9 @@
             </command>
          </menu>
          <menu
-               label="Debug"
-               mnemonic="d"
-               tooltip="Debug mode on/off and show some debugging information">
+               label="Advanced"
+               mnemonic="a"
+               tooltip="Options for advance users: Debug mode on/off and show some debugging information">
             <visibleWhen
                   checkEnabled="false">
                <with

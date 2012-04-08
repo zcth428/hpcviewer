@@ -3,6 +3,10 @@
  */
 package edu.rice.cs.hpc.viewer.metric;
 // jface
+import java.util.Formatter;
+import java.util.FormatterClosedException;
+import java.util.IllegalFormatException;
+
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -11,7 +15,6 @@ import org.eclipse.jface.layout.LayoutConstants;
 // swt
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ExpandBar;
@@ -301,6 +304,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			btnFormat.setText("Custom format");
 			
 			txtFormat = new Text(cFormat, SWT.BORDER);
+			txtFormat.setToolTipText("The format is based on Java's Formatter class which is almost equivalent to C's printf format ");
 			btnFormat.addSelectionListener(new SelectionListener(){
 
 				public void widgetSelected(SelectionEvent e) {
@@ -325,7 +329,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			eiOptions.setExpanded(false);
 			
 			barOptions.setToolTipText("Optional settings");
-			barOptions.setSpacing(2);
 		}
 
 		GridLayoutFactory.fillDefaults().numColumns(1).margins(ptMargin).generateLayout(
@@ -375,6 +378,24 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 				MessageDialog.openError(this.getShell(), "Error: empty expression", 
 					"An expression can not be empty.");
 			}
+		  return bResult;
+	  }
+	  
+	  private boolean checkFormat() {
+		  boolean bResult = true;
+		  if (this.btnFormat.getSelection()) {
+			  this.sFormat = this.txtFormat.getText();
+			  try {
+				  Formatter format = new Formatter();
+				  format.format(sFormat, 1.0);
+				  
+			  } catch (IllegalFormatException e) {
+				  MessageDialog.openError(getShell(), "Format syntax error", "Format is incorrect");
+				  bResult = false;
+			  } catch (FormatterClosedException e) {
+				  bResult = false;
+			  }
+		  }
 		  return bResult;
 	  }
 	  
@@ -447,7 +468,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	   * Call back method when the OK button is pressed
 	   */
 	  public void okPressed() {
-		if(this.checkExpression()) {
+		if(this.checkExpression() && this.checkFormat()) {
 			// save the options for further usage (required by the caller)
 			this.bPercent = this.btnPercent.getSelection();
 			this.sMetricName = this.cbName.getText();

@@ -457,15 +457,25 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * Update the data input for Scope View, depending also on the scope
      */
     public void setInput(Database db, RootScope scope) {
+    	initDatabase(db, scope);
+    	updateDisplay();
+    }
+    
+    /***
+     * initialize view without creating the tree and the metric columns
+     * 
+     * @param db
+     * @param scope
+     */
+    public void initDatabase(Database db, RootScope scope) {
     	database = db;
     	myRootScope = scope;// try to get the aggregate value
 
         // tell the action class that we have built the tree
-        this.objViewActions.setTreeViewer(treeViewer);
-
-    	updateDisplay();
-
+        this.objViewActions.setTreeViewer(treeViewer);    	
     }
+    
+    
     
     //======================================================
     // ................ MISC ............................

@@ -159,13 +159,30 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 		scope.setParentScope(top);
 	}
 
-
-	protected RootScope createCallersView(Scope callingContextViewRootScope)
+	/***
+	 * Preparing the tree for caller view. Since we will create the tree dynamically,
+	 * 	we need to create at least the root. All the children will be created by
+	 * 	createCallersView() method.
+	 * 
+	 * @param callingContextViewRootScope
+	 * @return
+	 */
+	protected RootScope prepareCallersView(Scope callingContextViewRootScope)
 	{
-		EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
-
 		RootScope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallerTree);
 		beginScope(callersViewRootScope);
+		
+		return callersViewRootScope;
+	}
+	
+	/***
+	 * create callers view
+	 * @param callingContextViewRootScope
+	 * @return
+	 */
+	public RootScope createCallersView(Scope callingContextViewRootScope, RootScope callersViewRootScope)
+	{
+		EmptyMetricValuePropagationFilter filter = new EmptyMetricValuePropagationFilter();
 
 		CallersViewScopeVisitor csv = new CallersViewScopeVisitor(this, callersViewRootScope, 
 				this.getMetricCount(), false, filter);
@@ -175,6 +192,13 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 		// bug fix 2008.10.21 : we don't need to recompute the aggregate metrics here. Just copy it from the CCT
 		//	This will solve the problem where there is only nested loops in the programs
 		callersViewRootScope.accumulateMetrics(callingContextViewRootScope, filter, this.getMetricCount());
+		
+		AbstractFinalizeMetricVisitor diVisitor = new FinalizeMetricVisitorWithBackup(this.getMetrics());
+		this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
+		
+		// bug fix 2010.06.17: move the percent after finalization
+		addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
+
 		return callersViewRootScope;
 	}
 
@@ -300,9 +324,8 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 			//----------------------------------------------------------------------------------------------
 			// Callers View
 			//----------------------------------------------------------------------------------------------
-			Scope callersViewRootScope = null;
 			if (callerView) {
-				callersViewRootScope = createCallersView(callingContextViewRootScope);
+				prepareCallersView(callingContextViewRootScope);
 			}
 
 			//----------------------------------------------------------------------------------------------
@@ -321,12 +344,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 			this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
 
 			diVisitor = new FinalizeMetricVisitorWithBackup(this.getMetrics());
-
-			if (callerView)	{												// caller view
-				this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
-				// bug fix 2010.06.17: move the percent after finalization
-				addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
-			}
 
 			this.finalizeAggregateMetrics(callingContextViewRootScope, diVisitor);		// cct
 

@@ -23,8 +23,9 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     // ................ UPDATE ............................
     //======================================================
     
-	/**
-	 * Update the content of the tree view when a new experiment is loaded
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView#updateDisplay()
 	 */
 	protected void updateDisplay() {
         if (database == null)

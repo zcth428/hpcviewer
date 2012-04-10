@@ -87,7 +87,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		super(parent);
 		experiment = exp;
 		this.setMetrics(exp.getMetrics());
-		this.fctMap = new ExtFuncMap(exp.getMetrics(), exp.getCallerTreeRoot());
+		this.fctMap = new ExtFuncMap(exp.getMetrics());
 		this.varMap = new MetricVarMap ( s, exp );
 	}
 	

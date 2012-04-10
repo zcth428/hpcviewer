@@ -4,7 +4,6 @@
 package edu.rice.cs.hpc.data.experiment.metric;
 
 import com.graphbuilder.math.FuncMap;
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 
 /**
  * @author laksonoadhianto
@@ -32,16 +31,15 @@ public class ExtFuncMap extends FuncMap {
 	 * @param metrics: list of metrics
 	 * @param rootscope: a root scope (any root scope will do)
 	 */
-	public ExtFuncMap(BaseMetric []metrics, RootScope rootscope) {
+	public ExtFuncMap(BaseMetric []metrics) {
 		super(false);
-		this.init(metrics, rootscope);
+		this.init(metrics);
 	}
 
-	public void init(BaseMetric []metrics, RootScope rootscope) {
-		//AggregateFunction fct = new AggregateFunction(metrics, rootscope);
+	public void init(BaseMetric []metrics) {
+
 		StdDevFunction fctStdDev = new StdDevFunction();
 
-		//this.setFunction("@", fct);
 		this.setFunction("stdev", fctStdDev);
 		this.loadDefaultFunctions();
 	}

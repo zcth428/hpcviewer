@@ -53,7 +53,7 @@ public class DerivedMetric extends BaseMetric {
 		
 		final Experiment experiment = (Experiment)scopeRoot.getExperiment();
 		BaseMetric []metrics = experiment.getMetrics(); 
-		this.fctMap.init(metrics, scopeRoot);
+		this.fctMap.init(metrics);
 
 		// set up the variables
 		this.varMap = new MetricVarMap(experiment);

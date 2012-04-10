@@ -275,13 +275,13 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 */
 	public RootScope getCallerTreeRoot() {
 
-		if (this.rootScope.getSubscopeCount()==3) {
-
-			Scope scope = this.rootScope.getSubscope(1);
-			if (scope instanceof RootScope)
+		for (TreeNode node: this.rootScope.getChildren()) {
+			Scope scope = (Scope) node;
+			if ( (scope instanceof RootScope) && 
+					((RootScope)scope).getType()==RootScopeType.CallerTree )
 				return (RootScope) scope;
-
 		}
+
 		return null;
 	}
 

@@ -472,7 +472,9 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	myRootScope = scope;// try to get the aggregate value
 
         // tell the action class that we have built the tree
-        this.objViewActions.setTreeViewer(treeViewer);    	
+        this.objViewActions.setTreeViewer(treeViewer);
+        
+        initTableColumns();
     }
     
     
@@ -533,6 +535,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 	 */
 	abstract protected void updateDisplay();
 
+	abstract protected void initTableColumns();
+	
     /**
      * The derived class has to implement this method to create its own actions
      * For instance, caller view and cct view has the same actions but flat view

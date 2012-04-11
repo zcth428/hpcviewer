@@ -91,6 +91,13 @@ public class ThreadScopeView extends AbstractBaseScopeView {
         
 	}
 
+
+	//@Override
+	protected void initTableColumns() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 
 }

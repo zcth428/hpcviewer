@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.viewer.experiment;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.data.experiment.*; 
@@ -20,7 +23,6 @@ import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -32,27 +34,34 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
  *
  */
 public class ExperimentView {
-	//private ExperimentData dataExperiment;
-	private org.eclipse.ui.IWorkbenchPage objPage;		// workbench current page
+
+	private IWorkbenchPage objPage;		// workbench current page
 	/**
 	 * List of registered views in the current experiment
 	 */
 	protected BaseScopeView []arrScopeViews;
 	
-	static private boolean isPartListenerInitialized;
-	
-	private void init() {
-		isPartListenerInitialized = false;
-	}
-	
+	/** we have to make sure that the listener is added only once for a given window **/
+	static private HashMap<IWorkbenchWindow, DynamicViewListener> hashWindow;
 	/**
 	 * Constructor for Data experiment. Needed to link with the view
 	 * @param objTarget: the scope view to link with
 	 */
-	public ExperimentView(org.eclipse.ui.IWorkbenchPage objTarget) {
+	public ExperimentView(IWorkbenchPage objTarget) {
 		if(objTarget != null) {
 			this.objPage = objTarget;
-			this.init();
+			
+			if (hashWindow == null) {
+				hashWindow = new HashMap<IWorkbenchWindow, DynamicViewListener>();
+			}
+			IWorkbenchWindow window = objPage.getWorkbenchWindow();
+			DynamicViewListener listener = hashWindow.get(window);
+			if (listener == null) {
+				listener = new DynamicViewListener(window);
+				window.getPartService().addPartListener(listener);
+				hashWindow.put(window, listener);
+			}
+
 		} else {
 			System.err.println("EV Error: active page is null !");
 		}
@@ -194,16 +203,14 @@ public class ExperimentView {
 				if(child.getType() == RootScopeType.Flat) {
 					objView = (BaseScopeView) this.objPage.showView(FlatScopeView.ID, viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
 					objView.setInput(db, child);
+					
 				} else if(child.getType() == RootScopeType.CallerTree) {
 					objView = (BaseScopeView) this.objPage.showView(CallerScopeView.ID , viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
 					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
 					objView.initDatabase(db, child);
-					if (!isPartListenerInitialized) 
-					{
-						// set the listener for tree creation only once for an application
-						addPartListener(window, db, child);
-						isPartListenerInitialized = true;
-					}
+					DynamicViewListener dynamicViewListener = hashWindow.get(window);
+					dynamicViewListener.addView(objView, db, child);
+					
 				} else {
 					// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
 					objView = (BaseScopeView)this.objPage.showView(ScopeView.ID , viewIdx, IWorkbenchPage.VIEW_ACTIVATE); 
@@ -221,49 +228,71 @@ public class ExperimentView {
 	
 	
 	/***
-	 * add listener for creating callers tree when the tab view is activated.
 	 * 
-	 * @param window
-	 * @param database
-	 * @param callerRoot
+	 * class to manage the dynamic creation of caller tree
+	 * the tree is only created if the user click the tab view header
+	 *
 	 */
-	private void addPartListener(IWorkbenchWindow window, final Database database, final RootScope callerRoot) {
-		if (callerRoot == null)
-			return;
+	private class DynamicViewListener implements IPartListener2 
+	{
+		private ArrayList<ViewObjectDatabase> listOfViews;
 		
-		window.getPartService().addPartListener(new IPartListener2(){
-			private boolean myInit = false;
+		private class ViewObjectDatabase {
+			public Database database;
+			public BaseScopeView view;
+			public RootScope root;
+		}
+		
+		
+		public DynamicViewListener(IWorkbenchWindow window) 
+		{
+			listOfViews = new ArrayList<ViewObjectDatabase>();
+		}
+		/***
+		 * add view to the list of listeners
+		 * @param view
+		 */
+		public void addView( BaseScopeView view, Database data, RootScope root )
+		{
+			ViewObjectDatabase obj = new ViewObjectDatabase();
+			obj.database = data;
+			obj.root = root;
+			obj.view = view;
+			listOfViews.add(obj);
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.ui.IPartListener2#partActivated(org.eclipse.ui.IWorkbenchPartReference)
+		 */
+		public void partActivated(IWorkbenchPartReference partRef) {
 			
-			/*
-			 * (non-Javadoc)
-			 * @see org.eclipse.ui.IPartListener2#partActivated(org.eclipse.ui.IWorkbenchPartReference)
-			 */
-			public void partActivated(IWorkbenchPartReference partRef) {
-				if (!myInit && partRef.getId().equals(CallerScopeView.ID)) {
-					// make sure the creation is happened only once
-					myInit = true;
-					
-					final IWorkbenchPart part = partRef.getPart(true);
-					BaseScopeView view = (BaseScopeView) part;
-					final Experiment experiment = view.getExperiment();
+			for (int i=0; i<listOfViews.size(); i++) {
+				ViewObjectDatabase obj = listOfViews.get(i);
+
+				if (obj.view.getPartName().equals(partRef.getPartName())) {
+					final Experiment experiment = obj.view.getExperiment();
 					final RootScope cct = (RootScope)experiment.getRootScopeChildren()[0];
 					
 					// create the tree
-					experiment.createCallersView(cct, callerRoot);
+					experiment.createCallersView(cct, obj.root);
 					
 					// notify the view that we have changed the data
-					view.setInput(database, callerRoot);
+					obj.view.setInput(obj.database, obj.root);
+					
+					// remove this view from the list since we already initialize the tree
+					listOfViews.remove(i);
+					
+					return;
 				}
 			}
-
-			public void partBroughtToTop(IWorkbenchPartReference partRef) {}
-			public void partClosed(IWorkbenchPartReference partRef) {}
-			public void partDeactivated(IWorkbenchPartReference partRef) {}
-			public void partOpened(IWorkbenchPartReference partRef) {}
-			public void partHidden(IWorkbenchPartReference partRef) {}
-			public void partVisible(IWorkbenchPartReference partRef) {}
-			public void partInputChanged(IWorkbenchPartReference partRef) {}
-			
-		});
+		}
+		public void partBroughtToTop(IWorkbenchPartReference partRef) {}
+		public void partClosed(IWorkbenchPartReference partRef) {}
+		public void partDeactivated(IWorkbenchPartReference partRef) {}
+		public void partOpened(IWorkbenchPartReference partRef) {}
+		public void partHidden(IWorkbenchPartReference partRef) {}
+		public void partVisible(IWorkbenchPartReference partRef) {}
+		public void partInputChanged(IWorkbenchPartReference partRef) {}
 	}
 }

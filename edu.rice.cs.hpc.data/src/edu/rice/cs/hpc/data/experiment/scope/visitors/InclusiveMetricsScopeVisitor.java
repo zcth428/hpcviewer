@@ -26,12 +26,10 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilte
  */
 public class InclusiveMetricsScopeVisitor extends AbstractInclusiveMetricsVisitor {
 	private int numberOfPrimaryMetrics;
-	MetricValuePropagationFilter filter;
 
 	public InclusiveMetricsScopeVisitor(Experiment experiment, MetricValuePropagationFilter filter) {
 		super(experiment, filter);
 		this.numberOfPrimaryMetrics = experiment.getMetricCount();
-		this.filter = filter;
 
 	}
 
@@ -60,16 +58,4 @@ public class InclusiveMetricsScopeVisitor extends AbstractInclusiveMetricsVisito
 	protected void accumulateToParent(Scope parent, Scope source) {
 		parent.accumulateMetrics(source, this.filter, this.numberOfPrimaryMetrics);
 	}
-	
-	/**
-	 * Method to accumulate the metric value from the child to the parent based on a given filter
-	 * @param parent
-	 * @param source
-	 * @param filter
-	 */
-	protected void accumulateToParent(Scope parent, Scope source, MetricValuePropagationFilter myfilter) {
-		parent.accumulateMetrics(source, myfilter, this.numberOfPrimaryMetrics);
-	}
-
-
 }

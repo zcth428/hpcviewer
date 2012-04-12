@@ -67,12 +67,12 @@ public class ScopeLabelProvider extends ColumnLabelProvider
 						text = merged.length+ "*";
 					}
 					Scope cct = caller.getScopeCCT();
-					text = text + "[c:" + caller.getCCTIndex() +"/" + cct.getCCTIndex()  + "] " ;
+					text += "[c:" + caller.getCCTIndex() +"/" + cct.getCCTIndex()  + "] " ;
 				} else
 					text = "[c:" + node.getCCTIndex() + "] ";
 			} 
 			if (viewerWindow.showFlatLabel()) {
-				text = "[f: " + node.getFlatIndex() + "] ";
+				text += "[f: " + node.getFlatIndex() + "] ";
 			} 
 			text += node.getName();	
 		} else

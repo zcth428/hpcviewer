@@ -12,6 +12,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
+import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.provider.DatabaseState;
 
@@ -46,6 +47,7 @@ public class ViewerWindow {
 	Database[] dbObj = new Database[maxDbNum];
 
 	private Command cmdDebugCCT;
+	private Command cmdDebugFlat;
 	
 
 	public IWorkbenchWindow getWinObj() {
@@ -55,6 +57,7 @@ public class ViewerWindow {
 		winObj = window;
 		ICommandService commandService = (ICommandService) winObj.getService(ICommandService.class);
 		cmdDebugCCT = commandService.getCommand( DebugShowCCT.commandId );
+		cmdDebugFlat = commandService.getCommand( DebugShowFlatID.commandId );
 	}
 
 	/**
@@ -261,13 +264,33 @@ public class ViewerWindow {
 	// --------------------------------------------------------------
 	
 	/**
-	 * check if we are in debug mode or not 
-	 * @return true if it's in debug mode
+	 * check if we are in debug mode (showing CCT label) or not 
+	 * @return true if we need to show CCT label
 	 */
-	public boolean isDebugMode() 
+	public boolean showCCTLabel() 
+	{
+		return isDebugMode(cmdDebugCCT);
+	}
+	
+	/**
+	 * check if we are in debug mode (showing Flat label) or not 
+	 * @return true if we need to show Flat label
+	 */
+	public boolean showFlatLabel() 
+	{
+		return isDebugMode(cmdDebugFlat);
+	}
+	
+	/**
+	 * check if we are in debug mode for a given command
+	 * 
+	 * @param command
+	 * @return
+	 */
+	private boolean isDebugMode(Command command) 
 	{
 		boolean isDebug = false;
-		final State state = cmdDebugCCT.getState(RegistryToggleState.STATE_ID);
+		final State state = command.getState(RegistryToggleState.STATE_ID);
 		if (state != null)
 		{
 			final Boolean b = (Boolean) state.getValue();
@@ -275,5 +298,4 @@ public class ViewerWindow {
 		}
 		return isDebug;
 	}
-		
 }

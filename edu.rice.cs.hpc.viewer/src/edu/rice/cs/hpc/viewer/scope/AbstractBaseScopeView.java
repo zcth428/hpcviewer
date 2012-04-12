@@ -37,6 +37,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
+import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
@@ -413,7 +414,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 			 */
 			public void postExecuteSuccess(String commandId, Object returnValue) 
 			{
-				if (commandId.equals(DebugShowCCT.commandId))
+				if (commandId.equals(DebugShowCCT.commandId) || commandId.equals(DebugShowFlatID.commandId))
 				{
 					// refresh the table to take into account the turn on/off debugging mode
 					Utilities.resetView(treeViewer);

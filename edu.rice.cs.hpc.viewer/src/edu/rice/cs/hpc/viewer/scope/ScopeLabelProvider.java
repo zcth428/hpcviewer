@@ -54,7 +54,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider
 		if (element instanceof Scope){
 			Scope node = (Scope) element;
 			
-			if (viewerWindow.isDebugMode())  
+			if (viewerWindow.showCCTLabel())  
 			{
 				//---------------------------------------------------------------
 				// label for debugging purpose
@@ -64,14 +64,17 @@ public class ScopeLabelProvider extends ColumnLabelProvider
 					CallSiteScopeCallerView caller = (CallSiteScopeCallerView) node;
 					Object merged[] = caller.getMergedScopes();
 					if (merged != null) {
-						text += merged.length+ "*";
+						text = merged.length+ "*";
 					}
 					Scope cct = caller.getScopeCCT();
-					text = text + "[" + caller.getCCTIndex() +"/" + cct.getCCTIndex()  + "]" + node.getName();
+					text = text + "[c:" + caller.getCCTIndex() +"/" + cct.getCCTIndex()  + "] " ;
 				} else
-					text = "[" + node.getCCTIndex() + "] " + node.getName();
-			} else
-				text = node.getName();			
+					text = "[c:" + node.getCCTIndex() + "] ";
+			} 
+			if (viewerWindow.showFlatLabel()) {
+				text = "[f: " + node.getFlatIndex() + "] ";
+			} 
+			text += node.getName();	
 		} else
 			text = element.getClass().toString();
 		return text;

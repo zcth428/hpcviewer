@@ -249,6 +249,13 @@
                   style="toggle"
                   tooltip="Show the CCT ID label in the tree ">
             </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.debug.showFlatID"
+                  label="Show flat ID"
+                  mnemonic="f"
+                  style="toggle"
+                  tooltip="Show the flat ID label in the tree ">
+            </command>
          </menu>
          <menu
          	   id="edu.rice.cs.hpc.viewer.menu.window"
@@ -333,6 +340,16 @@
             description="Show CCT ID in the tree"
             id="edu.rice.cs.hpc.viewer.command.debug.showCCT"
             name="Show CCT">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.DebugShowFlatID"
+            description="Show flat ID in the tree"
+            id="edu.rice.cs.hpc.viewer.command.debug.showFlatID"
+            name="Show flat ID">
          <state
                class="org.eclipse.ui.handlers.RegistryToggleState:false"
                id="org.eclipse.ui.commands.toggleState">

@@ -363,6 +363,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 	
 	
 
+	private boolean is_raw_metric_only = true;
 
 
 	/*************************************************************************
@@ -372,7 +373,6 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		
 		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
 
-		boolean is_raw_metric_only = true;
 		final int nbMetrics = this.metricList.size();
 		
 		for (int i=0; i<nbMetrics; i++) {
@@ -410,6 +410,20 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		exp.setMetrics(metricList);
 	}
 
+	 
+	private BaseMetric getMetric(String internalName) 
+	{
+		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
+		if (is_raw_metric_only) 
+		{
+			int index = Integer.valueOf(internalName);
+			return exp.getMetric(String.valueOf(index*2));
+		} else
+		{
+			return exp.getMetric(internalName);
+		}
+	}
+	
 	/*************************************************************************
 	 *	Processes an M (metric value) element.
 	 ************************************************************************/
@@ -433,7 +447,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		}
 		double actualValue  = dblValue.doubleValue();
 		
-		BaseMetric metric = exp.getMetric(internalName);
+		BaseMetric metric = getMetric(internalName);
 		// get the sample period
 		double prd = metric.getSamplePeriod();
 

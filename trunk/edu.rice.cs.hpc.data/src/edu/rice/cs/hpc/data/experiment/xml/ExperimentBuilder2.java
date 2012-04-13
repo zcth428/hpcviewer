@@ -1,19 +1,12 @@
-
 ////
-//ExperimentBuilder.java						//
+//ExperimentBuilder2.java						//
 ////
-//experiment.xml.ExperimentBuilder -- XML builder for hpcviewer	//
-//Last edited: January 16, 2002 at 11:27 am			//
+//$Id$	//
 ////
-//(c) Copyright 2002 Rice University. All rights reserved.	//
+//(c) Copyright 2002-2012 Rice University. All rights reserved.	//
 ////
-
-
-
-
 
 package edu.rice.cs.hpc.data.experiment.xml;
-
 
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.metric.*;
@@ -23,13 +16,6 @@ import edu.rice.cs.hpc.data.experiment.xml.Token2.TokenXML;
 import java.util.List;
 import java.util.ArrayList;
 
-
-
-
-
-//CLASS EXPERIMENT-BUILDER					//
-
-
 /**
  *
  * Builder for an XML parser for HPCViewer experiment files.
@@ -38,12 +24,8 @@ import java.util.ArrayList;
  * 
  * @see BaseExperimentBuilder
  */
-
-
 public class ExperimentBuilder2 extends BaseExperimentBuilder
 {
-
-
 	/** The parsed metric objects. */
 	protected List<BaseMetric> metricList;
 	protected List<MetricRaw> metricRawList;
@@ -56,10 +38,6 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 	/** Maximum number of metrics provided by the experiment file.
     We use the maxNumberOfMetrics value to generate short names for the self metrics*/
 	final protected int maxNumberOfMetrics = 10000;
-
-
-
-
 
 	/**
 	 * 
@@ -75,17 +53,14 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		this.metricList = new ArrayList<BaseMetric>();
 		
 		numberOfPrimaryMetrics = 0;
-		
 	}
-
 
 
     //====================================== PARSING SEMANTICS ==================//
 	
 	/*************************************************************************
-	 * 
+	 * parsing the beginning of XML element 
 	 *************************************************************************/
-	//@Override
 	public void beginElement(String element, String[] attributes, String[] values) {
 		
 		TokenXML current = Token2.map(element);
@@ -130,7 +105,15 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		TokenXML current = Token2.map(element);
 		switch(current)
 		{
-
+		// Data elements
+		case T_CALLPATH_PROFILE_DATA:	// @deprecated: semi old format. some data has this kind of tag
+		case T_SEC_FLAT_PROFILE_DATA:
+		case T_SEC_CALLPATH_PROFILE_DATA:
+			this.end_ProfileData();
+			// ok, this is ugly: we force the parent class to treat the end of this element
+			super.endElement(element);
+			break;
+			
 		case T_METRIC_TABLE:
 			this.end_MetricTable();
 			break;
@@ -154,6 +137,51 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 
 //	------------------------------- BUILDING		---------------------------//
 
+	/*************************************************************************
+	 *	Finishes processing a profile element.
+	 ************************************************************************/
+	private void end_ProfileData()
+	{
+		boolean is_raw_metric_only = true;
+		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
+
+		final int nbMetrics = this.metricList.size();
+		
+		// ----------------------------------------------------------------------------
+		// check if all metrics are metric raw.
+		// it is unlikely that hpcprof will mix between metric raw and other type of metric,
+		// but we cannot trust hpcprof to do properly
+		// ----------------------------------------------------------------------------
+		for (int i=0; i<nbMetrics; i++) {
+			BaseMetric objMetric = (BaseMetric) this.metricList.get(i);
+			is_raw_metric_only &= (objMetric instanceof Metric);
+		}
+		
+		if (is_raw_metric_only)
+		{
+			// ----------------------------------------------------------------------------	
+			// need to reorder the metrics: instead of 0, 10000, 1, 10001, ....
+			// 	it should be: 0, 1, 2, 3, ....
+			// our xml reader is based on old xml where the number of metrics is unknown
+			// since now we know this number, we should change the algo 
+			//	to adapt with the new one instead of hacking
+			// ----------------------------------------------------------------------------	
+			for (int i=0; i<nbMetrics; i++) 
+			{
+				Metric objMetric = (Metric) this.metricList.get(i);
+				objMetric.setIndex(i);
+				
+				// reset the short name. short name is the key used by formula
+				objMetric.setShortName(String.valueOf(i));
+				
+				// reset the partner: inclusive's partner is exclusive, and vice versa
+				final int partner = (objMetric.getMetricType() == MetricType.EXCLUSIVE) ? i-1: i+1;
+				objMetric.setPartnerIndex(partner);
+			}
+			// notify the experiment object that we have reordered metric index
+			exp.setMetrics(metricList);
+		}
+	}
 
 	/*************************************************************************
 	 *	Processes a METRICFORMULA element.
@@ -289,6 +317,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 				break;
 			case Derived_Incr:
 				metricInc = new AggregateMetric(sID, sDisplayName, toShow, format, percent, nbMetrics, partner, objType);
+				((AggregateMetric) metricInc).init( (BaseExperimentWithMetrics) this.experiment );
 				break;
 			case Raw:
 			case Derived:
@@ -305,8 +334,11 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 
 		this.metricList.add(metricInc);
 
-		// Laks 2009.01.14: if the database is call path database, then we need
-		//	to distinguish between exclusive and inclusive
+		// ----------------------------------------------------------------------------
+		// if the XML file only provides one type of metric (i.e. exclusive metric),
+		// we should create the pair <inclusive, exclusive> manually
+		// 	this only happens if the metric is "raw metric"
+		// ----------------------------------------------------------------------------
 		if (needPartner) {
 			// set the exclusive metric
 			String sSelfName = String.valueOf(partner);	// I am the partner of the inclusive metric
@@ -322,12 +354,6 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 			this.metricList.add(metricExc);
 		}
 	}
-
-
-
-	/*************************************************************************
-	 *	Finishes processing a PGM (program) element.
-	 ************************************************************************/
 
 
 	/*******
@@ -361,69 +387,18 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		this.metricRawList.add(metric);
 	}
 	
-	
-
-	private boolean is_raw_metric_only = true;
 
 
 	/*************************************************************************
 	 * finishes processing metric table
 	 *************************************************************************/
 	private void end_MetricTable() {
-		
 		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
-
-		final int nbMetrics = this.metricList.size();
-		
-		for (int i=0; i<nbMetrics; i++) {
-			BaseMetric objMetric = (BaseMetric) this.metricList.get(i);
-			if (objMetric instanceof AggregateMetric) {
-				AggregateMetric aggMetric = (AggregateMetric) objMetric;
-				aggMetric.init(exp);
-			}
-			is_raw_metric_only &= (objMetric instanceof Metric);
-		}
-		
-		if (is_raw_metric_only)
-		{
-			// ----------------------------------------------------------------------------	
-			// need to reorder the metrics: instead of 0, 10000, 1, 10001, ....
-			// 	it should be: 0, 1, 2, 3, ....
-			// our xml reader is based on old xml where the number of metrics is unknown
-			// since now we know this number, we should change the algo 
-			//	to adapt with the new one instead of hacking
-			// ----------------------------------------------------------------------------	
-			for (int i=0; i<nbMetrics; i++) 
-			{
-				Metric objMetric = (Metric) this.metricList.get(i);
-				objMetric.setIndex(i);
-				
-				// reset the short name. short name is the key used by formula
-				objMetric.setShortName(String.valueOf(i));
-				
-				// reset the partner: inclusive's partner is exclusive, and vice versa
-				final int partner = (objMetric.getMetricType() == MetricType.EXCLUSIVE) ? i-1: i+1;
-				objMetric.setPartnerIndex(partner);
-			}
-		}
 		
 		exp.setMetrics(metricList);
 	}
 
-	 
-	private BaseMetric getMetric(String internalName) 
-	{
-		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
-		if (is_raw_metric_only) 
-		{
-			int index = Integer.valueOf(internalName);
-			return exp.getMetric(String.valueOf(index*2));
-		} else
-		{
-			return exp.getMetric(internalName);
-		}
-	}
-	
+	 	
 	/*************************************************************************
 	 *	Processes an M (metric value) element.
 	 ************************************************************************/
@@ -447,7 +422,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		}
 		double actualValue  = dblValue.doubleValue();
 		
-		BaseMetric metric = getMetric(internalName);
+		BaseMetric metric = exp.getMetric(internalName);
 		// get the sample period
 		double prd = metric.getSamplePeriod();
 
@@ -559,8 +534,6 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		}
 	}
 	
-	
-	
 	//--------------------------------------------------------------------------------
 	// raw metric database
 	//--------------------------------------------------------------------------------
@@ -584,8 +557,5 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 			((Experiment)this.experiment).setMetricRaw( metrics );
 		}
 	}
-
-
-
 }
 

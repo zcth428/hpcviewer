@@ -42,7 +42,7 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 	//----------------------------------------------------
 	// visitor pattern instantiations for each Scope type
 	//----------------------------------------------------
-	public void visit(RootScope scope, ScopeVisitType vt) { //up(scope, vt);
+	public void visit(RootScope scope, ScopeVisitType vt) { 
 		if (vt == ScopeVisitType.PostVisit) {
 			MetricValue mv = this._experiment.getMetric(this.iInclusive).getValue(scope);
 			scope.setMetricValue(this.iInclusive, mv);
@@ -57,27 +57,7 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 	 */
 	protected void up(Scope scope, ScopeVisitType vt) {
 		if (vt == ScopeVisitType.PostVisit) {
-			// We compute the inclusive metric only if the information of exclusive metrics is available 
-			/*if (withExclusiveAndInclusive)
-				super.up(scope, vt);
-			else {
-				// inclusive only
-			}*/
-			/*
-			if (scope.getParentScope() instanceof RootScope) {
-				// the value of the root scope should be the highest of its children
-				Scope parent = scope.getParentScope();
-				MetricValue mParent = parent.getMetricValue(this.iInclusive);
-				MetricValue mKid = scope.getMetricValue(this.iInclusive); 
-				if ( mParent.getValue() < mKid.getValue() ) {
-					//parent.setMetricValue(this.iInclusive, mKid);
-					parent.setMetricValue(this.iInclusive, this.arrMetrics[this.iInclusive].getValue(scope.getParentScope()));
-				}
-				
-				if (withExclusiveAndInclusive) {
-					parent.setMetricValue(this.iExclusive, new MetricValue(this.excAggregateValue, 1));
-				}
-			} */
+
 		} else if (vt == ScopeVisitType.PreVisit) {
 			// first, create metric exclusive
 			BaseMetric metricExc = this._experiment.getMetric(iBaseMetric);
@@ -86,9 +66,6 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 			// set the value of the derived metric into the scope
 			if (withExclusiveAndInclusive) {
 				scope.setMetricValue(this.iExclusive, mv);
-				// naive aggregate calculationx`
-				//this.excAggregateValue += mv.getValue();
-				//System.out.println("dmv: "+scope.getName()+"\t"+mv.getValue()+"\t"+this.excAggregateValue);
 			}
 			// copy to the inclusive metric
 			scope.setMetricValue(this.iInclusive, mv);
@@ -105,24 +82,4 @@ public class DerivedMetricVisitor extends AbstractInclusiveMetricsVisitor {
 			// we only compute inclusive metric when the information of exclusive metric is available
 			parent.accumulateMetric(source, this.iInclusive, this.iInclusive, filter);
 	}
-	
-	/**
-	 * Method to accumulate the metric value from the child to the parent based on a given filter
-	 * @param parent
-	 * @param source
-	 * @param filter
-	 */
-	protected void accumulateToParent(Scope parent, Scope source, MetricValuePropagationFilter myfilter) {
-		if (withExclusiveAndInclusive)
-			// we only compute inclusive metric when the information of exclusive metric is available
-			parent.accumulateMetric(source, this.iInclusive, this.iInclusive, myfilter);
-	}
-
-	/*
-	//@Override
-	protected void accumulateAncestor(Scope scope, Scope parent) {
-		// TODO Auto-generated method stub
-		
-	} */
-
 }

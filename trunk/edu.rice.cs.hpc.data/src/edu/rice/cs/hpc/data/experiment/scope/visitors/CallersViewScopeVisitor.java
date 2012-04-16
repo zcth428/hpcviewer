@@ -70,9 +70,6 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			return; 
 		}
 		
-		if (scope.getCCTIndex() == 20) {
-			System.out.println();
-		}
 		if (vt == ScopeVisitType.PreVisit) {
 			this.listCombinedScopes.push();
 

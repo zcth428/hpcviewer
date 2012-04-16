@@ -103,4 +103,12 @@ public class ScopeLabelProvider extends ColumnLabelProvider
 	public Font getFont(Object element) {
 		return Utilities.fontGeneral;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.CellLabelProvider#getToolTipText(java.lang.Object)
+	 */
+	public String getToolTipText(Object element) {
+		return getText(element);
+	}
 }

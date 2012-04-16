@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -32,10 +33,12 @@ import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ITreeViewerListener;
+import org.eclipse.jface.window.ToolTip;
 
 //HPC
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
@@ -288,6 +291,14 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	treeViewer.setContentProvider(treeContentProvider);
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
+        
+        // --------------------------------------------------------------------
+        // tricky code for linux: by default on linux the tooltip doesn't show up
+        //  we should manually tell eclipse/jface that we want a tooltip for the table
+        // --------------------------------------------------------------------
+        if (OSValidator.isUnix())
+        	ColumnViewerToolTipSupport.enableFor(treeViewer, ToolTip.NO_RECREATE);
+
         //treeViewer.setAutoExpandLevel(2);
         
         //----------------- create the column tree

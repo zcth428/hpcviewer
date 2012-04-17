@@ -29,7 +29,7 @@ public class FlatScopeView extends BaseScopeView {
 
 	//@Override
 	protected CellLabelProvider getLabelProvider() {
-		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
+		return new StyledScopeLabelProvider(this.getSite().getWorkbenchWindow());
 	}
 
 	//@Override

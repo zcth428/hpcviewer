@@ -45,7 +45,8 @@ public class ScopeView extends BaseScopeView {
 
 	//@Override
 	protected CellLabelProvider getLabelProvider() {
-		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
+		return new StyledScopeLabelProvider( this.getSite().getWorkbenchWindow() ); 
+				//ScopeLabelProvider(this.getSite().getWorkbenchWindow());
 	}
 
 	//@Override

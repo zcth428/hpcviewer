@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 //Jface
@@ -47,7 +49,11 @@ import edu.rice.cs.hpc.viewer.window.Database;
 
 /**
  * 
- * @author laksonoadhianto
+ * Abstract class of view-part for different types of views:
+ * - calling context view (top down)
+ * - callers view (bottom-down)
+ * - flat view (static)
+ * - thread scope view (not implemented yet, but it will shows metric of a thread)
  *
  */
 abstract public class AbstractBaseScopeView  extends ViewPart {
@@ -61,6 +67,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 	
     private EditorManager editorSourceCode;	// manager to display the source code
 	private Clipboard cb = null;
+	private GC gc = null;
 	
 	/**
 	 * bar composite for placing toolbar and tool items
@@ -183,6 +190,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         	sMenuTitle = SHOW_MENU + scope.getSourceFile().getName();
         } else
         	sMenuTitle= SHOW_MENU +scope.getToolTip(); // the tooltip contains the info we need: file and the linenum
+        
         ScopeViewTreeAction acShowCode = new ScopeViewTreeAction(sMenuTitle, scope){
         	public void run() {
         		displayFileEditor(this.scope);
@@ -322,54 +330,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
          * add listener when left button mouse is clicked 
          * On MAC it doesn't matter which button, but on Windows, we need to make sure !
          */
-        treeViewer.getTree().addListener(SWT.MouseDown, new Listener(){
-        	public void handleEvent(Event event) {
-
-        		mouseDownEvent(event);
-
-    			if(event.button != 1) {
-        			// yes, we only allow the first button
-        			return;
-        		}
-        		
-        		// get the item
-        		TreeItem []itemsSelected = treeViewer.getTree().getSelection();
-        		if(itemsSelected == null || itemsSelected.length==0)
-        			return; // no selected. it will hard to for us to go further
-        		TreeItem item = itemsSelected[0];
-        		Rectangle recImage = item.getImageBounds(0);	// get the image location (if exist)
-        		Rectangle recText = item.getTextBounds(0);
-        		
-        		// verify if the user click on the icon
-        		if(recImage.intersects(event.x, event.y, event.width, event.height)) {
-        			// Check the object of the click/select item
-    		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
-    		        Object o = selection.getFirstElement();
-    		        // we will treat this click if the object is Scope.Node
-    		        if(o instanceof Scope) {
-    		        	Scope scope = (Scope) o;
-    		            // show the call site in case this one exists
-    		            if(scope instanceof CallSiteScope) {
-    		            	// get the call site scope
-    		            	CallSiteScope callSiteScope = (CallSiteScope) scope;
-    		            	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
-    		            	displayFileEditor(lineScope);
-    		            } else {
-    		            }
-    		        }
-        		} else if(recText.intersects(event.x, event.y, 1, 1)){
-        			// Check the object of the click/select item
-    		        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
-    		        Object o = selection.getFirstElement();
-    		        // we will treat this click if the object is Scope.Node
-    		        if(o instanceof Scope) {
-    		        	displayFileEditor( (Scope)o );
-    		        }
-        		} else {
-        			// User click a region other than tree
-        		}
-        	}
-        }); 
+        gc = new GC(this.treeViewer.getTree().getDisplay());
+        treeViewer.getTree().addListener(SWT.MouseDown, new ScopeMouseListener(gc)); 
         
         // bug #132: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=132&group_id=22&atid=169
         // need to capture event of "collapse" tree then check if the button state should be updated or not.
@@ -461,6 +423,15 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     }
     
 
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.part.WorkbenchPart#dispose()
+     */
+    public void dispose() {
+    	if (gc != null)
+    		gc.dispose();
+    }
+    
     //======================================================
     // ................ UPDATE ............................
     //======================================================
@@ -568,5 +539,96 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     abstract protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope);
     
     abstract protected ScopeTreeContentProvider getScopeContentProvider();
+
+    //======================================================
+    // ................ CLASSES...........................
+    //======================================================
+
     
+    /***
+     * 
+     * class to handle mouse up and down event in scope tree
+     *
+     */
+    public class ScopeMouseListener implements Listener {
+
+    	final private GC gc;
+    	
+    	/**
+    	 * initialization with the gc of the tree
+    	 * @param gc of the tree
+    	 */
+    	public ScopeMouseListener(final GC gc) {
+    		this.gc = gc;
+    	}
+    	
+    	/*
+    	 * (non-Javadoc)
+    	 * @see org.eclipse.swt.widgets.Listener#handleEvent(org.eclipse.swt.widgets.Event)
+    	 */
+    	public void handleEvent(Event event) {
+
+    		// tell the children to handle the mouse click
+    		mouseDownEvent(event);
+
+    		if(event.button != 1) {
+    			// yes, we only allow the first button
+    			return;
+    		}
+    		
+    		// get the item
+    		TreeItem []itemsSelected = treeViewer.getTree().getSelection();
+    		if(itemsSelected == null || itemsSelected.length==0)
+    			return; // no selected. it will hard to for us to go further
+    		TreeItem item = itemsSelected[0];
+    		Rectangle recImage = item.getImageBounds(0);	// get the image location (if exist)
+    		Rectangle recText = item.getTextBounds(0);
+    		
+    		// verify if the user click on the icon
+    		if(recImage.intersects(event.x, event.y, event.width, event.height)) {
+    			// Check the object of the click/select item
+    	        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
+    	        Object o = selection.getFirstElement();
+    	        
+    	        // we will treat this click if the object is Scope
+    	        if(o instanceof Scope) {
+    	        	Scope scope = (Scope) o;
+    	            // show the call site in case this one exists
+    	            if(scope instanceof CallSiteScope) {
+    	            	// get the call site scope
+    	            	CallSiteScope callSiteScope = (CallSiteScope) scope;
+    	            	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
+    	            	displayFileEditor(lineScope);
+    	            } else {
+    	            }
+    	        }
+    		} else if(recText.intersects(event.x, event.y, 1, 1)){
+    			// Check the object of the click/select item
+    	        TreeSelection selection = (TreeSelection) treeViewer.getSelection();
+    	        Object o = selection.getFirstElement();
+    	        
+    	        // we will treat this click if the object is Scope.Node
+    	        if(o instanceof Scope) {
+    	        	if (o instanceof CallSiteScope) {
+    	        		CallSiteScope cs = (CallSiteScope) o;
+    	        		// the line number in xml is started from zero, while the source
+    	        		//	code starts from 1
+    	        		int line = 1 + cs.getLineScope().getFirstLineNumber();
+    	        		
+    	        		if (gc != null && line>0) {
+        		        	Point p = gc.textExtent(":" + line);
+        		        	if (p.x+recText.x >= event.x && p.y+recText.y>= event.y) {
+        		        		displayFileEditor( cs.getLineScope() );
+        		        		return;
+        		        	}
+    	        		}
+    	        	}
+    	        	displayFileEditor( (Scope)o );
+    	        }
+    		} else {
+    			// User click a region other than tree
+    		}		
+    	}
+    }
+
 }

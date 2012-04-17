@@ -32,11 +32,8 @@ public class CallerScopeView extends BaseScopeView {
 
 	//@Override
 	protected CellLabelProvider getLabelProvider() {
-		return new ScopeLabelProvider(this.getSite().getWorkbenchWindow());
-/*		CallerScopeLabelProvider objScopeLabel = new CallerScopeLabelProvider(this.getSite().getWorkbenchWindow());
-		final DelegatingStyledCellLabelProvider objLabelProvider = new DelegatingStyledCellLabelProvider( objScopeLabel );
-		return objLabelProvider;
-*/	}
+		return new StyledScopeLabelProvider(this.getSite().getWorkbenchWindow());
+	}
 
 	//@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {}
@@ -50,9 +47,6 @@ public class CallerScopeView extends BaseScopeView {
 	}
 
 	//@Override
-	protected void updateDatabase(Experiment newDatabase) {
-		CallerViewContentProvider objContent = (CallerViewContentProvider) this.treeViewer.getContentProvider();
-		objContent.setDatabase(newDatabase);
-	}
+	protected void updateDatabase(Experiment newDatabase) {	}
 
 }

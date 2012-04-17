@@ -1,22 +1,16 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
-//	CallSiteScope.java						//
+//	CallSiteScope.java				//
 //									//
 //	experiment.scope.CallSiteScope -- a function callsite scope	//
-//	Last edited: February 15, 2006 					//
-//	(c) Copyright 2001 Rice University. All rights reserved.	//
+//	(c) Copyright 2001-2012 Rice University. All rights reserved.	//
+//  $Id$							//
 //									//
 //////////////////////////////////////////////////////////////////////////
-
-
-
-
 package edu.rice.cs.hpc.data.experiment.scope;
 
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
-
-
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,8 +27,6 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 public class CallSiteScope extends Scope
 {
 
-// Laksono 2009.09.10: get rid off unused methods
-//private boolean CsprofLeaf=false;
 
 protected LineScope lineScope;
 
@@ -42,18 +34,10 @@ protected ProcedureScope procScope;
 
 protected CallSiteScopeType type;
 
-//////////////////////////////////////////////////////////////////////////
-//	INITIALIZATION	
-//////////////////////////////////////////////////////////////////////////
-
-
 
 //////////////////////////////////////////////////////////////////////////
-//	SCOPE DISPLAY	
+//INITIALIZATION	
 //////////////////////////////////////////////////////////////////////////
-
-
-
 
 public CallSiteScope(LineScope scope, ProcedureScope scope2, 
 		CallSiteScopeType csst, int cct_id, int flat_id) 
@@ -63,7 +47,6 @@ public CallSiteScope(LineScope scope, ProcedureScope scope2,
 	this.lineScope = scope;
 	this.procScope = scope2;
 	this.type = csst;
-//	this.id = "CallSiteScope";
 }
 
 public Scope duplicate() {
@@ -74,18 +57,19 @@ public Scope duplicate() {
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//SCOPE DISPLAY	
+//////////////////////////////////////////////////////////////////////////
+
+
 /*************************************************************************
  *	Returns the user visible name for this scope.
  ************************************************************************/
 	
 public String getName()
 {
-	return this.procScope.getName();
+	return procScope.getName();
 }
-/*
-public int hashCode() {
-	return procScope.hashCode() ^ lineScope.hashCode();
-}*/
 
 public ProcedureScope getProcedureScope()
 {
@@ -97,18 +81,7 @@ public LineScope getLineScope()
 	return this.lineScope;
 }
 
-/* Laksono 2009.09.10: get rid off unused methods
-public boolean getCsprofLeaf()
-{
-   return this.CsprofLeaf;
-}
 
-
-public void setCsprofLeaf(boolean value) 
-{
-   this.CsprofLeaf=value;
-} 
-*/
 //////////////////////////////////////////////////////////////////////////
 //support for visitors													//
 //////////////////////////////////////////////////////////////////////////

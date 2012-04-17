@@ -16,19 +16,38 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
+
+/***
+ * 
+ * Class to display label on the tree of views
+ * 
+ * A node of the tree contains three objects: [icon] [callsite] node_label
+ * Every object has colors to indicate if they are clickable or not
+ * - An object is clickable if they contain further information such as file source code
+ * - Otherwise it is not clickable
+ * 
+ */
 public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 	
 	final static protected Icons iconCollection = Icons.getInstance();
 	final private Styler STYLE_ACTIVE_LINK;
 	final private ViewerWindow viewerWindow;
 
-	
+	/**
+	 * Initialization of the class: preparing the colors for each object
+	 * 
+	 * @param window
+	 */
 	public StyledScopeLabelProvider(IWorkbenchWindow window) {
 		super();
 		STYLE_ACTIVE_LINK = StyledString.createColorRegistryStyler(JFacePreferences.ACTIVE_HYPERLINK_COLOR, null); 
 		viewerWindow = ViewerWindowManager.getViewerWindow(window);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.StyledCellLabelProvider#update(org.eclipse.jface.viewers.ViewerCell)
+	 */
 	public void update(ViewerCell cell) {
 		Object element = cell.getElement();
 		
@@ -37,14 +56,28 @@ public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 			final String text = getText(node);
 			
 			StyledString styledString= new StyledString();
-			
+
+			// ----------------------------------------------
+			// special case for call sites :
+			// - coloring the object for call site (if exists)
+			// - show the icon if exists
+			// ----------------------------------------------
 			if (element instanceof CallSiteScope) {
 				final CallSiteScope cs = (CallSiteScope) element;
 				int line = cs.getLineScope().getFirstLineNumber();
+				boolean isReadable = Utilities.isFileReadable(cs.getLineScope());
 				
+				// show the line number
 				if (line>0) {
-					styledString.append(String.valueOf(line)+": ", StyledString.COUNTER_STYLER);
+					if (isReadable)
+						styledString.append(String.valueOf(line)+": ", StyledString.COUNTER_STYLER);
+					else 
+						styledString.append(String.valueOf(line)+": ", StyledString.DECORATIONS_STYLER);
 				}
+				
+				// show the icon
+				final Image image = Utilities.getScopeNavButton(node);
+				cell.setImage(image);
 			}
 			if(Utilities.isFileReadable(node)) {
 				styledString.append( text, STYLE_ACTIVE_LINK );
@@ -53,9 +86,6 @@ public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 			}
 			cell.setText(styledString.toString());
 			cell.setStyleRanges(styledString.getStyleRanges());
-			
-			final Image image = Utilities.getScopeNavButton(node);
-			cell.setImage(image);
 		}
 	}
 

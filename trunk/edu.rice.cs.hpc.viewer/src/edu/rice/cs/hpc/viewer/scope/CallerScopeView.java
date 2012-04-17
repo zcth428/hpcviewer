@@ -47,6 +47,13 @@ public class CallerScopeView extends BaseScopeView {
 	}
 
 	//@Override
-	protected void updateDatabase(Experiment newDatabase) {	}
+	protected void updateDatabase(Experiment newDatabase) {
+		
+		// ---------------------------------------------------------------------------
+		// it is important to notify the content provider that we have new database
+		// ---------------------------------------------------------------------------
+		CallerViewContentProvider objContent = (CallerViewContentProvider) this.treeViewer.getContentProvider();
+		objContent.setDatabase(newDatabase);
+	}
 
 }

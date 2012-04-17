@@ -64,7 +64,9 @@ public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 			// ----------------------------------------------
 			if (element instanceof CallSiteScope) {
 				final CallSiteScope cs = (CallSiteScope) element;
-				int line = cs.getLineScope().getFirstLineNumber();
+				
+				// the line number in XML is 0-based, while the editor is 1-based
+				int line = 1+cs.getLineScope().getFirstLineNumber();
 				boolean isReadable = Utilities.isFileReadable(cs.getLineScope());
 				
 				// show the line number
@@ -84,6 +86,7 @@ public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 			} else {
 				styledString.append( text );
 			}
+			cell.setFont(Utilities.fontGeneral);
 			cell.setText(styledString.toString());
 			cell.setStyleRanges(styledString.getStyleRanges());
 		}

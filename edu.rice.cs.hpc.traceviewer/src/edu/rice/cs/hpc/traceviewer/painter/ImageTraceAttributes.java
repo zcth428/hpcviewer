@@ -85,7 +85,7 @@ public class ImageTraceAttributes {
 	{
 		begTime = other.begTime;
 		endTime = other.endTime;
-		begProcess = other.endProcess;
+		begProcess = other.begProcess;
 		endProcess = other.endProcess;
 		numPixelsH = other.numPixelsH;
 		numPixelsV = other.numPixelsV;

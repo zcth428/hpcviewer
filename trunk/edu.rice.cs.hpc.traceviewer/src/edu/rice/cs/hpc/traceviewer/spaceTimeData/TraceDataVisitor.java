@@ -56,15 +56,7 @@ public class TraceDataVisitor implements IScopeVisitor {
 	
 	public void visit(StatementRangeScope scope, ScopeVisitType vt) { }
 	
-	public void visit(CallSiteScope scope, ScopeVisitType vt) { 
-		/*if (vt == ScopeVisitType.PreVisit) {
-			int cpid = scope.getCpid();
-			if (cpid > 0) {
-				this.map.put(cpid, scope);
-				System.out.println("adding cs scope cpid " + cpid);
-			}
-		}*/
-	}
+	public void visit(CallSiteScope scope, ScopeVisitType vt) { }
 	
 	public void visit(GroupScope scope, ScopeVisitType vt) { }
 

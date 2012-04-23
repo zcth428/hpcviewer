@@ -133,7 +133,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 				{
 					// force the canvas to redraw the content
 					if (stData != null)
-						detailCanvas.refresh();
+						detailCanvas.refresh(false);
 				}
 			}
 		});

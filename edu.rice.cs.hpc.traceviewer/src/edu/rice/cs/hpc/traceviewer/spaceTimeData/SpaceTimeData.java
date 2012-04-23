@@ -7,7 +7,6 @@ import java.lang.Math;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
@@ -75,8 +74,6 @@ public class SpaceTimeData extends TraceEvents
 	private Position currentPosition;
 	
 	private String dbName;
-	
-	final private boolean debug =  true;
 	
 	private IStatusLineManager statusMgr;
 	final private IWorkbenchWindow window;
@@ -240,10 +237,12 @@ public class SpaceTimeData extends TraceEvents
 	 *  @param numPixelsV		 The number of vertical pixels to be painted.
 	 *************************************************************************/
 	public void paintDetailViewport(final GC masterGC, final GC origGC, SpaceTimeDetailCanvas canvas, 
-			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
+			boolean refreshData)
 	{	
-		boolean changedBounds = !attributes.sameTrace(oldAttributes);
-
+		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
+		
+		
 		attributes.numPixelsH = _numPixelsH;
 		attributes.numPixelsV = _numPixelsV;
 		
@@ -449,11 +448,14 @@ public class SpaceTimeData extends TraceEvents
 						lineToPaint(attributes.lineNum-1), attributes.numPixelsH, 
 						attributes.endTime-attributes.begTime, minBegTime + attributes.begTime, 
 						HEADER_SIZE);
-			else
-				return traces[attributes.lineNum-1];
+			else {
+				if (traces.length >= attributes.lineNum)
+					return traces[attributes.lineNum-1];
+				else
+					System.err.println("STD error: trace paints " + traces.length + " < line number " + attributes.lineNum);
+			}
 		}
-		else
-			return null;
+		return null;
 	}
 	
 	/***********************************************************************
@@ -534,11 +536,5 @@ public class SpaceTimeData extends TraceEvents
 	public BaseDataFile getTraceData()
 	{
 		return this.dataTrace;
-	}
-	
-	private void printDebug(String str)
-	{
-		if (this.debug)
-			System.err.println(str);
 	}
 }

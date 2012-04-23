@@ -5,6 +5,7 @@ import java.util.Vector;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.LargeByteBuffer;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 public class TraceDataByRank {
 
@@ -41,8 +42,17 @@ public class TraceDataByRank {
 		listcpid = new Vector<TimeCPID>(numPixelH);
 	}
 	
+	/***
+	 * reading data from file
+	 * 
+	 * @param timeStart
+	 * @param timeRange
+	 * @param pixelLength : number of records
+	 */
 	public void getData(double timeStart, double timeRange, double pixelLength)
 	{
+		Debugger.printDebug(1, "getData loc [" + minloc+","+ maxloc + "]");
+		
 		// get the start location
 		final long startLoc = this.findBoundedLocRAF(timeStart, minloc, maxloc);
 		

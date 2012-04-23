@@ -285,7 +285,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 
 	private class DetailBufferPaint implements BufferPaint {
 		public void rebuffering() {
-			rebuffer();
+			// force the paint to refresh the data
+			rebuffer(true);
 		}
 	}
 
@@ -1092,7 +1093,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * Refresh the content of the canvas with new input data or boundary or parameters
 	 *  
 	 *********************************************************************************/
-	public void refresh() {
+	public void refresh(boolean refreshData) {
 		//Debugger.printTrace("STDC rebuffer");
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
@@ -1119,7 +1120,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,viewWidth,viewHeight);
 		stData.paintDetailViewport(bufferGC, origGC, this, stData.attributes.begProcess, stData.attributes.endProcess, 
-				stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight);
+				stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight, refreshData);
 		
 		bufferGC.dispose();
 		origGC.dispose();
@@ -1136,8 +1137,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * 	please do not call this if not necessary
 	 ***********************************************************************************/
 	public void rebuffer() {
-		
-		refresh();
+		rebuffer(false);
+	}
+	
+	/***********************************************************************************
+	 * Forcing to refresh data. In case of resizing the program, it is possible that 
+	 * the size (width x height) is the same, although in fact it is not (due to Eclipse
+	 * limitation of handling resizing window)
+	 *  
+	 * @param refreshData
+	 ***********************************************************************************/
+	public void rebuffer(boolean refreshData) {
+		refresh(refreshData);
 		
 		// forces all other views to refresh with the new region
 		depthCanvas.refresh(stData.attributes.begTime, stData.attributes.endTime);

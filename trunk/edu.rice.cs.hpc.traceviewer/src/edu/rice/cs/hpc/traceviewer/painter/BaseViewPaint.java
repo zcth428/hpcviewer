@@ -1,7 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;

@@ -204,7 +204,8 @@ public abstract class BaseMetric {
 		
 		// enforce bounds for presentation
 		if (mv.value > 9.99e99) mv.value = Float.POSITIVE_INFINITY;
-		if (mv.value < 1.00e-99)  mv.value = (float) 0.0;
+		else if (mv.value < -9.99e99) mv.value = Float.NEGATIVE_INFINITY;
+		else if (mv.value > -1.00e-99 && mv.value < 1.00e-99)  mv.value = (float) 0.0;
 		
 		// if not a special case, convert the number to a string
 		if (mv.value == 0.0 || mv == MetricValue.NONE || !MetricValue.isAvailable(mv) ) sText = "";

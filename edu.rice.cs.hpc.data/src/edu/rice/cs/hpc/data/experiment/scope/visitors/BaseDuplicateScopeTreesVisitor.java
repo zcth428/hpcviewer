@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
 import java.util.Stack;
 
+import edu.rice.cs.hpc.data.experiment.merge.MergeMetric;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.FileScope;
 import edu.rice.cs.hpc.data.experiment.scope.GroupScope;
@@ -16,13 +17,15 @@ import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
 public abstract class BaseDuplicateScopeTreesVisitor implements IScopeVisitor {
-	protected Stack<Scope> scopeStack;
-	protected int offsetMetric;
+	final protected Stack<Scope> scopeStack;
+	final protected int offsetMetric[];
+	final protected int factor;
 	
-	public BaseDuplicateScopeTreesVisitor(Scope newRoot, int offset) {
+	public BaseDuplicateScopeTreesVisitor(Scope newRoot, int offset[], int factor) {
 		scopeStack = new Stack<Scope>();
 		scopeStack.push(newRoot);
 		offsetMetric = offset;
+		this.factor = factor;
 	}
 
 	
@@ -94,9 +97,8 @@ public abstract class BaseDuplicateScopeTreesVisitor implements IScopeVisitor {
 		return target;
 	}
 	
-	protected void accumulateMetrics(Scope target, Scope source, int offset) {
-				
-		source.copyMetrics(target, offset);
+	protected void accumulateMetrics(Scope target, Scope source, int offset[]) {
+		MergeMetric.setMetrics(target, source, offset, factor);
 	}
 
 	/****

@@ -26,6 +26,7 @@ public class TreeSimilarity {
 	
 	private enum SimilarityType{ SAME, SIMILAR, DIFF }
 	
+	final private MergeMetric mergedMetrics;
 	
 	/********
 	 * construct similarity class
@@ -36,10 +37,12 @@ public class TreeSimilarity {
 	 * @param source: the source root scope
 	 * 
 	 */
-	public TreeSimilarity(int offset, RootScope target, RootScope source)
+	public TreeSimilarity(int offset, RootScope target, RootScope source, MergeMetric objMergeMetric)
 	{
+		mergedMetrics = objMergeMetric;
+		
 		// merge the root scope
-		mergeMetrics(target, source, offset);
+		mergeMetrics(target, source);
 		
 		// merge the children of the root (tree)
 		mergeTree(target, source, offset);
@@ -75,7 +78,7 @@ public class TreeSimilarity {
 		{
 			for (Scope childSource: sortedSource)
 			{
-				addSubTree(target, childSource, metricOffset);
+				addSubTree(target, childSource, metricOffset, -1);
 			}
 			return;
 		}
@@ -117,7 +120,7 @@ public class TreeSimilarity {
 		{
 			if (childSource.isCounterZero())
 			{
-				addSubTree(target, childSource, metricOffset);
+				addSubTree(target, childSource, metricOffset, -1);
 			}
 		}
 	}
@@ -153,10 +156,11 @@ public class TreeSimilarity {
 				(similar.type == SimilarityType.SIMILAR) )
 		{
 			// merge the metric
-			mergeMetrics(target, source, metricOffset);
+			mergeMetrics(target, source);
 			
-			// mark the source has been merged
+			// mark the source and target have been merged
 			source.incrementCounter();
+			target.incrementCounter();
 			
 			return true;
 		}
@@ -296,8 +300,8 @@ public class TreeSimilarity {
 	
 	private float getMetricDistance( Scope s1, Scope s2 )
 	{
-		final float v1 = getAnnotationValue(s1);
-		final float v2 = getAnnotationValue(s2);
+		final float v1 = getAnnotationValue(s1, mergedMetrics.pointerMetric1[0]);
+		final float v2 = getAnnotationValue(s2, mergedMetrics.pointerMetric2[0]);
 		return (float) (Math.abs(v2-v1));
 	}
 	
@@ -450,16 +454,18 @@ public class TreeSimilarity {
 	 * @param s
 	 * @return
 	 */
-	private float getAnnotationValue(Scope s)
+	private float getAnnotationValue(Scope s, int metricIndex)
 	{
-		final MetricValue mv = s.getMetricValue(0);
-		if (MetricValue.isAnnotationAvailable(mv)) 
+		final MetricValue mv = s.getMetricValue(metricIndex);
+		float annValue = MetricValue.getAnnotationValue(mv);
+		
+		if (annValue > 0) 
 		{
 			return MetricValue.getAnnotationValue(mv);
 		}
 		else 
 		{
-			return MetricValue.getValue(mv);
+			throw new IllegalStateException("annotation value is null");
 		}
 	}
 	
@@ -469,9 +475,10 @@ public class TreeSimilarity {
 	 * @param node : source nodes to be copied
 	 * @param metricOffset : offset of the metric
 	 */
-	private void addSubTree(Scope parent, Scope node, int metricOffset)
+	private void addSubTree(Scope parent, Scope node, int metricOffset, int factor)
 	{
-		DuplicateScopeTreesVisitor visitor = new DuplicateScopeTreesVisitor(parent, metricOffset);
+		DuplicateScopeTreesVisitor visitor = new DuplicateScopeTreesVisitor(parent, 
+				mergedMetrics.pointerMetric2, factor);
 		node.dfsVisitScopeTree(visitor);
 	}
 	
@@ -481,9 +488,9 @@ public class TreeSimilarity {
 	 * @param target
 	 * @param source
 	 */
-	private void mergeMetrics(Scope target, Scope source, int metricOffset)
+	private void mergeMetrics(Scope target, Scope source)
 	{
-		source.copyMetrics(target, metricOffset);
+		MergeMetric.mergeMetrics(target, source, mergedMetrics.pointerMetric2);
 	}
 	
 	
@@ -503,7 +510,9 @@ public class TreeSimilarity {
 	{
 		////@Override
 		public int compare(Scope s1, Scope s2) {
-			return (int) (s1.getMetricValue(0).getValue() - s2.getMetricValue(0).getValue());
+			MetricValue mv1 = s1.getMetricValue(0);
+			MetricValue mv2 = s1.getMetricValue(0);
+			return MetricValue.compareTo(mv1, mv2);
 		}
 	}
 	

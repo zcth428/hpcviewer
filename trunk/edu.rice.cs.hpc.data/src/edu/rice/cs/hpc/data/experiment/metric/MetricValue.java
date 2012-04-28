@@ -127,7 +127,7 @@ private static boolean getAnnotationAvailable(MetricValue m)
 	return available;
 }
 
-private static void setAnnotationAvailable(MetricValue m, boolean status)
+public static void setAnnotationAvailable(MetricValue m, boolean status)
 {
 	if (status) {
 		m.flags |= ANNOTATION_IS_AVAILABLE;

@@ -71,7 +71,10 @@ public class ColorTable implements IProcedureTable
 				procName.equals("cudaEventSynchronize") ||
 				procName.equals("cudaStreamSynchronize") ||
 				procName.equals("cudaDeviceSynchronize") ||
-				procName.equals("cudaThreadSynchronize");
+				procName.equals("cudaThreadSynchronize") ||
+				procName.equals("cuStreamSynchronize") ||
+				procName.equals("cuEventSynchronize") ||
+				procName.equals("cuCtxSynchronize");
 	}
 	
 	/*********************************************************************

@@ -21,6 +21,7 @@ public class ColorTable implements IProcedureTable
 {
 	static final private int COLOR_ICON_SIZE = 12;
 	static private ColorImagePair IMAGE_WHITE;
+	static private ColorImagePair IMAGE_GRAY;
 	
 	// data members
 	HashMap<String, ColorImagePair> colorMatcher;
@@ -37,6 +38,7 @@ public class ColorTable implements IProcedureTable
 		procNames = new ArrayList<String>();
 		display = _display;
 		IMAGE_WHITE = new ColorImagePair(display.getSystemColor(SWT.COLOR_WHITE));
+		IMAGE_GRAY = new ColorImagePair(display.getSystemColor(SWT.COLOR_GRAY));
 	}
 	
 	/**
@@ -63,6 +65,15 @@ public class ColorTable implements IProcedureTable
 		}
 	}
 	
+	public boolean isIdleProcedure(String procName)
+	{
+		return 	procName.equals("... IDLE ...") || 
+				procName.equals("cudaEventSynchronize") ||
+				procName.equals("cudaStreamSynchronize") ||
+				procName.equals("cudaDeviceSynchronize") ||
+				procName.equals("cudaThreadSynchronize");
+	}
+	
 	/*********************************************************************
 	 * Fills the colorMatcher with unique "random" colors that correspond
 	 * to each function name in procNames.
@@ -79,14 +90,18 @@ public class ColorTable implements IProcedureTable
 			int cmax = 200 - cmin;
 			for (int l=0; l<procNames.size(); l++) {
 				String procName = procNames.get(l);
-				if (procName != CallPath.NULL_FUNCTION) {
-					Color c = new Color(display, 
+				if (isIdleProcedure(procName)) {
+					colorMatcher.put(procName, IMAGE_GRAY);
+				} else {
+					if (procName != CallPath.NULL_FUNCTION) {
+						Color c = new Color(display, 
 								cmin + r.nextInt(cmax), 
 								cmin + r.nextInt(cmax), 
 								cmin + r.nextInt(cmax));
-					colorMatcher.put(procName, new ColorImagePair(c));
-				} else {
-					colorMatcher.put(procName, IMAGE_WHITE);
+						colorMatcher.put(procName, new ColorImagePair(c));
+					} else {
+						colorMatcher.put(procName, IMAGE_WHITE);
+					}
 				}
 			}
 

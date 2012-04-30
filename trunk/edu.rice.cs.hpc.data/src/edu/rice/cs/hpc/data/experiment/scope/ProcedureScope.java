@@ -45,6 +45,10 @@ protected boolean isalien;
 // we assume that all procedure scope has the information on load module it resides
 protected LoadModuleScope objLoadModule;
 
+
+final String viewIdleProcName = "... IDLE ...";
+final String inputIdleProcName = "hpcrun_special_IDLE";
+
 /**
  * scope ID of the procedure frame. The ID is given by hpcstruct and hpcprof
  */
@@ -66,6 +70,7 @@ public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int
 {
 	super(experiment, file, first, last, cct_id, flat_id);
 	this.isalien = _isalien;
+	if (proc.equals(inputIdleProcName)) proc = viewIdleProcName;
 	this.procedureName = proc;
 	this.objLoadModule = null;
 }

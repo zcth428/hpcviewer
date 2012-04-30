@@ -121,14 +121,14 @@
             </command>
          </menu>
          <menu
-               id="edu.rice.cs.hpc.traceviewer.menu.advanced"
-               label="Advanced"
-               mnemonic="A"
-               tooltip="Menus for advanced users">
+               id="edu.rice.cs.hpc.traceviewer.menu.view"
+               label="View"
+               mnemonic="V"
+               tooltip="View menu">
             <command
                   commandId="edu.rice.cs.hpc.traceviewer.showRecords"
                   id="edu.rice.cs.hpc.traceviewer.showRecords"
-                  label="Show trace records"
+                  label="Show trace record count"
                   mnemonic="S"
                   style="toggle"
                   tooltip="Show the number of trace records displayed in the trace view (useful for identifying blocking operations and debugging)">

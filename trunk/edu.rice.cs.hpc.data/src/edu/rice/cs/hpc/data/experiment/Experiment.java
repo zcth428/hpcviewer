@@ -84,14 +84,29 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 ************************************************************************/
 
 	public void open()
-			throws
-			Exception
-			{
+			throws Exception
+	{
+		open(this.fileExperiment);
+	}
+
+	
+	/*************************************************************************
+	 * Opens the experiment 
+	 * 
+	 * @param 		experimentFile : file to be parsed
+	 * @exception 	IOException if experiment file can't be read.
+	 * @exception 	InvalExperimentException if file contents are
+	 * 			 	not a valid experiment.
+	 *************************************************************************/
+	
+	public void open(File experimentFile)
+			throws Exception
+	{
 		// parsing may throw exceptions
-		new ExperimentFileXML().parse(this.fileExperiment, this, true);
-			}
+		new ExperimentFileXML().parse(experimentFile, this, true);
+	}
 
-
+	
 	/*************************************************************************
 	 *	Sets the experiment's metric list.
 	 *

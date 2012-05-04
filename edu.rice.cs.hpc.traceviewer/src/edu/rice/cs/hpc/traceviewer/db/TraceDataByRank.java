@@ -73,7 +73,7 @@ public class TraceDataByRank {
 			for(long i=startLoc;i<=endLoc; ) {
 				listcpid.add(getData(i));
 				// one record of data contains of an integer (cpid) and a long (time)
-				i =  i + Constants.SIZEOF_INT + Constants.SIZEOF_LONG;
+				i =  i + SIZE_OF_TRACE_RECORD;
 			}
 			
 		} else {
@@ -321,7 +321,7 @@ public class TraceDataByRank {
 	}
 	
 	private long getNumberOfRecords(long start, long end) {
-		return (end-start)/(Constants.SIZEOF_INT+Constants.SIZEOF_LONG);
+		return (end-start)/(SIZE_OF_TRACE_RECORD);
 	}
 
 	/*********************************************************************************************

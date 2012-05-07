@@ -224,8 +224,8 @@
             </command>
          </menu>
          <menu
-               label="Advanced"
-               mnemonic="a"
+               label="View"
+               mnemonic="v"
                tooltip="Options for advance users: Debug mode on/off and show some debugging information">
             <visibleWhen
                   checkEnabled="false">

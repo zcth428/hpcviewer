@@ -19,6 +19,7 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 public class MergeMetric {
 	int pointerMetric1[];
 	int pointerMetric2[];
+	int pointerCommon[];
 	
 	ArrayList<BaseMetric> metrics;
 	
@@ -59,11 +60,11 @@ public class MergeMetric {
 			
 			if (mv != null && MetricValue.isAvailable(mv)) {
 				mine = new MetricValue();
-				MetricValue myMV = target.getMetricValue(offset[i]);
+				MetricValue myMV = target.getMetricValue(i);
 				float myValue = 0;
 				
 				if (myMV != null && MetricValue.isAvailable(myMV)) {
-					myValue = target.getMetricValue(offset[i]).getValue();
+					myValue = target.getMetricValue(i).getValue();
 					MetricValue.setValue(mine, myValue - mv.getValue());
 				} else {
 					MetricValue.setValue(mine, factor * mv.getValue());
@@ -72,7 +73,7 @@ public class MergeMetric {
 				}
 				// we don't want to show percentage in the merged metric
 				MetricValue.setAnnotationAvailable(mine, false);
-				target.setMetricValue(offset[i], mine);
+				target.setMetricValue(i, mine);
 			}
 		}
 	}

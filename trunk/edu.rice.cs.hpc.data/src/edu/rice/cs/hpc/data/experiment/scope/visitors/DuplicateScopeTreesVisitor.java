@@ -4,8 +4,18 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 public class DuplicateScopeTreesVisitor extends BaseDuplicateScopeTreesVisitor {
 
-	public DuplicateScopeTreesVisitor(Scope newRoot, int offset[], int factor) {
-		super( newRoot, offset, factor );
+	/****
+	 * Class for duplicating a tree, including its metric values 
+	 * 
+	 * @param newRoot
+	 */
+	public DuplicateScopeTreesVisitor(Scope newRoot) {
+		super(newRoot, 0);
+	}
+
+	
+	public DuplicateScopeTreesVisitor(Scope newRoot, int offset) {
+		super( newRoot, offset );
 	}
 	
 	//@Override

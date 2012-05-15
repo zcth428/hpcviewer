@@ -10,13 +10,19 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
+
+/*****
+ * 
+ * class to handle the history of user inputs (such as metric names and formula)
+ * the class will store the data into Eclipse's workspace which should be
+ * writable to each user
+ *
+ */
 public class UserInputHistory {
 	private static final String HISTORY_NAME_BASE = "history."; //$NON-NLS-1$
 	private final static String ENCODING = "UTF-8";
     
-    private static final Preferences CONFIGURATION = new ConfigurationScope().getNode("edu.rice.cs.hpc");
-    //public static final Preferences CONFIGURATION_NODES[] = new Preferences[]{new ConfigurationScope().getNode("edu.rice.cs.hpc")};
-    
+    private static final Preferences CONFIGURATION = ConfigurationScope.INSTANCE.getNode("edu.rice.cs.hpc");   
     
     private String name;
     private int depth;

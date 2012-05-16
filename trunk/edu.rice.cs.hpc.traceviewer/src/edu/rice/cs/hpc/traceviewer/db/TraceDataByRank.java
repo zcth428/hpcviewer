@@ -54,11 +54,11 @@ public class TraceDataByRank {
 		Debugger.printDebug(1, "getData loc [" + minloc+","+ maxloc + "]");
 		
 		// get the start location
-		final long startLoc = this.findBoundedLocRAF(timeStart, minloc, maxloc);
+		final long startLoc = this.findTimeInInterval(timeStart, minloc, maxloc);
 		
 		// get the end location
 		final double endTime = timeStart + timeRange;
-		final long endLoc = Math.min(this.findBoundedLocRAF(endTime, minloc, maxloc)+SIZE_OF_TRACE_RECORD, maxloc );
+		final long endLoc = Math.min(this.findTimeInInterval(endTime, minloc, maxloc)+SIZE_OF_TRACE_RECORD, maxloc );
 
 		// get the number of records data to display
 		final long numRec = 1+this.getNumberOfRecords(startLoc, endLoc);
@@ -81,7 +81,7 @@ public class TraceDataByRank {
 			// the data is too big: try to fit the "big" data into the display
 			
 			//fills in the rest of the data for this process timeline
-			this.binaryFill(startLoc, endLoc, 0, numPixelH, 0, pixelLength, timeStart);
+			this.sampleTimeLine(startLoc, endLoc, 0, numPixelH, 0, pixelLength, timeStart);
 			
 		}
 		
@@ -208,21 +208,21 @@ public class TraceDataByRank {
 	 * @return Returns the index that shows the size of the recursive subtree that has been read.
 	 * Used for calculating the index in which the data is to be inserted.
 	 ******************************************************************************************/
-	private int binaryFill(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex, 
+	private int sampleTimeLine(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex, 
 			double pixelLength, double startingTime)
 	{
 		int midPixel = (startPixel+endPixel)/2;
 		if (midPixel == startPixel)
 			return 0;
 		
-		long loc = findBoundedLocRAF(midPixel*pixelLength+startingTime, minLoc, maxLoc);
+		long loc = findTimeInInterval(midPixel*pixelLength+startingTime, minLoc, maxLoc);
 		
 		final TimeCPID nextData = this.getData(loc);
 		
 		addSample(minIndex, nextData);
 		
-		int addedLeft = binaryFill(minLoc, loc, startPixel, midPixel, minIndex, pixelLength, startingTime);
-		int addedRight = binaryFill(loc, maxLoc, midPixel, endPixel, minIndex+addedLeft+1, pixelLength, startingTime);
+		int addedLeft = sampleTimeLine(minLoc, loc, startPixel, midPixel, minIndex, pixelLength, startingTime);
+		int addedRight = sampleTimeLine(loc, maxLoc, midPixel, endPixel, minIndex+addedLeft+1, pixelLength, startingTime);
 		
 		return (addedLeft+addedRight+1);
 	}
@@ -231,48 +231,60 @@ public class TraceDataByRank {
 	 *	Returns the location in the traceFile of the trace data (time stamp and cpid)
 	 *	Precondition: the location of the trace data is between minLoc and maxLoc.
 	 * @param time: the time to be found
-	 * @param leftloc: the relative start location. 0 means the beginning of the data in a process
-	 * @param rightloc: the relative end location.
+	 * @param left_boundary_offset: the start location. 0 means the beginning of the data in a process
+	 * @param right_boundary_offset: the end location.
 	 ********************************************************************************/
-	private long findBoundedLocRAF(double time, long leftLoc, long rightLoc)
+	private long findTimeInInterval(double time, long left_boundary_offset, long right_boundary_offset)
 	{
-		if (leftLoc == rightLoc)
-			return leftLoc;
-		long low = getRelativeLocation(leftLoc);
-		long high = getRelativeLocation(rightLoc);
-		long mid = (low+high)/2;
-		final LargeByteBuffer masterBuff = data.getMasterBuffer();
-		
-		double temp = 0;
-		long midAbsPos;
-		while(low < mid)
-		{
-			midAbsPos = getAbsoluteLocation(mid);
-			temp = masterBuff.getLong(midAbsPos);
-			if (time > temp)
-				low = mid;
-			else
-				high = mid;
-			
-			mid = (low+high)/2;
-		}
-		// check the closest midpoint
-		final long low_abs = getAbsoluteLocation(low);
-		final long high_abs = getAbsoluteLocation(high);
-		
-		final double low_time = masterBuff.getLong(low_abs);
-		final double high_time = masterBuff.getLong(high_abs);
-		
-		final boolean is_left_closer = Math.abs(time-low_time) < Math.abs(high_time-time);
+		if (left_boundary_offset == right_boundary_offset) return left_boundary_offset;
 
-		if ( is_left_closer )
-			return low_abs;
-		else if (high_abs < this.maxloc)
-			return high_abs;
-		else
-			return this.maxloc;
+		final LargeByteBuffer masterBuff = data.getMasterBuffer();
+
+		long left_index = getRelativeLocation(left_boundary_offset);
+		long right_index = getRelativeLocation(right_boundary_offset);
+		
+		double left_time = masterBuff.getLong(left_boundary_offset);
+		double right_time = masterBuff.getLong(right_boundary_offset);
+		
+		// apply "Newton's method" to find target time
+		while (right_index - left_index > 1) {
+			long predicted_index;
+			double rate = (right_time - left_time) / (right_index - left_index);
+			double mtime = (right_time - left_time) / 2;
+			if (time <= mtime) {
+				predicted_index = Math.max((long) ((time - left_time) / rate) + left_index, left_index);
+			} else {
+				predicted_index = Math.min(right_index - (long) ((right_time - time) / rate), right_index);
+			}
+			
+			// adjust so that the predicted index differs from both ends
+			// except in the case where the interval is of length only 1
+			// this helps us achieve the convergence condition
+			if (predicted_index == left_index) predicted_index++;
+			if (predicted_index == right_index) predicted_index--;
+
+			double temp = masterBuff.getLong(getAbsoluteLocation(predicted_index));
+			if (time >= temp) {
+				left_index = predicted_index;
+				left_time = temp;
+			} else {
+				right_index = predicted_index;
+				right_time = temp;
+			}
+		}
+		long left_offset = getAbsoluteLocation(left_index);
+		long right_offset = getAbsoluteLocation(right_index);
+
+		left_time = masterBuff.getLong(left_offset);
+		right_time = masterBuff.getLong(right_offset);
+
+		// return the closer sample or the maximum sample if the 
+		// time is at or beyond the right boundary of the interval
+		final boolean is_left_closer = Math.abs(time - left_time) < Math.abs(right_time - time);
+		if ( is_left_closer ) return left_offset;
+		else if (right_offset < this.maxloc) return right_offset;
+		else return this.maxloc;
 	}
-	
 	
 	private long getAbsoluteLocation(long relativePosition)
 	{

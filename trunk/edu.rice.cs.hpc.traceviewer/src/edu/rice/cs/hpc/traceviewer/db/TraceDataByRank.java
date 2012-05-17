@@ -254,7 +254,8 @@ public class TraceDataByRank {
 			if (time <= mtime) {
 				predicted_index = Math.max((long) ((time - left_time) / rate) + left_index, left_index);
 			} else {
-				predicted_index = Math.min(right_index - (long) ((right_time - time) / rate), right_index);
+				// original code: predicted_index = Math.min((right_index - (long) ((right_time - time) / rate)), right_index);
+				predicted_index = Math.min(Math.abs(right_index - (long) ((right_time - time) / rate)), right_index);
 			}
 			
 			// adjust so that the predicted index differs from both ends

@@ -22,7 +22,10 @@ public class UserInputHistory {
 	private static final String HISTORY_NAME_BASE = "history."; //$NON-NLS-1$
 	private final static String ENCODING = "UTF-8";
     
-    private static final Preferences CONFIGURATION = ConfigurationScope.INSTANCE.getNode("edu.rice.cs.hpc");   
+	// temporary revert back to use deprecated code in order to keep backward compatibility
+	// Original code:
+	//     private static final Preferences CONFIGURATION = ConfigurationScope.INSTANCE.getNode("edu.rice.cs.hpc");   
+    private static final Preferences CONFIGURATION = new ConfigurationScope().getNode("edu.rice.cs.hpc");
     
     private String name;
     private int depth;

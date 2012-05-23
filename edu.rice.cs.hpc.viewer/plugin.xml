@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point 
+		id="edu.rice.cs.hpc.viewer.metric.metricLabelProvider"
+		name="Metric Label Provider"
+		schema="schema/edu.rice.cs.hpc.viewer.metric.metricLabelProvider.exsd"/>
    <extension
          id="application"
          name="hpcviewer"

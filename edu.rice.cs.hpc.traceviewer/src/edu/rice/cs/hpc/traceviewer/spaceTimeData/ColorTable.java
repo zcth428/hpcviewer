@@ -55,27 +55,33 @@ public class ColorTable implements IProcedureTable
 		}
 	}
 	
-	/**Returns the color in the colorMatcher that corresponds to name.*/
+	/**
+	 * Returns the color in the colorMatcher that corresponds to the name's class
+	 * @param name
+	 * @return
+	 */
 	public Color getColor(String name)
 	{
-		return colorMatcher.get(name).getColor();
+		final String procClass = getProcedureClass( name );
+		return colorMatcher.get(procClass).getColor();
 	}
 	
-	public Image getImage(String name) {
-		ColorImagePair cipair = colorMatcher.get(name);
+	/**
+	 * returns the image that corresponds to the name's class
+	 * @param name
+	 * @return
+	 */
+	public Image getImage(String name) 
+	{
+		final String procClass = getProcedureClass( name );
+		final ColorImagePair cipair = colorMatcher.get(procClass);
 		if (cipair != null) {
-			return colorMatcher.get(name).getImage();
+			return cipair.getImage();
 		} else {
 			return null;
 		}
 	}
 	
-	public boolean isIdleProcedure(String procName)
-	{
-		final String val = classMap.get(procName);
-		boolean result = (val != null && ProcedureClassMap.CLASS_IDLE.equals(val));
-		return result;
-	}
 	
 	/*********************************************************************
 	 * Fills the colorMatcher with unique "random" colors that correspond
@@ -86,44 +92,33 @@ public class ColorTable implements IProcedureTable
 		//This is where the data file is converted to the colorTable using colorMatcher.
 		//creates name-function-color colorMatcher for each function.
 		colorMatcher = new HashMap<String,ColorImagePair>();
-		if (true) {
+		{
 			// rework the color assignment to use a single random number stream
 			Random r = new Random((long)612543231);
 			int cmin = 16;
 			int cmax = 200 - cmin;
 			for (int l=0; l<procNames.size(); l++) {
+				
 				String procName = procNames.get(l);
-				if (isIdleProcedure(procName)) {
-					colorMatcher.put(procName, IMAGE_GRAY);
-				} else {
-					if (procName != CallPath.NULL_FUNCTION) {
-						Color c = new Color(display, 
-								cmin + r.nextInt(cmax), 
-								cmin + r.nextInt(cmax), 
-								cmin + r.nextInt(cmax));
-						colorMatcher.put(procName, new ColorImagePair(c));
-					} else {
-						colorMatcher.put(procName, IMAGE_WHITE);
+				
+				if (procName != CallPath.NULL_FUNCTION) {
+					String procClass = getProcedureClass( procName );
+					
+					if (!colorMatcher.containsKey(procClass)) {
+						
+						if (procClass.equals(ProcedureClassMap.CLASS_IDLE)) 
+						{
+							colorMatcher.put(ProcedureClassMap.CLASS_IDLE, IMAGE_GRAY);								
+						} else 
+						{
+							Color c = new Color(display, 
+									cmin + r.nextInt(cmax), 
+									cmin + r.nextInt(cmax), 
+									cmin + r.nextInt(cmax));
+							colorMatcher.put(procClass, new ColorImagePair(c));
+						}
 					}
-				}
-			}
-
-		} else {
-			Random red = new Random((long)612543231);
-			Random blue = new Random((long)91028735);
-			Random green = new Random((long)19238479);
-
-			for(int l=0;l<procNames.size();l++)
-			{
-				String procName = procNames.get(l);
-
-				if(procName!=CallPath.NULL_FUNCTION)
-				{
-					Color c = new Color(display, red.nextInt(200),green.nextInt(200),blue.nextInt(200));
-					colorMatcher.put(procName, new ColorImagePair(c));
-				}
-				else
-				{
+				} else {
 					colorMatcher.put(procName, IMAGE_WHITE);
 				}
 			}
@@ -142,6 +137,21 @@ public class ColorTable implements IProcedureTable
 			procNames.add(name);
 	}
 	
+	/***********************************************************************
+	 * return the class of the procedure (if exists), otherwise return the 
+	 * 	procedure name itself
+	 * 
+	 * @param name
+	 * @return
+	 ***********************************************************************/
+	private String getProcedureClass( String name ) 
+	{
+		String procClass = this.classMap.get(name);
+		if (procClass != null)
+			return procClass;
+		else
+			return name;
+	}
 	
 	/************************************************************************
 	 * class to pair color and image

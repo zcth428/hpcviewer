@@ -88,7 +88,7 @@ public class ScopeLabelProvider extends ColumnLabelProvider
 		if(element instanceof Scope) {
 			Scope node = (Scope) element;
 			if(Utilities.isFileReadable(node)) {
-				node.hasSourceCodeFile = true; //update the indicator flag in the node
+
 				// put the color blue
 				return this.DARK_BLUE;
 			}

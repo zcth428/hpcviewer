@@ -71,12 +71,6 @@ protected MetricValue[] combinedMetrics;
 protected String srcCitation;
 
 
-/**
- * This public variable indicates if the node contains information about the source code file.
- * If the boolean is true, then the filename can be retrieved from its scope
- * @author laksono
- */
-public boolean hasSourceCodeFile;
 
 /**
  * FIXME: this variable is only used for the creation of callers view to count
@@ -127,7 +121,6 @@ public Scope(BaseExperiment experiment, SourceFile file, int first, int last, in
 	this.srcCitation = null;
 	this.flat_node_index = flat_id;
 	this.cct_node_index = cct_id;
-	this.hasSourceCodeFile = false;
 	this.cpid = -1;
 	this.iCounter  = 0;
 }

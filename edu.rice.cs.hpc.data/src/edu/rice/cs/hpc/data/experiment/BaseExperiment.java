@@ -7,6 +7,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
+import edu.rice.cs.hpc.data.util.IUserData;
 
 
 /***
@@ -86,11 +87,11 @@ public abstract class BaseExperiment implements IExperiment {
 	}
 	
 	
-	public void open(File fileExperiment)
+	public void open(File fileExperiment, IUserData userData)
 			throws	Exception
 	{
 		// parsing may throw exceptions
-		new ExperimentFileXML().parse(fileExperiment, this, false);
+		new ExperimentFileXML().parse(fileExperiment, this, false, userData);
 	}
 	
 	

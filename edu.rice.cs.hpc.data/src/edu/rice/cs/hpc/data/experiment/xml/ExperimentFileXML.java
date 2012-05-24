@@ -17,6 +17,7 @@ package edu.rice.cs.hpc.data.experiment.xml;
 
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.util.Grep;
+import edu.rice.cs.hpc.data.util.IUserData;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,7 +60,7 @@ public class ExperimentFileXML extends ExperimentFile
  *
  ************************************************************************/
 	
-public void parse(File file, BaseExperiment experiment, boolean need_metrics)
+public void parse(File file, BaseExperiment experiment, boolean need_metrics, IUserData userData)
 		throws	Exception
 		{
 	// get an appropriate input stream
@@ -73,7 +74,7 @@ public void parse(File file, BaseExperiment experiment, boolean need_metrics)
 	if (need_metrics)
 	{
 		stream = new FileInputStream(file);
-		builder = new ExperimentBuilder2(experiment, name);
+		builder = new ExperimentBuilder2(experiment, name, userData);
 	}
 	else
 	{
@@ -92,7 +93,7 @@ public void parse(File file, BaseExperiment experiment, boolean need_metrics)
 			callpathFile = new File(callpathLoc);
 		}
 		stream = new FileInputStream(callpathFile);
-		builder = new BaseExperimentBuilder(experiment, name);
+		builder = new BaseExperimentBuilder(experiment, name, userData);
 	}
 	
 	Parser parser = new Parser(name, stream, builder);

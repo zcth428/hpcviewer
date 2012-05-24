@@ -27,6 +27,7 @@ import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.experiment.xml.Token2.TokenXML;
 import edu.rice.cs.hpc.data.util.Dialogs;
+import edu.rice.cs.hpc.data.util.IUserData;
 
 
 /****
@@ -65,6 +66,8 @@ public class BaseExperimentBuilder extends Builder {
 	protected Stack<SourceFile> srcFileStack;
 
 	private boolean csviewer;
+	
+	final private IUserData userData;
 
 	protected Token2.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	protected Token2.TokenXML elemInfoState = TokenXML.T_INVALID_ELEMENT_NAME;
@@ -97,7 +100,7 @@ public class BaseExperimentBuilder extends Builder {
 	 *  @param defaultName: the default name of the experiment
 	 *
 	 ************************************************************************/
-	public BaseExperimentBuilder(BaseExperiment experiment, String defaultName) {
+	public BaseExperimentBuilder(BaseExperiment experiment, String defaultName, IUserData userData) {
 		super();
 		this.csviewer = false;
 		viewRootScope = new RootScope[3];
@@ -117,7 +120,7 @@ public class BaseExperimentBuilder extends Builder {
 		this.experiment = experiment;
 		this.defaultName = defaultName;
 		
-
+		this.userData = userData;
 	}
 	
 	
@@ -569,7 +572,7 @@ public class BaseExperimentBuilder extends Builder {
 			}
 			ProcedureScope procScope  = new ProcedureScope(this.experiment, objLoadModule, srcFile, 
 					firstLn-1, lastLn-1, 
-					sProcName, isalien, cct_id, flat_id);
+					sProcName, isalien, cct_id, flat_id, userData);
 
 			if ( (this.scopeStack.size()>1) && ( this.scopeStack.peek() instanceof LineScope)  ) {
 

@@ -13,6 +13,8 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.xml.Token2.TokenXML;
+import edu.rice.cs.hpc.data.util.IUserData;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -47,9 +49,9 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 	 * 
 	 * @param need_metrics: do we need metrics ?
 	 */
-	public ExperimentBuilder2(BaseExperiment experiment, String defaultName) {
+	public ExperimentBuilder2(BaseExperiment experiment, String defaultName, IUserData userData) {
 		
-		super(experiment, defaultName);
+		super(experiment, defaultName, userData);
 		this.metricList = new ArrayList<BaseMetric>();
 		
 		numberOfPrimaryMetrics = 0;

@@ -20,6 +20,7 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.AbstractFinalizeMetricVisi
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
+import edu.rice.cs.hpc.data.util.IUserData;
 
 
 
@@ -46,8 +47,6 @@ protected boolean isalien;
 protected LoadModuleScope objLoadModule;
 
 
-final String viewIdleProcName = "... IDLE ...";
-final String inputIdleProcName = "hpcrun_special_IDLE";
 
 /**
  * scope ID of the procedure frame. The ID is given by hpcstruct and hpcprof
@@ -66,19 +65,20 @@ final String inputIdleProcName = "hpcrun_special_IDLE";
  ************************************************************************/
 	
 public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int last, 
-		String proc, boolean _isalien, int cct_id, int flat_id)
+		String proc, boolean _isalien, int cct_id, int flat_id, IUserData userData)
 {
 	super(experiment, file, first, last, cct_id, flat_id);
 	this.isalien = _isalien;
-	if (proc.equals(inputIdleProcName)) proc = viewIdleProcName;
 	this.procedureName = proc;
+
+	if (userData != null) {
+		String newName = userData.get(proc);
+		if (newName != null) 
+			procedureName = newName;
+	}
 	this.objLoadModule = null;
 }
 
-public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int last, String proc, boolean _isalien)
-{
-	this(experiment, file, first, last, proc, _isalien, Scope.idMax++, Scope.idMax);
-}
 
 /**
  * Laks 2008.08.25: We need a special constructor to accept the SID
@@ -91,9 +91,9 @@ public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int
  * @param _isalien
  */
 public ProcedureScope(BaseExperiment experiment, LoadModuleScope loadModule, SourceFile file, 
-		int first, int last, String proc, boolean _isalien, int cct_id, int flat_id)
+		int first, int last, String proc, boolean _isalien, int cct_id, int flat_id, IUserData userData)
 {
-	this(experiment, file, first, last,proc,_isalien, cct_id, flat_id);
+	this(experiment, file, first, last,proc,_isalien, cct_id, flat_id, userData);
 	//this.iScopeID = sid;
 	this.objLoadModule = loadModule;
 }
@@ -139,7 +139,8 @@ public Scope duplicate() {
 			this.procedureName,
 			this.isalien,
 			this.cct_node_index, // Laks 2008.08.26: add the sequence ID
-			this.flat_node_index);
+			this.flat_node_index,
+			null);
 
 }
 

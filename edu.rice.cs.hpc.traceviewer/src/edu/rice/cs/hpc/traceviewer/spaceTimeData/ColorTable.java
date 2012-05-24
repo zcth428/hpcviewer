@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
 import edu.rice.cs.hpc.data.util.IProcedureTable;
+import edu.rice.cs.hpc.traceviewer.util.ProcedureClassMap;
 /**************************************************************
  * A data structure designed to hold all the name-color pairs
  * needed for the actual drawing.
@@ -32,6 +33,8 @@ public class ColorTable implements IProcedureTable
 	/**The display this ColorTable uses to generate the random colors.*/
 	Display display;
 	
+	private final ProcedureClassMap classMap;
+	
 	/**Creates a new ColorTable with Display _display.*/
 	public ColorTable(Display _display)
 	{
@@ -39,6 +42,8 @@ public class ColorTable implements IProcedureTable
 		display = _display;
 		IMAGE_WHITE = new ColorImagePair(display.getSystemColor(SWT.COLOR_WHITE));
 		IMAGE_GRAY = new ColorImagePair(display.getSystemColor(SWT.COLOR_GRAY));
+		
+		classMap = new ProcedureClassMap();
 	}
 	
 	/**
@@ -67,14 +72,9 @@ public class ColorTable implements IProcedureTable
 	
 	public boolean isIdleProcedure(String procName)
 	{
-		return 	procName.equals("... IDLE ...") || 
-				procName.equals("cudaEventSynchronize") ||
-				procName.equals("cudaStreamSynchronize") ||
-				procName.equals("cudaDeviceSynchronize") ||
-				procName.equals("cudaThreadSynchronize") ||
-				procName.equals("cuStreamSynchronize") ||
-				procName.equals("cuEventSynchronize") ||
-				procName.equals("cuCtxSynchronize");
+		final String val = classMap.get(procName);
+		boolean result = (val != null && ProcedureClassMap.CLASS_IDLE.equals(val));
+		return result;
 	}
 	
 	/*********************************************************************

@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
@@ -113,7 +114,7 @@ public class SpaceTimeData extends TraceEvents
 		BaseExperiment exp = new ExperimentWithoutMetrics(expFile);
 		try
 		{
-			exp.open(expFile);
+			exp.open( expFile, new ProcedureAliasMap() );
 		}
 		catch (InvalExperimentException e)
 		{

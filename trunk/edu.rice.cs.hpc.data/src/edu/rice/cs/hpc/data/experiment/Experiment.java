@@ -21,6 +21,7 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
+import edu.rice.cs.hpc.data.util.IUserData;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,10 +84,10 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 *
 	 ************************************************************************/
 
-	public void open()
+	public void open(IUserData userData)
 			throws Exception
 	{
-		open(this.fileExperiment);
+		open(this.fileExperiment, userData);
 	}
 
 	
@@ -99,11 +100,11 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 * 			 	not a valid experiment.
 	 *************************************************************************/
 	
-	public void open(File experimentFile)
+	public void open(File experimentFile, IUserData userData)
 			throws Exception
 	{
 		// parsing may throw exceptions
-		new ExperimentFileXML().parse(experimentFile, this, true);
+		new ExperimentFileXML().parse(experimentFile, this, true, userData);
 	}
 
 	

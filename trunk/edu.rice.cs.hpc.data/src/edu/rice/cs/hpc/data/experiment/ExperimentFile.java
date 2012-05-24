@@ -17,6 +17,8 @@ package edu.rice.cs.hpc.data.experiment;
 
 import java.io.File;
 
+import edu.rice.cs.hpc.data.util.IUserData;
+
 
 
 
@@ -60,7 +62,8 @@ public abstract class ExperimentFile
  *
  ************************************************************************/
 	
-public abstract void parse(File file, BaseExperiment experiment, boolean need_metrics)
+public abstract void parse(File file, BaseExperiment experiment, 
+		boolean need_metrics, IUserData userData)
 throws
 	Exception;
 

@@ -192,7 +192,6 @@ public class Utilities {
 					for(int i=0;i<arrViews.length;i++) {
 						if (arrViews[i] != visible_view) {
 							ScopeTreeViewer tree = (ScopeTreeViewer) arrViews[i].getTreeViewer();
-							tree.enableAutoRowAdjust();
 							
 							// reset the view
 							Utilities.resetView(objItemManager, tree);

@@ -9,9 +9,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Event;
-
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.swt.widgets.TreeItem;
 
@@ -51,17 +48,6 @@ public class ScopeTreeViewer extends TreeViewer {
 	}
 
 	
-	public void enableAutoRowAdjust() {
-		
-		this.getTree().addListener(SWT.MeasureItem, new Listener() {
-
-			public void handleEvent(Event event) {
-				event.height = event.gc.getFontMetrics().getHeight() + 5;
-				//System.out.println("event: " + event.height + ", met: " + fm.getHeight() + ", pt: " + pt.y + ", gc:" + event.gc.getFontMetrics().getHeight());
-			}}
-		);
-	
-	}
 	
 	/**
 	 * Finding the path based on the treeitem information
@@ -133,6 +119,7 @@ public class ScopeTreeViewer extends TreeViewer {
      */
     private TreeViewerColumn addTreeColumn(BaseMetric objMetric, //int iPosition, 
     		boolean bSorted, boolean bDisplayed) {
+    	
     	TreeViewerColumn colMetric = new TreeViewerColumn(this,SWT.RIGHT);	// add column
 		colMetric.setLabelProvider(new MetricLabelProvider(objMetric /*, Utilities.fontMetric*/) );
 

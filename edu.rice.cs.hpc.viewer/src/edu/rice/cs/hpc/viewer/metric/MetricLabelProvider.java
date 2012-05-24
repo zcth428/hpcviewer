@@ -132,14 +132,14 @@ public class MetricLabelProvider extends BaseMetricLabelProvider {
 	 * @param element
 	 * @param mf
 	 */
-	private boolean runExtension( ISafeRunnable run, Object element, MethodFlag mf ) {
+	private boolean runExtension( ExtensionSafeRunnable run, Object element, MethodFlag mf ) {
 		
 		boolean isCalled = false;
 		
 		for (IMetricLabelProvider ext: this.extLabelProvider) {
 			
 			if (ext != null && ext.isEnabled()) {
-				runnable.setInfo(ext, element, mf);
+				run.setInfo(ext, element, mf);
 				ext.setScope(element);
 				SafeRunner.run(run);
 				isCalled = true;

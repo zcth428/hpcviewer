@@ -196,7 +196,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         		displayFileEditor(this.scope);
         	}
         };
-        acShowCode.setEnabled(scope.hasSourceCodeFile);
+        acShowCode.setEnabled(Utilities.isFileReadable(scope));
         mgr.add(acShowCode);
 
         // show the call site in case this one exists

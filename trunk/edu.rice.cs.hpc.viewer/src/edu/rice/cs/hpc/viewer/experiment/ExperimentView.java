@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 
+import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
@@ -115,7 +116,7 @@ public class ExperimentView {
 		try
 		{
 			experiment = new Experiment(new java.io.File(sFilename));
-			experiment.open();
+			experiment.open( new ProcedureAliasMap() );
 
 		} catch(java.io.FileNotFoundException fnf)
 		{

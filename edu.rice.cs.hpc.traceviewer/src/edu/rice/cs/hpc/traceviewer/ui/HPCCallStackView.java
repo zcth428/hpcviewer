@@ -150,16 +150,29 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		miniCanvas.setVisible(true);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+	 */
 	public void setFocus() 
 	{
-		
+		// by default, make the table to be the center of the focus
+		this.csViewer.getTable().setFocus();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.ISizeProvider#computePreferredSize(boolean, int, int, int)
+	 */
 	public int computePreferredSize(boolean width, int availableParallel, int availablePerpendicular, int preferredSize) 
 	{
 		return preferredSize;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.ISizeProvider#getSizeFlags(boolean)
+	 */
 	public int getSizeFlags(boolean width) 
 	{
 		return width ? SWT.MAX : 0;

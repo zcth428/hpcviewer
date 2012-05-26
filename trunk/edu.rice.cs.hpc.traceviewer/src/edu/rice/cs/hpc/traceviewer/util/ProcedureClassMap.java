@@ -37,4 +37,8 @@ public class ProcedureClassMap extends AliasMap {
 		this.put("cuEventSynchronize", CLASS_IDLE);
 		this.put("cuCtxSynchronize", CLASS_IDLE);
 	}
+	
+	public Object[] getEntrySet() {
+		return data.entrySet().toArray();
+	}
 }

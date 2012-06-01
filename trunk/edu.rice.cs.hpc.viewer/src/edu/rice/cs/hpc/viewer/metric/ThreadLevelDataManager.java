@@ -48,14 +48,7 @@ public class ThreadLevelDataManager {
 	 * @return true if the data is ready and available
 	 */
 	public boolean isDataAvailable() {
-		if (data_file != null && data_file.length>0) {
-			
-			for (ThreadLevelDataFile data: data_file) {
-				if (data != null)
-					return true;
-			}
-		}
-		return false;
+		return (data_file != null && data_file.length>0);
 	}
 	
 	

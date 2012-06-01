@@ -73,9 +73,11 @@ public class ScopeView extends BaseScopeView {
 
 	//@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
-		if (scope != null && this.hasThreadsLevelData) {
+		if (scope != null) {
 
 			ThreadLevelDataManager objDataManager = this.database.getThreadLevelDataManager();
+			if (objDataManager == null)
+				return;
 
 			// return immediately if the experiment doesn't contain thread level data
 			if (!objDataManager.isDataAvailable())

@@ -17,7 +17,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     // ................ ATTRIBUTES..........................
     //======================================================
 	
-	protected boolean hasThreadsLevelData = false;
 	private TreeViewerColumn []colMetrics = null;
 	
     //======================================================
@@ -31,9 +30,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	protected void updateDisplay() {
         if (database == null)
         	return;
-        
-        hasThreadsLevelData = database.getThreadLevelDataManager() != null;
-        
+                
         initTableColumns();
         
         // Update root scope

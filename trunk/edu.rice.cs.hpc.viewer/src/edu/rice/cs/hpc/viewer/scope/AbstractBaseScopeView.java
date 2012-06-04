@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPage;
 //SWT
 import org.eclipse.swt.*;
 import org.eclipse.swt.layout.GridData;
@@ -331,7 +332,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
          * On MAC it doesn't matter which button, but on Windows, we need to make sure !
          */
         gc = new GC(this.treeViewer.getTree().getDisplay());
-        treeViewer.getTree().addListener(SWT.MouseDown, new ScopeMouseListener(gc)); 
+        treeViewer.getTree().addListener(SWT.MouseDown, new ScopeMouseListener(gc, this.getSite().getPage())); 
         
         // bug #132: https://outreach.scidac.gov/tracker/index.php?func=detail&aid=132&group_id=22&atid=169
         // need to capture event of "collapse" tree then check if the button state should be updated or not.
@@ -553,13 +554,15 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     public class ScopeMouseListener implements Listener {
 
     	final private GC gc;
+    	final private IWorkbenchPage page;
     	
     	/**
     	 * initialization with the gc of the tree
     	 * @param gc of the tree
     	 */
-    	public ScopeMouseListener(final GC gc) {
+    	public ScopeMouseListener(final GC gc, IWorkbenchPage page) {
     		this.gc = gc;
+    		this.page = page;
     	}
     	
     	/*
@@ -598,7 +601,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	            	// get the call site scope
     	            	CallSiteScope callSiteScope = (CallSiteScope) scope;
     	            	LineScope lineScope = (LineScope) callSiteScope.getLineScope();
-    	            	displayFileEditor(lineScope);
+    	            	displaySourceCode(lineScope);
     	            } else {
     	            }
     	        }
@@ -618,16 +621,28 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	        		if (gc != null && line>0) {
         		        	Point p = gc.textExtent(":" + line);
         		        	if (p.x+recText.x >= event.x && p.y+recText.y>= event.y) {
-        		        		displayFileEditor( cs.getLineScope() );
+        		        		displaySourceCode( cs.getLineScope() );
         		        		return;
         		        	}
     	        		}
     	        	}
-    	        	displayFileEditor( (Scope)o );
+    	        	displaySourceCode( (Scope)o );
     	        }
     		} else {
     			// User click a region other than tree
     		}		
+    	}
+    	
+    	/**
+    	 * special source code display when user click a tree node
+    	 * @param scope
+    	 */
+    	private void displaySourceCode( Scope scope ) {
+			// display the source code if the view is not maximized
+    		int state = page.getPartState( page.getActivePartReference() );
+    		if (state != IWorkbenchPage.STATE_MAXIMIZED) {
+    			displayFileEditor( scope );
+    		}
     	}
     }
 

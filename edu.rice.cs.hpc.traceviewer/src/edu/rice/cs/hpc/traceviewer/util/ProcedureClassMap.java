@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.util;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Platform;
+
 import edu.rice.cs.hpc.common.util.AliasMap;
 
 
@@ -13,13 +16,16 @@ import edu.rice.cs.hpc.common.util.AliasMap;
 public class ProcedureClassMap extends AliasMap {
 
 	static public final String CLASS_IDLE = "idle";
+	static private final String FILENAME = "class.map";
 	
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.common.util.ProcedureMap#getFilename()
 	 */
 	public String getFilename() {
-		return "alias.map";
+		
+		IPath path = Platform.getLocation().makeAbsolute();
+		return path.append(FILENAME).makeAbsolute().toString();
 	}
 	
 	/*

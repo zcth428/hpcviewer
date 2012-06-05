@@ -38,7 +38,6 @@ public abstract class AliasMap implements IUserData {
 				if (o instanceof HashMap) {
 					data = (HashMap<String, String>) o;
 				}
-				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -82,11 +81,24 @@ public abstract class AliasMap implements IUserData {
 			data = new HashMap<String, String>();
 		}
 		data.put(key, val);
-		
-		save();
 	}
 
-	private void save() {
+	/***
+	 * Removes the mapping for the specified key from this map if present.
+	 * @param key
+	 * @return the value if the key exists
+	 */
+	public String remove(String key) {
+		String oldClass = data.remove(key);
+		
+		return oldClass;
+	}
+
+	/***
+	 * save the changes permanently into the storage
+	 * Note: once it is stored, there is no way to restore back
+	 */
+	public void save() {
 		
 		final String filename = getFilename();
 		final File file = new File(filename);
@@ -105,7 +117,7 @@ public abstract class AliasMap implements IUserData {
 			}
 		}
 	}	
-
+	
 	abstract public String getFilename();
 	abstract public void initDefault();
 

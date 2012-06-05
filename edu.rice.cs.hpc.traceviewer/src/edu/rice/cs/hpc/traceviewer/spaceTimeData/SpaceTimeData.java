@@ -415,7 +415,13 @@ public class SpaceTimeData extends TraceEvents
 	 ************************************************************************/
 	public ProcessTimeline getProcess(int process)
 	{
-		return traces[process];
+		int relativeProcess = process - attributes.begProcess;
+		
+		// in case of single process displayed
+		if (relativeProcess >= traces.length)
+			relativeProcess = traces.length - 1;
+		
+		return traces[relativeProcess];
 	}
 
 	public int getNumberOfDisplayedProcesses()

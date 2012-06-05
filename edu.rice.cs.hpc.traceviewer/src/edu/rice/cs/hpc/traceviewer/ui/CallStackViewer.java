@@ -147,7 +147,7 @@ public class CallStackViewer extends TableViewer
 		// however, if the selected process is less than the start of displayed process, 
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
-		int adjustedPosition = position.processInCS; 
+		int adjustedPosition = position.process; //position.processInCS; 
 
 		ProcessTimeline ptl;
 		ptl = stData.getProcess(adjustedPosition);

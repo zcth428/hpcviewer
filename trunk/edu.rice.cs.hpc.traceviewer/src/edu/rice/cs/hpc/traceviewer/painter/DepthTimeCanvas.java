@@ -216,7 +216,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     	
     	Position currentPosition = stData.getPosition();
     	Position position = new Position(closeTime, currentPosition.process);
-    	position.processInCS = currentPosition.processInCS;
+    	//position.processInCS = currentPosition.processInCS;
     	
     	this.stData.updatePosition(position);
     }
@@ -301,7 +301,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     		time = (t1+t2)>>1;
 		
     	Position position = new Position(time, currentPosition.process);
-    	position.processInCS = currentPosition.processInCS;
+    	//position.processInCS = currentPosition.processInCS;
     	
     	this.stData.updatePosition(position);
 	

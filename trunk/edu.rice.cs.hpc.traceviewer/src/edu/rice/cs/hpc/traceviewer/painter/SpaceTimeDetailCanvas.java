@@ -809,7 +809,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	if (relativeProcess>=numDisplayedProcess)
     		relativeProcess = (int) (numDisplayedProcess - 1);
     	
-    	position.processInCS = relativeProcess;
+    	//position.processInCS = relativeProcess;
     	if (estimatedProcess != relativeProcess) {
         	//---------------------------------------------------------------------------------------
         	// if there is any change between the estimated process by mouse click and the
@@ -969,18 +969,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	if(mouseDown == null)
     		return;
     	int selectedProcess;
-    	int procIndex;
+    	//int procIndex;
 
     	//need to do different things if there are more traces to paint than pixels
     	if(viewHeight > getNumProcessesDisplayed())
     	{
     		selectedProcess = (int)(stData.attributes.begProcess+mouseDown.y/getScaleY());
-    		procIndex = (int)(mouseDown.y/getScaleY());
+    		//procIndex = (int)(mouseDown.y/getScaleY());
     	}
     	else
     	{
     		selectedProcess = (int)(stData.attributes.begProcess+(mouseDown.y*(getNumProcessesDisplayed()))/viewHeight);
-    		procIndex = mouseDown.y;
+    		//procIndex = mouseDown.y;
     	}
     	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
     	if (closeTime > stData.attributes.endTime) {
@@ -991,7 +991,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	}
     	
     	Position position = new Position(closeTime, selectedProcess);
-    	position.processInCS = procIndex;
+    	//position.processInCS = procIndex;
     	
     	this.stData.updatePosition(position);
     }

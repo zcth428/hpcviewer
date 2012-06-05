@@ -92,7 +92,7 @@ public class ProcessTimeline
 				cp.updateCurrentDepth(depth);
 			else
 			{
-				System.err.println("ERROR: No sample found for cpid " + cpid + " in trace (process ID, thread ID, sample): ("+sample+")");
+				System.err.println("ERROR: No sample found for cpid " + cpid + " in trace sample: "+sample);
 				System.err.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
 			}
 			return cp;

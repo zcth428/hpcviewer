@@ -25,11 +25,6 @@ public class ProcessTimeline
 	/**The amount of time that each pixel on the screen correlates to.*/
 	private double pixelLength;
 	
-	/**The ID used in the fileName that correlates to the ID of the processor*/
-	public int processID;
-	
-	/**The ID used in the fileName that correlates to the ID of the thread*/
-	public int threadID;
 	
 	final TraceDataByRank data;
 	
@@ -97,7 +92,7 @@ public class ProcessTimeline
 				cp.updateCurrentDepth(depth);
 			else
 			{
-				System.err.println("ERROR: No sample found for cpid " + cpid + " in trace (process ID, thread ID, sample): ("+processID+","+threadID+","+sample+")");
+				System.err.println("ERROR: No sample found for cpid " + cpid + " in trace (process ID, thread ID, sample): ("+sample+")");
 				System.err.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
 			}
 			return cp;

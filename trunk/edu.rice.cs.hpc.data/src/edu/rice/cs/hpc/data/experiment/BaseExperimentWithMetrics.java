@@ -17,11 +17,6 @@ public abstract class BaseExperimentWithMetrics extends BaseExperiment {
 
 	protected List<BaseMetric> metrics;
 
-	public BaseExperimentWithMetrics(File filename) {
-		super(filename);
-	}
-
-
 
 
 	public void setMetrics(List<BaseMetric> metricList) {

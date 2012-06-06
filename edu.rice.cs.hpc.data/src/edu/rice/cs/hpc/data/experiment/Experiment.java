@@ -20,7 +20,6 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
-import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.util.IUserData;
 
 import java.io.File;
@@ -44,30 +43,9 @@ import com.graphbuilder.math.*;
 
 public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 {
-	// The experiment (XML) file 
-	private File fileExperiment;
-
 	// thread level database
 	private MetricRaw[] metrics_raw;
 
-
-	//////////////////////////////////////////////////////////////////////////
-	//	INITIALIZATION														//
-	//////////////////////////////////////////////////////////////////////////
-
-
-	/*************************************************************************
-	 *	Creates an Experiment object from a file.
-	 *
-	 *	@param filename		A path to the file containing the experiment.
-	 *
-	 ************************************************************************/
-
-	public Experiment(File filename)
-	{
-		super(filename);
-		this.fileExperiment = filename;
-	}
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -75,22 +53,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	//////////////////////////////////////////////////////////////////////////
 
 
-	/*************************************************************************
-	 *	Opens the experiment from its file.
-	 *
-	 *	@exception			IOException if experiment file can't be read.
-	 *	@exception			InvalExperimentException if file contents are
-	 *							not a valid experiment.
-	 *
-	 ************************************************************************/
-
-	public void open(IUserData userData)
-			throws Exception
-	{
-		open(this.fileExperiment, userData);
-	}
-
-	
 	/*************************************************************************
 	 * Opens the experiment 
 	 * 
@@ -103,8 +65,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	public void open(File experimentFile, IUserData userData)
 			throws Exception
 	{
-		// parsing may throw exceptions
-		new ExperimentFileXML().parse(experimentFile, this, true, userData);
+		open(experimentFile, userData, true);
 	}
 
 	
@@ -466,9 +427,9 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 
 	public Experiment duplicate() {
 
-		Experiment copy = new Experiment(fileExperiment);
+		Experiment copy = new Experiment();
 		copy.configuration = configuration;
-		copy.defaultDirectory = defaultDirectory;
+		copy.fileExperiment = fileExperiment;
 		
 		return copy;
 	}

@@ -115,8 +115,8 @@ public class ExperimentView {
 		org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
 		try
 		{
-			experiment = new Experiment(new java.io.File(sFilename));
-			experiment.open( new ProcedureAliasMap() );
+			experiment = new Experiment();
+			experiment.open( new java.io.File(sFilename), new ProcedureAliasMap() );
 
 		} catch(java.io.FileNotFoundException fnf)
 		{

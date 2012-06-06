@@ -8,6 +8,7 @@ import java.io.PrintStream;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.xml.PrintFileXML;
+import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.Util;
 
 /******************************************************************************************
@@ -31,8 +32,8 @@ public class Application {
 		Experiment experiment;
 
 		try {
-			experiment = new Experiment(objFile);	// prepare the experiment
-			experiment.open(null);						// parse the database
+			experiment = new Experiment();	// prepare the experiment
+			experiment.open(objFile, null);						// parse the database
 			experiment.postprocess(false);			// create the flat view
 			this.printFlatView(objPrint, experiment);
 			return true;
@@ -121,8 +122,14 @@ public class Application {
 		
 		if (objFile.isDirectory()) {
 			File files[] = Util.getListOfXMLFiles(sFilename);
-			for (int i=0; i<files.length && !done; i++) {
-				done = objApp.openExperiment(objPrint, files[i]);
+			for (File file: files) 
+			{
+				// only experiment*.xml will be considered as database file
+				if (file.getName().startsWith(Constants.DATABASE_FILENAME)) {
+					done = objApp.openExperiment(objPrint, file);
+					if (done)
+						break;
+				}
 			}
 		} else {
 			done = objApp.openExperiment(objPrint, objFile);

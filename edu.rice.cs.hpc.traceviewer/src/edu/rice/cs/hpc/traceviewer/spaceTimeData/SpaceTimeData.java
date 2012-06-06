@@ -108,10 +108,8 @@ public class SpaceTimeData extends TraceEvents
 		{
 			System.err.println("Master buffer could not be created");
 		}
-		
-		System.out.println("Reading experiment database file '" + expFile.getPath() + "'");
 
-		BaseExperiment exp = new ExperimentWithoutMetrics(expFile);
+		BaseExperiment exp = new ExperimentWithoutMetrics();
 		try
 		{
 			exp.open( expFile, new ProcedureAliasMap() );

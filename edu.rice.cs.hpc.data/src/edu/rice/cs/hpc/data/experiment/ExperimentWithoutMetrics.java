@@ -1,7 +1,5 @@
 package edu.rice.cs.hpc.data.experiment;
 
-import java.io.File;
-
 /*************************************
  * 
  * Experiment class without metrics
@@ -9,9 +7,6 @@ import java.io.File;
  *************************************/
 public class ExperimentWithoutMetrics extends BaseExperiment {
 
-	public ExperimentWithoutMetrics(File filename) {
-		super(filename);
-	}
 
 
 	/*
@@ -20,10 +15,10 @@ public class ExperimentWithoutMetrics extends BaseExperiment {
 	 */
 	public ExperimentWithoutMetrics duplicate() {
 
-		ExperimentWithoutMetrics copy = new ExperimentWithoutMetrics(null);
+		ExperimentWithoutMetrics copy = new ExperimentWithoutMetrics();
 
 		copy.configuration = configuration;
-		copy.defaultDirectory = defaultDirectory;
+		copy.fileExperiment = fileExperiment;
 		
 		return copy;
 	}

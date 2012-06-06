@@ -29,20 +29,9 @@ public abstract class BaseExperiment implements IExperiment {
 
 	private TraceAttribute attribute;
 
-	/** The directory from which to resolve relative source file paths. */
-	protected File defaultDirectory;
+	/** The file from which to resolve relative source file paths. */
+	protected File fileExperiment;
 
-	
-	/****
-	 * constructor to create an experiment
-	 * 
-	 * @param filename: the filename of the database (*.xml file)
-	 */
-	public BaseExperiment(File filename) {
-		// protect ourselves against filename being `foo' with no parent
-		// information whatsoever.
-		this.defaultDirectory = filename.getAbsoluteFile().getParentFile();
-	}
 	
 	
 	/***
@@ -87,11 +76,36 @@ public abstract class BaseExperiment implements IExperiment {
 	}
 	
 	
+	/****
+	 * open a database
+	 * 
+	 * @param fileExperiment
+	 * @param userData
+	 * @throws Exception
+	 */
 	public void open(File fileExperiment, IUserData userData)
 			throws	Exception
 	{
+		open(fileExperiment, userData, false);
+	}
+	
+	
+	/****
+	 * open a database, possibly with parsing the metrics as well
+	 * @param fileExperiment
+	 * @param userData
+	 * @param withMetric
+	 * @throws Exception
+	 */
+	public void open(File fileExperiment, IUserData userData, boolean withMetric)
+			throws	Exception
+	{
+		// protect ourselves against filename being `foo' with no parent
+		// information whatsoever.
+		this.fileExperiment = fileExperiment;
+		
 		// parsing may throw exceptions
-		new ExperimentFileXML().parse(fileExperiment, this, false, userData);
+		new ExperimentFileXML().parse(fileExperiment, this, withMetric, userData);
 	}
 	
 	
@@ -150,7 +164,7 @@ public ExperimentConfiguration getConfiguration()
 	
 public File getDefaultDirectory()
 {
-	return this.defaultDirectory;
+	return this.fileExperiment.getAbsoluteFile().getParentFile();
 }
 
 

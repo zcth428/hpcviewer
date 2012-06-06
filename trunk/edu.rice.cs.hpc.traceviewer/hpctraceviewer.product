@@ -29,8 +29,7 @@ Release 5.2.2 (C) Copyright 2012, Rice University.
 
    <windowImages i16="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer016.png" i32="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.png" i48="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.png" i128="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer128.png"/>
 
-   <splash
-      startupProgressRect="5,275,445,15" />
+
    <launcher name="hpctraceviewer">
       <linux icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.xpm"/>
       <macosx icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer.icns"/>

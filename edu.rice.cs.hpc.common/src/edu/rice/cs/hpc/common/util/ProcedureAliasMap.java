@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.Platform;
  * class to manage procedure aliases
  *
  */
-public class ProcedureAliasMap extends AliasMap {
+public class ProcedureAliasMap extends AliasMap<String,String> {
 
 	static private final String FILE_NAME = "procedure.map";
 

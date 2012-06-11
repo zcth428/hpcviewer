@@ -10,9 +10,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
+import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
@@ -146,6 +148,13 @@ public class TraceDatabase
 				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
 				cview.updateData(database.dataTraces);
 
+				ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
+						ISourceProviderService.class);
+				
+				// keep the current data in "shared" variable
+				DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
+				dataService.setData(database.dataTraces);
+				
 				return true;
 				
 			} catch (PartInitException e) {

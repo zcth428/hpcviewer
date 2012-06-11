@@ -93,6 +93,12 @@
                id="org.eclipse.ui.commands.toggleState">
          </state>
       </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"
+            description="Show procedure-class mapping "
+            id="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"
+            name="Procedure map">
+      </command>
    </extension>
    <extension
          id="edu.rice.cs.hpc.traceviewer.menus"
@@ -126,6 +132,21 @@
                mnemonic="V"
                tooltip="View menu">
             <command
+                  commandId="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"
+                  label="Show class mapping"
+                  mnemonic="c"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="edu.rice.cs.hpc.traceviewer.services.DataService.data">
+                     <equals
+                           value="ENABLED">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
                   commandId="edu.rice.cs.hpc.traceviewer.showRecords"
                   id="edu.rice.cs.hpc.traceviewer.showRecords"
                   label="Show trace record count"
@@ -148,5 +169,15 @@
             </command>
          </menu>
       </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.services">
+      <sourceProvider
+            provider="edu.rice.cs.hpc.traceviewer.services.DataService">
+         <variable
+               name="edu.rice.cs.hpc.traceviewer.services.DataService.data"
+               priorityLevel="workbench">
+         </variable>
+      </sourceProvider>
    </extension>
 </plugin>

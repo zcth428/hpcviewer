@@ -65,7 +65,7 @@ protected LoadModuleScope objLoadModule;
  ************************************************************************/
 	
 public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int last, 
-		String proc, boolean _isalien, int cct_id, int flat_id, IUserData userData)
+		String proc, boolean _isalien, int cct_id, int flat_id, IUserData<String,String> userData)
 {
 	super(experiment, file, first, last, cct_id, flat_id);
 	this.isalien = _isalien;
@@ -91,7 +91,7 @@ public ProcedureScope(BaseExperiment experiment, SourceFile file, int first, int
  * @param _isalien
  */
 public ProcedureScope(BaseExperiment experiment, LoadModuleScope loadModule, SourceFile file, 
-		int first, int last, String proc, boolean _isalien, int cct_id, int flat_id, IUserData userData)
+		int first, int last, String proc, boolean _isalien, int cct_id, int flat_id, IUserData<String,String> userData)
 {
 	this(experiment, file, first, last,proc,_isalien, cct_id, flat_id, userData);
 	//this.iScopeID = sid;

@@ -18,9 +18,9 @@ import edu.rice.cs.hpc.data.util.IUserData;
  * This is useful when we want to change a name of a procedure X to Y (for display only) 
  *
  */
-public abstract class AliasMap implements IUserData {
+public abstract class AliasMap<K,V> implements IUserData<K, V> {
 	
-	protected HashMap<String, String> data;
+	protected HashMap<K, V> data;
 	
 	
 	/***
@@ -28,58 +28,25 @@ public abstract class AliasMap implements IUserData {
 	 */
 	public AliasMap() {
 
-		final String filename = getFilename();
-		File file = new File( filename );
-		
-		if (file.canRead()) {
-			try {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getAbsolutePath()));
-				Object o = in.readObject();
-				if (o instanceof HashMap) {
-					data = (HashMap<String, String>) o;
-				}
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else if (!file.exists()) {
-			// file doesn't exist, but we can create
-			data = new HashMap<String, String>();
-			
-			// init data
-			initDefault();
-			
-			save();
-		}
 	}
 		
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.util.IUserData#get(java.lang.String)
 	 */
-	public String get(String key) {
+	public V get(K key) {
 		
-		if (data != null) {
-			return data.get(key);
-		}
-		return null;
+		checkData();
+		return data.get(key);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.util.IUserData#put(java.lang.String, java.lang.String)
 	 */
-	public void put(String key, String val) {
+	public void put(K key, V val) {
 		
-		if (data == null) {
-			data = new HashMap<String, String>();
-		}
+		checkData();
 		data.put(key, val);
 	}
 
@@ -88,8 +55,8 @@ public abstract class AliasMap implements IUserData {
 	 * @param key
 	 * @return the value if the key exists
 	 */
-	public String remove(String key) {
-		String oldClass = data.remove(key);
+	public V remove(K key) {
+		V oldClass = data.remove(key);
 		
 		return oldClass;
 	}
@@ -103,20 +70,77 @@ public abstract class AliasMap implements IUserData {
 		final String filename = getFilename();
 		final File file = new File(filename);
 		
-		{
-			try {
-				ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream(file.getAbsoluteFile()) );
-				out.writeObject(data);
-				
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream(file.getAbsoluteFile()) );
+			out.writeObject(data);
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}	
+	
+	/***
+	 * check if we have loaded the data or not. If not, we need to read the file,
+	 * and initialize the data. If the file doesn't exist, it will be created and
+	 * initialized by the default data (implemented by the children)
+	 */
+	protected void checkData() {
+		if (data == null) {
+			final String filename = getFilename();
+			File file = new File( filename );
+			
+			if (file.canRead()) {
+				if (! readData(file.getAbsolutePath()) ) {
+					// old format, we need to remove the file
+					if ( file.delete() ) {
+						// initialize the data
+						initDefault();
+						readData(file.getAbsolutePath());
+					}
+				}
+			} else if (!file.exists()) {
+				// file doesn't exist, but we can create
+				data = new HashMap<K, V>();
+				
+				// init data
+				initDefault();
+				
+				save();
+			}
+		}
+	}
+
+	/***
+	 * read data from a given file
+	 * 
+	 * @param filename
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	private boolean readData(String filename) {
+		boolean result = false;
+		ObjectInputStream in;
+		try {
+			in = new ObjectInputStream(new FileInputStream(filename));
+			Object o = in.readObject();
+			if (o instanceof HashMap<?,?>) {
+				data = (HashMap<K, V>) o;
+				result =  true;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
 	
 	abstract public String getFilename();
 	abstract public void initDefault();

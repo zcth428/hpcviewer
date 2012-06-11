@@ -9,7 +9,7 @@ package edu.rice.cs.hpc.data.util;
  * - put: to store a data
  *
  */
-public interface IUserData {
+public interface IUserData<K,V> {
 
 	/***
 	 * get the value of the key
@@ -18,7 +18,7 @@ public interface IUserData {
 	 * @param key
 	 * @return
 	 */
-	public String get(String key);
+	public V get(K key);
 	
 	/***
 	 * store the pair key, value
@@ -27,6 +27,6 @@ public interface IUserData {
 	 * @param key
 	 * @param val
 	 */
-	public void put(String key, String val);
+	public void put(K key, V val);
 	
 }

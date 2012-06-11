@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -18,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -26,6 +30,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+
+import edu.rice.cs.hpc.common.util.ProcedureClassData;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 import edu.rice.cs.hpc.traceviewer.util.ProcedureClassMap;
 
@@ -40,7 +46,6 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 	
 	private TableViewer tableViewer ;
 	final private ProcedureClassMap data;
-	final private ColorTable colorTable;
 	
 	private Button btnRemove;
 	private Button btnEdit;
@@ -51,10 +56,9 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 	 * constructor 
 	 * @param parentShell
 	 */
-	public ProcedureClassDialog(Shell parentShell, ProcedureClassMap data, ColorTable colorTable ) {
+	public ProcedureClassDialog(Shell parentShell, ProcedureClassMap data ) {
 		super(parentShell);
 		this.data = data;
-		this.colorTable = colorTable;
 	}
 
 	/***
@@ -64,6 +68,26 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 	 */
 	public boolean isModified() {
 		return isModified;
+	}
+	
+	/****
+	 * update data in the map and in the table 
+	 * it is unfortunate we have two storage of the same data.
+	 * 
+	 * @param proc
+	 * @param procClass
+	 * @param rgb
+	 */
+	private void updateData(String proc, String procClass, RGB rgb) {
+		// update the map
+		data.put(proc, procClass, rgb);
+		
+		// update the table of colors
+		cacheImages.put(proc, rgb);
+		
+		isModified = true;
+		tableViewer.setInput(data.getEntrySet());
+		//refresh();
 	}
 	
 	/*
@@ -89,11 +113,10 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 
 			public void widgetSelected(SelectionEvent e) {
 				ProcedureMapDetailDialog dlg = new ProcedureMapDetailDialog(getShell(), 
-						"Add a new procedure-class map", "", "");
+						"Add a new procedure-class map", "", "", null);
 				if (dlg.open() == Dialog.OK) {
-					ProcedureClassDialog.this.data.put(dlg.getProcedure(), dlg.getProcedureClass());
-					isModified = true;
-					ProcedureClassDialog.this.refresh();
+					// update the map and the table
+					ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getProcedureClass(), dlg.getRGB());
 				}
 			}
 		});
@@ -121,15 +144,14 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 				Object item = selection.getFirstElement();
 				if (item instanceof Entry<?,?>) {
 					final String proc = (String)((Entry<?, ?>) item).getKey();
-					final String pclass = (String) ((Entry<?, ?>)item).getValue();
-					
+					final ProcedureClassData pclass = (ProcedureClassData) 
+							((Entry<?, ?>)item).getValue();
+
 					ProcedureMapDetailDialog dlg = new ProcedureMapDetailDialog(getShell(), 
-							"Edit procedure-class map", proc, pclass);
+							"Edit procedure-class map", proc, pclass.getProcedureClass(), pclass.getRGB());
 					if (dlg.open() == Dialog.OK) {
-						ProcedureClassDialog.this.data.remove(proc);
-						ProcedureClassDialog.this.data.put(dlg.getProcedure(), dlg.getProcedureClass());
-						isModified = true;
-						ProcedureClassDialog.this.refresh();
+						// update the map and the table
+						ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getProcedureClass(), dlg.getRGB());
 					}
 				}
 			}
@@ -195,6 +217,15 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		return composite;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.window.Window#setShellStyle(int)
+	 */
+	protected void setShellStyle(int newShellStyle) {
+
+		super.setShellStyle(newShellStyle | SWT.RESIZE );
+	} 
+	
 	/***
 	 * check and set button status
 	 */
@@ -235,6 +266,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		if (!cont)
 			return;
 		
+		// remove the data
 		for (Object o: sels) {
 			if (o instanceof Entry<?,?>) {
 				Entry<?,?> elem = (Entry<?,?>) o;
@@ -243,6 +275,9 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 				isModified = true;
 			}
 		}
+		// remove the color table
+		
+		// refresh the table
 		refresh();
 	}
 	
@@ -254,9 +289,12 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 	 */
 	private String getClassName(Object element) {
 		if (element instanceof Entry<?,?>) {
-			Entry<?,?> oLine = (Entry<?,?>) element;
-			String val = (String) oLine.getValue();
-			return val;
+			final Entry<?,?> oLine = (Entry<?, ?>) element;
+			final Object o = oLine.getValue();
+			if (o instanceof ProcedureClassData) {
+				final ProcedureClassData objValue = (ProcedureClassData) oLine.getValue();
+				return objValue.getProcedureClass();
+			}
 		}
 		return UnknownData;	
 	}
@@ -268,12 +306,12 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 	 */
 	private String getProcedureName(Object element) {
 		if (element instanceof Entry<?,?>) {
-			Entry<?,?> oLine = (Entry<?,?>) element;
-			String key = (String) oLine.getKey();
-			return key;
+			final Entry<?,?> oLine = (Entry<?, ?>) element;
+			return (String) oLine.getKey();
 		}
 		return UnknownData;
 	}
+	
 	
 	
 	/***
@@ -363,6 +401,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		}
 	}
 	
+	private ImageCache cacheImages;
 	
 	/**
 	 * 
@@ -371,6 +410,11 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 	 */
 	private class ClassColumnLabelProvider extends ColumnLabelProvider 
 	{
+		
+		public ClassColumnLabelProvider() {
+			cacheImages = new ImageCache();
+		}
+		
 		/*
 		 * (non-Javadoc)
 		 * @see org.eclipse.jface.viewers.ColumnLabelProvider#getText(java.lang.Object)
@@ -385,10 +429,59 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		 */
 		public Image getImage(Object element) {
 			String key = ProcedureClassDialog.this.getProcedureName(element);
-			if (key != UnknownData) {
-				return colorTable.getImage(key);
+			if (key == UnknownData) {
+				// procedure doesn't exist in the current data, let's find it in the data map
+				return null;
+			} else {
+				// procedure exist
+				final ProcedureClassData val = ProcedureClassDialog.this.data.get(key);
+				Image image = cacheImages.get(key, val.getRGB());
+				return image;
 			}
-			return null;
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.BaseLabelProvider#dispose()
+		 */
+		public void dispose() {
+			// dispose images before disposing the parent
+			if (cacheImages != null) {
+				cacheImages.dispose();
+			}
+			// now, dispose the parent
+			super.dispose();
+		} 
+	}
+	
+	private class ImageCache {
+		private HashMap<String,Image> images;
+
+		public ImageCache() {
+			images = new HashMap<String, Image>(10);
+		}
+		
+		public Image get(String name, RGB rgb) {
+			Image image = images.get(name);
+			if (image == null) {
+				image = put(name, rgb);
+			}
+			return image;
+		}
+		
+		public Image put(String name, RGB rgb) {
+			Image image = ColorTable.createImage(ProcedureClassDialog.this.getShell().getDisplay(), rgb);
+			images.put(name, image);
+			return image;
+		}
+		
+		public void dispose() {
+			Collection<Image> col = images.values();
+			Iterator<Image> iterator = col.iterator();
+			while(iterator.hasNext()) {
+				Image img = iterator.next();
+				img.dispose();
+			}
 		}
 	}
 	
@@ -404,15 +497,8 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		
 		shell.open();
 		
-		ProcedureClassMap pcMap = new ProcedureClassMap();
-		ColorTable ct = new ColorTable(display);
-		Object list[] = pcMap.getEntrySet();
-		for (Object o: list) {
-			Entry<?,?> entry = (Entry<?,?>) o;
-			ct.addProcedure((String) entry.getKey());
-		}
-		ct.setColorTable();
-		ProcedureClassDialog dlg = new ProcedureClassDialog(shell, pcMap, ct );
+		ProcedureClassMap pcMap = new ProcedureClassMap(shell);
+		ProcedureClassDialog dlg = new ProcedureClassDialog(shell, pcMap );
 
 		if ( dlg.open() == Dialog.OK ) {
 			if (dlg.isModified()) {

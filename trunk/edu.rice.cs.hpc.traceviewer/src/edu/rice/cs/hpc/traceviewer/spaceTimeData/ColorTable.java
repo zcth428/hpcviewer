@@ -12,18 +12,18 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
+import edu.rice.cs.hpc.common.util.ProcedureClassData;
 import edu.rice.cs.hpc.data.util.IProcedureTable;
 import edu.rice.cs.hpc.traceviewer.util.ProcedureClassMap;
+
 /**************************************************************
  * A data structure designed to hold all the name-color pairs
  * needed for the actual drawing.
  **************************************************************/
 public class ColorTable implements IProcedureTable
 {
-	static final private int COLOR_ICON_SIZE = 12;
+	static final public int COLOR_ICON_SIZE = 12;
 	static private ColorImagePair IMAGE_WHITE;
-	static private ColorImagePair IMAGE_GRAY;
-	
 	// data members
 	HashMap<String, ColorImagePair> colorMatcher;
 	
@@ -41,9 +41,9 @@ public class ColorTable implements IProcedureTable
 		procNames = new ArrayList<String>();
 		display = _display;
 		IMAGE_WHITE = new ColorImagePair(display.getSystemColor(SWT.COLOR_WHITE));
-		IMAGE_GRAY = new ColorImagePair(display.getSystemColor(SWT.COLOR_GRAY));
+		new ColorImagePair(display.getSystemColor(SWT.COLOR_GRAY));
 		
-		classMap = new ProcedureClassMap();
+		classMap = new ProcedureClassMap(display.getActiveShell());
 	}
 	
 	/**
@@ -62,8 +62,7 @@ public class ColorTable implements IProcedureTable
 	 */
 	public Color getColor(String name)
 	{
-		final String procClass = getProcedureClass( name );
-		return colorMatcher.get(procClass).getColor();
+		return colorMatcher.get(name).getColor();
 	}
 	
 	/**
@@ -73,8 +72,7 @@ public class ColorTable implements IProcedureTable
 	 */
 	public Image getImage(String name) 
 	{
-		final String procClass = getProcedureClass( name );
-		final ColorImagePair cipair = colorMatcher.get(procClass);
+		final ColorImagePair cipair = colorMatcher.get(name);
 		if (cipair != null) {
 			return cipair.getImage();
 		} else {
@@ -82,6 +80,22 @@ public class ColorTable implements IProcedureTable
 		}
 	}
 	
+
+	/***
+	 * set the procedure name with a new color
+	 * @param name
+	 * @param color
+	 */
+	public void setColor(String name, RGB rgb) {
+		// dispose old value
+		final ColorImagePair oldValue = colorMatcher.get(name);
+		if (oldValue != null) {
+			oldValue.dispose();
+		}
+		// create new value
+		final ColorImagePair newValue = new ColorImagePair(new Color(display,rgb));
+		colorMatcher.put(name, newValue);
+	}
 	
 	/*********************************************************************
 	 * Fills the colorMatcher with unique "random" colors that correspond
@@ -102,21 +116,12 @@ public class ColorTable implements IProcedureTable
 				String procName = procNames.get(l);
 				
 				if (procName != CallPath.NULL_FUNCTION) {
-					String procClass = getProcedureClass( procName );
 					
-					if (!colorMatcher.containsKey(procClass)) {
+					if (!colorMatcher.containsKey(procName)) {
 						
-						if (procClass.equals(ProcedureClassMap.CLASS_IDLE)) 
-						{
-							colorMatcher.put(ProcedureClassMap.CLASS_IDLE, IMAGE_GRAY);								
-						} else 
-						{
-							Color c = new Color(display, 
-									cmin + r.nextInt(cmax), 
-									cmin + r.nextInt(cmax), 
-									cmin + r.nextInt(cmax));
-							colorMatcher.put(procClass, new ColorImagePair(c));
-						}
+						RGB rgb = getProcedureColor( procName, cmin, cmax, r );
+						Color c = new Color(display, rgb);
+						colorMatcher.put(procName, new ColorImagePair(c));
 					}
 				} else {
 					colorMatcher.put(procName, IMAGE_WHITE);
@@ -137,21 +142,44 @@ public class ColorTable implements IProcedureTable
 			procNames.add(name);
 	}
 	
+	
 	/***********************************************************************
-	 * return the class of the procedure (if exists), otherwise return the 
-	 * 	procedure name itself
+	 * create an image based on the color
 	 * 
-	 * @param name
+	 * @param display
+	 * @param color
 	 * @return
 	 ***********************************************************************/
-	private String getProcedureClass( String name ) 
-	{
-		String procClass = this.classMap.get(name);
-		if (procClass != null)
-			return procClass;
-		else
-			return name;
+	static public Image createImage(Display display, RGB color) {
+		PaletteData palette = new PaletteData(new RGB[] {color} );
+		ImageData imgData = new ImageData(COLOR_ICON_SIZE, COLOR_ICON_SIZE, 1, palette);
+		Image image = new Image(display, imgData);
+		return image;
 	}
+	
+	/***********************************************************************
+	 * retrieve color for a procedure. If the procedure has been assigned to
+	 * 	a color, we'll return the allocated color, otherwise, create a new one
+	 * 	randomly.
+	 * 
+	 * @param name
+	 * @param colorMin
+	 * @param colorMax
+	 * @param r
+	 * @return
+	 ***********************************************************************/
+	private RGB getProcedureColor( String name, int colorMin, int colorMax, Random r ) {
+		ProcedureClassData value = this.classMap.get(name);
+		final RGB rgb;
+		if (value != null)
+			rgb = value.getRGB();
+		else 
+			rgb = new RGB(	colorMin + r.nextInt(colorMax), 
+							colorMin + r.nextInt(colorMax), 
+							colorMin + r.nextInt(colorMax));
+		return rgb;
+	}
+	
 	
 	/************************************************************************
 	 * class to pair color and image
@@ -168,10 +196,8 @@ public class ColorTable implements IProcedureTable
 		 */
 		ColorImagePair(Color c) {
 			// create an empty image filled with color c
-			PaletteData pdata = new PaletteData(new RGB[]{c.getRGB()});
-			ImageData idata = new ImageData(COLOR_ICON_SIZE, COLOR_ICON_SIZE, 1, pdata);
-			this.image = new Image(display, idata);
-			this.color = c;
+			image = ColorTable.createImage(display, c.getRGB());
+			color = c;
 		}
 		
 		/***

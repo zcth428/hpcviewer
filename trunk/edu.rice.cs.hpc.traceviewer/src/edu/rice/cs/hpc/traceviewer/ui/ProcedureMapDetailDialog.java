@@ -5,13 +5,21 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 
 /****
  * 
@@ -24,6 +32,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 	final private String title;
 	private String proc;
 	private String procClass;
+	private RGB rgb;
 	
 	private Text txtProc;
 	private Text txtClass;
@@ -44,6 +53,10 @@ public class ProcedureMapDetailDialog extends Dialog {
 		return procClass;
 	}
 	
+	public RGB getRGB() {
+		return rgb;
+	}
+	
 	/***
 	 * constructor
 	 * 
@@ -52,12 +65,13 @@ public class ProcedureMapDetailDialog extends Dialog {
 	 * @param proc : default name of the procedure
 	 * @param procClass : default name of the class
 	 */
-	protected ProcedureMapDetailDialog(Shell parentShell, String title, String proc, String procClass) {
+	protected ProcedureMapDetailDialog(Shell parentShell, String title, String proc, String procClass, RGB color) {
 		super(parentShell);
 		
 		this.proc = proc;
 		this.procClass = procClass;
 		this.title = title;
+		this.rgb = color;
 	}
 
 	/*
@@ -86,9 +100,46 @@ public class ProcedureMapDetailDialog extends Dialog {
 				this.convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH), SWT.DEFAULT)
 				.grab(true, false).applyTo(txtClass);
 		
+		final Label lblColor = new Label(composite, SWT.LEFT);
+		lblColor.setText("Color: ");
+		final Button btnColor = new Button(composite, SWT.PUSH | SWT.FLAT);
+		btnColor.computeSize(ColorTable.COLOR_ICON_SIZE, ColorTable.COLOR_ICON_SIZE);
+		if (rgb == null) {
+			rgb = getShell().getDisplay().getSystemColor(SWT.COLOR_BLACK).getRGB();
+		}
+		setButtonImage(btnColor, rgb);
+		
+		btnColor.addSelectionListener( new SelectionAdapter(){
+			public void widgetSelected(SelectionEvent e) {
+				final Shell shell = ProcedureMapDetailDialog.this.getShell();
+				ColorDialog colorDlg = new ColorDialog(shell);
+				colorDlg.setRGB(rgb);
+				colorDlg.setText("Select color for " + ProcedureMapDetailDialog.this.procClass);
+				final RGB newRGB = colorDlg.open();
+				if (newRGB != null) {
+					rgb = newRGB;
+					setButtonImage(btnColor, rgb);
+				}
+			}
+		});
+		
 		return composite;
 	}
 
+	/***
+	 * set an image to a button given the color 
+	 * @param button
+	 * @param color
+	 */
+	private void setButtonImage(Button button, RGB color) {
+		Image oldImage = button.getImage();
+		if (oldImage != null) {
+			oldImage.dispose();
+		}
+		Image image = ColorTable.createImage(getShell().getDisplay(), color);
+		button.setImage(image);
+	}
+	
     /*
      * (non-Javadoc)
      * 
@@ -123,7 +174,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 		
 		shell.open();
 		
-		ProcedureMapDetailDialog dlg = new ProcedureMapDetailDialog(shell, "edit", "procedure", "procedure-class");
+		ProcedureMapDetailDialog dlg = new ProcedureMapDetailDialog(shell, "edit", "procedure", "procedure-class", null);
 
 		dlg.open();
 		

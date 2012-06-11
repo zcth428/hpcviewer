@@ -21,9 +21,13 @@ public class DatabaseState extends AbstractSourceProvider {
 	public void dispose() {
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.ISourceProvider#getCurrentState()
+	 */
 	public Map getCurrentState() 
 	{
-		Map<String, Object> map = new HashMap<String, Object>(1);
+		Map<String, Object> map = new HashMap<String, Object>(2);
 		String value = num_opened_database>0 ? ENABLED : DISABLED;
 		map.put(DATABASE_ACTIVE_STATE, value);
 		
@@ -33,6 +37,10 @@ public class DatabaseState extends AbstractSourceProvider {
 		return map;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.ISourceProvider#getProvidedSourceNames()
+	 */
 	public String[] getProvidedSourceNames() 
 	{
 		return new String[] { DATABASE_ACTIVE_STATE, DATABASE_MERGE_STATE };

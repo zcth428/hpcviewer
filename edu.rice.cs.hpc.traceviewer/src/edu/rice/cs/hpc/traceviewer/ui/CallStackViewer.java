@@ -147,10 +147,8 @@ public class CallStackViewer extends TableViewer
 		// however, if the selected process is less than the start of displayed process, 
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
-		int adjustedPosition = position.process; //position.processInCS; 
-
 		ProcessTimeline ptl;
-		ptl = stData.getProcess(adjustedPosition);
+		ptl = stData.getProcess(position.process);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time);
 
@@ -178,7 +176,7 @@ public class CallStackViewer extends TableViewer
 		}
 		else
 		{
-			System.err.println("Internal error: unable to get process " + adjustedPosition+"\tProcess range: " +
+			System.err.println("Internal error: unable to get process " + position.process+"\tProcess range: " +
 					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
 			Debugger.printTrace("CSV traces: ");
 		}

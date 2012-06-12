@@ -1,17 +1,23 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
+import java.util.Map;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.ISourceProvider;
+import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
 import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePosition
@@ -45,9 +51,10 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		}
 		
 		setupEverything();
+		setListener();
 	}
 	
-	public void setupEverything()
+	private void setupEverything()
 	{
 		/*************************************************************************
 		 * Master Composite
@@ -68,6 +75,23 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		traceview.detailCanvas.setDepthCanvas(depthCanvas);
 	}
 	
+	private void setListener() {
+		ISourceProviderService service = (ISourceProviderService)getSite().getService(ISourceProviderService.class);
+		ISourceProvider serviceProvider = service.getSourceProvider(DataService.DATA_UPDATE);
+		serviceProvider.addSourceProviderListener( new ISourceProviderListener(){
+
+			public void sourceChanged(int sourcePriority, Map sourceValuesByName) {	}
+			public void sourceChanged(int sourcePriority, String sourceName,
+					Object sourceValue) {
+				// eclipse bug: even if we set a very specific source provider, eclipse still
+				//	gather event from other source. we then require to put a guard to avoid this.
+				if (sourceName.equals(DataService.DATA_UPDATE)) {
+					depthCanvas.refresh();
+				}
+			}
+		});
+	}
+
 	public void updateData(SpaceTimeData _stData)
 	{
 		this.depthCanvas.updateData(_stData);

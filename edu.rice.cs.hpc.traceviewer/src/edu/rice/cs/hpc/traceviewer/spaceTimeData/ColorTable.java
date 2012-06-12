@@ -33,17 +33,19 @@ public class ColorTable implements IProcedureTable
 	/**The display this ColorTable uses to generate the random colors.*/
 	Display display;
 	
-	private final ProcedureClassMap classMap;
+	private ProcedureClassMap classMap;
 	
 	/**Creates a new ColorTable with Display _display.*/
 	public ColorTable(Display _display)
 	{
 		procNames = new ArrayList<String>();
 		display = _display;
-		IMAGE_WHITE = new ColorImagePair(display.getSystemColor(SWT.COLOR_WHITE));
-		new ColorImagePair(display.getSystemColor(SWT.COLOR_GRAY));
 		
-		classMap = new ProcedureClassMap(display.getActiveShell());
+		// create our own white color so we can dispose later, instead of disposing
+		//	Eclipse's white color
+		final RGB rgb_white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
+		IMAGE_WHITE = new ColorImagePair( new Color(display, rgb_white));
+		new ColorImagePair(display.getSystemColor(SWT.COLOR_GRAY));
 	}
 	
 	/**
@@ -102,7 +104,10 @@ public class ColorTable implements IProcedureTable
 	 * to each function name in procNames.
 	 *********************************************************************/
 	public void setColorTable()
-	{
+	{	
+		// initialize the procedure-color map
+		classMap = new ProcedureClassMap(display.getActiveShell());
+
 		//This is where the data file is converted to the colorTable using colorMatcher.
 		//creates name-function-color colorMatcher for each function.
 		colorMatcher = new HashMap<String,ColorImagePair>();

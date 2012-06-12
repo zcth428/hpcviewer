@@ -178,6 +178,10 @@
                name="edu.rice.cs.hpc.traceviewer.services.DataService.data"
                priorityLevel="workbench">
          </variable>
+         <variable
+               name="edu.rice.cs.hpc.traceviewer.services.DataService.update"
+               priorityLevel="workbench">
+         </variable>
       </sourceProvider>
    </extension>
 </plugin>

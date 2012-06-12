@@ -133,7 +133,7 @@
                tooltip="View menu">
             <command
                   commandId="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"
-                  label="Show class mapping"
+                  label="Show procedure-color mapping"
                   mnemonic="c"
                   style="push">
                <visibleWhen

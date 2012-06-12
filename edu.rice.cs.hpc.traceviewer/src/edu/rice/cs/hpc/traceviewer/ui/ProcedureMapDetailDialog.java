@@ -31,7 +31,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 
 	final private String title;
 	private String proc;
-	private String procClass;
+	private String description;
 	private RGB rgb;
 	
 	private Text txtProc;
@@ -49,8 +49,8 @@ public class ProcedureMapDetailDialog extends Dialog {
 	 * retrieve the new class
 	 * @return
 	 */
-	public String getProcedureClass() {
-		return procClass;
+	public String getDescription() {
+		return description;
 	}
 	
 	public RGB getRGB() {
@@ -69,7 +69,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 		super(parentShell);
 		
 		this.proc = proc;
-		this.procClass = procClass;
+		this.description = procClass;
 		this.title = title;
 		this.rgb = color;
 	}
@@ -93,9 +93,9 @@ public class ProcedureMapDetailDialog extends Dialog {
 				.grab(true, false).applyTo(txtProc);
 		
 		final Label lblClass = new Label(composite, SWT.LEFT);
-		lblClass.setText("Class: ");
+		lblClass.setText("Description: ");
 		txtClass = new Text(composite, SWT.LEFT | SWT.SINGLE);
-		txtClass.setText(procClass);
+		txtClass.setText(description);
 		GridDataFactory.swtDefaults().hint(
 				this.convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH), SWT.DEFAULT)
 				.grab(true, false).applyTo(txtClass);
@@ -114,7 +114,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 				final Shell shell = ProcedureMapDetailDialog.this.getShell();
 				ColorDialog colorDlg = new ColorDialog(shell);
 				colorDlg.setRGB(rgb);
-				colorDlg.setText("Select color for " + ProcedureMapDetailDialog.this.procClass);
+				colorDlg.setText("Select color for " + ProcedureMapDetailDialog.this.description);
 				final RGB newRGB = colorDlg.open();
 				if (newRGB != null) {
 					rgb = newRGB;
@@ -158,7 +158,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 	 */
 	protected void okPressed() {
 		proc = txtProc.getText();
-		procClass = txtClass.getText();
+		description = txtClass.getText();
 		super.okPressed();
 	}
 	
@@ -178,7 +178,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 
 		dlg.open();
 		
-		System.out.println("proc: " + dlg.proc + ", class: " + dlg.procClass);
+		System.out.println("proc: " + dlg.proc + ", class: " + dlg.description);
 		
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())

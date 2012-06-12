@@ -115,7 +115,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 						"Add a new procedure-class map", "", "", null);
 				if (dlg.open() == Dialog.OK) {
 					// update the map and the table
-					ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getProcedureClass(), dlg.getRGB());
+					ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getDescription(), dlg.getRGB());
 				}
 			}
 		});
@@ -153,7 +153,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 						// Attention: these two actions have to be atomic !
 						ProcedureClassDialog.this.data.remove(proc);
 						// update the map and the table
-						ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getProcedureClass(), dlg.getRGB());
+						ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getDescription(), dlg.getRGB());
 					}
 				}
 			}
@@ -167,30 +167,32 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		//-----------------------------------------------------------------
 		
 		tableViewer = new TableViewer(composite, SWT.MULTI | SWT.VIRTUAL);
-		
-		final TableViewerColumn colClass = new TableViewerColumn(tableViewer, SWT.LEFT);
-		TableColumn col = colClass.getColumn();
-		col.setText("Class");
-		col.setResizable(true);
-		col.setMoveable(true);
-		col.setWidth(120);
-		
-		colClass.setLabelProvider( new ClassColumnLabelProvider() );
-		ColumnViewerSorter sortColClass = new ColumnViewerSorter(tableViewer, colClass, COLUMN_ID.CLASS);
 
+		// set procedure column
 		final TableViewerColumn colProcedure = new TableViewerColumn(tableViewer, SWT.LEFT);
-		col = colProcedure.getColumn();
+		TableColumn col = colProcedure.getColumn();
 		col.setText("Procedure");
 		col.setResizable(true);
 		col.setMoveable(true);
 		col.setWidth(220);
 		
-		colProcedure.setLabelProvider( new ColumnLabelProvider(){
+		colProcedure.setLabelProvider( new ClassColumnLabelProvider() );
+		new ColumnViewerSorter(tableViewer, colProcedure, COLUMN_ID.PROCEDURE);
+		
+		// set description column
+		final TableViewerColumn colClass = new TableViewerColumn(tableViewer, SWT.LEFT);
+		col = colClass.getColumn();
+		col.setText("Description");
+		col.setResizable(true);
+		col.setMoveable(true);
+		col.setWidth(150);
+		
+		colClass.setLabelProvider( new ColumnLabelProvider(){
 			public String getText(Object element) {
-				return ProcedureClassDialog.this.getProcedureName(element);
+				return ProcedureClassDialog.this.getClassName(element);
 			}
 		});
-		new ColumnViewerSorter(tableViewer, colProcedure, COLUMN_ID.PROCEDURE);
+		ColumnViewerSorter sortColClass = new ColumnViewerSorter(tableViewer, colClass, COLUMN_ID.CLASS);
 		
 		tableViewer.setUseHashlookup(true);
 		
@@ -422,7 +424,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		 * @see org.eclipse.jface.viewers.ColumnLabelProvider#getText(java.lang.Object)
 		 */
 		public String getText(Object element) {
-			return ProcedureClassDialog.this.getClassName(element);
+			return ProcedureClassDialog.this.getProcedureName(element);
 		}
 		
 		/*

@@ -11,6 +11,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 public class DataService extends AbstractSourceProvider {
 
 	final static public String DATA_PROVIDER = "edu.rice.cs.hpc.traceviewer.services.DataService.data";
+	final static public String DATA_UPDATE = "edu.rice.cs.hpc.traceviewer.services.DataService.update";
 	
 	private SpaceTimeData data;
 	
@@ -29,6 +30,7 @@ public class DataService extends AbstractSourceProvider {
 
 		Map<String, Object> map = new HashMap<String, Object>(1);
 		map.put(DATA_PROVIDER, getValue());
+		map.put(DATA_UPDATE, data);
 		
 		return map;
 	}
@@ -39,7 +41,7 @@ public class DataService extends AbstractSourceProvider {
 	 */
 	public String[] getProvidedSourceNames() {
 
-		return new String[] {DATA_PROVIDER};
+		return new String[] {DATA_PROVIDER, DATA_UPDATE};
 	}
 	
 	/***
@@ -49,6 +51,16 @@ public class DataService extends AbstractSourceProvider {
 	public void setData( SpaceTimeData data ) {
 		this.data = data;
 		fireSourceChanged(ISources.WORKBENCH, DATA_PROVIDER, "ENABLED");
+	}
+	
+	/***
+	 * broadcast updated data
+	 */
+	public void broadcastUpdate( Object updatedData ) {
+		if (updatedData == null)
+			fireSourceChanged(ISources.WORKBENCH, DATA_UPDATE, data);
+		else
+			fireSourceChanged(ISources.WORKBENCH, DATA_UPDATE, updatedData);
 	}
 	
 	/***

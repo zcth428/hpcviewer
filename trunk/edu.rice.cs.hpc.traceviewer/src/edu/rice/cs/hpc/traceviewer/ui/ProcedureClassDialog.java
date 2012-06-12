@@ -87,7 +87,6 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		
 		isModified = true;
 		tableViewer.setInput(data.getEntrySet());
-		//refresh();
 	}
 	
 	/*
@@ -150,6 +149,9 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 					ProcedureMapDetailDialog dlg = new ProcedureMapDetailDialog(getShell(), 
 							"Edit procedure-class map", proc, pclass.getProcedureClass(), pclass.getRGB());
 					if (dlg.open() == Dialog.OK) {
+						// update: remove the old data, and then insert a new one
+						// Attention: these two actions have to be atomic !
+						ProcedureClassDialog.this.data.remove(proc);
 						// update the map and the table
 						ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getProcedureClass(), dlg.getRGB());
 					}

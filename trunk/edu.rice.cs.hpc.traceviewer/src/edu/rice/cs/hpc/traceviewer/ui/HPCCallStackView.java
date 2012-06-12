@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
+import java.util.Map;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -9,14 +11,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.ISizeProvider;
+import org.eclipse.ui.ISourceProvider;
+import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
 import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeMiniCanvas;
+import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the call path viewer and minimap.*/
@@ -58,9 +64,10 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		}
 				
 		setupEverything();
+		setListener();
 	}
 	
-	public void setupEverything()
+	private void setupEverything()
 	{
 		/*************************************************************************
 		 * Master Composite
@@ -131,6 +138,25 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		traceview.detailCanvas.setMiniCanvas(miniCanvas);
 		
 		miniCanvas.setVisible(false);
+	}
+	
+	private void setListener() {
+		ISourceProviderService service = (ISourceProviderService)getSite().getService(ISourceProviderService.class);
+		ISourceProvider serviceProvider = service.getSourceProvider(DataService.DATA_UPDATE);
+		serviceProvider.addSourceProviderListener( new ISourceProviderListener(){
+
+			public void sourceChanged(int sourcePriority, Map sourceValuesByName) {	}
+			public void sourceChanged(int sourcePriority, String sourceName,
+					Object sourceValue) {
+				// eclipse bug: even if we set a very specific source provider, eclipse still
+				//	gather event from other source. we then require to put a guard to avoid this.
+				if (sourceName.equals(DataService.DATA_UPDATE)) {
+					if (sourceValue instanceof SpaceTimeData) {
+						csViewer.updateData((SpaceTimeData)sourceValue);
+					}
+				}
+			}
+		});
 	}
 	
 	

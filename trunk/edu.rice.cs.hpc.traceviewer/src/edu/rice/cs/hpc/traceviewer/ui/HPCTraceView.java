@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -21,14 +22,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.ISourceProvider;
+import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
 import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
+import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the traceviewer.*/
@@ -137,7 +142,20 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 				}
 			}
 		});
+		ISourceProviderService service = (ISourceProviderService)getSite().getService(ISourceProviderService.class);
+		ISourceProvider yourProvider = service.getSourceProvider(DataService.DATA_UPDATE);
+		yourProvider.addSourceProviderListener( new ISourceProviderListener(){
 
+			public void sourceChanged(int sourcePriority, Map sourceValuesByName) {	}
+			public void sourceChanged(int sourcePriority, String sourceName,
+					Object sourceValue) {
+				// eclipse bug: even if we set a very specific source provider, eclipse still
+				//	gather event from other source. we then require to put a guard to avoid this.
+				if (sourceName.equals(DataService.DATA_UPDATE)) {
+					detailCanvas.refresh(false);
+				}
+			}
+		});
 	}
 	
 	private void createToolbar(Composite parent) {

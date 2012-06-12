@@ -70,9 +70,6 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		selectedDepth = -1;
 		leftSelection = 0;
 		rightSelection = 0;
-		
-		//this.getVerticalBar().setVisible(false);
-		//this.getHorizontalBar().setVisible(false);
 	}
 	
 	
@@ -200,12 +197,20 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     	// if it is the same then repaint the canvas, otherwise we have to 
     	//	create a new image buffer
     	//------------------------------------------------------
-    	if (oldBegTime != _begTime && oldEndTime != _endTime) {
+    	if (oldBegTime != _begTime || oldEndTime != _endTime) {
     		// different time range. Needs to create a new image buffer
     		setTimeZoom(_begTime, _endTime);
     	} else
     		this.redraw();
     }
+    
+    /***
+     * force to refresh the content of the canvas. 
+     */
+    public void refresh() {
+		rebuffer();
+    }
+    
     
     public void setCSSample()
     {
@@ -301,7 +306,6 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     		time = (t1+t2)>>1;
 		
     	Position position = new Position(time, currentPosition.process);
-    	//position.processInCS = currentPosition.processInCS;
     	
     	this.stData.updatePosition(position);
 	

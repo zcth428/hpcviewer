@@ -5,7 +5,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.services.ISourceProviderService;
+
+import edu.rice.cs.hpc.traceviewer.services.DataService;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 import edu.rice.cs.hpc.traceviewer.ui.ProcedureClassDialog;
 import edu.rice.cs.hpc.traceviewer.util.ProcedureClassMap;
 
@@ -28,9 +33,24 @@ public class ProcedureClassMapAction extends AbstractHandler {
 		ProcedureClassDialog dlg = new ProcedureClassDialog(shell, classMap);
 		if ( dlg.open() == Dialog.OK ) {
 			classMap.save();
+			broadcastChanges(event);
 		}
 		
 		return null;
 	}
 
+	private void broadcastChanges(ExecutionEvent event) {
+		IWorkbenchWindow winObj = HandlerUtil.getActiveWorkbenchWindow(event);
+		ISourceProviderService sourceProviderService = (ISourceProviderService) winObj.getService(
+				ISourceProviderService.class);
+		
+		DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
+		// reset the color table
+		ColorTable colorTable = dataService.getData().getColorTable(); 
+		colorTable.dispose();
+		colorTable.setColorTable();
+		
+		// broadcast to all views
+		dataService.broadcastUpdate(null);
+	}
 }

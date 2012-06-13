@@ -14,7 +14,7 @@ HPCToolkit is principally funded by the Department of Energy&apos;s Office of
 Science as part of the SciDAC Center for Scalable Application Development
 Software and the Performance Engineering Research Institute.
 
-Release 5.2.2 (C) Copyright 2012, Rice University.
+Release 5.2.3 (C) Copyright 2012, Rice University.
       </text>
    </aboutInfo>
 
@@ -29,7 +29,6 @@ Release 5.2.2 (C) Copyright 2012, Rice University.
 
    <windowImages i16="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer016.png" i32="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.png" i48="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.png" i128="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer128.png"/>
 
-
    <launcher name="hpctraceviewer">
       <linux icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer032.xpm"/>
       <macosx icon="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer.icns"/>
@@ -41,6 +40,7 @@ Release 5.2.2 (C) Copyright 2012, Rice University.
             winLargeHigh="/edu.rice.cs.hpc.traceviewer/icons/hpctraceviewer048.BMP"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>

@@ -45,7 +45,7 @@ public class LargeByteBuffer
 		}
 	}
 	
-	public int get(long position)
+	public byte get(long position)
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
@@ -79,7 +79,17 @@ public class LargeByteBuffer
 		int loc = (int) (position % PAGE_SIZE);
 		return masterBuffer.get(page).getChar(loc);
 	}
-	
+
+	public String getString(long position, long length)
+	{
+		String str = "";
+		for (long i = 0; i < length; ++i) {
+			char c = (char)get(position + i);
+			str += c;
+		}
+		return str;
+	}
+
 	public float getFloat(long position)
 	{
 		int page = (int) (position / PAGE_SIZE);

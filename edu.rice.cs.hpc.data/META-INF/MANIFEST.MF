@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: hpcdata
 Bundle-SymbolicName: edu.rice.cs.hpc.data
-Bundle-Version: 5.2.2
+Bundle-Version: 5.2.3.qualifier
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: Rice University
 Import-Package: org.apache.xerces.parsers,

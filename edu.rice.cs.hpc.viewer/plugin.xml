@@ -48,14 +48,6 @@
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
       </view>
-      <view
-            allowMultiple="true"
-            class="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
-            icon="icons/cct.png"
-            id="edu.rice.cs.hpc.viewer.scope.ThreadScopeView"
-            name="Thread scope view"
-            restorable="true">
-      </view>
    </extension>
    <extension
          id="product"
@@ -273,6 +265,13 @@
                   style="push"
                   tooltip="Reset the current window layout to the default settings">
             </command>
+            <command
+                  commandId="org.eclipse.ui.views.showView"
+                  label="Show views"
+                  mnemonic="v"
+                  style="push"
+                  tooltip="Show all the views">
+            </command>
          </menu>
          <menu
                id="edu.rice.cs.hpc.viewer.menu.help"
@@ -292,6 +291,13 @@
                   mnemonic="m"
                   style="push"
                   tooltip="Display the manual">
+            </command>
+            <command
+                  commandId="org.eclipse.equinox.p2.ui.sdk.update"
+                  label="Check for updates"
+                  mnemonic="u"
+                  style="push"
+                  tooltip="Check for updates (hpcviewer and its required plugins)">
             </command>
          </menu>
       </menuContribution>

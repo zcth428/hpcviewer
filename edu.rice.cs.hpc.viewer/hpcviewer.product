@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer.app" id="edu.rice.cs.hpc.viewer.product" application="edu.rice.cs.hpc.viewer.application" version="5.2.3" useFeatures="false" includeLaunchers="true">
+<product name="hpcviewer" uid="edu.rice.cs.hpc.viewer.app" id="edu.rice.cs.hpc.viewer.product" application="edu.rice.cs.hpc.viewer.application" version="5.2.3.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="icons/hpcviewerEclipseShadow128.png"/>
@@ -50,7 +50,7 @@ Release 5.2.3 (C) Copyright 2012, Rice University.
    <license>
         <url>http://hpctoolkit.org</url>
         <text>
-   Copyright ((c)) 2002-2011, Rice University 
+   Copyright ((c)) 2002-2012, Rice University 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -171,6 +171,10 @@ if advised of the possibility of such damage.
       <plugin id="org.eclipse.ui.workbench"/>
       <plugin id="org.eclipse.ui.workbench.texteditor"/>
    </plugins>
+
+   <features>
+      <feature id="edu.rice.cs.hpc.viewer.feature" version="5.2.3.qualifier"/>
+   </features>
 
 
 </product>

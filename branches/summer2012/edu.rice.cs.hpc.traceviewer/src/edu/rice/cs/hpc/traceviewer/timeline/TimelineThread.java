@@ -9,7 +9,7 @@ import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 
 /***********************************************************
  * A thread that reads in the data for one line, 
@@ -22,7 +22,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 public class TimelineThread extends Thread
 {
 	/**The SpaceTimeData that this thread gets its files from and adds it data and images to.*/
-	private SpaceTimeData stData;
+	private SpaceTimeDataControllerLocal stDataController;
 	
 	/**Stores whether or not the bounds have been changed*/
 	private boolean changedBounds;
@@ -47,18 +47,17 @@ public class TimelineThread extends Thread
 	
 	final private TimelineProgressMonitor monitor;
 	
-	final private IWorkbenchWindow window;
 	
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, 
+	public TimelineThread(SpaceTimeDataControllerLocal _stDataC, 
 			boolean _changedBounds, Canvas _canvas, int _width, 
 			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
-		stData = _stData;
+		stDataController = _stDataC;
 		changedBounds = _changedBounds;
 		canvas = _canvas;
 		width = _width;
@@ -67,26 +66,28 @@ public class TimelineThread extends Thread
 		detailPaint = canvas instanceof SpaceTimeDetailCanvas;
 		
 		monitor = _monitor;
-		this.window = window;
+
 	}
 	
 	/***************************************************************
 	 * Reads in data for one line if the bounds have changed, 
 	 * then paints the data to an image, then adds the data and the
-	 * image to the stData that created it, and then gets the next
+	 * image to the stDataController that created it, and then gets the next
 	 * line that it needs to do all this for if there are any left.
 	 ***************************************************************/
 	public void run()
 	{
 		if (detailPaint)
 		{
-			ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
+			ProcessTimeline nextTrace = stDataController.getNextTrace(changedBounds);
+			//Hack bug fix.. traces in stDataController is null. Initialize it by calling prepareViewportPainting
+			stDataController.prepareViewportPainting(changedBounds);
 			while(nextTrace != null)
 			{
 				if(changedBounds)
 				{
-					nextTrace.readInData(stData.getHeight());
-					stData.addNextTrace(nextTrace);
+					nextTrace.readInData();
+					stDataController.addNextTrace(nextTrace);
 				}
 				
 				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
@@ -100,23 +101,22 @@ public class TimelineThread extends Thread
 				GC gcFinal = new GC(lineFinal);
 				GC gcOriginal = new GC(lineOriginal);
 				
-				SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
-						scaleX, scaleY );
-				stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
+				SpaceTimeSamplePainter spp = stDataController.getPainter().CreateDetailSpaceTimePainter(gcOriginal, gcFinal, scaleX, scaleY);
+				stDataController.getPainter().paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
 				
 				gcFinal.dispose();
 				gcOriginal.dispose();
 				
-				stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
+				stDataController.getPainter().addNextImage(lineOriginal, lineFinal, nextTrace.line());
 				
 				monitor.announceProgress();
 				
-				nextTrace = stData.getNextTrace(changedBounds);
+				nextTrace = stDataController.getNextTrace(changedBounds);
 			}
 		}
 		else
 		{
-			ProcessTimeline nextTrace = stData.getNextDepthTrace();
+			ProcessTimeline nextTrace = stDataController.getNextDepthTrace();
 			while (nextTrace != null)
 			{
 				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
@@ -127,7 +127,7 @@ public class TimelineThread extends Thread
 				
 				Image line = new Image(canvas.getDisplay(), width, imageHeight);
 				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY) {
+				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stDataController.getPainter().getColorTable(), scaleX, scaleY) {
 
 					//@Override
 					public void paintSample(int startPixel, int endPixel,
@@ -137,11 +137,11 @@ public class TimelineThread extends Thread
 					}
 				};
 				
-				stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
+				stDataController.getPainter().paintDepthLine(spp, nextTrace.line(), imageHeight);
 				gc.dispose();
 				
-				stData.addNextImage(line, nextTrace.line());
-				nextTrace = stData.getNextDepthTrace();
+				stDataController.getPainter().addNextImage(line, nextTrace.line());
+				nextTrace = stDataController.getNextDepthTrace();
 			}
 		}
 	}

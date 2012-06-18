@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 /**************************************************
@@ -28,7 +28,7 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
 public class CallStackViewer extends TableViewer
 {
 	/**The SpaceTimeData associated with this CallStackViewer.*/
-	private SpaceTimeData stData;
+	private SpaceTimeDataControllerLocal stDataC;
 	
 	private final TableViewerColumn viewerColumn;
 	
@@ -70,10 +70,10 @@ public class CallStackViewer extends TableViewer
 			public void handleEvent(Event event)
 			{
 				int depth = stack.getSelectionIndex(); 
-				if(depth !=-1 && depth != stData.getDepth()) {
+				if(depth !=-1 && depth != stDataC.getPainter().getDepth()) {
 					// ask the depth editor to update the depth and launch the updateDepth event
 					csview.depthEditor.setSelection(depth);
-					stData.updateDepth(depth, csviewer);
+					stDataC.getPainter().updateDepth(depth, csviewer);
 				}
 			}
 		});
@@ -86,8 +86,8 @@ public class CallStackViewer extends TableViewer
         	public Image getImage(Object element) {
         		if (element instanceof String) {
         			Image img = null;
-        			if (stData != null)
-        				img = stData.getColorTable().getImage((String)element);
+        			if (stDataC != null)
+        				img = stDataC.getPainter().getColorTable().getImage((String)element);
         			return img;
         		}
         		
@@ -120,13 +120,13 @@ public class CallStackViewer extends TableViewer
 	
 	/***
 	 * set new database
-	 * @param _stData
+	 * @param dataTraces
 	 */
-	public void updateData(SpaceTimeData _stData) 
+	public void updateData(SpaceTimeDataControllerLocal dataTraces) 
 	{
-		this.stData = _stData;
+		this.stDataC = dataTraces;
 
-		this.setSample(stData.getPosition(), this.stData.getDepth());
+		this.setSample(stDataC.getPainter().getPosition(), this.stDataC.getPainter().getDepth());
 		this.getTable().setVisible(true);
 	}
 	
@@ -148,7 +148,7 @@ public class CallStackViewer extends TableViewer
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
 		ProcessTimeline ptl;
-		ptl = stData.getProcess(position.process);
+		ptl = stDataC.getProcess(position.process);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time);
 
@@ -177,7 +177,7 @@ public class CallStackViewer extends TableViewer
 		else
 		{
 			System.err.println("Internal error: unable to get process " + position.process+"\tProcess range: " +
-					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
+					stDataC.getPainter().getBegProcess() + "-" + stDataC.getPainter().getEndProcess() + " \tNum Proc: " + stDataC.getPainter().getNumberOfDisplayedProcesses());
 			Debugger.printTrace("CSV traces: ");
 		}
 	}

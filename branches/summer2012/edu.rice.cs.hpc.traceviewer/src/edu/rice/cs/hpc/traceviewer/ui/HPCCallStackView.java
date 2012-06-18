@@ -23,7 +23,7 @@ import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeMiniCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 
 /**A view for displaying the call path viewer and minimap.*/
 //all the GUI setup for the call path and minimap are here//
@@ -32,7 +32,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	
 	public static final String ID = "hpccallstackview.view";
 	
-	SpaceTimeData stData;
+	SpaceTimeDataControllerLocal stDataC;
 	
 	Composite master;
 	
@@ -106,9 +106,9 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 					value = maximum;
 				if (value < minimum)
 					value = minimum;
-				if(stData.getDepth() != value)
+				if(stDataC.getPainter().getDepth() != value)
 				{
-					stData.updateDepth(value, csview);
+					stDataC.getPainter().updateDepth(value, csview);
 					csViewer.setDepth(value);
 				}
 			}
@@ -128,7 +128,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		
 		Label l = new Label(master, SWT.SINGLE);
 		l.setText("Mini Map");
-		miniCanvas = new SpaceTimeMiniCanvas(master, stData);
+		miniCanvas = new SpaceTimeMiniCanvas(master, stDataC);
 		miniCanvas.setLayout(new GridLayout());
 		GridData miniCanvasData = new GridData(SWT.CENTER, SWT.BOTTOM, true, false);
 		miniCanvasData.heightHint = 100;
@@ -151,8 +151,8 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 				// eclipse bug: even if we set a very specific source provider, eclipse still
 				//	gather event from other source. we then require to put a guard to avoid this.
 				if (sourceName.equals(DataService.DATA_UPDATE)) {
-					if (sourceValue instanceof SpaceTimeData) {
-						csViewer.updateData((SpaceTimeData)sourceValue);
+					if (sourceValue instanceof SpaceTimeDataControllerLocal) {
+						csViewer.updateData((SpaceTimeDataControllerLocal)sourceValue);
 					}
 				}
 			}
@@ -160,19 +160,19 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	}
 	
 	
-	public void updateData(SpaceTimeData _stData) 
+	public void updateData(SpaceTimeDataControllerLocal dataTraces) 
 	{
-		this.stData = _stData;
+		this.stDataC = dataTraces;
 		
-		depthEditor.setMaximum(stData.getMaxDepth());
+		depthEditor.setMaximum(stDataC.getPainter().getMaxDepth());
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 
-		this.csViewer.updateData(_stData);
-		this.miniCanvas.updateData(_stData);
+		this.csViewer.updateData(dataTraces);
+		this.miniCanvas.updateData(dataTraces);
 		
-		stData.addDepthListener(this);
-		stData.addPositionListener(this);
+		stDataC.getPainter().addDepthListener(this);
+		stDataC.getPainter().addPositionListener(this);
 		miniCanvas.setVisible(true);
 	}
 
@@ -219,6 +219,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	 */
 	public void setPosition(Position position) {
 		
-		this.csViewer.setSample(position, stData.getDepth());
+		this.csViewer.setSample(position, stDataC.getPainter().getDepth());
 	}
 }

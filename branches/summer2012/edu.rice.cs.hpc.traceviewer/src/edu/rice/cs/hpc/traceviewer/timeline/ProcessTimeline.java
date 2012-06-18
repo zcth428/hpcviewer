@@ -53,7 +53,7 @@ public class ProcessTimeline
 	}
 	
 	/**Fills the ProcessTimeline with data from the file.*/
-	public void readInData(int totalProcesses)
+	public void readInData()
 	{
 		data.getData(startingTime, timeRange, pixelLength);
 	}

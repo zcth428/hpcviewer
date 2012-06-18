@@ -11,7 +11,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 /*****************************************************************************
  * 
  * The Canvas onto which the MiniMap is painted.
@@ -51,7 +51,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	private boolean insideBox;
 
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
-	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeData _stData)
+	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeDataControllerLocal stDataC)
 	{	
 		super(_composite);
 		
@@ -61,8 +61,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		selectionBottomRight = new Point(0,0);
 	}
 	
-	public void updateData(SpaceTimeData _stData) {
-		this.setSpaceTimeData(_stData);
+	public void updateData(SpaceTimeDataControllerLocal dataTraces) {
+		this.setSpaceTimeData(dataTraces);
 
 		if (this.mouseState == MouseState.ST_MOUSE_INIT) {
 			this.mouseState = MouseState.ST_MOUSE_NONE;
@@ -88,7 +88,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	/**The painting of the miniMap.*/
 	public void paintControl(PaintEvent event)
 	{
-		if (this.stData == null)
+		if (this.stDataC == null)
 			return;
 			
 			
@@ -116,7 +116,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/
 	public void setBox(long topLeftTime, double topLeftProcess, long bottomRightTime, double bottomRightProcess)
 	{
-		if (this.stData == null)
+		if (this.stDataC == null)
 			return;
 		
 		topLeftPixelX = (int)Math.round(topLeftTime * getScaleX());
@@ -166,7 +166,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		
 		detailCanvas.pushUndo();
 		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
-		setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
+		setBox(stDataC.attributes.begTime, stDataC.attributes.begProcess, stDataC.attributes.endTime, stDataC.attributes.endProcess);
 	}
 	
 	/**Updates the selectionBox on the MiniMap to have corners at p1 and p2.*/
@@ -206,13 +206,13 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	/**Gets the scale in the X-direction (pixels per time unit).*/
 	public double getScaleX()
 	{
-		return (double)viewWidth / (double)stData.getWidth();
+		return (double)viewWidth / (double)stDataC.getWidth();
 	}
 
 	/**Gets the scale in the Y-direction (pixels per process).*/
 	public double getScaleY()
 	{
-		return (double)viewHeight / (double)stData.getHeight();
+		return (double)viewHeight / (double)stDataC.getHeight();
 	}
 	
 	/* *****************************************************************

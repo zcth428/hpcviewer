@@ -34,7 +34,7 @@ import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
@@ -45,7 +45,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	public static final String ID = "hpctraceview.view";
 	
 	/** Stores/Creates all of the data that is used in the view.*/
-	private SpaceTimeData stData = null;
+	private SpaceTimeDataControllerLocal stDataC = null;
 	
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
@@ -76,13 +76,13 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/*************************************************************************
 	 * update new data
 	 *************************************************************************/
-	public void updateData(SpaceTimeData _stData)
+	public void updateData(SpaceTimeDataControllerLocal dataTraces)
 	{
-		this.stData = _stData;
-		this.detailCanvas.updateData(_stData);
+		this.stDataC = dataTraces;
+		this.detailCanvas.updateData(dataTraces);
 		
-		this.stData.addDepthListener(this);
-		this.stData.addPositionListener(this);
+		this.stDataC.getPainter().addDepthListener(this);
+		this.stDataC.getPainter().addPositionListener(this);
 		detailCanvas.setVisible(true);
 	}
 	
@@ -102,9 +102,9 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		this.detailCanvas.setFocus();
 	}
 	
-	public SpaceTimeData getData()
+	public SpaceTimeDataControllerLocal getData()
 	{
-		return stData;
+		return stDataC;
 	}
 
 	public void setPosition(Position position)
@@ -137,7 +137,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 				if (commandId.equals(OptionRecordsDisplay.commandId))
 				{
 					// force the canvas to redraw the content
-					if (stData != null)
+					if (stDataC != null)
 						detailCanvas.refresh(false);
 				}
 			}

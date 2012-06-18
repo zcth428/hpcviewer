@@ -17,7 +17,7 @@ import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SummaryTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 
 public class HPCSummaryView extends ViewPart implements ITracePosition
 {
@@ -89,7 +89,7 @@ public class HPCSummaryView extends ViewPart implements ITracePosition
 		});
 	}
 
-	public void updateData(SpaceTimeData stData)
+	public void updateData(SpaceTimeDataControllerLocal dataTraces)
 	{
 		//stData.addPositionListener(this);
 		summaryCanvas.setVisible(true);

@@ -15,7 +15,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView;
@@ -35,7 +35,7 @@ public class TraceDatabase
 	final private static int MIN_TRACE_SIZE = 32+8+24+TraceDataByRank.SIZE_OF_TRACE_RECORD*2;
 				
 	static private HashMap<IWorkbenchWindow, TraceDatabase> listOfDatabases = null;
-	private SpaceTimeData dataTraces = null;
+	private SpaceTimeDataControllerLocal dataTraces = null;
 	
 	/***
 	 * get the instance of this class
@@ -65,7 +65,7 @@ public class TraceDatabase
 		
 		if (listOfDatabases != null) {
 			final TraceDatabase data = listOfDatabases.get(_window);
-			data.dataTraces.dispose();
+			data.dataTraces.getPainter().dispose();
 			listOfDatabases.remove(_window);
 		}
 	}
@@ -121,7 +121,8 @@ public class TraceDatabase
 			//if (database.dataTraces != null)
 			//	database.dataTraces.dispose();
 			
-			database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+			//database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+			database.dataTraces = new SpaceTimeDataControllerLocal(window, statusMgr, location.fileXML, location.fileTrace);
 			
 			statusMgr.setMessage("Rendering trace data ...");
 			shell.update();

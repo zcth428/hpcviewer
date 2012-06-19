@@ -5,8 +5,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
-import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 
 /******************************************************
@@ -20,8 +19,6 @@ import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
  *******************************************************/
 public abstract class BaseViewPaint {
 	
-	private ImageTraceAttributes attributes;
-	private PaintManager painter;
 	private boolean changedBounds;
 	
 	final private TimelineProgressMonitor monitor;
@@ -29,7 +26,7 @@ public abstract class BaseViewPaint {
 	protected int lineNum;
 	private final IWorkbenchWindow window;
 	
-	protected SpaceTimeDataControllerLocal controller;
+	protected SpaceTimeDataController controller;
 	
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -41,11 +38,9 @@ public abstract class BaseViewPaint {
 	 * @param _statusMgr: used for displaying the status
 	 * @param _monitor: progress monitor
 	 */
-	public BaseViewPaint(PaintManager paintManager, ImageTraceAttributes _attributes, boolean _changeBound, 
-			IStatusLineManager _statusMgr, IWorkbenchWindow window, SpaceTimeDataControllerLocal _controller) 
+	public BaseViewPaint(boolean _changeBound, 
+			IStatusLineManager _statusMgr, IWorkbenchWindow window, SpaceTimeDataController _controller) 
 	{
-		painter = paintManager;
-		attributes = _attributes;
 		changedBounds = _changeBound;
 		monitor = new TimelineProgressMonitor(_statusMgr );
 		controller = _controller;

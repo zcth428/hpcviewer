@@ -6,14 +6,14 @@ import java.util.Map;
 import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.ISources;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 public class DataService extends AbstractSourceProvider {
 
 	final static public String DATA_PROVIDER = "edu.rice.cs.hpc.traceviewer.services.DataService.data";
 	final static public String DATA_UPDATE = "edu.rice.cs.hpc.traceviewer.services.DataService.update";
 	
-	private SpaceTimeDataControllerLocal data;
+	private SpaceTimeDataController data;
 	
 
 	/*
@@ -48,7 +48,7 @@ public class DataService extends AbstractSourceProvider {
 	 * set the updated data
 	 * @param dataTraces
 	 */
-	public void setData( SpaceTimeDataControllerLocal dataTraces ) {
+	public void setData( SpaceTimeDataController dataTraces ) {
 		this.data = dataTraces;
 		fireSourceChanged(ISources.WORKBENCH, DATA_PROVIDER, "ENABLED");
 	}
@@ -67,7 +67,7 @@ public class DataService extends AbstractSourceProvider {
 	 * retrieve the current data
 	 * @return
 	 */
-	public SpaceTimeDataControllerLocal getData() {
+	public SpaceTimeDataController getData() {
 		return data;
 	}
  

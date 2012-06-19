@@ -7,6 +7,8 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 public class OpenDatabase extends AbstractHandler
@@ -17,7 +19,13 @@ public class OpenDatabase extends AbstractHandler
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		final IViewSite vSite = ( IViewSite ) HandlerUtil.getActiveSite(event);
 
-		TraceDatabase.openDatabase(window, null, vSite.getActionBars().getStatusLineManager());
+		AbstractDBOpener DBOpener;
+		
+		if (true)//TODO: figure out how we want to switch between Remote and Local storage
+			DBOpener = new LocalDBOpener();
+		
+		
+		TraceDatabase.openDatabase(window, null, vSite.getActionBars().getStatusLineManager(), DBOpener);
 		return null;
 	}
 }

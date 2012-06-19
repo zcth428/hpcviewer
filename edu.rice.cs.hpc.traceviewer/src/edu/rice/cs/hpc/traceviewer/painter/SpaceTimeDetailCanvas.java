@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
@@ -141,7 +141,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * set new database and refresh the screen
 	 * @param dataTraces
 	 */
-	public void updateData(SpaceTimeDataControllerLocal dataTraces) {
+	public void updateData(SpaceTimeDataController dataTraces) {
 		this.setSpaceTimeData(dataTraces);
 		
 		if (mouseState == MouseState.ST_MOUSE_INIT)
@@ -297,24 +297,24 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 *************************************************************************/
 	public void setDetailZoom(long _topLeftTime, double _topLeftProcess, long _bottomRightTime, double _bottomRightProcess)
 	{
-		stDataC.attributes.assertProcessBounds(stDataC.getHeight());
-		stDataC.attributes.assertTimeBounds(stDataC.getWidth());
+		stDataC.getAttributes().assertProcessBounds(stDataC.getHeight());
+		stDataC.getAttributes().assertTimeBounds(stDataC.getWidth());
 		
-		stDataC.attributes.setTime(_topLeftTime, _bottomRightTime);
-		stDataC.attributes.setProcess((int)_topLeftProcess, (int)_bottomRightProcess);
+		stDataC.getAttributes().setTime(_topLeftTime, _bottomRightTime);
+		stDataC.getAttributes().setProcess((int)_topLeftProcess, (int)_bottomRightProcess);
 		
 		final long numTimeDisplayed = this.getNumTimeUnitDisplayed();
 		if (numTimeDisplayed < Constants.MIN_TIME_UNITS_DISP)
 		{
-			stDataC.attributes.begTime += (numTimeDisplayed - Constants.MIN_TIME_UNITS_DISP) / 2;
-			stDataC.attributes.endTime = stDataC.attributes.begTime + Constants.MIN_TIME_UNITS_DISP;
+			stDataC.getAttributes().begTime += (numTimeDisplayed - Constants.MIN_TIME_UNITS_DISP) / 2;
+			stDataC.getAttributes().endTime = stDataC.getAttributes().begTime + Constants.MIN_TIME_UNITS_DISP;
 		}
 		
 		final double numProcessDisp = this.getNumProcessesDisplayed();
 		if (numProcessDisp < MIN_PROC_DISP)
 		{
-			stDataC.attributes.begProcess = (int)stDataC.attributes.begProcess;
-			stDataC.attributes.endProcess = stDataC.attributes.begProcess+MIN_PROC_DISP;
+			stDataC.getAttributes().begProcess = (int)stDataC.getAttributes().begProcess;
+			stDataC.getAttributes().endProcess = stDataC.getAttributes().begProcess+MIN_PROC_DISP;
 		}
 				
 		this.rebuffer();
@@ -338,8 +338,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (this.stDataC == null)
 			return;
 		
-		topLeftPixelX = Math.round(stDataC.attributes.begTime * getScaleX());
-		topLeftPixelY = Math.round(stDataC.attributes.begProcess * getScaleY());
+		topLeftPixelX = Math.round(stDataC.getAttributes().begTime * getScaleX());
+		topLeftPixelY = Math.round(stDataC.getAttributes().begProcess * getScaleY());
 		
 		Rectangle region = imageBuffer.getBounds();
 		if (region.width != viewWidth || region.height != viewHeight)
@@ -441,7 +441,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		long selectedTime = stDataC.getPainter().getPosition().time;
 		int selectedProcess = stDataC.getPainter().getPosition().process;
 
-		return new Frame(stDataC.attributes, stDataC.getPainter().getDepth(), selectedTime, selectedProcess);
+		return new Frame(stDataC.getAttributes(), stDataC.getPainter().getDepth(), selectedTime, selectedProcess);
 	}
 	
 	/**************************************************************************
@@ -457,7 +457,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		redoButton.setEnabled(false);
 		long selectedTime = stDataC.getPainter().getPosition().time;
 		int selectedProcess = stDataC.getPainter().getPosition().process;
-		undoStack.push(new Frame(stDataC.attributes,stDataC.getPainter().getDepth(),selectedTime,selectedProcess));
+		undoStack.push(new Frame(stDataC.getAttributes(),stDataC.getPainter().getDepth(),selectedTime,selectedProcess));
 		undoButton.setEnabled(true);
 	}
 	
@@ -471,7 +471,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		Frame nextFrame = undoStack.pop();
 		long selectedTime = stDataC.getPainter().getPosition().time;
 		int selectedProcess = stDataC.getPainter().getPosition().process;
-		Frame currentFrame = new Frame(stDataC.attributes,stDataC.getPainter().getDepth(),selectedTime,selectedProcess);
+		Frame currentFrame = new Frame(stDataC.getAttributes(),stDataC.getPainter().getDepth(),selectedTime,selectedProcess);
 		redoStack.push(currentFrame);
 		redoButton.setEnabled(true);
 		if (undoStack.isEmpty()) undoButton.setEnabled(false);
@@ -488,7 +488,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		Frame nextFrame = redoStack.pop();
 		long selectedTime = stDataC.getPainter().getPosition().time;
 		int selectedProcess = stDataC.getPainter().getPosition().process;
-		Frame currentFrame = new Frame(stDataC.attributes,stDataC.getPainter().getDepth(),selectedTime,selectedProcess);
+		Frame currentFrame = new Frame(stDataC.getAttributes(),stDataC.getPainter().getDepth(),selectedTime,selectedProcess);
 		undoStack.push(currentFrame);
 		undoButton.setEnabled(true);
 		if (redoStack.isEmpty()) redoButton.setEnabled(false);
@@ -528,16 +528,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		pushUndo();
 		final double SCALE = .4;
 		
-		double yMid = (stDataC.attributes.endProcess+stDataC.attributes.begProcess)/2.0;
+		double yMid = (stDataC.getAttributes().endProcess+stDataC.getAttributes().begProcess)/2.0;
 		
-		final double numProcessDisp = stDataC.attributes.endProcess - stDataC.attributes.begProcess;
+		final double numProcessDisp = stDataC.getAttributes().endProcess - stDataC.getAttributes().begProcess;
 		
 		double p2 = Math.ceil( yMid+numProcessDisp*SCALE );
 		double p1 = Math.floor( yMid-numProcessDisp*SCALE );
 		
-		stDataC.attributes.assertProcessBounds(stDataC.getHeight());
+		stDataC.getAttributes().assertProcessBounds(stDataC.getHeight());
 		
-		if(p2 == stDataC.attributes.endProcess && p1 == stDataC.attributes.begProcess)
+		if(p2 == stDataC.getAttributes().endProcess && p1 == stDataC.getAttributes().begProcess)
 		{
 			if(numProcessDisp == 2)
 				p2--;
@@ -548,7 +548,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			}
 		}
 		
-		this.setDetailZoom(stDataC.attributes.begTime, p1, stDataC.attributes.endTime, p2);
+		this.setDetailZoom(stDataC.getAttributes().begTime, p1, stDataC.getAttributes().endTime, p2);
 	}
 
 	/**************************************************************************
@@ -562,14 +562,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		//zoom out works as follows: find mid point of times (yMid).
 		//Add/Subtract 1/2 of the scaled numProcessDisp to yMid to get new endProcess and begProcess
-		double yMid = ((double)stDataC.attributes.endProcess + (double)stDataC.attributes.begProcess)/2.0;
+		double yMid = ((double)stDataC.getAttributes().endProcess + (double)stDataC.getAttributes().begProcess)/2.0;
 		
-		final double numProcessDisp = stDataC.attributes.endProcess - stDataC.attributes.begProcess;
+		final double numProcessDisp = stDataC.getAttributes().endProcess - stDataC.getAttributes().begProcess;
 		
 		double p2 = Math.min( stDataC.getHeight(), Math.ceil( yMid+numProcessDisp*SCALE ) );
 		double p1 = Math.max( 0, Math.floor( yMid-numProcessDisp*SCALE ) );
 		
-		if(p2 == stDataC.attributes.endProcess && p1 == stDataC.attributes.begProcess)
+		if(p2 == stDataC.getAttributes().endProcess && p1 == stDataC.getAttributes().begProcess)
 		{
 			if(numProcessDisp == 2)
 				p2++;
@@ -580,7 +580,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			}
 		}
 
-		this.setDetailZoom(stDataC.attributes.begTime, p1, stDataC.attributes.endTime, p2);
+		this.setDetailZoom(stDataC.getAttributes().begTime, p1, stDataC.getAttributes().endTime, p2);
 	}
 
 	
@@ -593,14 +593,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		pushUndo();
 		final double SCALE = .4;
 		
-		long xMid = (stDataC.attributes.endTime + stDataC.attributes.begTime) / 2;
+		long xMid = (stDataC.getAttributes().endTime + stDataC.getAttributes().begTime) / 2;
 		
-		final double numTimeUnitsDisp = stDataC.attributes.endTime - stDataC.attributes.begTime;
+		final double numTimeUnitsDisp = stDataC.getAttributes().endTime - stDataC.getAttributes().begTime;
 		
 		long t2 = xMid + (long)((double)numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)((double)numTimeUnitsDisp * SCALE);
 		
-		this.setDetailZoom(t1, stDataC.attributes.begProcess, t2, stDataC.attributes.endProcess);
+		this.setDetailZoom(t1, stDataC.getAttributes().begProcess, t2, stDataC.getAttributes().endProcess);
 	}
 
 	/**************************************************************************
@@ -614,14 +614,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		//zoom out works as follows: find mid point of times (xMid).
 		//Add/Subtract 1/2 of the scaled numTimeUnitsDisp to xMid to get new endTime and begTime
-		long xMid = (stDataC.attributes.endTime + stDataC.attributes.begTime) / 2;
+		long xMid = (stDataC.getAttributes().endTime + stDataC.getAttributes().begTime) / 2;
 		
 		final long td2 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE); 
 		long t2 = Math.min( stDataC.getWidth(), xMid + td2);
 		final long td1 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
-		this.setDetailZoom(t1, stDataC.attributes.begProcess, t2, stDataC.attributes.endProcess);
+		this.setDetailZoom(t1, stDataC.getAttributes().begProcess, t2, stDataC.getAttributes().endProcess);
 	}
 	
 	/**************************************************************************
@@ -792,7 +792,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     private Position getAdjustedProcess(Position position) {
     	
     	double numDisplayedProcess = stDataC.getPainter().getNumberOfDisplayedProcesses();
-    	int estimatedProcess = (int) (position.process - stDataC.attributes.begProcess);			
+    	int estimatedProcess = (int) (position.process - stDataC.getAttributes().begProcess);			
     	double scaleProcess = numDisplayedProcess/(double)this.getNumProcessesDisplayed();
     	
     	//---------------------------------------------------------------------------------------
@@ -816,26 +816,26 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     		//	estimated process by the array of displayed process, we need to adjust
     		//	the absolute process
         	//---------------------------------------------------------------------------------------
-        	position.process = (int) (relativeProcess/scaleProcess + stDataC.attributes.begProcess);
+        	position.process = (int) (relativeProcess/scaleProcess + stDataC.getAttributes().begProcess);
     	}
     	return position;
     	
     }
     
     private boolean canGoEast() {
-    	return (stDataC.attributes.begTime > 0);
+    	return (stDataC.getAttributes().begTime > 0);
     }
     
     private boolean canGoWest() {
-    	return (stDataC.attributes.endTime< this.stDataC.getWidth());
+    	return (stDataC.getAttributes().endTime< this.stDataC.getWidth());
     }
     
     private boolean canGoNorth() {
-    	return (stDataC.attributes.begProcess>0);
+    	return (stDataC.getAttributes().begProcess>0);
     }
     
     private boolean canGoSouth() {
-    	return (stDataC.attributes.endProcess<this.stDataC.getHeight());
+    	return (stDataC.getAttributes().endProcess<this.stDataC.getHeight());
     }
     /**********
      * check the status of all buttons
@@ -846,18 +846,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.redoButton.setEnabled( this.redoStack.size()>0 );
 		
 		this.tZoomInButton.setEnabled( this.getNumTimeUnitDisplayed() > Constants.MIN_TIME_UNITS_DISP );
-		this.tZoomOutButton.setEnabled(stDataC.attributes.begTime>0 || stDataC.attributes.endTime<stDataC.getWidth() );
+		this.tZoomOutButton.setEnabled(stDataC.getAttributes().begTime>0 || stDataC.getAttributes().endTime<stDataC.getWidth() );
 		
 		this.pZoomInButton.setEnabled( getNumProcessesDisplayed() > MIN_PROC_DISP );
-		this.pZoomOutButton.setEnabled( stDataC.attributes.begProcess>0 || stDataC.attributes.endProcess<stDataC.getHeight());
+		this.pZoomOutButton.setEnabled( stDataC.getAttributes().begProcess>0 || stDataC.getAttributes().endProcess<stDataC.getHeight());
 		
 		this.goEastButton.setEnabled( canGoEast() );
 		this.goWestButton.setEnabled( canGoWest() );
 		this.goNorthButton.setEnabled( canGoNorth() );
 		this.goSouthButton.setEnabled( canGoSouth() );
 		
-		homeButton.setEnabled( stDataC.attributes.begTime>0 || stDataC.attributes.endTime<stDataC.getWidth()
-				|| stDataC.attributes.begProcess>0 || stDataC.attributes.endProcess<stDataC.getHeight() );
+		homeButton.setEnabled( stDataC.getAttributes().begTime>0 || stDataC.getAttributes().endTime<stDataC.getWidth()
+				|| stDataC.getAttributes().begProcess>0 || stDataC.getAttributes().endProcess<stDataC.getHeight() );
 
     }
     
@@ -915,7 +915,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
     	pushUndo();
-    	setDetailZoom(topLeftTime, stDataC.attributes.begProcess, bottomRightTime, stDataC.attributes.endProcess);
+    	setDetailZoom(topLeftTime, stDataC.getAttributes().begProcess, bottomRightTime, stDataC.getAttributes().endProcess);
     }
 
     /*******
@@ -974,19 +974,19 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	//need to do different things if there are more traces to paint than pixels
     	if(viewHeight > getNumProcessesDisplayed())
     	{
-    		selectedProcess = (int)(stDataC.attributes.begProcess+mouseDown.y/getScaleY());
+    		selectedProcess = (int)(stDataC.getAttributes().begProcess+mouseDown.y/getScaleY());
     		//procIndex = (int)(mouseDown.y/getScaleY());
     	}
     	else
     	{
-    		selectedProcess = (int)(stDataC.attributes.begProcess+(mouseDown.y*(getNumProcessesDisplayed()))/viewHeight);
+    		selectedProcess = (int)(stDataC.getAttributes().begProcess+(mouseDown.y*(getNumProcessesDisplayed()))/viewHeight);
     		//procIndex = mouseDown.y;
     	}
-    	long closeTime = stDataC.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
-    	if (closeTime > stDataC.attributes.endTime) {
+    	long closeTime = stDataC.getAttributes().begTime + (long)((double)mouseDown.x / getScaleX());
+    	if (closeTime > stDataC.getAttributes().endTime) {
     		System.err.println("ERR STDC SCSSample time: " + closeTime +" max time: " + 
-    				stDataC.attributes.endTime + "\t new: " + ((stDataC.attributes.begTime + stDataC.attributes.endTime) >> 1));
-    		closeTime = (stDataC.attributes.begTime + stDataC.attributes.endTime) >> 1;
+    				stDataC.getAttributes().endTime + "\t new: " + ((stDataC.getAttributes().begTime + stDataC.getAttributes().endTime) >> 1));
+    		closeTime = (stDataC.getAttributes().begTime + stDataC.getAttributes().endTime) >> 1;
     		
     	}
     	
@@ -999,12 +999,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	
 	private long getNumTimeUnitDisplayed()
 	{
-		return (stDataC.attributes.endTime - stDataC.attributes.begTime);
+		return (stDataC.getAttributes().endTime - stDataC.getAttributes().begTime);
 	}
 	
 	private double getNumProcessesDisplayed()
 	{
-		return (stDataC.attributes.endProcess - stDataC.attributes.begProcess);
+		return (stDataC.getAttributes().endProcess - stDataC.getAttributes().begProcess);
 	}
 	
 	/* *****************************************************************
@@ -1121,8 +1121,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		origGC.fillRectangle(0,0,viewWidth,viewHeight);
 		
 		stDataC.prepareViewportPainting(refreshData);//Is changed bounds functionally the same as refreshData?
-		stDataC.getPainter().paintDetailViewport(bufferGC, origGC, this, stDataC.attributes.begProcess, stDataC.attributes.endProcess, 
-				stDataC.attributes.begTime, stDataC.attributes.endTime, viewWidth, viewHeight, refreshData, stDataC);
+		stDataC.getPainter().paintDetailViewport(bufferGC, origGC, this, stDataC.getAttributes().begProcess, stDataC.getAttributes().endProcess, 
+				stDataC.getAttributes().begTime, stDataC.getAttributes().endTime, viewWidth, viewHeight, refreshData, stDataC);
 		
 		bufferGC.dispose();
 		origGC.dispose();
@@ -1153,7 +1153,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		refresh(refreshData);
 		
 		// forces all other views to refresh with the new region
-		depthCanvas.refresh(stDataC.attributes.begTime, stDataC.attributes.endTime);
-		miniCanvas.setBox(stDataC.attributes.begTime, stDataC.attributes.begProcess, stDataC.attributes.endTime, stDataC.attributes.endProcess);
+		depthCanvas.refresh(stDataC.getAttributes().begTime, stDataC.getAttributes().endTime);
+		miniCanvas.setBox(stDataC.getAttributes().begTime, stDataC.getAttributes().begProcess, stDataC.getAttributes().endTime, stDataC.getAttributes().endProcess);
 	}
 }

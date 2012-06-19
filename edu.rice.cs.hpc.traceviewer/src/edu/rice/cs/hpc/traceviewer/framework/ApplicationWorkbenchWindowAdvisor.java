@@ -7,6 +7,8 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
+import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
@@ -52,7 +54,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		final IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		final IStatusLineManager status = configurer.getActionBarConfigurer().getStatusLineManager();
 		
-		TraceDatabase.openDatabase(configurer.getWindow(), args, status);
+		//I'm duplicating this code from OpenDatabase, but I think it needs to be
+		AbstractDBOpener DBOpener;
+		if (true)//TODO: figure out how we want to switch between Remote and Local storage
+			DBOpener = new LocalDBOpener();
+		
+		TraceDatabase.openDatabase(configurer.getWindow(), args, status, DBOpener);
 	}
 
 	/*

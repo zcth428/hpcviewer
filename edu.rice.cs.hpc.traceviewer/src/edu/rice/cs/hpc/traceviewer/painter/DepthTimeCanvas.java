@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**A view for displaying the depthview.*/
@@ -24,7 +24,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	
 	int maxDepth;
 	
-	SpaceTimeDataControllerLocal stDataC;
+	SpaceTimeDataController stDataC;
 	
 	Image imageBuffer;
 	
@@ -73,7 +73,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	}
 	
 	
-	public void updateData(SpaceTimeDataControllerLocal dataTraces)
+	public void updateData(SpaceTimeDataController dataTraces)
 	{
 		this.stDataC = dataTraces;
 		this.maxDepth = dataTraces.getPainter().getMaxDepth();
@@ -113,7 +113,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		if (this.stDataC == null || imageBuffer == null)
 			return;
 		
-		topLeftPixelX = Math.round(stDataC.attributes.begTime*getScaleX());
+		topLeftPixelX = Math.round(stDataC.getAttributes().begTime*getScaleX());
 		
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
@@ -217,7 +217,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     	if(mouseDown == null)
     		return;
 
-    	long closeTime = stDataC.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
+    	long closeTime = stDataC.getAttributes().begTime + (long)((double)mouseDown.x / getScaleX());
     	
     	Position currentPosition = stDataC.getPainter().getPosition();
     	Position position = new Position(closeTime, currentPosition.process);
@@ -257,28 +257,28 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 
 	private long getNumTimeDisplayed()
 	{
-		return (stDataC.attributes.endTime - stDataC.attributes.begTime);
+		return (stDataC.getAttributes().endTime - stDataC.getAttributes().begTime);
 	}
 	
 	private void setTimeZoom(long leftTime, long rightTime)
 	{
-		stDataC.attributes.begTime= leftTime;
-		stDataC.attributes.endTime = rightTime;
+		stDataC.getAttributes().begTime= leftTime;
+		stDataC.getAttributes().endTime = rightTime;
 		
-		stDataC.attributes.assertTimeBounds(stDataC.getWidth());
+		stDataC.getAttributes().assertTimeBounds(stDataC.getWidth());
 		
 		if (getNumTimeDisplayed() < Constants.MIN_TIME_UNITS_DISP)
 		{
-			stDataC.attributes.begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
-			stDataC.attributes.endTime = stDataC.attributes.begTime + getNumTimeDisplayed();
+			stDataC.getAttributes().begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
+			stDataC.getAttributes().endTime = stDataC.getAttributes().begTime + getNumTimeDisplayed();
 			
-			stDataC.attributes.assertTimeBounds(stDataC.getWidth());
+			stDataC.getAttributes().assertTimeBounds(stDataC.getWidth());
 		}
 		
 		rebuffer();
 		
-		oldBegTime = stDataC.attributes.begTime;
-		oldEndTime = stDataC.attributes.endTime;
+		oldBegTime = stDataC.getAttributes().begTime;
+		oldEndTime = stDataC.getAttributes().endTime;
 	}
 
     
@@ -326,12 +326,12 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 		
-		stDataC.attributes.numPixelsDepthV = viewHeight;
+		stDataC.getAttributes().numPixelsDepthV = viewHeight;
 		
 		try
 		{
 			stDataC.getPainter().paintDepthViewport(bufferGC, this, 
-					stDataC.attributes.begTime, stDataC.attributes.endTime, viewWidth, viewHeight, stDataC);
+					stDataC.getAttributes().begTime, stDataC.getAttributes().endTime, viewWidth, viewHeight, stDataC);
 		}
 		catch(Exception e)
 		{

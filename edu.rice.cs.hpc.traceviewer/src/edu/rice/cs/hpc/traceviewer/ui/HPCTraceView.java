@@ -34,7 +34,7 @@ import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
@@ -45,7 +45,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	public static final String ID = "hpctraceview.view";
 	
 	/** Stores/Creates all of the data that is used in the view.*/
-	private SpaceTimeDataControllerLocal stDataC = null;
+	private SpaceTimeDataController stDataC = null;
 	
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
@@ -76,7 +76,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/*************************************************************************
 	 * update new data
 	 *************************************************************************/
-	public void updateData(SpaceTimeDataControllerLocal dataTraces)
+	public void updateData(SpaceTimeDataController dataTraces)
 	{
 		this.stDataC = dataTraces;
 		this.detailCanvas.updateData(dataTraces);
@@ -102,7 +102,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		this.detailCanvas.setFocus();
 	}
 	
-	public SpaceTimeDataControllerLocal getData()
+	public SpaceTimeDataController getData()
 	{
 		return stDataC;
 	}

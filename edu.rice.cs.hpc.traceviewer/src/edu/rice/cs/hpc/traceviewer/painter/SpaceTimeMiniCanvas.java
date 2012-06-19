@@ -11,7 +11,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 /*****************************************************************************
  * 
  * The Canvas onto which the MiniMap is painted.
@@ -51,7 +51,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	private boolean insideBox;
 
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
-	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeDataControllerLocal stDataC)
+	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeDataController stDataC)
 	{	
 		super(_composite);
 		
@@ -61,7 +61,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		selectionBottomRight = new Point(0,0);
 	}
 	
-	public void updateData(SpaceTimeDataControllerLocal dataTraces) {
+	public void updateData(SpaceTimeDataController dataTraces) {
 		this.setSpaceTimeData(dataTraces);
 
 		if (this.mouseState == MouseState.ST_MOUSE_INIT) {
@@ -166,7 +166,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		
 		detailCanvas.pushUndo();
 		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
-		setBox(stDataC.attributes.begTime, stDataC.attributes.begProcess, stDataC.attributes.endTime, stDataC.attributes.endProcess);
+		setBox(stDataC.getAttributes().begTime, stDataC.getAttributes().begProcess, stDataC.getAttributes().endTime, stDataC.getAttributes().endProcess);
 	}
 	
 	/**Updates the selectionBox on the MiniMap to have corners at p1 and p2.*/

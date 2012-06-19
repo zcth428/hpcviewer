@@ -23,7 +23,7 @@ import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeMiniCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /**A view for displaying the call path viewer and minimap.*/
 //all the GUI setup for the call path and minimap are here//
@@ -32,7 +32,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	
 	public static final String ID = "hpccallstackview.view";
 	
-	SpaceTimeDataControllerLocal stDataC;
+	SpaceTimeDataController stDataC;
 	
 	Composite master;
 	
@@ -151,8 +151,8 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 				// eclipse bug: even if we set a very specific source provider, eclipse still
 				//	gather event from other source. we then require to put a guard to avoid this.
 				if (sourceName.equals(DataService.DATA_UPDATE)) {
-					if (sourceValue instanceof SpaceTimeDataControllerLocal) {
-						csViewer.updateData((SpaceTimeDataControllerLocal)sourceValue);
+					if (sourceValue instanceof SpaceTimeDataController) {
+						csViewer.updateData((SpaceTimeDataController)sourceValue);
 					}
 				}
 			}
@@ -160,7 +160,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	}
 	
 	
-	public void updateData(SpaceTimeDataControllerLocal dataTraces) 
+	public void updateData(SpaceTimeDataController dataTraces) 
 	{
 		this.stDataC = dataTraces;
 		

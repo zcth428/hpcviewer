@@ -18,7 +18,7 @@ import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePosition
 {
@@ -92,7 +92,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 	}
 
-	public void updateData(SpaceTimeDataControllerLocal dataTraces)
+	public void updateData(SpaceTimeDataController dataTraces)
 	{
 		this.depthCanvas.updateData(dataTraces);
 		dataTraces.getPainter().addDepthListener(this);

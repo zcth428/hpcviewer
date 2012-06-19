@@ -70,12 +70,12 @@ public class PaintManager extends TraceEvents {
 	
 	private int numTraces;
 	
-	private SpaceTimeDataControllerLocal controller;
+	private SpaceTimeDataController controller;
 
 	public PaintManager(ImageTraceAttributes _attributes,
 			ImageTraceAttributes _oldAttributes, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, ColorTable _colorTable, int _maxDepth,
-			long _minBegTime, SpaceTimeDataControllerLocal spaceTimeDataController) {
+			long _minBegTime, SpaceTimeDataController spaceTimeDataController) {
 		
 		attributes = _attributes;
 		oldAttributes = _oldAttributes;
@@ -219,7 +219,7 @@ public class PaintManager extends TraceEvents {
 	public void paintDetailViewport(final GC masterGC, final GC origGC,
 			SpaceTimeDetailCanvas canvas, int _begProcess, int _endProcess,
 			long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
-			boolean refreshData, SpaceTimeDataControllerLocal _controller) {
+			boolean refreshData, SpaceTimeDataController _controller) {
 		boolean changedBounds = (refreshData ? refreshData : !attributes
 				.sameTrace(oldAttributes));
 
@@ -230,7 +230,7 @@ public class PaintManager extends TraceEvents {
 
 		attributes.lineNum = 0;
 
-		BaseViewPaint detailPaint = new BaseViewPaint(this, attributes,
+		BaseViewPaint detailPaint = new BaseViewPaint(
 				changedBounds, this.statusMgr, window, _controller) {
 
 			// @Override
@@ -280,7 +280,7 @@ public class PaintManager extends TraceEvents {
 	 *************************************************************************/
 	public void paintDepthViewport(final GC masterGC, DepthTimeCanvas canvas,
 			long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
-			SpaceTimeDataControllerLocal _controller) {
+			SpaceTimeDataController _controller) {
 		boolean changedBounds = true; // !( dtProcess == currentPosition.process
 										// &&
 										// attributes.sameDepth(oldAttributes));
@@ -292,7 +292,7 @@ public class PaintManager extends TraceEvents {
 		controller.setCurrentlySelectedProccess(currentPosition.process);
 		oldAttributes.copy(attributes);
 
-		BaseViewPaint depthPaint = new BaseViewPaint(this, attributes,
+		BaseViewPaint depthPaint = new BaseViewPaint(
 				changedBounds, this.statusMgr, window, _controller) {
 
 			// @Override
@@ -353,7 +353,8 @@ public class PaintManager extends TraceEvents {
 	
 
 	public int getNumberOfDisplayedProcesses() {
-		return numTraces;
+		return Math.min(attributes.numPixelsV,
+				attributes.endProcess - attributes.begProcess);
 	}
 	
 	/*************************************************************************
@@ -410,5 +411,6 @@ public class PaintManager extends TraceEvents {
 		// PaintManger does. Should the PaintManager share the data with the
 		// controller some how, or will this not be an issue once TraceEvents is
 		// removed.
+		this.currentPosition = position;
 	}
 }

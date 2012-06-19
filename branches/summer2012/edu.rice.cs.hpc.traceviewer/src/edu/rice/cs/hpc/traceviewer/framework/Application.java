@@ -6,6 +6,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+
 /**
  * This class controls all aspects of the application's execution
  */

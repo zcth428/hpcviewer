@@ -3,7 +3,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 import java.util.HashMap;
 
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
-import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank;
+import edu.rice.cs.hpc.traceviewer.db.TraceDataByRankLocal;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 
 /**A data structure that stores one line of timestamp-cpid data.*/
@@ -26,7 +26,7 @@ public class ProcessTimeline
 	private double pixelLength;
 	
 	
-	final TraceDataByRank data;
+	final TraceDataByRankLocal data;
 	
 	/*************************************************************************
 	 *	Reads in the call-stack trace data from the binary traceFile in the form:
@@ -49,7 +49,7 @@ public class ProcessTimeline
 				
 		pixelLength = timeRange/(double)_numPixelH;
 		
-		data = new TraceDataByRank(dataTrace, _processNumber, _numPixelH, header_size);
+		data = new TraceDataByRankLocal(dataTrace, _processNumber, _numPixelH, header_size);
 	}
 	
 	/**Fills the ProcessTimeline with data from the file.*/

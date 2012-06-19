@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 /**************************************************
@@ -28,7 +28,7 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
 public class CallStackViewer extends TableViewer
 {
 	/**The SpaceTimeData associated with this CallStackViewer.*/
-	private SpaceTimeDataControllerLocal stDataC;
+	private SpaceTimeDataController stDataC;
 	
 	private final TableViewerColumn viewerColumn;
 	
@@ -122,7 +122,7 @@ public class CallStackViewer extends TableViewer
 	 * set new database
 	 * @param dataTraces
 	 */
-	public void updateData(SpaceTimeDataControllerLocal dataTraces) 
+	public void updateData(SpaceTimeDataController dataTraces) 
 	{
 		this.stDataC = dataTraces;
 

@@ -26,12 +26,11 @@ import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
  * @author Philip Taffet
  * 
  */
-public class SpaceTimeDataControllerLocal {
+public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 	public final ImageTraceAttributes attributes;
 	ImageTraceAttributes oldAtributes;
 
-	private PaintManager painter;
 
 	private BaseDataFile dataTrace;
 
@@ -59,11 +58,27 @@ public class SpaceTimeDataControllerLocal {
 	private int dtProcess;
 	
 	IStatusLineManager statusMgr;
+	
+	static int[] MethodCounts = new int[15];
+	
+	public static void dumpAllCounts()
+	{
+		String[] MethodNames = {"Constructor", "getNextTrace", "getNextDepthTrace", "addNextTrace", "getProcess","launchDetailViewThreads","lineToPaint",
+				"prepareDepthViewportPainting","prepareViewportPainting","getPainter"};
+		
+		for (int i = 0; i < MethodNames.length; i++) {
+			System.out.println(MethodNames[i] + ": " + MethodCounts[i]);
+		}
+		System.out.println();
+	}
 
 	public SpaceTimeDataControllerLocal(
 			// ?
+			
 			IWorkbenchWindow _window, IStatusLineManager _statusMgr,
 			File expFile, File traceFile) {
+		
+		MethodCounts[0]++;
 		
 		statusMgr = _statusMgr;
 		
@@ -109,12 +124,19 @@ public class SpaceTimeDataControllerLocal {
 
 		dbName = exp.getName();
 
-		painter = new PaintManager(attributes, oldAtributes, _window,
+		super.painter = new PaintManager(attributes, oldAtributes, _window,
 				_statusMgr, colorTable, maxDepth, minBegTime, this);
 	}
 
+	@Override
 	public String getName() {
 		return this.dbName;
+	}
+	
+	@Override
+	public ImageTraceAttributes getAttributes()
+	{
+		return attributes;
 	}
 
 	/***********************************************************************
@@ -124,8 +146,11 @@ public class SpaceTimeDataControllerLocal {
 	 *            Whether or not the thread should get the data.
 	 * @return The next trace.
 	 **********************************************************************/
+	@Override
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds) {
 
+		MethodCounts[1]++;
+		
 		if (attributes.lineNum < Math.min(attributes.numPixelsV,
 				attributes.endProcess - attributes.begProcess)) {
 			attributes.lineNum++;
@@ -152,7 +177,11 @@ public class SpaceTimeDataControllerLocal {
 	 * 
 	 * @return The next trace.
 	 **********************************************************************/
+	@Override
 	public synchronized ProcessTimeline getNextDepthTrace() {
+		
+		MethodCounts[2]++;
+		
 		if (attributes.lineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
 			if (attributes.lineNum == 0) {
 				attributes.lineNum++;
@@ -173,15 +202,19 @@ public class SpaceTimeDataControllerLocal {
 	// KEEP
 	/** Adds a filled ProcessTimeline to traces - used by TimelineThreads. */
 
-	// KEEP
+	// Does this need to be part of the superclass? I think the remote way would not need this.
+	
 	public synchronized void addNextTrace(ProcessTimeline nextPtl) {
+		MethodCounts[3]++;
 		traces[nextPtl.line()] = nextPtl;
 	}
 
 	/*************************************************************************
 	 * Returns the process that has been specified.
 	 ************************************************************************/
+	@Override
 	public ProcessTimeline getProcess(int process) {
+		MethodCounts[4]++;
 		int relativeProcess = process - attributes.begProcess;
 
 		// in case of single process displayed
@@ -192,8 +225,11 @@ public class SpaceTimeDataControllerLocal {
 	}
 
 	// From BaseViewPaint
+	@Override
 	public void launchDetailViewThreads(SpaceTimeCanvas canvas,
 			int linesToPaint, double xscale, double yscale, boolean changedBounds) {
+		
+		MethodCounts[5]++;
 
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime()
 				.availableProcessors());
@@ -241,13 +277,16 @@ public class SpaceTimeDataControllerLocal {
 	 * Returns width of the spaceTimeData: The width (the last time in the
 	 * ProcessTimeline) of the longest ProcessTimeline.
 	 ************************************************************************/
+	@Override
 	public long getWidth() {
 		return maxEndTime - minBegTime;
 	}
 
 	/** Returns the index of the file to which the line-th line corresponds. */
 
+	
 	public int lineToPaint(int line) {
+		MethodCounts[6]++;
 		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
 		if (numTimelinesToPaint > attributes.numPixelsV)
 			return attributes.begProcess + (line * numTimelinesToPaint)
@@ -260,15 +299,19 @@ public class SpaceTimeDataControllerLocal {
 	 * Returns number of processes (ProcessTimelines) held in this
 	 * SpaceTimeData.
 	 ******************************************************************************/
+	@Override
 	public int getHeight() {
 		return dataTrace.getNumberOfFiles();
 	}
 
+	@Override
 	public BaseDataFile getTraceData() {
 		return this.dataTrace;
 	}
 
+	@Override
 	void prepareDepthViewportPainting() {
+		MethodCounts[7]++;
 		int lineNum = 0;// ?? It doesn't seem like lineNum is changed in the
 						// BaseViewPaint, but I'm not sure if it is changed
 						// elsewhere.
@@ -282,7 +325,9 @@ public class SpaceTimeDataControllerLocal {
 		// depthTrace;
 	}
 
+	@Override
 	public void prepareViewportPainting(boolean changedBounds) {
+		MethodCounts[8]++;
 		if (changedBounds) {
 			int numTraces = Math.min(attributes.numPixelsV,
 					attributes.endProcess - attributes.begProcess);
@@ -293,21 +338,20 @@ public class SpaceTimeDataControllerLocal {
 	/**
 	 * Returns a trace from Traces[x]
 	 */
+	@Override
 	public ProcessTimeline getTrace(int process) {
 		return traces[process];
 	}
 
+	@Override
 	public ProcessTimeline getDepthTrace() {
 		return depthTrace;
 	}
 	
-	public PaintManager getPainter()
-	{
-		return painter;
-	}
 
 	// FIXME: This is bad structure. The controller should receive this
 	// notification without needing the PaintManager to notify it of the event.
+	@Override
 	public void setCurrentlySelectedProccess(int ProcessNumber) {
 		dtProcess = ProcessNumber;
 	}

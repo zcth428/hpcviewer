@@ -131,6 +131,7 @@ public class PaintManager extends TraceEvents {
 						height, functionName);
 
 				final boolean isOverDepth = (currDepth < depth);
+				
 				// write texts (depth and number of samples) if needed
 				dstp.paintOverDepthText(currSampleMidpoint,
 						Math.min(succSampleMidpoint, attributes.numPixelsH),
@@ -138,6 +139,7 @@ public class PaintManager extends TraceEvents {
 			}
 		};
 		detailPaint.paint();
+		
 	}
 
 	/**********************************************************************
@@ -228,7 +230,7 @@ public class PaintManager extends TraceEvents {
 
 		oldAttributes.copy(attributes);
 
-		attributes.lineNum = 0;
+		attributes.lineNum = 0; 
 
 		BaseViewPaint detailPaint = new BaseViewPaint(
 				changedBounds, this.statusMgr, window, _controller) {

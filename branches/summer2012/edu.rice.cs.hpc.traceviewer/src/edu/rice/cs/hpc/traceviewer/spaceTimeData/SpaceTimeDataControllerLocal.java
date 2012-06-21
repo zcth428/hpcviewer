@@ -31,7 +31,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	public final ImageTraceAttributes attributes;
 	ImageTraceAttributes oldAtributes;
 
-
 	private BaseDataFile dataTrace;
 
 	/** The map between the nodes and the cpid's. */
@@ -56,16 +55,18 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	ProcessTimeline depthTrace;
 
 	private int dtProcess;
-	
+
 	IStatusLineManager statusMgr;
+
 	
-	static int[] MethodCounts = new int[15];
-	
-	public static void dumpAllCounts()
-	{
-		String[] MethodNames = {"Constructor", "getNextTrace", "getNextDepthTrace", "addNextTrace", "getProcess","launchDetailViewThreads","lineToPaint",
-				"prepareDepthViewportPainting","prepareViewportPainting","getPainter"};
-		
+
+	public static void dumpAllCounts() {
+		String[] MethodNames = { "Constructor", "getNextTrace",
+				"getNextDepthTrace", "addNextTrace", "getProcess",
+				"launchDetailViewThreads", "lineToPaint",
+				"prepareDepthViewportPainting", "prepareViewportPainting",
+				"getPainter" };
+
 		for (int i = 0; i < MethodNames.length; i++) {
 			System.out.println(MethodNames[i] + ": " + MethodCounts[i]);
 		}
@@ -73,15 +74,14 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	}
 
 	public SpaceTimeDataControllerLocal(
-			// ?
-			
-			IWorkbenchWindow _window, IStatusLineManager _statusMgr,
-			File expFile, File traceFile) {
-		
+
+	IWorkbenchWindow _window, IStatusLineManager _statusMgr, File expFile,
+			File traceFile) {
+
 		MethodCounts[0]++;
-		
+
 		statusMgr = _statusMgr;
-		
+
 		attributes = new ImageTraceAttributes();
 		oldAtributes = new ImageTraceAttributes();
 
@@ -98,7 +98,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 			System.out.println("Parse error in Experiment XML at line "
 					+ e.getLineNumber());
 			e.printStackTrace();
-			//return;
+			// return;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -132,10 +132,9 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	public String getName() {
 		return this.dbName;
 	}
-	
+
 	@Override
-	public ImageTraceAttributes getAttributes()
-	{
+	public ImageTraceAttributes getAttributes() {
 		return attributes;
 	}
 
@@ -149,8 +148,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	@Override
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds) {
 
-		MethodCounts[1]++;
-		
+		 MethodCounts[1]++;
+
 		if (attributes.lineNum < Math.min(attributes.numPixelsV,
 				attributes.endProcess - attributes.begProcess)) {
 			attributes.lineNum++;
@@ -161,9 +160,19 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 								- attributes.begTime, minBegTime
 								+ attributes.begTime, HEADER_SIZE);
 			else {
-				if (traces.length >= attributes.lineNum)
+				if (traces.length >= attributes.lineNum) {
+					if (traces[attributes.lineNum - 1] == null)//Why is it sometimes null????
+					{
+						System.out.println("Was null, auto-fixing");
+						traces[attributes.lineNum - 1] = new ProcessTimeline(
+								attributes.lineNum - 1, scopeMap, dataTrace,
+								lineToPaint(attributes.lineNum - 1),
+								attributes.numPixelsH, attributes.endTime
+										- attributes.begTime, minBegTime
+										+ attributes.begTime, HEADER_SIZE);
+					}
 					return traces[attributes.lineNum - 1];
-				else
+				} else
 					System.err.println("STD error: trace paints "
 							+ traces.length + " < line number "
 							+ attributes.lineNum);
@@ -179,9 +188,9 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	 **********************************************************************/
 	@Override
 	public synchronized ProcessTimeline getNextDepthTrace() {
-		
-		MethodCounts[2]++;
-		
+
+		 MethodCounts[2]++;
+
 		if (attributes.lineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
 			if (attributes.lineNum == 0) {
 				attributes.lineNum++;
@@ -199,13 +208,15 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 			return null;
 	}
 
-	// KEEP
 	/** Adds a filled ProcessTimeline to traces - used by TimelineThreads. */
 
-	// Does this need to be part of the superclass? I think the remote way would not need this.
-	
+	// Does this need to be part of the superclass? I think the remote way would
+	// not need this.
+
 	public synchronized void addNextTrace(ProcessTimeline nextPtl) {
-		MethodCounts[3]++;
+		 MethodCounts[3]++;
+		if (nextPtl == null)
+			System.out.println("Saving a null PTL?");
 		traces[nextPtl.line()] = nextPtl;
 	}
 
@@ -227,14 +238,31 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	// From BaseViewPaint
 	@Override
 	public void launchDetailViewThreads(SpaceTimeCanvas canvas,
-			int linesToPaint, double xscale, double yscale, boolean changedBounds) {
-		
+			int linesToPaint, double xscale, double yscale,
+			boolean changedBounds) {
+
 		MethodCounts[5]++;
 
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime()
 				.availableProcessors());
+		attributes.lineNum = 0;
 
-		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr );//FIXME:This will probably break the status reporting by creating a new one instead of using the existing one.
+		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);// I
+																					// thought
+																					// making
+																					// a
+																					// new
+																					// monitor
+																					// every
+																					// time
+																					// might
+																					// break
+																					// progress
+																					// monitoring,
+																					// but
+																					// apparently
+																					// this
+																					// works.
 		TimelineThread[] threads = new TimelineThread[num_threads];
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 			threads[threadNum] = new TimelineThread(this, changedBounds,
@@ -271,6 +299,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
 	}
 
 	/*************************************************************************
@@ -284,7 +313,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 	/** Returns the index of the file to which the line-th line corresponds. */
 
-	
 	public int lineToPaint(int line) {
 		MethodCounts[6]++;
 		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
@@ -347,7 +375,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	public ProcessTimeline getDepthTrace() {
 		return depthTrace;
 	}
-	
 
 	// FIXME: This is bad structure. The controller should receive this
 	// notification without needing the PaintManager to notify it of the event.

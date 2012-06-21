@@ -82,9 +82,11 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		// Finalize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
+
 		endPainting(linesToPaint, xscale, yscale);
 		
 		monitor.endProgress();
+		
 	}
 
 	

@@ -4,13 +4,18 @@ import java.util.Vector;
 
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRankLocal.TimeCPID;
 
-public class TraceDataByRank {
+public abstract class TraceDataByRank {
+	
+	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
+	public final static byte SIZE_OF_TRACE_RECORD = 12;
 
 	protected Vector<TimeCPID> listcpid;
 
 	public TraceDataByRank() {
 		super();
 	}
+	
+	public abstract void getData(double timeStart, double timeRange, double pixelLength);
 
 	/** Gets the time that corresponds to the index sample in times. */
 	public double getTime(int sample) {

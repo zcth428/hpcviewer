@@ -1,16 +1,20 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
 import java.util.Vector;
+import java.util.zip.GZIPOutputStream;
 
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 public class TraceDataByRankLocal extends TraceDataByRank {
 
-	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
-	public final static byte SIZE_OF_TRACE_RECORD = 12;
+
 	
 	final private BaseDataFile data;
 	final private int rank;
@@ -40,6 +44,7 @@ public class TraceDataByRankLocal extends TraceDataByRank {
 		listcpid = new Vector<TimeCPID>(numPixelH);
 	}
 	
+	@Override
 	/***
 	 * reading data from file
 	 * 
@@ -104,11 +109,7 @@ public class TraceDataByRankLocal extends TraceDataByRank {
 		postProcess();
 		
 	}
-	
-	
-	
 
-	
 	/*public BaseDataFile getTraceData()
 	{
 		return this.data;

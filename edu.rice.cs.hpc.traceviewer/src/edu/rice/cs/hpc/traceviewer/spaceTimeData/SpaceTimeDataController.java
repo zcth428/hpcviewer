@@ -8,6 +8,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 public abstract class SpaceTimeDataController {
 	
 	PaintManager painter;
+	static int[] MethodCounts = new int[15];
 
 	public SpaceTimeDataController() {
 		super();
@@ -17,6 +18,7 @@ public abstract class SpaceTimeDataController {
 
 	public PaintManager getPainter()
 	{
+		MethodCounts[9]++;
 		return painter;
 	}
 

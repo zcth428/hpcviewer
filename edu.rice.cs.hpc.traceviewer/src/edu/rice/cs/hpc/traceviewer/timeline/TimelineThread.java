@@ -3,10 +3,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
-import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
@@ -17,6 +14,12 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
  * to the SpaceTimeData object that created them, and then
  * gets the next line that it needs to do this for if there
  * are any left (synchronized methods ftw!).
+ * 
+ * Note that this class is specific to retrieving data stored
+ * locally. There is no direct parallel to it for remote data,
+ * so it is does not extend an AbstractTimelineThread or 
+ * something similar.
+ * 
  * @author Michael Franco
  **********************************************************/
 public class TimelineThread extends Thread
@@ -80,8 +83,12 @@ public class TimelineThread extends Thread
 		if (detailPaint)
 		{
 			ProcessTimeline nextTrace = stDataController.getNextTrace(changedBounds);
-			//Hack bug fix.. traces in stDataController is null. Initialize it by calling prepareViewportPainting
+			//Traces in stDataController is null. Initialize it by calling prepareViewportPainting
 			stDataController.prepareViewportPainting(changedBounds);
+			
+			if (nextTrace==null)
+				System.out.println(getName() + " Started the thread with no PTL available");
+
 			while(nextTrace != null)
 			{
 				if(changedBounds)
@@ -113,6 +120,7 @@ public class TimelineThread extends Thread
 				
 				nextTrace = stDataController.getNextTrace(changedBounds);
 			}
+			
 		}
 		else
 		{

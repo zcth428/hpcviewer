@@ -60,6 +60,22 @@
                value="hpcviewer">
          </property>
          <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+         <property
+               name="startupProgressRect"
+               value="5,275,445,15">
+         </property>
+         <property
+               name="startupForegroundColor"
+               value="000000">
+         </property>
+         <property
+               name="startupMessageRect"
+               value="7,252,445,20">
+         </property>
+         <property
                name="aboutImage"
                value="icons/hpcviewerEclipseShadow128.png">
          </property>
@@ -69,15 +85,7 @@
          </property>
          <property
                name="windowImages"
-               value="icons/hpcviewerEclipseShadow16.png,icons/hpcviewerEclipseShadow32.png,icons/hpcviewerEclipseShadow48.png,icons/hpcviewerEclipseShadow64.png,icons/hpcviewerEclipseShadow128.png">
-         </property>
-         <property
-               name="preferenceCustomization"
-               value="plugin_customization.ini">
-         </property>
-         <property
-               name="startupProgressRect"
-               value="1,273,245,7">
+               value="icons/hpcviewerEclipse16.gif,icons/hpcviewerEclipse32.gif,icons/hpcviewerEclipse48.gif,icons/hpcviewerEclipse64.gif,icons/hpcviewerEclipse128.gif">
          </property>
       </product>
    </extension>

@@ -3,10 +3,8 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
@@ -15,7 +13,6 @@ import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
-import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
@@ -28,7 +25,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
  */
 public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
-	public final ImageTraceAttributes attributes;
+	
 	ImageTraceAttributes oldAtributes;
 
 	private BaseDataFile dataTrace;
@@ -39,26 +36,13 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	/** The maximum depth of any single CallStackSample in any trace. */
 	private int maxDepth;
 
-	/**
-	 * The minimum beginning and maximum ending time stamp across all traces (in
-	 * microseconds)).
-	 */
-	private long minBegTime;
-	private long maxEndTime;
-
-	private ProcessTimeline traces[];
-
-	private String dbName;
 
 	private int HEADER_SIZE;
 
-	ProcessTimeline depthTrace;
 
 	private int dtProcess;
 
 	IStatusLineManager statusMgr;
-
-	
 
 	public static void dumpAllCounts() {
 		String[] MethodNames = { "Constructor", "getNextTrace",
@@ -102,6 +86,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		Height = dataTrace.getNumberOfFiles();
+		
 		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);
 
@@ -126,17 +112,11 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
 				_statusMgr, colorTable, maxDepth, minBegTime, this);
+		
 	}
 
-	@Override
-	public String getName() {
-		return this.dbName;
-	}
 
-	@Override
-	public ImageTraceAttributes getAttributes() {
-		return attributes;
-	}
+
 
 	/***********************************************************************
 	 * Gets the next available trace to be filled/painted
@@ -145,10 +125,9 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	 *            Whether or not the thread should get the data.
 	 * @return The next trace.
 	 **********************************************************************/
-	@Override
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds) {
 
-		 MethodCounts[1]++;
+		MethodCounts[1]++;
 
 		if (attributes.lineNum < Math.min(attributes.numPixelsV,
 				attributes.endProcess - attributes.begProcess)) {
@@ -161,7 +140,9 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 								+ attributes.begTime, HEADER_SIZE);
 			else {
 				if (traces.length >= attributes.lineNum) {
-					if (traces[attributes.lineNum - 1] == null)//Why is it sometimes null????
+					if (traces[attributes.lineNum - 1] == null)// Why is it
+																// sometimes
+																// null????
 					{
 						System.out.println("Was null, auto-fixing");
 						traces[attributes.lineNum - 1] = new ProcessTimeline(
@@ -186,10 +167,9 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	 * 
 	 * @return The next trace.
 	 **********************************************************************/
-	@Override
 	public synchronized ProcessTimeline getNextDepthTrace() {
 
-		 MethodCounts[2]++;
+		MethodCounts[2]++;
 
 		if (attributes.lineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
 			if (attributes.lineNum == 0) {
@@ -214,7 +194,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	// not need this.
 
 	public synchronized void addNextTrace(ProcessTimeline nextPtl) {
-		 MethodCounts[3]++;
+		MethodCounts[3]++;
 		if (nextPtl == null)
 			System.out.println("Saving a null PTL?");
 		traces[nextPtl.line()] = nextPtl;
@@ -236,10 +216,15 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	}
 
 	// From BaseViewPaint
+	/**
+	 * This fills the Traces array with the proper ProcessTimelines. In the
+	 * local implementation, it launches n TimelineThreads, where n is the
+	 * available number of processors on the local computer, which then do the
+	 * actual work of creating the ProcessTimelines.
+	 */
 	@Override
-	public void launchDetailViewThreads(SpaceTimeCanvas canvas,
-			int linesToPaint, double xscale, double yscale,
-			boolean changedBounds) {
+	public void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
+			double xscale, double yscale, boolean changedBounds) {
 
 		MethodCounts[5]++;
 
@@ -247,22 +232,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 				.availableProcessors());
 		attributes.lineNum = 0;
 
-		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);// I
-																					// thought
-																					// making
-																					// a
-																					// new
-																					// monitor
-																					// every
-																					// time
-																					// might
-																					// break
-																					// progress
-																					// monitoring,
-																					// but
-																					// apparently
-																					// this
-																					// works.
+		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
+		
 		TimelineThread[] threads = new TimelineThread[num_threads];
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 			threads[threadNum] = new TimelineThread(this, changedBounds,
@@ -299,21 +270,12 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-	}
 
-	/*************************************************************************
-	 * Returns width of the spaceTimeData: The width (the last time in the
-	 * ProcessTimeline) of the longest ProcessTimeline.
-	 ************************************************************************/
-	@Override
-	public long getWidth() {
-		return maxEndTime - minBegTime;
 	}
 
 	/** Returns the index of the file to which the line-th line corresponds. */
 
-	public int lineToPaint(int line) {
+	private int lineToPaint(int line) {
 		MethodCounts[6]++;
 		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
 		if (numTimelinesToPaint > attributes.numPixelsV)
@@ -323,21 +285,17 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 			return attributes.begProcess + line;
 	}
 
-	/******************************************************************************
-	 * Returns number of processes (ProcessTimelines) held in this
-	 * SpaceTimeData.
-	 ******************************************************************************/
+
 	@Override
-	public int getHeight() {
-		return dataTrace.getNumberOfFiles();
+	//The only part of TraceData that is needed externally is the list of processes, so we do not need to expose the whole TraceData
+	public String[] getTraceDataValuesX() {
+		return this.dataTrace.getValuesX();
 	}
 
 	@Override
-	public BaseDataFile getTraceData() {
-		return this.dataTrace;
-	}
-
-	@Override
+	/**
+	 * Makes and fills the depthTrace ProcessTimeline
+	 */
 	void prepareDepthViewportPainting() {
 		MethodCounts[7]++;
 		int lineNum = 0;// ?? It doesn't seem like lineNum is changed in the
@@ -350,7 +308,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 		depthTrace.readInData();
 		depthTrace.shiftTimeBy(minBegTime);
-		// depthTrace;
+		
 	}
 
 	@Override
@@ -363,18 +321,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		}
 	}
 
-	/**
-	 * Returns a trace from Traces[x]
-	 */
-	@Override
-	public ProcessTimeline getTrace(int process) {
-		return traces[process];
-	}
 
-	@Override
-	public ProcessTimeline getDepthTrace() {
-		return depthTrace;
-	}
 
 	// FIXME: This is bad structure. The controller should receive this
 	// notification without needing the PaintManager to notify it of the event.

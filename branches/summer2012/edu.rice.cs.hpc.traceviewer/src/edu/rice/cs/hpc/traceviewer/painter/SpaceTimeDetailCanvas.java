@@ -680,10 +680,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         					+ ((long)stDataC.getPainter().getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-        final BaseDataFile traceData = this.stDataC.getTraceData();
         
-        final String processes[] = traceData.getValuesX();
-        final int proc_start = (int)stDataC.getPainter().getBegProcess();
+        
+        final String processes[] = this.stDataC.getTraceDataValuesX();
+        final int proc_start = stDataC.getPainter().getBegProcess();
         
         // -------------------------------------------------------------------------------------------------
         // bug fix: since the end of the process is the ceiling of the selected region,
@@ -707,7 +707,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         {
     		final long selectedTime = stDataC.getPainter().getPosition().time;
     		final int rank = this.stDataC.getPainter().getPosition().process;
-    		final String selectedProcessLabel = stDataC.getTraceData().getValuesX()[rank];
+    		final String selectedProcessLabel = stDataC.getTraceDataValuesX()[rank];
             
         	crossHairLabel.setText("Cross Hair: (" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcessLabel + ")");
         }

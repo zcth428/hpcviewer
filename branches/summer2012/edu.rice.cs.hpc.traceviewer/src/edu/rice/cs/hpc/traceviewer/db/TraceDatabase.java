@@ -66,11 +66,22 @@ public class TraceDatabase {
 	 */
 	static public void removeInstance(IWorkbenchWindow _window) {
 
-		if (listOfDatabases != null) {
+		if (!databaseNull()) {
 			final TraceDatabase data = listOfDatabases.get(_window);
 			data.dataTraces.getPainter().dispose();
 			listOfDatabases.remove(_window);
 		}
+	}
+	//Sometimes listOfDatabases can have one entry that is null, but not be null itself, so we check for that
+	private static boolean databaseNull() {
+		if  (listOfDatabases == null)
+			return true;
+		else
+			for (TraceDatabase i : listOfDatabases.values()) {
+				if (i!= null)
+					return true;
+			}
+		return false;
 	}
 
 	/***

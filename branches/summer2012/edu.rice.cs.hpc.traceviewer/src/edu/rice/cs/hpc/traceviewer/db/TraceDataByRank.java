@@ -2,7 +2,7 @@ package edu.rice.cs.hpc.traceviewer.db;
 
 import java.util.Vector;
 
-import edu.rice.cs.hpc.traceviewer.db.TraceDataByRankLocal.TimeCPID;
+import edu.rice.cs.hpc.traceviewer.db.TimeCPID;
 
 public abstract class TraceDataByRank {
 	
@@ -15,7 +15,6 @@ public abstract class TraceDataByRank {
 		super();
 	}
 	
-	public abstract void getData(double timeStart, double timeRange, double pixelLength);
 
 	/** Gets the time that corresponds to the index sample in times. */
 	public double getTime(int sample) {

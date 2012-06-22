@@ -33,13 +33,14 @@ public class ProcessTimeline {
 	 * double time-stamp int Call-Path ID double time-stamp int Call-Path ID ...
 	 ************************************************************************/
 
-	/** Creates a new ProcessTimeline with the given parameters. */
+	/** Creates a new ProcessTimeline with the given parameters. 
+	 * @param _numPixelH The number of Horizontal pixels
+	 * @param _timeRange The difference between the start time and the end time
+	 */
 	public ProcessTimeline(int _lineNum, HashMap<Integer, CallPath> _scopeMap,
 			BaseDataFile dataTrace, int _processNumber, int _numPixelH,
 			double _timeRange, double _startingTime, final int header_size) {
-		
-		boolean isRemote = false; //This probably will become an argument to the function
-		
+
 		lineNum = _lineNum;
 		scopeMap = _scopeMap;
 
@@ -47,19 +48,28 @@ public class ProcessTimeline {
 		startingTime = _startingTime;
 
 		pixelLength = timeRange / (double) _numPixelH;
-		
-		if (isRemote)
-			data = new TraceDataByRankRemote();//Params?
-		else
+
 		data = new TraceDataByRankLocal(dataTrace, _processNumber, _numPixelH,
 				header_size);
 	}
 
-	/** Fills the ProcessTimeline with data from the file. */
+	public ProcessTimeline(TraceDataByRankRemote _data,
+			HashMap<Integer, CallPath> _scopeMap, int _processNumber,
+			int _numPixelH, double _timeRange, double _startingTime) {
+		data = _data;
+	}
+
+	/**
+	 * Fills the ProcessTimeline with data from the file. If this is being
+	 * called, it must be on local, so the cast is fine
+	 */
 	public void readInData() {
-		
-		data.getData(startingTime, timeRange,
-					pixelLength);
+
+		((TraceDataByRankLocal) data).getData(startingTime, timeRange,
+				pixelLength);// In some languages and scenarios casting can be
+								// an expensive operation. If this line is a
+								// performance issue, we can do the whole two
+								// classes extending an abstract class.
 	}
 
 	/** Gets the time that corresponds to the index sample in times. */

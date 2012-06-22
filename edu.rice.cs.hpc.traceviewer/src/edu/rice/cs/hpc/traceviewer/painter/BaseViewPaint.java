@@ -77,7 +77,7 @@ public abstract class BaseViewPaint {
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 		
-		controller.launchDetailViewThreads(canvas, linesToPaint, xscale, yscale, changedBounds);
+		controller.fillTraces(canvas, linesToPaint, xscale, yscale, changedBounds);
 		
 		// -------------------------------------------------------------------
 		// Finalize the painting (to be implemented by the instance

@@ -44,7 +44,7 @@ public class TraceDataByRankLocal extends TraceDataByRank {
 		listcpid = new Vector<TimeCPID>(numPixelH);
 	}
 	
-	@Override
+	
 	/***
 	 * reading data from file
 	 * 
@@ -272,23 +272,6 @@ public class TraceDataByRankLocal extends TraceDataByRank {
 				listcpid.remove(i+1);
 				len--;
 			}
-		}
-	}
-		
-	/***
-	 * struct object of time and CPID pair
-	 * 
-	 * @author laksonoadhianto
-	 *
-	 */
-	class TimeCPID 
-	{
-		public double timestamp;
-		public int cpid;
-		
-		public TimeCPID(double _timestamp, int _cpid) {
-			this.timestamp = _timestamp;
-			this.cpid = _cpid;
 		}
 	}
 }

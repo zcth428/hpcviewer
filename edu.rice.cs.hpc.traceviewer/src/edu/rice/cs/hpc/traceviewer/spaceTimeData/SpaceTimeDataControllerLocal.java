@@ -225,7 +225,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	@Override
 	public void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
 			double xscale, double yscale, boolean changedBounds) {
-
+		System.out.println("Lines to Paint: "+ linesToPaint+ ", attr.max-min: "+ (attributes.endProcess - attributes.endProcess));
 		MethodCounts[5]++;
 
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime()

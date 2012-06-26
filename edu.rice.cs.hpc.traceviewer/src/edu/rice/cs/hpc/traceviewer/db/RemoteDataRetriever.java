@@ -7,8 +7,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 
 import edu.rice.cs.hpc.traceviewer.db.TimeCPID;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
 /**
@@ -24,11 +26,28 @@ public class RemoteDataRetriever {
 	private final Socket socket;
 	DataInputStream receiver;
 	DataOutputStream sender;
+	public final int Height;
 	public RemoteDataRetriever(Socket _serverConnection) throws IOException {
 		socket = _serverConnection;
 		//TODO:Wrap in GZip stream
 		receiver = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 		sender = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		
+		//Check for DBOK
+		int Message = waitAndReadInt(receiver);
+		if (Message == 0x44424F4B)//DBOK
+		{
+			Height = receiver.readInt();
+		}
+		else if (Message == 0x4E4F4442)//NODB
+		{
+			//Tell the user
+			Height = -1;
+		}
+		else
+		{
+			Height = -1;
+		}
 	}
 	//TODO: Inclusive or exclusive?
 	/**
@@ -42,7 +61,7 @@ public class RemoteDataRetriever {
 	 * @return
 	 * @throws IOException 
 	 */
-	public ProcessTimeline[] getData(int P0, int Pn, double t0, double tn, int vertRes, int horizRes) throws IOException
+	public ProcessTimeline[] getData(int P0, int Pn, double t0, double tn, int vertRes, int horizRes, HashMap<Integer, CallPath> _scopeMap) throws IOException
 	{
 		//Make the call
 		//Check to make sure the server is sending back data
@@ -52,30 +71,38 @@ public class RemoteDataRetriever {
 				//			Make into ProcessTimeline
 				//			Put into appropriate place in array
 		//When all are done, return the array
-
+		
+		System.out.println("getData called");
 		requestData(P0, Pn, t0, tn, vertRes, horizRes);
-		if (receiver.readInt() != 0x48455245)//"HERE" in ASCII
+		System.out.println("Data request finished");
+		
+		int ResponseCommand = waitAndReadInt(receiver);
+		if (ResponseCommand != 0x48455245)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
+		System.out.println("Data receive begin");
 		int RanksReceived = 0;
-		int RanksExpected = vertRes;
+		int RanksExpected = Math.min(Pn-P0, vertRes);
 		ProcessTimeline[] timelines = new ProcessTimeline[RanksExpected];
 		while (RanksReceived < RanksExpected)
 		{
 			int RankNumber = receiver.readInt();
-			int Length = receiver.readInt();
+			int Length = receiver.readInt();//Number of CPID's
 			TimeCPID[] ranksData = readTimeCPIDArray(Length, t0, tn);
 			TraceDataByRankRemote dataAsTraceDBR = new TraceDataByRankRemote(ranksData);
-			//TODO: Figure out how to get the CallPath map!
-			ProcessTimeline PTl = new ProcessTimeline(dataAsTraceDBR, null, RankNumber, RanksExpected, tn-t0, t0);
-			int IndexInArray;
-			if (Pn-P0 > vertRes)
-				IndexInArray = (int)Math.round((RankNumber-P0)*(double)vertRes/(Pn-P0));//Its like a line: P0 -> 0, the slope is number of pixels/number of ranks
+			
+			
+			int lineNumber;
+			if (false)//if (Pn-P0 > vertRes)
+				lineNumber = (int)Math.round((RankNumber-P0)*(double)vertRes/(Pn-P0));//Its like a line: P0 -> 0, the slope is number of pixels/number of ranks
 			else
-				IndexInArray = RankNumber-P0;
-			timelines[IndexInArray]= PTl;
+				lineNumber = RankNumber-P0;
+			ProcessTimeline PTl = new ProcessTimeline(dataAsTraceDBR, _scopeMap, lineNumber, RanksExpected, tn-t0, t0);
+			timelines[RankNumber]= PTl;//RankNumber or RankNumber-P0??
 			RanksReceived++;
+			if (RanksReceived%100==0|| RanksReceived>500)
+				System.out.println(RanksReceived+ "/" + RanksExpected);
 		}
-		
+		System.out.println("Data receive end");
 		return timelines;
 	}
 
@@ -108,5 +135,40 @@ public class RemoteDataRetriever {
 		//That's it for the message
 		sender.flush();
 	}
+	private static int waitAndReadInt(DataInputStream receiver)
+			throws IOException {
+		int nextCommand;
+		// Sometime the buffer is filled with 0s for some reason. This flushes
+		// them out. This is awful, but otherwise we just get 0s
+		while (receiver.available() <= 4
+				|| ((nextCommand = receiver.readInt()) == 0)) {
 
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+
+				e.printStackTrace();
+			}
+		}
+		if (receiver.available() < 4)// There certainly isn't a message
+										// available, since every message is at
+										// least 4 bytes, but the next time the
+										// buffer has anything there will be a
+										// message
+		{
+			receiver.read(new byte[receiver.available()]);// Flush the rest of
+															// the buffer
+			while (receiver.available() <= 0) {
+
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			nextCommand = receiver.readInt();
+		}
+		return nextCommand;
+	}
 }

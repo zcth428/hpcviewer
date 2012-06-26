@@ -9,6 +9,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.RemoteDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 public class OpenDatabase extends AbstractHandler
@@ -21,9 +22,10 @@ public class OpenDatabase extends AbstractHandler
 
 		AbstractDBOpener DBOpener;
 		
-		if (true)//TODO: figure out how we want to switch between Remote and Local storage
+		if (AbstractDBOpener.Local)//TODO: figure out how we want to switch between Remote and Local storage
 			DBOpener = new LocalDBOpener();
-		
+		else
+			DBOpener = new RemoteDBOpener();
 		
 		TraceDatabase.openDatabase(window, null, vSite.getActionBars().getStatusLineManager(), DBOpener);
 		return null;

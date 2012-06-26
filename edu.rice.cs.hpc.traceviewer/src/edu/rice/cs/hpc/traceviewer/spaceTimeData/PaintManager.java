@@ -108,8 +108,6 @@ public class PaintManager extends TraceEvents {
 	public void paintDetailLine(SpaceTimeSamplePainter spp, int process,
 			int height, boolean changedBounds) {
 
-		// TODO: Implement the method. I guess PaintManager will have a
-		// reference to Controller that can be set in the constructor.
 		ProcessTimeline ptl = controller.getTrace(process);
 		if (ptl == null || ptl.size() < 2)
 			return;
@@ -301,7 +299,8 @@ public class PaintManager extends TraceEvents {
 			protected boolean startPainting(int linesToPaint,
 					boolean changedBounds) {
 				controller.prepareDepthViewportPainting();
-				compositeFinalLines = new Image[linesToPaint];
+				//TODO: Get the depth viewport working
+				//compositeFinalLines = new Image[linesToPaint];
 				return changedBounds;
 			}
 

@@ -74,6 +74,7 @@ public abstract class SpaceTimeDataController {
 		return Height;
 	}
 
+
 	/*************************************************************************
 	 * Returns width of the spaceTimeData: The width (the last time in the
 	 * ProcessTimeline) of the longest ProcessTimeline.
@@ -113,6 +114,14 @@ public abstract class SpaceTimeDataController {
 
 	public ImageTraceAttributes getAttributes() {
 		return attributes;
+	}
+
+	public long getMaxEndTime() {
+		return maxEndTime;
+	}
+
+	public long getMinBegTime() {
+		return minBegTime;
 	}
 
 }

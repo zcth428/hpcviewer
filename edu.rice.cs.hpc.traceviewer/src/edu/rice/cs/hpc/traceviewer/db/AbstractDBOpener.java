@@ -16,6 +16,8 @@ public abstract class AbstractDBOpener {
 
 	protected final static int MIN_TRACE_SIZE = 32 + 8 + 24
 			+ TraceDataByRankLocal.SIZE_OF_TRACE_RECORD * 2;
+	
+	public static final boolean Local = true;
 
 	/**
 	 * This prepares the database for retrieving data and creates a

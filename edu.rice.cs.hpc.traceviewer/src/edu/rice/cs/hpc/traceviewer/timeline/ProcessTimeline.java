@@ -56,6 +56,13 @@ public class ProcessTimeline {
 	public ProcessTimeline(TraceDataByRankRemote _data,
 			HashMap<Integer, CallPath> _scopeMap, int _processNumber,
 			int _numPixelH, double _timeRange, double _startingTime) {
+		lineNum = _processNumber;
+		scopeMap = _scopeMap; //Where do I get the scopeMap from????
+
+		timeRange = _timeRange;
+		startingTime = _startingTime;
+
+		pixelLength = timeRange / (double) _numPixelH;
 		data = _data;
 	}
 

@@ -27,6 +27,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	RemoteDataRetriever dataRetriever;
 	HashMap<Integer, CallPath> scopeMap;
 	public final int HEADER_SIZE;
+	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 
 	public SpaceTimeDataControllerRemote(IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, File expFile) {
@@ -98,16 +99,20 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	@Override
 	void prepareDepthViewportPainting() {
 		// TODO Auto-generated method stub
-System.out.println("Calling the unimplemented prepDVPainting");
+		System.out.println("Calling the unimplemented prepDVPainting");
 	}
 
 	@Override
 	public String[] getTraceDataValuesX() {
-//TEMPORARY FIX!! What do we want to do about this???
-		int size = 1037;//Hardcoded value for the sample, that's why this needs to be fixed!
+		// TEMPORARY FIX!! What do we want to do about this???
+		int size = 1037;// Hardcoded value for the sample, that's why this needs
+						// to be fixed!
 		String[] names = new String[size];
 		for (int i = 0; i < names.length; i++) {
-			names[i] = String.valueOf(i)+ ".0";//Not actually what it even should be because some are skipped, but this is already a bad fix.
+			names[i] = String.valueOf(i) + ".0";// Not actually what it even
+												// should be because some are
+												// skipped, but this is already
+												// a bad fix.
 		}
 		return names;
 	}
@@ -115,56 +120,69 @@ System.out.println("Calling the unimplemented prepDVPainting");
 	@Override
 	public void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
 			double xscale, double yscale, boolean changedBounds) {
-		try {
-			traces = dataRetriever.getData(attributes.begProcess,
-					attributes.endProcess, minBegTime,
-					maxEndTime, attributes.numPixelsV,
-					attributes.numPixelsH, scopeMap);
-		} catch (IOException e) {
-			// UI Notify user...
-			e.printStackTrace();
+		if (changedBounds) {
+			try {
+				traces = dataRetriever.getData(attributes.begProcess,
+						attributes.endProcess, minBegTime, maxEndTime,
+						attributes.numPixelsV, attributes.numPixelsH, scopeMap);
+			} catch (IOException e) {
+				// UI Notify user...
+				e.printStackTrace();
+			}
 		}
-		renderTraces(canvas, true, xscale, yscale);//For some reason, when changedBounds is false, everything appears to be zero-length, so all we get is a white screen
+		renderTraces(canvas, changedBounds, xscale, yscale);// For some reason, when
+													// changedBounds is false,
+													// everything appears to be
+													// zero-length, so all we
+													// get is a white screen
 
 	}
 
 	private void renderTraces(SpaceTimeCanvas canvas, boolean changedBounds,
 			double scaleX, double scaleY) {
 		int width = attributes.numPixelsH;
-		int imageHeight = attributes.numPixelsV;
+		//The height of each individual Image, not the full vertical height of the window
 		// From ProcessTimeline
-		//This slows waaay down somewhere between trace 200 and 300. TODO:Investigate it.
+
 		for (int i = 0; i < traces.length; i++) {
-			boolean debug =  (i%100==0);
+			boolean debug = (i % 100 == 0);
 			if (debug)
 				System.out.println("Rendering: " + i + "/" + traces.length);
-			
+
 			ProcessTimeline nextTrace = traces[i];
 			// Again why does traces have null entries??? Grr...
+			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));//The height of each individual Image, not the full vertical height of the window
+			if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
+				imageHeight--;
+			else
+				imageHeight++;
 
-				Image lineFinal = new Image(canvas.getDisplay(), width,
-						imageHeight);
-				Image lineOriginal = new Image(canvas.getDisplay(), width,
-						imageHeight);
-				GC gcFinal = new GC(lineFinal);
-				GC gcOriginal = new GC(lineOriginal);
+			Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);//ImageHeight or 1??
+			Image lineOriginal = new Image(canvas.getDisplay(), width,
+					imageHeight);
+			GC gcFinal = new GC(lineFinal);
+			GC gcOriginal = new GC(lineOriginal);
 
-				if (debug)
-					System.out.println("About to create spp");
-				SpaceTimeSamplePainter spp = this.getPainter()
-						.CreateDetailSpaceTimePainter(gcOriginal, gcFinal,
-								scaleX, scaleY);
-				if (debug) System.out.println("spp created, about to paint");
-				this.getPainter().paintDetailLine(spp, nextTrace.line(),
-						imageHeight, changedBounds);
-if (debug) System.out.println("Painted, about to dispose");
-				gcFinal.dispose();
-				gcOriginal.dispose();
-if(debug) System.out.println("Disposed, adding");
-				this.getPainter().addNextImage(lineOriginal, lineFinal,
-						nextTrace.line());
-				if (debug) System.out.println("Done");
-			
+			if (debug)
+				System.out.println("About to create spp");
+			SpaceTimeSamplePainter spp = this.getPainter()
+					.CreateDetailSpaceTimePainter(gcOriginal, gcFinal, scaleX,
+							scaleY);
+			if (debug)
+				System.out.println("spp created, about to paint");
+			this.getPainter().paintDetailLine(spp, nextTrace.line(),
+					imageHeight, changedBounds);
+			if (debug)
+				System.out.println("Painted, about to dispose");
+			gcFinal.dispose();
+			gcOriginal.dispose();
+			if (debug)
+				System.out.println("Disposed, adding");
+			this.getPainter().addNextImage(lineOriginal, lineFinal,
+					nextTrace.line());
+			if (debug)
+				System.out.println("Done");
+
 		}
 	}
 

@@ -87,20 +87,21 @@ public class RemoteDataRetriever {
 		{
 			int RankNumber = receiver.readInt();
 			int Length = receiver.readInt();//Number of CPID's
-			TimeCPID[] ranksData = readTimeCPIDArray(Length, t0, tn);
+			double startTimeForThisTimeline = receiver.readDouble();
+			double endTimeForThisTimeline = receiver.readDouble();
+			TimeCPID[] ranksData = readTimeCPIDArray(Length, startTimeForThisTimeline, endTimeForThisTimeline);
 			TraceDataByRankRemote dataAsTraceDBR = new TraceDataByRankRemote(ranksData);
 			
 			
-			int lineNumber;
-			if (false)//if (Pn-P0 > vertRes)
+			int lineNumber = RankNumber;
+			/*if (false)//if (Pn-P0 > vertRes)
 				lineNumber = (int)Math.round((RankNumber-P0)*(double)vertRes/(Pn-P0));//Its like a line: P0 -> 0, the slope is number of pixels/number of ranks
 			else
-				lineNumber = RankNumber-P0;
+				lineNumber = RankNumber-P0;*/
+			
 			ProcessTimeline PTl = new ProcessTimeline(dataAsTraceDBR, _scopeMap, lineNumber, RanksExpected, tn-t0, t0);
 			timelines[RankNumber]= PTl;//RankNumber or RankNumber-P0??
 			RanksReceived++;
-			if (RanksReceived%100==0|| RanksReceived>500)
-				System.out.println(RanksReceived+ "/" + RanksExpected);
 		}
 		System.out.println("Data receive end");
 		return timelines;

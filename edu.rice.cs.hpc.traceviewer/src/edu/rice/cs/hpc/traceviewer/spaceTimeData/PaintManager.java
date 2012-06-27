@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.text.NumberFormat;
+
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -115,7 +117,7 @@ public class PaintManager extends TraceEvents {
 		if (changedBounds)
 			ptl.shiftTimeBy(minBegTime);
 		double pixelLength = (attributes.endTime - attributes.begTime)
-				/ (double) attributes.numPixelsH;
+				/ (double) attributes.numPixelsH;//Time per pixel
 
 		// do the paint
 		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp,
@@ -236,6 +238,23 @@ public class PaintManager extends TraceEvents {
 			// @Override
 			protected boolean startPainting(int linesToPaint,
 					boolean changedBounds) {
+				if (compositeFinalLines != null)
+				{
+					System.out.println("Disposing compFinalLines");
+					for (int i = 0; i < compositeFinalLines.length; i++) {
+						compositeFinalLines[i].dispose();
+					}
+				}
+				if (compositeOrigLines != null)
+				{
+					System.out.println("Disposing compOrigLines");
+					for (int i = 0; i < compositeOrigLines.length; i++) {
+						compositeOrigLines[i].dispose();
+					}
+				}
+				printMemInfo();
+				System.gc();
+				printMemInfo();
 				compositeOrigLines = new Image[linesToPaint];
 				compositeFinalLines = new Image[linesToPaint];
 
@@ -246,6 +265,23 @@ public class PaintManager extends TraceEvents {
 					traces = new ProcessTimeline[numTraces];
 				}*/
 				return true;
+			}
+
+			private void printMemInfo() {
+				Runtime runtime = Runtime.getRuntime();
+
+			    NumberFormat format = NumberFormat.getInstance();
+
+			    StringBuilder sb = new StringBuilder();
+			    long maxMemory = runtime.maxMemory();
+			    long allocatedMemory = runtime.totalMemory();
+			    long freeMemory = runtime.freeMemory();
+
+			    sb.append("free memory: " + format.format(freeMemory / 1024) + "<br/>");
+			    sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "<br/>");
+			    sb.append("max memory: " + format.format(maxMemory / 1024) + "<br/>");
+			    sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "<br/>");
+			    System.out.println(sb.toString());
 			}
 
 			// @Override

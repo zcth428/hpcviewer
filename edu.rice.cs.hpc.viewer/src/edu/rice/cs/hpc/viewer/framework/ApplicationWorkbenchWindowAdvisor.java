@@ -152,7 +152,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		    			expViewer.loadExperimentAndProcess( objFile.getAbsolutePath(), withCallerView);
 		    		}
 		    	} else {
-		    		if (doPrint) System.err.println("File doesn't exist: " + fileStore.getName() );
+		    		System.err.println("File doesn't exist: " + fileStore.getName() );
 					this.removeViews();
 
 		    	}

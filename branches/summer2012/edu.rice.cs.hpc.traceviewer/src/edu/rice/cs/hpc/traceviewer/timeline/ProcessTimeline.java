@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 import java.util.HashMap;
 
 import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
+import edu.rice.cs.hpc.traceviewer.db.TimeCPID;
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRankLocal;
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRankRemote;
@@ -57,13 +58,16 @@ public class ProcessTimeline {
 			HashMap<Integer, CallPath> _scopeMap, int _processNumber,
 			int _numPixelH, double _timeRange, double _startingTime) {
 		lineNum = _processNumber;
-		scopeMap = _scopeMap; //Where do I get the scopeMap from????
+		scopeMap = _scopeMap;
 
 		timeRange = _timeRange;
 		startingTime = _startingTime;
 
 		pixelLength = timeRange / (double) _numPixelH;
-		data = _data;
+		if (_data == null)
+			data = new TraceDataByRankRemote(new TimeCPID[0]);
+		else
+			data = _data;
 	}
 
 	/**
@@ -112,8 +116,11 @@ public class ProcessTimeline {
 			return cp;
 		}
 	}
-
-	public void copyData(ProcessTimeline another) {
+/**
+ * Fills this one with the data from another
+ * @param another
+ */
+	public void copyDataFrom(ProcessTimeline another) {
 		this.data.setListOfData(another.data.getListOfData());
 	}
 

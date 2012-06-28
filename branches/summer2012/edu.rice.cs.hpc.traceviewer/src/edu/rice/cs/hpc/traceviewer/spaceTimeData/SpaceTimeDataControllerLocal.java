@@ -40,7 +40,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	private int HEADER_SIZE;
 
 
-	private int dtProcess;
+	
 
 	IStatusLineManager statusMgr;
 
@@ -180,7 +180,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 					scopeMap, dataTrace, dtProcess, attributes.numPixelsH,
 					attributes.endTime - attributes.begTime, minBegTime
 							+ attributes.begTime, HEADER_SIZE);
-			toDonate.copyData(depthTrace);
+			toDonate.copyDataFrom(depthTrace);
 
 			attributes.lineNum++;
 			return toDonate;
@@ -321,12 +321,4 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		}
 	}
 
-
-
-	// FIXME: This is bad structure. The controller should receive this
-	// notification without needing the PaintManager to notify it of the event.
-	@Override
-	public void setCurrentlySelectedProccess(int ProcessNumber) {
-		dtProcess = ProcessNumber;
-	}
 }

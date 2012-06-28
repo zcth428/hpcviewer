@@ -148,7 +148,7 @@ public class TimelineThread extends Thread
 				stDataController.getPainter().paintDepthLine(spp, nextTrace.line(), imageHeight);
 				gc.dispose();
 				
-				stDataController.getPainter().addNextImage(line, nextTrace.line());
+				stDataController.getPainter().addNextDepthImage(line, nextTrace.line());
 				nextTrace = stDataController.getNextDepthTrace();
 			}
 		}

@@ -18,6 +18,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
  * parsing data, but not opening the connection or closing the connection. It
  * assumes the connection has already been opened by RemoteDBOpener and can be
  * retrieved from SpaceTimeDataControllerRemote.
+ * See protocol documentation at the end of this file.
  * 
  * @author Philip Taffet
  * 
@@ -126,7 +127,6 @@ public class RemoteDataRetriever {
 	private void requestData(int P0, int Pn, double t0, double tn, int vertRes,
 			int horizRes) throws IOException {
 		sender.writeInt(0x44415441);//"DATA" in ASCII
-		sender.writeInt(32);//There will be 32 more bytes in this message
 		sender.writeInt(P0);
 		sender.writeInt(Pn);
 		sender.writeDouble(t0);
@@ -173,3 +173,44 @@ public class RemoteDataRetriever {
 		return nextCommand;
 	}
 }
+/**
+ ******* PROTOCOL DOCUMENTATION *******
+ * 
+ * Global note: Big-endian encoding is used throughout. Client indicates the computer with the front end, while server indicates the supercomputer doing the processing.
+ * 
+ * Message OPEN  Client -> Server
+ * Notes: This should be the first message sent. It tells the remote server to open the database file. It also gives the server a little additional information to help it process the database.
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x4F50454E (OPEN in ASCII)
+ * 0x04		Database Path	string-m			Modified UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. The first two bytes of this message are the length (in bytes) of the string that follows.
+ * 0x04+m	Global Min Time long-8				The lowest starting time for all the traces. This is mapped to 0 at some point during the execution. This value comes from the experiment.xml file
+ * 0x0C+m	Global Max Time long-8				The highest ending time for all the traces. This can also be found in experiment.xml
+ * 0x12+m	DB Header Size	int-4				The size of the header in the DB file. TraceDataByRank uses it to pinpoint the location of each trace.
+ * 
+ * The server can then reply with DBOK or NODB
+ * 
+ * Message DBOK  Server -> Client
+ * Notes: This indicates that the server could find the specified database and opened it. It also contains a little additional information to help the client in later rendering.
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x44424F4B (DBOK in ASCII)
+ * 0x04		Trace count		int-4				The number of traces contained in the database/trace file
+ * 
+ * Message NODB	Server -> Client
+ * Notes: This indicates that the server could not find the database or could not open it for some reason. The user should be notified and the next message the client sends should be another OPEN command.
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x4E4F4442 (NODB in ASCII)
+ * 0x04		Error Code		int-4				Currently unused, but the server could specify a code to make diagnosing the error easier. Set to 0 for right now.
+ * 
+ * 
+ * 
+ * Message DATA Client -> Server
+ * Notes: This message represents a request for the server to retrieve data from the file and return it to the client
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x44415441 (DATA in ASCII)
+ * 0x04		First Process	int-4				The lower bound on the processes to be retrieved
+ * 0x08		Last Process	int-4				The upper bound on the processes to be retrieved
+ * 0x0C		Time Start		double-8			The lower bound on the time of the traces to be retrieved. This is the absolute time, not the time since Global Min Time.
+ * 0x12		Time End		double-8			The upper bound on the time of the traces to be retrieved. Again, the absolute time.
+ * 0x1A		Vertical Res	int-4				The vertical resolution of the detail view. The server uses this to determine which processes should be returned from the range [First Process, Last Process]
+ * 0x1E		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
+ */

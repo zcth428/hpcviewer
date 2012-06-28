@@ -70,6 +70,11 @@ public class PaintManager extends TraceEvents {
 	 */
 	private Image[] compositeOrigLines;
 	
+	/**
+	 * The composite image of all the lines that make up the depth trace
+	 */
+	private Image[] compositeDepthLines;
+	
 	private int numTraces;
 	
 	private SpaceTimeDataController controller;
@@ -238,7 +243,7 @@ public class PaintManager extends TraceEvents {
 			// @Override
 			protected boolean startPainting(int linesToPaint,
 					boolean changedBounds) {
-				if (compositeFinalLines != null)
+				/*if (compositeFinalLines != null)
 				{
 					System.out.println("Disposing compFinalLines");
 					for (int i = 0; i < compositeFinalLines.length; i++) {
@@ -251,10 +256,7 @@ public class PaintManager extends TraceEvents {
 					for (int i = 0; i < compositeOrigLines.length; i++) {
 						compositeOrigLines[i].dispose();
 					}
-				}
-				printMemInfo();
-				System.gc();
-				printMemInfo();
+				}*/
 				compositeOrigLines = new Image[linesToPaint];
 				compositeFinalLines = new Image[linesToPaint];
 
@@ -265,23 +267,6 @@ public class PaintManager extends TraceEvents {
 					traces = new ProcessTimeline[numTraces];
 				}*/
 				return true;
-			}
-
-			private void printMemInfo() {
-				Runtime runtime = Runtime.getRuntime();
-
-			    NumberFormat format = NumberFormat.getInstance();
-
-			    StringBuilder sb = new StringBuilder();
-			    long maxMemory = runtime.maxMemory();
-			    long allocatedMemory = runtime.totalMemory();
-			    long freeMemory = runtime.freeMemory();
-
-			    sb.append("free memory: " + format.format(freeMemory / 1024) + "<br/>");
-			    sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "<br/>");
-			    sb.append("max memory: " + format.format(maxMemory / 1024) + "<br/>");
-			    sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "<br/>");
-			    System.out.println(sb.toString());
 			}
 
 			// @Override
@@ -336,7 +321,7 @@ public class PaintManager extends TraceEvents {
 					boolean changedBounds) {
 				controller.prepareDepthViewportPainting();
 				//TODO: Get the depth viewport working
-				//compositeFinalLines = new Image[linesToPaint];
+				compositeDepthLines = new Image[linesToPaint];
 				return changedBounds;
 			}
 
@@ -346,16 +331,16 @@ public class PaintManager extends TraceEvents {
 
 				for (int i = 0; i < linesToPaint; i++) {
 					masterGC.drawImage(
-							compositeFinalLines[i],
+							compositeDepthLines[i],
 							0,
 							0,
-							compositeFinalLines[i].getBounds().width,
-							compositeFinalLines[i].getBounds().height,
+							compositeDepthLines[i].getBounds().width,
+							compositeDepthLines[i].getBounds().height,
 							0,
 							(int) Math.round(i * attributes.numPixelsDepthV
 									/ (float) maxDepth),
-							compositeFinalLines[i].getBounds().width,
-							compositeFinalLines[i].getBounds().height);
+									compositeDepthLines[i].getBounds().width,
+									compositeDepthLines[i].getBounds().height);
 				}
 			}
 
@@ -378,6 +363,11 @@ public class PaintManager extends TraceEvents {
 			int index) {
 		compositeOrigLines[index] = imgOriginal;
 		compositeFinalLines[index] = imgFinal;
+	}
+	
+	public synchronized void addNextDepthImage(Image line, int index)
+	{
+		compositeDepthLines[index] = line;
 	}
 
 	/****

@@ -22,6 +22,11 @@ public abstract class SpaceTimeDataController {
 	protected ProcessTimeline traces[];
 
 	protected ProcessTimeline depthTrace;
+	
+	/**
+	 * The currently selected process;
+	 */
+	int dtProcess;
 
 	/**
 	 * The number of processes in the database, independent of the current
@@ -42,7 +47,14 @@ public abstract class SpaceTimeDataController {
 		super();
 	}
 
-	public abstract void setCurrentlySelectedProccess(int ProcessNumber);
+	// FIXME: This is bad structure. The controller should receive this
+	// notification without needing the PaintManager to notify it of the event.
+//Why is this called twice?? Once before it changes and once with the new value.
+	public void setCurrentlySelectedProccess(int ProcessNumber)
+	{
+	 dtProcess = ProcessNumber;
+	 System.out.println("Setting process to "+ ProcessNumber);
+	}
 
 	public PaintManager getPainter() {
 		MethodCounts[9]++;

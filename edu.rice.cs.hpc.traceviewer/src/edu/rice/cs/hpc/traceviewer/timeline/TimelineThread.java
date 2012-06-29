@@ -97,24 +97,7 @@ public class TimelineThread extends Thread
 					stDataController.addNextTrace(nextTrace);
 				}
 				
-				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-					imageHeight--;
-				else
-					imageHeight++;
-				
-				Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
-				Image lineOriginal = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gcFinal = new GC(lineFinal);
-				GC gcOriginal = new GC(lineOriginal);
-				
-				SpaceTimeSamplePainter spp = stDataController.getPainter().CreateDetailSpaceTimePainter(gcOriginal, gcFinal, scaleX, scaleY);
-				stDataController.getPainter().paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
-				
-				gcFinal.dispose();
-				gcOriginal.dispose();
-				
-				stDataController.getPainter().addNextImage(lineOriginal, lineFinal, nextTrace.line());
+				stDataController.getPainter().renderTrace(canvas, changedBounds, scaleX, scaleY, width, nextTrace);
 				
 				monitor.announceProgress();
 				

@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -33,4 +34,6 @@ public abstract class AbstractDBOpener {
 	 */
 	abstract SpaceTimeDataController openDBAndCreateSTDC(
 			IWorkbenchWindow window, String[] args, IStatusLineManager statusMgr);
+	
+	abstract void closeDB();
 }

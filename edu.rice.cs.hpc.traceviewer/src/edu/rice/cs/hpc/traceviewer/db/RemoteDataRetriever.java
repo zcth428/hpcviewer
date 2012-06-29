@@ -8,7 +8,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+
+import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.db.TimeCPID;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
@@ -28,11 +35,28 @@ public class RemoteDataRetriever {
 	DataInputStream receiver;
 	DataOutputStream sender;
 	public final int Height;
-	public RemoteDataRetriever(Socket _serverConnection) throws IOException {
+	
+	private final Shell shell;
+	
+	private final static boolean Compressed = false;
+	
+	private final IStatusLineManager statusMgr;
+	public RemoteDataRetriever(Socket _serverConnection, IStatusLineManager _statusMgr, Shell _shell) throws IOException {
 		socket = _serverConnection;
-		//TODO:Wrap in GZip stream
-		receiver = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+		
+		if (Compressed)
+		{
+			receiver = new DataInputStream(new GZIPInputStream(socket.getInputStream()));
+		}
+		else
+		{
+			receiver = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+		}
 		sender = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		
+		
+		statusMgr = _statusMgr;
+		shell = _shell;
 		
 		//Check for DBOK
 		int Message = waitAndReadInt(receiver);
@@ -43,11 +67,16 @@ public class RemoteDataRetriever {
 		else if (Message == 0x4E4F4442)//NODB
 		{
 			//Tell the user
+			int errorCode = receiver.readInt();//Unused but there for the future
+			MessageBox box = new MessageBox(shell);
+			box.setMessage("The server could not find that database.");
+			box.open();
+			
 			Height = -1;
 		}
 		else
 		{
-			Height = -1;
+			throw new IOException("Unrecognized message sent");
 		}
 	}
 	//TODO: Inclusive or exclusive?
@@ -73,19 +102,30 @@ public class RemoteDataRetriever {
 				//			Put into appropriate place in array
 		//When all are done, return the array
 		
-		System.out.println("getData called");
+		statusMgr.setMessage("Requesting data");
+		shell.update();
 		requestData(P0, Pn, t0, tn, vertRes, horizRes);
 		System.out.println("Data request finished");
 		
 		int ResponseCommand = waitAndReadInt(receiver);
+		statusMgr.setMessage("Receiving data");
+		shell.update();
+		
 		if (ResponseCommand != 0x48455245)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
 		System.out.println("Data receive begin");
+		
+		
 		int RanksReceived = 0;
 		int RanksExpected = Math.min(Pn-P0, vertRes);
 		ProcessTimeline[] timelines = new ProcessTimeline[RanksExpected];
+		
+		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
+		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
+		
 		while (RanksReceived < RanksExpected)
 		{
+			monitor.announceProgress();
 			int RankNumber = receiver.readInt();
 			int Length = receiver.readInt();//Number of CPID's
 			double startTimeForThisTimeline = receiver.readDouble();
@@ -103,7 +143,9 @@ public class RemoteDataRetriever {
 			ProcessTimeline PTl = new ProcessTimeline(dataAsTraceDBR, _scopeMap, lineNumber, RanksExpected, tn-t0, t0);
 			timelines[RankNumber]= PTl;//RankNumber or RankNumber-P0??
 			RanksReceived++;
+			monitor.announceProgress();
 		}
+		monitor.endProgress();
 		System.out.println("Data receive end");
 		return timelines;
 	}
@@ -138,9 +180,46 @@ public class RemoteDataRetriever {
 	}
 	private static int waitAndReadInt(DataInputStream receiver)
 			throws IOException {
+		if (Compressed)
+			return waitAndReadCompressedInt(receiver);
+		else
+			return waitAndReadUncompressedInt(receiver);
+	}
+
+	private static int waitAndReadCompressedInt(DataInputStream receiver) throws IOException {
+		
+		// So available is not reliable at all. Sometimes it'll return 1 and
+		// then the next byte it reads is -1. It's saying it has data, and then
+		// as soon as you try to get the data, it says it doesn't have data.
+		// That means we have to do it the hard way...
+		int byte1 = 0;
+		while((receiver.available()<=0)|| ((byte1 = receiver.read())<=0))
+		{
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+
+				e.printStackTrace();
+			}
+		}
+		
+		
+		int byte2 = receiver.read();
+		int byte3 = receiver.read();
+		int byte4 = receiver.read();
+		int nextCommand = (byte1<<24)| (byte2<<16)|(byte3<<8)|byte4;
+		if (nextCommand < 0)
+			System.out.println("Not good");
+		System.out.println("Client received a "+ nextCommand);
+		return nextCommand;
+	}
+
+	private static int waitAndReadUncompressedInt(DataInputStream receiver)
+			throws IOException {
 		int nextCommand;
 		// Sometime the buffer is filled with 0s for some reason. This flushes
 		// them out. This is awful, but otherwise we just get 0s
+
 		while (receiver.available() <= 4
 				|| ((nextCommand = receiver.readInt()) == 0)) {
 

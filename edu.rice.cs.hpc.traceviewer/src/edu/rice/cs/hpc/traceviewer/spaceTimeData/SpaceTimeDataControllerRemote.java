@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
@@ -34,15 +35,13 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	 * thin white lines in between traces that show up when the view is
 	 * sufficiently zoomed (when their heights are greater than this value).
 	 */
-	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 	private final int maxDepth;
+	
 
 	public SpaceTimeDataControllerRemote(IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, File expFile) {
 
 		MethodCounts[0]++;
-
-		// statusMgr = _statusMgr;
 
 		attributes = new ImageTraceAttributes();
 		ImageTraceAttributes oldAtributes = new ImageTraceAttributes();
@@ -103,8 +102,6 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		if (dtProcess <= attributes.endProcess) {
 			int scaledDTProcess = (int) (((double) traces.length - 1)
 					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (dtProcess - attributes.begProcess));// -atr.begPro-1??
-			System.out
-					.println("Mapped " + dtProcess + " to " + scaledDTProcess);
 			return scaledDTProcess;
 		} else// So this means that it's in that weird state where the length of
 				// traces and attributes has been updated, but the position of
@@ -171,54 +168,12 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 					e.printStackTrace();
 				}
 			}
-			renderTraces(canvas, changedBounds, xscale, yscale);
+			painter.renderTraces(traces, canvas, changedBounds, xscale, yscale);
 		} else// Depth view
 		{
 			renderDepthTrace(canvas, changedBounds, xscale, yscale);
 		}
 
-	}
-
-	private void renderTraces(SpaceTimeCanvas canvas, boolean changedBounds,
-			double scaleX, double scaleY) {
-		int width = attributes.numPixelsH;
-
-		// From ProcessTimeline
-
-		for (int i = 0; i < traces.length; i++) {
-			boolean debug = (i % 100 == 0);
-			if (debug)
-				System.out.println("Rendering: " + i + "/" + traces.length);
-
-			ProcessTimeline nextTrace = traces[i];
-			// Again why does traces have null entries??? Grr...
-			int imageHeight = (int) (Math
-					.round(scaleY * (nextTrace.line() + 1)) - Math.round(scaleY
-					* nextTrace.line()));// The height of each individual Image,
-											// not the full vertical height of
-											// the window
-			if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-				imageHeight--;
-			else
-				imageHeight++;
-
-			Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
-			Image lineOriginal = new Image(canvas.getDisplay(), width,
-					imageHeight);
-			GC gcFinal = new GC(lineFinal);
-			GC gcOriginal = new GC(lineOriginal);
-
-			SpaceTimeSamplePainter spp = this.getPainter()
-					.CreateDetailSpaceTimePainter(gcOriginal, gcFinal, scaleX,
-							scaleY);
-			this.getPainter().paintDetailLine(spp, nextTrace.line(),
-					imageHeight, changedBounds);
-			gcFinal.dispose();
-			gcOriginal.dispose();
-			this.getPainter().addNextImage(lineOriginal, lineFinal,
-					nextTrace.line());
-
-		}
 	}
 
 	private void renderDepthTrace(SpaceTimeCanvas canvas,
@@ -228,35 +183,12 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		int width = attributes.numPixelsH;
 
 		while (nextTrace != null) {
-			int imageHeight = (int) (Math
-					.round(scaleY * (nextTrace.line() + 1)) - Math.round(scaleY
-					* nextTrace.line()));
-			if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-				imageHeight--;
-			else
-				imageHeight++;
-
-			Image line = new Image(canvas.getDisplay(), width, imageHeight);
-			GC gc = new GC(line);
-			SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc,
-					painter.getColorTable(), scaleX, scaleY) {
-
-				// @Override
-				public void paintSample(int startPixel, int endPixel,
-						int height, String function) {
-
-					this.internalPaint(gc, startPixel, endPixel, height,
-							function);
-				}
-			};
-
-			painter.paintDepthLine(spp, nextTrace.line(), imageHeight);
-			gc.dispose();
-
-			painter.addNextDepthImage(line, nextTrace.line());
+			painter.renderDepthTrace(canvas, scaleX, scaleY, nextTrace, width);
 			nextTrace = getNextDepthTrace();
 		}
 	}
+
+	
 
 	private ProcessTimeline getNextDepthTrace() {
 

@@ -179,5 +179,10 @@ public class LocalDBOpener extends AbstractDBOpener {
 		dialog.setMessage("The directory selected contains no traces:\n\t"
 				+ str + "\nPlease select a directory that contains traces.");
 	}
+	@Override
+	void closeDB() {
+		//It doesn't seem like the file handles are ever released. I guess this isn't a problem. 
+		
+	}
 
 }

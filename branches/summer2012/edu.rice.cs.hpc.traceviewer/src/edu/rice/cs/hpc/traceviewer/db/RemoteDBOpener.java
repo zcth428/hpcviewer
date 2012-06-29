@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -15,6 +16,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
 
 public class RemoteDBOpener extends AbstractDBOpener {
 
+	DataOutputStream sender;
 	@Override
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
@@ -34,8 +36,8 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		Socket serverConnection = null;
 		try {
 			serverConnection = new Socket(serverURL, port);
-			DataOutputStream sender = new DataOutputStream(
-					new BufferedOutputStream(serverConnection.getOutputStream()));
+			sender = new DataOutputStream(new BufferedOutputStream(serverConnection.getOutputStream()));
+
 			sender.writeInt(0x4F50454E);// "OPEN" in ascii
 			sender.writeUTF(serverPathToDB);
 			/*
@@ -58,7 +60,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			e1.printStackTrace();
 		}
 		try {
-			RemoteDataRetriever DR = new RemoteDataRetriever(serverConnection);
+			RemoteDataRetriever DR = new RemoteDataRetriever(serverConnection, statusMgr, window.getShell());
 			stData.setDataRetriever(DR);
 			return stData;
 		} catch (IOException e) {
@@ -66,6 +68,18 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			e.printStackTrace();
 		}
 		return null;//If an exception was thrown
+	}
+
+	@Override
+	void closeDB() {
+		try {
+			sender.writeInt(0x444F4E45);
+			sender.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//DONE in ASCII
+		
 	}
 
 }

@@ -5,8 +5,10 @@ import java.text.NumberFormat;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
@@ -15,6 +17,7 @@ import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
@@ -75,9 +78,11 @@ public class PaintManager extends TraceEvents {
 	 */
 	private Image[] compositeDepthLines;
 	
-	private int numTraces;
+	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 	
 	private SpaceTimeDataController controller;
+	
+	private final TimelineProgressMonitor monitor;
 
 	public PaintManager(ImageTraceAttributes _attributes,
 			ImageTraceAttributes _oldAttributes, IWorkbenchWindow _window,
@@ -90,6 +95,7 @@ public class PaintManager extends TraceEvents {
 		statusMgr = _statusMgr;
 		
 		statusMgr.getProgressMonitor();//This was in the SpaceTimeData ctor before. I guess it initializes something because it's result isn't actually used.
+		monitor = new TimelineProgressMonitor(statusMgr);
 		
 		colorTable = _colorTable;
 		colorTable.setColorTable();
@@ -287,6 +293,88 @@ public class PaintManager extends TraceEvents {
 		};
 
 		detailPaint.paint(canvas);
+	}
+	
+	/**
+	 * Renders the SpaceTimeDetailView from an array of ProcessTimelines by calling renderTrace on each one.
+	 */
+	public void renderTraces(ProcessTimeline[] _traces, SpaceTimeCanvas canvas, boolean changedBounds,
+			double scaleX, double scaleY) {
+		int width = attributes.numPixelsH;
+
+		
+		monitor.beginProgress(_traces.length, "Rendering space time view...", "Trace painting", window.getShell());
+		for (int i = 0; i < _traces.length; i++) {
+			boolean debug = (i % 100 == 0);
+			if (debug)
+				System.out.println("Rendering: " + i + "/" + _traces.length);
+
+			ProcessTimeline nextTrace = _traces[i];
+			// Again why does traces have null entries??? Grr...
+			renderTrace(canvas, changedBounds, scaleX, scaleY, width, nextTrace);
+			monitor.announceProgress();
+
+		}
+		monitor.endProgress();
+	}
+	
+	public synchronized void renderDepthTrace(SpaceTimeCanvas canvas, double scaleX,
+			double scaleY, ProcessTimeline nextTrace, int width) {
+		int imageHeight = (int) (Math
+				.round(scaleY * (nextTrace.line() + 1)) - Math.round(scaleY
+				* nextTrace.line()));
+		if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
+			imageHeight--;
+		else
+			imageHeight++;
+
+		Image line = new Image(canvas.getDisplay(), width, imageHeight);
+		GC gc = new GC(line);
+		SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc,
+				this.getColorTable(), scaleX, scaleY) {
+
+			// @Override
+			public void paintSample(int startPixel, int endPixel,
+					int height, String function) {
+
+				this.internalPaint(gc, startPixel, endPixel, height,
+						function);
+			}
+		};
+
+		this.paintDepthLine(spp, nextTrace.line(), imageHeight);
+		gc.dispose();
+
+		this.addNextDepthImage(line, nextTrace.line());
+	}
+
+	public synchronized void renderTrace(Canvas canvas, boolean changedBounds,
+			double scaleX, double scaleY, int width, ProcessTimeline trace) {
+		int imageHeight = (int) (Math
+				.round(scaleY * (trace.line() + 1)) - Math.round(scaleY
+				* trace.line()));// The height of each individual Image,
+										// not the full vertical height of
+										// the window
+		if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
+			imageHeight--;
+		else
+			imageHeight++;
+
+		Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
+		Image lineOriginal = new Image(canvas.getDisplay(), width,
+				imageHeight);
+		GC gcFinal = new GC(lineFinal);
+		GC gcOriginal = new GC(lineOriginal);
+
+		SpaceTimeSamplePainter spp = this
+				.CreateDetailSpaceTimePainter(gcOriginal, gcFinal, scaleX,
+						scaleY);
+		this.paintDetailLine(spp, trace.line(),
+				imageHeight, changedBounds);
+		gcFinal.dispose();
+		gcOriginal.dispose();
+		this.addNextImage(lineOriginal, lineFinal,
+				trace.line());
 	}
 
 	/*************************************************************************

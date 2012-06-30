@@ -45,19 +45,25 @@ import com.graphbuilder.math.func.*;
  * Dialog box to enter a math formula to define a derived metric
  */
 public class ExtDerivedMetricDlg extends TitleAreaDialog {
+	
+	static public enum MetricDisplayFormat {
+		Default, Percent, Custom
+	}
+	
 	//------------- GUI variables
 	private Combo cbName;
 	private Combo cbExpression;
 	private Button btnPercent;
 	private Text txtFormat;
-	private Button btnFormat;
+	private Button btnCustomFormat;
+	private Button btnPercentFormat;
+	private Button btnDefaultFormat;
 	
 	// ------------ Metric and math variables
 	private String []arrStrMetrics;
 	private Expression expFormula;
 	private final ExtFuncMap fctMap;
 	private final MetricVarMap varMap;
-	private String sFormat;
 	
 	// ------------- Others
 	static private final String HISTORY_FORMULA = "formula";			//$NON-NLS-1$
@@ -66,6 +72,8 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	private boolean bPercent;
 	private Experiment experiment;
 	private Point expression_position;
+	private String sFormat;
+	MetricDisplayFormat displayFormat;
 	
 	// ------------- object for storing history of formula and metric names
 	private UserInputHistory objHistoryFormula;
@@ -295,38 +303,67 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			
 			// percent option
 			this.btnPercent = new Button(cOptions, SWT.CHECK);
-			this.btnPercent.setText("Display metric percentage annotation");
-			this.btnPercent.setToolTipText("For each metric value, display the annotation of percentage of aggregate metric value");
+			this.btnPercent.setText("Augment metric value display with a percentage relative to column total");
+			this.btnPercent.setToolTipText("For each metric value, display the annotation of percentage relative to aggregate metric value");
 
 			// format option
-			final Composite cFormat = new Composite( cOptions, SWT.NONE );
-			btnFormat = new Button(cFormat, SWT.CHECK);
-			btnFormat.setText("Custom format");
+			//final Composite cFormat = new Composite( cOptions, SWT.NONE );
+			final Composite cCustomFormat = new Composite( cOptions, SWT.NONE );
 			
-			txtFormat = new Text(cFormat, SWT.BORDER);
-			txtFormat.setToolTipText("The format is based on Java's Formatter class which is almost equivalent to C's printf format ");
-			btnFormat.addSelectionListener(new SelectionListener(){
+			btnDefaultFormat = new Button(cCustomFormat, SWT.RADIO);
+			btnDefaultFormat.setText("Default format");
+			new Label( cCustomFormat, SWT.NONE );
+			
+			btnPercentFormat = new Button(cCustomFormat, SWT.RADIO);
+			btnPercentFormat.setText("Display metric value as percent");
+			new Label( cCustomFormat, SWT.NONE );
+			
+			btnCustomFormat = new Button(cCustomFormat, SWT.RADIO);
+			btnCustomFormat.setText("Custom format");
+			
+			txtFormat = new Text(cCustomFormat, SWT.BORDER);
+			final String txtCustomFormat = "The format is based on java.util.Formatter class which is almost equivalent to C's printf format. "; 
+			txtFormat.setToolTipText(txtCustomFormat);
+			btnCustomFormat.addSelectionListener(new SelectionListener(){
 
 				public void widgetSelected(SelectionEvent e) {
-					txtFormat.setEnabled(btnFormat.getSelection()); 
+					txtFormat.setEnabled(true); 
 				}
 
+				public void widgetDefaultSelected(SelectionEvent e) {}	
+			});
+			
+			btnPercentFormat.addSelectionListener(new SelectionListener(){
+
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					txtFormat.setEnabled(false);
+					txtFormat.setFocus();
+				}
+
+				@Override
 				public void widgetDefaultSelected(SelectionEvent e) {}
 				
 			});
+			btnDefaultFormat.setSelection(true);
+
 			// make sure to initialize the state of the text
-			txtFormat.setEnabled(btnFormat.getSelection()); 
+			txtFormat.setEnabled(false); 
 			
-			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(cFormat);
+			final Label lblCustomFormat = new Label( cOptions, SWT.NONE );
+			lblCustomFormat.setText(txtCustomFormat + "\n"
+					+ "Example: '%6.2f ' will display 6 digit floating-points with 2 digit precision. ");
+			
+			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(cCustomFormat);
+			
+			//GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(cFormat);
 			
 			// item for expansion bar
 			ExpandItem eiOptions = new ExpandItem(barOptions, SWT.NONE, 0);
 			eiOptions.setText("Advanced options");
 			eiOptions.setHeight(cOptions.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 			eiOptions.setControl(cOptions);
-			// set by default we don't want users to see the advanced options
-			// it will just scare them away
-			eiOptions.setExpanded(false);
+			eiOptions.setExpanded(true);
 			
 			barOptions.setToolTipText("Optional settings");
 		}
@@ -381,21 +418,35 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  return bResult;
 	  }
 	  
+	  /***
+	   * verify the validity of custom format
+	   * @return
+	   */
 	  private boolean checkFormat() {
 		  boolean bResult = true;
-		  if (this.btnFormat.getSelection()) {
+		  String sError = null;
+		  if (this.btnCustomFormat.getSelection()) {
 			  this.sFormat = this.txtFormat.getText();
+			  
+			  // custom format if selected, cannot be null
+			  if (sFormat.length()==0) {
+				  bResult = false;
+				  sError = "Custom format cannot be empty.";
+			  }
 			  try {
 				  Formatter format = new Formatter();
 				  format.format(sFormat, 1.0);
 				  
 			  } catch (IllegalFormatException e) {
-				  MessageDialog.openError(getShell(), "Format syntax error", "Format is incorrect");
+				  sError = "Format is incorrect.";
 				  bResult = false;
 			  } catch (FormatterClosedException e) {
 				  bResult = false;
+				  sError = "Illegal format.";
 			  }
 		  }
+		  if (!bResult)
+			  MessageDialog.openError(getShell(), "Format syntax error", sError);
 		  return bResult;
 	  }
 	  
@@ -424,7 +475,6 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		
 	  public void setMetrics(BaseMetric []listOfMetrics) {
 		  int nbMetrics = listOfMetrics.length;
-		  //this.arrMetrics = listOfMetrics;
 		  this.arrStrMetrics = new String[nbMetrics];
 		  for(int i=0;i<nbMetrics;i++) {
 			  BaseMetric metric = listOfMetrics[i];
@@ -470,17 +520,23 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  public void okPressed() {
 		if(this.checkExpression() && this.checkFormat()) {
 			// save the options for further usage (required by the caller)
-			this.bPercent = this.btnPercent.getSelection();
-			this.sMetricName = this.cbName.getText();
+			bPercent = btnPercent.getSelection();
+			sMetricName = cbName.getText();
 			
 			// save user history
-			this.objHistoryFormula.addLine( this.cbExpression.getText() );
-			this.objHistoryName.addLine( this.cbName.getText() );
+			objHistoryFormula.addLine( cbExpression.getText() );
+			objHistoryName.addLine( cbName.getText() );
 
-			if (this.btnFormat.getSelection())
-				this.sFormat = this.txtFormat.getText();
-			else
-				this.sFormat = null;
+			sFormat = null;
+			displayFormat = MetricDisplayFormat.Default;
+			
+			if (this.btnCustomFormat.getSelection()) {
+				sFormat = txtFormat.getText();
+				displayFormat = MetricDisplayFormat.Custom;
+			} else if (btnPercentFormat.getSelection()) {
+				displayFormat = MetricDisplayFormat.Percent;
+				sFormat = "%.2f %%";
+			}
 			
 			super.okPressed();
 		}

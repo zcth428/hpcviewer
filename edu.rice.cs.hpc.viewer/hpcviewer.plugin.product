@@ -30,7 +30,7 @@ Release 5.2.3 (C) Copyright 2012, Rice University.
    <windowImages i16="icons/hpcviewerEclipse16.gif" i32="icons/hpcviewerEclipse32.gif" i48="icons/hpcviewerEclipse48.gif" i64="icons/hpcviewerEclipse64.gif" i128="icons/hpcviewerEclipse128.gif"/>
 
    <splash
-      startupProgressRect="5,275,445,15"
+      startupProgressRect="0,275,445,15"
       startupMessageRect="7,252,445,20"
       startupForegroundColor="000000" />
    <launcher name="hpcviewer">
@@ -39,7 +39,6 @@ Release 5.2.3 (C) Copyright 2012, Rice University.
          <bmp/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>

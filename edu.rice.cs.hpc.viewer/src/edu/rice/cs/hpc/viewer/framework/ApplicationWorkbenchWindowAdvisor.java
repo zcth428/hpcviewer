@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
@@ -150,7 +151,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		    			expViewer.loadExperimentAndProcess( objFile.getAbsolutePath(), withCallerView);
 		    		}
 		    	} else {
-		    		System.err.println("File doesn't exist: " + fileStore.getName() );
+		    		final String sMsg = "File doesn't exist: " + fileStore.getName();
+		    		System.err.println(sMsg );
+		    		MessageDialog.openError(window.getShell(), "Fail to open a database", sMsg);
 					this.removeViews();
 		    	}
 

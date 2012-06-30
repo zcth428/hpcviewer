@@ -140,10 +140,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		    	if( objFileInfo.exists() ) {
 		    		if ( objFileInfo.isDirectory() ) {
 		    			if (doPrint) System.out.println("Opening database: " + fileStore.fetchInfo().getName() + " " + withCallerView);
-		    			// bug fix: needs to treat a folder/directory
-		    			// it is a directory
-		    			//ExperimentData dataEx = ExperimentData.getInstance(this.workbench.getActiveWorkbenchWindow());
-		    			final ExperimentManager objManager = new ExperimentManager(window); // dataEx.getExperimentManager();
+
+		    			final ExperimentManager objManager = new ExperimentManager(window); 
 		    			objManager.openDatabaseFromDirectory(sPath, this.getFlag(withCallerView));
 		    		} else {
 		    			File objFile = new File(sPath);
@@ -154,7 +152,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		    	} else {
 		    		System.err.println("File doesn't exist: " + fileStore.getName() );
 					this.removeViews();
-
 		    	}
 
 				this.shutdownEvent(this.workbench, window.getActivePage());

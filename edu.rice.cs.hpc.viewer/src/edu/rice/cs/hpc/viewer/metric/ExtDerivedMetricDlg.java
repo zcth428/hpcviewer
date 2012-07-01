@@ -335,13 +335,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			
 			btnPercentFormat.addSelectionListener(new SelectionListener(){
 
-				@Override
 				public void widgetSelected(SelectionEvent e) {
 					txtFormat.setEnabled(false);
 					txtFormat.setFocus();
 				}
 
-				@Override
 				public void widgetDefaultSelected(SelectionEvent e) {}
 				
 			});

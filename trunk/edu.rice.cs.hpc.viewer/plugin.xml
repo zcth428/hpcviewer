@@ -273,13 +273,6 @@
                   style="push"
                   tooltip="Reset the current window layout to the default settings">
             </command>
-            <command
-                  commandId="org.eclipse.ui.views.showView"
-                  label="Show views"
-                  mnemonic="v"
-                  style="push"
-                  tooltip="Show all the views">
-            </command>
          </menu>
          <menu
                id="edu.rice.cs.hpc.viewer.menu.help"

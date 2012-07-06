@@ -99,6 +99,11 @@
             id="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"
             name="Procedure map">
       </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.traceviewer.actions.FilterRanks"
+            id="edu.rice.cs.hpc.traceviewer.actions.FilterRanks"
+            name="Filter ranks">
+      </command>
    </extension>
    <extension
          id="edu.rice.cs.hpc.traceviewer.menus"
@@ -132,6 +137,14 @@
                mnemonic="V"
                tooltip="View menu">
             <command
+                  commandId="edu.rice.cs.hpc.traceviewer.showRecords"
+                  id="edu.rice.cs.hpc.traceviewer.showRecords"
+                  label="Show trace record count"
+                  mnemonic="S"
+                  style="toggle"
+                  tooltip="Show the number of trace records displayed in the trace view (useful for identifying blocking operations and debugging)">
+            </command>
+            <command
                   commandId="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"
                   label="Show procedure-color mapping"
                   mnemonic="c"
@@ -147,12 +160,20 @@
                </visibleWhen>
             </command>
             <command
-                  commandId="edu.rice.cs.hpc.traceviewer.showRecords"
-                  id="edu.rice.cs.hpc.traceviewer.showRecords"
-                  label="Show trace record count"
-                  mnemonic="S"
-                  style="toggle"
-                  tooltip="Show the number of trace records displayed in the trace view (useful for identifying blocking operations and debugging)">
+                  commandId="edu.rice.cs.hpc.traceviewer.actions.FilterRanks"
+                  label="Filter ranks"
+                  mnemonic="c"
+                  style="push"
+                  tooltip="Filter displayed ranks">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="edu.rice.cs.hpc.traceviewer.services.DataService.data">
+                     <equals
+                           value="ENABLED">
+                     </equals>
+                  </with>
+               </visibleWhen>
             </command>
          </menu>
          <menu

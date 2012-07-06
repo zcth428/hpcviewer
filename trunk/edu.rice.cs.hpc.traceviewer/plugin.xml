@@ -170,7 +170,7 @@
                   <with
                         variable="edu.rice.cs.hpc.traceviewer.services.DataService.data">
                      <equals
-                           value="ENABLED">
+                           value="DENABLED">
                      </equals>
                   </with>
                </visibleWhen>

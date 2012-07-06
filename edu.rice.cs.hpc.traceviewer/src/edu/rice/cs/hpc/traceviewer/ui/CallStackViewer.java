@@ -177,7 +177,7 @@ public class CallStackViewer extends TableViewer
 		else
 		{
 			System.err.println("Internal error: unable to get process " + position.process+"\tProcess range: " +
-					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
+					stData.getProcessBegin() + "-" + stData.getProcessEnd() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
 			Debugger.printTrace("CSV traces: ");
 		}
 	}

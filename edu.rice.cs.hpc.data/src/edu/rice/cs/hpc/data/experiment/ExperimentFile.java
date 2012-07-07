@@ -16,6 +16,7 @@ package edu.rice.cs.hpc.data.experiment;
 
 
 import java.io.File;
+import java.io.InputStream;
 
 import edu.rice.cs.hpc.data.util.IUserData;
 
@@ -67,7 +68,9 @@ public abstract void parse(File file, BaseExperiment experiment,
 throws
 	Exception;
 
-
+public abstract void parse(InputStream stream, String name,
+		BaseExperiment experiment, boolean need_metrics, IUserData userData)
+		throws Exception;
 
 
 }

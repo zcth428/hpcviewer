@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 
 import org.eclipse.jface.action.IStatusLineManager;
@@ -27,7 +28,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
 	// Set dataRetreiver before using any methods besides the constructor!
-	RemoteDataRetriever dataRetriever;
+	final RemoteDataRetriever dataRetriever;
 	HashMap<Integer, CallPath> scopeMap;
 	public final int HEADER_SIZE;
 	/**
@@ -38,8 +39,8 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	private final int maxDepth;
 	
 
-	public SpaceTimeDataControllerRemote(IWorkbenchWindow _window,
-			IStatusLineManager _statusMgr, File expFile) {
+	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
+			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces) {
 
 		MethodCounts[0]++;
 
@@ -48,7 +49,8 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
 		BaseExperiment exp = new ExperimentWithoutMetrics();
 		try {
-			exp.open(expFile, new ProcedureAliasMap());
+			//Without metrics, so param 3 is false
+			exp.open(expStream, new ProcedureAliasMap(), false, Name);
 		} catch (InvalExperimentException e) {
 			System.out.println("Parse error in Experiment XML at line "
 					+ e.getLineNumber());
@@ -80,16 +82,15 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		HEADER_SIZE = attribute.dbHeaderSize;
 
 		dbName = exp.getName();
+		
+		dataRetriever = _dataRet;
+		Height = _numTraces;
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
 				_statusMgr, colorTable, maxDepth, minBegTime, this);
 
 	}
 
-	public void setDataRetriever(RemoteDataRetriever _dr) {
-		dataRetriever = _dr;
-		Height = _dr.Height;
-	}
 
 	/**
 	 * dtProcess scaled to be the index in traces[] that corresponds to this

@@ -23,6 +23,7 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.util.IUserData;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
@@ -65,7 +66,10 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	public void open(File experimentFile, IUserData userData)
 			throws Exception
 	{
-		open(experimentFile, userData, true);
+		backingObject = experimentFile;
+		open(new FileInputStream(experimentFile), userData, true,
+				experimentFile.toString());
+		
 	}
 
 	
@@ -434,13 +438,19 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 		return copy;
 	}
 
-
+//These also seem to never be called from HPC TraceViewer.
+	//TODO: Figure out a better way to deal with this. Make sure it didn't break HPCViewer
 	public File getXMLExperimentFile() {
-		return this.fileExperiment;
+		if (backingObject instanceof File)
+		{
+			return (File)backingObject;
+		}
+		else
+			return null;
 	}
 
 	public void setXMLExperimentFile(File file) {
-		this.fileExperiment = file;
+		this.backingObject = file;
 	}
 
 	public void setMetricRaw(MetricRaw []metrics) {

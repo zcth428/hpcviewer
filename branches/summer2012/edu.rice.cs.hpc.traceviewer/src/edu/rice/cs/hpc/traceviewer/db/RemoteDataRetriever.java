@@ -34,7 +34,6 @@ public class RemoteDataRetriever {
 	private final Socket socket;
 	DataInputStream receiver;
 	DataOutputStream sender;
-	public final int Height;
 	
 	private final Shell shell;
 	
@@ -58,26 +57,6 @@ public class RemoteDataRetriever {
 		statusMgr = _statusMgr;
 		shell = _shell;
 		
-		//Check for DBOK
-		int Message = waitAndReadInt(receiver);
-		if (Message == 0x44424F4B)//DBOK
-		{
-			Height = receiver.readInt();
-		}
-		else if (Message == 0x4E4F4442)//NODB
-		{
-			//Tell the user
-			int errorCode = receiver.readInt();//Unused but there for the future
-			MessageBox box = new MessageBox(shell);
-			box.setMessage("The server could not find that database.");
-			box.open();
-			
-			Height = -1;
-		}
-		else
-		{
-			throw new IOException("Unrecognized message sent");
-		}
 	}
 	//TODO: Inclusive or exclusive?
 	/**
@@ -178,7 +157,7 @@ public class RemoteDataRetriever {
 		//That's it for the message
 		sender.flush();
 	}
-	private static int waitAndReadInt(DataInputStream receiver)
+	static int waitAndReadInt(DataInputStream receiver)
 			throws IOException {
 		if (Compressed)
 			return waitAndReadCompressedInt(receiver);

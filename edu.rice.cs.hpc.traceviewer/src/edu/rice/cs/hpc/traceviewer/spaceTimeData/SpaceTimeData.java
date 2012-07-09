@@ -13,8 +13,8 @@ import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
-import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
+import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
@@ -79,9 +79,8 @@ public class SpaceTimeData extends TraceEvents
 	private IStatusLineManager statusMgr;
 	final private IWorkbenchWindow window;
 	
-	private BaseDataFile dataTrace;
-	
-	private int HEADER_SIZE;
+	private IBaseData dataTrace;
+
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
@@ -100,15 +99,6 @@ public class SpaceTimeData extends TraceEvents
 		
 		//Initializes the CSS that represents time values outside of the time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
-		try
-		{
-			dataTrace = new BaseDataFile(traceFile.getAbsolutePath());
-		}
-		catch (IOException e)
-		{
-			System.err.println("Master buffer could not be created");
-		}
-
 		BaseExperiment exp = new ExperimentWithoutMetrics();
 		try
 		{
@@ -125,6 +115,15 @@ public class SpaceTimeData extends TraceEvents
 			e.printStackTrace();
 		}
 		
+		try
+		{
+			dataTrace = new BaseData(traceFile.getAbsolutePath(), exp.getTraceAttribute().dbHeaderSize);
+		}
+		catch (IOException e)
+		{
+			System.err.println("Master buffer could not be created");
+		}
+
 		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);	
 		maxDepth = exp.getRootScope().dfsSetup(visitor, colorTable, 1);
@@ -137,10 +136,7 @@ public class SpaceTimeData extends TraceEvents
 		// default position
 		this.currentPosition = new Position(0,0);
 		this.dbName = exp.getName();
-		//System.gc();
-		
-		final TraceAttribute attribute = exp.getTraceAttribute();
-		HEADER_SIZE = attribute.dbHeaderSize;
+		//System.gc();		
 	}
 
 	public String getName()
@@ -172,7 +168,7 @@ public class SpaceTimeData extends TraceEvents
 	 ******************************************************************************/
 	public int getHeight()
 	{
-		return dataTrace.getNumberOfFiles();
+		return dataTrace.getNumberOfRanks();
 	}
 	
 	/*************************************************************************
@@ -310,7 +306,7 @@ public class SpaceTimeData extends TraceEvents
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
 				depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, 
 						attributes.numPixelsH, attributes.endTime-attributes.begTime,
-						minBegTime+attributes.begTime, HEADER_SIZE);
+						minBegTime+attributes.begTime);
 				
 				depthTrace.readInData(getHeight());
 				depthTrace.shiftTimeBy(minBegTime);
@@ -451,8 +447,7 @@ public class SpaceTimeData extends TraceEvents
 			if(changedBounds)
 				return new ProcessTimeline(attributes.lineNum-1, scopeMap, dataTrace, 
 						lineToPaint(attributes.lineNum-1), attributes.numPixelsH, 
-						attributes.endTime-attributes.begTime, minBegTime + attributes.begTime, 
-						HEADER_SIZE);
+						attributes.endTime-attributes.begTime, minBegTime + attributes.begTime);
 			else {
 				if (traces.length >= attributes.lineNum)
 					return traces[attributes.lineNum-1];
@@ -477,8 +472,7 @@ public class SpaceTimeData extends TraceEvents
 				return depthTrace;
 			}
 			ProcessTimeline toDonate = new ProcessTimeline(attributes.lineNum, scopeMap, dataTrace, dtProcess, 
-					attributes.numPixelsH, attributes.endTime-attributes.begTime, minBegTime+attributes.begTime,
-					HEADER_SIZE);
+					attributes.numPixelsH, attributes.endTime-attributes.begTime, minBegTime+attributes.begTime);
 			toDonate.copyData(depthTrace);
 			
 			attributes.lineNum++;
@@ -538,7 +532,7 @@ public class SpaceTimeData extends TraceEvents
 	}
 	
 	
-	public BaseDataFile getTraceData()
+	public IBaseData getTraceData()
 	{
 		return this.dataTrace;
 	}

@@ -2,9 +2,8 @@ package edu.rice.cs.hpc.traceviewer.db;
 
 import java.util.Vector;
 
-import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.util.Constants;
-import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 public class TraceDataByRank {
@@ -12,11 +11,9 @@ public class TraceDataByRank {
 	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
 	public final static byte SIZE_OF_TRACE_RECORD = 12;
 	
-	final private BaseDataFile data;
-	final private int rank;
-	final private long minloc;
-	final private long maxloc;
+	final private IBaseData data;
 	final private int numPixelH;
+	final int rank;
 	
 	private Vector<TimeCPID> listcpid;
 	
@@ -27,16 +24,10 @@ public class TraceDataByRank {
 	 * @param _rank
 	 * @param _numPixelH
 	 */
-	public TraceDataByRank(BaseDataFile _data, int _rank, int _numPixelH, final int header_size)
+	public TraceDataByRank(IBaseData _data, int _rank, int _numPixelH)
 	{
 		data = _data;
 		rank = _rank;
-		
-		final long offsets[] = data.getOffsets();
-		minloc = offsets[rank] + header_size;
-		maxloc = ( (rank+1<data.getNumberOfFiles())? offsets[rank+1] : data.getMasterBuffer().size()-1 )
-				- SIZE_OF_TRACE_RECORD;
-		
 		numPixelH = _numPixelH;
 		
 		listcpid = new Vector<TimeCPID>(numPixelH);
@@ -51,6 +42,9 @@ public class TraceDataByRank {
 	 */
 	public void getData(double timeStart, double timeRange, double pixelLength)
 	{
+		long minloc = data.getMinLoc(rank);
+		long maxloc = data.getMaxLoc(rank);
+		
 		Debugger.printDebug(1, "getData loc [" + minloc+","+ maxloc + "]");
 		
 		// get the start location
@@ -89,7 +83,7 @@ public class TraceDataByRank {
 		// get the last data if necessary: the rightmost time is still less then the upper limit
 		// 	I think we can add the rightmost data into the list of samples
 		// --------------------------------------------------------------------------------------------------
-		if (endLoc < this.maxloc) {
+		if (endLoc < maxloc) {
 			final TimeCPID dataLast = this.getData(endLoc);
 			this.addSample(listcpid.size(), dataLast);
 		}
@@ -182,11 +176,6 @@ public class TraceDataByRank {
 	}
 
 	
-	public BaseDataFile getTraceData()
-	{
-		return this.data;
-	}
-	
 	
 	private double getTimeMidPoint(int left, int right) {
 		return (listcpid.get(left).timestamp + listcpid.get(right).timestamp) / 2.0;
@@ -238,13 +227,11 @@ public class TraceDataByRank {
 	{
 		if (left_boundary_offset == right_boundary_offset) return left_boundary_offset;
 
-		final LargeByteBuffer masterBuff = data.getMasterBuffer();
-
 		long left_index = getRelativeLocation(left_boundary_offset);
 		long right_index = getRelativeLocation(right_boundary_offset);
 		
-		double left_time = masterBuff.getLong(left_boundary_offset);
-		double right_time = masterBuff.getLong(right_boundary_offset);
+		double left_time = data.getLong(left_boundary_offset);
+		double right_time = data.getLong(right_boundary_offset);
 		
 		// apply "Newton's method" to find target time
 		while (right_index - left_index > 1) {
@@ -272,7 +259,7 @@ public class TraceDataByRank {
 			if (predicted_index >= right_index)
 				predicted_index = right_index - 1;
 
-			double temp = masterBuff.getLong(getAbsoluteLocation(predicted_index));
+			double temp = data.getLong(getAbsoluteLocation(predicted_index));
 			if (time >= temp) {
 				left_index = predicted_index;
 				left_time = temp;
@@ -284,25 +271,27 @@ public class TraceDataByRank {
 		long left_offset = getAbsoluteLocation(left_index);
 		long right_offset = getAbsoluteLocation(right_index);
 
-		left_time = masterBuff.getLong(left_offset);
-		right_time = masterBuff.getLong(right_offset);
+		left_time = data.getLong(left_offset);
+		right_time = data.getLong(right_offset);
 
 		// return the closer sample or the maximum sample if the 
 		// time is at or beyond the right boundary of the interval
 		final boolean is_left_closer = Math.abs(time - left_time) < Math.abs(right_time - time);
+		long maxloc = data.getMaxLoc(rank);
+		
 		if ( is_left_closer ) return left_offset;
-		else if (right_offset < this.maxloc) return right_offset;
-		else return this.maxloc;
+		else if (right_offset < maxloc) return right_offset;
+		else return maxloc;
 	}
 	
 	private long getAbsoluteLocation(long relativePosition)
 	{
-		return minloc + (relativePosition*SIZE_OF_TRACE_RECORD);
+		return data.getMinLoc(rank) + (relativePosition*SIZE_OF_TRACE_RECORD);
 	}
 	
 	private long getRelativeLocation(long absolutePosition)
 	{
-		return (absolutePosition-minloc)/SIZE_OF_TRACE_RECORD;
+		return (absolutePosition-data.getMinLoc(rank))/SIZE_OF_TRACE_RECORD;
 	}
 	
 	
@@ -334,9 +323,8 @@ public class TraceDataByRank {
 	
 	private TimeCPID getData(long location) {
 		
-		final LargeByteBuffer masterBuff = data.getMasterBuffer();
-		final double time = masterBuff.getLong(location);
-		final int cpid = masterBuff.getInt(location+Constants.SIZEOF_LONG);
+		final double time = data.getLong(location);
+		final int cpid = data.getInt(location+Constants.SIZEOF_LONG);
 
 		return new TimeCPID(time,cpid);
 	}

@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.awt.image.renderable.RenderableImage;
 import java.text.NumberFormat;
 
 import org.eclipse.jface.action.IStatusLineManager;
@@ -21,6 +22,7 @@ import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.timeline.RenderThread;
 
 /**
  * This contains the painting components from SpaceTimeData
@@ -296,7 +298,7 @@ public class PaintManager extends TraceEvents {
 	}
 	
 	/**
-	 * Renders the SpaceTimeDetailView from an array of ProcessTimelines by calling renderTrace on each one.
+	 * Renders the SpaceTimeDetailView from an array of ProcessTimelines by calling renderTrace on each one. Uses multiple threads.
 	 */
 	public void renderTraces(ProcessTimeline[] _traces, SpaceTimeCanvas canvas, boolean changedBounds,
 			double scaleX, double scaleY) {
@@ -304,7 +306,30 @@ public class PaintManager extends TraceEvents {
 
 		
 		monitor.beginProgress(_traces.length, "Rendering space time view...", "Trace painting", window.getShell());
-		for (int i = 0; i < _traces.length; i++) {
+		int numThreadsToLaunch = Math.min(_traces.length, Runtime.getRuntime().availableProcessors());
+		RenderThread[] renderThreads = new RenderThread[numThreadsToLaunch];
+		for (int i = 0; i < renderThreads.length; i++) {
+			//min_i = (i*len)/N
+			//max_i = ((i+1)*len)/N
+			int min = (i*_traces.length)/numThreadsToLaunch;
+			int max = ((i+1)*_traces.length)/numThreadsToLaunch;
+			System.out.println("Creating thread to render traces ["+min+", "+ max +")");
+			renderThreads[i] = new RenderThread(min, max,
+					_traces, this, canvas, changedBounds, scaleX, scaleY, width, monitor);
+		}
+		for (int i = 0; i < renderThreads.length; i++) {
+			renderThreads[i].start();
+		}
+		//Wait until they are all done
+		System.out.println("Threads launched. Waiting");
+		for (int i = 0; i < renderThreads.length; i++) {
+			try {
+				renderThreads[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		/*for (int i = 0; i < _traces.length; i++) {
 			boolean debug = (i % 100 == 0);
 			if (debug)
 				System.out.println("Rendering: " + i + "/" + _traces.length);
@@ -314,7 +339,7 @@ public class PaintManager extends TraceEvents {
 			renderTrace(canvas, changedBounds, scaleX, scaleY, width, nextTrace);
 			monitor.announceProgress();
 
-		}
+		}*/
 		monitor.endProgress();
 	}
 	

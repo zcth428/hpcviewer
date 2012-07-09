@@ -241,9 +241,6 @@ public class RemoteDataRetriever {
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x4F50454E (OPEN in ASCII)
  * 0x04		Database Path	string-m			Modified UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. The first two bytes of this message are the length (in bytes) of the string that follows.
- * 0x04+m	Global Min Time long-8				The lowest starting time for all the traces. This is mapped to 0 at some point during the execution. This value comes from the experiment.xml file
- * 0x0C+m	Global Max Time long-8				The highest ending time for all the traces. This can also be found in experiment.xml
- * 0x12+m	DB Header Size	int-4				The size of the header in the DB file. TraceDataByRank uses it to pinpoint the location of each trace.
  * 
  * The server can then reply with DBOK or NODB
  * 
@@ -251,7 +248,8 @@ public class RemoteDataRetriever {
  * Notes: This indicates that the server could find the specified database and opened it. It also contains a little additional information to help the client in later rendering.
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x44424F4B (DBOK in ASCII)
- * 0x04		Trace count		int-4				The number of traces contained in the database/trace file
+ * 0x04		XML Port		int-4				The port to which the client should connect to receive the XML file
+ * 0x08		Trace count		int-4				The number of traces contained in the database/trace file
  * 
  * Message NODB	Server -> Client
  * Notes: This indicates that the server could not find the database or could not open it for some reason. The user should be notified and the next message the client sends should be another OPEN command.
@@ -259,8 +257,16 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x4E4F4442 (NODB in ASCII)
  * 0x04		Error Code		int-4				Currently unused, but the server could specify a code to make diagnosing the error easier. Set to 0 for right now.
  * 
+ * The XML file should be sent as soon as the client connects to the appropriate port. It is GZIP compressed.
  * 
- * 
+ * Message INFO Client -> Server
+ * Notes: This contains information derived from the XML data that the server needs in order to understand the later data requests
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x494E464F (INFO in ASCII)
+ * 0x04		Global Min Time long-8				The lowest starting time for all the traces. This is mapped to 0 at some point during the execution. This value comes from the experiment.xml file
+ * 0x0C		Global Max Time long-8				The highest ending time for all the traces. This can also be found in experiment.xml
+ * 0x12		DB Header Size	int-4				The size of the header in the DB file. TraceDataByRank uses it to pinpoint the location of each trace.
+ *  
  * Message DATA Client -> Server
  * Notes: This message represents a request for the server to retrieve data from the file and return it to the client
  * Offset	Name			Type-Length (bytes)	Value

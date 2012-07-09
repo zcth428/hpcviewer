@@ -172,12 +172,12 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 			painter.renderTraces(traces, canvas, changedBounds, xscale, yscale);
 		} else// Depth view
 		{
-			renderDepthTrace(canvas, changedBounds, xscale, yscale);
+			renderDepthTraces(canvas, changedBounds, xscale, yscale);
 		}
 
 	}
 
-	private void renderDepthTrace(SpaceTimeCanvas canvas,
+	private void renderDepthTraces(SpaceTimeCanvas canvas,
 			boolean changedBounds, double scaleX, double scaleY) {
 		System.out.println("Rendering Depth Trace");
 		ProcessTimeline nextTrace = getNextDepthTrace();

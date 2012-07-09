@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 
-import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
@@ -680,9 +680,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         					+ ((long)stData.getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-        final BaseDataFile traceData = this.stData.getTraceData();
+        final IBaseData traceData = this.stData.getTraceData();
         
-        final String processes[] = traceData.getValuesX();
+        final String processes[] = traceData.getListOfRanks();
         final int proc_start = (int)stData.getBegProcess();
         
         // -------------------------------------------------------------------------------------------------
@@ -707,7 +707,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         {
     		final long selectedTime = stData.getPosition().time;
     		final int rank = this.stData.getPosition().process;
-    		final String selectedProcessLabel = stData.getTraceData().getValuesX()[rank];
+    		final String selectedProcessLabel = processes[rank];
             
         	crossHairLabel.setText("Cross Hair: (" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcessLabel + ")");
         }

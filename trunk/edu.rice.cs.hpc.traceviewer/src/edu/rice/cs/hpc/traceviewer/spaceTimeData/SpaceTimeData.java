@@ -24,9 +24,7 @@ import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
-import edu.rice.cs.hpc.traceviewer.timeline.ITimeline;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
-import edu.rice.cs.hpc.traceviewer.timeline.Timeline;
 
 /*************************************************************************
  * 
@@ -84,8 +82,6 @@ public class SpaceTimeData extends TraceEvents
 	private BaseDataFile dataTrace;
 	
 	private int HEADER_SIZE;
-	
-	private ITimeline timeline;
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
@@ -145,8 +141,6 @@ public class SpaceTimeData extends TraceEvents
 		
 		final TraceAttribute attribute = exp.getTraceAttribute();
 		HEADER_SIZE = attribute.dbHeaderSize;
-		
-		timeline = new Timeline();
 	}
 
 	public String getName()
@@ -163,17 +157,6 @@ public class SpaceTimeData extends TraceEvents
 	{
 		return this.currentDepth;
 	}
-	
-	public void setTimeline(ITimeline timeline) 
-	{
-		this.timeline = timeline;
-	}
-	
-	public ITimeline getTimeline()
-	{
-		return this.timeline;
-	}
-	
 	/*************************************************************************
 	 *	Returns width of the spaceTimeData:
 	 *	The width (the last time in the ProcessTimeline) of the longest 
@@ -274,7 +257,8 @@ public class SpaceTimeData extends TraceEvents
 				compositeFinalLines = new Image[linesToPaint];
 
 				if (changedBounds) {
-					traces = new ProcessTimeline[ linesToPaint ];
+					final int num_traces = Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
+					traces = new ProcessTimeline[ num_traces ];
 				}
 				return true;
 			}
@@ -290,8 +274,7 @@ public class SpaceTimeData extends TraceEvents
 
 			//@Override
 			protected int getNumberOfLines() {
-				return Math.min(attributes.numPixelsV, 
-						timeline.getDistance(attributes.begProcess, attributes.endProcess));
+				return Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
 			}
 		};
 		
@@ -448,10 +431,12 @@ public class SpaceTimeData extends TraceEvents
 	/**Returns the index of the file to which the line-th line corresponds.*/
 	public int lineToPaint(int line)
 	{
-		return timeline.getLineIndex(line, attributes.endProcess - attributes.begProcess, 
-				attributes.numPixelsV, getProcessBegin());
+		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
+		if(numTimelinesToPaint > attributes.numPixelsV)
+			return attributes.begProcess + (line * numTimelinesToPaint)/(attributes.numPixelsV);
+		else
+			return attributes.begProcess + line;
 	}
-	
 	
 	/***********************************************************************
 	 * Gets the next available trace to be filled/painted
@@ -460,9 +445,7 @@ public class SpaceTimeData extends TraceEvents
 	 **********************************************************************/
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds)
 	{
-		int distance = Math.min( attributes.numPixelsV, 
-				timeline.getDistance(attributes.begProcess, attributes.endProcess));
-		if( attributes.lineNum < distance )
+		if(attributes.lineNum < Math.min(attributes.numPixelsV, attributes.endProcess-attributes.begProcess))
 		{
 			attributes.lineNum++;
 			if(changedBounds)
@@ -532,7 +515,13 @@ public class SpaceTimeData extends TraceEvents
 		this.colorTable.dispose();
 	}
 	
-	public int getProcessEnd()
+	public int getBegProcess()
+	{
+		return attributes.begProcess;
+	}
+	
+	
+	public int getEndProcess()
 	{
 		return attributes.endProcess;
 	}
@@ -552,13 +541,5 @@ public class SpaceTimeData extends TraceEvents
 	public BaseDataFile getTraceData()
 	{
 		return this.dataTrace;
-	}
-
-	public int getProcessBegin() {
-		return this.attributes.begProcess;
-	}
-
-	public String[] getProcessNames() {
-		return this.dataTrace.getValuesX();
 	}
 }

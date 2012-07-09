@@ -313,8 +313,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		final double numProcessDisp = this.getNumProcessesDisplayed();
 		if (numProcessDisp < MIN_PROC_DISP)
 		{
-			// laks: useless statement ?
-			//stData.attributes.begProcess = (int)stData.attributes.begProcess;
+			stData.attributes.begProcess = (int)stData.attributes.begProcess;
 			stData.attributes.endProcess = stData.attributes.begProcess+MIN_PROC_DISP;
 		}
 				
@@ -503,7 +502,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void setFrame(Frame current)
 	{
 		if (current.begTime == stData.getViewTimeBegin() && current.endTime == stData.getViewTimeEnd() 
-				&& current.begProcess == stData.getProcessBegin() && current.endProcess == stData.getProcessEnd()) {
+				&& current.begProcess == stData.getBegProcess() && current.endProcess == stData.getEndProcess()) {
 			
 		} else {
 			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);	
@@ -684,7 +683,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         final BaseDataFile traceData = this.stData.getTraceData();
         
         final String processes[] = traceData.getValuesX();
-        final int proc_start = (int)stData.getProcessBegin();
+        final int proc_start = (int)stData.getBegProcess();
         
         // -------------------------------------------------------------------------------------------------
         // bug fix: since the end of the process is the ceiling of the selected region,
@@ -695,7 +694,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         // TODO: we should fix the rendering to inclusive min and inclusive max, otherwise it is too much
         //		 headache to maintain
         // -------------------------------------------------------------------------------------------------
-        int proc_end   = stData.getProcessEnd() - 1;
+        int proc_end   = stData.getEndProcess() - 1;
         if (proc_end>=processes.length)
         	proc_end = processes.length-1;
         
@@ -923,8 +922,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      * go north one step
      */
     public void goNorth() {
-    	double proc_begin = stData.getProcessBegin();
-    	double proc_end = stData.getProcessEnd();
+    	double proc_begin = stData.getBegProcess();
+    	double proc_end = stData.getEndProcess();
     	final double delta = proc_end - proc_begin;
     	final double move = java.lang.Math.ceil((double)delta * SCALE_MOVE);
     	proc_begin = proc_begin - move;
@@ -941,8 +940,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      * go south one step
      */
     public void goSouth() {
-    	double proc_begin = stData.getProcessBegin();
-    	double proc_end = stData.getProcessEnd();
+    	double proc_begin = stData.getBegProcess();
+    	double proc_end = stData.getEndProcess();
     	final double delta = proc_end - proc_begin;
     	final double move = java.lang.Math.ceil((double)delta * SCALE_MOVE);
     	proc_end = proc_end + move;
@@ -1005,10 +1004,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	
 	private double getNumProcessesDisplayed()
 	{
-		int begin = stData.getProcessBegin();
-		int end = stData.getProcessEnd();
-		
-		return (stData.getTimeline().getDistance(begin, end));
+		return (stData.attributes.endProcess - stData.attributes.begProcess);
 	}
 	
 	/* *****************************************************************

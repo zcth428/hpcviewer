@@ -152,7 +152,12 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 				// eclipse bug: even if we set a very specific source provider, eclipse still
 				//	gather event from other source. we then require to put a guard to avoid this.
 				if (sourceName.equals(DataService.DATA_UPDATE)) {
-					detailCanvas.refresh(false);
+					boolean needRefresh = false;
+					if (sourceValue instanceof Boolean) {
+						Boolean refresh = (Boolean) sourceValue;
+						needRefresh = refresh.booleanValue();
+					}
+					detailCanvas.refresh(needRefresh);
 				}
 			}
 		});

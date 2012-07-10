@@ -15,6 +15,7 @@ import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
@@ -56,10 +57,8 @@ public class SpaceTimeData extends TraceEvents
 	
 	/**The maximum depth of any single CallStackSample in any trace.*/
 	private int maxDepth;
-	
-	/**The minimum beginning and maximum ending time stamp across all traces (in microseconds)).*/
-	private long minBegTime;
-	private long maxEndTime;
+
+	private TraceAttribute traceAttributes;
 	
 	final public ImageTraceAttributes attributes;
 	
@@ -80,7 +79,7 @@ public class SpaceTimeData extends TraceEvents
 	final private IWorkbenchWindow window;
 	
 	private IBaseData dataTrace;
-
+	final private File traceFile;
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
@@ -99,6 +98,9 @@ public class SpaceTimeData extends TraceEvents
 		
 		//Initializes the CSS that represents time values outside of the time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
+		
+		this.traceFile = traceFile;
+
 		BaseExperiment exp = new ExperimentWithoutMetrics();
 		try
 		{
@@ -115,9 +117,11 @@ public class SpaceTimeData extends TraceEvents
 			e.printStackTrace();
 		}
 		
+		traceAttributes = exp.getTraceAttribute();
+		
 		try
 		{
-			dataTrace = new BaseData(traceFile.getAbsolutePath(), exp.getTraceAttribute().dbHeaderSize);
+			dataTrace = new BaseData(traceFile.getAbsolutePath(), traceAttributes.dbHeaderSize);
 		}
 		catch (IOException e)
 		{
@@ -130,15 +134,41 @@ public class SpaceTimeData extends TraceEvents
 		
 		colorTable.setColorTable();
 		
-		minBegTime = exp.getTraceAttribute().dbTimeMin;
-		maxEndTime = exp.getTraceAttribute().dbTimeMax;
-		
 		// default position
 		this.currentPosition = new Position(0,0);
 		this.dbName = exp.getName();
 		//System.gc();		
 	}
 
+	/***
+	 * changing the trace data, caller needs to make sure to refresh the views
+	 * @param baseData
+	 */
+	public void setBaseData(IBaseData baseData) 
+	{
+		this.dataTrace = baseData;
+		
+		// we have to change the range of displayed processes
+		this.attributes.begProcess = 0;
+		this.attributes.endProcess = baseData.getNumberOfRanks()-1;
+	}
+	
+	
+	public IBaseData getBaseData()
+	{
+		return dataTrace;
+	}
+	
+	public File getTraceFile()
+	{
+		return traceFile;
+	}
+	
+	public TraceAttribute getTraceAttribute()
+	{
+		return traceAttributes;
+	}
+	
 	public String getName()
 	{
 		return this.dbName;
@@ -160,7 +190,7 @@ public class SpaceTimeData extends TraceEvents
 	 ************************************************************************/
 	public long getWidth()
 	{
-		return maxEndTime - minBegTime;
+		return getMaxBegTime() - getMinBegTime();
 	}
 	
 	/******************************************************************************
@@ -185,7 +215,7 @@ public class SpaceTimeData extends TraceEvents
 	 ************************************************************************/
 	public long getMinBegTime()
 	{
-		return minBegTime;
+		return traceAttributes.dbTimeMin;
 	}
 
 	/*************************************************************************
@@ -193,7 +223,7 @@ public class SpaceTimeData extends TraceEvents
 	 *************************************************************************/
 	public long getMaxBegTime()
 	{
-		return maxEndTime;
+		return traceAttributes.dbTimeMax;
 	}
 	
 	public long getViewTimeBegin()
@@ -306,10 +336,10 @@ public class SpaceTimeData extends TraceEvents
 			protected boolean startPainting(int linesToPaint, boolean changedBounds) {
 				depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace, dtProcess, 
 						attributes.numPixelsH, attributes.endTime-attributes.begTime,
-						minBegTime+attributes.begTime);
+						getMinBegTime()+attributes.begTime);
 				
 				depthTrace.readInData(getHeight());
-				depthTrace.shiftTimeBy(minBegTime);
+				depthTrace.shiftTimeBy(getMinBegTime());
 				compositeFinalLines = new Image[linesToPaint];
 
 				return changedBounds;
@@ -383,7 +413,7 @@ public class SpaceTimeData extends TraceEvents
 			return;
 		
 		if (changedBounds)
-			ptl.shiftTimeBy(minBegTime);
+			ptl.shiftTimeBy(getMinBegTime());
 		double pixelLength = (attributes.endTime - attributes.begTime)/(double)attributes.numPixelsH;
 		
 		// do the paint
@@ -447,7 +477,7 @@ public class SpaceTimeData extends TraceEvents
 			if(changedBounds)
 				return new ProcessTimeline(attributes.lineNum-1, scopeMap, dataTrace, 
 						lineToPaint(attributes.lineNum-1), attributes.numPixelsH, 
-						attributes.endTime-attributes.begTime, minBegTime + attributes.begTime);
+						attributes.endTime-attributes.begTime, getMinBegTime() + attributes.begTime);
 			else {
 				if (traces.length >= attributes.lineNum)
 					return traces[attributes.lineNum-1];
@@ -472,7 +502,7 @@ public class SpaceTimeData extends TraceEvents
 				return depthTrace;
 			}
 			ProcessTimeline toDonate = new ProcessTimeline(attributes.lineNum, scopeMap, dataTrace, dtProcess, 
-					attributes.numPixelsH, attributes.endTime-attributes.begTime, minBegTime+attributes.begTime);
+					attributes.numPixelsH, attributes.endTime-attributes.begTime, getMinBegTime()+attributes.begTime);
 			toDonate.copyData(depthTrace);
 			
 			attributes.lineNum++;

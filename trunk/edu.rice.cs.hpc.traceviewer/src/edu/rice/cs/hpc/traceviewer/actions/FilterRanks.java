@@ -1,21 +1,64 @@
 package edu.rice.cs.hpc.traceviewer.actions;
 
+import java.io.IOException;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.traceviewer.util.FilterRankDialog;
+import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.traceviewer.filter.Filter;
+import edu.rice.cs.hpc.traceviewer.filter.FilterDialog;
+import edu.rice.cs.hpc.traceviewer.services.DataService;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
+/*****
+ * 
+ * Action class to filter ranks
+ *
+ */
 public class FilterRanks extends AbstractHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
 		final Shell shell = HandlerUtil.getActiveShell(event);
-		final FilterRankDialog filterDlg = new FilterRankDialog(shell);
+		IWorkbenchWindow winObj = HandlerUtil.getActiveWorkbenchWindow(event);
+		ISourceProviderService sourceProviderService = (ISourceProviderService) winObj.getService(
+				ISourceProviderService.class);
 		
-		final int ret = filterDlg.open();
+		DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
+
+		final SpaceTimeData data = dataService.getData();
+		IBaseData baseData = data.getBaseData();
+		
+		Filter filter = new Filter();
+		if (baseData instanceof FilteredBaseData) {
+			filter.setPatterns( ((FilteredBaseData)baseData).getFilters() );
+		}
+	
+		FilterDialog dlg = new FilterDialog(shell, filter);
+		
+		if (dlg.open() == Dialog.OK) {
+			try {
+				FilteredBaseData filteredBaseData = new FilteredBaseData(data.getTraceFile().getAbsolutePath(), 
+						data.getTraceAttribute().dbHeaderSize);
+				filteredBaseData.setFilters( filter.getPatterns() );
+				
+				data.setBaseData(filteredBaseData);
+				dataService.broadcastUpdate(new Boolean(true));
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		
 		return null;
 	}

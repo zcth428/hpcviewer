@@ -29,6 +29,7 @@ public class FilterDialog extends TitleAreaDialog {
 
 	private List list;
 	private Filter filter;
+	private Button btnRemove;
 	
 	/****
 	 * constructor for displaying filter glob pattern
@@ -50,43 +51,64 @@ public class FilterDialog extends TitleAreaDialog {
 		Group grpFilter = new Group(composite, SWT.SHADOW_ETCHED_IN);
 		grpFilter.setText("Filter");
 		
-		Button btnAdd = new Button(grpFilter, SWT.PUSH);
+		Button btnAdd = new Button(grpFilter, SWT.PUSH | SWT.FLAT);
 		btnAdd.setText("Add");
 		btnAdd.addSelectionListener( new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
 				InputDialog dlg = new InputDialog(getShell(), "Add a pattern", 
-						"Please type a glob pattern", "*", null);
+						"Please type a glob pattern\n" + 
+						"Symbol * matches all characters, while symbol ? matches only one character.\n" +
+						"For instance, *.0 will match 12.0 and 13.0", "", null);
 				if (dlg.open() == Dialog.OK) {
 					list.add(dlg.getValue());
+					checkButtons();
 				}
 			}
 		});
 		
-		Button btnRemove = new Button(grpFilter, SWT.PUSH);
+		btnRemove = new Button(grpFilter, SWT.PUSH | SWT.FLAT);
 		btnRemove.setText("remove");
 		btnRemove.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				int i = list.getSelectionCount();
 				if (i > 0) {
 					final String item = list.getSelection()[0];
-					if (MessageDialog.openQuestion(getShell(), "Removing a pattern", 
-							"Do you want to remove: " + item + " ?")) {
-						list.remove(item);
-					}
+					list.remove(item);
+					checkButtons();
 				}
 			}
 		});
 		
+		final Button btnRemoveAll = new Button(grpFilter, SWT.PUSH | SWT.FLAT);
+		btnRemoveAll.setText("Remove all");
+		btnRemoveAll.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				int count = list.getItemCount();
+				if (count>0) {
+					if (MessageDialog.openQuestion(getShell(), "Remove all patterns",
+							"Are you sure to remove all " + count + " patterns ?")) {
+						list.removeAll();
+						checkButtons();
+					}
+				}
+			}
+		}) ;
+		
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(grpFilter);
-		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(grpFilter);
+		GridLayoutFactory.fillDefaults().spacing(2, 4).numColumns(3).applyTo(grpFilter);
 		
 		list = new List(composite, SWT.SINGLE | SWT.V_SCROLL);
+		list.addSelectionListener(new SelectionAdapter(){
+			public void widgetSelected(SelectionEvent e) {
+				checkButtons();
+			}			
+		});
 
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(list);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(composite);
 		
 		this.setMessage("Add/remove glob patterns to filter displayed processes");
-		this.setTitle("Filter pattern");
+		this.setTitle("Filter patterns");
 		
 		// add pattern into the list
 		if (filter != null && filter.getPatterns() != null) {
@@ -95,9 +117,16 @@ public class FilterDialog extends TitleAreaDialog {
 			}
 		}
 
+		checkButtons();
+		
 		return parent;
 	}
 	
+	
+	private void checkButtons() {
+		boolean selected = (list.getSelectionCount()>0);
+		btnRemove.setEnabled(selected);
+	}
 	
 	/*
 	 * (non-Javadoc)

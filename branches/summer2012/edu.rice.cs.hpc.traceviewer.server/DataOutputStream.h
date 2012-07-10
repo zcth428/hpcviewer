@@ -9,10 +9,10 @@
 
 #ifndef DATAOUTPUTSTREAM_H_
 #define DATAOUTPUTSTREAM_H_
-
+#include <fstream>
 namespace TraceviewerServer {
 using namespace std;
-class DataOutputStream : ofstream{
+class DataOutputStream : public ofstream{
 public:
 	DataOutputStream(const char*);
 	virtual ~DataOutputStream();

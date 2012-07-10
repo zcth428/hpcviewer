@@ -8,7 +8,14 @@
 #ifndef LOCALDBOPENER_H_
 #define LOCALDBOPENER_H_
 #include <string>;
-#include <FileData.h>
+#include "SpaceTimeDataControllerLocal.h"
+#include "FileData.h"
+#include "boost/filesystem/path.hpp"
+#include "boost/filesystem/operations.hpp"
+#include "Constants.h"
+#include <iostream>
+#include "MergeDataFiles.h"
+#include "TraceDataByRankLocal.h"
 using namespace std;
 namespace TraceviewerServer {
 
@@ -19,8 +26,8 @@ public:
 
 	SpaceTimeDataControllerLocal* OpenDbAndCreateSTDC(string);
 private:
-	static int MIN_TRACE_SIZE;
-	static bool IsCorrectDatabase(string, FileData);
+	static const int MIN_TRACE_SIZE = 32 + 8 + 24 + TraceDataByRankLocal::SIZE_OF_TRACE_RECORD * 2;
+	static bool IsCorrectDatabase(string, FileData*);
 };
 
 } /* namespace TraceviewerServer */

@@ -6,11 +6,11 @@
  */
 
 #include "DataOutputStream.h"
-#include <iostream>
+
 using namespace std;
 namespace TraceviewerServer {
 
-ostream* Backer;
+//ostream* Backer;
 const unsigned int MASK_0 = 0x000000FF, MASK_1=0x0000FF00, MASK_2=0x00FF0000, MASK_3 = 0xFF000000;//For an int
 const unsigned long MASK_4 = 0x000000FF00000000, MASK_5 = 0x0000FF0000000000, MASK_6 = 0x00FF000000000000, MASK_7 = 0xFF00000000000000;//for a long
 DataOutputStream::DataOutputStream(const char* filename)
@@ -20,8 +20,7 @@ DataOutputStream::DataOutputStream(const char* filename)
 }
 
 DataOutputStream::~DataOutputStream() {
-	delete(*Backer);
-	Backer = NULL;
+
 }
 void DataOutputStream::WriteInt(int toWrite){
 	char arrayform[4] = {

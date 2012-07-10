@@ -9,6 +9,7 @@
 #define MERGEDATAFILES_H_
 #include "MergeDataAttribute.h"
 #include "boost/filesystem/path.hpp"
+#include "DataOutputStream.h"
 using namespace boost::filesystem;
 using namespace std;
 namespace TraceviewerServer {
@@ -25,7 +26,7 @@ private:
 	static bool IsMergedFileCorrect(path*);
 	static bool RemoveFiles(vector<path>);
 	//This was in Util.java in a modified form but is more useful here
-	static bool AtLeastOneValidFile(iterator);
+	static bool AtLeastOneValidFile(path);
 	//We need this because of the way atoi works.
 	static bool StringActuallyZero(string);
 };

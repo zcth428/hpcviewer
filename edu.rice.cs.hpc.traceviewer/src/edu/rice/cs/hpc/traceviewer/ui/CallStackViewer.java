@@ -125,7 +125,15 @@ public class CallStackViewer extends TableViewer
 	public void updateData(SpaceTimeData _stData) 
 	{
 		this.stData = _stData;
-
+		this.updateData();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.StructuredViewer#refresh()
+	 */
+	public void updateData()
+	{
 		this.setSample(stData.getPosition(), this.stData.getDepth());
 		this.getTable().setVisible(true);
 	}

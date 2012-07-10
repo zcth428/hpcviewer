@@ -79,6 +79,11 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		this.redraw();
 	}
 	
+	public void updateData()
+	{
+		setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
+	}
+	
 	/**Sets the detail canvas.*/
 	public void setDetailCanvas(SpaceTimeDetailCanvas _detailCanvas)
 	{

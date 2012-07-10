@@ -153,6 +153,9 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 				if (sourceName.equals(DataService.DATA_UPDATE)) {
 					if (sourceValue instanceof SpaceTimeData) {
 						csViewer.updateData((SpaceTimeData)sourceValue);
+					} else if (sourceValue instanceof Boolean) {
+						csViewer.updateData();
+						miniCanvas.updateData();
 					}
 				}
 			}

@@ -80,7 +80,7 @@ public class FilterDialog extends TitleAreaDialog {
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(grpFilter);
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(grpFilter);
 		
-		list = new List(composite, SWT.SINGLE);
+		list = new List(composite, SWT.SINGLE | SWT.V_SCROLL);
 
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(list);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(composite);
@@ -98,6 +98,14 @@ public class FilterDialog extends TitleAreaDialog {
 		return parent;
 	}
 	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.window.Window#setShellStyle(int)
+	 */
+	protected void setShellStyle(int newShellStyle) {
+		super.setShellStyle(newShellStyle | SWT.RESIZE);
+	}
 	
 	/*
 	 * (non-Javadoc)

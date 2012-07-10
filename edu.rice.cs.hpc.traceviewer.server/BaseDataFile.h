@@ -10,6 +10,9 @@
 using namespace std;
 #include <string>;
 #include "LargeByteBuffer.h"
+#include "Constants.h"
+#include "boost/filesystem/path.hpp"
+#include <sstream>
 namespace TraceviewerServer {
 
 class BaseDataFile {
@@ -20,6 +23,17 @@ public:
 	long* getOffsets();
 	LargeByteBuffer* getMasterBuffer();
 	void setData(string);
+
+	bool IsMultiProcess();
+	bool IsMultiThreading();
+	bool IsHybrid();
+
+private:
+	int Type;// = Constants::MULTI_PROCESSES | Constants::MULTI_THREADING;
+	LargeByteBuffer* MasterBuff;
+	int NumFiles;// = 0;
+	string* ValuesX;
+	long* Offsets;
 };
 
 } /* namespace TraceviewerServer */

@@ -150,7 +150,10 @@ public class SpaceTimeData extends TraceEvents
 		
 		// we have to change the range of displayed processes
 		this.attributes.begProcess = 0;
-		this.attributes.endProcess = baseData.getNumberOfRanks()-1;
+		
+		// hack: for unknown reason, "endProcess" is exclusive.
+		// TODO: we should change to inclusive just like begProcess
+		this.attributes.endProcess = baseData.getNumberOfRanks();
 	}
 	
 	

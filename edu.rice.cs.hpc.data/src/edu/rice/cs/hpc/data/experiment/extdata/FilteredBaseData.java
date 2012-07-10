@@ -56,7 +56,8 @@ public class FilteredBaseData implements IBaseData {
 			// search for the matching string
 			// this is not an optimized version O(n^2), but at the moment it works
 			// ------------------------------------------------------------------
-			for (String glob: listOfGlobs) {
+			for (int k=0; k<listOfGlobs.size(); k++) {
+				String glob = listOfGlobs.get(k);
 				String globPattern = glob.replace("*", ".*").replace("?",".?");
 				int j=0;
 				for (int i=0; i<data.length; i++) {
@@ -64,10 +65,17 @@ public class FilteredBaseData implements IBaseData {
 					String item = data[i];
 					boolean isMatched = item.matches(globPattern);
 					
-					// Needs to remove duplicates
-					if ( (isMatched && isShownMode) || (!isShownMode && !isMatched)) {
-						mapIndex.put(i, j);
-						j++;
+					//if we have multiple glob pattern, we need to match with the existing
+					//	filtered ranks
+					if ( k==0 || (k>0 && mapIndex.containsKey(i)) ) {
+						// Needs to remove duplicates
+						if ( (isMatched && isShownMode) || (!isShownMode && !isMatched)) {
+							mapIndex.put(i, j);
+							j++;
+						} else {
+							// remove from the existing un-filtered list
+							mapIndex.remove(i);
+						}
 					}
 				}
 			}
@@ -86,7 +94,7 @@ public class FilteredBaseData implements IBaseData {
 			}			
 		} else {
 			// no glob pattern to filter
-			// not optimized
+			// warning: not optimized code
 			indexes = new int[data.length];
 			for(int i=0; i<data.length; i++) {
 				indexes[i] = i;

@@ -16,8 +16,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+
+import edu.rice.cs.hpc.data.experiment.extdata.Filter;
 
 
 /*****
@@ -30,6 +33,7 @@ public class FilterDialog extends TitleAreaDialog {
 	private List list;
 	private Filter filter;
 	private Button btnRemove;
+	private Button btnShow;
 	
 	/****
 	 * constructor for displaying filter glob pattern
@@ -39,7 +43,6 @@ public class FilterDialog extends TitleAreaDialog {
 		super(parentShell);
 		filter = f;
 	}
-
 	
 	/*
 	 * (non-Javadoc)
@@ -47,7 +50,30 @@ public class FilterDialog extends TitleAreaDialog {
 	 */
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
+
+		Group grpMode = new Group(composite, SWT.SHADOW_ETCHED_IN);
+		grpMode.setText("Mode of filter");
 		
+		btnShow = new Button(grpMode, SWT.RADIO);
+		btnShow.setText("To show");
+
+		Button btnHide = new Button(grpMode, SWT.RADIO);
+		btnHide.setText("To hide");
+		
+		if (filter.isShownMode())
+			btnShow.setSelection(true);
+		else
+			btnHide.setSelection(true);
+		
+		Label lblMode = new Label(grpMode, SWT.CENTER);
+		lblMode.setText("Choosing 'To show' will show matching processes, " +
+						 "while choosing 'To hide' will hide them.");
+		
+		GridDataFactory.swtDefaults().span(2, 1).grab(true, false).applyTo(lblMode);
+		
+		GridDataFactory.swtDefaults().grab(true, false).applyTo(grpMode);
+		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(grpMode);
+
 		Group grpFilter = new Group(composite, SWT.SHADOW_ETCHED_IN);
 		grpFilter.setText("Filter");
 		
@@ -94,17 +120,18 @@ public class FilterDialog extends TitleAreaDialog {
 			}
 		}) ;
 		
-		GridDataFactory.fillDefaults().grab(true, false).applyTo(grpFilter);
-		GridLayoutFactory.fillDefaults().spacing(2, 4).numColumns(3).applyTo(grpFilter);
 		
-		list = new List(composite, SWT.SINGLE | SWT.V_SCROLL);
+		list = new List(grpFilter, SWT.SINGLE | SWT.V_SCROLL);
 		list.addSelectionListener(new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
 				checkButtons();
 			}			
 		});
+		GridDataFactory.fillDefaults().span(3, 1).hint(100, 80).grab(true, true).applyTo(list);
 
-		GridDataFactory.fillDefaults().grab(true, true).applyTo(list);
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(grpFilter);
+		GridLayoutFactory.fillDefaults().spacing(2, 4).numColumns(3).applyTo(grpFilter);
+		
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(composite);
 		
 		this.setMessage("Add/remove glob patterns to filter displayed processes");
@@ -148,6 +175,8 @@ public class FilterDialog extends TitleAreaDialog {
 		}
 		// put the glob pattern back
 		filter.setPatterns(filterList);
+		// set the show mode (to show or to hide)
+		filter.setShowMode( btnShow.getSelection() );
 		
 		super.okPressed();
 	}

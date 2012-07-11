@@ -146,14 +146,19 @@ public class SpaceTimeData extends TraceEvents
 	 */
 	public void setBaseData(IBaseData baseData) 
 	{
-		this.dataTrace = baseData;
+		dataTrace = baseData;
 		
 		// we have to change the range of displayed processes
-		this.attributes.begProcess = 0;
+		attributes.begProcess = 0;
 		
 		// hack: for unknown reason, "endProcess" is exclusive.
 		// TODO: we should change to inclusive just like begProcess
-		this.attributes.endProcess = baseData.getNumberOfRanks();
+		attributes.endProcess = baseData.getNumberOfRanks();
+		
+		if (currentPosition.process >= attributes.endProcess) {
+			// if the current process is beyond the range, make it in the middle
+			currentPosition.process = (attributes.endProcess >> 1);
+		}
 	}
 	
 	

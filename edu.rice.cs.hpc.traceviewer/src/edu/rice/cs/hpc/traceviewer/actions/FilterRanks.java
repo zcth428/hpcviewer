@@ -13,7 +13,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
-import edu.rice.cs.hpc.traceviewer.filter.Filter;
+import edu.rice.cs.hpc.data.experiment.extdata.Filter;
 import edu.rice.cs.hpc.traceviewer.filter.FilterDialog;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -37,18 +37,21 @@ public class FilterRanks extends AbstractHandler {
 		final SpaceTimeData data = dataService.getData();
 		IBaseData baseData = data.getBaseData();
 		
-		Filter filter = new Filter();
+		Filter filter;
 		if (baseData instanceof FilteredBaseData) {
-			filter.setPatterns( ((FilteredBaseData)baseData).getFilters() );
+			filter = ((FilteredBaseData)baseData).getFilter();
+		} else {
+			filter = new Filter();
 		}
 	
 		FilterDialog dlg = new FilterDialog(shell, filter);
 		
 		if (dlg.open() == Dialog.OK) {
 			try {
+				
 				FilteredBaseData filteredBaseData = new FilteredBaseData(data.getTraceFile().getAbsolutePath(), 
 						data.getTraceAttribute().dbHeaderSize);
-				filteredBaseData.setFilters( filter.getPatterns() );
+				filteredBaseData.setFilter( filter );
 				
 				data.setBaseData(filteredBaseData);
 				dataService.broadcastUpdate(new Boolean(true));

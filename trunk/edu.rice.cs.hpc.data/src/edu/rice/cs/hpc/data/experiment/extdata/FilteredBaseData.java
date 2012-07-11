@@ -18,10 +18,9 @@ import java.util.TreeMap;
 public class FilteredBaseData implements IBaseData {
 
 	final private BaseDataFile baseDataFile;
-	private ArrayList<String> listOfGlobs;
-	private int []indexes;
+	private Filter filter;
 	private String []filteredRanks;
-	private boolean isShownMode = false;
+	private int []indexes;
 	final int headerSize;
 
 	/*****
@@ -50,6 +49,8 @@ public class FilteredBaseData implements IBaseData {
 
 		filteredRanks = null;
 		TreeMap<Integer,Integer> mapIndex = new TreeMap<Integer,Integer>( );
+		ArrayList<String> listOfGlobs = filter.getPatterns();
+		boolean isShownMode = filter.isShownMode();
 		
 		if (listOfGlobs != null && listOfGlobs.size()>0) {
 			// ------------------------------------------------------------------
@@ -65,16 +66,22 @@ public class FilteredBaseData implements IBaseData {
 					String item = data[i];
 					boolean isMatched = item.matches(globPattern);
 					
-					//if we have multiple glob pattern, we need to match with the existing
-					//	filtered ranks
-					if ( k==0 || (k>0 && mapIndex.containsKey(i)) ) {
-						// Needs to remove duplicates
-						if ( (isMatched && isShownMode) || (!isShownMode && !isMatched)) {
+					if (isShownMode) {
+						if (isMatched) {
 							mapIndex.put(i, j);
-							j++;
-						} else {
-							// remove from the existing un-filtered list
-							mapIndex.remove(i);
+						}
+					} else {
+						//if we have multiple glob pattern, we need to match with the existing
+						//	filtered ranks
+						if ( k==0 || (k>0 && mapIndex.containsKey(i)) ) {
+							// Needs to remove duplicates
+							if ( (isMatched && isShownMode) || (!isShownMode && !isMatched)) {
+								mapIndex.put(i, j);
+								j++;
+							} else {
+								// remove from the existing un-filtered list
+								mapIndex.remove(i);
+							}
 						}
 					}
 				}
@@ -106,14 +113,14 @@ public class FilteredBaseData implements IBaseData {
 	 * set oatterns to filter ranks
 	 * @param filters
 	 */
-	public void setFilters(ArrayList<String> filters) {
-		listOfGlobs = filters;
+	public void setFilter(Filter filter) {
+		this.filter = filter;
 		filter();
 	}
 	
 	
-	public ArrayList<String> getFilters() {
-		return listOfGlobs;
+	public Filter getFilter() {
+		return filter;
 	}
 	
 	/*

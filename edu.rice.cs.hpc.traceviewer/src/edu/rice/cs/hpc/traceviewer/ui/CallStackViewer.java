@@ -122,17 +122,17 @@ public class CallStackViewer extends TableViewer
 	 * set new database
 	 * @param _stData
 	 */
-	public void updateData(SpaceTimeData _stData) 
+	public void updateView(SpaceTimeData _stData) 
 	{
 		this.stData = _stData;
-		this.updateData();
+		this.updateView();
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.StructuredViewer#refresh()
 	 */
-	public void updateData()
+	public void updateView()
 	{
 		this.setSample(stData.getPosition(), this.stData.getDepth());
 		this.getTable().setVisible(true);
@@ -162,7 +162,7 @@ public class CallStackViewer extends TableViewer
 
 			final Vector<String> sampleVector;
 			if (sample>=0)
-				sampleVector = ptl.getCallPath(sample, depth).getAllNames();
+				sampleVector = ptl.getCallPath(sample, depth).getFunctionNames();
 			else
 				// empty array of string
 				sampleVector = new Vector<String>();

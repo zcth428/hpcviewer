@@ -92,9 +92,9 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		});
 	}
 
-	public void updateData(SpaceTimeData _stData)
+	public void updateView(SpaceTimeData _stData)
 	{
-		this.depthCanvas.updateData(_stData);
+		this.depthCanvas.updateView(_stData);
 		_stData.addDepthListener(this);
 		_stData.addPositionListener(this);
 		depthCanvas.setVisible(true);

@@ -141,7 +141,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * set new database and refresh the screen
 	 * @param _stData
 	 */
-	public void updateData(SpaceTimeData _stData) {
+	public void updateView(SpaceTimeData _stData) {
 		this.setSpaceTimeData(_stData);
 		
 		if (mouseState == MouseState.ST_MOUSE_INIT)

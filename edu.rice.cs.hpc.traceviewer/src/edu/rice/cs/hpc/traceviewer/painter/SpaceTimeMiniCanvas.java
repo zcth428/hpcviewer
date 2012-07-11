@@ -61,7 +61,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		selectionBottomRight = new Point(0,0);
 	}
 	
-	public void updateData(SpaceTimeData _stData) {
+	public void updateView(SpaceTimeData _stData) {
 		this.setSpaceTimeData(_stData);
 
 		if (this.mouseState == MouseState.ST_MOUSE_INIT) {
@@ -79,7 +79,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		this.redraw();
 	}
 	
-	public void updateData()
+	public void updateView()
 	{
 		setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
 	}

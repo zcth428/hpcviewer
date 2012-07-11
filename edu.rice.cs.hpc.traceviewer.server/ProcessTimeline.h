@@ -18,7 +18,7 @@ public:
 	virtual ~ProcessTimeline();
 	int Line();
 	void ReadInData();
-
+	TraceDataByRankLocal* Data;
 private:
 	/** This ProcessTimeline's line number. */
 	int LineNum;
@@ -29,7 +29,7 @@ private:
 	/** The amount of time that each pixel on the screen correlates to. */
 	double PixelLength;
 
-	TraceDataByRankLocal* Data;
+
 };
 
 } /* namespace TraceviewerServer */

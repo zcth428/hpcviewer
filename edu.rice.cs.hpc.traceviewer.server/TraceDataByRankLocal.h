@@ -29,13 +29,14 @@ public:
 
 	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
 	static const int SIZE_OF_TRACE_RECORD = 12;
+	vector<TimeCPID> ListCPID;
 private:
 	BaseDataFile* Data;
 	int Rank;
 	long Minloc;
 	long Maxloc;
 	int NumPixelsH;
-	vector<TimeCPID> ListCPID;
+
 
 	long GetAbsoluteLocation(long);
 	long GetRelativeLocation(long);

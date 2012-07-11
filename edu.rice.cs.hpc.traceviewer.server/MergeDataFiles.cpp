@@ -6,16 +6,7 @@
  */
 
 #include "MergeDataFiles.h"
-#include <algorithm>
-#include <vector>
-#include <iterator>
-#include "boost/iterator.hpp"
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/classification.hpp"
-#include "boost/filesystem.hpp"
-#include <iostream>
-#include <fstream>
-#include "Constants.h"
+
 using namespace std;
 using namespace boost::filesystem;
 
@@ -44,7 +35,7 @@ namespace TraceviewerServer {
 			return FAIL_NO_DATA;
 		}
 
-		DataOutputStream dos(OutputFile.string().c_str());
+		DataOutputFileStream dos(OutputFile.string().c_str());
 
 	//-----------------------------------------------------
 	// 1. write the header:
@@ -134,7 +125,7 @@ namespace TraceviewerServer {
 		//  	the type of the application is computed in step 2
 		//		Ideally, this step has to be in the beginning !
 		//-----------------------------------------------------
-		DataOutputStream f(OutputFile.string().c_str());
+		DataOutputFileStream f(OutputFile.string().c_str());
 		f.WriteInt(type);
 		f.close();
 
@@ -155,7 +146,7 @@ namespace TraceviewerServer {
 			return true;
 		}
 
-		 void MergeDataFiles::InsertMarker(DataOutputStream* dos)
+		 void MergeDataFiles::InsertMarker(DataOutputFileStream* dos)
 		{
 			dos->WriteLong(MARKER_END_MERGED_FILE);
 		}

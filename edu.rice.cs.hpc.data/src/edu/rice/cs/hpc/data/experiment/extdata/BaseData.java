@@ -7,15 +7,11 @@ import java.io.IOException;
  * basic implementation of IBaseData
  *
  */
-public class BaseData implements IBaseData {
-
-	final private BaseDataFile baseDataFile;
-	final int headerSize;
+public class BaseData extends AbstractBaseData {
 	
 	public BaseData(String filename, int headerSize) throws IOException 
 	{
-		baseDataFile = new BaseDataFile(filename);
-		this.headerSize = headerSize;
+		super(filename, headerSize);
 	}
 	
 	/*
@@ -42,45 +38,6 @@ public class BaseData implements IBaseData {
 		return baseDataFile.getNumberOfFiles();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getOffsets()
-	 */
-	public long[] getOffsets() {
-		return baseDataFile.getOffsets();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getString(long)
-	 */
-	public String getString(long position, long length) {
-		return baseDataFile.getMasterBuffer().getString(position, length);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getLong(long)
-	 */
-	public long getLong(long position) {
-		return baseDataFile.getMasterBuffer().getLong(position);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getInt(long)
-	 */
-	public int getInt(long position) {
-		return baseDataFile.getMasterBuffer().getInt(position);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getDouble(long)
-	 */
-	public double getDouble(long position) {
-		return baseDataFile.getMasterBuffer().getDouble(position);
-	}
 
 	/*
 	 * (non-Javadoc)

@@ -681,6 +681,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         final IBaseData traceData = this.stData.getTraceData();
+        if (traceData == null)
+        	// we don't want to throw an exception here, so just do nothing
+        	return;
         
         final String processes[] = traceData.getListOfRanks();
         final int proc_start = (int)stData.getBegProcess();
@@ -698,7 +701,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         if (proc_end>=processes.length)
         	proc_end = processes.length-1;
         
-        processLabel.setText("Process Range: [" + processes[proc_start] + "," + processes[proc_end]+"]");
+        processLabel.setText("Rank Range: [" + processes[proc_start] + "," + processes[proc_end]+"]");
         processLabel.setSize(processLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         if(stData == null)

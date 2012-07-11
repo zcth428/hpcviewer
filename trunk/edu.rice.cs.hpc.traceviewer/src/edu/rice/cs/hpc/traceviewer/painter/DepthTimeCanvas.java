@@ -73,7 +73,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	}
 	
 	
-	public void updateData(SpaceTimeData _stData)
+	public void updateView(SpaceTimeData _stData)
 	{
 		this.stData = _stData;
 		this.maxDepth = _stData.getMaxDepth();

@@ -99,7 +99,7 @@ public class CallPath
 		currentDepth = newDepth > maxDepth-1 ? maxDepth-1 : newDepth;
 	}
 	
-	public Vector<String> getAllNames()
+	public Vector<String> getFunctionNames()
 	{
 		if (functionNames.isEmpty())
 		{

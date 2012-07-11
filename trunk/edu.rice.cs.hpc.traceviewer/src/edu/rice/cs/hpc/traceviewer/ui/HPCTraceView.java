@@ -76,10 +76,10 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 	/*************************************************************************
 	 * update new data
 	 *************************************************************************/
-	public void updateData(SpaceTimeData _stData)
+	public void updateView(SpaceTimeData _stData)
 	{
 		this.stData = _stData;
-		this.detailCanvas.updateData(_stData);
+		this.detailCanvas.updateView(_stData);
 		
 		this.stData.addDepthListener(this);
 		this.stData.addPositionListener(this);

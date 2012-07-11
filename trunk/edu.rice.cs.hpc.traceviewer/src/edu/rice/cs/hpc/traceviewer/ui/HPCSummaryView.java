@@ -89,7 +89,7 @@ public class HPCSummaryView extends ViewPart implements ITracePosition
 		});
 	}
 
-	public void updateData(SpaceTimeData stData)
+	public void updateView(SpaceTimeData stData)
 	{
 		//stData.addPositionListener(this);
 		summaryCanvas.setVisible(true);

@@ -152,10 +152,10 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 				//	gather event from other source. we then require to put a guard to avoid this.
 				if (sourceName.equals(DataService.DATA_UPDATE)) {
 					if (sourceValue instanceof SpaceTimeData) {
-						csViewer.updateData((SpaceTimeData)sourceValue);
+						csViewer.updateView((SpaceTimeData)sourceValue);
 					} else if (sourceValue instanceof Boolean) {
-						csViewer.updateData();
-						miniCanvas.updateData();
+						csViewer.updateView();
+						miniCanvas.updateView();
 					}
 				}
 			}
@@ -163,7 +163,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 	}
 	
 	
-	public void updateData(SpaceTimeData _stData) 
+	public void updateView(SpaceTimeData _stData) 
 	{
 		this.stData = _stData;
 		
@@ -171,8 +171,8 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 
-		this.csViewer.updateData(_stData);
-		this.miniCanvas.updateData(_stData);
+		this.csViewer.updateView(_stData);
+		this.miniCanvas.updateView(_stData);
 		
 		stData.addDepthListener(this);
 		stData.addPositionListener(this);

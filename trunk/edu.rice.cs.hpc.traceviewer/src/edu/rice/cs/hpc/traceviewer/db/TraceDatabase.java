@@ -137,16 +137,16 @@ public class TraceDatabase
 				// ---------------------------------------------------------------------				
 
 				HPCSummaryView sview = (HPCSummaryView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCSummaryView.ID);
-				sview.updateData(database.dataTraces);
+				sview.updateView(database.dataTraces);
 
 				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-				tview.updateData(database.dataTraces);
+				tview.updateView(database.dataTraces);
 				
 				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
-				dview.updateData(database.dataTraces);
+				dview.updateView(database.dataTraces);
 				
 				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
-				cview.updateData(database.dataTraces);
+				cview.updateView(database.dataTraces);
 
 				ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
 						ISourceProviderService.class);

@@ -1,9 +1,13 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
 public interface IBaseData {
-	/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
-	public final static byte SIZE_OF_TRACE_RECORD = 12;
-
+	
+	/***
+	 * retrieve trace data header and record size
+	 * @return
+	 */
+	public int getHeaderSize();
+	
 	/***
 	 * retrieve the list of rank names ( usual format: process.thread )
 	 * @return
@@ -28,9 +32,22 @@ public interface IBaseData {
 	 * @param rank
 	 * @return
 	 */
-	public long getMaxLoc(int rank);
+	public long getMaxLoc(int rank, int recordSize);
 	
-	
+	/****
+	 * retrieve ...
+	 * @param 
+	 * @return
+	 */
+	public long[] getOffsets();
+
+	/****
+	 * get data in string format
+	 * @param position
+	 * @return
+	 */
+	public String getString(long position, long length);
+
 	/****
 	 * get data in long format
 	 * @param position

@@ -28,18 +28,20 @@ public:
 	//The number of processes in the database, independent of the current display size
 	int Height;
 	boost::filesystem::path ExperimentXML;
+	ImageTraceAttributes* Attributes;
+	ProcessTimeline** Traces;
+	int TracesLength;
 private:
 	int LineToPaint(int);
 
 	ImageTraceAttributes* OldAttributes;
-	ImageTraceAttributes* Attributes;
+
 	BaseDataFile* DataTrace;
 	int HEADER_SIZE;
 
 	 // The minimum beginning and maximum ending time stamp across all traces (in microseconds).
 	long MaxEndTime, MinBegTime;
-	ProcessTimeline** Traces;
-	int TracesLength;
+
 	ProcessTimeline* DepthTrace;
 
 };

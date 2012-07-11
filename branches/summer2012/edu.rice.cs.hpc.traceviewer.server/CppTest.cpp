@@ -1,12 +1,14 @@
 //#include "mpi.h"
-#include <iostream>
-#include "Constants.h"
+#include "ServerLaunch.h"
+
 using namespace std;
 //using namespace MPI;
 
 int main(int argc, char *argv[]) {
 
 	cout << "Yes! It actually runs!"<<endl;
+
+	TraceviewerServer::ServerLaunch::main(argc, argv);
 
 	/*MPI::Init(argc, argv);
 

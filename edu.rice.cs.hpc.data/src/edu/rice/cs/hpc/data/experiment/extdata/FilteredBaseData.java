@@ -118,6 +118,14 @@ public class FilteredBaseData implements IBaseData {
 	
 	/*
 	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getHeaderSize()
+	 */
+	public int getHeaderSize() {
+		return headerSize;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getListOfRanks()
 	 */
 	public String[] getListOfRanks() {
@@ -138,6 +146,22 @@ public class FilteredBaseData implements IBaseData {
 	 */
 	public int getNumberOfRanks() {
 		return indexes.length;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getOffsets()
+	 */
+	public long[] getOffsets() {
+		return baseDataFile.getOffsets();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getString(long)
+	 */
+	public String getString(long position, long length) {
+		return baseDataFile.getMasterBuffer().getString(position, length);
 	}
 
 	/*
@@ -178,12 +202,12 @@ public class FilteredBaseData implements IBaseData {
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getMaxLoc(int)
 	 */
-	public long getMaxLoc(int rank) {
+	public long getMaxLoc(int rank, int recordSize) {
 		int filteredRank = indexes[rank];
 		final long offsets[] = baseDataFile.getOffsets();
 		long maxloc = ( (filteredRank+1<baseDataFile.getNumberOfFiles())? 
 				offsets[filteredRank+1] : baseDataFile.getMasterBuffer().size()-1 )
-				- SIZE_OF_TRACE_RECORD;
+				- recordSize;
 		return maxloc;
 	}
 

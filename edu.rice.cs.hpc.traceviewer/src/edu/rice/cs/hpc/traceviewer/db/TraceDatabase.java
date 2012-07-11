@@ -32,7 +32,7 @@ public class TraceDatabase
 {
 	
 	/** heuristically, the minimum size a trace file must be in order to be correctly formatted*/
-	final private static int MIN_TRACE_SIZE = 32+8+24+TraceDataByRank.SIZE_OF_TRACE_RECORD*2;
+	final private static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
 				
 	static private HashMap<IWorkbenchWindow, TraceDatabase> listOfDatabases = null;
 	private SpaceTimeData dataTraces = null;

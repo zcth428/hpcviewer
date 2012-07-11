@@ -16,4 +16,7 @@ public class Constants {
 	/**The min number of time units you can zoom in*/
 	public final static int MIN_TIME_UNITS_DISP = 1;
 	
+	public static final int dataIdxNULL = -1;
+	public static final int dataIdxNoData = 0; // corresponds to "no data"
+	public static final String dataStrNULL = null;
 }

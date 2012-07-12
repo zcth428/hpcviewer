@@ -26,6 +26,7 @@ import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /*************************************************************************
  * 
@@ -67,8 +68,9 @@ public class SpaceTimeData extends TraceEvents
 	/**The process to be painted in the depth time viewer.*/
 	private int dtProcess;
 		
-	/** Stores the current depth that is being displayed.*/
+	/** Stores the current depth and data object that are being displayed.*/
 	private int currentDepth;
+	private int currentDataIdx;
 	
 	/** Stores the current position of cursor */
 	private Position currentPosition;
@@ -135,6 +137,8 @@ public class SpaceTimeData extends TraceEvents
 		colorTable.setColorTable();
 		
 		// default position
+		this.currentDepth = 0;
+		this.currentDataIdx = Constants.dataIdxNULL;
 		this.currentPosition = new Position(0,0);
 		this.dbName = exp.getName();
 		//System.gc();		
@@ -191,6 +195,18 @@ public class SpaceTimeData extends TraceEvents
 	{
 		return this.currentDepth;
 	}
+	
+	public void setData(int dataIdx)
+	{
+		this.currentDataIdx = dataIdx;
+	}
+	
+	public int getData()
+	{
+		return this.currentDataIdx;
+	}
+
+
 	/*************************************************************************
 	 *	Returns width of the spaceTimeData:
 	 *	The width (the last time in the ProcessTimeline) of the longest 

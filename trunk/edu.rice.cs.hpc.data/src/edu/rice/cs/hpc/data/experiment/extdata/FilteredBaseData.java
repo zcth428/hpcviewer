@@ -63,6 +63,11 @@ public class FilteredBaseData extends AbstractBaseData implements IBaseData {
 					String item = data[i];
 					boolean isMatched = item.matches(globPattern);
 					
+					//-----------------------------------------------------------------------
+					// for show mode: for every glob, we add everything that matches
+					// for hide mode: we add everything that doesn't match. 
+					//					for the second glob, we remove everything that match
+					//-----------------------------------------------------------------------
 					if (isShownMode) {
 						if (isMatched) {
 							mapIndex.put(i, j);

@@ -1,6 +1,7 @@
 //#include "mpi.h"
 #include "ServerLaunch.h"
-
+#include <fstream>
+#include "boost/asio.hpp"
 using namespace std;
 //using namespace MPI;
 
@@ -9,6 +10,7 @@ int main(int argc, char *argv[]) {
 	cout << "Yes! It actually runs!"<<endl;
 
 	TraceviewerServer::ServerLaunch::main(argc, argv);
+	ofstream g;
 
 	/*MPI::Init(argc, argv);
 

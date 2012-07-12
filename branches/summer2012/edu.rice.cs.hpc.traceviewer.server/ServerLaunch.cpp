@@ -24,19 +24,28 @@ ServerLaunch::~ServerLaunch() {
 }
 int ServerLaunch::main(int argc, char *argv[]) {
 	DataSocketStream* socketptr;
+	as::io_service io_service;
+	DataSocketStream CLsocket(io_service);
 	try {
-		as::io_service io_service;
+
 		ip::tcp::acceptor acceptor(io_service,
 				ip::tcp::endpoint(ip::tcp::v4(), 21590));
 		cout << "Waiting for connection" << endl;
+		/*
 		ip::tcp::socket CLsocket(io_service);
+		//CLsocket.open(ip::tcp::v4());
 		acceptor.accept(CLsocket);
 		socketptr = (DataSocketStream*) &CLsocket;
+		*/
+		acceptor.accept(CLsocket);
+		socketptr = &CLsocket;
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 		return -3;
 	}
 	cout << "Received connection" << endl;
+	//vector<char> test(4);
+	//as::read(*socketptr, as::buffer(test));
 
 	ParseOpenDB(socketptr);
 
@@ -112,6 +121,8 @@ void ServerLaunch::SendXML(ip::tcp::iostream* XMLSocket) {
 
 void ServerLaunch::ParseOpenDB(DataSocketStream* receiver) {
 	boost::system::error_code e1, e2;
+	if (!receiver->is_open())
+		cout<<"Socket not open!"<<endl;
 	int Command = receiver->ReadInt(e1);
 	if (Command != OPEN)
 		cerr << "Expected an open command, got " << Command << endl;

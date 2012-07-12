@@ -16,17 +16,18 @@ namespace TraceviewerServer {
 		const int Last_dot = GlobInputFile.find_last_of('.');
 		const string Suffix = GlobInputFile.substr(Last_dot);
 
-		FILE* fout = fopen(OutputFile.string().c_str(), "r");
-		// check if the file already exists
-		if (fout != NULL)
+		cout<<"Checking to see if " << OutputFile.string().c_str()<<" exists"<<endl;
+
+		if (exists(OutputFile))
 		{
+			cout<<"Exists"<<endl;
 			if (IsMergedFileCorrect(&OutputFile))
 				return SUCCESS_ALREADY_CREATED;
 			// the file exists but corrupted. In this case, we have to remove and create a new one
-			fclose(fout);
+
 			remove(OutputFile.string().c_str());
 		}
-
+		cout<<"Doesn't exist"<<endl;
 		// check if the files in glob patterns is correct
 		path Glob(GlobInputFile);
 

@@ -5,6 +5,7 @@ import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 public class CallPath
 {
@@ -24,6 +25,9 @@ public class CallPath
 	/**the list of all functions as strings in the call path*/
 	private Vector<String> functionNames;
 	
+	/**the list of all data object names in the call path*/
+	private Vector<String> dataNames;
+
 	/**A null function*/
 	public static final String NULL_FUNCTION = "-Outside Timeline-";
 	
@@ -34,6 +38,7 @@ public class CallPath
 		currentDepthScope = _currentDepthScope;
 		currentDepth = _currentDepth;
 		functionNames = new Vector<String>();
+		dataNames = new Vector<String>();
 	}
 	
 	public CallPath(Scope _leafScope, int _maxDepth)
@@ -116,5 +121,10 @@ public class CallPath
 			}
 		}
 		return functionNames;
+	}
+	
+	public Vector<String> getDataNames()
+	{
+		return dataNames;
 	}
 }

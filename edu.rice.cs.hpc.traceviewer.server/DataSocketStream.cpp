@@ -11,7 +11,7 @@ namespace TraceviewerServer {
 namespace as = boost::asio;
 namespace ip = boost::asio::ip;
 using namespace std;
-DataSocketStream::DataSocketStream(as::io_service ios)
+DataSocketStream::DataSocketStream(as::io_service& ios)
 : ip::tcp::socket(ios)
 {
 	socketFormPtr = this;
@@ -69,8 +69,15 @@ void DataSocketStream::Flush(boost::system::error_code e)
 
 int DataSocketStream::ReadInt(boost::system::error_code e)
 {
-	char Af[4];
-	as::read(*socketFormPtr, as::buffer(Af), e);
+	vector<char> Af(4);
+	//char Af[4];
+
+	int len = as::read(*socketFormPtr, as::buffer(Af), e);
+	cout<<"Read " << len <<"/4"<<endl;
+	if (e == boost::asio::error::eof)
+		cout<<"Connection closed"<<endl; // Connection closed cleanly by peer.
+	else if (e)
+		throw boost::system::system_error(e); // Some other error.
 	return ((Af[0]<<24)| (Af[1]<<16) | (Af[2]<<8) | (Af[3]));
 
 }

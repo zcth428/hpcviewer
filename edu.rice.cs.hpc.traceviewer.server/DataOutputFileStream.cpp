@@ -40,7 +40,7 @@ void DataOutputFileStream::WriteLong(long toWrite){
 			(toWrite & MASK_1)>>8,
 			toWrite & MASK_0
 	};
-	write(arrayform, 4);
+	write(arrayform, 8);
 }
 
 } /* namespace TraceviewerServer */

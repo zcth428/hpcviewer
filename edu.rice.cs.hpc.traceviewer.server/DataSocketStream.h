@@ -15,7 +15,7 @@ namespace as = boost::asio;
 namespace ip = boost::asio::ip;
 class DataSocketStream : public ip::tcp::socket{
 public:
-	DataSocketStream(as::io_service);
+	DataSocketStream(as::io_service&);
 	virtual ~DataSocketStream();
 	void WriteInt(int);
 	void WriteLong(long);

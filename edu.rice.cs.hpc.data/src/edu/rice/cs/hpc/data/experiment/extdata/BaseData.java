@@ -16,14 +16,6 @@ public class BaseData extends AbstractBaseData {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getHeaderSize()
-	 */
-	public int getHeaderSize() {
-		return headerSize;
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getListOfRanks()
 	 */
 	public String[] getListOfRanks() {

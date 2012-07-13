@@ -165,42 +165,74 @@ public class SpaceTimeData extends TraceEvents
 		}
 	}
 	
-	
+	/***
+	 * retrieve the object to access trace data
+	 * @return
+	 */
 	public IBaseData getBaseData()
 	{
 		return dataTrace;
 	}
 	
+	/***
+	 * retrieve the trace file of this experiment
+	 * @return
+	 */
 	public File getTraceFile()
 	{
 		return traceFile;
 	}
 	
+	/***
+	 * retrieve the attributes of the trace file
+	 * @return
+	 */
 	public TraceAttribute getTraceAttribute()
 	{
 		return traceAttributes;
 	}
 	
+	/***
+	 * get the name of the experiment
+	 * @return
+	 */
 	public String getName()
 	{
 		return this.dbName;
 	}
 	
+	/**
+	 * update the current depth
+	 * @param _depth : the current depth
+	 */
 	public void setDepth(int _depth)
 	{
 		this.currentDepth = _depth;
 	}
 	
+	/***
+	 * get the current depth
+	 * @return
+	 */
 	public int getDepth()
 	{
 		return this.currentDepth;
 	}
 	
+	/***
+	 * set the current index data
+	 * This is used by data centric view 
+	 * @param dataIdx
+	 */
 	public void setData(int dataIdx)
 	{
 		this.currentDataIdx = dataIdx;
 	}
 	
+	/**
+	 * get the current index data
+	 * @return
+	 */
 	public int getData()
 	{
 		return this.currentDataIdx;

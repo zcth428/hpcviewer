@@ -88,7 +88,7 @@ public abstract class TraceEvents {
 
 	/***
 	 * tell the manager that an event has changed
-	 * @param region
+	 * @param dataIdx
 	 */
 	public void updateData(int dataIdx, Object source) {
 		setData(dataIdx);

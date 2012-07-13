@@ -15,33 +15,33 @@ public class MetricValueTest extends TestCase {
 
 	public void testMetricValue() {
 		value = new MetricValue();
-		assertTrue(value.isAvailable() == false);
+		assertTrue(MetricValue.isAvailable(value) == false);
 	}
 
 	public void testMetricValueDoubleDouble() {
 		value = new MetricValue(1.0,100.0);
-		assertTrue(value.isAvailable() == true);
-		assertTrue(value.getValue() == 1.0);
-		assertTrue(value.getPercentValue() == 100.0);
+		assertTrue(MetricValue.isAvailable(value) == true);
+		assertTrue(MetricValue.getValue(value) == 1.0);
+		assertTrue(MetricValue.getAnnotationValue(value) == 100.0);
 	}
 
 	public void testMetricValueDouble() {
 		value = new MetricValue(1.0);
-		assertTrue(value.isAvailable() == true);
-		assertTrue(value.getValue() == 1.0);
+		assertTrue(MetricValue.isAvailable(value) == true);
+		assertTrue(MetricValue.getValue(value) == 1.0);
 	}
 
 	public void testIsAvailable() {
 		value = new MetricValue();
-		assertTrue(value.isAvailable() == false);
-		value.setValue(1.0);
-		assertTrue(value.isAvailable() == true);
+		assertTrue(MetricValue.isAvailable(value) == false);
+		MetricValue.setValue(value,1.0);
+		assertTrue(MetricValue.isAvailable(value) == true);
 	}
 
 	public void testGetValue() {
 		value = new MetricValue();
-		value.setValue(1.0);
-		assertTrue(value.getValue() == 1.0);
+		MetricValue.setValue(value,1.0);
+		assertTrue(MetricValue.getValue(value) == 1.0);
 	}
 
 	public void testSetValue() {
@@ -50,14 +50,14 @@ public class MetricValueTest extends TestCase {
 
 	public void testIsPercentAvailable() {
 		value = new MetricValue();
-		value.setPercentValue(100.0);
-		assertTrue(value.isPercentAvailable() == true);
+		MetricValue.setAnnotationValue(value,100.0);
+		assertTrue(MetricValue.isAnnotationAvailable(value) == true);
 	}
 
 	public void testGetPercentValue() {
 		value = new MetricValue();
-		value.setPercentValue(100.0);
-		assertTrue(value.getPercentValue() == 100.0);
+		MetricValue.setAnnotationValue(value,100.0);
+		assertTrue(MetricValue.getAnnotationValue(value) == 100.0);
 	}
 
 	public void testSetPercentValue() {
@@ -75,24 +75,24 @@ public class MetricValueTest extends TestCase {
 		MetricValue m1, m2;
 		m1 = new MetricValue();
 		m2 = new MetricValue();
-		assertTrue(m1.compareTo(m2) == 0);
+		assertTrue(MetricValue.compareTo(m1,m2) == 0);
 		
-		m1.setValue(2.0);
-		assertTrue(m1.compareTo(m2) == 1);
+		MetricValue.setValue(m1,2.0);
+		assertTrue(MetricValue.compareTo(m1,m2) == 1);
 		
-		m1.setValue(0.0); // make it not available
-		m2.setValue(1.0);
-		assertTrue(m1.compareTo(m2) == -1);
+		MetricValue.setValue(m1,0.0); // make it not available
+		MetricValue.setValue(m2,1.0);
+		assertTrue(MetricValue.compareTo(m1,m2) == -1);
 		
-		m1.setValue(2.0);
-		m2.setValue(1.0);
-		assertTrue(m1.compareTo(m2) == 1);
+		MetricValue.setValue(m1,2.0);
+		MetricValue.setValue(m2,1.0);
+		assertTrue(MetricValue.compareTo(m1,m2) == 1);
 		
-		m1.setValue(0.5);
-		assertTrue(m1.compareTo(m2) == -1);
+		MetricValue.setValue(m1,0.5);
+		assertTrue(MetricValue.compareTo(m1,m2) == -1);
 		
-		m2.setValue(0.5);
-		assertTrue(m1.compareTo(m2) == 0);
+		MetricValue.setValue(m2,0.5);
+		assertTrue(MetricValue.compareTo(m1,m2) == 0);
 	}
 
 }

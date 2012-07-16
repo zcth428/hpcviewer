@@ -1,16 +1,16 @@
 //#include "mpi.h"
-#include "ServerLaunch.h"
+#include "Server.h"
 #include <fstream>
 #include "boost/asio.hpp"
 using namespace std;
 //using namespace MPI;
-
+void GzipTest();
 int main(int argc, char *argv[]) {
 
-	cout << "Yes! It actually runs!"<<endl;
+	//GzipTest();
 
-	TraceviewerServer::ServerLaunch::main(argc, argv);
-	ofstream g;
+	TraceviewerServer::Server::main(argc, argv);
+	//ofstream g;
 
 	/*MPI::Init(argc, argv);
 
@@ -30,6 +30,23 @@ int main(int argc, char *argv[]) {
 
 	MPI::Finalize();*/
 	return 0;
+}
+void GzipTest()
+{
+	std::ifstream XMLFile("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.xml",
+			std::ios_base::in | std::ios_base::binary);
+
+	std::ofstream GZFile("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.gz",
+			ios_base::out | ios_base::trunc | ios_base::binary);
+	if (!GZFile.good())
+		cout<<"B: "<< GZFile.bad()<<" EO: "<<GZFile.eof() << " F:" << GZFile.fail()<<endl;
+	boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
+
+	out.push(boost::iostreams::gzip_compressor());
+	out.push(GZFile);
+	boost::iostreams::copy(XMLFile, out);
+	XMLFile.close();
+	GZFile.close();
 }
 void HelloWorld() {
 	//int rank, size;

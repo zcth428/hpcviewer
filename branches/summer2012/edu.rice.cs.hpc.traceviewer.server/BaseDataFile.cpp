@@ -14,6 +14,7 @@ namespace TraceviewerServer {
 //-----------------------------------------------------------
 
 BaseDataFile::BaseDataFile(string filename) {
+	cout<< "Setting Data File: "<< filename<<endl;
 	if (filename != "") {
 		//---------------------------------------------
 		// test file version

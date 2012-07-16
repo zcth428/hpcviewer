@@ -32,10 +32,11 @@ void DataSocketStream::WriteInt(int toWrite){
 	};
 
 	as::write(*socketFormPtr, as::buffer(arrayform), as::transfer_all(),e);*/
-	Message.push_back((toWrite & MASK_3) >> 24);
-	Message.push_back((toWrite & MASK_2) >> 16);
-	Message.push_back((toWrite & MASK_1) >> 8);
-	Message.push_back(toWrite & MASK_0);
+	unsigned int utoWrite =toWrite;
+	Message.push_back((utoWrite & MASK_3) >> 24);
+	Message.push_back((utoWrite & MASK_2) >> 16);
+	Message.push_back((utoWrite & MASK_1) >> 8);
+	Message.push_back(utoWrite & MASK_0);
 }
 void DataSocketStream::WriteLong(long toWrite){
 	/*char arrayform[8] = {
@@ -50,28 +51,29 @@ void DataSocketStream::WriteLong(long toWrite){
 	};
 
 	as::write(*socketFormPtr, as::buffer(arrayform), as::transfer_all(),e);*/
-	Message.push_back((toWrite & MASK_7) >> 56);
-	Message.push_back((toWrite & MASK_6) >> 48);
-	Message.push_back((toWrite & MASK_5) >> 40);
-	Message.push_back((toWrite & MASK_4) >> 32);
-	Message.push_back((toWrite & MASK_3) >> 24);
-	Message.push_back((toWrite & MASK_2) >> 16);
-	Message.push_back((toWrite & MASK_1) >> 8);
-	Message.push_back(toWrite & MASK_0);
+	unsigned long utoWrite = toWrite;
+	Message.push_back((utoWrite & MASK_7) >> 56);
+	Message.push_back((utoWrite & MASK_6) >> 48);
+	Message.push_back((utoWrite & MASK_5) >> 40);
+	Message.push_back((utoWrite & MASK_4) >> 32);
+	Message.push_back((utoWrite & MASK_3) >> 24);
+	Message.push_back((utoWrite & MASK_2) >> 16);
+	Message.push_back((utoWrite & MASK_1) >> 8);
+	Message.push_back(utoWrite & MASK_0);
 }
 
 void DataSocketStream::Flush(boost::system::error_code e)
 {
+	cout<< "Sending "<<Message.size()<<" bytes."<<endl;
 	as::write(*socketFormPtr, as::buffer(Message), as::transfer_all(),e);
-	delete (&Message);
-	std::vector<char> Message;
+	Message.clear();
 }
 
 int DataSocketStream::ReadInt(boost::system::error_code e)
 {
-	vector<char> Af(4);
+	vector<unsigned char> Af(4);
 	//char Af[4];
-
+	//TODO: Why is this not symmetric with ReadLong???
 	int len = as::read(*socketFormPtr, as::buffer(Af), e);
 	cout<<"Read " << len <<"/4"<<endl;
 	if (e == boost::asio::error::eof)
@@ -84,7 +86,7 @@ int DataSocketStream::ReadInt(boost::system::error_code e)
 
 long DataSocketStream::ReadLong(boost::system::error_code e)
 {
-	char Af[8];
+	unsigned char Af[8];
 	as::read(*socketFormPtr, as::buffer(Af), e);
 	return (((long)Af[0]<<56)| ((long)Af[1]<<48) | ((long)Af[2]<<40) | ((long)Af[3]<<32) |
 	 (Af[4]<<24)| (Af[5]<<16) | (Af[6]<<8) | (Af[7]));

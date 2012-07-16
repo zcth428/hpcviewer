@@ -9,20 +9,38 @@
 #include "FileData.h"
 namespace TraceviewerServer {
 
+int Height;
+boost::filesystem::path ExperimentXML;
+//ImageTraceAttributes* Attributes;
+//ProcessTimeline** Traces;
+//int TracesLength;
+
 SpaceTimeDataControllerLocal::SpaceTimeDataControllerLocal(FileData* locations) {
 	Attributes = new ImageTraceAttributes();
 	OldAttributes = new ImageTraceAttributes();
 	DataTrace = new BaseDataFile(locations->fileTrace.string());
 	Height = DataTrace->getNumberOfFiles();
+	cout<< "STDCL: Height= "<<Height<<endl;
 	ExperimentXML = locations->fileXML;
 
 }
+
 //called once the INFO packet has been received to add the information to the stdc
 void SpaceTimeDataControllerLocal::SetInfo(long minBegTime, long maxEndTime, int headerSize)
 {
 	MinBegTime = minBegTime;
 	MaxEndTime = maxEndTime;
 	HEADER_SIZE = headerSize;
+}
+
+int SpaceTimeDataControllerLocal::GetHeight()
+{
+	return Height;
+}
+
+string SpaceTimeDataControllerLocal::GetExperimentXML()
+{
+	return ExperimentXML.string();
 }
 
 ProcessTimeline* SpaceTimeDataControllerLocal::GetNextTrace(bool ChangedBounds)

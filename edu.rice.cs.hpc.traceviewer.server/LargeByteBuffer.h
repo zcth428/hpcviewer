@@ -10,6 +10,9 @@
 
 #include "boost/iostreams/device/mapped_file.hpp"
 #include "boost/filesystem.hpp"
+#include "sys/mman.h"
+#include "sys/stat.h"
+#include <fcntl.h>
 #include <vector>
 
 namespace TraceviewerServer {
@@ -22,7 +25,7 @@ public:
 	long GetLong(long);
 	int GetInt(long);
 private:
-	boost::iostreams::mapped_file** MasterBuffer;
+	char** MasterBuffer;
 	long Length;
 	int NumPages;
 	static const int PAGE_SIZE = INT_MAX;

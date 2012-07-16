@@ -110,7 +110,9 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="edu.rice.cs.hpc.traceviewer.server.cdt.managedbuild.target.gnu.cross.exe.526791800" name="Executable" projectType="cdt.managedbuild.target.gnu.cross.exe"/>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/edu.rice.cs.hpc.traceviewer.server"/>
+	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>

@@ -1,12 +1,13 @@
 /*
- * ServerLaunch.h
+ * Server.h
  *
  *  Created on: Jul 9, 2012
  *      Author: pat2
  */
 
-#ifndef SERVERLAUNCH_H_
-#define SERVERLAUNCH_H_
+
+#ifndef Server_H_
+#define Server_H_
 #include "SpaceTimeDataControllerLocal.h"
 #include "DataSocketStream.h"
 #include "LocalDBOpener.h"
@@ -22,13 +23,15 @@
 #include "boost/iostreams/copy.hpp"
 #include "boost/iostreams/filter/gzip.hpp"
 
+
+
 namespace TraceviewerServer {
 namespace as = boost::asio;
 namespace ip = boost::asio::ip;
-class ServerLaunch {
+class Server {
 public:
-	ServerLaunch();
-	virtual ~ServerLaunch();
+	Server();
+	virtual ~Server();
 	static int main(int argc, char *argv[]);
 
 private:
@@ -47,4 +50,4 @@ private:
 
 };
 }/* namespace TraceviewerServer */
-#endif /* SERVERLAUNCH_H_ */
+#endif /* Server_H_ */

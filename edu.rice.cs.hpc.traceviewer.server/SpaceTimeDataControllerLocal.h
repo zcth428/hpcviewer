@@ -26,8 +26,9 @@ public:
 	void PrepareViewportPainting(bool);
 
 	//The number of processes in the database, independent of the current display size
-	int Height;
-	boost::filesystem::path ExperimentXML;
+	int GetHeight();
+	//boost::filesystem::path ExperimentXML;
+	std::string GetExperimentXML();
 	ImageTraceAttributes* Attributes;
 	ProcessTimeline** Traces;
 	int TracesLength;

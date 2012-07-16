@@ -1,12 +1,13 @@
 /*
- * ServerLaunch.cpp
+ * Server.cpp
  *
  *  Created on: Jul 9, 2012
  *      Author: pat2
  */
 
-#include "ServerLaunch.h"
+#include "Server.h"
 //#include "SpaceTimeDataControllerLocal.h"
+
 namespace as = boost::asio;
 namespace ip = boost::asio::ip;
 using namespace std;
@@ -14,20 +15,20 @@ namespace TraceviewerServer {
 
 static SpaceTimeDataControllerLocal* STDCL;
 
-ServerLaunch::ServerLaunch() {
+Server::Server() {
 	// TODO Auto-generated constructor stub
 
 }
 
-ServerLaunch::~ServerLaunch() {
+Server::~Server() {
 	// TODO Auto-generated destructor stub
 }
-int ServerLaunch::main(int argc, char *argv[]) {
+int Server::main(int argc, char *argv[]) {
 	DataSocketStream* socketptr;
 	as::io_service io_service;
 	DataSocketStream CLsocket(io_service);
 	try {
-
+//TODO: Change the port to 21591 because 21590 has some other use...
 		ip::tcp::acceptor acceptor(io_service,
 				ip::tcp::endpoint(ip::tcp::v4(), 21590));
 		cout << "Waiting for connection" << endl;
@@ -82,12 +83,12 @@ int ServerLaunch::main(int argc, char *argv[]) {
 
 	return 0;
 }
-void ServerLaunch::ParseInfo(DataSocketStream* socket) {
+void Server::ParseInfo(DataSocketStream* socket) {
 	boost::system::error_code e1, e2, e3;
 	STDCL->SetInfo(socket->ReadLong(e1), socket->ReadLong(e2),
 			socket->ReadInt(e3));
 }
-void ServerLaunch::SendDBOpenedSuccessfully(DataSocketStream* socket) {
+void Server::SendDBOpenedSuccessfully(DataSocketStream* socket) {
 	boost::system::error_code e1, e2, e3;
 	socket->WriteInt(DBOK);
 
@@ -97,7 +98,9 @@ void ServerLaunch::SendDBOpenedSuccessfully(DataSocketStream* socket) {
 	int port = XMLacceptor.local_endpoint().port();
 
 	socket->WriteInt(port);
-	socket->WriteInt(STDCL->Height);
+
+	socket->WriteInt(STDCL->GetHeight());
+
 	socket->Flush(e1);
 
 	cout << "Waiting to send XML on port " << port << endl;
@@ -109,17 +112,23 @@ void ServerLaunch::SendDBOpenedSuccessfully(DataSocketStream* socket) {
 	cout << "XML Sent";
 }
 
-void ServerLaunch::SendXML(ip::tcp::iostream* XMLSocket) {
-	std::ifstream XMLFile(STDCL->ExperimentXML.string().c_str(),
+void Server::SendXML(ip::tcp::iostream* XMLSocket) {
+	string PathToFile = STDCL->GetExperimentXML();
+	cout << "Compressing XML File from " << PathToFile<<endl;
+	std::ifstream XMLFile(PathToFile.c_str(),
 			std::ios_base::in | std::ios_base::binary);
 
 	boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
-	out.push(*XMLSocket);
+
 	out.push(boost::iostreams::gzip_compressor());
+	out.push(*XMLSocket);
 	boost::iostreams::copy(XMLFile, out);
+	if (!XMLSocket->good())
+		cerr<<"Sending XML failed"<<endl;
+	XMLSocket->flush();
 }
 
-void ServerLaunch::ParseOpenDB(DataSocketStream* receiver) {
+void Server::ParseOpenDB(DataSocketStream* receiver) {
 	boost::system::error_code e1, e2;
 	if (!receiver->is_open())
 		cout<<"Socket not open!"<<endl;
@@ -131,7 +140,7 @@ void ServerLaunch::ParseOpenDB(DataSocketStream* receiver) {
 	STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
 }
 
-void ServerLaunch::GetAndSendData(DataSocketStream* Stream) {
+void Server::GetAndSendData(DataSocketStream* Stream) {
 	boost::system::error_code e1, e2;
 	int processStart = Stream->ReadInt(e1);
 	int processEnd = Stream->ReadInt(e1);

@@ -27,7 +27,7 @@ class MergeDataFiles {
 public:
 	static MergeDataAttribute merge(path, string, path);
 private:
-	static const long MARKER_END_MERGED_FILE = 0xDEADF00D;
+	static const unsigned long MARKER_END_MERGED_FILE = 0xDEADF00D;
 	static const int PAGE_SIZE_GUESS = 4096;
 	static const int PROC_POS = 5;
 	static const int THREAD_POS = 4;

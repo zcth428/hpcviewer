@@ -9,8 +9,7 @@
 #include "FileData.h"
 namespace TraceviewerServer {
 
-int Height;
-boost::filesystem::path ExperimentXML;
+
 //ImageTraceAttributes* Attributes;
 //ProcessTimeline** Traces;
 //int TracesLength;
@@ -20,7 +19,7 @@ SpaceTimeDataControllerLocal::SpaceTimeDataControllerLocal(FileData* locations) 
 	OldAttributes = new ImageTraceAttributes();
 	DataTrace = new BaseDataFile(locations->fileTrace.string());
 	Height = DataTrace->getNumberOfFiles();
-	cout<< "STDCL: Height= "<<Height<<endl;
+	cout<< "STDCL at: "<< this<< " Height= "<<Height<<endl;
 	ExperimentXML = locations->fileXML;
 
 }
@@ -127,11 +126,11 @@ void SpaceTimeDataControllerLocal::PrepareViewportPainting(bool ChangedBounds)
 
 SpaceTimeDataControllerLocal::SpaceTimeDataControllerLocal()
 {
-
+	cout<< "Calling the blank constructor"<<endl;
 }
 
 SpaceTimeDataControllerLocal::~SpaceTimeDataControllerLocal() {
-	// TODO Auto-generated destructor stub
+	cout<< "Calling the destructor!"<<endl;
 }
 
 } /* namespace TraceviewerServer */

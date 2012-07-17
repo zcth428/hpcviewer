@@ -9,6 +9,7 @@
 #define DATASOCKETSTREAM_H_
 #include "boost/asio.hpp"
 #include <vector>
+#include "ByteUtilities.h"
 namespace TraceviewerServer {
 using namespace std;
 namespace as = boost::asio;

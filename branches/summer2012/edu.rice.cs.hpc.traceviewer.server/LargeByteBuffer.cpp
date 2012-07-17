@@ -61,7 +61,7 @@ long FileSize;
 		int Page = pos / PAGE_SIZE;
 		int loc = pos % PAGE_SIZE;
 		char* p2D = MasterBuffer[Page] + loc;
-		int val = (*(p2D) <<24) | (*(p2D+1) <<16) | (*(p2D+2) <<8) | *(p2D+3);
+		int val = ByteUtilities::ReadInt(p2D);
 		return val;
 	}
 	long LargeByteBuffer::GetLong(long pos)
@@ -69,8 +69,7 @@ long FileSize;
 		int Page = pos / PAGE_SIZE;
 		int loc = pos % PAGE_SIZE;
 		char* p2D = MasterBuffer[Page] + loc;
-		long val =((long)*(p2D) <<56) | ((long)*(p2D+1) <<48) | ((long)*(p2D+2) <<40) | ((long)*(p2D+3) <<32)|
-				(*(p2D+4) <<24) | (*(p2D+5) <<16) | (*(p2D+6) <<8) | *(p2D+7);
+		long val = ByteUtilities::ReadLong(p2D);
 		return val;
 
 	}

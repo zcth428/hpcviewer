@@ -19,7 +19,7 @@ LocalDBOpener::LocalDBOpener() {
 LocalDBOpener::~LocalDBOpener() {
 	// TODO Auto-generated destructor stub
 }
-SpaceTimeDataControllerLocal stdcl;
+SpaceTimeDataControllerLocal* stdcl;
 SpaceTimeDataControllerLocal* LocalDBOpener::OpenDbAndCreateSTDC(string PathToDB) {
 	FileData location;
 	FileData* ptrLocation = &location;
@@ -30,8 +30,9 @@ SpaceTimeDataControllerLocal* LocalDBOpener::OpenDbAndCreateSTDC(string PathToDB
 	// want to open a database, so we return null, which makes the calling method return false.
 	if (!HasDatabase)
 		return NULL;
-	SpaceTimeDataControllerLocal test(ptrLocation);
-	return &stdcl;
+
+	stdcl = new SpaceTimeDataControllerLocal(ptrLocation);//I think this should allocate it on the heap
+	return stdcl;
 }
 /****
  * Check if the directory is correct or not. If it is correct, it returns

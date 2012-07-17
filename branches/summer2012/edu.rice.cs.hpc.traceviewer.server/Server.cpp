@@ -4,7 +4,6 @@
  *  Created on: Jul 9, 2012
  *      Author: pat2
  */
-
 #include "Server.h"
 //#include "SpaceTimeDataControllerLocal.h"
 
@@ -24,6 +23,7 @@ Server::~Server() {
 	// TODO Auto-generated destructor stub
 }
 int Server::main(int argc, char *argv[]) {
+
 	DataSocketStream* socketptr;
 	as::io_service io_service;
 	DataSocketStream CLsocket(io_service);
@@ -45,6 +45,7 @@ int Server::main(int argc, char *argv[]) {
 		return -3;
 	}
 	cout << "Received connection" << endl;
+
 	//vector<char> test(4);
 	//as::read(*socketptr, as::buffer(test));
 
@@ -65,6 +66,7 @@ int Server::main(int argc, char *argv[]) {
 	else
 		cerr << "Did not receive info packet" << endl;
 
+
 	bool EndingConnection = false;
 	while (!EndingConnection) {
 		int NextCommand = socketptr->ReadInt(error);
@@ -77,6 +79,7 @@ int Server::main(int argc, char *argv[]) {
 			break;
 		default:
 			cerr << "Unknown command received" << endl;
+			exit(-7);
 			break;
 		}
 	}
@@ -103,7 +106,7 @@ void Server::SendDBOpenedSuccessfully(DataSocketStream* socket) {
 
 	socket->Flush(e1);
 
-	cout << "Waiting to send XML on port " << port << endl;
+	cout << "Waiting to send XML on port " << port << ". Num traces was " << STDCL->GetHeight()<< endl;
 
 	ip::tcp::iostream XMLstr;
 	XMLacceptor.accept(*XMLstr.rdbuf());
@@ -138,6 +141,7 @@ void Server::ParseOpenDB(DataSocketStream* receiver) {
 	string PathToDB = receiver->ReadString(e2);
 	LocalDBOpener DBO;
 	STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
+
 }
 
 void Server::GetAndSendData(DataSocketStream* Stream) {

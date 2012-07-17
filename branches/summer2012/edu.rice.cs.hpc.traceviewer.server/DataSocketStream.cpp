@@ -11,6 +11,9 @@ namespace TraceviewerServer {
 namespace as = boost::asio;
 namespace ip = boost::asio::ip;
 using namespace std;
+typedef unsigned long ulong;
+typedef unsigned int uint;
+typedef unsigned char uchar;
 DataSocketStream::DataSocketStream(as::io_service& ios)
 : ip::tcp::socket(ios)
 {
@@ -32,11 +35,9 @@ void DataSocketStream::WriteInt(int toWrite){
 	};
 
 	as::write(*socketFormPtr, as::buffer(arrayform), as::transfer_all(),e);*/
-	unsigned int utoWrite =toWrite;
-	Message.push_back((utoWrite & MASK_3) >> 24);
-	Message.push_back((utoWrite & MASK_2) >> 16);
-	Message.push_back((utoWrite & MASK_1) >> 8);
-	Message.push_back(utoWrite & MASK_0);
+	char Buffer[4];
+	ByteUtilities::WriteInt(Buffer, toWrite);
+	Message.insert(Message.end(), Buffer, Buffer+4);
 }
 void DataSocketStream::WriteLong(long toWrite){
 	/*char arrayform[8] = {
@@ -51,15 +52,9 @@ void DataSocketStream::WriteLong(long toWrite){
 	};
 
 	as::write(*socketFormPtr, as::buffer(arrayform), as::transfer_all(),e);*/
-	unsigned long utoWrite = toWrite;
-	Message.push_back((utoWrite & MASK_7) >> 56);
-	Message.push_back((utoWrite & MASK_6) >> 48);
-	Message.push_back((utoWrite & MASK_5) >> 40);
-	Message.push_back((utoWrite & MASK_4) >> 32);
-	Message.push_back((utoWrite & MASK_3) >> 24);
-	Message.push_back((utoWrite & MASK_2) >> 16);
-	Message.push_back((utoWrite & MASK_1) >> 8);
-	Message.push_back(utoWrite & MASK_0);
+	char Buffer[8];
+	ByteUtilities::WriteLong(Buffer, toWrite);
+	Message.insert(Message.end(), Buffer, Buffer+8);
 }
 
 void DataSocketStream::Flush(boost::system::error_code e)
@@ -71,30 +66,27 @@ void DataSocketStream::Flush(boost::system::error_code e)
 
 int DataSocketStream::ReadInt(boost::system::error_code e)
 {
-	vector<unsigned char> Af(4);
-	//char Af[4];
-	//TODO: Why is this not symmetric with ReadLong???
+	char Af[4];
 	int len = as::read(*socketFormPtr, as::buffer(Af), e);
-	cout<<"Read " << len <<"/4"<<endl;
 	if (e == boost::asio::error::eof)
 		cout<<"Connection closed"<<endl; // Connection closed cleanly by peer.
 	else if (e)
 		throw boost::system::system_error(e); // Some other error.
-	return ((Af[0]<<24)| (Af[1]<<16) | (Af[2]<<8) | (Af[3]));
+	return ByteUtilities::ReadInt(Af);
 
 }
 
 long DataSocketStream::ReadLong(boost::system::error_code e)
 {
-	unsigned char Af[8];
+	char Af[8];
 	as::read(*socketFormPtr, as::buffer(Af), e);
-	return (((long)Af[0]<<56)| ((long)Af[1]<<48) | ((long)Af[2]<<40) | ((long)Af[3]<<32) |
-	 (Af[4]<<24)| (Af[5]<<16) | (Af[6]<<8) | (Af[7]));
+	return ByteUtilities::ReadLong(Af);
+
 }
 
 string DataSocketStream::ReadString(boost::system::error_code e)
 {
-	char len[2];
+	uchar len[2];
 	as::read(*socketFormPtr, as::buffer(len), e);
 	int Len = len[0]<<8 | len[1];
 	vector<char> Msg(Len);

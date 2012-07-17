@@ -162,13 +162,7 @@ namespace TraceviewerServer {
 				f.seekg(pos, ios_base::beg);
 				char buffer[8];
 				f.read(buffer, 8);
-				unsigned char* ubuffer = (unsigned char*)buffer;
-				//const long Marker = ((long)buffer[0]<<56)| ((long)buffer[1]<<48)| ((long)buffer[2]<<40)| ((long)buffer[3]<<32)|
-				//		((long)buffer[4]<<24)| ((long)buffer[5]<<16)| (buffer[6]<<8)| (buffer[7]<<0);
-				//printf("Buffer val: %x, %x, %x, %x, %x, %x, %x %x", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
-				const unsigned long high = (ubuffer[0]<<24)| (ubuffer[1]<<16)| (ubuffer[2]<<8)| (ubuffer[3]<<0);
-				const unsigned int low = (ubuffer[4]<<24)| (ubuffer[5]<<16)| (ubuffer[6]<<8)| (ubuffer[7]<<0);
-				const unsigned long Marker = (high<<32)|low;
+				const unsigned long Marker = ByteUtilities::ReadLong(buffer);
 				//No idea why this doesn't work:
 				//IsCorrect = ((Marker) == MARKER_END_MERGED_FILE);
 

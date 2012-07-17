@@ -107,12 +107,12 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		
 		final Button btnAdd   = new Button(areaAction, SWT.PUSH | SWT.FLAT);
 		btnAdd.setText("Add");
-		btnAdd.setToolTipText("Add a class-procedure pair");
+		btnAdd.setToolTipText("Add a procedure-color pair");
 		btnAdd.addSelectionListener( new SelectionAdapter() {
 
 			public void widgetSelected(SelectionEvent e) {
 				ProcedureMapDetailDialog dlg = new ProcedureMapDetailDialog(getShell(), 
-						"Add a new procedure-class map", "", "", null);
+						"Add a new procedure-color map", "", "", null);
 				if (dlg.open() == Dialog.OK) {
 					// update the map and the table
 					ProcedureClassDialog.this.updateData(dlg.getProcedure(), dlg.getDescription(), dlg.getRGB());
@@ -122,7 +122,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		
 		btnRemove   = new Button(areaAction, SWT.PUSH| SWT.FLAT);
 		btnRemove.setText("Delete");
-		btnRemove.setToolTipText("Remove a selected class-procedure pair");
+		btnRemove.setToolTipText("Remove a selected procedure-color pair");
 		btnRemove.setEnabled(false);
 		btnRemove.addSelectionListener(new SelectionAdapter() {
 
@@ -133,7 +133,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		
 		btnEdit   = new Button(areaAction, SWT.PUSH| SWT.FLAT);
 		btnEdit.setText("Edit");
-		btnEdit.setToolTipText("Edit a selected class-procedure pair");
+		btnEdit.setToolTipText("Edit a selected procedure-color pair");
 		btnEdit.setEnabled(false);
 		btnEdit.addSelectionListener( new SelectionAdapter() {
 
@@ -147,7 +147,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 							((Entry<?, ?>)item).getValue();
 
 					ProcedureMapDetailDialog dlg = new ProcedureMapDetailDialog(getShell(), 
-							"Edit procedure-class map", proc, pclass.getProcedureClass(), pclass.getRGB());
+							"Edit procedure-color map", proc, pclass.getProcedureClass(), pclass.getRGB());
 					if (dlg.open() == Dialog.OK) {
 						// update: remove the old data, and then insert a new one
 						// Attention: these two actions have to be atomic !
@@ -214,9 +214,9 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		});
 		
 		sortColClass.setSorter(sortColClass, Direction.ASC);
-		setTitle("Procedure and class map");
-		setMessage("Add, remove or edit a procedure-class mapping");
-		getShell().setText("Procedure-class map");
+		setTitle("Procedure and color mapping");
+		setMessage("Add, remove or edit a procedure-color mapping");
+		getShell().setText("Procedure-color mapping");
 		
 		return composite;
 	}

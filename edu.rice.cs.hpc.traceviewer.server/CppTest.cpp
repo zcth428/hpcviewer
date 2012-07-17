@@ -2,12 +2,15 @@
 #include "Server.h"
 #include <fstream>
 #include "boost/asio.hpp"
+
+#include "TestingClass.h"
 using namespace std;
 //using namespace MPI;
-void GzipTest();
+
+
 int main(int argc, char *argv[]) {
 
-	//GzipTest();
+	//ScopeTest();
 
 	TraceviewerServer::Server::main(argc, argv);
 	//ofstream g;
@@ -31,6 +34,8 @@ int main(int argc, char *argv[]) {
 	MPI::Finalize();*/
 	return 0;
 }
+
+
 void GzipTest()
 {
 	std::ifstream XMLFile("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.xml",

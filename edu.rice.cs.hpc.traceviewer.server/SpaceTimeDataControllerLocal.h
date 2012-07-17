@@ -45,6 +45,9 @@ private:
 
 	ProcessTimeline* DepthTrace;
 
+	int Height;
+	boost::filesystem::path ExperimentXML;
+
 };
 
 } /* namespace TraceviewerServer */

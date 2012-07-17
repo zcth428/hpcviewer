@@ -9,6 +9,7 @@
 #define MERGEDATAFILES_H_
 #include "MergeDataAttribute.h"
 #include "DataOutputFileStream.h"
+#include "ByteUtilities.h"
 #include "Constants.h"
 #include "boost/iterator.hpp"
 #include "boost/algorithm/string.hpp"

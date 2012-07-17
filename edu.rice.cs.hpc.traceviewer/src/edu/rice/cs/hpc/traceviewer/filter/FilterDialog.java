@@ -11,6 +11,8 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -68,8 +70,8 @@ public class FilterDialog extends TitleAreaDialog {
 			btnHide.setSelection(true);
 		
 		Label lblMode = new Label(grpMode, SWT.LEFT | SWT.WRAP);
-		lblMode.setText("Choosing 'To show' will show matching processes, " +
-						 "while choosing 'To hide' will hide them.");
+		lblMode.setText("Selecting 'To show' radio button will show matching processes, " +
+						 "while selecting 'To hide'button will hide them.");
 		
 		GridDataFactory.swtDefaults().span(2, 1).grab(true, false).applyTo(lblMode);
 		
@@ -78,8 +80,20 @@ public class FilterDialog extends TitleAreaDialog {
 
 		Group grpFilter = new Group(composite, SWT.NONE);
 		grpFilter.setText("Filter");
+
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(grpFilter);
+		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(grpFilter);
+
+		Composite coButtons = new Composite(grpFilter, SWT.NONE);
+
+		RowLayout rl = new RowLayout();
+		rl.pack = true;
+		rl.center = true;
+		rl.type = SWT.VERTICAL;
 		
-		Button btnAdd = new Button(grpFilter, SWT.PUSH | SWT.FLAT);
+		coButtons.setLayout(rl);
+		
+		Button btnAdd = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnAdd.setText("Add");
 		btnAdd.setToolTipText("Add a new glob pattern");
 		btnAdd.addSelectionListener( new SelectionAdapter(){
@@ -94,8 +108,9 @@ public class FilterDialog extends TitleAreaDialog {
 				}
 			}
 		});
+		btnAdd.setLayoutData(new RowData(80,20));
 		
-		btnRemove = new Button(grpFilter, SWT.PUSH | SWT.FLAT);
+		btnRemove = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnRemove.setText("remove");
 		btnRemove.setToolTipText("Remove a selected glob pattern");
 		btnRemove.addSelectionListener( new SelectionAdapter() {
@@ -108,8 +123,9 @@ public class FilterDialog extends TitleAreaDialog {
 				}
 			}
 		});
+		btnRemove.setLayoutData(new RowData(80,20));
 		
-		final Button btnRemoveAll = new Button(grpFilter, SWT.PUSH | SWT.FLAT);
+		final Button btnRemoveAll = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnRemoveAll.setText("Remove all");
 		btnRemoveAll.setToolTipText("Remove all glob patterns");
 		btnRemoveAll.addSelectionListener(new SelectionAdapter() {
@@ -124,7 +140,7 @@ public class FilterDialog extends TitleAreaDialog {
 				}
 			}
 		}) ;
-		
+		btnRemoveAll.setLayoutData(new RowData(80,20));
 		
 		list = new List(grpFilter, SWT.SINGLE | SWT.V_SCROLL);
 		list.addSelectionListener(new SelectionAdapter(){
@@ -132,10 +148,7 @@ public class FilterDialog extends TitleAreaDialog {
 				checkButtons();
 			}			
 		});
-		GridDataFactory.fillDefaults().grab(true, true).span(3, 1).hint(40, 80).applyTo(list);
-
-		GridDataFactory.fillDefaults().grab(true, true).applyTo(grpFilter);
-		GridLayoutFactory.fillDefaults().numColumns(3).applyTo(grpFilter);
+		GridDataFactory.fillDefaults().grab(true, true).hint(40, 80).applyTo(list);
 		
 		this.setMessage("Add/remove glob patterns to filter displayed processes");
 		this.setTitle("Filter patterns");

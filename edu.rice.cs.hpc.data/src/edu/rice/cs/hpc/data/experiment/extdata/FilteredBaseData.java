@@ -13,9 +13,10 @@ import java.util.TreeMap;
  * Filtered version for accessing a raw data file
  * A data file can either thread level data metric, or trace data
  * @see IBaseData
+ * @see AbstractBaseData
  * @see BaseDataFile
  *******************************************************************/
-public class FilteredBaseData extends AbstractBaseData implements IBaseData {
+public class FilteredBaseData extends AbstractBaseData {
 
 	private Filter filter;
 	private String []filteredRanks;

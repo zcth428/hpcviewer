@@ -47,14 +47,14 @@ public abstract class SpaceTimeDataController {
 		super();
 	}
 
-	// FIXME: This is bad structure. The controller should receive this
-	// notification without needing the PaintManager to notify it of the event.
-//Why is this called twice?? Once before it changes and once with the new value.
-	public void setCurrentlySelectedProccess(int ProcessNumber)
+	/**
+	 * The storage location for all the ProcessTimelines
+	 */
+	int getCurrentlySelectedProcess()
 	{
-	 dtProcess = ProcessNumber;
-	 System.out.println("Setting process to "+ ProcessNumber);
+		return painter.getPosition().process;
 	}
+
 
 	public PaintManager getPainter() {
 		MethodCounts[9]++;

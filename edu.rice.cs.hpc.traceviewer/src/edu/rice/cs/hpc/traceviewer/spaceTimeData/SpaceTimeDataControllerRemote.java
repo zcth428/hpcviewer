@@ -87,7 +87,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		Height = _numTraces;
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
-				_statusMgr, colorTable, maxDepth, minBegTime, this);
+				_statusMgr, colorTable, maxDepth, minBegTime);
 
 	}
 
@@ -100,9 +100,9 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	 * return would be outside the array, so the 0 is a sort of safeguard.
 	 */
 	private int computeScaledProcess() {
-		if (dtProcess <= attributes.endProcess) {
+		if (getCurrentlySelectedProcess() <= attributes.endProcess) {
 			int scaledDTProcess = (int) (((double) traces.length - 1)
-					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (dtProcess - attributes.begProcess));// -atr.begPro-1??
+					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (getCurrentlySelectedProcess() - attributes.begProcess));// -atr.begPro-1??
 			return scaledDTProcess;
 		} else// So this means that it's in that weird state where the length of
 				// traces and attributes has been updated, but the position of
@@ -184,7 +184,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		int width = attributes.numPixelsH;
 
 		while (nextTrace != null) {
-			painter.renderDepthTrace(canvas, scaleX, scaleY, nextTrace, width);
+			painter.renderDepthTrace(canvas, scaleX, scaleY, nextTrace, width, getDepthTrace());
 			nextTrace = getNextDepthTrace();
 		}
 	}

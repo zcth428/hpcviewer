@@ -111,7 +111,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		dbName = exp.getName();
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
-				_statusMgr, colorTable, maxDepth, minBegTime, this);
+				_statusMgr, colorTable, maxDepth, minBegTime);
 		
 	}
 
@@ -177,7 +177,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 				return depthTrace;
 			}
 			ProcessTimeline toDonate = new ProcessTimeline(attributes.lineNum,
-					scopeMap, dataTrace, dtProcess, attributes.numPixelsH,
+					scopeMap, dataTrace, getCurrentlySelectedProcess(), attributes.numPixelsH,
 					attributes.endTime - attributes.begTime, minBegTime
 							+ attributes.begTime, HEADER_SIZE);
 			toDonate.copyDataFrom(depthTrace);
@@ -302,7 +302,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 						// BaseViewPaint, but I'm not sure if it is changed
 						// elsewhere.
 		depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace,
-				dtProcess, attributes.numPixelsH, attributes.endTime
+				getCurrentlySelectedProcess(), attributes.numPixelsH, attributes.endTime
 						- attributes.begTime, minBegTime + attributes.begTime,
 				HEADER_SIZE);
 

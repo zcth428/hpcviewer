@@ -88,8 +88,10 @@ int Server::main(int argc, char *argv[]) {
 }
 void Server::ParseInfo(DataSocketStream* socket) {
 	boost::system::error_code e1, e2, e3;
-	STDCL->SetInfo(socket->ReadLong(e1), socket->ReadLong(e2),
-			socket->ReadInt(e3));
+	long minBegTime=socket->ReadLong(e1);
+	long maxEndTime=socket->ReadLong(e2);
+	int headerSize=socket->ReadInt(e3);
+	STDCL->SetInfo(minBegTime, maxEndTime, headerSize);
 }
 void Server::SendDBOpenedSuccessfully(DataSocketStream* socket) {
 	boost::system::error_code e1, e2, e3;
@@ -112,7 +114,7 @@ void Server::SendDBOpenedSuccessfully(DataSocketStream* socket) {
 	XMLacceptor.accept(*XMLstr.rdbuf());
 	SendXML(&XMLstr);
 
-	cout << "XML Sent";
+	cout << "XML Sent"<<endl;
 }
 
 void Server::SendXML(ip::tcp::iostream* XMLSocket) {
@@ -169,6 +171,9 @@ void Server::GetAndSendData(DataSocketStream* Stream) {
 	// filled.
 
 	STDCL->FillTraces(-1, true);
+
+	Stream->WriteInt(HERE);
+
 	for (int i = 0; i < STDCL->TracesLength; i++) {
 		ProcessTimeline* T = STDCL->Traces[i];
 		Stream->WriteInt(T->Line());
@@ -178,8 +183,11 @@ void Server::GetAndSendData(DataSocketStream* Stream) {
 		Stream->WriteDouble(data[data.size() - 1].Timestamp); //End time
 
 		vector<TimeCPID>::iterator it;
+		cout<<"Sending process timeline with "<< data.size()<<" entries"<<endl;
 		for (it = data.begin(); it != data.end(); ++it) {
 			Stream->WriteInt(it->CPID);
+			if (it->CPID == 0)
+				cout<<"CPID == 0, bad"<<endl;
 		}
 		Stream->Flush(e2);
 	}

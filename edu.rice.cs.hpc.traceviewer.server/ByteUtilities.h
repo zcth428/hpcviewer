@@ -7,7 +7,7 @@
 
 #ifndef BYTEUTILITIES_H_
 #define BYTEUTILITIES_H_
-#include <signal.h>
+
 namespace TraceviewerServer {
 
 class ByteUtilities {

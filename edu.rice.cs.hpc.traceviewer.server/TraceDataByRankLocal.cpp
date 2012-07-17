@@ -18,7 +18,7 @@ TraceDataByRankLocal::TraceDataByRankLocal(BaseDataFile* data , int rank , int n
 						- SIZE_OF_TRACE_RECORD;
 	NumPixelsH = numPixelH;
 	TimeCPID empty(0,0);
-	vector<TimeCPID> _listcpid(NumPixelsH, empty);
+	vector<TimeCPID> _listcpid;
 	ListCPID = _listcpid;
 
 }
@@ -68,7 +68,7 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 		const TimeCPID dataFirst = GetData(startLoc-SIZE_OF_TRACE_RECORD);
 		AddSample(0, dataFirst);
 	}
-	PostProcess();
+	//PostProcess();
 }
 	/*******************************************************************************************
 	 * Recursive method that fills in times and timeLine with the correct data from the file.
@@ -188,7 +188,6 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 		LargeByteBuffer* const MasterBuff = Data->getMasterBuffer();
 		const double time = MasterBuff->GetLong(location);
 		const int CPID = MasterBuff->GetInt(location+Constants::SIZEOF_LONG);
-
 		return *(new TimeCPID(time,CPID));
 	}
 

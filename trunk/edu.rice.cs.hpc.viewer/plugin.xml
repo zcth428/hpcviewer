@@ -293,13 +293,6 @@
                   style="push"
                   tooltip="Display the manual">
             </command>
-            <command
-                  commandId="org.eclipse.equinox.p2.ui.sdk.update"
-                  label="Check for updates"
-                  mnemonic="u"
-                  style="push"
-                  tooltip="Check for updates (hpcviewer and its required plugins)">
-            </command>
          </menu>
       </menuContribution>
    </extension>

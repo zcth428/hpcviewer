@@ -82,14 +82,13 @@ public class PaintManager extends TraceEvents {
 	
 	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 	
-	private SpaceTimeDataController controller;
 	
 	private final TimelineProgressMonitor monitor;
 
 	public PaintManager(ImageTraceAttributes _attributes,
 			ImageTraceAttributes _oldAttributes, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, ColorTable _colorTable, int _maxDepth,
-			long _minBegTime, SpaceTimeDataController spaceTimeDataController) {
+			long _minBegTime) {
 		
 		attributes = _attributes;
 		oldAttributes = _oldAttributes;
@@ -108,8 +107,6 @@ public class PaintManager extends TraceEvents {
 		
 		//defaut position
 		currentPosition = new Position(0, 0);
-		
-		controller = spaceTimeDataController;
 	}
 
 	/*************************************************************************
@@ -120,20 +117,20 @@ public class PaintManager extends TraceEvents {
 	 * @param height
 	 * @param changedBounds
 	 *************************************************************************/
-	public void paintDetailLine(SpaceTimeSamplePainter spp, int process,
+	public void paintDetailLine(SpaceTimeSamplePainter spp, ProcessTimeline Trace,
 			int height, boolean changedBounds) {
 
-		ProcessTimeline ptl = controller.getTrace(process);
-		if (ptl == null || ptl.size() < 2)
+		
+		if (Trace == null || Trace.size() < 2)
 			return;
 
 		if (changedBounds)
-			ptl.shiftTimeBy(minBegTime);
+			Trace.shiftTimeBy(minBegTime);
 		double pixelLength = (attributes.endTime - attributes.begTime)
 				/ (double) attributes.numPixelsH;//Time per pixel
 
 		// do the paint
-		BasePaintLine detailPaint = new BasePaintLine(colorTable, ptl, spp,
+		BasePaintLine detailPaint = new BasePaintLine(colorTable, Trace, spp,
 				attributes.begTime, currentDepth, height, pixelLength) {
 			// @Override
 			public void finishPaint(int currSampleMidpoint,
@@ -158,11 +155,12 @@ public class PaintManager extends TraceEvents {
 	/**********************************************************************
 	 * Paints one "line" (the timeline for one processor) to its own image,
 	 * which is later copied to a master image with the rest of the lines.
+	 * 
 	 ********************************************************************/
-	public void paintDepthLine(SpaceTimeSamplePainter spp, int depth, int height) {
+	public void paintDepthLine(SpaceTimeSamplePainter spp, int depth, int height, ProcessTimeline ptl) {
 		// System.out.println("I'm painting process "+process+" at depth "+depth);
 		
-		ProcessTimeline ptl = controller.getDepthTrace();
+		
 
 		if (ptl.size() < 2)
 			return;
@@ -344,7 +342,7 @@ public class PaintManager extends TraceEvents {
 	}
 	
 	public synchronized void renderDepthTrace(SpaceTimeCanvas canvas, double scaleX,
-			double scaleY, ProcessTimeline nextTrace, int width) {
+			double scaleY, ProcessTimeline nextTrace, int width, ProcessTimeline depthTrace) {
 		int imageHeight = (int) (Math
 				.round(scaleY * (nextTrace.line() + 1)) - Math.round(scaleY
 				* nextTrace.line()));
@@ -367,7 +365,7 @@ public class PaintManager extends TraceEvents {
 			}
 		};
 
-		this.paintDepthLine(spp, nextTrace.line(), imageHeight);
+		this.paintDepthLine(spp, nextTrace.line(), imageHeight, depthTrace);
 		gc.dispose();
 
 		this.addNextDepthImage(line, nextTrace.line());
@@ -394,7 +392,7 @@ public class PaintManager extends TraceEvents {
 		SpaceTimeSamplePainter spp = this
 				.CreateDetailSpaceTimePainter(gcOriginal, gcFinal, scaleX,
 						scaleY);
-		this.paintDetailLine(spp, trace.line(),
+		this.paintDetailLine(spp, trace,
 				imageHeight, changedBounds);
 		gcFinal.dispose();
 		gcOriginal.dispose();
@@ -423,7 +421,8 @@ public class PaintManager extends TraceEvents {
 		attributes.numPixelsDepthV = _numPixelsV;
 		attributes.setTime(_begTime, _endTime);
 
-		controller.setCurrentlySelectedProccess(currentPosition.process);
+		setPosition(currentPosition);
+		
 		oldAttributes.copy(attributes);
 
 		BaseViewPaint depthPaint = new BaseViewPaint(

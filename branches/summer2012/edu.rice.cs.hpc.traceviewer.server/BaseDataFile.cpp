@@ -47,8 +47,7 @@ LargeByteBuffer* BaseDataFile::getMasterBuffer()
  */
 void BaseDataFile::setData(string filename)
 {
-	boost::filesystem::path Path(filename);
-	MasterBuff = new LargeByteBuffer(Path);
+	MasterBuff = new LargeByteBuffer(filename);
 
 	Type = MasterBuff->GetInt(0);
 	NumFiles = MasterBuff->GetInt(Constants::SIZEOF_INT);

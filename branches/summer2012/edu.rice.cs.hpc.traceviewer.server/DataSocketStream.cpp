@@ -67,7 +67,7 @@ void DataSocketStream::Flush(boost::system::error_code e)
 int DataSocketStream::ReadInt(boost::system::error_code e)
 {
 	char Af[4];
-	int len = as::read(*socketFormPtr, as::buffer(Af), e);
+	as::read(*socketFormPtr, as::buffer(Af), e);
 	if (e == boost::asio::error::eof)
 		cout<<"Connection closed"<<endl; // Connection closed cleanly by peer.
 	else if (e)

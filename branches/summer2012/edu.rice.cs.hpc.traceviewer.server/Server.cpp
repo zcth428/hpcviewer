@@ -186,8 +186,6 @@ void Server::GetAndSendData(DataSocketStream* Stream) {
 		cout<<"Sending process timeline with "<< data.size()<<" entries"<<endl;
 		for (it = data.begin(); it != data.end(); ++it) {
 			Stream->WriteInt(it->CPID);
-			if (it->CPID == 0)
-				cout<<"CPID == 0, bad"<<endl;
 		}
 		Stream->Flush(e2);
 	}

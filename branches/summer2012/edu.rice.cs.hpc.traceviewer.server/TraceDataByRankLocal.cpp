@@ -68,7 +68,7 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 		const TimeCPID dataFirst = GetData(startLoc-SIZE_OF_TRACE_RECORD);
 		AddSample(0, dataFirst);
 	}
-	//PostProcess();
+	PostProcess();
 }
 	/*******************************************************************************************
 	 * Recursive method that fills in times and timeLine with the correct data from the file.

@@ -8,10 +8,9 @@
 #ifndef BASEDATAFILE_H_
 #define BASEDATAFILE_H_
 using namespace std;
-#include <string>;
+#include <iostream>;
 #include "LargeByteBuffer.h"
 #include "Constants.h"
-#include "boost/filesystem/path.hpp"
 #include <sstream>
 namespace TraceviewerServer {
 

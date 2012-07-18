@@ -7,15 +7,13 @@
 #include "LargeByteBuffer.h"
 
 using namespace std;
-namespace fs = boost::filesystem;
-namespace mm = boost::iostreams;
 
 namespace TraceviewerServer {
 
 long FileSize;
-	LargeByteBuffer::LargeByteBuffer(fs::path Path)
+	LargeByteBuffer::LargeByteBuffer(string SPath)
 	{
-		string SPath = Path.string();
+		//string SPath = Path.string();
 
 		int MapFlags = MAP_PRIVATE;
 		int MapProt = PROT_READ;

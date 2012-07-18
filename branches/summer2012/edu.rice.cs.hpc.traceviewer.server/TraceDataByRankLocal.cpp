@@ -7,69 +7,82 @@
 
 #include "TraceDataByRankLocal.h"
 
-namespace TraceviewerServer {
-
-TraceDataByRankLocal::TraceDataByRankLocal(BaseDataFile* data , int rank , int numPixelH, int header_size) {
-	Data = data;
-	Rank = rank;
-	long* Offsets = Data->getOffsets();
-	Minloc = Offsets[Rank] + header_size;
-	Maxloc = ( (Rank+1<Data->getNumberOfFiles()) ? Offsets[Rank+1] : data->getMasterBuffer()->Size()-1 )
-						- SIZE_OF_TRACE_RECORD;
-	NumPixelsH = numPixelH;
-	TimeCPID empty(0,0);
-	vector<TimeCPID> _listcpid;
-	ListCPID = _listcpid;
-
-}
-void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pixelLength)
+namespace TraceviewerServer
 {
-	// get the start location
-	const long startLoc = FindTimeInInterval(timeStart, Minloc, Maxloc);
 
-	// get the end location
-	const double endTime = timeStart+timeRange;
-	const long endLoc = min(FindTimeInInterval(endTime, Minloc, Maxloc)+SIZE_OF_TRACE_RECORD, Maxloc);
+	TraceDataByRankLocal::TraceDataByRankLocal(BaseDataFile* data, int rank,
+			int numPixelH, int header_size)
+	{
+		Data = data;
+		Rank = rank;
+		long* Offsets = Data->getOffsets();
+		Minloc = Offsets[Rank] + header_size;
+		Maxloc = (
+				(Rank + 1 < Data->getNumberOfFiles()) ?
+						Offsets[Rank + 1] : data->getMasterBuffer()->Size() - 1)
+				- SIZE_OF_TRACE_RECORD;
+		NumPixelsH = numPixelH;
+		TimeCPID empty(0, 0);
+		vector<TimeCPID> _listcpid;
+		ListCPID = _listcpid;
 
-	// get the number of records data to display
-	const long numRec = 1+ GetNumberOfRecords(startLoc, endLoc);
+	}
+	void TraceDataByRankLocal::GetData(double timeStart, double timeRange,
+			double pixelLength)
+	{
+		// get the start location
+		const long startLoc = FindTimeInInterval(timeStart, Minloc, Maxloc);
 
-	// --------------------------------------------------------------------------------------------------
-	// if the data-to-display is fit in the display zone, we don't need to use recursive binary search
-	//	we just simply display everything from the file
-	// --------------------------------------------------------------------------------------------------
-	if (numRec<=NumPixelsH) {
-		// display all the records
-		for(long i=startLoc;i<=endLoc; ) {
-			ListCPID.push_back(GetData(i));
-			// one record of data contains of an integer (cpid) and a long (time)
-			i =  i + SIZE_OF_TRACE_RECORD;
+		// get the end location
+		const double endTime = timeStart + timeRange;
+		const long endLoc = min(
+				FindTimeInInterval(endTime, Minloc, Maxloc) + SIZE_OF_TRACE_RECORD, Maxloc);
+
+		// get the number of records data to display
+		const long numRec = 1 + GetNumberOfRecords(startLoc, endLoc);
+
+		// --------------------------------------------------------------------------------------------------
+		// if the data-to-display is fit in the display zone, we don't need to use recursive binary search
+		//	we just simply display everything from the file
+		// --------------------------------------------------------------------------------------------------
+		if (numRec <= NumPixelsH)
+		{
+			// display all the records
+			for (long i = startLoc; i <= endLoc;)
+			{
+				ListCPID.push_back(GetData(i));
+				// one record of data contains of an integer (cpid) and a long (time)
+				i = i + SIZE_OF_TRACE_RECORD;
+			}
 		}
-	} else {
-		// the data is too big: try to fit the "big" data into the display
+		else
+		{
+			// the data is too big: try to fit the "big" data into the display
 
-		//fills in the rest of the data for this process timeline
-		SampleTimeLine(startLoc, endLoc, 0, NumPixelsH, 0, pixelLength, timeStart);
-	}
-	// --------------------------------------------------------------------------------------------------
-	// get the last data if necessary: the rightmost time is still less then the upper limit
-	// 	I think we can add the rightmost data into the list of samples
-	// --------------------------------------------------------------------------------------------------
-	if (endLoc < Maxloc){
-		const TimeCPID dataLast = GetData(endLoc);
-		AddSample(ListCPID.size(),dataLast);
-	}
+			//fills in the rest of the data for this process timeline
+			SampleTimeLine(startLoc, endLoc, 0, NumPixelsH, 0, pixelLength, timeStart);
+		}
+		// --------------------------------------------------------------------------------------------------
+		// get the last data if necessary: the rightmost time is still less then the upper limit
+		// 	I think we can add the rightmost data into the list of samples
+		// --------------------------------------------------------------------------------------------------
+		if (endLoc < Maxloc)
+		{
+			const TimeCPID dataLast = GetData(endLoc);
+			AddSample(ListCPID.size(), dataLast);
+		}
 
-	// --------------------------------------------------------------------------------------------------
-	// get the first data if necessary: the leftmost time is still bigger than the lower limit
-	//	similarly, we add to the list
-	// --------------------------------------------------------------------------------------------------
-	if ( startLoc>Minloc ) {
-		const TimeCPID dataFirst = GetData(startLoc-SIZE_OF_TRACE_RECORD);
-		AddSample(0, dataFirst);
+		// --------------------------------------------------------------------------------------------------
+		// get the first data if necessary: the leftmost time is still bigger than the lower limit
+		//	similarly, we add to the list
+		// --------------------------------------------------------------------------------------------------
+		if (startLoc > Minloc)
+		{
+			const TimeCPID dataFirst = GetData(startLoc - SIZE_OF_TRACE_RECORD);
+			AddSample(0, dataFirst);
+		}
+		PostProcess();
 	}
-	PostProcess();
-}
 	/*******************************************************************************************
 	 * Recursive method that fills in times and timeLine with the correct data from the file.
 	 * Takes in two pixel locations as endpoints and finds the timestamp that owns the pixel
@@ -86,20 +99,23 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 	 * @return Returns the index that shows the size of the recursive subtree that has been read.
 	 * Used for calculating the index in which the data is to be inserted.
 	 ******************************************************************************************/
-	int TraceDataByRankLocal::SampleTimeLine(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex,
-			double pixelLength, double startingTime)
+	int TraceDataByRankLocal::SampleTimeLine(long minLoc, long maxLoc, int startPixel,
+			int endPixel, int minIndex, double pixelLength, double startingTime)
 	{
-		int midPixel = (startPixel+endPixel)/2;
+		int midPixel = (startPixel + endPixel) / 2;
 		if (midPixel == startPixel)
 			return 0;
 
-		long loc = FindTimeInInterval(midPixel*pixelLength+startingTime, minLoc, maxLoc);
+		long loc = FindTimeInInterval(midPixel * pixelLength + startingTime, minLoc,
+				maxLoc);
 		const TimeCPID nextData = GetData(loc);
 		AddSample(minIndex, nextData);
-		int addedLeft = SampleTimeLine(minLoc, loc, startPixel, midPixel, minIndex, pixelLength, startingTime);
-		int addedRight = SampleTimeLine(loc, maxLoc, midPixel, endPixel, minIndex+addedLeft+1, pixelLength, startingTime);
+		int addedLeft = SampleTimeLine(minLoc, loc, startPixel, midPixel, minIndex,
+				pixelLength, startingTime);
+		int addedRight = SampleTimeLine(loc, maxLoc, midPixel, endPixel,
+				minIndex + addedLeft + 1, pixelLength, startingTime);
 
-		return (addedLeft+addedRight+1);
+		return (addedLeft + addedRight + 1);
 	}
 
 	/*********************************************************************************
@@ -109,11 +125,13 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 	 * @param left_boundary_offset: the start location. 0 means the beginning of the data in a process
 	 * @param right_boundary_offset: the end location.
 	 ********************************************************************************/
-	long TraceDataByRankLocal::FindTimeInInterval(double time, long l_boundOffset, long r_boundOffset)
+	long TraceDataByRankLocal::FindTimeInInterval(double time, long l_boundOffset,
+			long r_boundOffset)
 	{
-		if (l_boundOffset==r_boundOffset)return l_boundOffset;
+		if (l_boundOffset == r_boundOffset)
+			return l_boundOffset;
 
-		 LargeByteBuffer* const masterBuff = Data->getMasterBuffer();
+		LargeByteBuffer* const masterBuff = Data->getMasterBuffer();
 
 		long l_index = GetRelativeLocation(l_boundOffset);
 		long r_index = GetRelativeLocation(r_boundOffset);
@@ -122,13 +140,17 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 		double r_time = masterBuff->GetLong(r_boundOffset);
 
 		// apply "Newton's method" to find target time
-		while (r_index - l_index > 1) {
+		while (r_index - l_index > 1)
+		{
 			long predicted_index;
 			double rate = (r_time - l_time) / (r_index - l_index);
 			double mtime = (r_time - l_time) / 2;
-			if (time <= mtime) {
+			if (time <= mtime)
+			{
 				predicted_index = max((long) ((time - l_time) / rate) + l_index, l_index);
-			} else {
+			}
+			else
+			{
 				predicted_index = min((r_index - (long) ((r_time - time) / rate)), r_index);
 			}
 			// adjust so that the predicted index differs from both ends
@@ -140,10 +162,13 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 				predicted_index = r_index - 1;
 
 			double temp = masterBuff->GetLong(GetAbsoluteLocation(predicted_index));
-			if (time >= temp) {
+			if (time >= temp)
+			{
 				l_index = predicted_index;
 				l_time = temp;
-			} else {
+			}
+			else
+			{
 				r_index = predicted_index;
 				r_time = temp;
 			}
@@ -154,20 +179,23 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 		l_time = masterBuff->GetLong(l_offset);
 		r_time = masterBuff->GetLong(r_offset);
 
-		const bool is_left_closer = abs(time-l_time) < abs(r_time - time);
+		const bool is_left_closer = abs(time - l_time) < abs(r_time - time);
 
-		if (is_left_closer) return l_offset;
-		else if (r_offset < Maxloc) return r_offset;
-		else return Maxloc;
+		if (is_left_closer)
+			return l_offset;
+		else if (r_offset < Maxloc)
+			return r_offset;
+		else
+			return Maxloc;
 	}
 	long TraceDataByRankLocal::GetAbsoluteLocation(long RelativePosition)
 	{
-		return Minloc + (RelativePosition*SIZE_OF_TRACE_RECORD);
+		return Minloc + (RelativePosition * SIZE_OF_TRACE_RECORD);
 	}
 
 	long TraceDataByRankLocal::GetRelativeLocation(long AbsolutePosition)
 	{
-		return (AbsolutePosition-Minloc)/SIZE_OF_TRACE_RECORD;
+		return (AbsolutePosition - Minloc) / SIZE_OF_TRACE_RECORD;
 	}
 	void TraceDataByRankLocal::AddSample(int index, TimeCPID dataCpid)
 	{
@@ -187,13 +215,13 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 	{
 		LargeByteBuffer* const MasterBuff = Data->getMasterBuffer();
 		const double time = MasterBuff->GetLong(location);
-		const int CPID = MasterBuff->GetInt(location+Constants::SIZEOF_LONG);
-		return *(new TimeCPID(time,CPID));
+		const int CPID = MasterBuff->GetInt(location + Constants::SIZEOF_LONG);
+		return *(new TimeCPID(time, CPID));
 	}
 
 	long TraceDataByRankLocal::GetNumberOfRecords(long start, long end)
 	{
-		return (end-start)/SIZE_OF_TRACE_RECORD;
+		return (end - start) / SIZE_OF_TRACE_RECORD;
 	}
 
 	/*********************************************************************************************
@@ -205,12 +233,13 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 	void TraceDataByRankLocal::PostProcess()
 	{
 		int len = ListCPID.size();
-		for (int i = 0; i < len-2; i++) {
+		for (int i = 0; i < len - 2; i++)
+		{
 
-			while (i<len-1 && ListCPID[i].Timestamp == ListCPID[i+1].Timestamp)
+			while (i < len - 1 && ListCPID[i].Timestamp == ListCPID[i + 1].Timestamp)
 			{
 				vector<TimeCPID>::iterator it = ListCPID.begin();
-				it += (i+1);
+				it += (i + 1);
 				ListCPID.erase(it);
 				len--;
 			}
@@ -218,8 +247,9 @@ void TraceDataByRankLocal::GetData(double timeStart, double timeRange, double pi
 		}
 	}
 
-TraceDataByRankLocal::~TraceDataByRankLocal() {
-	// TODO Auto-generated destructor stub
-}
+	TraceDataByRankLocal::~TraceDataByRankLocal()
+	{
+		// TODO Auto-generated destructor stub
+	}
 
 } /* namespace TraceviewerServer */

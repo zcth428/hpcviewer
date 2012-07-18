@@ -11,44 +11,46 @@
 #include "ImageTraceAttributes.h"
 #include "BaseDataFile.h"
 #include "ProcessTimeline.h"
-#include "boost/filesystem/path.hpp"
-namespace TraceviewerServer {
 
-class SpaceTimeDataControllerLocal {
-public:
-	SpaceTimeDataControllerLocal();
-	SpaceTimeDataControllerLocal(FileData*);
-	virtual ~SpaceTimeDataControllerLocal();
-	void SetInfo(long, long, int);
-	ProcessTimeline* GetNextTrace(bool);
-	void AddNextTrace(ProcessTimeline*);
-	void FillTraces(int, bool);
-	void PrepareViewportPainting(bool);
+namespace TraceviewerServer
+{
 
-	//The number of processes in the database, independent of the current display size
-	int GetHeight();
-	//boost::filesystem::path ExperimentXML;
-	std::string GetExperimentXML();
-	ImageTraceAttributes* Attributes;
-	ProcessTimeline** Traces;
-	int TracesLength;
-private:
-	int LineToPaint(int);
+	class SpaceTimeDataControllerLocal
+	{
+	public:
+		SpaceTimeDataControllerLocal();
+		SpaceTimeDataControllerLocal(FileData*);
+		virtual ~SpaceTimeDataControllerLocal();
+		void SetInfo(long, long, int);
+		ProcessTimeline* GetNextTrace(bool);
+		void AddNextTrace(ProcessTimeline*);
+		void FillTraces(int, bool);
+		void PrepareViewportPainting(bool);
 
-	ImageTraceAttributes* OldAttributes;
+		//The number of processes in the database, independent of the current display size
+		int GetHeight();
+		//boost::filesystem::path ExperimentXML;
+		std::string GetExperimentXML();
+		ImageTraceAttributes* Attributes;
+		ProcessTimeline** Traces;
+		int TracesLength;
+	private:
+		int LineToPaint(int);
 
-	BaseDataFile* DataTrace;
-	int HEADER_SIZE;
+		ImageTraceAttributes* OldAttributes;
 
-	 // The minimum beginning and maximum ending time stamp across all traces (in microseconds).
-	long MaxEndTime, MinBegTime;
+		BaseDataFile* DataTrace;
+		int HEADER_SIZE;
 
-	ProcessTimeline* DepthTrace;
+		// The minimum beginning and maximum ending time stamp across all traces (in microseconds).
+		long MaxEndTime, MinBegTime;
 
-	int Height;
-	boost::filesystem::path ExperimentXML;
+		ProcessTimeline* DepthTrace;
 
-};
+		int Height;
+		string ExperimentXML;
+
+	};
 
 } /* namespace TraceviewerServer */
 #endif /* SPACETIMEDATACONTROLLERLOCAL_H_ */

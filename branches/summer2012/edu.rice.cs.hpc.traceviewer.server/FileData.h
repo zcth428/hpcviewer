@@ -6,14 +6,15 @@
  */
 #ifndef FILEDATA_H_
 #define FILEDATA_H_
-
-#include <boost/filesystem/path.hpp>
-using namespace boost::filesystem;
-namespace TraceviewerServer {
-struct FileData {
-	path fileXML;
-	path fileTrace;
-};
+#include <string>
+using namespace std;
+namespace TraceviewerServer
+{
+	struct FileData
+	{
+		string fileXML;
+		string fileTrace;
+	};
 }
 #endif
 

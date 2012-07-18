@@ -15,6 +15,12 @@ namespace TraceviewerServer
 	{
 	public:
 
+		static short ReadShort(char* Buffer)
+		{
+			unsigned char* uBuffer = (unsigned char*) Buffer;
+			return (uBuffer[0] << 8)| (uBuffer[1]);
+		}
+
 		static int ReadInt(char* Buffer)
 		{
 			unsigned char* uBuffer = (unsigned char*) Buffer;

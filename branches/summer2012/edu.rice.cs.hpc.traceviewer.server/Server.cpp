@@ -28,13 +28,12 @@ namespace TraceviewerServer
 	int Server::main(int argc, char *argv[])
 	{
 
+
 		DataSocketStream* socketptr;
-		as::io_service io_service;
-		DataSocketStream CLsocket(io_service);
 		try
 		{
 //TODO: Change the port to 21591 because 21590 has some other use...
-			ip::tcp::acceptor acceptor(io_service, ip::tcp::endpoint(ip::tcp::v4(), 21590));
+				DataSocketStream CLsocket(21590);
 			cout << "Waiting for connection" << endl;
 			/*
 			 ip::tcp::socket CLsocket(io_service);
@@ -42,7 +41,7 @@ namespace TraceviewerServer
 			 acceptor.accept(CLsocket);
 			 socketptr = (DataSocketStream*) &CLsocket;
 			 */
-			acceptor.accept(CLsocket);
+
 			socketptr = &CLsocket;
 		} catch (std::exception& e)
 		{
@@ -67,8 +66,7 @@ namespace TraceviewerServer
 			SendDBOpenedSuccessfully(socketptr);
 		}
 
-		boost::system::error_code error;
-		int Message = socketptr->ReadInt(error);
+		int Message = socketptr->ReadInt();
 		if (Message == INFO)
 			ParseInfo(socketptr);
 		else
@@ -77,7 +75,7 @@ namespace TraceviewerServer
 		bool EndingConnection = false;
 		while (!EndingConnection)
 		{
-			int NextCommand = socketptr->ReadInt(error);
+			int NextCommand = socketptr->ReadInt();
 			switch (NextCommand)
 			{
 			case DATA:
@@ -97,15 +95,15 @@ namespace TraceviewerServer
 	}
 	void Server::ParseInfo(DataSocketStream* socket)
 	{
-		boost::system::error_code e1, e2, e3;
-		long minBegTime = socket->ReadLong(e1);
-		long maxEndTime = socket->ReadLong(e2);
-		int headerSize = socket->ReadInt(e3);
+
+		long minBegTime = socket->ReadLong();
+		long maxEndTime = socket->ReadLong();
+		int headerSize = socket->ReadInt();
 		STDCL->SetInfo(minBegTime, maxEndTime, headerSize);
 	}
 	void Server::SendDBOpenedSuccessfully(DataSocketStream* socket)
 	{
-		boost::system::error_code e1, e2, e3;
+
 		socket->WriteInt(DBOK);
 
 		as::io_service XMLio_service;
@@ -116,7 +114,7 @@ namespace TraceviewerServer
 
 		socket->WriteInt(STDCL->GetHeight());
 
-		socket->Flush(e1);
+		socket->Flush();
 
 		cout << "Waiting to send XML on port " << port << ". Num traces was "
 				<< STDCL->GetHeight() << endl;
@@ -147,13 +145,13 @@ namespace TraceviewerServer
 
 	void Server::ParseOpenDB(DataSocketStream* receiver)
 	{
-		boost::system::error_code e1, e2;
-		if (!receiver->is_open())
+
+		if (false)//(!receiver->is_open())
 			cout << "Socket not open!" << endl;
-		int Command = receiver->ReadInt(e1);
+		int Command = receiver->ReadInt();
 		if (Command != OPEN)
 			cerr << "Expected an open command, got " << Command << endl;
-		string PathToDB = receiver->ReadString(e2);
+		string PathToDB = receiver->ReadString();
 		LocalDBOpener DBO;
 		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
 
@@ -161,13 +159,13 @@ namespace TraceviewerServer
 
 	void Server::GetAndSendData(DataSocketStream* Stream)
 	{
-		boost::system::error_code e1, e2;
-		int processStart = Stream->ReadInt(e1);
-		int processEnd = Stream->ReadInt(e1);
-		double timeStart = Stream->ReadDouble(e1);
-		double timeEnd = Stream->ReadDouble(e1);
-		int verticalResolution = Stream->ReadInt(e1);
-		int horizontalResolution = Stream->ReadInt(e1);
+
+		int processStart = Stream->ReadInt();
+		int processEnd = Stream->ReadInt();
+		double timeStart = Stream->ReadDouble();
+		double timeEnd = Stream->ReadDouble();
+		int verticalResolution = Stream->ReadInt();
+		int horizontalResolution = Stream->ReadInt();
 		ImageTraceAttributes correspondingAttributes;
 
 		correspondingAttributes.begProcess = processStart;
@@ -204,7 +202,7 @@ namespace TraceviewerServer
 			{
 				Stream->WriteInt(it->CPID);
 			}
-			Stream->Flush(e2);
+			Stream->Flush();
 		}
 		cout << "Data sent" << endl;
 	}

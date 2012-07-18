@@ -7,7 +7,7 @@
 
 #ifndef MERGEDATAFILES_H_
 #define MERGEDATAFILES_H_
-#include "MergeDataAttribute.h"
+
 #include "DataOutputFileStream.h"
 #include "ByteUtilities.h"
 #include "Constants.h"
@@ -23,6 +23,10 @@
 using namespace boost::filesystem;
 using namespace std;
 namespace TraceviewerServer {
+
+enum MergeDataAttribute {
+	SUCCESS_MERGED, SUCCESS_ALREADY_CREATED, FAIL_NO_DATA, STATUS_UNKNOWN
+};
 
 class MergeDataFiles {
 public:

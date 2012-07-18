@@ -8,19 +8,20 @@
 #ifndef LARGEBYTEBUFFER_H_
 #define LARGEBYTEBUFFER_H_
 
-#include "boost/iostreams/device/mapped_file.hpp"
-#include "boost/filesystem.hpp"
 #include "sys/mman.h"
 #include "sys/stat.h"
 #include <fcntl.h>
 #include <vector>
+#include <string>
+#include <iostream>
+#include <errno.h>
 #include "ByteUtilities.h"
 
 namespace TraceviewerServer {
 
 class LargeByteBuffer {
 public:
-	LargeByteBuffer(boost::filesystem::path);
+	LargeByteBuffer(std::string);
 	virtual ~LargeByteBuffer();
 	long Size();
 	long GetLong(long);

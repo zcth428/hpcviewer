@@ -17,21 +17,23 @@
 #include <errno.h>
 #include "ByteUtilities.h"
 
-namespace TraceviewerServer {
+namespace TraceviewerServer
+{
 
-class LargeByteBuffer {
-public:
-	LargeByteBuffer(std::string);
-	virtual ~LargeByteBuffer();
-	long Size();
-	long GetLong(long);
-	int GetInt(long);
-private:
-	char** MasterBuffer;
-	long Length;
-	int NumPages;
-	static const int PAGE_SIZE = INT_MAX;
-};
+	class LargeByteBuffer
+	{
+	public:
+		LargeByteBuffer(std::string);
+		virtual ~LargeByteBuffer();
+		long Size();
+		long GetLong(long);
+		int GetInt(long);
+	private:
+		char** MasterBuffer;
+		long Length;
+		int NumPages;
+		static const int PAGE_SIZE = INT_MAX;
+	};
 
 } /* namespace TraceviewerServer */
 #endif /* LARGEBYTEBUFFER_H_ */

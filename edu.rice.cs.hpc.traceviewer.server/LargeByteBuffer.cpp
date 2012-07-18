@@ -8,9 +8,10 @@
 
 using namespace std;
 
-namespace TraceviewerServer {
+namespace TraceviewerServer
+{
 
-long FileSize;
+	long FileSize;
 	LargeByteBuffer::LargeByteBuffer(string SPath)
 	{
 		//string SPath = Path.string();
@@ -26,9 +27,9 @@ long FileSize;
 //		if (PAGE_SIZE % mm::mapped_file::alignment() != 0)
 //			cerr<< "PAGE_SIZE isn't a multiple of the OS granularity!!";
 //		long FileSize = fs::file_size(Path);
-		int FullPages = FileSize/PAGE_SIZE;
-		int PartialPageSize = FileSize%PAGE_SIZE;
-		NumPages = FullPages + (PartialPageSize==0? 0 : 1);
+		int FullPages = FileSize / PAGE_SIZE;
+		int PartialPageSize = FileSize % PAGE_SIZE;
+		NumPages = FullPages + (PartialPageSize == 0 ? 0 : 1);
 
 		typedef int FileDescriptor;
 		FileDescriptor fd = open(SPath.c_str(), O_RDONLY);
@@ -37,25 +38,28 @@ long FileSize;
 
 		//MasterBuffer = new mm::mapped_file*[NumPages];
 		MasterBuffer = new char*[NumPages];
-		for (int i = 0; i < NumPages; i++) {
+		for (int i = 0; i < NumPages; i++)
+		{
 
 			//MasterBuffer[i] = new mm::mapped_file(Path, mm::mapped_file::readonly, PAGE_SIZE, PAGE_SIZE*i);
 			//This is done to make the Blue Gene Q easier
-			void* AllocatedRegion = mmap(0, min((long)PAGE_SIZE, SizeRemaining), MapProt, MapFlags,fd ,PAGE_SIZE*i );
-			if (AllocatedRegion==MAP_FAILED)
+			void* AllocatedRegion = mmap(0, min((long) PAGE_SIZE, SizeRemaining), MapProt,
+					MapFlags, fd, PAGE_SIZE * i);
+			if (AllocatedRegion == MAP_FAILED)
 			{
-				cerr<<"Mapping returned error "<< strerror(errno) <<endl;
+				cerr << "Mapping returned error " << strerror(errno) << endl;
 			}
 
-			char* temp = (char*)AllocatedRegion;
+			char* temp = (char*) AllocatedRegion;
 			MasterBuffer[i] = temp;
-			cout<<"Allocated a page: "<< AllocatedRegion<< endl;
-			SizeRemaining -= min((long)PAGE_SIZE, SizeRemaining);
+			cout << "Allocated a page: " << AllocatedRegion << endl;
+			SizeRemaining -= min((long) PAGE_SIZE, SizeRemaining);
 		}
 
 	}
 
-	int LargeByteBuffer::GetInt(long pos) {
+	int LargeByteBuffer::GetInt(long pos)
+	{
 		int Page = pos / PAGE_SIZE;
 		int loc = pos % PAGE_SIZE;
 		char* p2D = MasterBuffer[Page] + loc;
@@ -77,11 +81,12 @@ long FileSize;
 	}
 	LargeByteBuffer::~LargeByteBuffer()
 	{
-		for (int i = 0; i < NumPages; i++) {
-			munmap(MasterBuffer[i], i+1==NumPages? FileSize % PAGE_SIZE : PAGE_SIZE);
-			delete(MasterBuffer[i]);
+		for (int i = 0; i < NumPages; i++)
+		{
+			munmap(MasterBuffer[i], i + 1 == NumPages ? FileSize % PAGE_SIZE : PAGE_SIZE);
+			delete (MasterBuffer[i]);
 		}
-		delete(MasterBuffer);
+		delete (MasterBuffer);
 	}
 }
 

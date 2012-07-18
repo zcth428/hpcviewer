@@ -11,16 +11,18 @@
 #define DATAOUTPUTFILESTREAM_H_
 #include <fstream>
 #include "ByteUtilities.h"
-namespace TraceviewerServer {
-using namespace std;
-class DataOutputFileStream : public ofstream{
-public:
-	DataOutputFileStream(const char*);
-	virtual ~DataOutputFileStream();
-	void WriteInt(int);
-	void WriteLong(long);
-private:
-};
+namespace TraceviewerServer
+{
+	using namespace std;
+	class DataOutputFileStream: public ofstream
+	{
+	public:
+		DataOutputFileStream(const char*);
+		virtual ~DataOutputFileStream();
+		void WriteInt(int);
+		void WriteLong(long);
+	private:
+	};
 
 } /* namespace TraceviewerServer */
 #endif /* DATAOUTPUTFILESTREAM_H_ */

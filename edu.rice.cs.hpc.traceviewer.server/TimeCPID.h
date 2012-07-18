@@ -8,19 +8,21 @@
 #ifndef TIMECPID_H_
 #define TIMECPID_H_
 
-namespace TraceviewerServer {
+namespace TraceviewerServer
+{
 
-struct TimeCPID {
-public:
-	double Timestamp;
-	int CPID;
-	TimeCPID(double timestamp, int cpid)
+	struct TimeCPID
 	{
-		Timestamp = timestamp;
-		CPID = cpid;
-	}
+	public:
+		double Timestamp;
+		int CPID;
+		TimeCPID(double timestamp, int cpid)
+		{
+			Timestamp = timestamp;
+			CPID = cpid;
+		}
 
-};
+	};
 
 } /* namespace TraceviewerServer */
 #endif /* TIMECPID_H_ */

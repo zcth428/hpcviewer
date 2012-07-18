@@ -7,32 +7,36 @@
 
 #include "ProcessTimeline.h"
 
-namespace TraceviewerServer {
-
-ProcessTimeline::ProcessTimeline(int lineNum, BaseDataFile* dataTrace, int processNumber,
-		int numPixelH, double timeRange, double startingTime, int header_size) {
-	LineNum = lineNum;
-
-	TimeRange = timeRange;
-	StartingTime = startingTime;
-
-	PixelLength = TimeRange / (double)numPixelH;
-
-	Data = new TraceDataByRankLocal(dataTrace, processNumber, numPixelH, header_size);
-
-}
-void ProcessTimeline::ReadInData()
+namespace TraceviewerServer
 {
-	Data->GetData(StartingTime, TimeRange, PixelLength);
-}
 
-int ProcessTimeline::Line()
-{
-	return LineNum;
-}
+	ProcessTimeline::ProcessTimeline(int lineNum, BaseDataFile* dataTrace,
+			int processNumber, int numPixelH, double timeRange, double startingTime,
+			int header_size)
+	{
+		LineNum = lineNum;
 
-ProcessTimeline::~ProcessTimeline() {
-	delete Data;
-}
+		TimeRange = timeRange;
+		StartingTime = startingTime;
+
+		PixelLength = TimeRange / (double) numPixelH;
+
+		Data = new TraceDataByRankLocal(dataTrace, processNumber, numPixelH, header_size);
+
+	}
+	void ProcessTimeline::ReadInData()
+	{
+		Data->GetData(StartingTime, TimeRange, PixelLength);
+	}
+
+	int ProcessTimeline::Line()
+	{
+		return LineNum;
+	}
+
+	ProcessTimeline::~ProcessTimeline()
+	{
+		delete Data;
+	}
 
 } /* namespace TraceviewerServer */

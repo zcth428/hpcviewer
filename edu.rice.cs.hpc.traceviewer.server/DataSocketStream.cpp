@@ -9,21 +9,37 @@
 
 namespace TraceviewerServer
 {
-	namespace as = boost::asio;
-	namespace ip = boost::asio::ip;
 	using namespace std;
-	typedef unsigned long ulong;
-	typedef unsigned int uint;
-	typedef unsigned char uchar;
-	DataSocketStream::DataSocketStream(as::io_service& ios) :
-			ip::tcp::socket(ios)
+
+	DataSocketStream::DataSocketStream(int Port)
 	{
-		socketFormPtr = this;
+		//create
+		SocketFD socketFD = socket(PF_INET, SOCK_STREAM, 0);
+		if (socketFD == -1)
+			cerr << "Could not create socket" << endl;
+		//bind
+		sockaddr_in Address;
+		Address.sin_family = AF_INET;
+		Address.sin_port = htons(Port);
+		Address.sin_addr.s_addr = INADDR_ANY;
+		int err = bind(socketFD, (sockaddr*) &Address, sizeof(Address));
+		if (err)
+			cerr << "Could not bind socket" << endl;
+		//listen
+		listen(socketFD, 5);
+		//accept
+		sockaddr_in client;
+		unsigned int len = sizeof(client);
+		cout<<"Waiting for connection"<<endl;
+		socketDesc = accept(socketFD, (sockaddr*) &client, &len);
+		if (socketDesc < 0)
+			cerr << "Error on accept" << endl;
 
 	}
 
 	DataSocketStream::~DataSocketStream()
 	{
+		close(socketDesc);
 
 	}
 
@@ -60,48 +76,50 @@ namespace TraceviewerServer
 		Message.insert(Message.end(), Buffer, Buffer + 8);
 	}
 
-	void DataSocketStream::Flush(boost::system::error_code e)
+	void DataSocketStream::Flush()
 	{
 		cout << "Sending " << Message.size() << " bytes." << endl;
-		as::write(*socketFormPtr, as::buffer(Message), as::transfer_all(), e);
+		int e = write(socketDesc, &Message[0], Message.size());
+		if (e == -1)
+			cerr<<"Error on sending"<<endl;
 		Message.clear();
 	}
 
-	int DataSocketStream::ReadInt(boost::system::error_code e)
+	int DataSocketStream::ReadInt()
 	{
 		char Af[4];
-		as::read(*socketFormPtr, as::buffer(Af), e);
-		if (e == boost::asio::error::eof)
-			cout << "Connection closed" << endl; // Connection closed cleanly by peer.
-		else if (e)
-			throw boost::system::system_error(e); // Some other error.
+		int e = read(socketDesc, &Af, 4);
+		CheckForErrors(e);
 		return ByteUtilities::ReadInt(Af);
 
 	}
 
-	long DataSocketStream::ReadLong(boost::system::error_code e)
+	long DataSocketStream::ReadLong()
 	{
 		char Af[8];
-		as::read(*socketFormPtr, as::buffer(Af), e);
+		int e = read(socketDesc, &Af,8);
+		CheckForErrors(e);
 		return ByteUtilities::ReadLong(Af);
 
 	}
 
-	string DataSocketStream::ReadString(boost::system::error_code e)
+	string DataSocketStream::ReadString()
 	{
-		uchar len[2];
-		as::read(*socketFormPtr, as::buffer(len), e);
-		int Len = len[0] << 8 | len[1];
-		vector<char> Msg(Len);
-		as::read(*socketFormPtr, as::buffer(Msg), e);
+		char len[2];
+		int e = read(socketDesc, &len, 2);
+		CheckForErrors(e);
+		short Len = ByteUtilities::ReadShort(len);
+		char* Msg = new char[Len];
+		e = read(socketDesc, Msg, Len);
+		CheckForErrors(e);
 		//TODO: This is wrong for any path that requires special characters
-		string SF(Msg.begin(), Msg.end());
+		string SF(Msg);
 		return SF;
 	}
 
-	double DataSocketStream::ReadDouble(boost::system::error_code e)
+	double DataSocketStream::ReadDouble()
 	{
-		long BytesAsLong = ReadLong(e);
+		long BytesAsLong = ReadLong();
 		long* ptrToLong = &BytesAsLong;
 		double* ptrToDoubleForm = (double*) ptrToLong;
 		return *ptrToDoubleForm;
@@ -111,5 +129,13 @@ namespace TraceviewerServer
 		double* ptrToD = &val;
 		long* ptrToLongForm = (long*) ptrToD;
 		WriteLong(*ptrToLongForm);
+	}
+
+	void DataSocketStream::CheckForErrors(int e)
+	{
+		if (e == 0)
+			cout << "Connection closed" << endl; // EOF
+		else if (e == -1)
+			throw e; // Some other error.
 	}
 } /* namespace TraceviewerServer */

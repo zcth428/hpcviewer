@@ -42,7 +42,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 		}
 
 		final int numWork = this.getNumberOfFiles();
-		final int num_threads = Math.min(numWork, Runtime.getRuntime().availableProcessors());
+		int num_threads = Math.min(numWork, Runtime.getRuntime().availableProcessors());
 		final int numWorkPerThreads = (int) Math.ceil((float)numWork / (float)num_threads);
 		final DataReadThread threads[] = new DataReadThread[num_threads];
 		
@@ -66,18 +66,25 @@ public class ThreadLevelDataFile extends BaseDataFile {
 		// --------------------------------------------------------------
 		// wait until all threads finish
 		// --------------------------------------------------------------
-		try {
+		while (num_threads > 0) {
 			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-				while (threads[threadNum].isAlive()) {
+				try {
 					Thread.sleep(30);
 					if (monitor != null) {
 						monitor.reportProgress();
 					}
 				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				if (!threads[threadNum].isAlive()) {
+					// mark that this thread has done his job
+					if (!threads[threadNum].done) {
+						threads[threadNum].done = true;
+						num_threads--;
+					}
+				}
 			}
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 
 		if (monitor != null) {
@@ -114,6 +121,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 		final private int _indexFileStart, _indexFileEnd;
 		final private TimelineProgressMonitor _monitor;
 		final private double _metrics[];
+		boolean done;
 		
 		/***
 		 * Initialization for reading a range of file from indexFileStart to indexFileEnd
@@ -139,6 +147,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			_indexFileEnd = indexFileEnd;
 			_monitor = monitor;
 			_metrics = metrics;
+			done = false;
 		}
 		
 		public void run() {

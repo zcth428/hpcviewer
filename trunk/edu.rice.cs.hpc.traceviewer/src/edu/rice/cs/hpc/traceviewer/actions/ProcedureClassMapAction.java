@@ -29,7 +29,7 @@ public class ProcedureClassMapAction extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
 		final Shell shell = HandlerUtil.getActiveShell(event);
-		ProcedureClassMap classMap = new ProcedureClassMap(shell);
+		ProcedureClassMap classMap = new ProcedureClassMap(shell.getDisplay());
 		ProcedureClassDialog dlg = new ProcedureClassDialog(shell, classMap);
 		if ( dlg.open() == Dialog.OK ) {
 			classMap.save();

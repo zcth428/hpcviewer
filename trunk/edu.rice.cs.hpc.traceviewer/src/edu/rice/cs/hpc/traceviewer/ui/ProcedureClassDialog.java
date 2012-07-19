@@ -501,7 +501,7 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		
 		shell.open();
 		
-		ProcedureClassMap pcMap = new ProcedureClassMap(shell);
+		ProcedureClassMap pcMap = new ProcedureClassMap(display);
 		ProcedureClassDialog dlg = new ProcedureClassDialog(shell, pcMap );
 
 		if ( dlg.open() == Dialog.OK ) {

@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Display;
 import edu.rice.cs.hpc.common.util.AliasMap;
 import edu.rice.cs.hpc.common.util.ProcedureClassData;
 
@@ -23,10 +23,10 @@ public class ProcedureClassMap extends AliasMap<String,ProcedureClassData> {
 
 	static public final String CLASS_IDLE = "idle";
 	static private final String FILENAME = "proc-class.map";
-	private Shell shell;
+	private final Display display;
 	
-	public ProcedureClassMap(Shell shell) {
-		this.shell = shell;
+	public ProcedureClassMap(Display display) {
+		this.display = display;
 	}
 	
 	/*
@@ -50,8 +50,8 @@ public class ProcedureClassMap extends AliasMap<String,ProcedureClassData> {
 	public void initDefault() {
 
 		final Color COLOR_GRAY;
-		if (shell != null) {
-			COLOR_GRAY = shell.getDisplay().getSystemColor(SWT.COLOR_GRAY);
+		if (display != null) {
+			COLOR_GRAY = display.getSystemColor(SWT.COLOR_GRAY);
 		} else {
 			COLOR_GRAY = null;
 		}
@@ -85,6 +85,7 @@ public class ProcedureClassMap extends AliasMap<String,ProcedureClassData> {
 	}
 
 	public void put(String key, String val, Color image) {
+		if (image != null)
 		put(key,new ProcedureClassData(val,image));
 	}
 

@@ -141,4 +141,11 @@ public class BaseDataFile {
 		return (isMultiProcess() && isMultiThreading());
 	}
 
+	/***
+	 * Disposing native resources
+	 */
+	public void dispose() {
+		if (masterBuff != null)
+			this.masterBuff.dispose();
+	}
 }

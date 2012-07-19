@@ -68,4 +68,10 @@ public interface IBaseData {
 	 * @return
 	 */
 	public double getDouble(long position);
+	
+	
+	/****
+	 * Disposing native resources
+	 */
+	public void dispose();
 }

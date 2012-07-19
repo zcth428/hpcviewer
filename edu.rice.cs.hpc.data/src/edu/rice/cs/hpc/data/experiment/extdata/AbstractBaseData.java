@@ -24,7 +24,13 @@ public abstract class AbstractBaseData implements IBaseData {
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getString(long)
 	 */
 	public String getString(long position, long length) {
-		return baseDataFile.getMasterBuffer().getString(position, length);
+		try {
+			return baseDataFile.getMasterBuffer().getString(position, length);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/*
@@ -32,7 +38,13 @@ public abstract class AbstractBaseData implements IBaseData {
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getLong(long)
 	 */
 	public long getLong(long position) {
-		return baseDataFile.getMasterBuffer().getLong(position);
+		try {
+			return baseDataFile.getMasterBuffer().getLong(position);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	/*
@@ -40,7 +52,13 @@ public abstract class AbstractBaseData implements IBaseData {
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getInt(long)
 	 */
 	public int getInt(long position) {
-		return baseDataFile.getMasterBuffer().getInt(position);
+		try {
+			return baseDataFile.getMasterBuffer().getInt(position);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	/*
@@ -48,7 +66,13 @@ public abstract class AbstractBaseData implements IBaseData {
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getDouble(long)
 	 */
 	public double getDouble(long position) {
-		return baseDataFile.getMasterBuffer().getDouble(position);
+		try {
+			return baseDataFile.getMasterBuffer().getDouble(position);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	/*
@@ -59,4 +83,11 @@ public abstract class AbstractBaseData implements IBaseData {
 		return headerSize;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#dispose()
+	 */
+	public void dispose() {
+		this.baseDataFile.dispose();
+	}
 }

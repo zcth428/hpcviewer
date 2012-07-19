@@ -1,6 +1,9 @@
 package edu.rice.cs.hpc.viewer.metric;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+
 import org.eclipse.jface.action.IStatusLineManager;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -44,7 +47,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 		final int numWork = this.getNumberOfFiles();
 		int num_threads = Math.min(numWork, Runtime.getRuntime().availableProcessors());
 		final int numWorkPerThreads = (int) Math.ceil((float)numWork / (float)num_threads);
-		final DataReadThread threads[] = new DataReadThread[num_threads];
+		ArrayList<DataReadThread> listThreads = new ArrayList<DataReadThread>(num_threads);
 		
 		if (monitor != null) {
 			monitor.beginProgress(numWork, "Reading data ...", "Metric raw data", Util.getActiveShell());
@@ -58,32 +61,41 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			final int start = i * numWorkPerThreads;
 			final int end = Math.min(start+numWorkPerThreads, numWork);
 			
-			threads[i] = new DataReadThread(nodeIndex, metricIndex, numMetrics, start, end,
+			DataReadThread thread = new DataReadThread(nodeIndex, metricIndex, numMetrics, start, end,
 					monitor, metrics);
-			threads[i].start();
+			thread.start();
+			listThreads.add(thread);
 		}
 		
 		// --------------------------------------------------------------
 		// wait until all threads finish
 		// --------------------------------------------------------------
-		while (num_threads > 0) {
-			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-				try {
-					Thread.sleep(30);
-					if (monitor != null) {
-						monitor.reportProgress();
+		while (!listThreads.isEmpty()) {
+			try {
+				for (DataReadThread thread : listThreads) {
+					try {
+						Thread.sleep(30);
+						if (monitor != null) {
+							monitor.reportProgress();
+						}
+					}
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					if (!thread.isAlive()) {
+						// The thread has done his job
+						// remove it from the list
+						listThreads.remove(thread);
+						
+						// this break is ugly, but needed to avoid using the "old" list
+						// we will use the "new" list in the next while iteration
+						break;
 					}
 				}
-				catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				if (!threads[threadNum].isAlive()) {
-					// mark that this thread has done his job
-					if (!threads[threadNum].done) {
-						threads[threadNum].done = true;
-						num_threads--;
-					}
-				}
+			} catch (ConcurrentModificationException e) {
+				// we just remove a thread while iterating a list
+				// it's considered as normal behavior. nothing to do.
+				System.err.println(e.getMessage());
 			}
 		}
 
@@ -121,7 +133,6 @@ public class ThreadLevelDataFile extends BaseDataFile {
 		final private int _indexFileStart, _indexFileEnd;
 		final private TimelineProgressMonitor _monitor;
 		final private double _metrics[];
-		boolean done;
 		
 		/***
 		 * Initialization for reading a range of file from indexFileStart to indexFileEnd
@@ -147,7 +158,6 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			_indexFileEnd = indexFileEnd;
 			_monitor = monitor;
 			_metrics = metrics;
-			done = false;
 		}
 		
 		public void run() {
@@ -157,7 +167,13 @@ public class ThreadLevelDataFile extends BaseDataFile {
 			
 			for (int i=_indexFileStart; i<_indexFileEnd; i++) {
 				final long pos_absolute = offsets[i] + pos_relative;
-				_metrics[i] = (double)masterBuff.getDouble(pos_absolute);
+				try {
+					_metrics[i] = (double)masterBuff.getDouble(pos_absolute);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break;
+				}
 				if (_monitor != null) {
 					_monitor.announceProgress();
 				}

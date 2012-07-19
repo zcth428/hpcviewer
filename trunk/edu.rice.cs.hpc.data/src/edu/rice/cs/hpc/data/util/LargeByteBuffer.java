@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.data.util;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Vector;
 
 /**The idea for this class is credited to Stu Thompson.
  * stackoverflow.com/questions/736556/binary-search-in-a-sorted-memory-mapped-file-in-java
@@ -16,71 +15,98 @@ public class LargeByteBuffer
 {
 	
 	/**The masterBuffer holds a vector of all bytebuffers*/
-	private Vector<MappedByteBuffer> masterBuffer;
+	private MappedByteBuffer[] masterBuffer;
 	
 	private long length;
 	
-	private static final int PAGE_SIZE = Integer.MAX_VALUE;
+	final private FileChannel fcInput;
+	
+	// The page size has to be the multiple of record size
+	// originally: Integer.MAX_VALUE;
+	private static final long PAGE_SIZE = 24 * (1 << 20); 
 	
 	public LargeByteBuffer(FileChannel in)
 		throws IOException
 	{
-		masterBuffer = new Vector<MappedByteBuffer>();
-		long start = 0;
-		long currentSize = 0;
-		length = 0;
-		for (long index = 0; length < in.size(); index++)
-		{
-			if ((in.size()/PAGE_SIZE) == index)
-			{
-				currentSize = (in.size() - index*PAGE_SIZE);
-			}
-			else
-			{
-				currentSize = PAGE_SIZE;
-			}
-			start = index*PAGE_SIZE;
-			masterBuffer.add(in.map(FileChannel.MapMode.READ_ONLY, start, currentSize));
-			length += currentSize;
+		fcInput = in;
+		length = in.size();
+		
+		int numPages = 1+(int) (in.size() / PAGE_SIZE);
+		masterBuffer = new MappedByteBuffer[numPages];		
+	}
+	
+	private long getCurrentSize(long index) throws IOException 
+	{
+		long currentSize = PAGE_SIZE;
+		if (length/PAGE_SIZE == index) {
+			currentSize = length - (index * PAGE_SIZE);
 		}
+		return currentSize;
 	}
 	
-	public byte get(long position)
+	/****
+	 * Set a buffer map to a specified page
+	 *  
+	 * @param page
+	 * @return
+	 * @throws IOException
+	 */
+	private MappedByteBuffer setBuffer(int page) throws IOException
+	{
+		long start = ((long)page) * PAGE_SIZE;
+		MappedByteBuffer buffer = fcInput.map(FileChannel.MapMode.READ_ONLY, start, 
+				getCurrentSize(page));
+		masterBuffer[page] = buffer;
+		
+		return buffer;
+	}
+	
+	private MappedByteBuffer getBuffer(int page) throws IOException
+	{
+		MappedByteBuffer buffer = masterBuffer[page];
+		if (buffer == null) {
+			buffer = setBuffer(page);
+		}
+		return buffer;
+	}
+	
+	public byte get(long position) throws IOException
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
-		return masterBuffer.get(page).get(loc);
+		
+		return getBuffer(page).get(loc);
 	}
 	
-	public int getInt(long position)
+	public int getInt(long position) throws IOException
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
-		return masterBuffer.get(page).getInt(loc);
+		return getBuffer(page).getInt(loc);
 	}
 	
-	public long getLong(long position)
+	public long getLong(long position) throws IOException
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
-		return masterBuffer.get(page).getLong(loc);
+		return getBuffer(page).getLong(loc);
 	}
 	
-	public double getDouble(long position)
+	public double getDouble(long position) throws IOException
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
-		return masterBuffer.get(page).getDouble(loc);
+		return getBuffer(page).getDouble(loc);
 	}
 	
-	public char getChar(long position)
+	public char getChar(long position) throws IOException
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
-		return masterBuffer.get(page).getChar(loc);
+		return getBuffer(page).getChar(loc);
 	}
 
-	public String getString(long position, long length)
+	public String getString(long position, long length) throws IOException
 	{
 		String str = "";
 		for (long i = 0; i < length; ++i) {
@@ -90,22 +116,36 @@ public class LargeByteBuffer
 		return str;
 	}
 
-	public float getFloat(long position)
+	public float getFloat(long position) throws IOException
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
-		return masterBuffer.get(page).getFloat(loc);
+		return getBuffer(page).getFloat(loc);
 	}
 	
-	public short getShort(long position)
+	public short getShort(long position) throws IOException
 	{
 		int page = (int) (position / PAGE_SIZE);
 		int loc = (int) (position % PAGE_SIZE);
-		return masterBuffer.get(page).getShort(loc);
+		return getBuffer(page).getShort(loc);
 	}
 	
 	public long size()
 	{
 		return length;
+	}
+	
+	/***
+	 * Disposing resources manually to avoid memory leak
+	 */
+	public void dispose() 
+	{
+		this.masterBuffer = null;
+		try {
+			this.fcInput.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

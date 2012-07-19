@@ -106,7 +106,7 @@ public class ColorTable implements IProcedureTable
 	public void setColorTable()
 	{	
 		// initialize the procedure-color map
-		classMap = new ProcedureClassMap(display.getActiveShell());
+		classMap = new ProcedureClassMap(display);
 
 		//This is where the data file is converted to the colorTable using colorMatcher.
 		//creates name-function-color colorMatcher for each function.

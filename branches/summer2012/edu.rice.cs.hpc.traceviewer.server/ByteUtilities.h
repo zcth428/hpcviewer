@@ -10,7 +10,8 @@
 
 namespace TraceviewerServer
 {
-
+	typedef int64_t Long;
+	typedef uint64_t ULong;
 	class ByteUtilities
 	{
 	public:
@@ -27,11 +28,11 @@ namespace TraceviewerServer
 			return ((uBuffer[0] << 24) | (uBuffer[1] << 16) | (uBuffer[2] << 8)
 					| (uBuffer[3]));
 		}
-		static long ReadLong(char* Buffer)
+		static Long ReadLong(char* Buffer)
 		{
 			unsigned int HighWord = ReadInt(Buffer);
 			unsigned int LowWord = ReadInt(Buffer + 4);
-			unsigned long Combined = ((unsigned long) HighWord << 32) | LowWord;
+			ULong Combined = ((ULong) HighWord << 32) | LowWord;
 			return Combined;
 		}
 		static void WriteInt(char* Buffer, int ToWrite)
@@ -54,7 +55,7 @@ namespace TraceviewerServer
 		}
 		static void WriteLong(char* Buffer, long ToWrite)
 		{
-			unsigned long utoWrite = ToWrite;
+			ULong utoWrite = ToWrite;
 			Buffer[0] = (utoWrite & MASK_7) >> 56;
 			Buffer[1] = (utoWrite & MASK_6) >> 48;
 			Buffer[2] = (utoWrite & MASK_5) >> 40;
@@ -67,9 +68,9 @@ namespace TraceviewerServer
 	private:
 		static const unsigned int MASK_0 = 0x000000FF, MASK_1 = 0x0000FF00, MASK_2 =
 				0x00FF0000, MASK_3 = 0xFF000000; //For an int
-		static const unsigned long MASK_4 = 0x000000FF00000000,
-				MASK_5 = 0x0000FF0000000000, MASK_6 = 0x00FF000000000000, MASK_7 =
-						0xFF00000000000000; //for a long
+		static const ULong MASK_4 = 0x000000FF00000000ULL,
+				MASK_5 = 0x0000FF0000000000ULL, MASK_6 = 0x00FF000000000000ULL, MASK_7 =
+						0xFF00000000000000ULL; //for a long
 
 	};
 

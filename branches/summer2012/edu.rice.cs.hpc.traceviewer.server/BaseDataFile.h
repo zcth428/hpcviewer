@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#include <iostream>;
+#include <iostream>
 #include "LargeByteBuffer.h"
 #include "Constants.h"
 #include <sstream>
@@ -24,7 +24,7 @@ namespace TraceviewerServer
 		BaseDataFile(string);
 		virtual ~BaseDataFile();
 		int getNumberOfFiles();
-		long* getOffsets();
+		Long* getOffsets();
 		LargeByteBuffer* getMasterBuffer();
 		void setData(string);
 
@@ -37,7 +37,7 @@ namespace TraceviewerServer
 		LargeByteBuffer* MasterBuff;
 		int NumFiles; // = 0;
 		string* ValuesX;
-		long* Offsets;
+		Long* Offsets;
 	};
 
 } /* namespace TraceviewerServer */

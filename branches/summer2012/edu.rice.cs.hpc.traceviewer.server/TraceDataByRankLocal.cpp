@@ -15,7 +15,7 @@ namespace TraceviewerServer
 	{
 		Data = data;
 		Rank = rank;
-		long* Offsets = Data->getOffsets();
+		Long* Offsets = Data->getOffsets();
 		Minloc = Offsets[Rank] + header_size;
 		Maxloc = (
 				(Rank + 1 < Data->getNumberOfFiles()) ?
@@ -31,15 +31,15 @@ namespace TraceviewerServer
 			double pixelLength)
 	{
 		// get the start location
-		const long startLoc = FindTimeInInterval(timeStart, Minloc, Maxloc);
+		const Long startLoc = FindTimeInInterval(timeStart, Minloc, Maxloc);
 
 		// get the end location
 		const double endTime = timeStart + timeRange;
-		const long endLoc = min(
+		const Long endLoc = min(
 				FindTimeInInterval(endTime, Minloc, Maxloc) + SIZE_OF_TRACE_RECORD, Maxloc);
 
 		// get the number of records data to display
-		const long numRec = 1 + GetNumberOfRecords(startLoc, endLoc);
+		const Long numRec = 1 + GetNumberOfRecords(startLoc, endLoc);
 
 		// --------------------------------------------------------------------------------------------------
 		// if the data-to-display is fit in the display zone, we don't need to use recursive binary search
@@ -48,7 +48,7 @@ namespace TraceviewerServer
 		if (numRec <= NumPixelsH)
 		{
 			// display all the records
-			for (long i = startLoc; i <= endLoc;)
+			for (Long i = startLoc; i <= endLoc;)
 			{
 				ListCPID.push_back(GetData(i));
 				// one record of data contains of an integer (cpid) and a long (time)
@@ -99,14 +99,14 @@ namespace TraceviewerServer
 	 * @return Returns the index that shows the size of the recursive subtree that has been read.
 	 * Used for calculating the index in which the data is to be inserted.
 	 ******************************************************************************************/
-	int TraceDataByRankLocal::SampleTimeLine(long minLoc, long maxLoc, int startPixel,
+	int TraceDataByRankLocal::SampleTimeLine(Long minLoc, Long maxLoc, int startPixel,
 			int endPixel, int minIndex, double pixelLength, double startingTime)
 	{
 		int midPixel = (startPixel + endPixel) / 2;
 		if (midPixel == startPixel)
 			return 0;
 
-		long loc = FindTimeInInterval(midPixel * pixelLength + startingTime, minLoc,
+		Long loc = FindTimeInInterval(midPixel * pixelLength + startingTime, minLoc,
 				maxLoc);
 		const TimeCPID nextData = GetData(loc);
 		AddSample(minIndex, nextData);
@@ -125,16 +125,16 @@ namespace TraceviewerServer
 	 * @param left_boundary_offset: the start location. 0 means the beginning of the data in a process
 	 * @param right_boundary_offset: the end location.
 	 ********************************************************************************/
-	long TraceDataByRankLocal::FindTimeInInterval(double time, long l_boundOffset,
-			long r_boundOffset)
+	Long TraceDataByRankLocal::FindTimeInInterval(double time, Long l_boundOffset,
+			Long r_boundOffset)
 	{
 		if (l_boundOffset == r_boundOffset)
 			return l_boundOffset;
 
 		LargeByteBuffer* const masterBuff = Data->getMasterBuffer();
 
-		long l_index = GetRelativeLocation(l_boundOffset);
-		long r_index = GetRelativeLocation(r_boundOffset);
+		Long l_index = GetRelativeLocation(l_boundOffset);
+		Long r_index = GetRelativeLocation(r_boundOffset);
 
 		double l_time = masterBuff->GetLong(l_boundOffset);
 		double r_time = masterBuff->GetLong(r_boundOffset);
@@ -142,12 +142,12 @@ namespace TraceviewerServer
 		// apply "Newton's method" to find target time
 		while (r_index - l_index > 1)
 		{
-			long predicted_index;
+			Long predicted_index;
 			double rate = (r_time - l_time) / (r_index - l_index);
 			double mtime = (r_time - l_time) / 2;
 			if (time <= mtime)
 			{
-				predicted_index = max((long) ((time - l_time) / rate) + l_index, l_index);
+				predicted_index = max((Long) ((time - l_time) / rate) + l_index, l_index);
 			}
 			else
 			{
@@ -188,12 +188,12 @@ namespace TraceviewerServer
 		else
 			return Maxloc;
 	}
-	long TraceDataByRankLocal::GetAbsoluteLocation(long RelativePosition)
+	Long TraceDataByRankLocal::GetAbsoluteLocation(Long RelativePosition)
 	{
 		return Minloc + (RelativePosition * SIZE_OF_TRACE_RECORD);
 	}
 
-	long TraceDataByRankLocal::GetRelativeLocation(long AbsolutePosition)
+	Long TraceDataByRankLocal::GetRelativeLocation(Long AbsolutePosition)
 	{
 		return (AbsolutePosition - Minloc) / SIZE_OF_TRACE_RECORD;
 	}
@@ -211,7 +211,7 @@ namespace TraceviewerServer
 		}
 	}
 
-	TimeCPID TraceDataByRankLocal::GetData(long location)
+	TimeCPID TraceDataByRankLocal::GetData(Long location)
 	{
 		LargeByteBuffer* const MasterBuff = Data->getMasterBuffer();
 		const double time = MasterBuff->GetLong(location);
@@ -219,7 +219,7 @@ namespace TraceviewerServer
 		return *(new TimeCPID(time, CPID));
 	}
 
-	long TraceDataByRankLocal::GetNumberOfRecords(long start, long end)
+	Long TraceDataByRankLocal::GetNumberOfRecords(Long start, Long end)
 	{
 		return (end - start) / SIZE_OF_TRACE_RECORD;
 	}

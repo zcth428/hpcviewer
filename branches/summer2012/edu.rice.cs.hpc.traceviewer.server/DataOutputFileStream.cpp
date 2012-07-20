@@ -29,7 +29,7 @@ namespace TraceviewerServer
 		ByteUtilities::WriteInt(arrayform, toWrite);
 		write(arrayform, 4);
 	}
-	void DataOutputFileStream::WriteLong(long toWrite)
+	void DataOutputFileStream::WriteLong(Long toWrite)
 	{
 		char arrayform[8];
 		ByteUtilities::WriteLong(arrayform, toWrite);

@@ -99,7 +99,7 @@ namespace TraceviewerServer
 		correspondingAttributes.numPixelsV = gc.verticalResolution;
 		double timeSpan = gc.timeEnd - gc.timeStart;
 		correspondingAttributes.begTime = 0;
-		correspondingAttributes.endTime = (long) timeSpan;
+		correspondingAttributes.endTime = (Long) timeSpan;
 		correspondingAttributes.lineNum = 0;
 		STDCL->Attributes = &correspondingAttributes;
 

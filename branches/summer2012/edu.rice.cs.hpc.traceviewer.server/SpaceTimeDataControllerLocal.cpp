@@ -26,7 +26,7 @@ namespace TraceviewerServer
 	}
 
 //called once the INFO packet has been received to add the information to the stdc
-	void SpaceTimeDataControllerLocal::SetInfo(long minBegTime, long maxEndTime,
+	void SpaceTimeDataControllerLocal::SetInfo(Long minBegTime, Long maxEndTime,
 			int headerSize)
 	{
 		MinBegTime = minBegTime;

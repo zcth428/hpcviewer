@@ -28,13 +28,13 @@ namespace TraceviewerServer
 		virtual ~DataSocketStream();
 
 		void WriteInt(int);
-		void WriteLong(long);
+		void WriteLong(Long);
 		void WriteDouble(double);
 		void WriteRawData(char*, int);
 		void Flush();
 
 		int ReadInt();
-		long ReadLong();
+		Long ReadLong();
 		string ReadString();
 		double ReadDouble();
 	private:

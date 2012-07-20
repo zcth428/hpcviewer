@@ -11,7 +11,7 @@ using namespace std;
 namespace TraceviewerServer
 {
 
-	long FileSize;
+	ULong FileSize;
 	LargeByteBuffer::LargeByteBuffer(string SPath)
 	{
 		//string SPath = Path.string();
@@ -34,7 +34,7 @@ namespace TraceviewerServer
 		typedef int FileDescriptor;
 		FileDescriptor fd = open(SPath.c_str(), O_RDONLY);
 
-		long SizeRemaining = FileSize;
+		ULong SizeRemaining = FileSize;
 
 		//MasterBuffer = new mm::mapped_file*[NumPages];
 		MasterBuffer = new char*[NumPages];
@@ -43,7 +43,7 @@ namespace TraceviewerServer
 
 			//MasterBuffer[i] = new mm::mapped_file(Path, mm::mapped_file::readonly, PAGE_SIZE, PAGE_SIZE*i);
 			//This is done to make the Blue Gene Q easier
-			void* AllocatedRegion = mmap(0, min((long) PAGE_SIZE, SizeRemaining), MapProt,
+			void* AllocatedRegion = mmap(0, min((ULong) PAGE_SIZE, SizeRemaining), MapProt,
 					MapFlags, fd, PAGE_SIZE * i);
 			if (AllocatedRegion == MAP_FAILED)
 			{
@@ -53,12 +53,12 @@ namespace TraceviewerServer
 			char* temp = (char*) AllocatedRegion;
 			MasterBuffer[i] = temp;
 			cout << "Allocated a page: " << AllocatedRegion << endl;
-			SizeRemaining -= min((long) PAGE_SIZE, SizeRemaining);
+			SizeRemaining -= min((ULong) PAGE_SIZE, SizeRemaining);
 		}
 
 	}
 
-	int LargeByteBuffer::GetInt(long pos)
+	int LargeByteBuffer::GetInt(ULong pos)
 	{
 		int Page = pos / PAGE_SIZE;
 		int loc = pos % PAGE_SIZE;
@@ -66,16 +66,16 @@ namespace TraceviewerServer
 		int val = ByteUtilities::ReadInt(p2D);
 		return val;
 	}
-	long LargeByteBuffer::GetLong(long pos)
+	Long LargeByteBuffer::GetLong(ULong pos)
 	{
 		int Page = pos / PAGE_SIZE;
 		int loc = pos % PAGE_SIZE;
 		char* p2D = MasterBuffer[Page] + loc;
-		long val = ByteUtilities::ReadLong(p2D);
+		Long val = ByteUtilities::ReadLong(p2D);
 		return val;
 
 	}
-	long LargeByteBuffer::Size()
+	ULong LargeByteBuffer::Size()
 	{
 		return Length;
 	}

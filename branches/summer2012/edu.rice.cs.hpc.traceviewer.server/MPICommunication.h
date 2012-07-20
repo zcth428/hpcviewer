@@ -31,8 +31,8 @@ namespace TraceviewerServer
 		} get_data_command;
 		typedef struct
 		{
-			long minBegTime;
-			long maxEndTime;
+			Long minBegTime;
+			Long maxEndTime;
 			int headerSize;
 		} more_info_command;
 

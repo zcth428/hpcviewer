@@ -8,7 +8,7 @@
 #include "MergeDataFiles.h"
 
 using namespace std;
-
+typedef int64_t Long;
 namespace TraceviewerServer
 {
 	MergeDataAttribute MergeDataFiles::merge(string Directory, string GlobInputFile,
@@ -54,10 +54,10 @@ namespace TraceviewerServer
 		sort(AllPaths.begin(), AllPaths.end());
 
 		dos.WriteInt(AllPaths.size());
-		const long num_metric_header = 2 * Constants::SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes)
-		const long num_metric_index = AllPaths.size()
+		const Long num_metric_header = 2 * Constants::SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes)
+		const Long num_metric_index = AllPaths.size()
 				* (Constants::SIZEOF_LONG + 2 * Constants::SIZEOF_INT);
-		long offset = num_metric_header + num_metric_index;
+		Long offset = num_metric_header + num_metric_index;
 
 		int name_format = 0; // FIXME hack:some hpcprof revisions have different format name !!
 		//-----------------------------------------------------
@@ -160,14 +160,14 @@ namespace TraceviewerServer
 	{
 		ifstream f(filename->c_str(), ios_base::binary | ios_base::in);
 		bool IsCorrect = false;
-		const long pos = FileUtils::GetFileSize(*filename) - Constants::SIZEOF_LONG;
+		const Long pos = FileUtils::GetFileSize(*filename) - Constants::SIZEOF_LONG;
 		int diff;
 		if (pos > 0)
 		{
 			f.seekg(pos, ios_base::beg);
 			char buffer[8];
 			f.read(buffer, 8);
-			const unsigned long Marker = ByteUtilities::ReadLong(buffer);
+			const ULong Marker = ByteUtilities::ReadLong(buffer);
 			//No idea why this doesn't work:
 			//IsCorrect = ((Marker) == MARKER_END_MERGED_FILE);
 

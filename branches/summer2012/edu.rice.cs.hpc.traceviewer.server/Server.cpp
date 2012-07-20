@@ -4,11 +4,14 @@
  *  Created on: Jul 9, 2012
  *      Author: pat2
  */
+//#define UseBoost
 #include "Server.h"
 //#include "SpaceTimeDataControllerLocal.h"
 
+#ifdef UseBoost
 namespace as = boost::asio;
 namespace ip = boost::asio::ip;
+#endif
 using namespace std;
 using namespace MPI;
 namespace TraceviewerServer
@@ -96,8 +99,8 @@ namespace TraceviewerServer
 	void Server::ParseInfo(DataSocketStream* socket)
 	{
 
-		long minBegTime = socket->ReadLong();
-		long maxEndTime = socket->ReadLong();
+		Long minBegTime = socket->ReadLong();
+		Long maxEndTime = socket->ReadLong();
 		int headerSize = socket->ReadInt();
 		STDCL->SetInfo(minBegTime, maxEndTime, headerSize);
 
@@ -112,11 +115,13 @@ namespace TraceviewerServer
 	{
 
 		socket->WriteInt(Constants::DBOK);
-
+#ifdef UseBoost
 		as::io_service XMLio_service;
 		ip::tcp::acceptor XMLacceptor(XMLio_service, ip::tcp::endpoint(ip::tcp::v4(), 0));
 		int port = XMLacceptor.local_endpoint().port();
-
+#else
+		int port = 2224;
+#endif
 		socket->WriteInt(port);
 
 		socket->WriteInt(STDCL->GetHeight());
@@ -125,7 +130,7 @@ namespace TraceviewerServer
 
 		cout << "Waiting to send XML on port " << port << ". Num traces was "
 				<< STDCL->GetHeight() << endl;
-
+#if UseBoost
 		ip::tcp::iostream XMLstr;
 		XMLacceptor.accept(*XMLstr.rdbuf());
 		SendXML(&XMLstr);
@@ -148,6 +153,9 @@ namespace TraceviewerServer
 		if (!XMLSocket->good())
 			cerr << "Sending XML failed" << endl;
 		XMLSocket->flush();
+#else
+		cout<<"Not sending XML because Boost is disabled"<<endl;
+#endif
 	}
 
 	void Server::ParseOpenDB(DataSocketStream* receiver)

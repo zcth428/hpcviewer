@@ -7,7 +7,7 @@
 
 #ifndef LOCALDBOPENER_H_
 #define LOCALDBOPENER_H_
-#include <string>;
+#include <string>
 #include <iostream>
 #include "SpaceTimeDataControllerLocal.h"
 #include "FileData.h"

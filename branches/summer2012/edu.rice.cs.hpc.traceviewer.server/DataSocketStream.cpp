@@ -74,7 +74,7 @@ namespace TraceviewerServer
 		//Message.insert(Message.end(), Buffer, Buffer + 4);
 		fwrite(Buffer,4,1,file);
 	}
-	void DataSocketStream::WriteLong(long toWrite)
+	void DataSocketStream::WriteLong(Long toWrite)
 	{
 		/*char arrayform[8] = {
 		 (toWrite& MASK_7)>>56,
@@ -119,7 +119,7 @@ namespace TraceviewerServer
 
 	}
 
-	long DataSocketStream::ReadLong()
+	Long DataSocketStream::ReadLong()
 	{
 		char Af[8];
 		fread(Af, 8, 1, file);
@@ -143,15 +143,15 @@ namespace TraceviewerServer
 
 	double DataSocketStream::ReadDouble()
 	{
-		long BytesAsLong = ReadLong();
-		long* ptrToLong = &BytesAsLong;
+		Long BytesAsLong = ReadLong();
+		Long* ptrToLong = &BytesAsLong;
 		double* ptrToDoubleForm = (double*) ptrToLong;
 		return *ptrToDoubleForm;
 	}
 	void DataSocketStream::WriteDouble(double val)
 	{
 		double* ptrToD = &val;
-		long* ptrToLongForm = (long*) ptrToD;
+		Long* ptrToLongForm = (Long*) ptrToD;
 		WriteLong(*ptrToLongForm);
 	}
 

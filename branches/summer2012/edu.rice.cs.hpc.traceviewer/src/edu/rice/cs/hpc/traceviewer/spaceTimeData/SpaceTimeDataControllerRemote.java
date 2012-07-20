@@ -100,7 +100,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	 * return would be outside the array, so the 0 is a sort of safeguard.
 	 */
 	private int computeScaledProcess() {
-		if (getCurrentlySelectedProcess() <= attributes.endProcess) {
+		if ((getCurrentlySelectedProcess() <= attributes.endProcess) && getCurrentlySelectedProcess() >= attributes.begProcess) {
 			int scaledDTProcess = (int) (((double) traces.length - 1)
 					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (getCurrentlySelectedProcess() - attributes.begProcess));// -atr.begPro-1??
 			return scaledDTProcess;

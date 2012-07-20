@@ -74,5 +74,6 @@ public class Database {
 	
 	public void dispose() {
 		dataManager.dispose();
+		experiment.dispose();
 	}
 }

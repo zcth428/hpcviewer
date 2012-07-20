@@ -195,14 +195,23 @@ public class ViewerWindow {
 				// refresh the menu state
 				checkService();
 				
-				experiment.dispose();
-				
 				return i;
 			}
 		}
 		return -1;
 	}
 
+	/****
+	 * Remove (nullify) all the allocated resources
+	 */
+	public void dispose() {
+		for (Database db : dbObj) {
+			if (db != null)
+				db.dispose();
+		}
+		dbObj = null;
+	}
+	
 	/*****
 	 * get the opened experiment databases
 	 * @return null if there is no opened database

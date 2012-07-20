@@ -43,6 +43,8 @@ namespace TraceviewerServer
 					NodeFinishedMsg.Tag = Constants::SLAVE_DONE;
 					NodeFinishedMsg.Done.RankID = COMM_WORLD.Get_rank();
 					NodeFinishedMsg.Done.TraceLinesSent = LinesSent;
+					cout << "Rank " << NodeFinishedMsg.Done.RankID << " done, having created "
+							<< LinesSent << " trace lines." << endl;
 					int SizeToSend = 3 * Constants::SIZEOF_INT;
 					COMM_WORLD.Send(&NodeFinishedMsg, SizeToSend, MPI_PACKED,
 							MPICommunication::SOCKET_SERVER, 0);
@@ -72,16 +74,19 @@ namespace TraceviewerServer
 
 		//If rank > n, there are more nodes than trace lines, so this node will do nothing
 		if (rank > n)
+		{
+			cout << "No work to do" << endl;
 			return 0;
+		}
 
 		//If rank < (n % (p-1)) this node should compute ceil(n/(p-1)) trace lines,
 		//otherwise it should compute floor(n/(p-1))
 
 		//=MIN(F5, $D$1)*(CEILING($B$1/($B$2-1),1)) + (F5-MIN(F5, $D$1))*(FLOOR($B$1/($B$2-1),1))
 		int LowerInclusiveBound = min(mod, rank) * ceil(q)
-				+ (rank - min(mod, rank)) * floor(q);
+				+ (rank - min(mod, rank)) * floor(q) + gc.processStart;
 		int UpperInclusiveBound = min(mod, rank + 1) * ceil(q)
-				+ (rank + 1 - min(mod, rank + 1)) * floor(q) - 1;
+				+ (rank + 1 - min(mod, rank + 1)) * floor(q) - 1 + gc.processStart;
 
 		cout << "Rank " << Truerank << " is getting lines [" << LowerInclusiveBound << ", "
 				<< UpperInclusiveBound << "]" << endl;
@@ -101,18 +106,23 @@ namespace TraceviewerServer
 		ProcessTimeline* NextTrace = STDCL->GetNextTrace(true);
 		int LinesSentCount = 0;
 		int waitcount = 0;
-		cout << "First trace's rank: " << NextTrace->Data->Rank;
+
+		if (NextTrace == NULL)
+			cout<<"First trace was null..."<<endl;
+
 		while (NextTrace != NULL)
 		{
-			if ((NextTrace->Data->Rank< LowerInclusiveBound) || (NextTrace->Data->Rank> UpperInclusiveBound))
+			if ((NextTrace->Data->Rank < LowerInclusiveBound)
+					|| (NextTrace->Data->Rank > UpperInclusiveBound))
 			{
 				NextTrace = STDCL->GetNextTrace(true);
 				waitcount++;
 				continue;
 			}
-			if (waitcount !=0)
+			if (waitcount != 0)
 			{
-				cout<<Truerank<< " skipped " << waitcount << " processes before actually starting work"<<endl;
+				cout << Truerank << " skipped " << waitcount
+						<< " processes before actually starting work" << endl;
 				waitcount = 0;
 			}
 			NextTrace->ReadInData();
@@ -131,8 +141,6 @@ namespace TraceviewerServer
 			int i = 0;
 			for (it = ActualData->begin(); it != ActualData->end(); ++it)
 			{
-				if (it->CPID == 419430400)
-					cerr << "CPID: 419430400 "<< i << " TL: " << msg.Data.Line<< endl;
 				msg.Data.Data[i++] = it->CPID;
 			}
 
@@ -144,9 +152,10 @@ namespace TraceviewerServer
 			COMM_WORLD.Send(&msg, SizeInBytes, MPI_PACKED, MPICommunication::SOCKET_SERVER,
 					0);
 			LinesSentCount++;
-			if (LinesSentCount%100 ==0)
-			cout << Truerank << " Has sent " << LinesSentCount << ". Most recent message was " << NextTrace->Line()
-					<< " and contained " << entries << " entries" << endl;
+			if (LinesSentCount % 100 == 0)
+				cout << Truerank << " Has sent " << LinesSentCount
+						<< ". Most recent message was " << NextTrace->Line() << " and contained "
+						<< entries << " entries" << endl;
 
 			NextTrace = STDCL->GetNextTrace(true);
 		}

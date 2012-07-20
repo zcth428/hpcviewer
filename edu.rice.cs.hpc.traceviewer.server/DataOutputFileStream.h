@@ -20,7 +20,7 @@ namespace TraceviewerServer
 		DataOutputFileStream(const char*);
 		virtual ~DataOutputFileStream();
 		void WriteInt(int);
-		void WriteLong(long);
+		void WriteLong(Long);
 	private:
 	};
 

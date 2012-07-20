@@ -8,6 +8,7 @@
 #include "BaseDataFile.h"
 
 using namespace std;
+typedef int64_t Long;
 namespace TraceviewerServer
 {
 //-----------------------------------------------------------
@@ -33,7 +34,7 @@ namespace TraceviewerServer
 		return NumFiles;
 	}
 
-	long* BaseDataFile::getOffsets()
+	Long* BaseDataFile::getOffsets()
 	{
 		return Offsets;
 	}
@@ -56,9 +57,9 @@ namespace TraceviewerServer
 		NumFiles = MasterBuff->GetInt(Constants::SIZEOF_INT);
 
 		ValuesX = new string[NumFiles];
-		Offsets = new long[NumFiles];
+		Offsets = new Long[NumFiles];
 
-		long current_pos = Constants::SIZEOF_INT * 2;
+		Long current_pos = Constants::SIZEOF_INT * 2;
 
 		// get the procs and threads IDs
 		for (int i = 0; i < NumFiles; i++)

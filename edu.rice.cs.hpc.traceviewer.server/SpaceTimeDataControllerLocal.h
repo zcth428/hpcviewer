@@ -21,7 +21,7 @@ namespace TraceviewerServer
 		SpaceTimeDataControllerLocal();
 		SpaceTimeDataControllerLocal(FileData*);
 		virtual ~SpaceTimeDataControllerLocal();
-		void SetInfo(long, long, int);
+		void SetInfo(Long, Long, int);
 		ProcessTimeline* GetNextTrace(bool);
 		void AddNextTrace(ProcessTimeline*);
 		void FillTraces(int, bool);
@@ -44,7 +44,7 @@ namespace TraceviewerServer
 		int HEADER_SIZE;
 
 		// The minimum beginning and maximum ending time stamp across all traces (in microseconds).
-		long MaxEndTime, MinBegTime;
+		Long MaxEndTime, MinBegTime;
 
 		ProcessTimeline* DepthTrace;
 

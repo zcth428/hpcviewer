@@ -25,10 +25,11 @@
 							<tool command="mpic++" id="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base.318821359" name="MacOS X C++ Linker" superClass="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base">
 								<option id="macosx.cpp.link.option.paths.1624967760" name="Library search path (-L)" superClass="macosx.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/Users/pat2/Downloads/boost_1_50_0/stage/lib"/>
+									<listOptionValue builtIn="false" value="/home/pat2/boost_1_50_0/stage/lib"/>
+									<listOptionValue builtIn="false" value="/home/pat2/mpi-install/lib"/>
 									<listOptionValue builtIn="false" value="/opt/pgi/osx86/2010/mpi/openmpi/lib"/>
 								</option>
 								<option id="macosx.cpp.link.option.libs.361848847" name="Libraries (-l)" superClass="macosx.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="boost_iostreams"/>
 									<listOptionValue builtIn="false" value="boost_system"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.macosx.cpp.linker.input.1268221563" superClass="cdt.managedbuild.tool.macosx.cpp.linker.input">
@@ -45,6 +46,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.1921304309" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1145117207" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/opt/pgi/osx86/2010/mpi/openmpi/lib"/>
+									<listOptionValue builtIn="false" value="/home/pat2/boost_1_50_0/"/>
 									<listOptionValue builtIn="false" value="/Users/pat2/Downloads/boost_1_50_0"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.835704801" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -109,10 +111,16 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="edu.rice.cs.hpc.traceviewer.server.cdt.managedbuild.target.gnu.cross.exe.526791800" name="Executable" projectType="cdt.managedbuild.target.gnu.cross.exe"/>
 	</storageModule>
-	<storageModule moduleId="refreshScope" versionNumber="1">
-		<resource resourceType="PROJECT" workspacePath="/edu.rice.cs.hpc.traceviewer.server"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/edu.rice.cs.hpc.traceviewer.server"/>
+		</configuration>
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/edu.rice.cs.hpc.traceviewer.server"/>
+		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.1298085016;cdt.managedbuild.config.gnu.cross.exe.debug.1298085016.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.485417573;cdt.managedbuild.tool.gnu.cpp.compiler.input.962131713">

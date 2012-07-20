@@ -25,8 +25,8 @@ namespace TraceviewerServer
 		virtual ~TraceDataByRankLocal();
 
 		void GetData(double, double, double);
-		int SampleTimeLine(long, long, int, int, int, double, double);
-		long FindTimeInInterval(double, long, long);
+		int SampleTimeLine(Long, Long, int, int, int, double, double);
+		Long FindTimeInInterval(double, Long, Long);
 
 		/**The size of one trace record in bytes (cpid (= 4 bytes) + timeStamp (= 8 bytes)).*/
 		static const int SIZE_OF_TRACE_RECORD = 12;
@@ -35,15 +35,15 @@ namespace TraceviewerServer
 	private:
 		BaseDataFile* Data;
 
-		long Minloc;
-		long Maxloc;
+		Long Minloc;
+		Long Maxloc;
 		int NumPixelsH;
 
-		long GetAbsoluteLocation(long);
-		long GetRelativeLocation(long);
+		Long GetAbsoluteLocation(Long);
+		Long GetRelativeLocation(Long);
 		void AddSample(int, TimeCPID);
-		TimeCPID GetData(long);
-		long GetNumberOfRecords(long, long);
+		TimeCPID GetData(Long);
+		Long GetNumberOfRecords(Long, Long);
 		void PostProcess();
 	};
 

@@ -19,18 +19,18 @@
 
 namespace TraceviewerServer
 {
-
+	typedef uint64_t ULong;
 	class LargeByteBuffer
 	{
 	public:
 		LargeByteBuffer(std::string);
 		virtual ~LargeByteBuffer();
-		long Size();
-		long GetLong(long);
-		int GetInt(long);
+		ULong Size();
+		Long GetLong(ULong);
+		int GetInt(ULong);
 	private:
 		char** MasterBuffer;
-		long Length;
+		ULong Length;
 		int NumPages;
 		static const int PAGE_SIZE = INT_MAX;
 	};

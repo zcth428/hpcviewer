@@ -107,6 +107,10 @@ public class RemoteDataRetriever {
 			monitor.announceProgress();
 			int RankNumber = receiver.readInt();
 			int Length = receiver.readInt();//Number of CPID's
+			
+			if (RanksExpected - RanksReceived < 3)
+				System.out.println(RanksReceived + "/" + RanksExpected );
+			
 			double startTimeForThisTimeline = receiver.readDouble();
 			double endTimeForThisTimeline = receiver.readDouble();
 			TimeCPID[] ranksData = readTimeCPIDArray(Length, startTimeForThisTimeline, endTimeForThisTimeline);
@@ -141,7 +145,10 @@ public class RemoteDataRetriever {
 		TimeCPID[] ToReturn = new TimeCPID[length];
 		double deltaT = (tn-t0)/length;
 		for (int i = 0; i < ToReturn.length; i++) {
-			ToReturn[i] = new TimeCPID(t0+i*deltaT, receiver.readInt());//Does this method of getting timestamps actually work???
+			int CPID = receiver.readInt();
+			if (CPID == 0)
+				System.out.println("CPID too small");
+			ToReturn[i] = new TimeCPID(t0+i*deltaT, CPID);//Does this method of getting timestamps actually work???
 		}
 		return ToReturn;
 	}

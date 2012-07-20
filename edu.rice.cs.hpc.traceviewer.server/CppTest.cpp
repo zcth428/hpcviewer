@@ -1,26 +1,52 @@
-//#include "mpi.h"
+#include "mpi.h"
 #include "FileUtils.h"
 #include "Server.h"
+#include "Slave.h"
+#include "MPICommunication.h"
 #include <fstream>
 #include <vector>
 
 using namespace std;
-//using namespace MPI;
+using namespace MPI;
 
 void FSTest();
 int main(int argc, char *argv[])
 {
 
-	//FSTest();
+	MPI::Init(argc, argv);
+	int rank, size;
+	rank = MPI::COMM_WORLD.Get_rank();
+	size = MPI::COMM_WORLD.Get_size();
 
-	TraceviewerServer::Server::main(argc, argv);
-	//ofstream g;
 
-	/*MPI::Init(argc, argv);
+	if (rank == TraceviewerServer::MPICommunication::SOCKET_SERVER)
+	{
+		try
+		{
+			TraceviewerServer::Server::main(argc, argv);
+		} catch (int e)
+		{
 
-	 int rank, size;
-	 rank = MPI::COMM_WORLD.Get_rank();
-	 size = MPI::COMM_WORLD.Get_size();
+		}
+		TraceviewerServer::MPICommunication::CommandMessage serverShutdown;
+		serverShutdown.Command = TraceviewerServer::Constants::DONE;
+		COMM_WORLD.Bcast(&serverShutdown, sizeof(serverShutdown), MPI_PACKED,
+				TraceviewerServer::MPICommunication::SOCKET_SERVER);
+	}
+	else
+	{
+		try
+		{
+			TraceviewerServer::Slave();
+		} catch (int e)
+		{
+
+		}
+	}
+
+	/*
+
+
 
 	 int* val = new int[10];
 	 if (rank == 0) {
@@ -31,8 +57,8 @@ int main(int argc, char *argv[])
 	 }
 	 MPI_Bcast(val, 10, MPI_INT, 0, COMM_WORLD);
 	 cout << "Rank: " << rank << " val: " << val[0] << ".." << val[9] << "\n";
-
-	 MPI::Finalize();*/
+	 */
+	MPI::Finalize();
 	return 0;
 }
 
@@ -42,10 +68,10 @@ void FSTest()
 	string d2 = "/FakeDirectory";
 	string f1 = "/FakeFile.ext";
 	string f2 = "FakeFile.ext";
-	cout << TraceviewerServer::FileUtils::CombinePaths(d1,f1)<<endl;
-	cout << TraceviewerServer::FileUtils::CombinePaths(d1,f2)<<endl;
-	cout << TraceviewerServer::FileUtils::CombinePaths(d2,f1)<<endl;
-	cout << TraceviewerServer::FileUtils::CombinePaths(d2,f2)<<endl;
+	cout << TraceviewerServer::FileUtils::CombinePaths(d1, f1) << endl;
+	cout << TraceviewerServer::FileUtils::CombinePaths(d1, f2) << endl;
+	cout << TraceviewerServer::FileUtils::CombinePaths(d2, f1) << endl;
+	cout << TraceviewerServer::FileUtils::CombinePaths(d2, f2) << endl;
 }
 
 void GzipTest()

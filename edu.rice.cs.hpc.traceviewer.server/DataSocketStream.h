@@ -30,6 +30,7 @@ namespace TraceviewerServer
 		void WriteInt(int);
 		void WriteLong(long);
 		void WriteDouble(double);
+		void WriteRawData(char*, int);
 		void Flush();
 
 		int ReadInt();
@@ -40,6 +41,10 @@ namespace TraceviewerServer
 		SocketFD socketDesc;
 		std::vector<char> Message;
 		void CheckForErrors(int);
+		FILE* file;
+#ifdef ManualBuffer
+		char* Buffer;
+#endif
 	};
 
 } /* namespace TraceviewerServer */

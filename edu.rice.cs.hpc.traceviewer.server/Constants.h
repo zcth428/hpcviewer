@@ -26,6 +26,15 @@ namespace TraceviewerServer
 		{
 			return "experiment.mt";
 		}
+
+		static const int DATA = 0x44415441;
+		static const int OPEN = 0x4F50454E;
+		static const int HERE = 0x48455245;
+		static const int DONE = 0x444F4E45;
+		static const int DBOK = 0x44424F4B;
+		static const int INFO = 0x494E464F;
+		static const int SLAVE_REPLY = 0x12345678;
+		static const int SLAVE_DONE = 0x87654321;
 	};
 }
 #endif /* CONSTANTS_H_ */

@@ -13,6 +13,7 @@ namespace TraceviewerServer
 
 	DataSocketStream::DataSocketStream(int Port)
 	{
+		//cout<<"In socket constructor"<<endl;
 		//create
 		SocketFD socketFD = socket(PF_INET, SOCK_STREAM, 0);
 		if (socketFD == -1)
@@ -24,7 +25,10 @@ namespace TraceviewerServer
 		Address.sin_addr.s_addr = INADDR_ANY;
 		int err = bind(socketFD, (sockaddr*) &Address, sizeof(Address));
 		if (err)
+		{
 			cerr << "Could not bind socket" << endl;
+			throw 11;
+		}
 		//listen
 		listen(socketFD, 5);
 		//accept
@@ -34,14 +38,26 @@ namespace TraceviewerServer
 		socketDesc = accept(socketFD, (sockaddr*) &client, &len);
 		if (socketDesc < 0)
 			cerr << "Error on accept" << endl;
-
+		file = fdopen(socketDesc, "r+b");//read, write, binary
+#ifdef ManualBuffer
+	  buffer = new char[2048];
+		setvbuf(file, buffer, _IOFBF, 2048);*/
+#endif
 	}
 
 	DataSocketStream::~DataSocketStream()
 	{
+		cout<<"In socket destructor"<<endl;
+#ifdef ManualBuffer
+		delete(buffer)
+#endif
 		close(socketDesc);
 
 	}
+	/*DataSocketStream& DataSocketStream::operator=(const DataSocketStream& rhs)
+	{
+		return *this;
+	}*/
 
 	void DataSocketStream::WriteInt(int toWrite)
 	{
@@ -55,7 +71,8 @@ namespace TraceviewerServer
 		 as::write(*socketFormPtr, as::buffer(arrayform), as::transfer_all(),e);*/
 		char Buffer[4];
 		ByteUtilities::WriteInt(Buffer, toWrite);
-		Message.insert(Message.end(), Buffer, Buffer + 4);
+		//Message.insert(Message.end(), Buffer, Buffer + 4);
+		fwrite(Buffer,4,1,file);
 	}
 	void DataSocketStream::WriteLong(long toWrite)
 	{
@@ -73,23 +90,31 @@ namespace TraceviewerServer
 		 as::write(*socketFormPtr, as::buffer(arrayform), as::transfer_all(),e);*/
 		char Buffer[8];
 		ByteUtilities::WriteLong(Buffer, toWrite);
-		Message.insert(Message.end(), Buffer, Buffer + 8);
+		//Message.insert(Message.end(), Buffer, Buffer + 8);
+		fwrite(Buffer,8,1,file);
+	}
+
+	void DataSocketStream::WriteRawData(char* Data, int Length)
+	{
+		fwrite(Data, Length, 1, file);
 	}
 
 	void DataSocketStream::Flush()
 	{
-		cout << "Sending " << Message.size() << " bytes." << endl;
+		/*cout << "Sending " << Message.size() << " bytes." << endl;
 		int e = write(socketDesc, &Message[0], Message.size());
 		if (e == -1)
 			cerr<<"Error on sending"<<endl;
-		Message.clear();
+		Message.clear();*/
+		int e = fflush(file);
+		if (e == EOF)
+					cerr<<"Error on sending"<<endl;
 	}
 
 	int DataSocketStream::ReadInt()
 	{
 		char Af[4];
-		int e = read(socketDesc, &Af, 4);
-		CheckForErrors(e);
+		fread(Af, 4, 1, file);
 		return ByteUtilities::ReadInt(Af);
 
 	}
@@ -97,8 +122,7 @@ namespace TraceviewerServer
 	long DataSocketStream::ReadLong()
 	{
 		char Af[8];
-		int e = read(socketDesc, &Af,8);
-		CheckForErrors(e);
+		fread(Af, 8, 1, file);
 		return ByteUtilities::ReadLong(Af);
 
 	}
@@ -106,12 +130,12 @@ namespace TraceviewerServer
 	string DataSocketStream::ReadString()
 	{
 		char len[2];
-		int e = read(socketDesc, &len, 2);
-		CheckForErrors(e);
+		fread(len, 2, 1, file);
+
 		short Len = ByteUtilities::ReadShort(len);
 		char* Msg = new char[Len];
-		e = read(socketDesc, Msg, Len);
-		CheckForErrors(e);
+		fread(Msg, Len, 1, file);
+
 		//TODO: This is wrong for any path that requires special characters
 		string SF(Msg);
 		return SF;
@@ -134,7 +158,10 @@ namespace TraceviewerServer
 	void DataSocketStream::CheckForErrors(int e)
 	{
 		if (e == 0)
-			cout << "Connection closed" << endl; // EOF
+			{
+				cout << "Connection closed" << endl; // EOF
+				throw -7;
+			}
 		else if (e == -1)
 			throw e; // Some other error.
 	}

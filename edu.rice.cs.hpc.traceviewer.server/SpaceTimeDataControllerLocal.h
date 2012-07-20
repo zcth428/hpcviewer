@@ -25,6 +25,7 @@ namespace TraceviewerServer
 		ProcessTimeline* GetNextTrace(bool);
 		void AddNextTrace(ProcessTimeline*);
 		void FillTraces(int, bool);
+		ProcessTimeline* FillTrace(bool);
 		void PrepareViewportPainting(bool);
 
 		//The number of processes in the database, independent of the current display size

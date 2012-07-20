@@ -75,6 +75,14 @@ public class Node extends TreeNode {
 		}
 	}
 
+	/****
+	 * dispose the allocated attributes (parent and children)
+	 */
+	public void dispose() {
+		setChildren(null);
+		setParent(null);
+	}
+	
 	//////////////////////////////////////////////////////////////////////////////
 	//// 	PRIVATE METHODS
 	//////////////////////////////////////////////////////////////////////////////

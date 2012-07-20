@@ -71,4 +71,8 @@ public class Database {
 		view = experView;
 		return;
 	}
+	
+	public void dispose() {
+		dataManager.dispose();
+	}
 }

@@ -137,6 +137,16 @@ public class ThreadLevelDataManager {
 		return this.data_file[metric_id];
 	}
 	
+	
+	public void dispose() {
+		if (data_file != null) {
+			for (ThreadLevelDataFile data: data_file) {
+				if (data != null)
+					data.dispose();
+			}
+		}
+	}
+	
 	//==============================================================================================
 	// PRIVATE METHODS
 	//==============================================================================================

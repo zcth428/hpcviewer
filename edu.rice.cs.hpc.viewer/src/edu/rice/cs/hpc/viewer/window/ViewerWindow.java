@@ -186,6 +186,7 @@ public class ViewerWindow {
 			int dbDir = xmlFileName.lastIndexOf(File.separator);
 			// if this is the guy we want to go away, take him out now
 			if (xmlFileName.substring(0,dbDir).equals(databasePath)) {
+				dbObj[i].dispose();
 				// Database numbers are visible to the user (in titles).  So we do not
 				// compact the list, we only make this entry empty (set pointer to its 
 				// database class to null) so it can be reused if another open is done.
@@ -193,6 +194,8 @@ public class ViewerWindow {
 				
 				// refresh the menu state
 				checkService();
+				
+				experiment.dispose();
 				
 				return i;
 			}

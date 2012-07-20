@@ -6,6 +6,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.DisposeResourcesVisitor;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.util.IUserData;
 
@@ -72,7 +73,10 @@ public abstract class BaseExperiment implements IExperiment {
 	
 
 	public TreeNode[] getRootScopeChildren() {
-		return this.rootScope.getChildren();
+		if (rootScope != null)
+			return this.rootScope.getChildren();
+		else
+			return null;
 	}
 	
 	
@@ -168,6 +172,12 @@ public File getDefaultDirectory()
 }
 
 
+public void dispose()
+{
+	DisposeResourcesVisitor visitor = new DisposeResourcesVisitor();
+	rootScope.dfsVisitScopeTree(visitor);
+	this.rootScope = null;
+}
 
 
 }

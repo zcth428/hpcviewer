@@ -273,18 +273,21 @@ public class ExperimentView {
 
 				if (obj.view.getPartName().equals(partRef.getPartName())) {
 					final Experiment experiment = obj.view.getExperiment();
-					final RootScope cct = (RootScope)experiment.getRootScopeChildren()[0];
-					
-					// create the tree
-					experiment.createCallersView(cct, obj.root);
-					
-					// notify the view that we have changed the data
-					obj.view.setInput(obj.database, obj.root);
-					
-					// remove this view from the list since we already initialize the tree
-					listOfViews.remove(i);
-					
-					return;
+					TreeNode []roots = experiment.getRootScopeChildren();
+					if (roots != null) {
+						final RootScope cct = (RootScope)roots[0];
+						
+						// create the tree
+						experiment.createCallersView(cct, obj.root);
+						
+						// notify the view that we have changed the data
+						obj.view.setInput(obj.database, obj.root);
+						
+						// remove this view from the list since we already initialize the tree
+						listOfViews.remove(i);
+						
+						return;
+					}
 				}
 			}
 		}

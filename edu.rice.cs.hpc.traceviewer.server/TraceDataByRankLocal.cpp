@@ -216,7 +216,8 @@ namespace TraceviewerServer
 		LargeByteBuffer* const MasterBuff = Data->getMasterBuffer();
 		const double time = MasterBuff->GetLong(location);
 		const int CPID = MasterBuff->GetInt(location + Constants::SIZEOF_LONG);
-		return *(new TimeCPID(time, CPID));
+		TimeCPID ToReturn(time, CPID);
+		return ToReturn;
 	}
 
 	Long TraceDataByRankLocal::GetNumberOfRecords(Long start, Long end)
@@ -249,7 +250,8 @@ namespace TraceviewerServer
 
 	TraceDataByRankLocal::~TraceDataByRankLocal()
 	{
-		// TODO Auto-generated destructor stub
+		ListCPID.clear();
+		//delete(Data);
 	}
 
 } /* namespace TraceviewerServer */

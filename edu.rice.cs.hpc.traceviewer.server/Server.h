@@ -41,6 +41,7 @@ namespace TraceviewerServer
 		virtual ~Server();
 		static int main(int argc, char *argv[]);
 
+
 	private:
 		static void ParseInfo(DataSocketStream*);
 		static void SendDBOpenedSuccessfully(DataSocketStream*);

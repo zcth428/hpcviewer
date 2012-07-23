@@ -317,7 +317,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			stData.attributes.endProcess = stData.attributes.begProcess+MIN_PROC_DISP;
 		}
 				
-		this.rebuffer();
+		this.rebuffer(true);
 		
 		this.updateButtonStates();
 		

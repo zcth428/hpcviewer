@@ -139,17 +139,25 @@ namespace TraceviewerServer
 			msg.Data.Endtime = (*ActualData)[entries - 1].Timestamp;
 			vector<TimeCPID>::iterator it;
 			int i = 0;
-			for (it = ActualData->begin(); it != ActualData->end(); ++it)
+			/*for (it = ActualData->begin(); it != ActualData->end(); it++)
 			{
 				msg.Data.Data[i++] = it->CPID;
+			}*/
+			for (i = 0; i < entries; i++) {
+				msg.Data.Data[i] = (*ActualData)[i].CPID;
 			}
+			cout << "Buffer overflow protection: Setting "<< i<< " to 0xABCDEF"<<endl;
+			msg.Data.Data[i]= 0xABCDEF;
+
+			if (msg.Data.Size-i != 0)
+				cout<<"The iterator didn't finish. i is "<<i << " while size is "<<msg.Data.Size<<endl;
 
 			// sizeof(msg) is too large because it assumes all the traces are full. It'll lead to lots of extra sending
 			//										Tag, Line, Size			 Beg ts, end ts--double same size as long
 			int SizeInBytes = 3 * Constants::SIZEOF_INT + 2 * Constants::SIZEOF_LONG +
 			//Each entry is an int
-					entries * Constants::SIZEOF_INT;
-			COMM_WORLD.Send(&msg, SizeInBytes, MPI_PACKED, MPICommunication::SOCKET_SERVER,
+					(entries) * Constants::SIZEOF_INT;
+			COMM_WORLD.Send(&msg, /*SizeInBytes*/ sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,
 					0);
 			LinesSentCount++;
 			if (LinesSentCount % 100 == 0)

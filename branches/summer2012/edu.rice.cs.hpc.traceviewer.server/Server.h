@@ -8,7 +8,7 @@
 #ifndef Server_H_
 #define Server_H_
 
-
+#define UseBoost
 
 #include "SpaceTimeDataControllerLocal.h"
 #include "DataSocketStream.h"

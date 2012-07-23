@@ -1,3 +1,4 @@
+#define UseBoost
 /*
  * Server.cpp
  *
@@ -130,7 +131,7 @@ namespace TraceviewerServer
 
 		cout << "Waiting to send XML on port " << port << ". Num traces was "
 				<< STDCL->GetHeight() << endl;
-#if UseBoost
+#ifdef UseBoost
 		ip::tcp::iostream XMLstr;
 		XMLacceptor.accept(*XMLstr.rdbuf());
 		SendXML(&XMLstr);
@@ -260,10 +261,15 @@ namespace TraceviewerServer
 				Stream->WriteDouble(msg.Data.Endtime); //End time
 
 				//This writes it little-endian instead of big-endian I think
+				//Stream->WriteRawData(msg.Data.RawBytes, SizeOfListInBytes);
+
+				//So do it manually...
 				for (int var = 0; var < msg.Data.Size; var++) {
+					if ((msg.Data.Data[var] == 0 )|| (msg.Data.Data[var] == 0xABCDEF))
+						cout<<"Sending CPID of 0 down the socket."<<endl;
 					Stream->WriteInt(msg.Data.Data[var]);
 				}
-				//Stream->WriteRawData(msg.Data.RawBytes, SizeOfListInBytes);
+				//delete(&msg);
 				Stream->Flush();
 			}
 			else if (msg.Tag == Constants::SLAVE_DONE)

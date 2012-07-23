@@ -50,6 +50,8 @@ public abstract class BasePaintLine
 		String succFunction = cp.getCurrentDepthScope().getName();
 		Color succColor = colorTable.getColor(succFunction);
 		int last_ptl_index = ptl.size() - 1;
+		
+		int pIndex = 0;
 
 		for (int index = 0; index < ptl.size(); index++)
 		{
@@ -78,6 +80,7 @@ public abstract class BasePaintLine
 					if (still_the_same)
 						end = indexSucc;
 				}
+				pIndex++;
 			};
 			
 			if (end < last_ptl_index)
@@ -85,8 +88,12 @@ public abstract class BasePaintLine
 				// --------------------------------------------------------------------
 				// start and middle samples: the rightmost point is the midpoint between
 				// 	the two samples
-				// --------------------------------------------------------------------
-				succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(end),ptl.getTime(end+1))-begTime)/pixelLength));
+				// -------------------------------------------------------------------
+				
+				//succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(end),ptl.getTime(end+1))-begTime)/pixelLength));
+				//if (succSampleMidpoint != pIndex)
+				//	System.out.println(ptl.line()+ ": sample mp: " + succSampleMidpoint + " my guess: " + pIndex);
+				succSampleMidpoint = pIndex;
 			}
 			else
 			{

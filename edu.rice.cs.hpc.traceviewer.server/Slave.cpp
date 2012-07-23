@@ -108,7 +108,7 @@ namespace TraceviewerServer
 		int waitcount = 0;
 
 		if (NextTrace == NULL)
-			cout<<"First trace was null..."<<endl;
+			cout << "First trace was null..." << endl;
 
 		while (NextTrace != NULL)
 		{
@@ -132,33 +132,36 @@ namespace TraceviewerServer
 			msg.Tag = Constants::SLAVE_REPLY;
 			msg.Data.Line = NextTrace->Line();
 			int entries = ActualData->size();
-			msg.Data.Size = entries;
-			if (msg.Data.Size > MPICommunication::MAX_TRACE_LENGTH)
-				cerr << "Trace was too big!" << endl;
+			msg.Data.Entries = entries;
+
 			msg.Data.Begtime = (*ActualData)[0].Timestamp;
 			msg.Data.Endtime = (*ActualData)[entries - 1].Timestamp;
-			vector<TimeCPID>::iterator it;
+			msg.Data.RankID = Truerank;
+			COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,
+					0);
+
 			int i = 0;
 			/*for (it = ActualData->begin(); it != ActualData->end(); it++)
-			{
-				msg.Data.Data[i++] = it->CPID;
-			}*/
-			for (i = 0; i < entries; i++) {
-				msg.Data.Data[i] = (*ActualData)[i].CPID;
-			}
-			cout << "Buffer overflow protection: Setting "<< i<< " to 0xABCDEF"<<endl;
-			msg.Data.Data[i]= 0xABCDEF;
+			 {
+			 msg.Data.Data[i++] = it->CPID;
+			 }*/
+			int CPIDs[entries];
 
-			if (msg.Data.Size-i != 0)
-				cout<<"The iterator didn't finish. i is "<<i << " while size is "<<msg.Data.Size<<endl;
+			for (i = 0; i < entries; i++)
+			{
+				CPIDs[i] = (*ActualData)[i].CPID;
+			}
+			//cout << "Buffer overflow protection: Setting " << i << " to 0xABCDEF" << endl;
+			//CPIDs[i] = 0xABCDEF;
 
 			// sizeof(msg) is too large because it assumes all the traces are full. It'll lead to lots of extra sending
 			//										Tag, Line, Size			 Beg ts, end ts--double same size as long
-			int SizeInBytes = 3 * Constants::SIZEOF_INT + 2 * Constants::SIZEOF_LONG +
+			//int SizeInBytes = 3 * Constants::SIZEOF_INT + 2 * Constants::SIZEOF_LONG +
 			//Each entry is an int
-					(entries) * Constants::SIZEOF_INT;
-			COMM_WORLD.Send(&msg, /*SizeInBytes*/ sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,
-					0);
+			//		(entries) * Constants::SIZEOF_INT;
+
+			COMM_WORLD.Send(CPIDs, entries, MPI_INT,
+					MPICommunication::SOCKET_SERVER, 0);
 			LinesSentCount++;
 			if (LinesSentCount % 100 == 0)
 				cout << Truerank << " Has sent " << LinesSentCount

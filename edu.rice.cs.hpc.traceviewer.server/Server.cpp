@@ -252,22 +252,19 @@ namespace TraceviewerServer
 			if (msg.Tag == Constants::SLAVE_REPLY)
 			{
 
-				//int SizeOfListInBytes = msg.Data.Size * Constants::SIZEOF_INT;
-				//cout<<"Sending trace with " << msg.Data.Size << " entries. The list spans "<<SizeOfListInBytes << " bytes"<<endl;
-
 				Stream->WriteInt(msg.Data.Line);
-				Stream->WriteInt(msg.Data.Size);
+				Stream->WriteInt(msg.Data.Entries);
 				Stream->WriteDouble(msg.Data.Begtime); // Begin time
 				Stream->WriteDouble(msg.Data.Endtime); //End time
 
-				//This writes it little-endian instead of big-endian I think
-				//Stream->WriteRawData(msg.Data.RawBytes, SizeOfListInBytes);
+				int* CPIDs = new int[msg.Data.Entries];
+				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID, MPI_ANY_TAG);
 
 				//So do it manually...
-				for (int var = 0; var < msg.Data.Size; var++) {
-					if ((msg.Data.Data[var] == 0 )|| (msg.Data.Data[var] == 0xABCDEF))
+				for (int var = 0; var < msg.Data.Entries; var++) {
+					if ((CPIDs[var] == 0 )|| (CPIDs[var] == 0xABCDEF))
 						cout<<"Sending CPID of 0 down the socket."<<endl;
-					Stream->WriteInt(msg.Data.Data[var]);
+					Stream->WriteInt(CPIDs[var]);
 				}
 				//delete(&msg);
 				Stream->Flush();

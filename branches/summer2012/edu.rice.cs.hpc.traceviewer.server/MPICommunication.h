@@ -15,7 +15,7 @@ namespace TraceviewerServer
 	{
 	public:
 		static const int SOCKET_SERVER = 0; //The rank of the node that is doing all the socket comm
-		static const int MAX_TRACE_LENGTH = 50000;
+
 		typedef struct
 		{
 			char Path[1024];
@@ -50,32 +50,30 @@ namespace TraceviewerServer
 
 		typedef struct
 		{
-			int Line;
-			int Size;
-			double Begtime;
-			double Endtime;
-			union
-			{
-			int Data[MAX_TRACE_LENGTH];
-			char RawBytes[4*MAX_TRACE_LENGTH];
-			};
-		} DataMessage;
-
-		typedef struct
-		{
 			int RankID;
 			int TraceLinesSent;
 		} DoneMessage;
 
 		typedef struct
 		{
+			int RankID;
+
+			int Line;
+			int Entries;
+			double Begtime;
+			double Endtime;
+		} DataHeader;
+
+		typedef struct
+		{
 			int Tag;
 			union
 			{
-				DataMessage Data;
+				DataHeader Data;
 				DoneMessage Done;
 			};
 		} ResultMessage;
+
 	};
 
 } /* namespace TraceviewerServer */

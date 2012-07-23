@@ -179,7 +179,7 @@ namespace TraceviewerServer
 
 	Slave::~Slave()
 	{
-		// TODO Auto-generated destructor stub
+		delete(STDCL);
 	}
 
 } /* namespace TraceviewerServer */

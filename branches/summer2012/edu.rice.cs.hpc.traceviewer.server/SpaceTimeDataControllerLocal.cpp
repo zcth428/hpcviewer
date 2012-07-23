@@ -125,6 +125,11 @@ namespace TraceviewerServer
 		{
 			int NumTraces = min(Attributes->numPixelsV,
 					Attributes->endProcess - Attributes->begProcess);
+			for (int var = 0; var < TracesLength; var++)
+			{
+				delete (Traces[var]);
+			}
+			delete[] Traces;
 			Traces = new ProcessTimeline*[NumTraces];
 			TracesLength = NumTraces;
 		}
@@ -137,7 +142,11 @@ namespace TraceviewerServer
 
 	SpaceTimeDataControllerLocal::~SpaceTimeDataControllerLocal()
 	{
-		cout << "Calling the destructor!" << endl;
+		for (int var = 0; var < TracesLength; var++)
+		{
+			delete (Traces[var]);
+		}
+		delete[] Traces;
 	}
 
 } /* namespace TraceviewerServer */

@@ -1,4 +1,5 @@
 #define UseBoost
+#define UseMPI
 /*
  * Server.cpp
  *
@@ -28,7 +29,7 @@ namespace TraceviewerServer
 
 	Server::~Server()
 	{
-		// TODO Auto-generated destructor stub
+		delete(STDCL);
 	}
 	int Server::main(int argc, char *argv[])
 	{
@@ -104,13 +105,14 @@ namespace TraceviewerServer
 		Long maxEndTime = socket->ReadLong();
 		int headerSize = socket->ReadInt();
 		STDCL->SetInfo(minBegTime, maxEndTime, headerSize);
-
+#ifdef UseMPI
 		MPICommunication::CommandMessage Info;
 		Info.Command = Constants::INFO;
 		Info.minfo.minBegTime = minBegTime;
 		Info.minfo.maxEndTime = maxEndTime;
 		Info.minfo.headerSize = headerSize;
 		COMM_WORLD.Bcast(&Info, sizeof(Info), MPI_PACKED, MPICommunication::SOCKET_SERVER);
+#endif
 	}
 	void Server::SendDBOpenedSuccessfully(DataSocketStream* socket)
 	{
@@ -168,7 +170,7 @@ namespace TraceviewerServer
 		if (Command != Constants::OPEN)
 			cerr << "Expected an open command, got " << Command << endl;
 		string PathToDB = receiver->ReadString();
-
+#ifdef UseMPI
 		MPICommunication::CommandMessage cmdPathToDB;
 		cmdPathToDB.Command = Constants::OPEN;
 		if (PathToDB.length() > 1023)
@@ -179,7 +181,7 @@ namespace TraceviewerServer
 		copy(PathToDB.begin(), PathToDB.end(), cmdPathToDB.ofile.Path);
 		COMM_WORLD.Bcast(&cmdPathToDB, sizeof(cmdPathToDB), MPI_PACKED,
 				MPICommunication::SOCKET_SERVER);
-
+#endif
 		LocalDBOpener DBO;
 		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
 
@@ -194,26 +196,26 @@ namespace TraceviewerServer
 		double timeEnd = Stream->ReadDouble();
 		int verticalResolution = Stream->ReadInt();
 		int horizontalResolution = Stream->ReadInt();
+#ifndef UseMPI
+		ImageTraceAttributes correspondingAttributes;
 
-		/*ImageTraceAttributes correspondingAttributes;
+		correspondingAttributes.begProcess = processStart;
+		correspondingAttributes.endProcess = processEnd;
+		correspondingAttributes.numPixelsH = horizontalResolution;
+		correspondingAttributes.numPixelsV = verticalResolution;
+		// Time start and Time end?? Should actually be longs instead of
+		// doubles????
+		double timeSpan = timeEnd - timeStart;
+		correspondingAttributes.begTime = 0;
+		correspondingAttributes.endTime = (long) timeSpan;
+		correspondingAttributes.lineNum = 0;
+		STDCL->Attributes = &correspondingAttributes;
 
-		 correspondingAttributes.begProcess = processStart;
-		 correspondingAttributes.endProcess = processEnd;
-		 correspondingAttributes.numPixelsH = horizontalResolution;
-		 correspondingAttributes.numPixelsV = verticalResolution;
-		 // Time start and Time end?? Should actually be longs instead of
-		 // doubles????
-		 double timeSpan = timeEnd - timeStart;
-		 correspondingAttributes.begTime = 0;
-		 correspondingAttributes.endTime = (long) timeSpan;
-		 correspondingAttributes.lineNum = 0;
-		 STDCL->Attributes = &correspondingAttributes;
+		// TODO: Make this so that the Lines get sent as soon as they are
+		// filled.
 
-		 // TODO: Make this so that the Lines get sent as soon as they are
-		 // filled.
-
-		 STDCL->FillTraces(-1, true);*/
-
+		STDCL->FillTraces(-1, true);
+#else
 		MPICommunication::CommandMessage toBcast;
 		toBcast.Command = Constants::DATA;
 		toBcast.gdata.processStart = processStart;
@@ -224,24 +226,27 @@ namespace TraceviewerServer
 		toBcast.gdata.horizontalResolution = horizontalResolution;
 		COMM_WORLD.Bcast(&toBcast, sizeof(toBcast), MPI_PACKED,
 				MPICommunication::SOCKET_SERVER);
-
+#endif
 		Stream->WriteInt(Constants::HERE);
 
-		/*for (int i = 0; i < STDCL->TracesLength; i++)
-		 {
-		 ProcessTimeline* T = STDCL->Traces[i];
-		 Stream->WriteInt(T->Line());
-		 vector<TimeCPID> data = T->Data->ListCPID;
-		 Stream->WriteInt(data.size());
-		 Stream->WriteDouble(data[0].Timestamp); // Begin time
-		 Stream->WriteDouble(data[data.size() - 1].Timestamp); //End time
+#ifndef UseMPI
+		for (int i = 0; i < STDCL->TracesLength; i++)
+		{
+			ProcessTimeline* T = STDCL->Traces[i];
+			Stream->WriteInt(T->Line());
+			vector<TimeCPID> data = T->Data->ListCPID;
+			Stream->WriteInt(data.size());
+			Stream->WriteDouble(data[0].Timestamp); // Begin time
+			Stream->WriteDouble(data[data.size() - 1].Timestamp); //End time
 
-		 vector<TimeCPID>::iterator it;
-		 cout << "Sending process timeline with " << data.size() << " entries" << endl;
-		 for (it = data.begin(); it != data.end(); ++it)
-		 {
-		 Stream->WriteInt(it->CPID);
-		 }*/
+			vector<TimeCPID>::iterator it;
+			cout << "Sending process timeline with " << data.size() << " entries" << endl;
+			for (it = data.begin(); it != data.end(); ++it)
+			{
+				Stream->WriteInt(it->CPID);
+			}
+		}
+#else
 		int RanksDone = 1;
 		int Size = COMM_WORLD.Get_size();
 
@@ -255,15 +260,16 @@ namespace TraceviewerServer
 				Stream->WriteInt(msg.Data.Line);
 				Stream->WriteInt(msg.Data.Entries);
 				Stream->WriteDouble(msg.Data.Begtime); // Begin time
-				Stream->WriteDouble(msg.Data.Endtime); //End time
+				Stream->WriteDouble(msg.Data.Endtime);//End time
 
 				int* CPIDs = new int[msg.Data.Entries];
 				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID, MPI_ANY_TAG);
 
 				//So do it manually...
-				for (int var = 0; var < msg.Data.Entries; var++) {
+				for (int var = 0; var < msg.Data.Entries; var++)
+				{
 					if ((CPIDs[var] == 0 )|| (CPIDs[var] == 0xABCDEF))
-						cout<<"Sending CPID of 0 down the socket."<<endl;
+					cout<<"Sending CPID of 0 down the socket."<<endl;
 					Stream->WriteInt(CPIDs[var]);
 				}
 				//delete(&msg);
@@ -275,6 +281,9 @@ namespace TraceviewerServer
 				RanksDone++;
 			}
 		}
+#endif
 		cout << "Data sent" << endl;
 	}
+
+
 } /* namespace TraceviewerServer */

@@ -1,3 +1,5 @@
+#define UseMPI
+
 #include "mpi.h"
 #include "FileUtils.h"
 #include "Server.h"
@@ -12,7 +14,7 @@ using namespace MPI;
 void FSTest();
 int main(int argc, char *argv[])
 {
-
+#ifdef UseMPI
 	MPI::Init(argc, argv);
 	int rank, size;
 	rank = MPI::COMM_WORLD.Get_rank();
@@ -43,6 +45,9 @@ int main(int argc, char *argv[])
 
 		}
 	}
+#else
+	TraceviewerServer::Server::main(argc, argv);
+#endif
 
 	/*
 
@@ -58,7 +63,9 @@ int main(int argc, char *argv[])
 	 MPI_Bcast(val, 10, MPI_INT, 0, COMM_WORLD);
 	 cout << "Rank: " << rank << " val: " << val[0] << ".." << val[9] << "\n";
 	 */
+#ifdef UseMPI
 	MPI::Finalize();
+#endif
 	return 0;
 }
 

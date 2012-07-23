@@ -93,6 +93,7 @@ namespace TraceviewerServer
 				stringBuilder << i;
 			}
 			ValuesX[i] = stringBuilder.str();
+
 		}
 	}
 
@@ -115,7 +116,9 @@ namespace TraceviewerServer
 
 	BaseDataFile::~BaseDataFile()
 	{
-		// TODO Auto-generated destructor stub
+		delete(MasterBuff);
+		delete[] ValuesX;
+		delete[] Offsets;
 	}
 
 } /* namespace TraceviewerServer */

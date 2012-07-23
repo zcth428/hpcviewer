@@ -1,8 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
-import java.awt.image.renderable.RenderableImage;
-import java.text.NumberFormat;
-
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -10,7 +7,6 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
-import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;

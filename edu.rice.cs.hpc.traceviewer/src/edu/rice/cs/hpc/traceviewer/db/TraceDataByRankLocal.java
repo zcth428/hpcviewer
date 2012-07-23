@@ -106,7 +106,7 @@ public class TraceDataByRankLocal extends TraceDataByRank {
 			this.addSample(0, dataFirst);
 		}
 
-		postProcess();
+		//postProcess();
 		
 	}
 

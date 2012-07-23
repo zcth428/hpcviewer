@@ -17,11 +17,16 @@ namespace TraceviewerServer
 		MPICommunication::CommandMessage Message;
 		COMM_WORLD.Bcast(&Message, sizeof(Message), MPI_PACKED,
 				MPICommunication::SOCKET_SERVER);
-		if (Message.Command != Constants::OPEN)
+		if (Message.Command == Constants::OPEN)
+		{
+			LocalDBOpener DBO;
+			STDCL = DBO.OpenDbAndCreateSTDC(string(Message.ofile.Path));
+			RunLoop();
+		}
+		else if (Message.Command == Constants::DONE)
+			return;
+		else
 			cerr << "Unexpected message command: " << Message.Command << endl;
-		LocalDBOpener DBO;
-		STDCL = DBO.OpenDbAndCreateSTDC(string(Message.ofile.Path));
-		RunLoop();
 	}
 	void Slave::RunLoop()
 	{
@@ -160,8 +165,7 @@ namespace TraceviewerServer
 			//Each entry is an int
 			//		(entries) * Constants::SIZEOF_INT;
 
-			COMM_WORLD.Send(CPIDs, entries, MPI_INT,
-					MPICommunication::SOCKET_SERVER, 0);
+			COMM_WORLD.Send(CPIDs, entries, MPI_INT, MPICommunication::SOCKET_SERVER, 0);
 			LinesSentCount++;
 			if (LinesSentCount % 100 == 0)
 				cout << Truerank << " Has sent " << LinesSentCount

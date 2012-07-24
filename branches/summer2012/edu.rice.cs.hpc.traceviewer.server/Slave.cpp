@@ -102,9 +102,9 @@ namespace TraceviewerServer
 		//double processsamplefreq = ((double)gc.verticalResolution)/(p-1);
 		//correspondingAttributes.numPixelsV = /*rank< mod*/ true ? ceil(processsamplefreq) : floor(processsamplefreq);
 		correspondingAttributes.numPixelsV = gc.verticalResolution;
-		double timeSpan = gc.timeEnd - gc.timeStart;
-		correspondingAttributes.begTime = 0;
-		correspondingAttributes.endTime = (Long) timeSpan;
+
+		correspondingAttributes.begTime = gc.timeStart;
+		correspondingAttributes.endTime = gc.timeEnd;
 		correspondingAttributes.lineNum = 0;
 		STDCL->Attributes = &correspondingAttributes;
 

@@ -149,6 +149,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			mouseState = MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
+		// reinitialize the selection rectangle
+		initSelectionRectangle();
 		
 		long rangeX = this.stData.getWidth();
 		int rangeY = this.stData.getHeight();
@@ -326,6 +328,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		//----------------------------------------------------------------------------
 		this.adjustCrossHair(_topLeftTime, _topLeftProcess, _bottomRightTime, _bottomRightProcess);
 
+	}
+	
+	/*******************************************************************************
+	 * Initialize attributes of selection rectangle
+	 *******************************************************************************/
+	private void initSelectionRectangle() 
+	{
+		selectionTopLeftX = 0;
+		selectionTopLeftY = 0;
+		selectionBottomRightX = 0;
+		selectionBottomRightY = 0;
 	}
 	
 	/*******************************************************************************

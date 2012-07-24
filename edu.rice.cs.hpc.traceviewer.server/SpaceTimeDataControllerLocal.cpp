@@ -22,6 +22,7 @@ namespace TraceviewerServer
 		Height = DataTrace->getNumberOfFiles();
 		cout << "STDCL at: " << this << " Height= " << Height << endl;
 		ExperimentXML = locations->fileXML;
+		TracesInitialized = false;
 
 	}
 
@@ -125,13 +126,17 @@ namespace TraceviewerServer
 		{
 			int NumTraces = min(Attributes->numPixelsV,
 					Attributes->endProcess - Attributes->begProcess);
-			for (int var = 0; var < TracesLength; var++)
+			if (TracesInitialized)
 			{
-				delete (Traces[var]);
+				for (int var = 0; var < TracesLength; var++)
+				{
+					delete (Traces[var]);
+				}
+				delete[] Traces;
 			}
-			delete[] Traces;
 			Traces = new ProcessTimeline*[NumTraces];
 			TracesLength = NumTraces;
+			TracesInitialized = true;
 		}
 	}
 

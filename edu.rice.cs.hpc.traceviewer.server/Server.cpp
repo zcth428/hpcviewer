@@ -1,4 +1,4 @@
-#define UseBoost
+//#define UseBoost
 #define UseMPI
 /*
  * Server.cpp
@@ -6,14 +6,10 @@
  *  Created on: Jul 9, 2012
  *      Author: pat2
  */
-//#define UseBoost
+
 #include "Server.h"
 //#include "SpaceTimeDataControllerLocal.h"
 
-#ifdef UseBoost
-namespace as = boost::asio;
-namespace ip = boost::asio::ip;
-#endif
 using namespace std;
 using namespace MPI;
 namespace TraceviewerServer
@@ -29,7 +25,7 @@ namespace TraceviewerServer
 
 	Server::~Server()
 	{
-		delete(STDCL);
+		delete (STDCL);
 	}
 	int Server::main(int argc, char *argv[])
 	{
@@ -118,13 +114,9 @@ namespace TraceviewerServer
 	{
 
 		socket->WriteInt(Constants::DBOK);
-#ifdef UseBoost
-		as::io_service XMLio_service;
-		ip::tcp::acceptor XMLacceptor(XMLio_service, ip::tcp::endpoint(ip::tcp::v4(), 0));
-		int port = XMLacceptor.local_endpoint().port();
-#else
+
 		int port = 2224;
-#endif
+
 		socket->WriteInt(port);
 
 		socket->WriteInt(STDCL->GetHeight());
@@ -133,32 +125,35 @@ namespace TraceviewerServer
 
 		cout << "Waiting to send XML on port " << port << ". Num traces was "
 				<< STDCL->GetHeight() << endl;
-#ifdef UseBoost
-		ip::tcp::iostream XMLstr;
-		XMLacceptor.accept(*XMLstr.rdbuf());
-		SendXML(&XMLstr);
+
+		DataSocketStream XmlSocket(port);
+		int fd = XmlSocket.GetDescriptor();
+		SendXML (fd);
+
 
 		cout << "XML Sent" << endl;
 	}
 
-	void Server::SendXML(ip::tcp::iostream* XMLSocket)
+	void Server::SendXML(int FileDescriptor)
 	{
-		string PathToFile = STDCL->GetExperimentXML();
-		cout << "Compressing XML File from " << PathToFile << endl;
-		std::ifstream XMLFile(PathToFile.c_str(),
-				std::ios_base::in | std::ios_base::binary);
+		FILE* in = fopen(STDCL->GetExperimentXML().c_str(), "r");
+		gzFile out = gzdopen(FileDescriptor, "w");
 
-		boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
+		int size = TraceviewerServer::FileUtils::GetFileSize(STDCL->GetExperimentXML());
 
-		out.push(boost::iostreams::gzip_compressor());
-		out.push(*XMLSocket);
-		boost::iostreams::copy(XMLFile, out);
-		if (!XMLSocket->good())
-			cerr << "Sending XML failed" << endl;
-		XMLSocket->flush();
-#else
-		cout<<"Not sending XML because Boost is disabled"<<endl;
-#endif
+#define CHUNK 0x40000//256k
+
+		int BytesProcessed = 0;
+		char Buffer[CHUNK];
+		while (BytesProcessed < size)
+		{
+			int br = fread(Buffer, 1, CHUNK, in);
+			gzwrite(out, Buffer, br);
+			BytesProcessed += br;
+		}
+		gzflush(out, Z_FINISH);
+		gzclose(out);
+		fclose(in);
 	}
 
 	void Server::ParseOpenDB(DataSocketStream* receiver)
@@ -186,6 +181,7 @@ namespace TraceviewerServer
 		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
 
 	}
+#define ISN(g) (g<0)
 
 	void Server::GetAndSendData(DataSocketStream* Stream)
 	{
@@ -196,6 +192,14 @@ namespace TraceviewerServer
 		double timeEnd = Stream->ReadDouble();
 		int verticalResolution = Stream->ReadInt();
 		int horizontalResolution = Stream->ReadInt();
+
+		if (ISN(processStart) || ISN(processEnd) || (processStart> processEnd) || ISN(verticalResolution)|| ISN(horizontalResolution)||(timeEnd< timeStart))
+		{
+			cerr<<"A data request with invalid parameters was received. This sometimes happens if the client shuts down in the middle of a request. The server will now shut down."<<endl;
+			throw (-99);
+		}
+
+
 #ifndef UseMPI
 		ImageTraceAttributes correspondingAttributes;
 
@@ -237,7 +241,7 @@ namespace TraceviewerServer
 			vector<TimeCPID> data = T->Data->ListCPID;
 			Stream->WriteInt(data.size());
 			Stream->WriteDouble(data[0].Timestamp); // Begin time
-			Stream->WriteDouble(data[data.size() - 1].Timestamp); //End time
+			Stream->WriteDouble(data[data.size() - 1].Timestamp);//End time
 
 			vector<TimeCPID>::iterator it;
 			cout << "Sending process timeline with " << data.size() << " entries" << endl;
@@ -260,16 +264,17 @@ namespace TraceviewerServer
 				Stream->WriteInt(msg.Data.Line);
 				Stream->WriteInt(msg.Data.Entries);
 				Stream->WriteDouble(msg.Data.Begtime); // Begin time
-				Stream->WriteDouble(msg.Data.Endtime);//End time
+				Stream->WriteDouble(msg.Data.Endtime); //End time
 
 				int* CPIDs = new int[msg.Data.Entries];
-				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID, MPI_ANY_TAG);
+				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID,
+						MPI_ANY_TAG);
 
 				//So do it manually...
 				for (int var = 0; var < msg.Data.Entries; var++)
 				{
-					if ((CPIDs[var] == 0 )|| (CPIDs[var] == 0xABCDEF))
-					cout<<"Sending CPID of 0 down the socket."<<endl;
+					if ((CPIDs[var] == 0) || (CPIDs[var] == 0xABCDEF))
+						cout << "Sending CPID of 0 down the socket." << endl;
 					Stream->WriteInt(CPIDs[var]);
 				}
 				//delete(&msg);
@@ -277,13 +282,12 @@ namespace TraceviewerServer
 			}
 			else if (msg.Tag == Constants::SLAVE_DONE)
 			{
-				cout<<"Rank " << msg.Done.RankID << " done"<<endl;
+				cout << "Rank " << msg.Done.RankID << " done" << endl;
 				RanksDone++;
 			}
 		}
 #endif
 		cout << "Data sent" << endl;
 	}
-
 
 } /* namespace TraceviewerServer */

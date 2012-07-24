@@ -8,7 +8,7 @@
 #ifndef Server_H_
 #define Server_H_
 
-#define UseBoost
+
 
 #include "SpaceTimeDataControllerLocal.h"
 #include "DataSocketStream.h"
@@ -22,18 +22,12 @@
 #include <fstream>
 #include <vector>
 #include <mpi.h>
-#include "boost/asio.hpp"
 
-#ifdef UseBoost
-#include "boost/iostreams/filtering_streambuf.hpp"
-#include "boost/iostreams/copy.hpp"
-#include "boost/iostreams/filter/gzip.hpp"
-#endif
+#include "zlib.h"
+
 
 namespace TraceviewerServer
 {
-	namespace as = boost::asio;
-	namespace ip = boost::asio::ip;
 	class Server
 	{
 	public:
@@ -47,7 +41,8 @@ namespace TraceviewerServer
 		static void SendDBOpenedSuccessfully(DataSocketStream*);
 		static void ParseOpenDB(DataSocketStream*);
 		static void GetAndSendData(DataSocketStream*);
-		static void SendXML(ip::tcp::iostream*);
+		static void SendXML(int);
+
 
 	};
 }/* namespace TraceviewerServer */

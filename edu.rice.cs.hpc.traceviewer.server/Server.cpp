@@ -221,9 +221,9 @@ namespace TraceviewerServer
 		correspondingAttributes.numPixelsV = verticalResolution;
 		// Time start and Time end?? Should actually be longs instead of
 		// doubles????
-		double timeSpan = timeEnd - timeStart;
-		correspondingAttributes.begTime = 0;
-		correspondingAttributes.endTime = (long) timeSpan;
+		//double timeSpan = timeEnd - timeStart;
+		correspondingAttributes.begTime = (long) timeStart;
+		correspondingAttributes.endTime = (long) timeEnd;
 		correspondingAttributes.lineNum = 0;
 		STDCL->Attributes = &correspondingAttributes;
 

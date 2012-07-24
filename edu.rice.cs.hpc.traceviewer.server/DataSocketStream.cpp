@@ -27,7 +27,7 @@ namespace TraceviewerServer
 		if (err)
 		{
 			cerr << "Could not bind socket. Error was " << errno << endl;
-			throw 11;
+			throw 1111;
 		}
 		//listen
 		listen(socketFD, 5);

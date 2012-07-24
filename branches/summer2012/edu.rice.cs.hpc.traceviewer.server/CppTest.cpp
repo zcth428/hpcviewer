@@ -5,6 +5,7 @@
 #include "Server.h"
 #include "Slave.h"
 #include "MPICommunication.h"
+#include "zlib.h"
 #include <fstream>
 #include <vector>
 
@@ -12,8 +13,12 @@ using namespace std;
 using namespace MPI;
 
 void FSTest();
+void GzipTest();
 int main(int argc, char *argv[])
 {
+	//GzipTest();
+	//FSTest();
+
 #ifdef UseMPI
 	MPI::Init(argc, argv);
 	int rank, size;
@@ -46,7 +51,14 @@ int main(int argc, char *argv[])
 		}
 	}
 #else
+	try
+	{
 	TraceviewerServer::Server::main(argc, argv);
+	}
+	catch (int e)
+	{
+		cout << "Closing with error code "<<e<<endl;
+	}
 #endif
 
 	/*
@@ -69,20 +81,62 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+void WriteVector(vector<string> t)
+{
+	cout << "Writing vector of length "<< t.size()<<endl;
+	for (int var = 0; var < t.size(); var++) {
+		cout<<"\t["<<var<<"] = " << t[var]<<endl;
+	}
+
+}
+
 void FSTest()
 {
-	string d1 = "/FakeDirectory/";
+/*	string d1 = "/FakeDirectory/";
 	string d2 = "/FakeDirectory";
 	string f1 = "/FakeFile.ext";
 	string f2 = "FakeFile.ext";
 	cout << TraceviewerServer::FileUtils::CombinePaths(d1, f1) << endl;
 	cout << TraceviewerServer::FileUtils::CombinePaths(d1, f2) << endl;
 	cout << TraceviewerServer::FileUtils::CombinePaths(d2, f1) << endl;
-	cout << TraceviewerServer::FileUtils::CombinePaths(d2, f2) << endl;
+	cout << TraceviewerServer::FileUtils::CombinePaths(d2, f2) << endl;*/
+
+	/*string t1 = "This string contains no delimiters";
+	string t2 = "a-b-c-d";
+	string t3 = "-";
+	string t4 = "--- -";
+	string t5 = "aa-aa-berty--d";
+	string t6 = "";
+	WriteVector(TraceviewerServer::MergeDataFiles::SplitString(t1, '-'));
+
+	WriteVector(TraceviewerServer::MergeDataFiles::SplitString(t2, '-'));
+	WriteVector(TraceviewerServer::MergeDataFiles::SplitString(t3, '-'));
+	WriteVector(TraceviewerServer::MergeDataFiles::SplitString(t4, '-'));
+	WriteVector(TraceviewerServer::MergeDataFiles::SplitString(t5, '-'));
+	WriteVector(TraceviewerServer::MergeDataFiles::SplitString(t6, '-'));
+	cout<<"Done"<<endl;*/
 }
 
 void GzipTest()
 {
+	#define CHUNK 0x40000//256k
+
+	FILE* in = fopen("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.xml", "r+");
+	gzFile out = gzopen("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.gz", "w");
+
+	int size = TraceviewerServer::FileUtils::GetFileSize("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.xml");
+	int BytesProcessed = 0;
+	char Buffer[CHUNK];
+	while(BytesProcessed < size)
+	{
+		int br = fread(Buffer, 1, CHUNK, in);
+		gzwrite(out, Buffer, br);
+		BytesProcessed += br;
+	}
+	gzflush(out, Z_FINISH);
+	gzclose(out);
+	fclose(in);
+
 	/*std::ifstream XMLFile("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.xml",
 	 std::ios_base::in | std::ios_base::binary);
 
@@ -97,6 +151,7 @@ void GzipTest()
 	 boost::iostreams::copy(XMLFile, out);
 	 XMLFile.close();
 	 GZFile.close();*/
+
 }
 void HelloWorld()
 {

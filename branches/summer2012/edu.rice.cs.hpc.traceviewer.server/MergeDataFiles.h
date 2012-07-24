@@ -11,8 +11,6 @@
 #include "DataOutputFileStream.h"
 #include "ByteUtilities.h"
 #include "Constants.h"
-#include "boost/iterator.hpp"
-#include "boost/algorithm/string.hpp"
 #include "FileUtils.h"
 #include <iostream>
 #include <fstream>
@@ -33,6 +31,8 @@ namespace TraceviewerServer
 	{
 	public:
 		static MergeDataAttribute merge(string, string, string);
+
+		static vector<string> SplitString(string, char);
 	private:
 		static const unsigned long MARKER_END_MERGED_FILE = 0xDEADF00D;
 		static const int PAGE_SIZE_GUESS = 4096;
@@ -45,6 +45,8 @@ namespace TraceviewerServer
 		static bool AtLeastOneValidFile(string);
 		//We need this because of the way atoi works.
 		static bool StringActuallyZero(string);
+		//vector<string> SplitString(string, char);
+
 	};
 
 } /* namespace TraceviewerServer */

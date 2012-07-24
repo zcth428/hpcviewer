@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <errno.h>
 
 namespace TraceviewerServer
 {
@@ -37,6 +38,9 @@ namespace TraceviewerServer
 		Long ReadLong();
 		string ReadString();
 		double ReadDouble();
+		short ReadShort();
+
+		SocketFD GetDescriptor();
 	private:
 		SocketFD socketDesc;
 		std::vector<char> Message;

@@ -77,9 +77,9 @@ namespace TraceviewerServer
 					last_pos_basic_name);
 			cout << "Path manipulation check: The file in " << Filename << " is "
 					<< Basic_name << endl;
-			vector<string> tokens;
 
-			boost::split(tokens, Basic_name, boost::is_any_of("-"));
+			vector<string> tokens = SplitString(Basic_name, '-');
+
 
 			const int num_tokens = tokens.size();
 			if (num_tokens < PROC_POS)
@@ -209,6 +209,24 @@ namespace TraceviewerServer
 			}
 		}
 		return false;
-
 	}
+	vector<string> MergeDataFiles::SplitString(string toSplit, char delimiter)
+	{
+		vector<string> ToReturn;
+		int CurrentStartPos = 0;
+		int CurrentSize = 0;
+		for (int var = 0; var < toSplit.length(); var++) {
+			if (toSplit[var] == delimiter)
+			{
+				ToReturn.push_back(toSplit.substr(CurrentStartPos, CurrentSize));
+				CurrentStartPos = var+1;
+				CurrentSize = 0;
+			}
+			else
+				CurrentSize++;
+		}
+		ToReturn.push_back(toSplit.substr(CurrentStartPos, CurrentSize));
+		return ToReturn;
+	}
+
 } /* namespace TraceviewerServer */

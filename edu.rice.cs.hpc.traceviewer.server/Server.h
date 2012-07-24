@@ -42,6 +42,7 @@ namespace TraceviewerServer
 		static void ParseOpenDB(DataSocketStream*);
 		static void GetAndSendData(DataSocketStream*);
 		static void SendXML(int);
+		static void SendDBOpenFailed(DataSocketStream*);
 
 
 	};

@@ -59,7 +59,7 @@ namespace TraceviewerServer
 		if (STDCL == NULL)
 		{
 			cout << "Could not open database" << endl;
-			//Send no DB
+			SendDBOpenFailed(socketptr);
 		}
 		else
 		{
@@ -174,13 +174,25 @@ namespace TraceviewerServer
 			throw 1008;
 		}
 		copy(PathToDB.begin(), PathToDB.end(), cmdPathToDB.ofile.Path);
+		cmdPathToDB.ofile.Path[PathToDB.size()] = '\0';
+
 		COMM_WORLD.Bcast(&cmdPathToDB, sizeof(cmdPathToDB), MPI_PACKED,
 				MPICommunication::SOCKET_SERVER);
 #endif
 		LocalDBOpener DBO;
+		cout << "Opening database: "<<PathToDB<<endl;
 		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
 
 	}
+
+	void Server::SendDBOpenFailed(DataSocketStream* socket)
+	{
+		socket->WriteInt(Constants::NODB);
+		socket->WriteInt(0);
+		socket->Flush();
+	}
+
+
 #define ISN(g) (g<0)
 
 	void Server::GetAndSendData(DataSocketStream* Stream)

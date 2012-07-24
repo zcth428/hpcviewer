@@ -33,6 +33,7 @@ namespace TraceviewerServer
 		static const int DONE = 0x444F4E45;
 		static const int DBOK = 0x44424F4B;
 		static const int INFO = 0x494E464F;
+		static const int NODB = 0x4E4F4442;
 		static const int SLAVE_REPLY = 0x12345678;
 		static const int SLAVE_DONE = 0x87654321;
 	};

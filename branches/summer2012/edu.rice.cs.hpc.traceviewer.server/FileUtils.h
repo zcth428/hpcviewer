@@ -12,6 +12,7 @@
 #include "dirent.h"
 #include <iostream>
 #include <vector>
+#include <errno.h>
 
 using namespace std;
 namespace TraceviewerServer
@@ -41,6 +42,10 @@ namespace TraceviewerServer
 			struct stat DirInfo;
 			int err = stat(p.c_str(), &DirInfo);
 			bool isDir = S_ISDIR(DirInfo.st_mode);
+			if ((err!=0)|| !isDir)
+			{
+				cout<<"ExistsAndIsDir returning false. Err: "<< err << " isDir: " << isDir << " mode: "<<DirInfo.st_mode<< " Errno: " << errno << endl;
+			}
 			return (err == 0) && isDir;
 		}
 

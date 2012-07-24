@@ -145,11 +145,12 @@ namespace TraceviewerServer
 
 		short Len =ReadShort();
 
-		char* Msg = new char[Len];
+		char* Msg = new char[Len+1];
 		int err = fread(Msg, 1, Len, file);
 		if (err != Len)
 			throw 0x5254;
 
+		Msg[Len] = '\0';
 
 		//TODO: This is wrong for any path that requires special characters
 		string SF(Msg);

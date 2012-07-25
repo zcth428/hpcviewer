@@ -161,7 +161,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 			if (changedBounds) {
 				try {
 					traces = dataRetriever.getData(attributes.begProcess,
-							attributes.endProcess, minBegTime, maxEndTime,
+							attributes.endProcess, attributes.begTime, attributes.endTime, //minBegTime, maxEndTime,
 							attributes.numPixelsV, attributes.numPixelsH,
 							scopeMap);
 				} catch (IOException e) {

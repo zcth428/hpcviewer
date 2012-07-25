@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipInputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.MessageBox;
@@ -33,6 +35,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 public class RemoteDataRetriever {
 	private final Socket socket;
 	DataInputStream receiver;
+	BufferedInputStream rcvBacking;
 	DataOutputStream sender;
 	
 	private final Shell shell;
@@ -49,7 +52,8 @@ public class RemoteDataRetriever {
 		}
 		else
 		{
-			receiver = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+			rcvBacking = new BufferedInputStream(socket.getInputStream());
+			receiver = new DataInputStream(rcvBacking);
 		}
 		sender = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		
@@ -101,19 +105,29 @@ public class RemoteDataRetriever {
 		
 		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
 		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
+	
+		
+		boolean DataCompressed = true;
+		
+		DataInputStream DataReader;
+		
+		if (DataCompressed)
+			 DataReader = new DataInputStream(new InflaterInputStream(rcvBacking));
+		else 
+			DataReader = receiver;
 		
 		while (RanksReceived < RanksExpected)
 		{
 			monitor.announceProgress();
-			int RankNumber = receiver.readInt();
-			int Length = receiver.readInt();//Number of CPID's
+			int RankNumber = DataReader.readInt();
+			int Length = DataReader.readInt();//Number of CPID's
 			
 			if (RanksExpected - RanksReceived < 3)
 				System.out.println(RanksReceived + "/" + RanksExpected );
 			
-			double startTimeForThisTimeline = receiver.readDouble();
-			double endTimeForThisTimeline = receiver.readDouble();
-			TimeCPID[] ranksData = readTimeCPIDArray(Length, startTimeForThisTimeline, endTimeForThisTimeline);
+			double startTimeForThisTimeline = DataReader.readDouble();
+			double endTimeForThisTimeline = DataReader.readDouble();
+			TimeCPID[] ranksData = readTimeCPIDArray(DataReader, Length, startTimeForThisTimeline, endTimeForThisTimeline);
 			TraceDataByRankRemote dataAsTraceDBR = new TraceDataByRankRemote(ranksData);
 			
 			
@@ -135,17 +149,18 @@ public class RemoteDataRetriever {
 
 	/**
 	 * Reads from the stream and creates an array of Timestamp-CPID pairs containing the data for this rank
+	 * @param dataReader 
 	 * @param length The number of Timestamp-CPID pairs in this rank (not the length in bytes)
 	 * @param t0 The start time
 	 * @param tn The end time
 	 * @return The array of data for this rank
 	 * @throws IOException
 	 */
-	private TimeCPID[] readTimeCPIDArray(int length, double t0, double tn) throws IOException {
+	private TimeCPID[] readTimeCPIDArray(DataInputStream dataReader, int length, double t0, double tn) throws IOException {
 		TimeCPID[] ToReturn = new TimeCPID[length];
 		double deltaT = (tn-t0)/length;
 		for (int i = 0; i < ToReturn.length; i++) {
-			int CPID = receiver.readInt();
+			int CPID = dataReader.readInt();
 			if (CPID == 0)
 				System.out.println("CPID too small");
 			ToReturn[i] = new TimeCPID(t0+i*deltaT, CPID);//Does this method of getting timestamps actually work???

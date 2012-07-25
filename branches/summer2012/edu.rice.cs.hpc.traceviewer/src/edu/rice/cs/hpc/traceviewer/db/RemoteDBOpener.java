@@ -33,9 +33,10 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			String[] args, IStatusLineManager statusMgr) {
 		System.out.println("OpenDB called");
 		String serverURL = "localhost";
+		//String serverURL = "les.cs.rice.edu";
 		int port = 21590;
 		String serverPathToDB = "/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/";
-		//serverPathToDB = "./database";
+		//serverPathToDB = "/home/pat2/database";
 		// String clientPathToXml =
 		// "/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.xml";
 
@@ -157,7 +158,15 @@ public class RemoteDBOpener extends AbstractDBOpener {
 
 	private void sendOpenDB(String serverPathToDB) throws IOException {
 		sender.writeInt(0x4F50454E);// "OPEN" in ascii
-		sender.writeUTF(serverPathToDB);
+		int len = serverPathToDB.length();
+		sender.writeShort(len);
+		for (int i = 0; i < len; i++) {
+			int charVal = serverPathToDB.charAt(i);
+			if (charVal > 0xFF)
+				System.out.println("Path to databse cannot contain special characters");
+			sender.writeByte(charVal);
+		}
+		
 		sender.flush();
 
 		System.out.println("Open databse message sent");

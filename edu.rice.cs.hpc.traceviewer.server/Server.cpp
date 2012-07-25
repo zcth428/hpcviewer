@@ -1,5 +1,5 @@
 //#define UseBoost
-#define UseMPI
+//#define UseMPI
 /*
  * Server.cpp
  *
@@ -128,8 +128,7 @@ namespace TraceviewerServer
 
 		DataSocketStream XmlSocket(port);
 		int fd = XmlSocket.GetDescriptor();
-		SendXML (fd);
-
+		SendXML(fd);
 
 		cout << "XML Sent" << endl;
 	}
@@ -142,7 +141,6 @@ namespace TraceviewerServer
 		int size = TraceviewerServer::FileUtils::GetFileSize(STDCL->GetExperimentXML());
 
 #define CHUNK 0x40000//256k
-
 		int BytesProcessed = 0;
 		char Buffer[CHUNK];
 		while (BytesProcessed < size)
@@ -180,7 +178,7 @@ namespace TraceviewerServer
 				MPICommunication::SOCKET_SERVER);
 #endif
 		LocalDBOpener DBO;
-		cout << "Opening database: "<<PathToDB<<endl;
+		cout << "Opening database: " << PathToDB << endl;
 		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
 
 	}
@@ -191,7 +189,6 @@ namespace TraceviewerServer
 		socket->WriteInt(0);
 		socket->Flush();
 	}
-
 
 #define ISN(g) (g<0)
 
@@ -205,12 +202,15 @@ namespace TraceviewerServer
 		int verticalResolution = Stream->ReadInt();
 		int horizontalResolution = Stream->ReadInt();
 
-		if (ISN(processStart) || ISN(processEnd) || (processStart> processEnd) || ISN(verticalResolution)|| ISN(horizontalResolution)||(timeEnd< timeStart))
+		if (ISN(processStart) || ISN(processEnd) || (processStart > processEnd)
+				|| ISN(verticalResolution) || ISN(horizontalResolution)
+				|| (timeEnd < timeStart))
 		{
-			cerr<<"A data request with invalid parameters was received. This sometimes happens if the client shuts down in the middle of a request. The server will now shut down."<<endl;
-			throw (-99);
+			cerr
+					<< "A data request with invalid parameters was received. This sometimes happens if the client shuts down in the middle of a request. The server will now shut down."
+					<< endl;
+			throw(-99);
 		}
-
 
 #ifndef UseMPI
 		ImageTraceAttributes correspondingAttributes;
@@ -244,24 +244,45 @@ namespace TraceviewerServer
 				MPICommunication::SOCKET_SERVER);
 #endif
 		Stream->WriteInt(Constants::HERE);
+		Stream->Flush();
+
+		//While this macro trick is pretty cool, I'm probably going to have to change it to a normal if statement
+		//because compression will probably be known only at run time and not at compile time.
+#ifdef Compression
+		CompressingDataSocketLayer CompL(Stream);
+#define stWr(type,val) CompL.Write##type((val))
+#else
+#define stWr(type,val) Stream->Write##type((val))
+#endif
 
 #ifndef UseMPI
+
 		for (int i = 0; i < STDCL->TracesLength; i++)
 		{
+
 			ProcessTimeline* T = STDCL->Traces[i];
-			Stream->WriteInt(T->Line());
+			stWr(Int, T->Line());
 			vector<TimeCPID> data = T->Data->ListCPID;
-			Stream->WriteInt(data.size());
-			Stream->WriteDouble(data[0].Timestamp); // Begin time
-			Stream->WriteDouble(data[data.size() - 1].Timestamp);//End time
+			stWr(Int, data.size());
+			stWr(Double, data[0].Timestamp);
+			// Begin time
+			stWr(Double, data[data.size() - 1].Timestamp);
+			//End time
 
 			vector<TimeCPID>::iterator it;
 			cout << "Sending process timeline with " << data.size() << " entries" << endl;
 			for (it = data.begin(); it != data.end(); ++it)
 			{
-				Stream->WriteInt(it->CPID);
+				stWr(Int, it->CPID);
 			}
+#ifdef Compression
+			//CompL.Flush();
+#else
+			Stream->Flush();
+#endif
 		}
+		CompL.Flush();
+
 #else
 		int RanksDone = 1;
 		int Size = COMM_WORLD.Get_size();
@@ -273,10 +294,11 @@ namespace TraceviewerServer
 			if (msg.Tag == Constants::SLAVE_REPLY)
 			{
 
-				Stream->WriteInt(msg.Data.Line);
-				Stream->WriteInt(msg.Data.Entries);
-				Stream->WriteDouble(msg.Data.Begtime); // Begin time
-				Stream->WriteDouble(msg.Data.Endtime); //End time
+				//Stream->WriteInt(msg.Data.Line);
+				stWr(Int, msg.Data.Line);
+				stWr(Int,msg.Data.Entries);
+				stWr(Double,msg.Data.Begtime);// Begin time
+				stWr(Double,msg.Data.Endtime);//End time
 
 				int* CPIDs = new int[msg.Data.Entries];
 				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID,
@@ -286,11 +308,15 @@ namespace TraceviewerServer
 				for (int var = 0; var < msg.Data.Entries; var++)
 				{
 					if ((CPIDs[var] == 0) || (CPIDs[var] == 0xABCDEF))
-						cout << "Sending CPID of 0 down the socket." << endl;
-					Stream->WriteInt(CPIDs[var]);
+					cout << "Sending CPID of 0 down the socket." << endl;
+					stWr(Int,CPIDs[var]);
 				}
 				//delete(&msg);
+#ifdef Compression
+				CompL.Flush();
+#else
 				Stream->Flush();
+#endif
 			}
 			else if (msg.Tag == Constants::SLAVE_DONE)
 			{

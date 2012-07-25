@@ -1,4 +1,4 @@
-#define UseMPI
+//#define UseMPI
 
 #include "mpi.h"
 #include "FileUtils.h"

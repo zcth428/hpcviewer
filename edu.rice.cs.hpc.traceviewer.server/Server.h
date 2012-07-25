@@ -8,13 +8,15 @@
 #ifndef Server_H_
 #define Server_H_
 
-
+#define UseMPI
+#define Compression
 
 #include "SpaceTimeDataControllerLocal.h"
 #include "DataSocketStream.h"
 #include "LocalDBOpener.h"
 #include "Constants.h"
 #include "MPICommunication.h"
+#include "CompressingDataSocketLayer.h"
 //#include "ImageTraceAttributes.h"
 //#include "ProcessTimeline.h"
 //#include "TimeCPID.h"

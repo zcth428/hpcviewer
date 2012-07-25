@@ -9,7 +9,6 @@
 #define Server_H_
 
 #define UseMPI
-#define Compression
 
 #include "SpaceTimeDataControllerLocal.h"
 #include "DataSocketStream.h"

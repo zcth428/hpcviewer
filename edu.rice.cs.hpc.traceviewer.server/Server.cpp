@@ -248,80 +248,82 @@ namespace TraceviewerServer
 
 		//While this macro trick is pretty cool, I'm probably going to have to change it to a normal if statement
 		//because compression will probably be known only at run time and not at compile time.
-#ifdef Compression
-		CompressingDataSocketLayer CompL(Stream);
-#define stWr(type,val) CompL.Write##type((val))
-#else
-#define stWr(type,val) Stream->Write##type((val))
-#endif
+		bool Compression = true;
+
+		if (Compression)
+		{
+			CompressingDataSocketLayer CompL(Stream);
+			/*#define stWr(type,val) CompL.Write##type((val))
+			 #else
+			 #define stWr(type,val) Stream->Write##type((val))
+			 #endif*/
 
 #ifndef UseMPI
 
-		for (int i = 0; i < STDCL->TracesLength; i++)
-		{
-
-			ProcessTimeline* T = STDCL->Traces[i];
-			stWr(Int, T->Line());
-			vector<TimeCPID> data = T->Data->ListCPID;
-			stWr(Int, data.size());
-			stWr(Double, data[0].Timestamp);
-			// Begin time
-			stWr(Double, data[data.size() - 1].Timestamp);
-			//End time
-
-			vector<TimeCPID>::iterator it;
-			cout << "Sending process timeline with " << data.size() << " entries" << endl;
-			for (it = data.begin(); it != data.end(); ++it)
-			{
-				stWr(Int, it->CPID);
-			}
-#ifdef Compression
-			//CompL.Flush();
-#else
-			Stream->Flush();
-#endif
-		}
-		CompL.Flush();
-
-#else
-		int RanksDone = 1;
-		int Size = COMM_WORLD.Get_size();
-
-		while (RanksDone < Size)
-		{
-			MPICommunication::ResultMessage msg;
-			COMM_WORLD.Recv(&msg, sizeof(msg), MPI_PACKED, MPI_ANY_SOURCE, MPI_ANY_TAG);
-			if (msg.Tag == Constants::SLAVE_REPLY)
+			for (int i = 0; i < STDCL->TracesLength; i++)
 			{
 
-				//Stream->WriteInt(msg.Data.Line);
-				stWr(Int, msg.Data.Line);
-				stWr(Int,msg.Data.Entries);
-				stWr(Double,msg.Data.Begtime);// Begin time
-				stWr(Double,msg.Data.Endtime);//End time
+				ProcessTimeline* T = STDCL->Traces[i];
+				CompL.WriteInt( T->Line());
+				vector<TimeCPID> data = T->Data->ListCPID;
+				CompL.WriteInt( data.size());
+				CompL.WriteDouble( data[0].Timestamp);
+				// Begin time
+				CompL.WriteDouble( data[data.size() - 1].Timestamp);
+				//End time
 
-				int* CPIDs = new int[msg.Data.Entries];
-				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID,
-						MPI_ANY_TAG);
-
-				//So do it manually...
-				for (int var = 0; var < msg.Data.Entries; var++)
+				vector<TimeCPID>::iterator it;
+				cout << "Sending process timeline with " << data.size() << " entries" << endl;
+				for (it = data.begin(); it != data.end(); ++it)
 				{
-					if ((CPIDs[var] == 0) || (CPIDs[var] == 0xABCDEF))
-					cout << "Sending CPID of 0 down the socket." << endl;
-					stWr(Int,CPIDs[var]);
+					CompL.WriteInt( it->CPID);
 				}
-				//delete(&msg);
 #ifdef Compression
-				CompL.Flush();
+				//CompL.Flush();
 #else
 				Stream->Flush();
 #endif
 			}
-			else if (msg.Tag == Constants::SLAVE_DONE)
+			CompL.Flush();
+
+#else
+			int RanksDone = 1;
+			int Size = COMM_WORLD.Get_size();
+
+			while (RanksDone < Size)
 			{
-				cout << "Rank " << msg.Done.RankID << " done" << endl;
-				RanksDone++;
+				MPICommunication::ResultMessage msg;
+				COMM_WORLD.Recv(&msg, sizeof(msg), MPI_PACKED, MPI_ANY_SOURCE, MPI_ANY_TAG);
+				if (msg.Tag == Constants::SLAVE_REPLY)
+				{
+
+					//Stream->WriteInt(msg.Data.Line);
+					CompL.WriteInt(msg.Data.Line);
+					CompL.WriteInt(msg.Data.Entries);
+					CompL.WriteDouble(msg.Data.Begtime); // Begin time
+					CompL.WriteDouble(msg.Data.Endtime); //End time
+
+					int* CPIDs = new int[msg.Data.Entries];
+					COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID,
+							MPI_ANY_TAG);
+
+					//So do it manually...
+					for (int var = 0; var < msg.Data.Entries; var++)
+					{
+						if ((CPIDs[var] == 0) || (CPIDs[var] == 0xABCDEF))
+							cout << "Sending CPID of 0 down the socket." << endl;
+						CompL.WriteInt(CPIDs[var]);
+					}
+					//delete(&msg);
+					cout << "About to flush" << endl;
+					CompL.Flush();
+					cout << "Flushed" << endl;
+				}
+				else if (msg.Tag == Constants::SLAVE_DONE)
+				{
+					cout << "Rank " << msg.Done.RankID << " done" << endl;
+					RanksDone++;
+				}
 			}
 		}
 #endif

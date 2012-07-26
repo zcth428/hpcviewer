@@ -286,8 +286,14 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     {
 		long topLeftTime = (long)((double)leftSelection / getScaleX());
 		long bottomRightTime = (long)((double)rightSelection / getScaleX());
-		setTimeZoom(topLeftTime, bottomRightTime);
+
+		// hack fix. Attention: we have to update first the detail view before others
+		// 	this is to allow the detail view to push undo stack
+		// TODO: we need to avoid having tightly coupled interaction between views.
+		//		 it makes to code hard to code
+		
 		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
+		setTimeZoom(topLeftTime, bottomRightTime);
 		
 		adjustCrossHair(topLeftTime, bottomRightTime);
     }

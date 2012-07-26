@@ -24,15 +24,19 @@ namespace TraceviewerServer
 	class DataSocketStream
 	{
 	public:
-		DataSocketStream(int);
+		DataSocketStream(int, bool);
+		void AcceptS();
+		DataSocketStream();
+
+		int GetPort();
 
 		virtual ~DataSocketStream();
 
-		void WriteInt(int);
-		void WriteLong(Long);
-		void WriteDouble(double);
-		void WriteRawData(char*, int);
-		void Flush();
+		virtual void WriteInt(int);
+		virtual void WriteLong(Long);
+		virtual void WriteDouble(double);
+		virtual void WriteRawData(char*, int);
+		virtual void Flush();
 
 		int ReadInt();
 		Long ReadLong();
@@ -42,13 +46,12 @@ namespace TraceviewerServer
 
 		SocketFD GetDescriptor();
 	private:
+		int Port;
 		SocketFD socketDesc;
+		SocketFD unopenedSocketFD;
 		std::vector<char> Message;
 		void CheckForErrors(int);
 		FILE* file;
-#ifdef ManualBuffer
-		char* Buffer;
-#endif
 	};
 
 } /* namespace TraceviewerServer */

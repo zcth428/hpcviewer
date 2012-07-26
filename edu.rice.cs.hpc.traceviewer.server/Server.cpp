@@ -14,6 +14,9 @@ using namespace std;
 using namespace MPI;
 namespace TraceviewerServer
 {
+	bool Compression =true;
+	int MainPort = 21590;
+	int XMLPort = 0;
 
 	static SpaceTimeDataControllerLocal* STDCL;
 
@@ -35,7 +38,7 @@ namespace TraceviewerServer
 		{
 //TODO: Change the port to 21591 because 21590 has some other use...
 			//DataSocketStream CLsocket = new DataSocketStream(21590);
-			socketptr = new DataSocketStream(21590);
+			socketptr = new DataSocketStream(MainPort, true);
 			/*
 			 ip::tcp::socket CLsocket(io_service);
 			 //CLsocket.open(ip::tcp::v4());
@@ -112,11 +115,14 @@ namespace TraceviewerServer
 	}
 	void Server::SendDBOpenedSuccessfully(DataSocketStream* socket)
 	{
-
+//TODO: Use the variable XML Port & obtain an open port if it is -1
 		socket->WriteInt(Constants::DBOK);
 
-		int port = 2224;
+		//int port = 2224;
 
+		//socket->WriteInt(port);
+		DataSocketStream XmlSocket(XMLPort, false);
+		int port = XmlSocket.GetPort();
 		socket->WriteInt(port);
 
 		socket->WriteInt(STDCL->GetHeight());
@@ -126,7 +132,7 @@ namespace TraceviewerServer
 		cout << "Waiting to send XML on port " << port << ". Num traces was "
 				<< STDCL->GetHeight() << endl;
 
-		DataSocketStream XmlSocket(port);
+		XmlSocket.AcceptS();
 		int fd = XmlSocket.GetDescriptor();
 		SendXML(fd);
 
@@ -243,89 +249,86 @@ namespace TraceviewerServer
 		COMM_WORLD.Bcast(&toBcast, sizeof(toBcast), MPI_PACKED,
 				MPICommunication::SOCKET_SERVER);
 #endif
+
 		Stream->WriteInt(Constants::HERE);
 		Stream->Flush();
 
-		//While this macro trick is pretty cool, I'm probably going to have to change it to a normal if statement
-		//because compression will probably be known only at run time and not at compile time.
-		bool Compression = true;
 
+		DataSocketStream* DataSender; //Could be a normal, could be a compressed
 		if (Compression)
 		{
-			CompressingDataSocketLayer CompL(Stream);
-			/*#define stWr(type,val) CompL.Write##type((val))
-			 #else
-			 #define stWr(type,val) Stream->Write##type((val))
-			 #endif*/
+			DataSender = new CompressingDataSocketLayer(Stream);
+		}
+		else
+		{
+			DataSender = Stream;
+		}
+		/*#define stWr(type,val) CompL.Write##type((val))
+		 #else
+		 #define stWr(type,val) Stream->Write##type((val))
+		 #endif*/
 
 #ifndef UseMPI
 
-			for (int i = 0; i < STDCL->TracesLength; i++)
+		for (int i = 0; i < STDCL->TracesLength; i++)
+		{
+
+			ProcessTimeline* T = STDCL->Traces[i];
+			DataSender->WriteInt( T->Line());
+			vector<TimeCPID> data = T->Data->ListCPID;
+			DataSender->WriteInt( data.size());
+			DataSender->WriteDouble( data[0].Timestamp);
+			// Begin time
+			DataSender->WriteDouble( data[data.size() - 1].Timestamp);
+			//End time
+
+			vector<TimeCPID>::iterator it;
+			cout << "Sending process timeline with " << data.size() << " entries" << endl;
+			for (it = data.begin(); it != data.end(); ++it)
 			{
-
-				ProcessTimeline* T = STDCL->Traces[i];
-				CompL.WriteInt( T->Line());
-				vector<TimeCPID> data = T->Data->ListCPID;
-				CompL.WriteInt( data.size());
-				CompL.WriteDouble( data[0].Timestamp);
-				// Begin time
-				CompL.WriteDouble( data[data.size() - 1].Timestamp);
-				//End time
-
-				vector<TimeCPID>::iterator it;
-				cout << "Sending process timeline with " << data.size() << " entries" << endl;
-				for (it = data.begin(); it != data.end(); ++it)
-				{
-					CompL.WriteInt( it->CPID);
-				}
-#ifdef Compression
-				//CompL.Flush();
-#else
-				Stream->Flush();
-#endif
-			}
-			CompL.Flush();
-
-#else
-			int RanksDone = 1;
-			int Size = COMM_WORLD.Get_size();
-
-			while (RanksDone < Size)
-			{
-				MPICommunication::ResultMessage msg;
-				COMM_WORLD.Recv(&msg, sizeof(msg), MPI_PACKED, MPI_ANY_SOURCE, MPI_ANY_TAG);
-				if (msg.Tag == Constants::SLAVE_REPLY)
-				{
-
-					//Stream->WriteInt(msg.Data.Line);
-					CompL.WriteInt(msg.Data.Line);
-					CompL.WriteInt(msg.Data.Entries);
-					CompL.WriteDouble(msg.Data.Begtime); // Begin time
-					CompL.WriteDouble(msg.Data.Endtime); //End time
-
-					int* CPIDs = new int[msg.Data.Entries];
-					COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID,
-							MPI_ANY_TAG);
-
-					//So do it manually...
-					for (int var = 0; var < msg.Data.Entries; var++)
-					{
-						if ((CPIDs[var] == 0) || (CPIDs[var] == 0xABCDEF))
-							cout << "Sending CPID of 0 down the socket." << endl;
-						CompL.WriteInt(CPIDs[var]);
-					}
-					//delete(&msg);
-					cout << "About to flush" << endl;
-					CompL.Flush();
-					cout << "Flushed" << endl;
-				}
-				else if (msg.Tag == Constants::SLAVE_DONE)
-				{
-					cout << "Rank " << msg.Done.RankID << " done" << endl;
-					RanksDone++;
-				}
+				DataSender->WriteInt( it->CPID);
 			}
 		}
+		DataSender->Flush();
+
+#else
+		int RanksDone = 1;
+		int Size = COMM_WORLD.Get_size();
+
+		while (RanksDone < Size)
+		{
+			MPICommunication::ResultMessage msg;
+			COMM_WORLD.Recv(&msg, sizeof(msg), MPI_PACKED, MPI_ANY_SOURCE, MPI_ANY_TAG);
+			if (msg.Tag == Constants::SLAVE_REPLY)
+			{
+
+				//Stream->WriteInt(msg.Data.Line);
+				DataSender->WriteInt(msg.Data.Line);
+				DataSender->WriteInt(msg.Data.Entries);
+				DataSender->WriteDouble(msg.Data.Begtime); // Begin time
+				DataSender->WriteDouble(msg.Data.Endtime); //End time
+
+				int* CPIDs = new int[msg.Data.Entries];
+				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID,
+						MPI_ANY_TAG);
+
+				//So do it manually...
+				for (int var = 0; var < msg.Data.Entries; var++)
+				{
+					if ((CPIDs[var] == 0) || (CPIDs[var] == 0xABCDEF))
+						cout << "Sending CPID of 0 down the socket." << endl;
+					DataSender->WriteInt(CPIDs[var]);
+				}
+				//delete(&msg);
+				DataSender->Flush();
+			}
+			else if (msg.Tag == Constants::SLAVE_DONE)
+			{
+				cout << "Rank " << msg.Done.RankID << " done" << endl;
+				RanksDone++;
+			}
+		}
+
 #endif
 		cout << "Data sent" << endl;
 	}

@@ -11,46 +11,72 @@ namespace TraceviewerServer
 {
 	using namespace std;
 
-	DataSocketStream::DataSocketStream(int Port)
+	DataSocketStream::DataSocketStream()
 	{
+		//Do nothing because this is used when the CompressingDataSocket is constructed, which means we already have a socket constructed that we want to use
+	}
+
+	DataSocketStream::DataSocketStream(int _Port, bool Accept = true)
+	{
+		Port = _Port;
 		//cout<<"In socket constructor"<<endl;
 		//create
-		SocketFD socketFD = socket(PF_INET, SOCK_STREAM, 0);
-		if (socketFD == -1)
+		unopenedSocketFD = socket(PF_INET, SOCK_STREAM, 0);
+		if (unopenedSocketFD == -1)
 			cerr << "Could not create socket" << endl;
 		//bind
 		sockaddr_in Address;
 		Address.sin_family = AF_INET;
-		Address.sin_port = htons(Port);
+		Address.sin_port = htons(_Port);
 		Address.sin_addr.s_addr = INADDR_ANY;
-		int err = bind(socketFD, (sockaddr*) &Address, sizeof(Address));
+		int err = bind(unopenedSocketFD, (sockaddr*) &Address, sizeof(Address));
 		if (err)
 		{
 			cerr << "Could not bind socket. Error was " << errno << endl;
 			throw 1111;
 		}
 		//listen
-		listen(socketFD, 5);
+		listen(unopenedSocketFD, 5);
+		if (Accept)
+			AcceptS();
+
+	}
+	void DataSocketStream::AcceptS()
+	{
 		//accept
 		sockaddr_in client;
 		unsigned int len = sizeof(client);
 		cout << "Waiting for connection" << endl;
-		socketDesc = accept(socketFD, (sockaddr*) &client, &len);
+		socketDesc = accept(unopenedSocketFD, (sockaddr*) &client, &len);
 		if (socketDesc < 0)
 			cerr << "Error on accept" << endl;
 		file = fdopen(socketDesc, "r+b"); //read, write, binary
-#ifdef ManualBuffer
-				buffer = new char[2048];
-				setvbuf(file, buffer, _IOFBF, 2048);*/
-#endif
+	}
+
+	int DataSocketStream::GetPort()
+	{
+		if (Port == 0)
+		{
+			//http://stackoverflow.com/questions/4046616/sockets-how-to-find-out-what-port-and-address-im-assigned
+			struct sockaddr_in sin;
+			socklen_t len = sizeof(sin);
+			if (getsockname(unopenedSocketFD, (struct sockaddr *) &sin, &len) == -1)
+			{
+				cerr << "Could not obtain port" << endl;
+				return 0;
+			}
+			else
+				return ntohs(sin.sin_port);
+		}
+		else
+		{
+			return Port;
+		}
 	}
 
 	DataSocketStream::~DataSocketStream()
 	{
 		cout << "In socket destructor" << endl;
-#ifdef ManualBuffer
-		delete(buffer)
-#endif
 		close(socketDesc);
 
 	}
@@ -143,9 +169,9 @@ namespace TraceviewerServer
 	string DataSocketStream::ReadString()
 	{
 
-		short Len =ReadShort();
+		short Len = ReadShort();
 
-		char* Msg = new char[Len+1];
+		char* Msg = new char[Len + 1];
 		int err = fread(Msg, 1, Len, file);
 		if (err != Len)
 			throw 0x5254;

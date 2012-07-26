@@ -9,7 +9,9 @@
 
 namespace TraceviewerServer
 {
+
 #define Room(a) if ((a) + BufferIndex > BUFFER_SIZE) SoftFlush();
+
 	CompressingDataSocketLayer::CompressingDataSocketLayer(
 			DataSocketStream* backingSocket)
 	{
@@ -34,6 +36,7 @@ namespace TraceviewerServer
 	}
 	void CompressingDataSocketLayer::WriteInt(int toWrite)
 	{
+
 		Room(4);
 		ByteUtilities::WriteInt(inBuf + BufferIndex, toWrite);
 		BufferIndex += 4;

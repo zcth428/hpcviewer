@@ -26,16 +26,18 @@
 
 #include "zlib.h"
 
-
 namespace TraceviewerServer
 {
+	extern bool Compression;
+	extern int MainPort;
+	extern int XMLPort;
 	class Server
 	{
+
 	public:
 		Server();
 		virtual ~Server();
 		static int main(int argc, char *argv[]);
-
 
 	private:
 		static void ParseInfo(DataSocketStream*);
@@ -44,7 +46,6 @@ namespace TraceviewerServer
 		static void GetAndSendData(DataSocketStream*);
 		static void SendXML(int);
 		static void SendDBOpenFailed(DataSocketStream*);
-
 
 	};
 }/* namespace TraceviewerServer */

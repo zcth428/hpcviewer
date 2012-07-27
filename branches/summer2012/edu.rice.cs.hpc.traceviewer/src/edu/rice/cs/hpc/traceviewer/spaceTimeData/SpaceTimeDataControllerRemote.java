@@ -213,4 +213,16 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		} else
 			return null;
 	}
+
+
+	public void CloseConnection() {
+		try{
+		dataRetriever.Close();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Could not close the connection.");
+		}
+		
+	}
 }

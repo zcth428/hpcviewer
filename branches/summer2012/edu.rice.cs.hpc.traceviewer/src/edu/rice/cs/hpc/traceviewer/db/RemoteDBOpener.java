@@ -32,13 +32,15 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
 		System.out.println("OpenDB called");
-		String serverURL = "localhost";
-		//String serverURL = "les.cs.rice.edu";
+		/*String serverURL = "localhost";
+		//serverURL = "les.cs.rice.edu";
 		int port = 21590;
 		String serverPathToDB = "/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/";
-		//serverPathToDB = "/home/pat2/database";
-		// String clientPathToXml =
-		// "/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/experiment.xml";
+		//serverPathToDB = "/home/pat2/database";*/
+		String serverURL = args[0];
+		int port = Integer.parseInt(args[1]);
+		String serverPathToDB = args[2];
+		
 
 		Socket serverConnection = null;
 		try {

@@ -22,10 +22,10 @@ public class OpenDatabase extends AbstractHandler
 
 		AbstractDBOpener DBOpener;
 		
-		if (AbstractDBOpener.Local)//TODO: figure out how we want to switch between Remote and Local storage
+		//if (AbstractDBOpener.Local)//TODO: figure out how we want to switch between Remote and Local storage
 			DBOpener = new LocalDBOpener();
-		else
-			DBOpener = new RemoteDBOpener();
+		//else
+		//	DBOpener = new RemoteDBOpener();
 		
 		TraceDatabase.openDatabase(window, null, vSite.getActionBars().getStatusLineManager(), DBOpener);
 		return null;

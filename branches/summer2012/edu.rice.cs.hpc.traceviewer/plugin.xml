@@ -99,6 +99,11 @@
             id="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"
             name="Procedure map">
       </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.traceviewer.actions.OpenRemoteDatabse"
+            id="edu.rice.cs.hpc.traceviewer.actions.OpenRemoteDatabse"
+            name="Open remote database">
+      </command>
    </extension>
    <extension
          id="edu.rice.cs.hpc.traceviewer.menus"
@@ -117,6 +122,13 @@
                   mnemonic="O"
                   style="push"
                   tooltip="Open a new database (the existing database will be replaced).">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.traceviewer.actions.OpenRemoteDatabse"
+                  label="Open Remote Database"
+                  mnemonic="R"
+                  style="push"
+                  tooltip="Opens a databse stored on a remote server and uses that server for processing the database">
             </command>
             <command
                   commandId="org.eclipse.ui.file.exit"

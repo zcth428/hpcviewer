@@ -1125,7 +1125,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			viewWidth = this.getClientArea().width;
 			viewHeight = this.getClientArea().height;
 		}
-		
+		if (imageBuffer != null) {
+			imageBuffer.dispose();
+		}
 		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 		GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
@@ -1145,6 +1147,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 
 		if (summaryCanvas != null)	
 			summaryCanvas.refresh(imageOrig.getImageData());
+		
+		imageOrig.dispose();
 	}
 	
 	/***********************************************************************************
@@ -1169,5 +1173,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		// forces all other views to refresh with the new region
 		depthCanvas.refresh(stData.attributes.begTime, stData.attributes.endTime);
 		miniCanvas.setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.widgets.Widget#dispose()
+	 */
+	public void dispose () { 
+		if (imageBuffer != null) {
+			imageBuffer.dispose();
+		}
 	}
 }

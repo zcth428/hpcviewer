@@ -352,6 +352,12 @@ public class SpaceTimeData extends TraceEvents
 					origGC.drawImage(compositeOrigLines[i], 0, yposition);
 					masterGC.drawImage(compositeFinalLines[i], 0, yposition);
 				}
+				
+				// disposing resources
+				for (int i=0; i<linesToPaint; i++) {
+					compositeOrigLines[i].dispose();
+					compositeFinalLines[i].dispose();
+				}
 			}
 
 			//@Override
@@ -410,6 +416,10 @@ public class SpaceTimeData extends TraceEvents
 					masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
 							compositeFinalLines[i].getBounds().height, 0,(int)Math.round(i*attributes.numPixelsDepthV/(float)maxDepth), 
 							compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
+				}
+				// disposing resources
+				for (Image img: compositeFinalLines) {
+					img.dispose();
 				}
 			}
 

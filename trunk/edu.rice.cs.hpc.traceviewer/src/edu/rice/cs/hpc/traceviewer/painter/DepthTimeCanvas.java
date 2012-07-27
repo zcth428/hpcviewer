@@ -325,9 +325,13 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 
-		if (viewWidth>0 && viewHeight>0)
+		if (viewWidth>0 && viewHeight>0) {
+			if (imageBuffer != null) {
+				imageBuffer.dispose();
+			}
 			//paints the current screen
 			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		}
 		GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);

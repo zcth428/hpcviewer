@@ -37,7 +37,7 @@ public class TraceDatabase {
 	
 
 	static private HashMap<IWorkbenchWindow, TraceDatabase> listOfDatabases = null;
-	private SpaceTimeDataController dataTraces = null;
+	public SpaceTimeDataController dataTraces = null;
 
 	/***
 	 * get the instance of this class

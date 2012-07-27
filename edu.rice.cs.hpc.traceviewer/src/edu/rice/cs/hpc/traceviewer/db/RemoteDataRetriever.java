@@ -252,6 +252,14 @@ public class RemoteDataRetriever {
 		}
 		return nextCommand;
 	}
+	public void Close() throws IOException {
+		sender.writeInt(0x444F4E45);
+		sender.flush();
+		sender.close();
+		receiver.close();
+		socket.close();
+		
+	}
 }
 /**
  ******* PROTOCOL DOCUMENTATION *******

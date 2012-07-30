@@ -37,10 +37,11 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	 * sufficiently zoomed (when their heights are greater than this value).
 	 */
 	private final int maxDepth;
+	private final String[] valuesX;
 	
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
-			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces) {
+			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, String[] _valuesX) {
 
 		MethodCounts[0]++;
 
@@ -85,6 +86,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		
 		dataRetriever = _dataRet;
 		Height = _numTraces;
+		valuesX = _valuesX;
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
 				_statusMgr, colorTable, maxDepth, minBegTime);
@@ -135,20 +137,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
 	@Override
 	public String[] getTraceDataValuesX() {
-		// TEMPORARY FIX!! What do we want to do about this???
-		// I had hoped that we would just be able to loop through the
-		// ProcessTimelines or something and add +1 to the total if it wasn't
-		// null and +.1 to the total if it was. Unfortunately, unless the
-		// vertical resolution of the window is larger than the total number of
-		// processes, we may never have data about each process timeline. It
-		// appears we may have to send this data over the wire in the DBOK
-		// message.
-		int size = Height;
-		String[] names = new String[size];
-		for (int i = 0; i < names.length; i++) {
-			names[i] = String.valueOf(i) + ".0";
-		}
-		return names;
+		return valuesX;
 	}
 
 	@Override

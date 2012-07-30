@@ -96,10 +96,18 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			int traceCount;
 			int Message = RemoteDataRetriever.waitAndReadInt(receiver);
 			int XMLMessagePortNumber;
+			int CompressionType;
+			String[] ValuesX;
 			if (Message == 0x44424F4B)// DBOK
 			{
 				XMLMessagePortNumber  = receiver.readInt();
 				traceCount = receiver.readInt();
+				CompressionType = receiver.readInt();
+				ValuesX = new String[traceCount];
+				for (int i = 0; i < ValuesX.length; i++) {
+					ValuesX[i] = receiver.readUTF();
+				}
+				
 			} else if (Message == 0x4E4F4442)// NODB
 			{
 				// Tell the user
@@ -123,9 +131,9 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			SpaceTimeDataControllerRemote stData;
 
 			RemoteDataRetriever DR = new RemoteDataRetriever(serverConnection,
-					statusMgr, window.getShell());
+					statusMgr, window.getShell(), CompressionType);
 			stData = new SpaceTimeDataControllerRemote(DR, window, statusMgr,
-					XMLStream, serverPathToDB + " on " + serverURL, traceCount);
+					XMLStream, serverPathToDB + " on " + serverURL, traceCount, ValuesX);
 
 			sendInfoPacket(sender, stData);
 			

@@ -2,19 +2,13 @@ package edu.rice.cs.hpc.traceviewer.db;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
-import java.util.zip.ZipInputStream;
-
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -40,21 +34,18 @@ public class RemoteDataRetriever {
 	
 	private final Shell shell;
 	
-	private final static boolean Compressed = false;
+	final boolean DataCompressed;
 	
 	private final IStatusLineManager statusMgr;
-	public RemoteDataRetriever(Socket _serverConnection, IStatusLineManager _statusMgr, Shell _shell) throws IOException {
+
+	public RemoteDataRetriever(Socket _serverConnection, IStatusLineManager _statusMgr, Shell _shell, int compressionType) throws IOException {
 		socket = _serverConnection;
 		
-		if (Compressed)
-		{
-			receiver = new DataInputStream(new GZIPInputStream(socket.getInputStream()));
-		}
-		else
-		{
-			rcvBacking = new BufferedInputStream(socket.getInputStream());
-			receiver = new DataInputStream(rcvBacking);
-		}
+		DataCompressed = (compressionType==1);
+		
+		rcvBacking = new BufferedInputStream(socket.getInputStream());
+		receiver = new DataInputStream(rcvBacking);
+
 		sender = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		
 		
@@ -107,7 +98,7 @@ public class RemoteDataRetriever {
 		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
 	
 		
-		boolean DataCompressed = true;
+		
 		
 		DataInputStream DataReader;
 		
@@ -181,39 +172,10 @@ public class RemoteDataRetriever {
 	}
 	static int waitAndReadInt(DataInputStream receiver)
 			throws IOException {
-		if (Compressed)
-			return waitAndReadCompressedInt(receiver);
-		else
+		
 			return waitAndReadUncompressedInt(receiver);
 	}
 
-	private static int waitAndReadCompressedInt(DataInputStream receiver) throws IOException {
-		
-		// So available is not reliable at all. Sometimes it'll return 1 and
-		// then the next byte it reads is -1. It's saying it has data, and then
-		// as soon as you try to get the data, it says it doesn't have data.
-		// That means we have to do it the hard way...
-		int byte1 = 0;
-		while((receiver.available()<=0)|| ((byte1 = receiver.read())<=0))
-		{
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-
-				e.printStackTrace();
-			}
-		}
-		
-		
-		int byte2 = receiver.read();
-		int byte3 = receiver.read();
-		int byte4 = receiver.read();
-		int nextCommand = (byte1<<24)| (byte2<<16)|(byte3<<8)|byte4;
-		if (nextCommand < 0)
-			System.out.println("Not good");
-		System.out.println("Client received a "+ nextCommand);
-		return nextCommand;
-	}
 
 	private static int waitAndReadUncompressedInt(DataInputStream receiver)
 			throws IOException {

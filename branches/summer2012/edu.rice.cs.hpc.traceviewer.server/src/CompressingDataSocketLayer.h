@@ -12,7 +12,7 @@
 
 namespace TraceviewerServer
 {
-#define BUFFER_SIZE 0x20000 //128KB
+#define BUFFER_SIZE 0x200000 //128KB
 	class CompressingDataSocketLayer : public DataSocketStream
 	{
 	public:

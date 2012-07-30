@@ -5,6 +5,7 @@
  *      Author: pat2
  */
 #include "LargeByteBuffer.h"
+#include <unistd.h>
 
 using namespace std;
 
@@ -40,20 +41,27 @@ namespace TraceviewerServer
 		MasterBuffer = new char*[NumPages];
 		for (int i = 0; i < NumPages; i++)
 		{
+			unsigned long mapping_len = min((ULong) PAGE_SIZE, SizeRemaining); 
 
 			//MasterBuffer[i] = new mm::mapped_file(Path, mm::mapped_file::readonly, PAGE_SIZE, PAGE_SIZE*i);
 			//This is done to make the Blue Gene Q easier
-			void* AllocatedRegion = mmap(0, min((ULong) PAGE_SIZE, SizeRemaining), MapProt,
-					MapFlags, fd, PAGE_SIZE * i);
+			void* AllocatedRegion = mmap(0, mapping_len, MapProt,
+					MapFlags, dup(fd), PAGE_SIZE * i);
 			if (AllocatedRegion == MAP_FAILED)
 			{
 				cerr << "Mapping returned error " << strerror(errno) << endl;
+				cerr << "off_t size =" << sizeof(off_t) << "mapping size=" << mapping_len << " PAGE_SIZE=" << PAGE_SIZE << " SizeRemaining=" <<SizeRemaining << " MapProt=" <<MapProt
+					<< " MapFlags=" << MapFlags << " fd=" << fd << " PAGE_SIZE*I=" << PAGE_SIZE * i << endl;
+				fflush(NULL);
+				exit(-1);
 			}
 
 			char* temp = (char*) AllocatedRegion;
 			MasterBuffer[i] = temp;
-			cout << "Allocated a page: " << AllocatedRegion << endl;
-			SizeRemaining -= min((ULong) PAGE_SIZE, SizeRemaining);
+			//cout << "Allocated a page: " << AllocatedRegion << endl;
+			SizeRemaining -= mapping_len;
+			//cerr << "pid=" << getpid() << " i=" << i << " first test read=" << (int) *MasterBuffer[i] << endl;
+			//cerr << "pid=" << getpid() << " i=" << i << " second test read=" << (int) *(MasterBuffer[i] + mapping_len-1) << endl;
 		}
 
 	}

@@ -265,15 +265,7 @@ namespace TraceviewerServer
 		Stream->WriteInt(Constants::HERE);
 		Stream->Flush();
 
-		DataSocketStream* DataSender; //Could be a normal, could be a compressed
-		if (Compression)
-		{
-			DataSender = new CompressingDataSocketLayer(Stream);
-		}
-		else
-		{
-			DataSender = Stream;
-		}
+
 		/*#define stWr(type,val) CompL.Write##type((val))
 		 #else
 		 #define stWr(type,val) Stream->Write##type((val))
@@ -314,24 +306,20 @@ namespace TraceviewerServer
 			{
 
 				//Stream->WriteInt(msg.Data.Line);
-				DataSender->WriteInt(msg.Data.Line);
-				DataSender->WriteInt(msg.Data.Entries);
-				DataSender->WriteDouble(msg.Data.Begtime); // Begin time
-				DataSender->WriteDouble(msg.Data.Endtime); //End time
+				Stream->WriteInt(msg.Data.Line);
+				Stream->WriteInt(msg.Data.Entries);
+				Stream->WriteDouble(msg.Data.Begtime); // Begin time
+				Stream->WriteDouble(msg.Data.Endtime); //End time
+				Stream->WriteInt(msg.Data.CompressedSize);
 
-				int* CPIDs = new int[msg.Data.Entries];
-				COMM_WORLD.Recv(CPIDs, msg.Data.Entries, MPI_INT, msg.Data.RankID,
+				char CompressedTraceLine[msg.Data.CompressedSize];
+				COMM_WORLD.Recv(CompressedTraceLine, msg.Data.CompressedSize, MPI_BYTE, msg.Data.RankID,
 						MPI_ANY_TAG);
 
-				//So do it manually...
-				for (int var = 0; var < msg.Data.Entries; var++)
-				{
-					if ((CPIDs[var] == 0) || (CPIDs[var] == 0xABCDEF))
-						cout << "Sending CPID of 0 down the socket." << endl;
-					DataSender->WriteInt(CPIDs[var]);
-				}
+				Stream->WriteRawData(CompressedTraceLine, msg.Data.CompressedSize);
+
 				//delete(&msg);
-				DataSender->Flush();
+				Stream->Flush();
 			}
 			else if (msg.Tag == Constants::SLAVE_DONE)
 			{

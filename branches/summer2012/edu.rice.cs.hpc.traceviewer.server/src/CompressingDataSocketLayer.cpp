@@ -13,10 +13,8 @@ namespace TraceviewerServer
 #define Room(a) if ((a) + BufferIndex > BUFFER_SIZE) SoftFlush();
 
 	CompressingDataSocketLayer::CompressingDataSocketLayer(
-			DataSocketStream* backingSocket)
+		)
 	{
-		BackingSocket = backingSocket;
-		SocketFile = fdopen(BackingSocket->GetDescriptor(), "wb");
 		//Compressor = gzdopen(BackingSocket->GetDescriptor(), "w");
 		//Compressor = gzopen("/Users/pat2/Desktop/test8.gz", "wb");
 
@@ -24,7 +22,7 @@ namespace TraceviewerServer
 		int ret;
 
 		BufferIndex = 0;
-
+		posInCompBuffer = 0;
 
 		Compressor.zalloc = Z_NULL;
 		Compressor.zfree = Z_NULL;
@@ -57,7 +55,7 @@ namespace TraceviewerServer
 	void CompressingDataSocketLayer::Flush()
 	{
 		SoftFlush();
-		fflush(SocketFile);
+
 	}
 
 	void CompressingDataSocketLayer::SoftFlush()
@@ -69,21 +67,28 @@ namespace TraceviewerServer
 
 		do
 		{
-			Compressor.avail_out = BUFFER_SIZE;
-			Compressor.next_out = outBuf;
+			Compressor.avail_out = BUFFER_SIZE - posInCompBuffer;
+			Compressor.next_out = outBuf + posInCompBuffer;
 			Compressor.avail_in = BufferIndex;
 			Compressor.next_in = (unsigned char*)inBuf;
 			int ret = deflate(&Compressor, Z_SYNC_FLUSH); /* no bad return value */
 			if (ret == Z_STREAM_ERROR)
 					cerr<<"zlib stream error."<<endl;	/* state not clobbered */
 			int have = BUFFER_SIZE - Compressor.avail_out;
-			fwrite(outBuf, 1, have, SocketFile);
+			posInCompBuffer += have;
 
 		} while (Compressor.avail_out == 0);
 
 		BufferIndex = 0;
 	}
-
+	const unsigned char* CompressingDataSocketLayer::GetOutputBuffer()
+	{
+		return outBuf;
+	}
+	int CompressingDataSocketLayer::GetOutputLength()
+	{
+		return posInCompBuffer;
+	}
 	CompressingDataSocketLayer::~CompressingDataSocketLayer()
 	{
 		//delete[] (Buffer);

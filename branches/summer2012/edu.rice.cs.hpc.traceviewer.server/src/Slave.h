@@ -17,6 +17,7 @@
 #include "LocalDBOpener.h"
 #include "ImageTraceAttributes.h"
 #include "MPICommunication.h"
+#include "CompressingDataSocketLayer.h"
 
 namespace TraceviewerServer
 {

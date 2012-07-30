@@ -12,16 +12,19 @@
 
 namespace TraceviewerServer
 {
-#define BUFFER_SIZE 0x200000 //128KB
-	class CompressingDataSocketLayer : public DataSocketStream
+#define BUFFER_SIZE 0x200000 //2MB
+	class CompressingDataSocketLayer
 	{
 	public:
-		CompressingDataSocketLayer(DataSocketStream*);
+		CompressingDataSocketLayer();
 		virtual ~CompressingDataSocketLayer();
 		void WriteInt(int);
 		void WriteLong(Long);
 		void WriteDouble(double);
 		void Flush();
+		const unsigned char* GetOutputBuffer();
+		int GetOutputLength();
+
 	private:
 		void SoftFlush();
 		int BufferIndex;
@@ -29,7 +32,7 @@ namespace TraceviewerServer
 		z_stream Compressor;
 		char inBuf[BUFFER_SIZE];
 		unsigned char outBuf[BUFFER_SIZE];
-		FILE* SocketFile;
+		int posInCompBuffer;
 
 	};
 

@@ -62,6 +62,7 @@ namespace TraceviewerServer
 			int Entries;
 			double Begtime;
 			double Endtime;
+			int CompressedSize;//In Bytes
 		} DataHeader;
 
 		typedef struct

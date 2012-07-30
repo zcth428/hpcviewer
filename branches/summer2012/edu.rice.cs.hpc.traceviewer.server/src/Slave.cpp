@@ -142,20 +142,24 @@ namespace TraceviewerServer
 			msg.Data.Begtime = (*ActualData)[0].Timestamp;
 			msg.Data.Endtime = (*ActualData)[entries - 1].Timestamp;
 			msg.Data.RankID = Truerank;
-			COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,
-					0);
+			/*Have to move this so that we know how large the compressed stream is
+			 * COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,
+					0);*/
 
 			int i = 0;
 			/*for (it = ActualData->begin(); it != ActualData->end(); it++)
 			 {
 			 msg.Data.Data[i++] = it->CPID;
 			 }*/
-			int CPIDs[entries];
+			CompressingDataSocketLayer Compr;
 
 			for (i = 0; i < entries; i++)
 			{
-				CPIDs[i] = (*ActualData)[i].CPID;
+				Compr.WriteInt((*ActualData)[i].CPID);
 			}
+			Compr.Flush();
+			msg.Data.CompressedSize = Compr.GetOutputLength();
+			COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER, 0);
 			//cout << "Buffer overflow protection: Setting " << i << " to 0xABCDEF" << endl;
 			//CPIDs[i] = 0xABCDEF;
 
@@ -165,7 +169,7 @@ namespace TraceviewerServer
 			//Each entry is an int
 			//		(entries) * Constants::SIZEOF_INT;
 
-			COMM_WORLD.Send(CPIDs, entries, MPI_INT, MPICommunication::SOCKET_SERVER, 0);
+			COMM_WORLD.Send(Compr.GetOutputBuffer(), Compr.GetOutputLength(), MPI_BYTE, MPICommunication::SOCKET_SERVER, 0);
 			LinesSentCount++;
 			if (LinesSentCount % 100 == 0)
 				cout << Truerank << " Has sent " << LinesSentCount

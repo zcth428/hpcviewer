@@ -31,7 +31,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildLocation</key>
-					<value>${workspace_loc:/edu.rice.cs.hpc.traceviewer.server/Debug}</value>
+					<value>${workspace_loc:/edu.rice.cs.hpc.traceviewer.server/Debug/src}</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>

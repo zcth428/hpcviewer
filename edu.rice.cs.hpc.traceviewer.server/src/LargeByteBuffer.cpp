@@ -85,7 +85,7 @@ namespace TraceviewerServer
 	}
 	ULong LargeByteBuffer::Size()
 	{
-		return Length;
+		return FileSize;
 	}
 	LargeByteBuffer::~LargeByteBuffer()
 	{

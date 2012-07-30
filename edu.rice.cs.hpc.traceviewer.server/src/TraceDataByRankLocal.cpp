@@ -21,6 +21,8 @@ namespace TraceviewerServer
 				(Rank + 1 < Data->getNumberOfFiles()) ?
 						Offsets[Rank + 1] : data->getMasterBuffer()->Size() - 1)
 				- SIZE_OF_TRACE_RECORD;
+if (Maxloc< Minloc)
+cerr<<"Maxloc is smaller than Minloc!! Maxloc= "<<Maxloc << " Minloc= " << Minloc << " Rank: " << Rank << " Num files= " << Data->getNumberOfFiles() << "MastB size=" << Data->getMasterBuffer()->Size()<<endl; 
 		NumPixelsH = numPixelH;
 		TimeCPID empty(0, 0);
 		vector<TimeCPID> _listcpid;

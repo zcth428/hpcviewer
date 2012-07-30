@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.swt.widgets.Canvas;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -28,6 +30,7 @@ public class RenderThread extends Thread {
 	 *            The array of <code>ProcessTimelines</code> that contains the
 	 *            ones that this thread will render
 	 */
+	
 	final int min, max;
 	final ProcessTimeline[] timelines;
 	final PaintManager painter;

@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.db;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -102,9 +103,9 @@ public class RemoteDataRetriever {
 		
 		DataInputStream DataReader;
 		
-		if (DataCompressed)
+		/*if (DataCompressed)
 			 DataReader = new DataInputStream(new InflaterInputStream(rcvBacking));
-		else 
+		else */
 			DataReader = receiver;
 		
 		while (RanksReceived < RanksExpected)
@@ -118,7 +119,12 @@ public class RemoteDataRetriever {
 			
 			double startTimeForThisTimeline = DataReader.readDouble();
 			double endTimeForThisTimeline = DataReader.readDouble();
-			TimeCPID[] ranksData = readTimeCPIDArray(DataReader, Length, startTimeForThisTimeline, endTimeForThisTimeline);
+			int compressedSize = DataReader.readInt();
+			byte[] compressedTraceLine = new byte[compressedSize];
+			
+			DataReader.read(compressedTraceLine, 0, compressedSize);
+			//This part will be moved to another thread
+			TimeCPID[] ranksData = readTimeCPIDArray(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline);
 			TraceDataByRankRemote dataAsTraceDBR = new TraceDataByRankRemote(ranksData);
 			
 			
@@ -140,18 +146,20 @@ public class RemoteDataRetriever {
 
 	/**
 	 * Reads from the stream and creates an array of Timestamp-CPID pairs containing the data for this rank
-	 * @param dataReader 
+	 * @param compressedTraceLine 
 	 * @param length The number of Timestamp-CPID pairs in this rank (not the length in bytes)
 	 * @param t0 The start time
 	 * @param tn The end time
 	 * @return The array of data for this rank
 	 * @throws IOException
 	 */
-	private TimeCPID[] readTimeCPIDArray(DataInputStream dataReader, int length, double t0, double tn) throws IOException {
+	private TimeCPID[] readTimeCPIDArray(byte[] compressedTraceLine, int length, double t0, double tn) throws IOException {
+		
+		DataInputStream decompressor = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(compressedTraceLine)));
 		TimeCPID[] ToReturn = new TimeCPID[length];
 		double deltaT = (tn-t0)/length;
 		for (int i = 0; i < ToReturn.length; i++) {
-			int CPID = dataReader.readInt();
+			int CPID = decompressor.readInt();
 			if (CPID == 0)
 				System.out.println("CPID too small");
 			ToReturn[i] = new TimeCPID(t0+i*deltaT, CPID);//Does this method of getting timestamps actually work???

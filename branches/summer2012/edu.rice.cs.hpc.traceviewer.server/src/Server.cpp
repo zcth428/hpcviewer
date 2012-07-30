@@ -128,7 +128,7 @@ namespace TraceviewerServer
 		int NumFiles = STDCL->GetHeight();
 		socket->WriteInt(NumFiles);
 
-		/*int CompressionType; //This is an int so that it is possible to have different compression algorithms in the future. For now, it is just 0=no compression, 1= normal compression
+		int CompressionType; //This is an int so that it is possible to have different compression algorithms in the future. For now, it is just 0=no compression, 1= normal compression
 		CompressionType = Compression ? 1 : 0;
 		socket->WriteInt(CompressionType);
 
@@ -137,7 +137,7 @@ namespace TraceviewerServer
 		for (int i = 0; i < NumFiles; i++)
 		{
 			socket->WriteString(ValuesX[i]);
-		}*/
+		}
 
 		socket->Flush();
 

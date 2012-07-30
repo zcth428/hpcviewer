@@ -167,6 +167,7 @@ namespace TraceviewerServer
 		else
 			cout<<"Not freeing Traces because it has probably already been freed"<<endl;
 #endif
+
 	}
 
 } /* namespace TraceviewerServer */

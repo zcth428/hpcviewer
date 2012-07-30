@@ -32,7 +32,7 @@ namespace TraceviewerServer
 		char** MasterBuffer;
 		ULong Length;
 		int NumPages;
-		static const int PAGE_SIZE = INT_MAX;
+		static const long PAGE_SIZE = 1 << 30;
 	};
 
 } /* namespace TraceviewerServer */

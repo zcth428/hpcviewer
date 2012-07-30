@@ -1,11 +1,14 @@
+#include <fstream>
+#include <vector>
+#include <map>
+
 #include "mpi.h"
 #include "FileUtils.h"
 #include "Server.h"
 #include "Slave.h"
 #include "MPICommunication.h"
 #include "zlib.h"
-#include <fstream>
-#include <vector>
+
 
 using namespace std;
 using namespace MPI;

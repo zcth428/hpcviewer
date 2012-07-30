@@ -88,10 +88,10 @@ namespace TraceviewerServer
 		//otherwise it should compute floor(n/(p-1))
 
 		//=MIN(F5, $D$1)*(CEILING($B$1/($B$2-1),1)) + (F5-MIN(F5, $D$1))*(FLOOR($B$1/($B$2-1),1))
-		int LowerInclusiveBound = min(mod, rank) * ceil(q)
-				+ (rank - min(mod, rank)) * floor(q) + gc.processStart;
-		int UpperInclusiveBound = min(mod, rank + 1) * ceil(q)
-				+ (rank + 1 - min(mod, rank + 1)) * floor(q) - 1 + gc.processStart;
+		int LowerInclusiveBound = (int) (min(mod, rank) * ceil(q)
+				+ (rank - min(mod, rank)) * floor(q) + gc.processStart);
+		int UpperInclusiveBound = (int) (min(mod, rank + 1) * ceil(q)
+				+ (rank + 1 - min(mod, rank + 1)) * floor(q) - 1 + gc.processStart);
 
 		cout << "Rank " << Truerank << " is getting lines [" << LowerInclusiveBound << ", "
 				<< UpperInclusiveBound << "]" << endl;

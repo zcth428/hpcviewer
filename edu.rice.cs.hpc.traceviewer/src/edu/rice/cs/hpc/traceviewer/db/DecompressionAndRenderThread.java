@@ -102,7 +102,7 @@ public class DecompressionAndRenderThread extends Thread {
 						timelines[toRender.index]);
 			}
 		}
-		workToDo = new ConcurrentLinkedQueue<WorkItemToDo>();
+		
 	}
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException
 	{
@@ -136,8 +136,8 @@ public class DecompressionAndRenderThread extends Thread {
 		double deltaT = (tn-t0)/length;
 		for (int i = 0; i < ToReturn.length; i++) {
 			int CPID = decompressor.readInt();
-			if (CPID == 0)
-				System.out.println("CPID too small");
+			/*if (CPID <= 0)
+				System.out.println("CPID too small");*/
 			ToReturn[i] = new TimeCPID(t0+i*deltaT, CPID);//Does this method of getting timestamps actually work???
 		}
 		return ToReturn;

@@ -122,7 +122,24 @@ public class RemoteDataRetriever {
 			int compressedSize = DataReader.readInt();
 			byte[] compressedTraceLine = new byte[compressedSize];
 			
-			DataReader.read(compressedTraceLine, 0, compressedSize);
+			int numRead = 0;
+			while (numRead < compressedSize)
+			{
+				numRead += DataReader.read(compressedTraceLine, numRead, compressedSize- numRead);
+				
+			}
+			int EndingZeroCount = 0;
+			for (int i = compressedTraceLine.length-1; i >= 0; i--) {
+				if (compressedTraceLine[i]==0)
+					EndingZeroCount++;
+				else
+					break;
+			}
+			if (EndingZeroCount > 0)
+				System.out.println("Message of size: " + compressedSize + " ended with " + EndingZeroCount + " zeros.");
+			//if (numRead != compressedSize)
+			//	System.out.println("Only read " + numRead + " instead of "+ compressedSize);
+			
 			//This part will be moved to another thread
 			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, RankNumber));
 			

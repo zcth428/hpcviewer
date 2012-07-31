@@ -3,6 +3,8 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
 
@@ -13,6 +15,7 @@ import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
+import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread.WorkItemToDo;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
@@ -179,6 +182,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 					e.printStackTrace();
 				}
 			}
+			DecompressionAndRenderThread.workToDo = new ConcurrentLinkedQueue<WorkItemToDo>();
 		} else// Depth view
 		{
 			renderDepthTraces(canvas, changedBounds, xscale, yscale);

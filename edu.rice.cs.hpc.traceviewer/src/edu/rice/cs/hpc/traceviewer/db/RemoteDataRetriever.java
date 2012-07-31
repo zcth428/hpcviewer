@@ -66,7 +66,7 @@ public class RemoteDataRetriever {
 	 * @return
 	 * @throws IOException 
 	 */
-	public ProcessTimeline[] getData(int P0, int Pn, double t0, double tn, int vertRes, int horizRes, HashMap<Integer, CallPath> _scopeMap) throws IOException
+	public void getData(int P0, int Pn, double t0, double tn, int vertRes, int horizRes, HashMap<Integer, CallPath> _scopeMap) throws IOException
 	{
 		//Make the call
 		//Check to make sure the server is sending back data
@@ -93,7 +93,7 @@ public class RemoteDataRetriever {
 		
 		int RanksReceived = 0;
 		int RanksExpected = Math.min(Pn-P0, vertRes);
-		ProcessTimeline[] timelines = new ProcessTimeline[RanksExpected];
+		
 		
 		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
 		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
@@ -124,48 +124,17 @@ public class RemoteDataRetriever {
 			
 			DataReader.read(compressedTraceLine, 0, compressedSize);
 			//This part will be moved to another thread
-			TimeCPID[] ranksData = readTimeCPIDArray(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline);
-			TraceDataByRankRemote dataAsTraceDBR = new TraceDataByRankRemote(ranksData);
+			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, RankNumber));
 			
-			
-			int lineNumber = RankNumber;
-			/*if (false)//if (Pn-P0 > vertRes)
-				lineNumber = (int)Math.round((RankNumber-P0)*(double)vertRes/(Pn-P0));//Its like a line: P0 -> 0, the slope is number of pixels/number of ranks
-			else
-				lineNumber = RankNumber-P0;*/
-			
-			ProcessTimeline PTl = new ProcessTimeline(dataAsTraceDBR, _scopeMap, lineNumber, RanksExpected, tn-t0, t0);
-			timelines[RankNumber]= PTl;//RankNumber or RankNumber-P0??
 			RanksReceived++;
 			monitor.announceProgress();
 		}
 		monitor.endProgress();
 		System.out.println("Data receive end");
-		return timelines;
+		
 	}
 
-	/**
-	 * Reads from the stream and creates an array of Timestamp-CPID pairs containing the data for this rank
-	 * @param compressedTraceLine 
-	 * @param length The number of Timestamp-CPID pairs in this rank (not the length in bytes)
-	 * @param t0 The start time
-	 * @param tn The end time
-	 * @return The array of data for this rank
-	 * @throws IOException
-	 */
-	private TimeCPID[] readTimeCPIDArray(byte[] compressedTraceLine, int length, double t0, double tn) throws IOException {
-		
-		DataInputStream decompressor = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(compressedTraceLine)));
-		TimeCPID[] ToReturn = new TimeCPID[length];
-		double deltaT = (tn-t0)/length;
-		for (int i = 0; i < ToReturn.length; i++) {
-			int CPID = decompressor.readInt();
-			if (CPID == 0)
-				System.out.println("CPID too small");
-			ToReturn[i] = new TimeCPID(t0+i*deltaT, CPID);//Does this method of getting timestamps actually work???
-		}
-		return ToReturn;
-	}
+	
 	private void requestData(int P0, int Pn, double t0, double tn, int vertRes,
 			int horizRes) throws IOException {
 		sender.writeInt(0x44415441);//"DATA" in ASCII

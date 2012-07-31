@@ -1,28 +1,21 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
+import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
-import edu.rice.cs.hpc.traceviewer.db.TraceDataByRankRemote;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
-import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
@@ -147,18 +140,45 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		// This relies on the fact that fillTraces will always be called with
 		// the DetailCanvas before the DepthViewCanvas. Can I guarantee this?
 		if (canvas instanceof SpaceTimeDetailCanvas) {
+			int numThreadsToLaunch = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
+			DecompressionAndRenderThread[] workThreads = new DecompressionAndRenderThread[numThreadsToLaunch];
+			int RanksExpected = Math.min(attributes.endProcess-attributes.begProcess, attributes.numPixelsV);
+			
+			if (changedBounds)
+				traces = new ProcessTimeline[RanksExpected];
+
+			for (int i = 0; i < workThreads.length; i++) {
+
+				workThreads[i] = new DecompressionAndRenderThread(traces, scopeMap, RanksExpected, attributes.begTime, attributes.endTime, painter, canvas, changedBounds, xscale, yscale, attributes.numPixelsH, !changedBounds);
+				workThreads[i].start();
+			}
+			
 			if (changedBounds) {
+				
 				try {
-					traces = dataRetriever.getData(attributes.begProcess,
+					/*traces = */dataRetriever.getData(attributes.begProcess,
 							attributes.endProcess, attributes.begTime, attributes.endTime, //minBegTime, maxEndTime,
 							attributes.numPixelsV, attributes.numPixelsH,
-							scopeMap);
+							scopeMap);//This will fill the workToDo queue with decompression and rendering. After the threads join, traces will be full
 				} catch (IOException e) {
 					// UI Notify user...
 					e.printStackTrace();
 				}
+				
 			}
-			painter.renderTraces(traces, canvas, changedBounds, xscale, yscale);
+			else
+			{
+				painter.renderTraces(traces);
+			}
+			//Wait until they are all done
+			System.out.println("Threads launched. Waiting");
+			for (int i = 0; i < workThreads.length; i++) {
+				try {
+					workThreads[i].join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		} else// Depth view
 		{
 			renderDepthTraces(canvas, changedBounds, xscale, yscale);

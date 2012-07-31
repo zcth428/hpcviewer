@@ -16,7 +16,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
  * @author Philip Taffet
  * 
  */
-public class RenderThread extends Thread {
+//public class RenderThread extends Thread {
 	/**
 	 * Creates a new RenderThread which will render the specified region
 	 * 
@@ -31,7 +31,7 @@ public class RenderThread extends Thread {
 	 *            ones that this thread will render
 	 */
 	
-	final int min, max;
+/*final int min, max;
 	final ProcessTimeline[] timelines;
 	final PaintManager painter;
 	final Canvas canvas;
@@ -63,4 +63,4 @@ monitor = _monitor;
 		}
 		super.run();
 	}
-}
+}*/

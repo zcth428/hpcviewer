@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
+import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
@@ -18,7 +19,6 @@ import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
-import edu.rice.cs.hpc.traceviewer.timeline.RenderThread;
 
 /**
  * This contains the painting components from SpaceTimeData
@@ -292,48 +292,16 @@ public class PaintManager extends TraceEvents {
 	}
 	
 	/**
-	 * Renders the SpaceTimeDetailView from an array of ProcessTimelines by calling renderTrace on each one. Uses multiple threads.
+	 * Renders the SpaceTimeDetailView from an array of ProcessTimelines by enqueueing work to do for the DecompressionAndRenderThreads
+	 * @param workThreads 
 	 */
-	public void renderTraces(ProcessTimeline[] _traces, SpaceTimeCanvas canvas, boolean changedBounds,
-			double scaleX, double scaleY) {
-		int width = attributes.numPixelsH;
-
+	public void renderTraces(ProcessTimeline[] _traces) {
 		
-		monitor.beginProgress(_traces.length, "Rendering space time view...", "Trace painting", window.getShell());
-		int numThreadsToLaunch = Math.min(_traces.length, Runtime.getRuntime().availableProcessors());
-		RenderThread[] renderThreads = new RenderThread[numThreadsToLaunch];
-		for (int i = 0; i < renderThreads.length; i++) {
-			//min_i = (i*len)/N
-			//max_i = ((i+1)*len)/N
-			int min = (i*_traces.length)/numThreadsToLaunch;
-			int max = ((i+1)*_traces.length)/numThreadsToLaunch;
-			System.out.println("Creating thread to render traces ["+min+", "+ max +")");
-			renderThreads[i] = new RenderThread(min, max,
-					_traces, this, canvas, changedBounds, scaleX, scaleY, width, monitor);
+		for (int i = 0; i < _traces.length; i++) {
+			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.RenderItemToDo(i));
 		}
-		for (int i = 0; i < renderThreads.length; i++) {
-			renderThreads[i].start();
-		}
-		//Wait until they are all done
-		System.out.println("Threads launched. Waiting");
-		for (int i = 0; i < renderThreads.length; i++) {
-			try {
-				renderThreads[i].join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		/*for (int i = 0; i < _traces.length; i++) {
-			boolean debug = (i % 100 == 0);
-			if (debug)
-				System.out.println("Rendering: " + i + "/" + _traces.length);
-
-			ProcessTimeline nextTrace = _traces[i];
-			// Again why does traces have null entries??? Grr...
-			renderTrace(canvas, changedBounds, scaleX, scaleY, width, nextTrace);
-			monitor.announceProgress();
-
-		}*/
+	
+		
 		monitor.endProgress();
 	}
 	

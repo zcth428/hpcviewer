@@ -123,7 +123,8 @@ public class SpaceTimeData extends TraceEvents
 		
 		try
 		{
-			dataTrace = new BaseData(traceFile.getAbsolutePath(), traceAttributes.dbHeaderSize);
+			// record size = sizeof(long) + sizeof(int) = 24
+			dataTrace = new BaseData(traceFile.getAbsolutePath(), traceAttributes.dbHeaderSize, 24);
 		}
 		catch (IOException e)
 		{
@@ -602,7 +603,8 @@ public class SpaceTimeData extends TraceEvents
 	 */
 	public void dispose() 
 	{
-		this.colorTable.dispose();
+		colorTable.dispose();
+		dataTrace.dispose();
 	}
 	
 	public int getBegProcess()

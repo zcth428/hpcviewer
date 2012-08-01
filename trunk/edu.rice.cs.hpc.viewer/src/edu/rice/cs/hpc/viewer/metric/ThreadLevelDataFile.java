@@ -23,9 +23,10 @@ public class ThreadLevelDataFile extends BaseDataFile {
 
 	// header bytes to skip
 	static private final int HEADER_LONG	=	32;
+	static int recordSz = Constants.SIZEOF_LONG + Constants.SIZEOF_LONG;
 
 	public ThreadLevelDataFile(String filename) throws IOException {
-		super(filename, HEADER_LONG);
+		super(filename, HEADER_LONG, recordSz);
 	}		
 		
 	/**

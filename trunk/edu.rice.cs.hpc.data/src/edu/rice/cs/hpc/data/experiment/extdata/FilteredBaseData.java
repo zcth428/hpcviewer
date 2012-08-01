@@ -30,9 +30,9 @@ public class FilteredBaseData extends AbstractBaseData {
 	 * @param headerSize
 	 * @throws IOException
 	 */
-	public FilteredBaseData(String filename, int headerSize) throws IOException 
+	public FilteredBaseData(String filename, int headerSize, int recordSz) throws IOException 
 	{
-		super( filename, headerSize);
+		super( filename, headerSize, recordSz);
 	}
 
 	/****

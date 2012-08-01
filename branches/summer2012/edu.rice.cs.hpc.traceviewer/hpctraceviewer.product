@@ -41,7 +41,6 @@ Release 5.2.3 (C) Copyright 2012, Rice University.
       </win>
    </launcher>
 
-
    <vm>
    </vm>
 
@@ -71,6 +70,7 @@ Release 5.2.3 (C) Copyright 2012, Rice University.
       <plugin id="org.eclipse.core.filesystem.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.filesystem.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.resources"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
       <plugin id="org.eclipse.ecf"/>

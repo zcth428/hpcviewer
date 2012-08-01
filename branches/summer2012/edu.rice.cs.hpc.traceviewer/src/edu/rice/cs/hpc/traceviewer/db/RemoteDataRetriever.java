@@ -35,14 +35,14 @@ public class RemoteDataRetriever {
 	
 	private final Shell shell;
 	
-	final boolean DataCompressed;
+	final boolean dataCompressed;
 	
 	private final IStatusLineManager statusMgr;
 
 	public RemoteDataRetriever(Socket _serverConnection, IStatusLineManager _statusMgr, Shell _shell, int compressionType) throws IOException {
 		socket = _serverConnection;
 		
-		DataCompressed = (compressionType==1);
+		dataCompressed = (compressionType==1);
 		
 		rcvBacking = new BufferedInputStream(socket.getInputStream());
 		receiver = new DataInputStream(rcvBacking);
@@ -111,7 +111,7 @@ public class RemoteDataRetriever {
 		while (RanksReceived < RanksExpected)
 		{
 			monitor.announceProgress();
-			int RankNumber = DataReader.readInt();
+			int rankNumber = DataReader.readInt();
 			int Length = DataReader.readInt();//Number of CPID's
 			
 			if (RanksExpected - RanksReceived < 3)
@@ -135,13 +135,13 @@ public class RemoteDataRetriever {
 				else
 					break;
 			}
-			if (EndingZeroCount > 0)
+			if (EndingZeroCount > 3)
 				System.out.println("Message of size: " + compressedSize + " ended with " + EndingZeroCount + " zeros.");
 			//if (numRead != compressedSize)
 			//	System.out.println("Only read " + numRead + " instead of "+ compressedSize);
 			
 			//This part will be moved to another thread
-			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, RankNumber));
+			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, rankNumber, dataCompressed));
 			
 			RanksReceived++;
 			monitor.announceProgress();

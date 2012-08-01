@@ -60,14 +60,21 @@ public abstract class BaseViewPaint {
 		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processors
 		int linesToPaint = getNumberOfLines();
 		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
-		
-		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting", window.getShell());
+
+		// -------------------------------------------------------------------
+		// hack fix: if the number of horizontal pixels is less than 1 we 
+		//			 return immediately, otherwise it throws an exception
+		// -------------------------------------------------------------------
+		if (attributes.numPixelsH <= 0)
+			return;
 		
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
 		if (! startPainting(linesToPaint, changedBounds))
 			return;
+		
+		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting", window.getShell());
 
 		// -------------------------------------------------------------------
 		// Create multiple threads to paint the view

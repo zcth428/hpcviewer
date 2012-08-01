@@ -118,8 +118,8 @@ public class TraceDatabase
 			//	some are allocated dynamically. At the moment we can't dispose
 			//	all colors
 			// ---------------------------------------------------------------------
-			//if (database.dataTraces != null)
-			//	database.dataTraces.dispose();
+			if (database.dataTraces != null)
+				database.dataTraces.dispose();
 			
 			database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
 			
@@ -134,16 +134,22 @@ public class TraceDatabase
 				
 				//---------------------------------------------------------------------
 				// Tell all views that we have the data, and they need to refresh their content
+				//	Due to tightly coupled relationship between views, 
+				//	we need to be extremely careful of the order of view activation
+				//	if the order is "incorrect", it can crash the program
+				//
+				// TODO: we need to use Eclipse's ISourceProvider to handle the existence of data
+				//		 this should avoid a tightly-coupled views
 				// ---------------------------------------------------------------------				
 
 				HPCSummaryView sview = (HPCSummaryView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCSummaryView.ID);
 				sview.updateView(database.dataTraces);
-
-				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-				tview.updateView(database.dataTraces);
 				
 				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
 				dview.updateView(database.dataTraces);
+
+				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
+				tview.updateView(database.dataTraces);
 				
 				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
 				cview.updateView(database.dataTraces);

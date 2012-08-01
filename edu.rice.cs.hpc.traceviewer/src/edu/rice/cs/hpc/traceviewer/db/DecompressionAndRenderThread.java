@@ -106,7 +106,7 @@ public class DecompressionAndRenderThread extends Thread {
 	}
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException
 	{
-		TimeCPID[] ranksData = readTimeCPIDArray(toDecomp.Packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime);
+		TimeCPID[] ranksData = readTimeCPIDArray(toDecomp.Packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
 		TraceDataByRankRemote dataAsTraceDBR = new TraceDataByRankRemote(ranksData);
 
 
@@ -122,16 +122,21 @@ public class DecompressionAndRenderThread extends Thread {
 
 	/**
 	 * Reads from the stream and creates an array of Timestamp-CPID pairs containing the data for this rank
-	 * @param compressedTraceLine 
+	 * @param packedTraceLine 
 	 * @param length The number of Timestamp-CPID pairs in this rank (not the length in bytes)
 	 * @param t0 The start time
 	 * @param tn The end time
+	 * @param compressed 
 	 * @return The array of data for this rank
 	 * @throws IOException
 	 */
-	private TimeCPID[] readTimeCPIDArray(byte[] compressedTraceLine, int length, double t0, double tn) throws IOException {
+	private TimeCPID[] readTimeCPIDArray(byte[] packedTraceLine, int length, double t0, double tn, boolean compressed) throws IOException {
 
-		DataInputStream decompressor = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(compressedTraceLine)));
+		DataInputStream decompressor;
+		if (compressed)
+			decompressor= new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(packedTraceLine)));
+		else
+			decompressor = new DataInputStream(new ByteArrayInputStream(packedTraceLine));
 		TimeCPID[] ToReturn = new TimeCPID[length];
 		double deltaT = (tn-t0)/length;
 		for (int i = 0; i < ToReturn.length; i++) {
@@ -153,12 +158,14 @@ public static class DecompressionItemToDo extends WorkItemToDo {
 	final int itemCount;//The number of Time-CPID pairs
 	final double startTime, endTime;
 	final int rankNumber;
-	public DecompressionItemToDo(byte[] _packet, int _itemCount, double _startTime, double _endTime, int _rankNumber) {
+	final boolean compressed;
+	public DecompressionItemToDo(byte[] _packet, int _itemCount, double _startTime, double _endTime, int _rankNumber, boolean _dataCompressed) {
 		Packet = _packet;
 		itemCount = _itemCount;
 		startTime = _startTime;
 		endTime = _endTime;
 		rankNumber = _rankNumber;
+		compressed = _dataCompressed;
 	}
 }
 public static class RenderItemToDo extends WorkItemToDo {

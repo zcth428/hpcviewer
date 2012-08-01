@@ -177,8 +177,6 @@ namespace TraceviewerServer
 					CurrIndexInBuff += 4;
 				}
 				OutputBufferLen = entries*4;
-				cout<<"First CPID: "<<(*ActualData)[0].CPID<< " First 4 bytes in buffer are "<<(int)OutputBuffer[0]<<", "<<(int)OutputBuffer[1]<<", "<<(int)OutputBuffer[2]<<", "<<(int)OutputBuffer[3]<<endl;
-
 			}
 			msg.Data.CompressedSize = OutputBufferLen;
 			COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,

@@ -9,9 +9,9 @@ import java.io.IOException;
  */
 public class BaseData extends AbstractBaseData {
 	
-	public BaseData(String filename, int headerSize) throws IOException 
+	public BaseData(String filename, int headerSize, int recordSz) throws IOException 
 	{
-		super(filename, headerSize);
+		super(filename, headerSize, recordSz);
 	}
 	
 	/*

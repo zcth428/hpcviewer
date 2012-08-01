@@ -33,7 +33,7 @@ public class LargeByteBuffer
 	 * 
 	 * @throws IOException
 	 */
-	public LargeByteBuffer(FileChannel in, int headerSz)
+	public LargeByteBuffer(FileChannel in, int headerSz, int recordSz)
 		throws IOException
 	{
 		fcInput = in;
@@ -44,7 +44,7 @@ public class LargeByteBuffer
 		// the page size has to be multiple of the least common multiple of 
 		//	the header size and the record size
 		// --------------------------------------------------------------------
-		pageSize = lcm (headerSz, 24) * (1 << 20);
+		pageSize = lcm (headerSz, recordSz) * (1 << 20);
 		
 		int numPages = 1+(int) (in.size() / pageSize);
 		masterBuffer = new MappedByteBuffer[numPages];		
@@ -155,9 +155,9 @@ public class LargeByteBuffer
 	 */
 	public void dispose() 
 	{
-		this.masterBuffer = null;
+		masterBuffer = null;
 		try {
-			this.fcInput.close();
+			fcInput.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

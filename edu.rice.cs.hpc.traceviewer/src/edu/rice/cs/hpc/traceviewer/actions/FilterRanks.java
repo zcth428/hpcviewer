@@ -50,7 +50,7 @@ public class FilterRanks extends AbstractHandler {
 			try {
 				
 				FilteredBaseData filteredBaseData = new FilteredBaseData(data.getTraceFile().getAbsolutePath(), 
-						data.getTraceAttribute().dbHeaderSize);
+						data.getTraceAttribute().dbHeaderSize, 24);
 				filteredBaseData.setFilter( filter );
 				
 				data.setBaseData(filteredBaseData);

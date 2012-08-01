@@ -67,7 +67,8 @@ public class BaseDataFile {
 	 */
 	private void setData(String filename) throws IOException {
 		
-		final FileChannel f = new RandomAccessFile(filename, "r").getChannel();
+		final RandomAccessFile file = new RandomAccessFile(filename, "r");
+		final FileChannel f = file.getChannel();
 		masterBuff = new LargeByteBuffer(f);
 
 		this.type = masterBuff.getInt(0);
@@ -112,6 +113,12 @@ public class BaseDataFile {
 			
 			valuesX[i] = x_val;
 		}
+		// ------------------------------------------------------
+		// need to close the file and its file channel
+		// somehow this can free the memory
+		// ------------------------------------------------------
+		f.close();
+		file.close();
 	}
 
 	/**

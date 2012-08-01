@@ -18,6 +18,7 @@
 #include "ImageTraceAttributes.h"
 #include "MPICommunication.h"
 #include "CompressingDataSocketLayer.h"
+#include "Server.h"
 
 namespace TraceviewerServer
 {

@@ -144,22 +144,45 @@ namespace TraceviewerServer
 			msg.Data.RankID = Truerank;
 			/*Have to move this so that we know how large the compressed stream is
 			 * COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,
-					0);*/
+			 0);*/
 
 			int i = 0;
 			/*for (it = ActualData->begin(); it != ActualData->end(); it++)
 			 {
 			 msg.Data.Data[i++] = it->CPID;
 			 }*/
-			CompressingDataSocketLayer Compr;
-
-			for (i = 0; i < entries; i++)
+			const unsigned char* OutputBuffer;
+			int OutputBufferLen;
+			if (Compression)
 			{
-				Compr.WriteInt((*ActualData)[i].CPID);
+				CompressingDataSocketLayer Compr;
+
+				for (i = 0; i < entries; i++)
+				{
+					Compr.WriteInt((*ActualData)[i].CPID);
+				}
+				Compr.Flush();
+				OutputBufferLen = Compr.GetOutputLength();
+				OutputBuffer = Compr.GetOutputBuffer();
 			}
-			Compr.Flush();
-			msg.Data.CompressedSize = Compr.GetOutputLength();
-			COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER, 0);
+			else
+			{
+
+				OutputBuffer = new unsigned char[entries*Constants::SIZEOF_INT];
+				char* ptrToFirstElem = (char*)&(OutputBuffer[0]);
+				int CurrIndexInBuff = 0;
+				for (i = 0; i < entries; i++)
+				{
+					ByteUtilities::WriteInt(ptrToFirstElem + CurrIndexInBuff, (*ActualData)[i].CPID);
+					CurrIndexInBuff += 4;
+				}
+				OutputBufferLen = entries*4;
+				cout<<"First CPID: "<<(*ActualData)[0].CPID<< " First 4 bytes in buffer are "<<(int)OutputBuffer[0]<<", "<<(int)OutputBuffer[1]<<", "<<(int)OutputBuffer[2]<<", "<<(int)OutputBuffer[3]<<endl;
+
+			}
+			msg.Data.CompressedSize = OutputBufferLen;
+			COMM_WORLD.Send(&msg, sizeof(msg), MPI_PACKED, MPICommunication::SOCKET_SERVER,
+					0);
 			//cout << "Buffer overflow protection: Setting " << i << " to 0xABCDEF" << endl;
 			//CPIDs[i] = 0xABCDEF;
 
@@ -169,7 +192,12 @@ namespace TraceviewerServer
 			//Each entry is an int
 			//		(entries) * Constants::SIZEOF_INT;
 
-			COMM_WORLD.Send(Compr.GetOutputBuffer(), Compr.GetOutputLength(), MPI_BYTE, MPICommunication::SOCKET_SERVER, 0);
+			COMM_WORLD.Send(OutputBuffer, OutputBufferLen, MPI_BYTE,
+					MPICommunication::SOCKET_SERVER, 0);
+			if (!Compression)
+			{
+				delete[] OutputBuffer;
+			}
 			LinesSentCount++;
 			if (LinesSentCount % 100 == 0)
 				cout << Truerank << " Has sent " << LinesSentCount
@@ -183,7 +211,7 @@ namespace TraceviewerServer
 
 	Slave::~Slave()
 	{
-		delete(STDCL);
+		delete (STDCL);
 	}
 
 } /* namespace TraceviewerServer */

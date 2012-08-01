@@ -119,12 +119,15 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 	make_pair( "yes", yes ),
 	make_pair( "Yes", yes ),
 	make_pair( "y", yes ),
+	make_pair( "on", yes),
 	make_pair( "false", no ),
 	make_pair( "f", no ),
 	make_pair( "False", no ),
 	make_pair( "no", no ),
 	make_pair( "No", no ),
-	make_pair( "n", no )};
+	make_pair( "n", no ),
+	make_pair( "off", no)
+	};
 	const Map Parser (vals, vals + sizeof(vals) / sizeof (vals[0]));
 
 

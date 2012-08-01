@@ -22,7 +22,7 @@ public class BaseDataFile {
 	private String valuesX[];
 	private long offsets[];
 
-	public BaseDataFile(String filename)  throws IOException 
+	public BaseDataFile(String filename, int headerSize)  throws IOException 
 	{
 		
 		if (filename != null) {
@@ -31,7 +31,7 @@ public class BaseDataFile {
 			// test file version
 			//---------------------------------------------
 			
-			this.setData(filename);
+			this.setData(filename, headerSize);
 		}
 	}
 	
@@ -65,11 +65,11 @@ public class BaseDataFile {
 	 * @param f: array of files
 	 * @throws IOException 
 	 */
-	private void setData(String filename) throws IOException {
+	private void setData(String filename, int headerSize) throws IOException {
 		
 		final RandomAccessFile file = new RandomAccessFile(filename, "r");
 		final FileChannel f = file.getChannel();
-		masterBuff = new LargeByteBuffer(f);
+		masterBuff = new LargeByteBuffer(f, headerSize);
 
 		this.type = masterBuff.getInt(0);
 		this.numFiles = masterBuff.getInt(Constants.SIZEOF_INT);

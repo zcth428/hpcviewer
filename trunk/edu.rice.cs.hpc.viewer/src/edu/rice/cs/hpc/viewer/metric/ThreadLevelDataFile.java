@@ -25,7 +25,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 	static private final int HEADER_LONG	=	32;
 
 	public ThreadLevelDataFile(String filename) throws IOException {
-		super(filename);
+		super(filename, HEADER_LONG);
 	}		
 		
 	/**

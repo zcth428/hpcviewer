@@ -17,7 +17,7 @@ namespace TraceviewerServer
 	class DataOutputFileStream: public ofstream
 	{
 	public:
-		DataOutputFileStream(const char*);
+		DataOutputFileStream(const char*, openmode mode = ios_base::binary | ios_base::out);
 		virtual ~DataOutputFileStream();
 		void WriteInt(int);
 		void WriteLong(Long);

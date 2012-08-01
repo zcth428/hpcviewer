@@ -12,8 +12,8 @@ namespace TraceviewerServer
 {
 
 //ostream* Backer;
-	DataOutputFileStream::DataOutputFileStream(const char* filename) :
-			ofstream(filename, ios_base::binary | ios_base::out)
+	DataOutputFileStream::DataOutputFileStream(const char* filename, openmode mode) :
+			ofstream(filename, mode)
 	{
 
 	}

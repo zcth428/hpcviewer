@@ -32,7 +32,7 @@ namespace TraceviewerServer
 		cout << "Doesn't exist" << endl;
 		// check if the files in glob patterns is correct
 
-		if (!AtLeastOneValidFile(GlobInputFile))
+		if (!AtLeastOneValidFile(Directory))
 		{
 			return FAIL_NO_DATA;
 		}
@@ -48,14 +48,22 @@ namespace TraceviewerServer
 		int type = 0;
 		dos.WriteInt(type);
 
-		vector<string> AllPaths = FileUtils::GetAllFilesInDir(GlobInputFile);
+		vector<string> AllPaths = FileUtils::GetAllFilesInDir(Directory);
+		vector<string> Filtered;
+		vector<string>::iterator it;
+		for (it = AllPaths.begin(); it != AllPaths.end(); it++)
+		{
+			string val = *it;
+			if (val.find(".hpctrace") < string::npos)//This is hardcoded, which isn't great but will have to do because GlobInputFile is regex-style ("*.hpctrace")
+				Filtered.push_back(val);
+		}
 		// on linux, we have to sort the files
-		//To sort them, we need a random access iterator, which means we need to load all of them into a vector F
-		sort(AllPaths.begin(), AllPaths.end());
+		//To sort them, we need a random access iterator, which means we need to load all of them into a vector
+		sort(Filtered.begin(), Filtered.end());
 
-		dos.WriteInt(AllPaths.size());
+		dos.WriteInt(Filtered.size());
 		const Long num_metric_header = 2 * Constants::SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes)
-		const Long num_metric_index = AllPaths.size()
+		const Long num_metric_index = Filtered.size()
 				* (Constants::SIZEOF_LONG + 2 * Constants::SIZEOF_INT);
 		Long offset = num_metric_header + num_metric_index;
 
@@ -68,12 +76,12 @@ namespace TraceviewerServer
 		//		int proc-id, int thread-id, long offset
 		//-----------------------------------------------------
 		vector<string>::iterator it2;
-		for (it2 = AllPaths.begin(); it2 < AllPaths.end(); it2++)
+		for (it2 = Filtered.begin(); it2 < Filtered.end(); it2++)
 		{
 
 			const string Filename = *it2;
 			const int last_pos_basic_name = Filename.length() - Suffix.length();
-			const string Basic_name = Filename.substr(Directory.length(),
+			const string Basic_name = Filename.substr(FileUtils::CombinePaths(Directory, "").length(),//This ensures we count the "/" at the end of the path
 					last_pos_basic_name);
 			cout << "Path manipulation check: The file in " << Filename << " is "
 					<< Basic_name << endl;
@@ -108,7 +116,7 @@ namespace TraceviewerServer
 		//-----------------------------------------------------
 		// 3. Copy all data from the multiple files into one file
 		//-----------------------------------------------------
-		for (it2 = AllPaths.begin(); it2 < AllPaths.end(); it2++)
+		for (it2 = Filtered.begin(); it2 < Filtered.end(); it2++)
 		{
 			string i = *it2;
 
@@ -131,14 +139,15 @@ namespace TraceviewerServer
 		//  	the type of the application is computed in step 2
 		//		Ideally, this step has to be in the beginning !
 		//-----------------------------------------------------
-		DataOutputFileStream f(OutputFile.c_str());
+		//While we don't actually want to do any input operations, adding the input flag prevents the file from being truncated to 0 bytes
+		DataOutputFileStream f(OutputFile.c_str(), ios_base::in | ios_base::out | ios_base::binary);
 		f.WriteInt(type);
 		f.close();
 
 		//-----------------------------------------------------
 		// 5. remove old files
 		//-----------------------------------------------------
-		RemoveFiles(AllPaths);
+		RemoveFiles(Filtered);
 		return SUCCESS_MERGED;
 	}
 

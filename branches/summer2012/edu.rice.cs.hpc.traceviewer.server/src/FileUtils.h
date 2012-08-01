@@ -69,12 +69,10 @@ namespace TraceviewerServer
 			vector<string> ValidFiles;
 			DIR* TestDir;
 			dirent* entry;
-			TestDir = opendir("/Users/pat2/Documents");
+			TestDir = opendir(directory.c_str());
 			while ((entry = readdir(TestDir)))
 			{
-				string FullPath = directory
-						+ (directory[directory.length() - 1] == '/' ? "" : "/") + //If it ends with a slash, we shouldn't add another
-						entry->d_name;
+				string FullPath = CombinePaths(directory, string(entry->d_name));
 
 				struct stat DirInfo;
 				bool err = (stat(FullPath.c_str(), &DirInfo) != 0);

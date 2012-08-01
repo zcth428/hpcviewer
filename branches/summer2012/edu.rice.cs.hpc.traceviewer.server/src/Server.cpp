@@ -63,6 +63,7 @@ namespace TraceviewerServer
 		{
 			cout << "Could not open database" << endl;
 			SendDBOpenFailed(socketptr);
+			return -4;
 		}
 		else
 		{
@@ -181,7 +182,12 @@ namespace TraceviewerServer
 		if (Command != Constants::OPEN)
 			cerr << "Expected an open command, got " << Command << endl;
 		string PathToDB = receiver->ReadString();
+		LocalDBOpener DBO;
+		cout << "Opening database: " << PathToDB << endl;
+		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
 #ifdef UseMPI
+		if (STDCL != NULL)
+		{
 		MPICommunication::CommandMessage cmdPathToDB;
 		cmdPathToDB.Command = Constants::OPEN;
 		if (PathToDB.length() > 1023)
@@ -194,10 +200,9 @@ namespace TraceviewerServer
 
 		COMM_WORLD.Bcast(&cmdPathToDB, sizeof(cmdPathToDB), MPI_PACKED,
 				MPICommunication::SOCKET_SERVER);
+		}
 #endif
-		LocalDBOpener DBO;
-		cout << "Opening database: " << PathToDB << endl;
-		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
+
 
 	}
 

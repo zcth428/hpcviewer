@@ -7,9 +7,9 @@ import java.util.HashMap;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.util.Constants;
@@ -142,16 +142,18 @@ public class TraceDatabase
 				//		 this should avoid a tightly-coupled views
 				// ---------------------------------------------------------------------				
 
-				HPCSummaryView sview = (HPCSummaryView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCSummaryView.ID);
+				IWorkbenchPage page = window.getActivePage();
+				
+				HPCSummaryView sview = (HPCSummaryView) page.showView(HPCSummaryView.ID);
 				sview.updateView(database.dataTraces);
 				
-				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
+				HPCDepthView dview = (HPCDepthView) page.showView(HPCDepthView.ID);
 				dview.updateView(database.dataTraces);
 
-				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
+				HPCTraceView tview = (HPCTraceView) page.showView(HPCTraceView.ID);
 				tview.updateView(database.dataTraces);
 				
-				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
+				HPCCallStackView cview = (HPCCallStackView) page.showView(HPCCallStackView.ID);
 				cview.updateView(database.dataTraces);
 
 				ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(

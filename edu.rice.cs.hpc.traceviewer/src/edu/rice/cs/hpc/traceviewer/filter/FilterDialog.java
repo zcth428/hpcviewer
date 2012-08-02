@@ -16,13 +16,13 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.data.experiment.extdata.Filter;
+import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 
 
 /*****
@@ -33,7 +33,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.Filter;
 public class FilterDialog extends TitleAreaDialog {
 
 	private List list;
-	private Filter filter;
+	private FilteredBaseData filterData;
 	private Button btnRemove;
 	private Button btnShow;
 	
@@ -41,9 +41,9 @@ public class FilterDialog extends TitleAreaDialog {
 	 * constructor for displaying filter glob pattern
 	 * @param parentShell
 	 */
-	public FilterDialog(Shell parentShell, Filter f) {
+	public FilterDialog(Shell parentShell, FilteredBaseData f) {
 		super(parentShell);
-		filter = f;
+		filterData = f;
 	}
 	
 	/*
@@ -64,6 +64,7 @@ public class FilterDialog extends TitleAreaDialog {
 		btnHide.setText("To hide");
 		btnHide.setToolTipText("An option to hide matching patterns");
 		
+		Filter filter = filterData.getFilter();
 		if (filter.isShownMode())
 			btnShow.setSelection(true);
 		else
@@ -154,7 +155,7 @@ public class FilterDialog extends TitleAreaDialog {
 		this.setTitle("Filter patterns");
 		
 		// add pattern into the list
-		if (filter != null && filter.getPatterns() != null) {
+		if (filterData != null && filter.getPatterns() != null) {
 			for (String str : filter.getPatterns()) {
 				list.add(str);
 			}
@@ -189,31 +190,20 @@ public class FilterDialog extends TitleAreaDialog {
 			String item = list.getItem(i);
 			filterList.add(i, item);
 		}
+		Filter filter = filterData.getFilter();
+		
 		// put the glob pattern back
 		filter.setPatterns(filterList);
 		// set the show mode (to show or to hide)
 		filter.setShowMode( btnShow.getSelection() );
 		
-		super.okPressed();
-	}
-	
-	/******
-	 * unit test for the dialog window
-	 * @param arg
-	 */
-	static public void main(String arg[]) {
-		Filter f = new Filter();
-		ArrayList<String> list = new ArrayList<String>();
-		list.add("*.*");
-		f.setPatterns(list);
-		
-		Display display = new Display();
-		FilterDialog dlg = new FilterDialog(display.getActiveShell(), f);
-		
-		if (dlg.open() == Dialog.OK ) {
-			System.out.println("list: " + f.getPatterns().size());
-		} else {
-			System.err.println("cancel: " + f.getPatterns().size());
+		// check if the filter is correct
+		filterData.setFilter(filter);
+		if (filterData.getNumberOfRanks()>0)
+			super.okPressed();
+		else {
+			// it is not allowed to filter everything
+			MessageDialog.openError(getShell(), "Error", "The result of filter is empty ranks.\nIt isn't allowed to filter all the ranks.");
 		}
-	}
+	}	
 }

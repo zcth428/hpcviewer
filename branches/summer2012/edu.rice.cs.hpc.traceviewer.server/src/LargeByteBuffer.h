@@ -8,7 +8,7 @@
 #ifndef LARGEBYTEBUFFER_H_
 #define LARGEBYTEBUFFER_H_
 
-#include "sys/mman.h"
+
 #include "sys/stat.h"
 #include <fcntl.h>
 #include <vector>
@@ -16,6 +16,8 @@
 #include <iostream>
 #include <errno.h>
 #include "ByteUtilities.h"
+#include "VersatileMemoryPage.h"
+#include <unistd.h>
 
 namespace TraceviewerServer
 {
@@ -29,10 +31,11 @@ namespace TraceviewerServer
 		Long GetLong(ULong);
 		int GetInt(ULong);
 	private:
-		char** MasterBuffer;
+		vector<VersatileMemoryPage> MasterBuffer;
 		ULong Length;
 		int NumPages;
-		static const long PAGE_SIZE = 1 << 30;
+		//TODO: Restore back to 30, at least!
+		static const long PAGE_SIZE = 1<<23;//1 << 30;
 	};
 
 } /* namespace TraceviewerServer */

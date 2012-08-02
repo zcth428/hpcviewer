@@ -5,7 +5,7 @@
  *      Author: pat2
  */
 #include "LargeByteBuffer.h"
-#include <unistd.h>
+
 
 using namespace std;
 
@@ -32,32 +32,23 @@ namespace TraceviewerServer
 		int PartialPageSize = FileSize % PAGE_SIZE;
 		NumPages = FullPages + (PartialPageSize == 0 ? 0 : 1);
 
-		typedef int FileDescriptor;
+
 		FileDescriptor fd = open(SPath.c_str(), O_RDONLY);
 
 		ULong SizeRemaining = FileSize;
 
+
 		//MasterBuffer = new mm::mapped_file*[NumPages];
-		MasterBuffer = new char*[NumPages];
+
 		for (int i = 0; i < NumPages; i++)
 		{
 			unsigned long mapping_len = min((ULong) PAGE_SIZE, SizeRemaining); 
 
 			//MasterBuffer[i] = new mm::mapped_file(Path, mm::mapped_file::readonly, PAGE_SIZE, PAGE_SIZE*i);
 			//This is done to make the Blue Gene Q easier
-			void* AllocatedRegion = mmap(0, mapping_len, MapProt,
-					MapFlags, dup(fd), PAGE_SIZE * i);
-			if (AllocatedRegion == MAP_FAILED)
-			{
-				cerr << "Mapping returned error " << strerror(errno) << endl;
-				cerr << "off_t size =" << sizeof(off_t) << "mapping size=" << mapping_len << " PAGE_SIZE=" << PAGE_SIZE << " SizeRemaining=" <<SizeRemaining << " MapProt=" <<MapProt
-					<< " MapFlags=" << MapFlags << " fd=" << fd << " PAGE_SIZE*I=" << PAGE_SIZE * i << endl;
-				fflush(NULL);
-				exit(-1);
-			}
 
-			char* temp = (char*) AllocatedRegion;
-			MasterBuffer[i] = temp;
+			MasterBuffer.push_back(*(new VersatileMemoryPage(PAGE_SIZE*i , mapping_len, i, fd)));
+
 			//cout << "Allocated a page: " << AllocatedRegion << endl;
 			SizeRemaining -= mapping_len;
 			//cerr << "pid=" << getpid() << " i=" << i << " first test read=" << (int) *MasterBuffer[i] << endl;
@@ -70,7 +61,7 @@ namespace TraceviewerServer
 	{
 		int Page = pos / PAGE_SIZE;
 		int loc = pos % PAGE_SIZE;
-		char* p2D = MasterBuffer[Page] + loc;
+		char* p2D = MasterBuffer[Page].Get() + loc;
 		int val = ByteUtilities::ReadInt(p2D);
 		return val;
 	}
@@ -78,7 +69,7 @@ namespace TraceviewerServer
 	{
 		int Page = pos / PAGE_SIZE;
 		int loc = pos % PAGE_SIZE;
-		char* p2D = MasterBuffer[Page] + loc;
+		char* p2D = MasterBuffer[Page].Get() + loc;
 		Long val = ByteUtilities::ReadLong(p2D);
 		return val;
 
@@ -89,12 +80,8 @@ namespace TraceviewerServer
 	}
 	LargeByteBuffer::~LargeByteBuffer()
 	{
-		for (int i = 0; i < NumPages; i++)
-		{
-			munmap(MasterBuffer[i], i + 1 == NumPages ? FileSize % PAGE_SIZE : PAGE_SIZE);
-			delete (MasterBuffer[i]);
-		}
-		delete (MasterBuffer);
+		MasterBuffer.clear();
+
 	}
 }
 

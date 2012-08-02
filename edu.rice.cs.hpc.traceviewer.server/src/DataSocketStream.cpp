@@ -41,15 +41,17 @@ namespace TraceviewerServer
 		//listen
 		listen(unopenedSocketFD, 5);
 		if (Accept)
+		{
+			cout << "Waiting for connection on port " << GetPort() << endl;
 			AcceptS();
-
+		}
 	}
 	void DataSocketStream::AcceptS()
 	{
 		//accept
 		sockaddr_in client;
 		unsigned int len = sizeof(client);
-		cout << "Waiting for connection" << endl;
+
 		socketDesc = accept(unopenedSocketFD, (sockaddr*) &client, &len);
 		if (socketDesc < 0)
 			cerr << "Error on accept" << endl;

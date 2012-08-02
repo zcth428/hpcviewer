@@ -165,7 +165,8 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 				if (c + 1 < argc)
 				{ //Possibly a number following
 					int val = atoi(argv[c + 1]);
-					if (val < 1024)
+
+					if ((val < 1024)&& (val != 0))
 					{
 						PrintHelp();
 						return false;

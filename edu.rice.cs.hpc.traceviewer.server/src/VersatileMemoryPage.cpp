@@ -25,18 +25,13 @@ namespace TraceviewerServer
 
 	VersatileMemoryPage::~VersatileMemoryPage()
 	{
-		cout<< "Destructing ";
-		if ((IsMapped != 0)&& (IsMapped!=1))
-			cout<<"Bad IsMapped:"<<IsMapped<<endl;
-		else
-			cout<<"IsMapped = " <<IsMapped<< " I:"<< Index << " Usage: " << PagesCurrentlyAllocatedCount << " / " <<MAX_PAGES_TO_ALLOCATE_AT_ONCE<<endl;
 		if (IsMapped)
 			UnmapPage();
 	}
 	char* VersatileMemoryPage::Get()
 	{
 		if ((IsMapped != 0)&& (IsMapped!=1))
-				cout<<"BadIsmapped:"<<IsMapped<<endl;
+			cout<<"BadIsmapped:"<<IsMapped<<endl;
 
 		PutMeOnTop();
 

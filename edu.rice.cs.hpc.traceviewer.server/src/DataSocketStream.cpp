@@ -32,7 +32,10 @@ namespace TraceviewerServer
 		int err = bind(unopenedSocketFD, (sockaddr*) &Address, sizeof(Address));
 		if (err)
 		{
-			cerr << "Could not bind socket. Error was " << errno << endl;
+			if (errno == 48)
+				cerr<< "Could not bind socket because socket is already in use. Make sure you have closed hpctraceviewer, wait 30 seconds and try again. Alternatively, you can choose a different port."<<endl;
+			else
+				cerr << "Could not bind socket. Error was " << errno << endl;
 			throw 1111;
 		}
 		//listen

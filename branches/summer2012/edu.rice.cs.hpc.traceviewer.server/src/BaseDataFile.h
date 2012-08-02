@@ -21,12 +21,12 @@ namespace TraceviewerServer
 	class BaseDataFile
 	{
 	public:
-		BaseDataFile(string);
+		BaseDataFile(string, int);
 		virtual ~BaseDataFile();
 		int getNumberOfFiles();
 		Long* getOffsets();
 		LargeByteBuffer* getMasterBuffer();
-		void setData(string);
+		void setData(string, int);
 
 		bool IsMultiProcess();
 		bool IsMultiThreading();

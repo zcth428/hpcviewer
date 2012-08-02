@@ -18,6 +18,9 @@
 #include "ByteUtilities.h"
 #include "VersatileMemoryPage.h"
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
 
 namespace TraceviewerServer
 {
@@ -25,17 +28,18 @@ namespace TraceviewerServer
 	class LargeByteBuffer
 	{
 	public:
-		LargeByteBuffer(std::string);
+		LargeByteBuffer(std::string, int);
 		virtual ~LargeByteBuffer();
 		ULong Size();
 		Long GetLong(ULong);
 		int GetInt(ULong);
 	private:
+		static ULong lcm(ULong, ULong);
+		static ULong GetRamSize();
 		vector<VersatileMemoryPage> MasterBuffer;
 		ULong Length;
 		int NumPages;
-		//TODO: Restore back to 30, at least!
-		static const long PAGE_SIZE = 1<<23;//1 << 30;
+
 	};
 
 } /* namespace TraceviewerServer */

@@ -24,6 +24,7 @@ namespace TraceviewerServer
 		VersatileMemoryPage();
 		VersatileMemoryPage(ULong, int, int, FileDescriptor);
 		virtual ~VersatileMemoryPage();
+		static void SetMaxPages(int);
 		char* Get();
 	private:
 		void MapPage();

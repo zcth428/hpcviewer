@@ -52,8 +52,11 @@ namespace TraceviewerServer
 
 		int Height;
 		string ExperimentXML;
+		string FileTrace;
 
 		bool TracesInitialized;
+
+		static const int DEFAULT_HEADER_SIZE = 24;
 
 	};
 

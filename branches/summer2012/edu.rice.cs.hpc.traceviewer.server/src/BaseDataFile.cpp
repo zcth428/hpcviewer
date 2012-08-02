@@ -15,7 +15,7 @@ namespace TraceviewerServer
 // Global variables
 //-----------------------------------------------------------
 
-	BaseDataFile::BaseDataFile(string filename)
+	BaseDataFile::BaseDataFile(string filename, int HeaderSize)
 	{
 		cout << "Setting Data File: " << filename << endl;
 		if (filename != "")
@@ -24,7 +24,7 @@ namespace TraceviewerServer
 			// test file version
 			//---------------------------------------------
 
-			setData(filename);
+			setData(filename, HeaderSize);
 		}
 
 	}
@@ -49,9 +49,9 @@ namespace TraceviewerServer
 	 * @param f: array of files
 	 * @throws IOException
 	 */
-	void BaseDataFile::setData(string filename)
+	void BaseDataFile::setData(string filename, int HeaderSize)
 	{
-		MasterBuff = new LargeByteBuffer(filename);
+		MasterBuff = new LargeByteBuffer(filename, HeaderSize);
 
 		Type = MasterBuff->GetInt(0);
 		NumFiles = MasterBuff->GetInt(Constants::SIZEOF_INT);

@@ -56,7 +56,8 @@ namespace TraceviewerServer
 		Type = MasterBuff->GetInt(0);
 		NumFiles = MasterBuff->GetInt(Constants::SIZEOF_INT);
 
-		ValuesX = new string[NumFiles];
+		ProcessIDs = new int[NumFiles];
+		ThreadIDs = new short[NumFiles];
 		Offsets = new Long[NumFiles];
 
 		Long current_pos = Constants::SIZEOF_INT * 2;
@@ -76,23 +77,25 @@ namespace TraceviewerServer
 			// adding list of x-axis
 			//--------------------------------------------------------------------
 
-			ostringstream stringBuilder;
+
 			if (IsHybrid())
 			{
-				stringBuilder << proc_id << "." << thread_id;
+				ProcessIDs[i] = proc_id;
+				ThreadIDs[i] = thread_id;
 			}
 			else if (IsMultiProcess())
 			{
-				stringBuilder << proc_id;
+				ProcessIDs[i] = proc_id;
+				ThreadIDs[i] = -1;
 			}
 			else
 			{
 				// temporary fix: if the application is neither hybrid nor multiproc nor multithreads,
 				// we just print whatever the order of file name alphabetically
 				// this is not the ideal solution, but we cannot trust the value of proc_id and thread_id
-				stringBuilder << i;
+				ProcessIDs[i] = i;
+				ThreadIDs[i] = -1;
 			}
-			ValuesX[i] = stringBuilder.str();
 
 		}
 	}
@@ -117,7 +120,8 @@ namespace TraceviewerServer
 	BaseDataFile::~BaseDataFile()
 	{
 		delete(MasterBuff);
-		delete[] ValuesX;
+		delete[] ProcessIDs;
+		delete[] ThreadIDs;
 		delete[] Offsets;
 	}
 

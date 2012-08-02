@@ -32,7 +32,9 @@ namespace TraceviewerServer
 		bool IsMultiThreading();
 		bool IsHybrid();
 
-		string* ValuesX;
+		//string* ValuesX;
+	  int* ProcessIDs;
+		short* ThreadIDs;
 	private:
 		int Type; // = Constants::MULTI_PROCESSES | Constants::MULTI_THREADING;
 		LargeByteBuffer* MasterBuff;

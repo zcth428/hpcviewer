@@ -79,7 +79,6 @@ namespace TraceviewerServer
 		}
 		PagesCurrentlyAllocatedCount++;
 		IsMapped = true;
-		cout<<"Mapped a page"<<endl;
 	}
 	void VersatileMemoryPage::UnmapPage()
 	{

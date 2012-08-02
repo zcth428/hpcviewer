@@ -134,10 +134,12 @@ namespace TraceviewerServer
 		socket->WriteInt(CompressionType);
 
 		//Send ValuesX
-		const string* ValuesX = STDCL->GetValuesX();
+		const int* ValuesXPI = STDCL->GetValuesXProcessID();
+		const short* ValuesXTI = STDCL->GetValuesXThreadID();
 		for (int i = 0; i < NumFiles; i++)
 		{
-			socket->WriteString(ValuesX[i]);
+			socket->WriteInt(ValuesXPI[i]);
+			socket->WriteShort(ValuesXTI[i]);
 		}
 
 		socket->Flush();

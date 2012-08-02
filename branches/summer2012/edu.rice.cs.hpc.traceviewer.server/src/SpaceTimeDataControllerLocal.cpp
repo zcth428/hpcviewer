@@ -128,9 +128,13 @@ namespace TraceviewerServer
 			return Attributes->begProcess + Line;
 	}
 
-	const string* SpaceTimeDataControllerLocal::GetValuesX()
+	const int* SpaceTimeDataControllerLocal::GetValuesXProcessID()
 	{
-		return DataTrace->ValuesX;
+		return DataTrace->ProcessIDs;
+	}
+	const short* SpaceTimeDataControllerLocal::GetValuesXThreadID()
+	{
+		return DataTrace->ThreadIDs;
 	}
 
 	void SpaceTimeDataControllerLocal::PrepareViewportPainting(bool ChangedBounds)

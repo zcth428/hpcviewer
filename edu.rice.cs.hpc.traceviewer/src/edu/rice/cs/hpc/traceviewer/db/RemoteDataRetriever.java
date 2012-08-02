@@ -226,7 +226,8 @@ public class RemoteDataRetriever {
  * Notes: This should be the first message sent. It tells the remote server to open the database file. It also gives the server a little additional information to help it process the database.
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x4F50454E (OPEN in ASCII)
- * 0x04		Database Path	string-m			Modified UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. The first two bytes of this message are the length (in bytes) of the string that follows.
+ * 0x04		Path length		short-2				The length (in bytes) of the string that follows.
+ * 0x06 	Database path	string-m			UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. If the path contains strange characters that don't fit in 8 bits, it is not considered a valid path.
  * 
  * The server can then reply with DBOK or NODB
  * 
@@ -236,6 +237,9 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x44424F4B (DBOK in ASCII)
  * 0x04		XML Port		int-4				The port to which the client should connect to receive the XML file
  * 0x08		Trace count		int-4				The number of traces contained in the database/trace file
+ * 0x0C		Compression		int-4				The compression type and algorithm used. Right now the only values are 0 = uncompressed and 1 = zlib compressed, but this could be extended
+ * 0x10+6n	Process ID		int-4				The process number for rank n. This is used only to label the location of the cursor. n goes from 0 to (Traces count-1)
+ * 0x14+6n	Thread ID		short-2				The thread number for rank n. If this has a value of -1, then neither it nor the period between the process and thread numbers should be displayed
  * 
  * Message NODB	Server -> Client
  * Notes: This indicates that the server could not find the database or could not open it for some reason. The user should be notified and the next message the client sends should be another OPEN command.
@@ -263,4 +267,20 @@ public class RemoteDataRetriever {
  * 0x12		Time End		double-8			The upper bound on the time of the traces to be retrieved. Again, the absolute time.
  * 0x1A		Vertical Res	int-4				The vertical resolution of the detail view. The server uses this to determine which processes should be returned from the range [First Process, Last Process]
  * 0x1E		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
+ * 
+ * Message HERE Server -> Client
+ * Notes: This is a response to the DATA request. After this message, the client may send another DATA request or a DONE shutdown command. After each rank is received, k should be incremented by (28+c). The client should expect the message to contain min(Last Process-First Process, Vertical Resolution) traceline.
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x48455245 (HERE in ASCII)
+ * 0x04+k	Line Number		int-4				The rank number whose data follows. Should be unique in the message
+ * 0x08+k	Entry Count		int-4				The number of CPID's that follow
+ * 0x0C+k	Begin Time		double-8			The start time of this rank, calculated by taking the timestamp of the first TimeCPID in the line
+ * 0x14+k	End Time		double-8			The end time of this rank, calculated by taking the timestamp of the last TimeCPID in the line
+ * 0x1C+k	Compressed Size	int-4				The size of the data, c, that follows. If compression is disabled, this should be equal to 4*(Entry Count)
+ * 0x20+k+c	CPID Data		ints or bytes		The raw CPID data. If compression is disabled, this is an array of 4-byte ints, one after the other. If compression is enabled, this is a compressed array of 4-byte ints
+ * 
+ * Message DONE Client -> Server
+ * Notes: After receiving this message, the server should close. The client cannot send any messages after this without opening a new connection
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x444F4E45 (DONE in ASCII)
  */

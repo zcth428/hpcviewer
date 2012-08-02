@@ -31,7 +31,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	@Override
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
-		System.out.println("OpenDB called");
+		//System.out.println("OpenDB called");
 		/*String serverURL = "localhost";
 		//serverURL = "les.cs.rice.edu";
 		int port = 21590;
@@ -105,7 +105,13 @@ public class RemoteDBOpener extends AbstractDBOpener {
 				CompressionType = receiver.readInt();
 				ValuesX = new String[traceCount];
 				for (int i = 0; i < ValuesX.length; i++) {
-					ValuesX[i] = receiver.readUTF();
+					int processID = receiver.readInt();
+					int threadID = receiver.readShort();
+					if (threadID == -1) {
+						ValuesX[i] = Integer.toString(processID);
+					} else {
+						ValuesX[i] = processID + "." + threadID;
+					}
 				}
 				
 			} else if (Message == 0x4E4F4442)// NODB

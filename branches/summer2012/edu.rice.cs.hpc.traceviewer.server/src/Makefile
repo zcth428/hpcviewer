@@ -2,7 +2,10 @@
 # mkdir Debug
 # cd ~/server/edu.rice.cs.hpc.traceviewer.server/src/Debug
 
-TARGET=edu.rice.cs.hpc.traceviewer.server
+ZLIB=$(HOME)/pkgs/zlib
+TARGET=hpctraceserver-mpi
+INCLUDE=-I$(ZLIB)/include 
+LDFLAGS=-L $(ZLIB)/lib -lz
 SRC = \
 	BaseDataFile.cpp \
 	CompressingDataSocketLayer.cpp \
@@ -24,7 +27,7 @@ OBJ = $(patsubst %.cpp,%.o,$(SRC))
 all: $(TARGET)
 
 %.o: %.cpp
-	mpicxx -O0 -g3 -Wall -c -fmessage-length=0 -o $@ $< -DMPICH_IGNORE_CXX_SEEK
+	mpicxx -O0 -g3 $(INCLUDE) -Wall -c -fmessage-length=0 -o $@ $< -DMPICH_IGNORE_CXX_SEEK
 #
 #mpicxx -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"ServerLaunch.d" -MT"ServerLaunch.d" -o "ServerLaunch.o" "../ServerLaunch.cpp"
 #
@@ -50,7 +53,8 @@ all: $(TARGET)
 #
 
 $(TARGET): $(OBJ)
-	mpicxx  -o "edu.rice.cs.hpc.traceviewer.server"  ./BaseDataFile.o ./CompressingDataSocketLayer.o ./ServerLaunch.o ./DataOutputFileStream.o ./DataSocketStream.o ./LargeByteBuffer.o ./LocalDBOpener.o ./MergeDataFiles.o ./ProcessTimeline.o ./Server.o ./Slave.o ./SpaceTimeDataControllerLocal.o ./TraceDataByRankLocal.o ./VersatileMemoryPage.o  -lz
+	mpicxx  -o $@  $(OBJ)  $(LDFLAGS)
+# ./BaseDataFile.o ./CompressingDataSocketLayer.o ./ServerLaunch.o ./DataOutputFileStream.o ./DataSocketStream.o ./LargeByteBuffer.o ./LocalDBOpener.o ./MergeDataFiles.o ./ProcessTimeline.o ./Server.o ./Slave.o ./SpaceTimeDataControllerLocal.o ./TraceDataByRankLocal.o ./VersatileMemoryPage.o  
 
 clean:
 	/bin/rm  -f $(OBJ) $(TARGET)

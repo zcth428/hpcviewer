@@ -10,7 +10,7 @@
 namespace TraceviewerServer
 {
 	static list<VersatileMemoryPage*> MostRecentlyUsed;
-	static int MAX_PAGES_TO_ALLOCATE_AT_ONCE = 5;
+	static int MAX_PAGES_TO_ALLOCATE_AT_ONCE = 0;
 	static int PagesCurrentlyAllocatedCount = 0;
 	VersatileMemoryPage::VersatileMemoryPage(ULong startPoint, int size, int index, FileDescriptor file)
 	{
@@ -21,6 +21,11 @@ namespace TraceviewerServer
 		IsMapped = false;
 		if (MAX_PAGES_TO_ALLOCATE_AT_ONCE <1)
 			cerr<<"Set max pages before creating any VersatileMemoryPages"<<endl;
+	}
+
+	void VersatileMemoryPage::SetMaxPages(int pages)
+	{
+		MAX_PAGES_TO_ALLOCATE_AT_ONCE = pages;
 	}
 
 	VersatileMemoryPage::~VersatileMemoryPage()

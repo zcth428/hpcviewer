@@ -19,10 +19,11 @@ namespace TraceviewerServer
 	{
 		Attributes = new ImageTraceAttributes();
 		OldAttributes = new ImageTraceAttributes();
-		DataTrace = new BaseDataFile(locations->fileTrace);
+		DataTrace = new BaseDataFile(locations->fileTrace, DEFAULT_HEADER_SIZE);
 		Height = DataTrace->getNumberOfFiles();
 		cout << "STDCL at: " << this << " Height= " << Height << endl;
 		ExperimentXML = locations->fileXML;
+		FileTrace = locations->fileTrace;
 		TracesInitialized = false;
 
 	}
@@ -34,6 +35,12 @@ namespace TraceviewerServer
 		MinBegTime = minBegTime;
 		MaxEndTime = maxEndTime;
 		HEADER_SIZE = headerSize;
+
+		if (DataTrace != NULL)
+		{
+			delete (DataTrace);
+			DataTrace = new BaseDataFile(FileTrace, HEADER_SIZE);
+		}
 	}
 
 	int SpaceTimeDataControllerLocal::GetHeight()

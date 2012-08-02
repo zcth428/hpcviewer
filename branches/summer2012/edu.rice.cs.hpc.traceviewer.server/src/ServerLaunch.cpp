@@ -14,6 +14,7 @@ using namespace std;
 using namespace MPI;
 
 bool ParseCommandLineArgs(int, char*[]);
+bool StringActuallyZero(string);
 
 int main(int argc, char *argv[])
 {
@@ -165,9 +166,15 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 				if (c + 1 < argc)
 				{ //Possibly a number following
 					int val = atoi(argv[c + 1]);
-
+					if (val == 0 && !StringActuallyZero(argv[c+1]))
+					{
+						cout<<"Could not parse port number"<<endl;
+						PrintHelp();
+						return false;
+					}
 					if ((val < 1024)&& (val != 0))
 					{
+						cout << "Port cannot be less than 1024"<<endl;
 						PrintHelp();
 						return false;
 					}
@@ -213,7 +220,15 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 	}
 	return true;
 }
-
+bool StringActuallyZero(string ToTest)
+	{
+		for (int var = 0; var < ToTest.length(); var++)
+		{
+			if (ToTest[var] != '0')
+				return false;
+		}
+		return true;
+	}
 /*void WriteVector(vector<string> t)
  {
  cout << "Writing vector of length "<< t.size()<<endl;

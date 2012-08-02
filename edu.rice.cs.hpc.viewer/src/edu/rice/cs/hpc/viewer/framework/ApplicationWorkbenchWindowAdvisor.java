@@ -26,6 +26,7 @@ import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor 
@@ -233,8 +234,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		closeAllEditors();
 		removeViews();
 		
-		ViewerWindowManager vwm = new ViewerWindowManager();
-		vwm.removeWindow(window);
+		ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
+		vw.dispose();
 
 		return true; // we allow app to shut down
 	}

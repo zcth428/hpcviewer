@@ -71,12 +71,14 @@ public class ViewerWindowManager {
 	 */
 	public Boolean removeWindow (IWorkbenchWindow window) {
 		for (int i=0 ; i<vWindows.size() ; i++) {
-			if (vWindows.get(i) == null) {
+			final ViewerWindow vw = vWindows.get(i);
+			if (vw == null) {
 				continue;
 			}
 
 			// if this is the one to remove, set it to null so it can be reused later
-			if (vWindows.get(i).getWinObj().equals(window)) {
+			if (vw.getWinObj().equals(window)) {
+				vw.dispose();
 				// set this to something that will cause problems if used before being reset
 				vWindows.set(i, null);
 				return true;

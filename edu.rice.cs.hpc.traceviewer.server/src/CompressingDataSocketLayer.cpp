@@ -5,6 +5,8 @@
  *      Author: pat2
  */
 
+#include <iostream>
+
 #include "CompressingDataSocketLayer.h"
 
 namespace TraceviewerServer

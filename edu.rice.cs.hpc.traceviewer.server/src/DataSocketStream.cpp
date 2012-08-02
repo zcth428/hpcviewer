@@ -5,6 +5,15 @@
  *      Author: pat2
  */
 
+#include <stdio.h>
+#include <vector>
+#include <iostream>
+#include "ByteUtilities.h"
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <errno.h>
+
 #include "DataSocketStream.h"
 
 namespace TraceviewerServer

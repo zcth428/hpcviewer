@@ -8,13 +8,9 @@
 #ifndef DATASOCKETSTREAM_H_
 #define DATASOCKETSTREAM_H_
 
-#include <vector>
-#include <iostream>
+#include <string>
+
 #include "ByteUtilities.h"
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <errno.h>
 
 namespace TraceviewerServer
 {
@@ -52,7 +48,6 @@ namespace TraceviewerServer
 		int Port;
 		SocketFD socketDesc;
 		SocketFD unopenedSocketFD;
-		std::vector<char> Message;
 		void CheckForErrors(int);
 		FILE* file;
 	};

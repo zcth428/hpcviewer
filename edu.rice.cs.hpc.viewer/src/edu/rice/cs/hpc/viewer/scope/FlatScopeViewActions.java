@@ -100,6 +100,7 @@ public class FlatScopeViewActions extends ScopeViewActions {
 			updateAction(FlatAction.Flatten, objFlattenedNode);
 
 			this.treeViewer.getTree().setRedraw(true);
+			checkStates(getSelectedNode());
 		}
 	}
 
@@ -117,6 +118,8 @@ public class FlatScopeViewActions extends ScopeViewActions {
 			updateAction(FlatAction.Unflatten, objParentNode);
 			
 			popElementStates();
+			
+			checkStates(getSelectedNode());
 		}
 	}
 
@@ -131,11 +134,13 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	public void checkStates(Scope nodeSelected) {
 		boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
 		objActionsGUI.enableHotCallPath( bCanZoomIn );
-		if (bCanZoomIn) {
-			bCanZoomIn = !( (FlatScopeViewActionsGUI) objActionsGUI ).shouldUnflattenBeEnabled();
-		}
+
 		objActionsGUI.enableZoomIn( bCanZoomIn );
-		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );
+		
+		boolean bCanZoomOut = objZoom.canZoomOut() && 
+				(!stackActions.isEmpty() && stackActions.peek()==ActionType.ZoomIn);
+		objActionsGUI.enableZoomOut( bCanZoomOut );
+
 		((FlatScopeViewActionsGUI) objActionsGUI).checkFlattenButtons();
 	}
 

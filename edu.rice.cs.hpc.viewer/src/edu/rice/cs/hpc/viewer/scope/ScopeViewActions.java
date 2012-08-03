@@ -293,7 +293,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * Retrieve the selected node
 	 * @return null if there is no selected node
 	 */
-	private Scope getSelectedNode() {
+	protected Scope getSelectedNode() {
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
 			return null;

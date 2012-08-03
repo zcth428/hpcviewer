@@ -67,7 +67,7 @@ namespace TraceviewerServer
 			cerr << "Expected an open command, got " << Command << endl;
 			return -77;
 		}
-
+		return 0;
 	}
 
 
@@ -141,9 +141,18 @@ namespace TraceviewerServer
 		//int port = 2224;
 
 		//socket->WriteInt(port);
-		DataSocketStream XmlSocket(XMLPort, false);
-		int port = XmlSocket.GetPort();
-		socket->WriteInt(port);
+		DataSocketStream* XmlSocket;
+		if (XMLPort != MainPort)
+		{//On a different port. Create another socket.
+			XmlSocket = new DataSocketStream(XMLPort, false);
+			XMLPort = XmlSocket->GetPort();//Could be different if XMLPort is 0
+		}
+		else
+		{
+			//Same port, simply use this socket
+			XmlSocket = socket;
+		}
+		socket->WriteInt(XMLPort);
 
 		int NumFiles = STDCL->GetHeight();
 		socket->WriteInt(NumFiles);
@@ -163,35 +172,85 @@ namespace TraceviewerServer
 
 		socket->Flush();
 
-		cout << "Waiting to send XML on port " << port << ". Num traces was "
+		cout << "Waiting to send XML on port " << XMLPort << ". Num traces was "
 				<< STDCL->GetHeight() << endl;
-
-		XmlSocket.AcceptS();
-		int fd = XmlSocket.GetDescriptor();
-		SendXML(fd);
-
+		if (XMLPort != MainPort)
+		{
+			XmlSocket->AcceptS();
+		}
+		else
+		{
+			XmlSocket->WriteInt(Constants::EXML);
+		}
+		vector<char> CompressedXML = CompressXML();
+		XmlSocket->WriteInt(CompressedXML.size());
+		XmlSocket->WriteRawData(&CompressedXML[0], CompressedXML.size());
+		XmlSocket->Flush();
 		cout << "XML Sent" << endl;
+
 	}
 
-	void Server::SendXML(int FileDescriptor)
+	vector<char> Server::CompressXML()
 	{
+		vector<char> Compressed;
+		FILE* testfile = fopen("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/test12AUTO.gz", "w+");
+
 		FILE* in = fopen(STDCL->GetExperimentXML().c_str(), "r");
-		gzFile out = gzdopen(FileDescriptor, "w");
+		//From http://zlib.net/zpipe.c with some editing
+		z_stream Compressor;
+		Compressor.zalloc = Z_NULL;
+		Compressor.zfree = Z_NULL;
+		Compressor.opaque = Z_NULL;
+		//int ret = deflateInit(&Compressor, -1);
+		//This makes a gzip stream with a window of 15 bits
+		int ret = deflateInit2(&Compressor, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16+15, 8, Z_DEFAULT_STRATEGY);
+		if (ret != Z_OK)
+			throw ret;
 
 		int size = TraceviewerServer::FileUtils::GetFileSize(STDCL->GetExperimentXML());
 
-#define CHUNK 0x40000//256k
-		int BytesProcessed = 0;
-		char Buffer[CHUNK];
-		while (BytesProcessed < size)
-		{
-			int br = fread(Buffer, 1, CHUNK, in);
-			gzwrite(out, Buffer, br);
-			BytesProcessed += br;
-		}
-		gzflush(out, Z_FINISH);
-		gzclose(out);
-		fclose(in);
+#define CHUNK 0x4000
+
+		unsigned char InBuffer[CHUNK];
+		unsigned char OutBuffer[CHUNK];
+		int flush;
+		int amtprocessed =0;
+		int compramt;
+		do {
+			Compressor.avail_in = fread(InBuffer, 1, CHUNK, in);
+			amtprocessed += Compressor.avail_in;
+			//cout<<"Processed " << amtprocessed << " / " <<size<<endl;
+			if (ferror(in)) {
+				cerr<<"Error"<<endl;
+				(void)deflateEnd(&Compressor);
+				throw Z_ERRNO;
+			}
+			flush = feof(in) ? Z_FINISH : Z_NO_FLUSH;
+
+			Compressor.next_in = InBuffer;
+			int have;
+			/* run deflate() on input until output buffer not full, finish
+		           compression if all of source has been read in */
+			do {
+				Compressor.avail_out = CHUNK;
+				Compressor.next_out = OutBuffer;
+				ret = deflate(&Compressor, flush);    /* no bad return value */
+				if (ret == Z_STREAM_ERROR) throw -33445;  /* state not clobbered */
+				have = CHUNK - Compressor.avail_out;
+				compramt += have;
+				//cout<<"Writing "<<have<< " compressed bytes. Length of compressed file so far is "<< compramt<<endl;
+				Compressed.insert(Compressed.end(), OutBuffer, OutBuffer+have);
+				fwrite(OutBuffer, 1, have, testfile);
+			} while (Compressor.avail_out == 0);
+
+
+			/* done when last data in file processed */
+		} while (flush != Z_FINISH);
+		deflateEnd(&Compressor);
+		fflush(testfile);
+		fclose(testfile);
+cout<<"Size of vector: "<<Compressed.size()<<endl;
+return Compressed;
 	}
 
 	void Server::ParseOpenDB(DataSocketStream* receiver)

@@ -56,7 +56,23 @@ namespace TraceviewerServer
 
 		//vector<char> test(4);
 		//as::read(*socketptr, as::buffer(test));
+		int Command = socketptr->ReadInt();
+		if (Command == Constants::OPEN)
+		{
+			while( RunConnection(socketptr)==1)
+				;
+		}
+		else
+		{
+			cerr << "Expected an open command, got " << Command << endl;
+			return -77;
+		}
 
+	}
+
+
+	int Server::RunConnection(DataSocketStream* socketptr)
+	{
 		ParseOpenDB(socketptr);
 
 		if (STDCL == NULL)
@@ -89,6 +105,9 @@ namespace TraceviewerServer
 				case Constants::DONE:
 					EndingConnection = true;
 					break;
+				case Constants::OPEN:
+					EndingConnection = true;
+					return 1;
 				default:
 					cerr << "Unknown command received" << endl;
 					return (-7);
@@ -116,7 +135,7 @@ namespace TraceviewerServer
 	}
 	void Server::SendDBOpenedSuccessfully(DataSocketStream* socket)
 	{
-//TODO: Use the variable XML Port & obtain an open port if it is -1
+
 		socket->WriteInt(Constants::DBOK);
 
 		//int port = 2224;
@@ -180,9 +199,7 @@ namespace TraceviewerServer
 
 		if (false) //(!receiver->is_open())
 			cout << "Socket not open!" << endl;
-		int Command = receiver->ReadInt();
-		if (Command != Constants::OPEN)
-			cerr << "Expected an open command, got " << Command << endl;
+
 		string PathToDB = receiver->ReadString();
 		LocalDBOpener DBO;
 		cout << "Opening database: " << PathToDB << endl;

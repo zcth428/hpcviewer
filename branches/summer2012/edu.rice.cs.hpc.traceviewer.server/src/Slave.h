@@ -34,6 +34,7 @@ namespace TraceviewerServer
 	private:
 		SpaceTimeDataControllerLocal* STDCL;
 		int GetData(MPICommunication::CommandMessage*);
+		bool STDCLNeedsDeleting;
 	};
 
 } /* namespace TraceviewerServer */

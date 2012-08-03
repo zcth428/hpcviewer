@@ -10,6 +10,8 @@
 #ifndef BYTEUTILITIES_H_
 #define BYTEUTILITIES_H_
 
+#include <stdint.h>
+
 namespace TraceviewerServer
 {
 	typedef int64_t Long;

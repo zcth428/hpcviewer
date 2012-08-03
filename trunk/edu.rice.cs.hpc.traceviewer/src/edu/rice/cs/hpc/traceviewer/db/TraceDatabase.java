@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -169,7 +170,6 @@ public class TraceDatabase
 				e.printStackTrace();
 			}
 		}
-
 		
 		return false;
 
@@ -193,8 +193,8 @@ public class TraceDatabase
 		dialog.setMessage("Please select a directory containing execution traces.");
 		dialog.setText("Select Data Directory");
 		String directory;
-		while(!validDatabaseFound) {
-			
+		/*while(!validDatabaseFound)*/ 
+		{
 			directory = dialog.open();
 			
 			if (directory == null) 
@@ -203,8 +203,11 @@ public class TraceDatabase
 			
 			validDatabaseFound = isCorrectDatabase(directory, statusMgr, location);
 						
-			if (!validDatabaseFound)
-				msgNoDatabase(dialog, directory);
+			if (!validDatabaseFound) {
+				String sMsg = "The directory selected contains no traces:\n\t" + directory + 
+						"\nPlease select a directory that contains traces.";
+				MessageDialog.openError(shell, "Error opening the database", sMsg);
+			}
 		}
 		
 		return validDatabaseFound;
@@ -237,6 +240,7 @@ public class TraceDatabase
 					final TraceProgressReport traceReport = new TraceProgressReport(statusMgr);
 					final String outputFile = dirFile.getAbsolutePath() + File.separatorChar + "experiment.mt";
 					final MergeDataFiles.MergeDataAttribute att = MergeDataFiles.merge(dirFile, "*.hpctrace", outputFile, traceReport);
+					
 					if (att != MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA) {
 						location.fileTrace = new File(outputFile);
 
@@ -259,17 +263,5 @@ public class TraceDatabase
 			}
 		}
 		return false;
-	}
-	
-	/***
-	 * show message in directory dialog box
-	 * @param dialog
-	 * @param str
-	 */
-	private static void msgNoDatabase(DirectoryDialog dialog, String str) {
-		
-		dialog.setMessage("The directory selected contains no traces:\n\t" + str + 
-				"\nPlease select a directory that contains traces.");
-	}
-
+	}	
 }

@@ -85,7 +85,7 @@ public class ProcedureMapDetailDialog extends Dialog {
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(composite);
 		
 		final Label lblProc = new Label(composite, SWT.LEFT);
-		lblProc.setText("Procedure: ");
+		lblProc.setText("Procedure pattern: ");
 		txtProc = new Text(composite, SWT.LEFT | SWT.SINGLE);
 		txtProc.setText(proc);
 		GridDataFactory.swtDefaults().hint(

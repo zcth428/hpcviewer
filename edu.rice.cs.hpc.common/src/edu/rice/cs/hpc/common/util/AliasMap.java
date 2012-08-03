@@ -61,6 +61,13 @@ public abstract class AliasMap<K,V> implements IUserData<K, V> {
 		return oldClass;
 	}
 
+	/****
+	 * Removes all of the mappings from this map. The map will be empty after this call 
+	 */
+	public void clear() {
+		data.clear();
+	}
+	
 	/***
 	 * save the changes permanently into the storage
 	 * Note: once it is stored, there is no way to restore back

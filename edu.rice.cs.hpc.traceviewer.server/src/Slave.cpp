@@ -14,19 +14,9 @@ namespace TraceviewerServer
 
 	Slave::Slave()
 	{
-		MPICommunication::CommandMessage Message;
-		COMM_WORLD.Bcast(&Message, sizeof(Message), MPI_PACKED,
-				MPICommunication::SOCKET_SERVER);
-		if (Message.Command == Constants::OPEN)
-		{
-			LocalDBOpener DBO;
-			STDCL = DBO.OpenDbAndCreateSTDC(string(Message.ofile.Path));
-			RunLoop();
-		}
-		else if (Message.Command == Constants::DONE)
-			return;
-		else
-			cerr << "Unexpected message command: " << Message.Command << endl;
+
+		RunLoop();
+
 	}
 	void Slave::RunLoop()
 	{
@@ -37,6 +27,18 @@ namespace TraceviewerServer
 					MPICommunication::SOCKET_SERVER);
 			switch (Message.Command)
 			{
+				case Constants::OPEN:
+					if (STDCLNeedsDeleting)
+					{
+						delete (STDCL);
+						STDCLNeedsDeleting = false;
+					}
+					{//Set an artificial context to avoid initialization crossing cases
+						LocalDBOpener DBO;
+						STDCL = DBO.OpenDbAndCreateSTDC(string(Message.ofile.Path));
+						STDCLNeedsDeleting = true;
+					}
+					break;
 				case Constants::INFO:
 					STDCL->SetInfo(Message.minfo.minBegTime, Message.minfo.maxEndTime,
 							Message.minfo.headerSize);
@@ -57,6 +59,9 @@ namespace TraceviewerServer
 				}
 				case Constants::DONE: //Server shutdown
 					return;
+				default:
+					cerr << "Unexpected message command: " << Message.Command << endl;
+					break;
 			}
 		}
 	}
@@ -209,7 +214,11 @@ namespace TraceviewerServer
 
 	Slave::~Slave()
 	{
-		delete (STDCL);
+		if (STDCLNeedsDeleting)
+		{
+			delete (STDCL);
+			STDCLNeedsDeleting = false;
+		}
 	}
 
 } /* namespace TraceviewerServer */

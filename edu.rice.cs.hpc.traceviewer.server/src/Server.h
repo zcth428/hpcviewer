@@ -40,6 +40,7 @@ namespace TraceviewerServer
 		static int main(int argc, char *argv[]);
 
 	private:
+		static int RunConnection(DataSocketStream*);
 		static void ParseInfo(DataSocketStream*);
 		static void SendDBOpenedSuccessfully(DataSocketStream*);
 		static void ParseOpenDB(DataSocketStream*);

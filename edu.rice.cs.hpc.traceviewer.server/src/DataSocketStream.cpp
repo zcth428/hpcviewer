@@ -136,7 +136,9 @@ namespace TraceviewerServer
 
 	void DataSocketStream::WriteRawData(char* Data, int Length)
 	{
-		fwrite(Data, Length, 1, file);
+		int r = fwrite(Data, 1, Length, file);
+		if (r != Length)
+			cerr<<"Only wrote "<<r << " / " <<Length<<endl;
 	}
 
 	void DataSocketStream::WriteString(string toWrite)

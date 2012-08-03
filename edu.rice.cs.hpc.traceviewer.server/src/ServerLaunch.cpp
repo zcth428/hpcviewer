@@ -86,7 +86,11 @@ int main(int argc, char *argv[])
 }
 void PrintHelp()
 {
-	cout << "This is a server for the HPCTraceviewer. Usage: INSERT THE USAGE HERE"
+	cout << "This is a server for the HPCTraceviewer. Usage: INSERT THE USAGE HERE"<<endl
+			<<"Some notes: Allowed flags: --help, --compression, --port, --xmlport"<<endl
+			<<"For compression, allowed options are on/off"<<endl
+			<<"For main data port, allowed values are 0, which means auto-choose, and any integer 1024< n <65535. Default is 21590"<<endl
+			<<"For the xml port, any integer 1024< n <65535. -1 forces usage of the data port to send xml. This should be used with --port 0. Do not include this flag to have the XML port automatically negotiated."
 			<< endl;
 }
 typedef enum
@@ -195,7 +199,7 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 				if (c + 1 < argc)
 				{ //Possibly a number following
 					int val = atoi(argv[c + 1]);
-					if (val < 1024)
+					if ((val < 1024) &&(val != -1))
 					{
 						PrintHelp();
 						return false;

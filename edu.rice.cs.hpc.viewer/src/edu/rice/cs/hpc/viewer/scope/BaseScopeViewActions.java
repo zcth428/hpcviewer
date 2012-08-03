@@ -29,4 +29,10 @@ public class BaseScopeViewActions extends ScopeViewActions {
 		objActionsGUI.enableHotCallPath( bCanZoomIn );
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.scope.ScopeViewActions#actionZoom(edu.rice.cs.hpc.viewer.scope.ScopeViewActions.ZoomType)
+	 */
+	protected void registerAction(IActionType type) {	}
+
 }

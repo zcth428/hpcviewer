@@ -52,6 +52,7 @@ namespace TraceviewerServer
 			std::cerr << e.what() << std::endl;
 			return -3;
 		}
+		MainPort = socketptr->GetPort();
 		cout << "Received connection" << endl;
 
 		//vector<char> test(4);
@@ -142,6 +143,9 @@ namespace TraceviewerServer
 
 		//socket->WriteInt(port);
 		DataSocketStream* XmlSocket;
+		if (XMLPort == -1)
+			XMLPort = MainPort;
+
 		if (XMLPort != MainPort)
 		{//On a different port. Create another socket.
 			XmlSocket = new DataSocketStream(XMLPort, false);
@@ -249,8 +253,8 @@ namespace TraceviewerServer
 		deflateEnd(&Compressor);
 		fflush(testfile);
 		fclose(testfile);
-cout<<"Size of vector: "<<Compressed.size()<<endl;
-return Compressed;
+		cout<<"Size of vector: "<<Compressed.size()<<endl;
+		return Compressed;
 	}
 
 	void Server::ParseOpenDB(DataSocketStream* receiver)

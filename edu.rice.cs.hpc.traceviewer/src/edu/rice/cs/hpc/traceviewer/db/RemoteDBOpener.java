@@ -28,6 +28,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	DataOutputStream sender;
 	DataInputStream receiver;
 
+	static Socket serverConnection = null;
 	@Override
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
@@ -42,42 +43,26 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		String serverPathToDB = args[2];
 		
 
-		Socket serverConnection = null;
+		//Socket serverConnection = null;
 		try {
-			serverConnection = new Socket(serverURL, port);
+			if (serverConnection != null) {
+				if (!serverConnection.getRemoteSocketAddress().equals(
+						new InetSocketAddress(serverURL, port))) {
+					closeDB();//Connecting to a new server
+					serverConnection = new Socket(serverURL, port);
+				}
+			} else {//First connection
+				serverConnection = new Socket(serverURL, port);
+			}
 			sender = new DataOutputStream(new BufferedOutputStream(
 					serverConnection.getOutputStream()));
 			receiver = new DataInputStream(new BufferedInputStream(
 					serverConnection.getInputStream()));
 		} catch (ConnectException e1) {
-
-			System.out.println("Could not connect. Is the server running?");// This
-																			// is
-																			// a
-																			// legitimate
-																			// catch
-																			// that
-																			// we
-																			// need
-																			// to
-																			// expect.
-																			// The
-																			// rest
-																			// should
-																			// be
-																			// very
-																			// rare
-																			// (ex.
-																			// the
-																			// internet
-																			// goes
-																			// down
-																			// in
-																			// the
-																			// middle
-																			// of
-																			// a
-																			// transmission)
+			// This is a legitimate catch that we need to expect. The rest
+			// should be very rare (ex. the internet goes down in the middle of
+			// a transmission)
+			System.out.println("Could not connect. Is the server running?");
 			return null;
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -128,6 +113,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 				throw new IOException("Unrecognized message sent");
 			}
 			System.out.println("About to connect to socket "+ XMLMessagePortNumber + " at "+ System.nanoTime());
+			statusMgr.setMessage("Receiving XML stream");
 			Socket xmlConnection = new Socket();
 			SocketAddress xmlAddress = new InetSocketAddress(serverURL, XMLMessagePortNumber);
 			xmlConnection.connect(xmlAddress, 1000);
@@ -191,8 +177,9 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	@Override
 	void closeDB() {
 		try {
-			sender.writeInt(0x444F4E45);
-			sender.close();
+			DataOutputStream closer = new DataOutputStream(serverConnection.getOutputStream());
+			closer.writeInt(0x444F4E45);
+			closer.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

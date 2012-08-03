@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.db;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.net.UnknownHostException;
 import java.rmi.server.ServerNotActiveException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.MessageBox;
@@ -114,11 +116,38 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			}
 			System.out.println("About to connect to socket "+ XMLMessagePortNumber + " at "+ System.nanoTime());
 			statusMgr.setMessage("Receiving XML stream");
-			Socket xmlConnection = new Socket();
-			SocketAddress xmlAddress = new InetSocketAddress(serverURL, XMLMessagePortNumber);
-			xmlConnection.connect(xmlAddress, 1000);
-			GZIPInputStream XMLStream = new GZIPInputStream(
-					new BufferedInputStream(xmlConnection.getInputStream()));
+			byte[] CompressedXMLMessage;
+			if (XMLMessagePortNumber == port)
+			{
+				int exml = receiver.readInt();
+				if (exml != 0x45584D4C)
+				System.out.println("Expected XML Message (" +0x45584D4C +")  on data socket, got " + exml);
+				int size = receiver.readInt();
+				CompressedXMLMessage = new byte[size];
+				int numRead = 0;
+				while (numRead < size)
+				{
+					numRead += receiver.read(CompressedXMLMessage, numRead, size- numRead);
+				}
+			}
+			else
+			{
+				Socket xmlConnection = new Socket();
+				SocketAddress xmlAddress = new InetSocketAddress(serverURL, XMLMessagePortNumber);
+				xmlConnection.connect(xmlAddress, 1000);
+				BufferedInputStream buf = new BufferedInputStream(xmlConnection.getInputStream());
+				DataInputStream dxmlreader = new DataInputStream(buf);
+				int size = dxmlreader.readInt();
+				CompressedXMLMessage = new byte[size];
+				int numRead = 0;
+				while (numRead < size)
+				{
+					numRead += buf.read(CompressedXMLMessage, numRead, size- numRead);
+				}
+			}
+			
+			GZIPInputStream XMLStream = new GZIPInputStream(new 
+					ByteArrayInputStream(CompressedXMLMessage));
 
 			SpaceTimeDataControllerRemote stData;
 

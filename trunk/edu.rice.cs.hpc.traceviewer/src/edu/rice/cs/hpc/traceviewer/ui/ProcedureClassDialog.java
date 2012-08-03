@@ -158,9 +158,20 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 				}
 			}
 		});
-				
+		
+		final Button btnReset = new Button(areaAction, SWT.PUSH | SWT.FLAT);
+		btnReset.setText("Reset");
+		btnReset.setToolTipText("Reset to the default configuration");
+		btnReset.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				ProcedureClassDialog.this.data.clear();
+				ProcedureClassDialog.this.data.initDefault();
+				ProcedureClassDialog.this.tableViewer.setInput(data.getEntrySet());
+			}
+		});
+		
 		GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.CENTER).grab(true, false).applyTo(areaAction);
-		GridLayoutFactory.fillDefaults().numColumns(3).applyTo(areaAction);
+		GridLayoutFactory.fillDefaults().numColumns(4).applyTo(areaAction);
 		
 		//-----------------------------------------------------------------
 		// table area

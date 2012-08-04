@@ -1,13 +1,27 @@
 #!/bin/bash
 #
-# Launch the hpcviewer/traceviewer binary and set the workspace directory.
+# Copyright (c) 2002-2012, Rice University.
+# See the file README.License for details.
 #
-# $Id: hpcviewer.sh 534 2010-07-21 13:15:27Z laksono $
+# Launch the viewer binary and set the workspace directory.
+# This script is only for Unix and X windows.
+#
+# $Id$
 #
 
 name=hpcviewer
-
 workspace="${HOME}/.hpctoolkit/${name}"
+
+# Substitute the Java bindir from the install script, if needed.
+# JAVA_BINDIR=/path/to/java/bindir
+
+if test -d "$JAVA_BINDIR" ; then
+    PATH="${JAVA_BINDIR}:$PATH"
+fi
+
+#------------------------------------------------------------
+# Error messages
+#------------------------------------------------------------
 
 die()
 {
@@ -20,9 +34,10 @@ warn()
     echo "$0: warning: $*" 1>&2
 }
 
-#
+#------------------------------------------------------------
 # Find the hpctoolkit directory.
-#
+#------------------------------------------------------------
+
 script="$0"
 if test -L "$script" ; then
     script=`readlink "$script"`
@@ -33,9 +48,10 @@ viewer="${bindir}/../libexec/${name}/${name}"
 test -x "$viewer"  || die "executable $viewer not found"
 test -n "$DISPLAY" || die "DISPLAY variable is not set"
 
-#
-# Check java version.
-#
+#------------------------------------------------------------
+# Check the java version.
+#------------------------------------------------------------
+
 java_version=`java -version 2>&1 | grep -i java | grep -i vers | head -1`
 if test "x$java_version" = x ; then
     die "unable to find program 'java' on your PATH"
@@ -46,9 +62,10 @@ if test $? -ne 0 ; then
     die "$java_version is too old, use Java 1.5 or later"
 fi
 
-#
+#------------------------------------------------------------
 # Launch the viewer.
-#
+#------------------------------------------------------------
+
 if test -d "$HOME" ; then
     exec "$viewer" -data "$workspace" "$@"
 else

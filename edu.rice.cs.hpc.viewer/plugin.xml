@@ -68,14 +68,6 @@
                value="0,275,445,15">
          </property>
          <property
-               name="startupForegroundColor"
-               value="000000">
-         </property>
-         <property
-               name="startupMessageRect"
-               value="7,252,445,20">
-         </property>
-         <property
                name="aboutImage"
                value="icons/hpcviewerEclipseShadow128.png">
          </property>
@@ -86,6 +78,14 @@
          <property
                name="windowImages"
                value="icons/hpcviewerEclipse16.gif,icons/hpcviewerEclipse32.gif,icons/hpcviewerEclipse48.gif,icons/hpcviewerEclipse64.gif,icons/hpcviewerEclipse128.gif">
+         </property>
+         <property
+               name="startupForegroundColor"
+               value="000000">
+         </property>
+         <property
+               name="startupMessageRect"
+               value="7,252,445,20">
          </property>
       </product>
    </extension>

@@ -45,7 +45,6 @@ Release 5.3.0 (C) Copyright 2012, Rice University.
       </win>
    </launcher>
 
-
    <vm>
    </vm>
 
@@ -126,15 +125,14 @@ if advised of the possibility of such damage.
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.equinox.security"/>
       <plugin id="org.eclipse.equinox.security.macosx" fragment="true"/>
-      <plugin id="org.eclipse.equinox.security.ui"/>
       <plugin id="org.eclipse.equinox.security.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.equinox.security.win32.x86_64" fragment="true"/>
-      <plugin id="org.eclipse.equinox.simpleconfigurator"/>
       <plugin id="org.eclipse.help"/>
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.text"/>
       <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.carbon.macosx" fragment="true"/>
       <plugin id="org.eclipse.swt.cocoa.macosx" fragment="true"/>
@@ -160,8 +158,6 @@ if advised of the possibility of such damage.
       <plugin id="org.eclipse.ui.win32" fragment="true"/>
       <plugin id="org.eclipse.ui.workbench"/>
       <plugin id="org.eclipse.ui.workbench.texteditor"/>
-      <plugin id="org.sat4j.core"/>
-      <plugin id="org.sat4j.pb"/>
    </plugins>
 
 

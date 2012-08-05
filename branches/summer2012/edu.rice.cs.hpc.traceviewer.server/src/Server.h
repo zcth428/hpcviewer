@@ -12,22 +12,9 @@
 	#define UseMPI
 #endif
 
-
-#include "SpaceTimeDataControllerLocal.h"
-#include "DataSocketStream.h"
-#include "LocalDBOpener.h"
-#include "Constants.h"
-#include "MPICommunication.h"
-#include "CompressingDataSocketLayer.h"
-//#include "ImageTraceAttributes.h"
-//#include "ProcessTimeline.h"
-//#include "TimeCPID.h"
-#include <iostream>
-#include <fstream>
 #include <vector>
-#include <mpi.h>
+#include "DataSocketStream.h"
 
-#include "zlib.h"
 
 namespace TraceviewerServer
 {

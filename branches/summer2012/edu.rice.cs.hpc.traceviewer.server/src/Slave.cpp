@@ -6,6 +6,16 @@
  */
 
 #include "Slave.h"
+#include <mpi.h>
+#include <iostream>
+#include <vector>
+#include "TimeCPID.h"
+#include "Constants.h"
+#include "LocalDBOpener.h"
+#include "ImageTraceAttributes.h"
+#include "CompressingDataSocketLayer.h"
+#include "Server.h"
+#include <cmath>
 using namespace MPI;
 using namespace std;
 

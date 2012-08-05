@@ -10,10 +10,10 @@
 
 using namespace std;
 
-#include <iostream>
+
 #include "LargeByteBuffer.h"
-#include "Constants.h"
-#include <sstream>
+#include "ByteUtilities.h"
+
 
 namespace TraceviewerServer
 {

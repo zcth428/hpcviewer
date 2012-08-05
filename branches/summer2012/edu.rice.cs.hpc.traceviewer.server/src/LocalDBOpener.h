@@ -8,13 +8,9 @@
 #ifndef LOCALDBOPENER_H_
 #define LOCALDBOPENER_H_
 #include <string>
-#include <iostream>
 #include "SpaceTimeDataControllerLocal.h"
 #include "FileData.h"
-#include "Constants.h"
-#include "MergeDataFiles.h"
-#include "TraceDataByRankLocal.h"
-#include "FileUtils.h"
+
 
 using namespace std;
 namespace TraceviewerServer

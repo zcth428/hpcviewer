@@ -8,18 +8,10 @@
 #ifndef LARGEBYTEBUFFER_H_
 #define LARGEBYTEBUFFER_H_
 
-
-#include "sys/stat.h"
-#include <fcntl.h>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <errno.h>
 #include "ByteUtilities.h"
+#include <string>
 #include "VersatileMemoryPage.h"
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/sysctl.h>
+#include <vector>
 
 
 namespace TraceviewerServer

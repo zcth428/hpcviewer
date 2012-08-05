@@ -5,10 +5,12 @@
  *      Author: pat2
  */
 
-#include <iostream>
 
+#include "ByteUtilities.h"
+#include <iostream>
 #include "CompressingDataSocketLayer.h"
 
+using namespace std;
 namespace TraceviewerServer
 {
 

@@ -5,7 +5,7 @@
  *      Author: pat2
  */
 
-#include <stdint.h>
+
 
 #ifndef BYTEUTILITIES_H_
 #define BYTEUTILITIES_H_

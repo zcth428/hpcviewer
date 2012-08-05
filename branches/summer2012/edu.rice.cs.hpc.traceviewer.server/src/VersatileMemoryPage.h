@@ -8,11 +8,10 @@
 #ifndef VERSATILEMEMORYPAGE_H_
 #define VERSATILEMEMORYPAGE_H_
 
-#include <list>
+
 #include "sys/mman.h"
-#include <errno.h>
 #include "ByteUtilities.h"
-#include <iostream>
+
 
 using namespace std;
 namespace TraceviewerServer

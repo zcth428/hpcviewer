@@ -6,6 +6,9 @@
  */
 
 #include "TraceDataByRankLocal.h"
+#include <cmath>
+#include "Constants.h"
+#include <iostream>
 
 namespace TraceviewerServer
 {

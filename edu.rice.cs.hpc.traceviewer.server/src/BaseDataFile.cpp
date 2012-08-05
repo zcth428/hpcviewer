@@ -6,9 +6,12 @@
  */
 
 #include "BaseDataFile.h"
+#include <iostream>
+#include "Constants.h"
+#include <sstream>
 
 using namespace std;
-typedef int64_t Long;
+
 namespace TraceviewerServer
 {
 //-----------------------------------------------------------

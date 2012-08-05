@@ -6,6 +6,12 @@
  */
 
 #include "MergeDataFiles.h"
+#include "ByteUtilities.h"
+#include "Constants.h"
+#include "FileUtils.h"
+#include <iostream>
+#include <algorithm>
+#include <iterator>
 
 using namespace std;
 typedef int64_t Long;

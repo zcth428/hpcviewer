@@ -9,14 +9,9 @@
 #define MERGEDATAFILES_H_
 
 #include "DataOutputFileStream.h"
-#include "ByteUtilities.h"
-#include "Constants.h"
-#include "FileUtils.h"
-#include <iostream>
-#include <fstream>
-#include <algorithm>
 #include <vector>
-#include <iterator>
+#include <string>
+
 
 using namespace std;
 namespace TraceviewerServer

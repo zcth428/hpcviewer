@@ -8,6 +8,16 @@
  */
 
 #include "Server.h"
+#include "SpaceTimeDataControllerLocal.h"
+#include "DataSocketStream.h"
+#include "LocalDBOpener.h"
+#include "Constants.h"
+#include "MPICommunication.h"
+#include "CompressingDataSocketLayer.h"
+#include <iostream>
+#include <fstream>
+#include <mpi.h>
+#include "zlib.h"
 //#include "SpaceTimeDataControllerLocal.h"
 
 using namespace std;

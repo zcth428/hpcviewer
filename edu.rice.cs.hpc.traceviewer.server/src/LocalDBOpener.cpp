@@ -6,6 +6,11 @@
  */
 
 #include "LocalDBOpener.h"
+#include <iostream>
+#include "Constants.h"
+#include "MergeDataFiles.h"
+#include "TraceDataByRankLocal.h"
+#include "FileUtils.h"
 
 namespace TraceviewerServer
 {

@@ -8,6 +8,8 @@
 #include "SpaceTimeDataControllerLocal.h"
 #include "FileData.h"
 #include "Server.h"
+#include <iostream>
+using namespace std;
 namespace TraceviewerServer
 {
 

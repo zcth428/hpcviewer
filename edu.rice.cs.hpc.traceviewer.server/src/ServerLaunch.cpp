@@ -8,6 +8,7 @@
 #include "Slave.h"
 #include "MPICommunication.h"
 #include "zlib.h"
+#include "Constants.h"
 
 
 using namespace std;

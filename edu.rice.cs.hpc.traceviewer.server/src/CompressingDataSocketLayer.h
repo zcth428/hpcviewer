@@ -1,4 +1,4 @@
-#include "DataSocketStream.h"
+
 #include "zlib.h"
 /*
  * CompressingDataSocketLayer.h
@@ -28,7 +28,6 @@ namespace TraceviewerServer
 	private:
 		void SoftFlush();
 		int BufferIndex;
-		DataSocketStream* BackingSocket;
 		z_stream Compressor;
 		char inBuf[BUFFER_SIZE];
 		unsigned char outBuf[BUFFER_SIZE];

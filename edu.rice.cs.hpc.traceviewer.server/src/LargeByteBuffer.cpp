@@ -5,7 +5,14 @@
  *      Author: pat2
  */
 #include "LargeByteBuffer.h"
+#include "sys/stat.h"
+#include <fcntl.h>
 
+#include <iostream>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 
 using namespace std;
 

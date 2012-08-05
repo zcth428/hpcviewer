@@ -211,7 +211,7 @@ namespace TraceviewerServer
 		if (ret != Z_OK)
 			throw ret;
 
-		int size = TraceviewerServer::FileUtils::GetFileSize(STDCL->GetExperimentXML());
+		//int size = TraceviewerServer::FileUtils::GetFileSize(STDCL->GetExperimentXML());
 
 #define CHUNK 0x4000
 
@@ -317,7 +317,7 @@ namespace TraceviewerServer
 			throw(-99);
 		}
 
-#ifndef UseMPI
+#ifdef NoMPI
 		ImageTraceAttributes correspondingAttributes;
 
 		correspondingAttributes.begProcess = processStart;
@@ -358,28 +358,36 @@ namespace TraceviewerServer
 		 #define stWr(type,val) Stream->Write##type((val))
 		 #endif*/
 
-#ifndef UseMPI
+#ifdef NoMPI
 
 		for (int i = 0; i < STDCL->TracesLength; i++)
 		{
 
 			ProcessTimeline* T = STDCL->Traces[i];
-			DataSender->WriteInt( T->Line());
+			Stream->WriteInt( T->Line());
 			vector<TimeCPID> data = T->Data->ListCPID;
-			DataSender->WriteInt( data.size());
-			DataSender->WriteDouble( data[0].Timestamp);
+			Stream->WriteInt( data.size());
+			Stream->WriteDouble( data[0].Timestamp);
 			// Begin time
-			DataSender->WriteDouble( data[data.size() - 1].Timestamp);
+			Stream->WriteDouble( data[data.size() - 1].Timestamp);
 			//End time
+			CompressingDataSocketLayer Compr;
 
 			vector<TimeCPID>::iterator it;
 			cout << "Sending process timeline with " << data.size() << " entries" << endl;
 			for (it = data.begin(); it != data.end(); ++it)
 			{
-				DataSender->WriteInt( it->CPID);
+				Compr.WriteInt( it->CPID);
 			}
+			Compr.Flush();
+			int OutputBufferLen = Compr.GetOutputLength();
+			char* OutputBuffer = (char*)Compr.GetOutputBuffer();
+
+			Stream->WriteInt(OutputBufferLen);
+
+			Stream->WriteRawData(OutputBuffer, OutputBufferLen);
 		}
-		DataSender->Flush();
+		Stream->Flush();
 
 #else
 		int RanksDone = 1;

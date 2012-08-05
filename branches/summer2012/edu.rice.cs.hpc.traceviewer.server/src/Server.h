@@ -8,7 +8,10 @@
 #ifndef Server_H_
 #define Server_H_
 
-#define UseMPI
+#ifndef NoMPI//MPI version should be default. If it is compiled with -DNoMPI, then we shouldn't use MPI
+	#define UseMPI
+#endif
+
 
 #include "SpaceTimeDataControllerLocal.h"
 #include "DataSocketStream.h"

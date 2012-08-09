@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.util.Constants;
@@ -118,8 +119,8 @@ public class TraceDatabase
 			//	some are allocated dynamically. At the moment we can't dispose
 			//	all colors
 			// ---------------------------------------------------------------------
-			//if (database.dataTraces != null)
-			//	database.dataTraces.dispose();
+			if (database.dataTraces != null)
+				database.dataTraces.dispose();
 			
 			database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
 			
@@ -134,18 +135,26 @@ public class TraceDatabase
 				
 				//---------------------------------------------------------------------
 				// Tell all views that we have the data, and they need to refresh their content
+				//	Due to tightly coupled relationship between views, 
+				//	we need to be extremely careful of the order of view activation
+				//	if the order is "incorrect", it can crash the program
+				//
+				// TODO: we need to use Eclipse's ISourceProvider to handle the existence of data
+				//		 this should avoid a tightly-coupled views
 				// ---------------------------------------------------------------------				
 
-				HPCSummaryView sview = (HPCSummaryView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCSummaryView.ID);
+				IWorkbenchPage page = window.getActivePage();
+				
+				HPCSummaryView sview = (HPCSummaryView) page.showView(HPCSummaryView.ID);
 				sview.updateView(database.dataTraces);
+				
+				HPCDepthView dview = (HPCDepthView) page.showView(HPCDepthView.ID);
+				dview.updateView(database.dataTraces);
 
-				HPCTraceView tview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
+				HPCTraceView tview = (HPCTraceView) page.showView(HPCTraceView.ID);
 				tview.updateView(database.dataTraces);
 				
-				HPCDepthView dview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
-				dview.updateView(database.dataTraces);
-				
-				HPCCallStackView cview = (HPCCallStackView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCCallStackView.ID);
+				HPCCallStackView cview = (HPCCallStackView) page.showView(HPCCallStackView.ID);
 				cview.updateView(database.dataTraces);
 
 				ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
@@ -161,7 +170,6 @@ public class TraceDatabase
 				e.printStackTrace();
 			}
 		}
-
 		
 		return false;
 
@@ -185,8 +193,8 @@ public class TraceDatabase
 		dialog.setMessage("Please select a directory containing execution traces.");
 		dialog.setText("Select Data Directory");
 		String directory;
-		while(!validDatabaseFound) {
-			
+		/*while(!validDatabaseFound)*/ 
+		{
 			directory = dialog.open();
 			
 			if (directory == null) 
@@ -195,8 +203,11 @@ public class TraceDatabase
 			
 			validDatabaseFound = isCorrectDatabase(directory, statusMgr, location);
 						
-			if (!validDatabaseFound)
-				msgNoDatabase(dialog, directory);
+			if (!validDatabaseFound) {
+				String sMsg = "The directory selected contains no traces:\n\t" + directory + 
+						"\nPlease select a directory that contains traces.";
+				MessageDialog.openError(shell, "Error opening the database", sMsg);
+			}
 		}
 		
 		return validDatabaseFound;
@@ -229,6 +240,7 @@ public class TraceDatabase
 					final TraceProgressReport traceReport = new TraceProgressReport(statusMgr);
 					final String outputFile = dirFile.getAbsolutePath() + File.separatorChar + "experiment.mt";
 					final MergeDataFiles.MergeDataAttribute att = MergeDataFiles.merge(dirFile, "*.hpctrace", outputFile, traceReport);
+					
 					if (att != MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA) {
 						location.fileTrace = new File(outputFile);
 
@@ -251,17 +263,5 @@ public class TraceDatabase
 			}
 		}
 		return false;
-	}
-	
-	/***
-	 * show message in directory dialog box
-	 * @param dialog
-	 * @param str
-	 */
-	private static void msgNoDatabase(DirectoryDialog dialog, String str) {
-		
-		dialog.setMessage("The directory selected contains no traces:\n\t" + str + 
-				"\nPlease select a directory that contains traces.");
-	}
-
+	}	
 }

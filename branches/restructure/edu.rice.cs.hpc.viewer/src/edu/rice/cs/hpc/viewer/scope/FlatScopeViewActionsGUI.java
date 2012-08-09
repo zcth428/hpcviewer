@@ -127,10 +127,10 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 * @param iLevel
 	 * @param showAggregate show in the root node the aggregate metrics
 	 */
-	public void updateFlattenView(int iLevel, boolean showAggregate) {
-		if(showAggregate)
-			this.displayRootExperiment();	// display the aggregate metrics
-		this.checkFlattenButtons();
+	public void updateFlattenView(Scope parentNode) {
+		//this.displayRootExperiment();	// display the aggregate metrics
+		insertParentNode(parentNode);
+		checkFlattenButtons();
 	}
 
 	/**
@@ -138,10 +138,14 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 * @return
 	 */
     public boolean shouldFlattenBeEnabled() {
+    	
+    	//return (objFlatAction.getScopeZoom().canZoomIn( ));
+    	/*
     	// https://outreach.scidac.gov/tracker/index.php?func=detail&aid=342&group_id=22&atid=169
     	// BUGS #342: we need to disable flatten buttons when the tree has been zoomed
     	if ( objFlatAction.getScopeZoom().canZoomOut() )
     		return false;
+    	*/
     	// DO NOT flatten if we reach to the point where there is no children 
     	//return this.myRootScope.getTreeNode().getDepth()>this.myRootScope.getFlattenLevel() + 1;
     	Object o = this.treeViewer.getInput();
@@ -160,8 +164,11 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
      * @return
      */
     public boolean shouldUnflattenBeEnabled() {
+    	
+    	return (objFlatAction.canUnflatten());
+    	
     	// DO NOT unflatten if we reach to root scope level
-    	return (objFlatAction.getFlattenLevel()>0);
+    	//return (objFlatAction.getFlattenLevel()>0);
     }
 
 

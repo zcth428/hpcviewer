@@ -18,7 +18,7 @@ import edu.rice.cs.hpc.viewer.metric.IMetricLabelProvider;
  *
  */
 public class MetricLabelProvider extends BaseMetricLabelProvider {
-	private enum MethodFlag { TEXT, FONT, FOREGROUND, BACKGROUND };
+	static private enum MethodFlag { TEXT, FONT, FOREGROUND, BACKGROUND };
 
 	// This is the ID of our extension point
 	private static final String METRIC_LABEL_PROVIDER_ID = "edu.rice.cs.hpc.viewer.metric.metricLabelProvider";
@@ -59,7 +59,24 @@ public class MetricLabelProvider extends BaseMetricLabelProvider {
 			}
 		}		
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.metric.BaseMetricLabelProvider#getFont(java.lang.Object)
+	 */
+	public Font getFont(Object element) {
 
+        if (!(element instanceof Scope)) {
+                return null;
+        }
+
+        if (runnable != null) {
+                if ( this.runExtension(runnable, element, MethodFlag.FONT) )
+                        return (Font) runnable.getResult();
+        }
+
+        return super.getFont(element);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -73,7 +90,7 @@ public class MetricLabelProvider extends BaseMetricLabelProvider {
 		
 		if (runnable != null) {
 			if ( this.runExtension(runnable, element, MethodFlag.TEXT) )
-				return runnable.getText();
+				return (String) runnable.getResult();
 		}
  		
 		return super.getText(element);
@@ -96,7 +113,7 @@ public class MetricLabelProvider extends BaseMetricLabelProvider {
 		
 		if (runnable != null) {
 			if ( this.runExtension(runnable, element, MethodFlag.BACKGROUND) )
-				return runnable.getColor();
+				return (Color) runnable.getResult();
 		}
 
 		return super.getBackground(element);
@@ -119,7 +136,7 @@ public class MetricLabelProvider extends BaseMetricLabelProvider {
 
 		if (runnable != null) {
 			if ( this.runExtension(runnable, element, MethodFlag.FOREGROUND) )
-				return runnable.getColor();
+				return (Color) runnable.getResult();
 		}
 		
 		return super.getForeground(element);
@@ -158,10 +175,8 @@ public class MetricLabelProvider extends BaseMetricLabelProvider {
 		private Object element;
 		private MethodFlag mf;
 		private IMetricLabelProvider labelProvider;
-		
-		private String text;
-		private Font font;
-		private Color color;
+
+		private Object result;
 		
 		public void setInfo(IMetricLabelProvider _labelProvider, Object _element, MethodFlag _mf) {
 			labelProvider = _labelProvider;
@@ -173,35 +188,24 @@ public class MetricLabelProvider extends BaseMetricLabelProvider {
 			System.out.println("Exception in label provider extension.");
 		}
 		public void run() throws Exception {
-			if (mf == MethodFlag.TEXT)
-			{
-				text = labelProvider.getText(element);
-				return;
+			switch(mf) {
+			case TEXT:
+				result = labelProvider.getText(element);
+				break;
+			case FONT:
+				result = labelProvider.getFont(element);
+				break;
+			case FOREGROUND:
+				result = labelProvider.getForeground(element);
+				break;
+			case BACKGROUND:
+				result = labelProvider.getBackground(element);
+				break;
 			}
-			if (mf == MethodFlag.FONT)
-			{
-				font = labelProvider.getFont(element);
-				return;
-			}
-			if (mf == MethodFlag.FOREGROUND)
-			{
-				color = labelProvider.getForeground(element);
-				return;
-			}
-			if (mf == MethodFlag.BACKGROUND)
-			{
-				color = labelProvider.getBackground(element);
-			}
-			return;
 		}
-		protected String getText () {
-			return text;
-		}
-		protected Font getFont () {
-			return font;
-		}
-		protected Color getColor () {
-			return color;
+		
+		Object getResult() {
+			return result;
 		}
 	}
 }

@@ -21,25 +21,40 @@ public class LargeByteBuffer
 	
 	final private FileChannel fcInput;
 	
-	// The page size has to be the multiple of record size
+	// The page size has to be the multiple of record size (24) and header size (can be 24 or 32)
 	// originally: Integer.MAX_VALUE;
-	private static final long PAGE_SIZE = 24 * (1 << 20); 
+	private long pageSize; 
 	
-	public LargeByteBuffer(FileChannel in)
+	/***
+	 * Construct direct/indirect mapped byte buffer
+	 * 
+	 * @param in : file channel
+	 * @param headerSz : the size of the header file
+	 * 
+	 * @throws IOException
+	 */
+	public LargeByteBuffer(FileChannel in, int headerSz, int recordSz)
 		throws IOException
 	{
 		fcInput = in;
 		length = in.size();
 		
-		int numPages = 1+(int) (in.size() / PAGE_SIZE);
+		// --------------------------------------------------------------------
+		// compute the page size:
+		// the page size has to be multiple of the least common multiple of 
+		//	the header size and the record size
+		// --------------------------------------------------------------------
+		pageSize = lcm (headerSz, recordSz) * (1 << 20);
+		
+		int numPages = 1+(int) (in.size() / pageSize);
 		masterBuffer = new MappedByteBuffer[numPages];		
 	}
 	
 	private long getCurrentSize(long index) throws IOException 
 	{
-		long currentSize = PAGE_SIZE;
-		if (length/PAGE_SIZE == index) {
-			currentSize = length - (index * PAGE_SIZE);
+		long currentSize = pageSize;
+		if (length/pageSize == index) {
+			currentSize = length - (index * pageSize);
 		}
 		return currentSize;
 	}
@@ -53,7 +68,7 @@ public class LargeByteBuffer
 	 */
 	private MappedByteBuffer setBuffer(int page) throws IOException
 	{
-		long start = ((long)page) * PAGE_SIZE;
+		long start = ((long)page) * pageSize;
 		MappedByteBuffer buffer = fcInput.map(FileChannel.MapMode.READ_ONLY, start, 
 				getCurrentSize(page));
 		masterBuffer[page] = buffer;
@@ -72,37 +87,37 @@ public class LargeByteBuffer
 	
 	public byte get(long position) throws IOException
 	{
-		int page = (int) (position / PAGE_SIZE);
-		int loc = (int) (position % PAGE_SIZE);
+		int page = (int) (position / pageSize);
+		int loc = (int) (position % pageSize);
 		
 		return getBuffer(page).get(loc);
 	}
 	
 	public int getInt(long position) throws IOException
 	{
-		int page = (int) (position / PAGE_SIZE);
-		int loc = (int) (position % PAGE_SIZE);
+		int page = (int) (position / pageSize);
+		int loc = (int) (position % pageSize);
 		return getBuffer(page).getInt(loc);
 	}
 	
 	public long getLong(long position) throws IOException
 	{
-		int page = (int) (position / PAGE_SIZE);
-		int loc = (int) (position % PAGE_SIZE);
+		int page = (int) (position / pageSize);
+		int loc = (int) (position % pageSize);
 		return getBuffer(page).getLong(loc);
 	}
 	
 	public double getDouble(long position) throws IOException
 	{
-		int page = (int) (position / PAGE_SIZE);
-		int loc = (int) (position % PAGE_SIZE);
+		int page = (int) (position / pageSize);
+		int loc = (int) (position % pageSize);
 		return getBuffer(page).getDouble(loc);
 	}
 	
 	public char getChar(long position) throws IOException
 	{
-		int page = (int) (position / PAGE_SIZE);
-		int loc = (int) (position % PAGE_SIZE);
+		int page = (int) (position / pageSize);
+		int loc = (int) (position % pageSize);
 		return getBuffer(page).getChar(loc);
 	}
 
@@ -118,15 +133,15 @@ public class LargeByteBuffer
 
 	public float getFloat(long position) throws IOException
 	{
-		int page = (int) (position / PAGE_SIZE);
-		int loc = (int) (position % PAGE_SIZE);
+		int page = (int) (position / pageSize);
+		int loc = (int) (position % pageSize);
 		return getBuffer(page).getFloat(loc);
 	}
 	
 	public short getShort(long position) throws IOException
 	{
-		int page = (int) (position / PAGE_SIZE);
-		int loc = (int) (position % PAGE_SIZE);
+		int page = (int) (position / pageSize);
+		int loc = (int) (position % pageSize);
 		return getBuffer(page).getShort(loc);
 	}
 	
@@ -140,12 +155,42 @@ public class LargeByteBuffer
 	 */
 	public void dispose() 
 	{
-		this.masterBuffer = null;
+		masterBuffer = null;
 		try {
-			this.fcInput.close();
+			fcInput.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	/***
+	 * compute the gcd of two numbers
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static long gcd(long a, long b)
+	{
+	    while (b > 0)
+	    {
+	        long temp = b;
+	        b = a % b; 
+	        a = temp;
+	    }
+	    return a;
+	}
+	
+	/****
+	 * compute the lcm of two numbers
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static long lcm(long a, long b)
+	{
+	    return a * (b / gcd(a, b));
 	}
 }

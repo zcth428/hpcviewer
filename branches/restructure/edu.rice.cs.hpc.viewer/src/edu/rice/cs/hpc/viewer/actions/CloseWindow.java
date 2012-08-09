@@ -10,7 +10,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 
@@ -26,13 +25,15 @@ public class CloseWindow extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		// get an array of open databases for this window
-		final ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
-		vWin.dispose();
+		ViewerWindowManager.removeWindow(window);
 		
 		// close editor windows
 		window.getActivePage().closeAllEditors(false);
 		// close the workbench (which will close the application as well)
 		window.close();
+		
+		ViewerWindowManager.removeWindow(window);
+		
 		return null;
 	}
 

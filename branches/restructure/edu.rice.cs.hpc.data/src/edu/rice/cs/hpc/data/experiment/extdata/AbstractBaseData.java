@@ -6,8 +6,8 @@ public abstract class AbstractBaseData implements IBaseData {
 	protected BaseDataFile baseDataFile;
 	final int headerSize;
 
-	public AbstractBaseData(String filename, int headerSize) throws IOException {
-		baseDataFile = new BaseDataFile(filename);
+	public AbstractBaseData(String filename, int headerSize, int recordSz) throws IOException {
+		baseDataFile = new BaseDataFile(filename, headerSize, recordSz);
 		this.headerSize = headerSize;
 	}
 	

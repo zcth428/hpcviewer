@@ -44,6 +44,9 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 
     // laksono 2009.04.07
     protected ScopeZoom objZoom = null;
+    
+    protected interface IActionType {};
+    protected enum ActionType implements IActionType {ZoomIn, ZoomOut} ;
 	
 	protected IWorkbenchWindow objWindow;
     /**
@@ -290,7 +293,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * Retrieve the selected node
 	 * @return null if there is no selected node
 	 */
-	private Scope getSelectedNode() {
+	protected Scope getSelectedNode() {
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
 			return null;
@@ -313,7 +316,10 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		Scope objInputNode = this.getInputNode();
 		objZoom.zoomIn(current, objInputNode);
 		Scope nodeSelected = this.getSelectedNode();
-		this.checkStates(nodeSelected);
+		
+		registerAction(ActionType.ZoomIn);
+		
+		checkStates(nodeSelected);
 	}
 	
 	/**
@@ -324,6 +330,9 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		// funny behavior on Windows: they still keep the track of the previously selected item !!
 		// therefore we need to check again the state of the buttons
 		Scope nodeSelected = this.getSelectedNode();
+		
+		registerAction(ActionType.ZoomOut);
+
 		this.checkStates(nodeSelected);
 	}
 	
@@ -561,6 +570,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      */
     public abstract void checkStates ( Scope nodeSelected );
     
+    protected abstract void registerAction( IActionType type );
     
     //===========================================================================
     //------------------- ADDITIONAL CLASSES ------------------------------------

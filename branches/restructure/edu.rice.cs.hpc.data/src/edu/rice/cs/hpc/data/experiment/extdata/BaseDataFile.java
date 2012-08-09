@@ -21,8 +21,10 @@ public class BaseDataFile {
 	private int numFiles = 0;
 	private String valuesX[];
 	private long offsets[];
+	
+	private RandomAccessFile file; 
 
-	public BaseDataFile(String filename)  throws IOException 
+	public BaseDataFile(String filename, int headerSize, int recordSz)  throws IOException 
 	{
 		
 		if (filename != null) {
@@ -31,7 +33,7 @@ public class BaseDataFile {
 			// test file version
 			//---------------------------------------------
 			
-			this.setData(filename);
+			this.setData(filename, headerSize, recordSz);
 		}
 	}
 	
@@ -65,10 +67,12 @@ public class BaseDataFile {
 	 * @param f: array of files
 	 * @throws IOException 
 	 */
-	private void setData(String filename) throws IOException {
+	private void setData(String filename, int headerSize, int recordSz)
+			throws IOException {
 		
-		final FileChannel f = new RandomAccessFile(filename, "r").getChannel();
-		masterBuff = new LargeByteBuffer(f);
+		file = new RandomAccessFile(filename, "r");
+		final FileChannel f = file.getChannel();
+		masterBuff = new LargeByteBuffer(f, headerSize, recordSz);
 
 		this.type = masterBuff.getInt(0);
 		this.numFiles = masterBuff.getInt(Constants.SIZEOF_INT);
@@ -112,6 +116,8 @@ public class BaseDataFile {
 			
 			valuesX[i] = x_val;
 		}
+		//f.close();
+		//file.close();
 	}
 
 	/**
@@ -146,6 +152,19 @@ public class BaseDataFile {
 	 */
 	public void dispose() {
 		if (masterBuff != null)
-			this.masterBuff.dispose();
+			masterBuff.dispose();
+
+		if (file != null) {
+			try {
+				// ------------------------------------------------------
+				// need to close the file and its file channel
+				// somehow this can free the memory
+				// ------------------------------------------------------
+				file.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

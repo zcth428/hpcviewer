@@ -111,6 +111,9 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		// ------------------------------------------------------------------------------------------
 		// let use GC instead of ImageData since GC allows us to draw lines and rectangles
 		// ------------------------------------------------------------------------------------------
+		if (imageBuffer != null) {
+			imageBuffer.dispose();
+		}
 		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 		GC buffer = new GC(imageBuffer);
 		buffer.setBackground(Constants.COLOR_WHITE);

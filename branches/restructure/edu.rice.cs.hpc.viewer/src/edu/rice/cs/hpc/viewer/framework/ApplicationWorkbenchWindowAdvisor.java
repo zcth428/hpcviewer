@@ -233,8 +233,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		closeAllEditors();
 		removeViews();
 		
-		ViewerWindowManager vwm = new ViewerWindowManager();
-		vwm.removeWindow(window);
+		ViewerWindowManager.removeWindow(window);
 
 		return true; // we allow app to shut down
 	}

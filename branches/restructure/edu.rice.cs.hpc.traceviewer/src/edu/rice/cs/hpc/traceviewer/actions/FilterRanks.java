@@ -44,24 +44,24 @@ public class FilterRanks extends AbstractHandler {
 			filter = new Filter();
 		}
 	
-		FilterDialog dlg = new FilterDialog(shell, filter);
-		
-		if (dlg.open() == Dialog.OK) {
-			try {
-				
-				FilteredBaseData filteredBaseData = new FilteredBaseData(data.getTraceFile().getAbsolutePath(), 
-						data.getTraceAttribute().dbHeaderSize);
-				filteredBaseData.setFilter( filter );
+		try {
+			
+			FilteredBaseData filteredBaseData = new FilteredBaseData(data.getTraceFile().getAbsolutePath(), 
+					data.getTraceAttribute().dbHeaderSize, 24);
+			
+			filteredBaseData.setFilter( filter );
+			
+			FilterDialog dlgFilter = new FilterDialog(shell, filteredBaseData);
+			if (dlgFilter.open() == Dialog.OK) {
 				
 				data.setBaseData(filteredBaseData);
 				dataService.broadcastUpdate(new Boolean(true));
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-		}
-		
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 		
 		return null;
 	}

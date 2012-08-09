@@ -25,7 +25,10 @@ public class UserInputHistory {
 	// temporary revert back to use deprecated code in order to keep backward compatibility
 	// Original code:
 	//     private static final Preferences CONFIGURATION = ConfigurationScope.INSTANCE.getNode("edu.rice.cs.hpc");   
-    private static final Preferences CONFIGURATION = new ConfigurationScope().getNode("edu.rice.cs.hpc");
+    //private static final Preferences CONFIGURATION = new ConfigurationScope().getNode("edu.rice.cs.hpc");
+    final static String NODE_HPC = "edu.rice.cs.hpc";
+    
+    private static final Preferences CONFIGURATION = ConfigurationScope.INSTANCE.getNode(NODE_HPC);
     
     private String name;
     private int depth;

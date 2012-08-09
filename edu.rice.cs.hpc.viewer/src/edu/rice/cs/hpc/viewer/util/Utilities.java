@@ -3,7 +3,10 @@
  */
 package edu.rice.cs.hpc.viewer.util;
 
+import java.util.ArrayList;
+
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 
@@ -11,7 +14,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Color;
@@ -19,7 +21,6 @@ import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
@@ -54,7 +55,6 @@ public class Utilities {
 	static public Color COLOR_TOP;
 	
 	static public String NEW_LINE = System.getProperty("line.separator");
-	static private Display objDisplay;	
 	
 	/**
 	 * Set the font for the metric columns (it may be different to other columns)
@@ -97,8 +97,6 @@ public class Utilities {
 		Utilities.fontGeneral = new Font (display, objFontGeneric);
 		
 		Utilities.fontMetric = new Font(display, objFontMetric);
-		// save the display
-		Utilities.objDisplay = display;
 	}
 
 	/**
@@ -108,28 +106,68 @@ public class Utilities {
 	 * @param objFontGeneric
 	 */
 	static public void setFontMetric(IWorkbenchWindow window, FontData objFontMetric[], FontData objFontGeneric[]) {
-		boolean isFontChanged = false;
 		FontData []myFontMetric = Utilities.fontMetric.getFontData();
-		FontData []myFontGeneric = Utilities.fontGeneral.getFontData();
-		if ( !myFontMetric[0].equals( objFontMetric[0] ) ) {
+		boolean isMetricFontChanged = isDifferentFontData(myFontMetric, objFontMetric);
+		if (isMetricFontChanged) {
+			Device device = Utilities.fontMetric.getDevice();
 			Utilities.fontMetric.dispose();
-			Utilities.fontMetric = new Font( Utilities.objDisplay, objFontMetric);
-			isFontChanged = true; 
-		}		
-		if ( !myFontGeneric[0].equals( objFontGeneric[0] ) ) {
-			Utilities.fontGeneral.dispose();
-			Utilities.fontGeneral = new Font( Utilities.objDisplay, objFontGeneric);
-			isFontChanged = true; 
+			Utilities.fontMetric = new Font(device, objFontMetric);
 		}
-		if (isFontChanged) {
+		
+		FontData []myFontGeneric = Utilities.fontGeneral.getFontData();
+		boolean isGenericFontChange = isDifferentFontData(myFontGeneric, objFontGeneric);
+		if (isGenericFontChange) {
+			Device device = Utilities.fontGeneral.getDevice();
+			Utilities.fontGeneral.dispose();
+			Utilities.fontGeneral = new Font(device, objFontGeneric);
+		}
+		
+		if (isMetricFontChanged || isGenericFontChange) {
 			// a font has been changed. we need to refresh the view
 			resetAllViews (window);
 			
-			// store the changes
+			// refresh other windows too
+			for (int i=0; i<ViewerWindowManager.size(); i++) {
+				ViewerWindow vw = ViewerWindowManager.getViewerWindow(i);
+				if (vw.getWinObj()!=window) {
+					resetAllViews(vw.getWinObj());
+				}
+			}
+			// set the fonts in the preference store to the new fonts
+			// if we got here from a preference page update this was already done by the font field editor but 
+			// if we got here from a tool bar button then we need the new values to be put into the preference store
+			// in addition this call will fire a property changed event which other non-Rice views can listen for and
+			// use it to refresh their views (without this event the SWT code throws lots of invalid argument exceptions
+			// because it tries to repaint the non-Rice views using the font that the Rice code has just disposed).
 			Utilities.storePreferenceFonts();
 		}
 	}
 	
+	
+	/*****
+	 * check if two font data are equal (name, height and style)
+	 * 
+	 * @param fontTarget
+	 * @param fontSource
+	 * @return
+	 */
+	static public boolean isDifferentFontData(FontData fontTarget[], FontData fontSource[]) {
+		boolean isChanged = false;
+		for (int i=0; i<fontTarget.length; i++) {
+			if (i < fontSource.length) {
+				FontData target = fontTarget[i];
+				FontData source = fontSource[i];
+				isChanged = !( target.getName().equals(source.getName()) &&
+						(target.getHeight()==source.getHeight()) && 
+						(target.getStyle()==source.getStyle()) ) ;
+				
+				if (isChanged)
+					// no need to continue the loop
+					return isChanged;
+			}
+		}
+		return isChanged;
+	}
 	
 	/****
 	 * remove all the allocated resources
@@ -138,6 +176,7 @@ public class Utilities {
 		try {
 			Utilities.fontGeneral.dispose();
 			Utilities.fontMetric.dispose();
+			COLOR_TOP.dispose();
 			
 			Icons.dispose();
 			
@@ -166,6 +205,16 @@ public class Utilities {
 			System.out.printf("Utilities.resetAllViews: ViewerWindow class not found\n");
 			return;
 		}
+
+		final TreeItemManager objItemManager = new TreeItemManager();
+		
+		// first, we need to refresh the visible view
+		final ArrayList<BaseScopeView> visible_view = Utilities.getTopView(window);
+		if (visible_view != null && visible_view.size()>0) {
+			for (BaseScopeView view : visible_view) {
+				Utilities.resetView(objItemManager, view.getTreeViewer());
+			}
+		}
 		
 		// find each open database so we can reset its views
 		for (int i=0 ; i<ViewerWindow.maxDbNum ; i++) {
@@ -176,12 +225,6 @@ public class Utilities {
 			}
 
 			final BaseScopeView arrViews[] = db.getExperimentView().getViews();
-			final TreeItemManager objItemManager = new TreeItemManager();
-
-			// first, we need to refresh the visible view
-			final BaseScopeView visible_view = Utilities.getTopView();
-			if (visible_view != null)
-				Utilities.resetView(objItemManager, visible_view.getTreeViewer());
 			
 			// next, using helper thread to refresh other views
 			window.getShell().getDisplay().asyncExec( new Runnable() {
@@ -190,7 +233,7 @@ public class Utilities {
 					// refresh all the views except the visible one 
 					// we will prioritize the visible view to be refreshed first
 					for(int i=0;i<arrViews.length;i++) {
-						if (arrViews[i] != visible_view) {
+						if (!visible_view.contains(arrViews[i])) {
 							ScopeTreeViewer tree = (ScopeTreeViewer) arrViews[i].getTreeViewer();
 							
 							// reset the view
@@ -206,19 +249,21 @@ public class Utilities {
 	 * Find the first visible scope view (the view can be active or not)
 	 * @return the visible view, null if there is no view
 	 */
-	static BaseScopeView getTopView() {
-		IWorkbenchPage page = 
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+	static ArrayList<BaseScopeView> getTopView(IWorkbenchWindow window) {
+		IWorkbenchPage page = window.getActivePage();
 		IViewReference [] viewRefs = page.getViewReferences();
+		ArrayList<BaseScopeView> listViews = new ArrayList<BaseScopeView>(viewRefs.length);
+		
 		for(int i=0;i<viewRefs.length;i++) {
 			IWorkbenchPart part = viewRefs[i].getPart(false);
 			if (page.isPartVisible(part)) {
-				if (part instanceof BaseScopeView)
-					return (BaseScopeView)part;
+				if (part instanceof BaseScopeView) {
+					listViews.add((BaseScopeView)part);
+				}
 			}
 		}
 
-		return null;
+		return listViews;
 	}
 	
 	static public void resetView ( TreeViewer tree )
@@ -265,19 +310,15 @@ public class Utilities {
 	 */
 	static public void increaseFont(IWorkbenchWindow window) {
 		Utilities.setFontMetric(window, +1);
-		FontData []objFontData = JFaceResources.getHeaderFontDescriptor().increaseHeight(+1).getFontData();
-		JFaceResources.getFontRegistry().put(JFaceResources.HEADER_FONT, objFontData);
-
 	}
 
+	
 	/**
 	 * Decrement font size
 	 * @param window
 	 */
 	static public void DecreaseFont(IWorkbenchWindow window) {
 		Utilities.setFontMetric(window, -1);
-		FontData []objFontData = JFaceResources.getHeaderFontDescriptor().increaseHeight(-1).getFontData();
-		JFaceResources.getFontRegistry().put(JFaceResources.HEADER_FONT, objFontData);
 	}
 
 	/**	

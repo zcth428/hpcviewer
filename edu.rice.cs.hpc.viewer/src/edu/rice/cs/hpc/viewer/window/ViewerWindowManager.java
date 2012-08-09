@@ -25,7 +25,7 @@ public class ViewerWindowManager {
 	/**
 	 * Vector of tables to keep track of what has happened in each open hpcviewer window.
 	 */
-	private static Vector<ViewerWindow> vWindows = new Vector<ViewerWindow>();
+	private static Vector<ViewerWindow> vWindows = new Vector<ViewerWindow>(3);
 
 	/**
 	 * Returns the index into the vWindows vector of the current window being used.
@@ -54,14 +54,6 @@ public class ViewerWindowManager {
 		vWin.setWinObj(window);
 
 		// see if there are any unused slots
-		for (int i=0 ; i<vWindows.size() ; i++) {
-			// if this slot was previously used but is now free, reuse it
-			if (vWindows.get(i) == null) {
-				vWindows.set(i, vWin);
-				return;
-			}
-		}
-
 		vWindows.add(vWin);
 		return;
 	}
@@ -69,7 +61,7 @@ public class ViewerWindowManager {
 	/**
 	 * Remove a window from the database managers tables.
 	 */
-	public Boolean removeWindow (IWorkbenchWindow window) {
+	static public Boolean removeWindow (IWorkbenchWindow window) {
 		for (int i=0 ; i<vWindows.size() ; i++) {
 			final ViewerWindow vw = vWindows.get(i);
 			if (vw == null) {
@@ -80,7 +72,7 @@ public class ViewerWindowManager {
 			if (vw.getWinObj().equals(window)) {
 				vw.dispose();
 				// set this to something that will cause problems if used before being reset
-				vWindows.set(i, null);
+				vWindows.remove(i);
 				return true;
 			}
 		}
@@ -121,5 +113,13 @@ public class ViewerWindowManager {
 				"Error: Current Window Unknown.", 
 				"Unable to find hpcviewer window associated with " + window.toString());
 		return null;
+	}
+	
+	static public int size() {
+		return vWindows.size();
+	}
+	
+	static public ViewerWindow getViewerWindow(int index) {
+		return vWindows.get(index);
 	}
 }

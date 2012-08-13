@@ -217,9 +217,8 @@ public class Utilities {
 		}
 		
 		// find each open database so we can reset its views
-		for (int i=0 ; i<ViewerWindow.maxDbNum ; i++) {
+		for (Database db : vWin.getDatabases()) {
 			// get the views created for our database
-			Database db = vWin.getDb(i);
 			if (db == null) {
 				continue;		// not open just skip it
 			}

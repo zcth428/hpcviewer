@@ -297,7 +297,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.
 	 *************************************************************************/
-	public void setDetailZoom(long _topLeftTime, double _topLeftProcess, long _bottomRightTime, double _bottomRightProcess)
+	public void setDetailZoom(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess)
 	{
 		stData.attributes.assertProcessBounds(stData.getHeight());
 		stData.attributes.assertTimeBounds(stData.getWidth());
@@ -545,8 +545,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		final double numProcessDisp = stData.attributes.endProcess - stData.attributes.begProcess;
 		
-		double p2 = Math.ceil( yMid+numProcessDisp*SCALE );
-		double p1 = Math.floor( yMid-numProcessDisp*SCALE );
+		int p2 = (int) Math.ceil( yMid+numProcessDisp*SCALE );
+		int p1 = (int) Math.floor( yMid-numProcessDisp*SCALE );
 		
 		stData.attributes.assertProcessBounds(stData.getHeight());
 		
@@ -579,8 +579,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		final double numProcessDisp = stData.attributes.endProcess - stData.attributes.begProcess;
 		
-		double p2 = Math.min( stData.getHeight(), Math.ceil( yMid+numProcessDisp*SCALE ) );
-		double p1 = Math.max( 0, Math.floor( yMid-numProcessDisp*SCALE ) );
+		int p2 = (int) Math.min( stData.getHeight(), Math.ceil( yMid+numProcessDisp*SCALE ) );
+		int p1 = (int) Math.max( 0, Math.floor( yMid-numProcessDisp*SCALE ) );
 		
 		if(p2 == stData.attributes.endProcess && p1 == stData.attributes.begProcess)
 		{
@@ -750,7 +750,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	 **************************************************************************/
 	private void setDetail()
     {
-    	double topLeftProcess = (selectionTopLeftY / getScaleY());
+		int topLeftProcess = (int) (selectionTopLeftY / getScaleY());
 		long topLeftTime = (long)((double)selectionTopLeftX / getScaleX());
 		
 		// ---------------------------------------------------------------------------------------
@@ -758,7 +758,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		// for instance if the user selects processes where the max process is between
 		// 	10 and 11, we should include process 11 (just like keynote selection)
 		// ---------------------------------------------------------------------------------------
-		double bottomRightProcess = Math.ceil( ((double) selectionBottomRightY / getScaleY()) );
+		int bottomRightProcess = (int) Math.ceil( ((double) selectionBottomRightY / getScaleY()) );
 		long bottomRightTime = (long)Math.ceil( ((double)selectionBottomRightX / getScaleX()) );
 		
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
@@ -775,7 +775,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      * @param t2
      * @param p2
      */
-    private void adjustCrossHair(long t1, double p1, long t2, double p2) {
+    private void adjustCrossHair(long t1, int p1, long t2, int p2) {
     	
     	Position current = this.stData.getPosition();
     	int process = (current.process);
@@ -938,10 +938,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      * go north one step
      */
     public void goNorth() {
-    	double proc_begin = stData.getBegProcess();
-    	double proc_end = stData.getEndProcess();
-    	final double delta = proc_end - proc_begin;
-    	final double move = java.lang.Math.ceil((double)delta * SCALE_MOVE);
+    	int proc_begin = stData.getBegProcess();
+    	int proc_end = stData.getEndProcess();
+    	final int delta = proc_end - proc_begin;
+    	final int move = (int) java.lang.Math.ceil((double)delta * SCALE_MOVE);
     	proc_begin = proc_begin - move;
     	
     	if (proc_begin < 0) {
@@ -956,10 +956,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      * go south one step
      */
     public void goSouth() {
-    	double proc_begin = stData.getBegProcess();
-    	double proc_end = stData.getEndProcess();
-    	final double delta = proc_end - proc_begin;
-    	final double move = java.lang.Math.ceil((double)delta * SCALE_MOVE);
+    	int proc_begin = stData.getBegProcess();
+    	int proc_end = stData.getEndProcess();
+    	final int delta = proc_end - proc_begin;
+    	final int move = (int) java.lang.Math.ceil((double)delta * SCALE_MOVE);
     	proc_end = proc_end + move;
     	
     	if (proc_end > stData.getHeight()) {
@@ -975,7 +975,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      * @param pBegin: the top position
      * @param pEnd: the bottom position
      */
-	private void setProcessRange(double pBegin, double pEnd) {
+	private void setProcessRange(int pBegin, int pEnd) {
 		pushUndo();
 		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
 	}

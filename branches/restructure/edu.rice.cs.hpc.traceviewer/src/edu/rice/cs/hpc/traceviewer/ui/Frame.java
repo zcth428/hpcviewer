@@ -14,7 +14,7 @@ public class Frame implements Serializable
     public long begTime, endTime;
     
     /**The first and last time being viewed now*/
-    public double begProcess, endProcess;
+    public int begProcess, endProcess;
 	
 	public Position position;
 	

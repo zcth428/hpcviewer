@@ -14,6 +14,7 @@ import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -295,28 +296,33 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 			
 			if (binFile.exists())
 			{
+				ObjectInputStream in = null;
 				try
 				{
-					ObjectInputStream in = null;
-					try
-					{
-						in = new ObjectInputStream(new FileInputStream(fileName));
-						Frame current = (Frame)in.readObject();
-						detailCanvas.open(current);
-						validFrameFound = true;
-					}
-					finally
-					{
-						in.close();
-					}
+					in = new ObjectInputStream(new FileInputStream(fileName));
+					Frame current = (Frame)in.readObject();
+					detailCanvas.open(current);
+					validFrameFound = true;
 				}
 				catch (IOException e)
 				{
 					validFrameFound = false;
+					MessageDialog.openError(getViewSite().getShell(), "Error reading the file",
+							"Fail to read the file: " + fileName );
 				}
 				catch (ClassNotFoundException e)
 				{
 					validFrameFound = false;
+					MessageDialog.openError(getViewSite().getShell(), "Error reading the file", 
+							"File format is not recognized. Either the file is corrupted or it's an old format");
+				}
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						MessageDialog.openWarning(getViewSite().getShell(), "Error closing the file", 
+								"Unable to close the file: " + fileName);
+					}
 				}
 			}
 		}

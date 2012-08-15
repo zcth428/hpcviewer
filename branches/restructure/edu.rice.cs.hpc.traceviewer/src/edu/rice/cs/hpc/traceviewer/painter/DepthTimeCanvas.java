@@ -1,5 +1,9 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.commands.operations.IOperationHistoryListener;
+import org.eclipse.core.commands.operations.OperationHistoryEvent;
+import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -14,12 +18,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
+import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**A view for displaying the depthview.*/
 //all the GUI setup for the depth view is here
-public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
+public class DepthTimeCanvas extends SpaceTimeCanvas 
+implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
 {
 	
 	int maxDepth;
@@ -57,7 +65,9 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	private int currentProcess = -1;
     
     public SpaceTimeDetailCanvas detailCanvas;
-    
+	private IOperationHistory history = OperationHistoryFactory
+			.getOperationHistory();
+
 	
 	public DepthTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas, int _process)
     {
@@ -87,7 +97,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	}
 	
 
-	public void addCanvasListener() {
+	private void addCanvasListener() {
 		addMouseListener(this);
 		addMouseMoveListener(this);
 		addPaintListener(this);
@@ -106,6 +116,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 				}
 			}
 		});
+		history.addOperationHistoryListener(this);
 	}
 	
 	public void paintControl(PaintEvent event)
@@ -293,11 +304,15 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		//		 it makes to code hard to code
 		
 		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
-		setTimeZoom(topLeftTime, bottomRightTime);
-		
-		adjustCrossHair(topLeftTime, bottomRightTime);
+		zoom(topLeftTime, bottomRightTime);
     }
 	
+    private void zoom(long time1, long time2)
+    {
+    	setTimeZoom(time1, time2);
+    	adjustCrossHair(time1, time2);
+    }
+    
     /******************
      * Forcing the crosshair to be always inside the region
      * 
@@ -403,6 +418,32 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 			Point mouseTemp = new Point(e.x,e.y);
 			adjustSelection(mouseDown,mouseTemp);
 			redraw();
+		}
+	}
+
+
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.core.commands.operations.IOperationHistoryListener#historyNotification(org.eclipse.core.commands.operations.OperationHistoryEvent)
+	 */
+	public void historyNotification(final OperationHistoryEvent event) {
+		if (event.getOperation().hasContext(TraceOperation.context)) {
+			if (event.getEventType() == OperationHistoryEvent.DONE) {
+				getDisplay().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						TraceOperation operation =  (TraceOperation) event.getOperation();
+						if (operation.getType() != TraceOperation.OperationType.DepthTime) {
+							if (operation instanceof ZoomOperation) {
+								Frame frame = operation.getFrame();
+								zoom(frame.begTime, frame.endTime);
+							}
+						}
+					}
+				});
+			}
 		}
 	}
 

@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.util.Stack;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -22,6 +23,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
+import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
@@ -1171,7 +1174,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		refresh(refreshData);
 		
 		// forces all other views to refresh with the new region
-		depthCanvas.refresh(stData.attributes.begTime, stData.attributes.endTime);
+		//depthCanvas.refresh(stData.attributes.begTime, stData.attributes.endTime);
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new ZoomOperation("zoom", TraceOperation.OperationType.SpaceTime, 
+							stData.attributes.begTime, stData.attributes.endTime,
+							stData.attributes.begProcess, stData.attributes.endProcess), 
+					null, null);
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		miniCanvas.setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
 	}
 	

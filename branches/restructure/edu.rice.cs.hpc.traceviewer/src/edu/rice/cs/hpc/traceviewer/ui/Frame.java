@@ -33,14 +33,40 @@ public class Frame implements Serializable
 		position = new Position(_selectedTime, _selectedProcess);
 	}
 	
-	public Frame(long _begTime, long _endTime, long _selectedTime, int _selectedDepth)
+	public Frame(long timeBeg, long timeEnd, int ProcBeg, int ProcEnd)
 	{
-		begTime = _begTime;
-		endTime = _endTime;
-		begProcess = -1;
-		endProcess = -1;
-		depth = -1;
-		position = new Position(_selectedTime, _selectedDepth);
+		begProcess 	= ProcBeg;
+		endProcess  = ProcEnd;
+		begTime	 	= timeBeg;
+		endTime		= timeEnd;
+	}
+	
+	public Frame(Frame frame)
+	{
+		this.begProcess = frame.begProcess;
+		this.endProcess = frame.endProcess;
+		this.begTime    = frame.begTime;
+		this.endTime    = frame.endTime;
+		this.depth	 	= frame.depth;
+		this.position	= new Position(frame.position.time, frame.position.process);
+	}
+	
+	public void set(int depth)
+	{
+		this.depth = depth;
+	}
+	
+	public void set(Position p)
+	{
+		this.position = p;
+	}
+	
+	public void set(long begTime, long endTime, int begProcess, int endProcess)
+	{
+		this.begProcess = begProcess;
+		this.endProcess = endProcess;
+		this.begTime	= begTime;
+		this.endTime	= endTime;
 	}
 	
 	public boolean equals(Frame other)

@@ -115,7 +115,11 @@ public class LargeByteBuffer
 	{
 		int page = (int) (position / pageSize);
 		int loc = (int) (position % pageSize);
-		return getBuffer(page).getDouble(loc);
+		if (loc < pageSize - 4) {
+			return getBuffer(page).getDouble(loc);
+		} else {
+			return (double)(((long) getBuffer(page).getInt(loc)) << 32) + (long) getBuffer(page+1).getInt(0);
+		}
 	}
 	
 	public char getChar(long position) throws IOException

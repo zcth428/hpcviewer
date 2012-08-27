@@ -12,21 +12,21 @@ public class JavaValidator {
 	
 	static public void main(String []args) {
 		if (isGCJ()) {
-			System.out.println("GNU GCJ");
+			System.out.println("Unsupported JVM: GNU GCJ");
 		} else {
-			System.out.println("Not GNU JVM");
 			if (isCorrectJavaVersion())
-				System.out.println("JVM version is correct");
+				System.out.println("Valid JVM");
 			else
-				System.out.println("Incorrect JVM. Needs to be higher or equal than " 
+				System.out.println("Invalid JVM: Needs to be higher or equal than " 
 						+ JavaMinVersion);
 		}
 	}
 	
+	
 	/***
 	 * print all the JVM properties
 	 */
-	static public void getProperties() {
+	static public void printProperties() {
 		Properties p = System.getProperties();
 		Set<Entry<Object, Object>> set = p.entrySet();
 		Iterator<Entry<Object, Object>> iterator = set.iterator();
@@ -42,6 +42,7 @@ public class JavaValidator {
 	 * @return
 	 */
 	static public boolean isGCJ() {
+		// GNU JVM has "Free Software Foundation" as the vendor
 		return getJavaVendor().indexOf("Free")>=0;
 	}
 	

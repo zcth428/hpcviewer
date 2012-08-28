@@ -56,7 +56,7 @@ public class TreeSimilarity {
 	 */
 	private void mergeTree( Scope target, Scope source, int metricOffset)
 	{
-		TreeNode childrenSource[] = source.getChildren();
+		TreeNode []childrenSource = source.getChildren();
 		
 		// ------------------------------------------------------------
 		// case 1: if the source has no children. no need to continue
@@ -64,9 +64,9 @@ public class TreeSimilarity {
 		if (childrenSource == null)
 			return;
 		
-		final Scope sortedSource[] = sortArrayOfNodes( childrenSource );
+		final Scope []sortedSource = sortArrayOfNodes( childrenSource );
 		
-		TreeNode childrenTarget[] = target.getChildren();
+		TreeNode []childrenTarget = target.getChildren();
 		
 		// ------------------------------------------------------------
 		// case 2: if the target has no children, just add from the source
@@ -79,7 +79,7 @@ public class TreeSimilarity {
 			}
 			return;
 		}
-		final Scope sortedTarget[] = sortArrayOfNodes( childrenTarget );
+		final Scope []sortedTarget = sortArrayOfNodes( childrenTarget );
 		
 		// ------------------------------------------------------------
 		// case 3: both target and source have children
@@ -130,7 +130,7 @@ public class TreeSimilarity {
 	 */
 	private Scope [] sortArrayOfNodes(TreeNode []nodes)
 	{
-		Scope sorted[] = new Scope[nodes.length];
+		Scope []sorted = new Scope[nodes.length];
 		System.arraycopy(nodes, 0, sorted, 0, nodes.length);
 		
 		Arrays.sort(sorted, new CompareScope() );

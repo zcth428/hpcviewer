@@ -22,7 +22,13 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.DuplicateScopeTreesVisitor
 public class TreeSimilarity {
 
 	final private boolean debug = false;
+	final private boolean verbose = true;
 	
+	int numNodes = 0;
+	int numMerges = 0;
+	int numUnmerges = 0;
+	int numChildMatches = 0;
+	int numSiblingMatches = 0;
 	
 	private enum SimilarityType{ SAME, SIMILAR, DIFF }
 	
@@ -43,6 +49,16 @@ public class TreeSimilarity {
 		
 		// merge the children of the root (tree)
 		mergeTree(target, source, offset);
+		
+		if (verbose) {
+			float mergePercent = (float) (numMerges * 100.0 / (float) numNodes);
+			float unmergePercent = (float) (numUnmerges * 100.0 / (float) numNodes);
+			
+			System.out.println("Merged: " + numMerges + "\t " + mergePercent + 
+					" %\t Unmerges: " + numUnmerges + " \t" + unmergePercent + " %\t Nodes: "
+					+ numNodes + " \t sibling-match: " + numSiblingMatches + 
+					"\t child-match: " + numChildMatches);
+		}
 	}
 	
 	
@@ -76,7 +92,11 @@ public class TreeSimilarity {
 			for (Scope childSource: sortedSource)
 			{
 				addSubTree(target, childSource, metricOffset);
+				if (verbose)
+					System.err.println("unmerged: " + childSource);
 			}
+			if (verbose)
+				numUnmerges += sortedSource.length;
 			return;
 		}
 		final Scope []sortedTarget = sortArrayOfNodes( childrenTarget );
@@ -86,30 +106,98 @@ public class TreeSimilarity {
 		// ------------------------------------------------------------
 		
 		// 3.a: initialize counter to mark that the children source scope hasn't been merged
-		for (Scope childSource: sortedSource)
+		/*for (Scope childSource: sortedSource)
 		{
 			childSource.setCounter(0);
-		}
+		}*/
 		
 		// 3.b: check for all children in target and source if they are similar
 		for (Scope childTarget: sortedTarget) 
 		{
-			// check if one of the child in the source is similar
-			for (Scope childSource: sortedSource)
-			{				
-				// check if the source has been merged or not
-				if (childSource.isCounterZero())
-				{
-					// check if the scopes are similar
-					if (mergeNode(childTarget, childSource, metricOffset))
+			if (childTarget.isCounterZero())
+			{
+				// ---------------------------------------------------------
+				// Algorithm: 
+				//	step 1: check the similarity with source's siblings
+				//	step 2: if no similarity found, check the kids 
+				// ---------------------------------------------------------
+				
+				// step 1: check if one of the child in the source is similar
+				for (int i=0; i<sortedSource.length; i++)
+				{	
+					Scope childSource = sortedSource[i];
+					// check if the source has been merged or not
+					if (childSource.isCounterZero())
 					{
-						// DFS: recursively, merge the children if they are similar
-						// the recursion will stop when all children are different
-						mergeTree( childTarget, childSource, metricOffset );
-						break;
+						// check if the scopes are similar
+						CoupleNodes candidate = mergeNode(childTarget, childSource, 
+								i, sortedSource, metricOffset) ;
+						if (candidate != null)
+						{
+							if (verbose)
+								numMerges += 2;
+							
+							// DFS: recursively, merge the children if they are similar
+							// the recursion will stop when all children are different
+							mergeTree( candidate.target, candidate.source, metricOffset );
+							break;
+						}
+					}
+				}	
+				
+				// step 2: check the kids of the source 
+				
+				if (childTarget.isCounterZero()) {
+					// so far there's no match between the childTarget and the source. 
+					// try the children in case of inlining
+					CoupleNodes result = null;
+					
+					if (childTarget.getChildCount() == 1) 
+					{
+						// case 1: childTarget has only one child, it's perhaps inlined
+						Scope targetKid = (Scope) childTarget.getChildAt(0);
+						for(Scope childSource: sortedSource) 
+						{
+							if (childSource.isCounterZero())
+							{
+								result = checkKid(targetKid, childSource, metricOffset);
+								if (result != null)
+									break;
+							}
+						}
+					} else 
+					{
+						// case 2: target has multiple kids. Check the child source if they are inlined
+						for(Scope childSource: sortedSource) 
+						{
+							if (childSource.isCounterZero() && childSource.getChildCount() == 1) 
+							{
+								Scope sourceKid = (Scope) childSource.getChildAt(0);
+								result = checkKid(childTarget, sourceKid, metricOffset);
+								if (result != null)
+									break;
+							}
+						}
+					}
+					if (result != null) 
+					{
+						if (verbose) 
+							numMerges += 2;
+						
+						mergeTree(result.target, result.source, metricOffset);
+					}
+				} 
+				
+				if (verbose) 
+				{
+					if (childTarget.isCounterZero())
+					{
+						// the child target cannot be merged with any of the source's kids
+						numUnmerges++;
+						System.err.println("\tunmerged: " + childTarget);
 					}
 				}
-			}			
+			}
 		}
 		
 		// 3.c: add the remainder scopes that are not merged
@@ -118,8 +206,14 @@ public class TreeSimilarity {
 			if (childSource.isCounterZero())
 			{
 				addSubTree(target, childSource, metricOffset);
+				if (verbose) {
+					numUnmerges++;
+					System.err.println("unmerged: " + childSource);
+				}
 			}
 		}
+		if (verbose)
+			numNodes += (childrenSource.length + childrenTarget.length);
 	}
 	
 	/******
@@ -138,6 +232,19 @@ public class TreeSimilarity {
 		return sorted;
 	}
 	
+	private class CoupleNodes
+	{
+		Scope target;
+		Scope source;
+		Similarity similar;
+		
+		public CoupleNodes(Scope target, Scope source, Similarity similar) 
+		{
+			this.target = target;
+			this.source = source;
+			this.similar = similar;
+		}
+	}
 	
 	/****
 	 * merge 2 nodes if they have similarity
@@ -145,22 +252,86 @@ public class TreeSimilarity {
 	 * @param source
 	 * @return
 	 */
-	private boolean mergeNode(Scope target, Scope source, int metricOffset)
+	private CoupleNodes mergeNode(Scope target, Scope source, 
+			int sourceOffset, Scope []sourceSiblings, 
+			int metricOffset)
 	{
-		final Similarity similar = checkNodesSimilarity( target, source);
+		Similarity similar = checkNodesSimilarity( target, source);
 		
-		if ( (similar.type == SimilarityType.SAME) ||
-				(similar.type == SimilarityType.SIMILAR) )
+		if (similar.type == SimilarityType.SAME)
 		{
-			// merge the metric
-			mergeMetrics(target, source, metricOffset);
+			setMergedNodes(target, source, metricOffset);
 			
-			// mark the source has been merged
-			source.incrementCounter();
+			return new CoupleNodes(target, source, similar);
 			
-			return true;
+		} else if (similar.type == SimilarityType.SIMILAR) 
+		{
+			// ---------------------------------------------------------------------
+			// Both target and source look similar, but we are not confident enough
+			//	Go for source's siblings to see better similarity
+			// ---------------------------------------------------------------------
+			int nextOffset = sourceOffset + 1;
+
+			// Looks for only a couple of siblings, we do not need to check
+			//	everyone for similarity
+			
+			int numSiblings = Math.min(sourceSiblings.length-nextOffset, 
+					TreeSimilarity.Constants.MAX_LEN_BFS);
+			Scope candidate = source;
+			
+			for (int i=nextOffset; i<nextOffset+numSiblings; i++) 
+			{
+				Scope sibling = sourceSiblings[i];
+				Similarity result = checkNodesSimilarity(target, sibling);
+				if (result.type == SimilarityType.SAME)
+				{
+					setMergedNodes(target, sibling, metricOffset);
+					
+					return new CoupleNodes(target, sibling, result);
+					
+				} else if(result.type == SimilarityType.SIMILAR) {
+					// -------------------------------------------------------------
+					// Looks similar, check if the sibling has a better score
+					// -------------------------------------------------------------
+					if ( result.score > similar.score ) 
+					{
+						similar = result;
+						candidate = sibling;
+					}
+				}
+			}
+			if (verbose && candidate != source) {
+				numSiblingMatches++;
+			}
+			setMergedNodes(target, candidate, metricOffset);
+			
+			return new CoupleNodes(target, candidate, similar);
 		}
-		return false;
+		return null;
+	}
+	
+	private void setMergedNodes(Scope target, Scope source, int offset)
+	{
+		// -------------------------------------------------------------
+		// Found strong similarity in the sibling: merge the metric
+		// -------------------------------------------------------------
+		mergeMetrics(target, source, offset);
+		
+		// mark the nodes have been merged
+		source.incrementCounter();
+		target.incrementCounter();
+	}
+	
+	private CoupleNodes checkKid(Scope target, Scope source, int offset) 
+	{
+		Similarity result = checkNodesSimilarity(target, source);
+		if ( (result.type == SimilarityType.SAME) || (result.type == SimilarityType.SIMILAR) )
+		{
+			numChildMatches++;
+			setMergedNodes(target, source, offset);
+			return new CoupleNodes(target, source, result);
+		}
+		return null;
 	}
 	
 	/***
@@ -223,12 +394,12 @@ public class TreeSimilarity {
 		// check if the children are the same
 		result.score += getChildrenSimilarityScore( s1, s2 );
 
-		if (result.score>260)
+		if (result.score>Constants.SCORE_SAME)
 		{
 			// we are confident enough that the two scopes are similar
 			result.type = SimilarityType.SAME;
 		}
-		else if (result.score>200)
+		else if (result.score>Constants.SCORE_SIMILAR)
 		{
 			// we are not confident, but it look like they are similar
 			// in this case, the caller has to check if other combinations exist
@@ -366,6 +537,8 @@ public class TreeSimilarity {
 		int c1 = Math.min( Constants.MAX_LEN_BFS, sortedS1.length );
 		int c2 = Math.min( Constants.MAX_LEN_BFS, sortedS2.length );
 		
+		int finalScore = 0;
+		
 		// is there a child that is exactly the same ?
 		for (int i=0; i<c1 ; i++)
 		{
@@ -374,9 +547,10 @@ public class TreeSimilarity {
 			for (int j=0; j<c2; j++) 
 			{
 				final Scope cs2 = sortedS2[j];
+				int score = getScopeSimilarityScore( cs1, cs2 );
 				
-				if (areSameNodes( cs1, cs2 ))
-					return true;
+				if (score > Constants.SCORE_SIMILAR)
+					finalScore += 3;
 				else 
 				{ 	// not the same nodes: check their descendants
 					// check if one (or all) of them are aliens
@@ -394,20 +568,21 @@ public class TreeSimilarity {
 					if (cs1_is_alien || cs2_is_alien)
 					{
 						if (areSameChildren(next1, next2, currDepth + 1))
-							return true;
+							finalScore++;
 					} else
 					{						
 						final boolean areLoops = (cs1 instanceof LoopScope && cs2 instanceof LoopScope);
 						if (areLoops)
 						{
 							if (areSameChildren( cs1, cs2, currDepth + 1))
-								return true;
+								finalScore++;
 						}
 					}
 				}
 			}
 		}
-		return false;
+		boolean verdict = (finalScore > (c1 + c2));
+		return verdict;
 	}
 	
 	/***
@@ -546,5 +721,13 @@ public class TreeSimilarity {
 		
 		// maximum length of depth first search
 		static final private int MAX_LEN_DFS = 4;
+		
+		// ------------------------------------------------------------------------
+		// minimum score for confidently the same or similar node
+		// ------------------------------------------------------------------------
+		
+		static final private int SCORE_SAME = 260;
+		
+		static final private int SCORE_SIMILAR = 200;
 	}
 }

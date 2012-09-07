@@ -45,6 +45,9 @@ public abstract class BaseDuplicateScopeTreesVisitor implements IScopeVisitor {
 
 	
 	private void mergeInsert(Scope scope, ScopeVisitType vt) {
+		if (!scope.isCounterZero())
+			return;
+		
 		if (vt == ScopeVisitType.PreVisit) {
 			Scope newParent = (Scope)scopeStack.peek();
 			

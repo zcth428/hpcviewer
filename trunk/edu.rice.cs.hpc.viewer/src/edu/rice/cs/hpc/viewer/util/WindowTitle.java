@@ -115,7 +115,7 @@ public class WindowTitle extends BaseWindowTitle {
 	public String getWindowTitle(final IWorkbenchWindow window) {
 		if (runnable != null) {
 			if ( this.runExtension(runnable, MethodFlag.WINDOWTITLE, window, null)) {
-				String windowTitle = runnable.getWindowTitle();
+				String windowTitle = runnable.getTitle();
 				// if the extension got the window title, just return it
 				if (windowTitle != null) {
 					return windowTitle;
@@ -139,7 +139,7 @@ public class WindowTitle extends BaseWindowTitle {
 		if (runnable != null) {
 			if ( this.runExtension(runnable, MethodFlag.VIEWTITLE, window, view) ) {
 				// if the extension sets the view title, just return that we are done
-				return (runnable.setViewTitle()) ;
+				return (runnable.getTitle()) ;
 			}
 		}
 		// either there was no extension or the extension did not handle this kind of view, let the super method try and set it
@@ -157,7 +157,7 @@ public class WindowTitle extends BaseWindowTitle {
 	public String setEditorTitle(IWorkbenchWindow window, IEditorPart editorPart) { //, Experiment experiment, String sTitle) {
 		if (runnable != null) {
 			if ( this.runExtension(runnable, MethodFlag.EDITORTITLE, window, editorPart) ) {
-				String editorTitle = runnable.setEditorTitle();
+				String editorTitle = runnable.getTitle();
 				// if the extension set the editor title, just return that we are done
 				if ( editorTitle != null) {
 					return editorTitle;
@@ -194,9 +194,7 @@ public class WindowTitle extends BaseWindowTitle {
 		private MethodFlag mf;
 		private IWorkbenchWindow window;
 		private Object object;
-		private String windowResult;
-		private String viewResult;
-		private String editorResult;
+		private String strResult;
 		
 		public void setInfo(IWindowTitle _windowTitle, MethodFlag _mf, final IWorkbenchWindow _window, Object _object) {
 			windowTitle = _windowTitle;
@@ -212,29 +210,24 @@ public class WindowTitle extends BaseWindowTitle {
 		public void run() throws Exception {
 			if (mf == MethodFlag.WINDOWTITLE)
 			{
-				this.windowResult = windowTitle.getWindowTitle(window);
+				strResult = windowTitle.getWindowTitle(window);
 				return;
 			}
 			if (mf == MethodFlag.VIEWTITLE)
 			{
-				this.viewResult = windowTitle.setViewTitle(window, (IViewPart)object);
+				strResult = windowTitle.setViewTitle(window, (IViewPart)object);
 				return;
 			}
 			if (mf == MethodFlag.EDITORTITLE)
 			{
-				this.editorResult = windowTitle.setEditorTitle(window, (IEditorPart)object);
+				strResult = windowTitle.setEditorTitle(window, (IEditorPart)object);
 				return;
 			}
 			return;
 		}
-		public String getWindowTitle() {
-			return this.windowResult;
-		}
-		public String setViewTitle() {
-			return this.viewResult;
-		}
-		public String setEditorTitle() {
-			return this.editorResult;
+		
+		public String getTitle() {
+			return strResult;
 		}
 	}
 }

@@ -21,7 +21,7 @@ public class BaseWindowTitle implements IWindowTitle {
 	 * 
 	 * @param window
 	 * @param experiment
-	 * @return
+	 * @return the new title
 	 */
 	public String getWindowTitle(IWorkbenchWindow window) {
 		String winTitle = MAIN_TITLE;
@@ -82,7 +82,7 @@ public class BaseWindowTitle implements IWindowTitle {
 	 * @param window
 	 * @param experiment
 	 * @param sTitle
-	 * @return
+	 * @return the new title
 	 */
 	public String setEditorTitle(IWorkbenchWindow window, IEditorPart editorPart) { 
 

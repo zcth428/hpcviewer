@@ -19,6 +19,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.viewer.util.Utilities;
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
 
 /**
  * Class specifically designed to manage editor such as displaying source code editor
@@ -153,7 +154,9 @@ public class EditorManager extends BaseEditorManager{
 		if (iep instanceof SourceCodeEditor) {
 			SourceCodeEditor sce = (SourceCodeEditor)iep;
 			sce.setExperiment(experiment);
-			sce.resetPartName();
+			WindowTitle wt = new WindowTitle();
+			wt.setEditorTitle(page.getWorkbenchWindow(), iep); //, experiment, sce.getEditorPartName());
+
 				// database numbers start with 0 but titles start with 1
 				//sce.setPartNamePrefix((dbNum+1) + "-");
 		}

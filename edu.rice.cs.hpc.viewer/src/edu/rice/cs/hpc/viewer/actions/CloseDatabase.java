@@ -96,7 +96,6 @@ public class CloseDatabase extends AbstractHandler {
 		// -----------------------------------------------------------------------
 		for (Object selectedDatabase: databasesToClose) {
 			
-			vWin.getDb(selectedDatabase.toString());
 			// remove the database from our database manager information
 			int dbNum = vWin.removeDatabase(selectedDatabase.toString());
 			if (dbNum < 0) {
@@ -118,14 +117,15 @@ public class CloseDatabase extends AbstractHandler {
 				if (edPart instanceof IViewerEditor) {
 					final IViewerEditor viewerEditor = (IViewerEditor) edPart;
 					final Experiment exp = viewerEditor.getExperiment();
-					final File dir = exp.getDefaultDirectory();
-					
-					// ----------------------------------------------------------
-					// at the moment we don't have mechanism to compare database
-					// thus, we just compare the path 
-					// ----------------------------------------------------------
-					if (dir.getAbsolutePath().equals(selectedDatabase)) {
-						curPage.closeEditor(edPart, false);
+					if (exp != null) {
+						final File dir = exp.getDefaultDirectory();
+						// ----------------------------------------------------------
+						// at the moment we don't have mechanism to compare database
+						// thus, we just compare the path 
+						// ----------------------------------------------------------
+						if (dir.getAbsolutePath().equals(selectedDatabase)) {
+							curPage.closeEditor(edPart, false);
+						}
 					}
 				}
 			}
@@ -138,18 +138,20 @@ public class CloseDatabase extends AbstractHandler {
 				if (objPart instanceof AbstractBaseScopeView) {
 					final AbstractBaseScopeView objView = (AbstractBaseScopeView) objPart;
 					final Experiment experiment = objView.getExperiment();
-					String xmlFileName = experiment.getXMLExperimentFile().getPath();
-					final int dbDir = xmlFileName.lastIndexOf(File.separator);
-					xmlFileName = xmlFileName.substring(0, dbDir);
-					
-					if (selectedDatabase.equals(xmlFileName)) {
-						curPage.hideView(objView);
+					if (experiment != null) {
+						String xmlFileName = experiment.getXMLExperimentFile().getPath();
+						final int dbDir = xmlFileName.lastIndexOf(File.separator);
+						xmlFileName = xmlFileName.substring(0, dbDir);
+						
+						if (selectedDatabase.equals(xmlFileName)) {
+							curPage.hideView(objView);
+						}
 					}
 				}
 			}
 		}
-		
-		WindowTitle.refreshAllTitle(window);
+		WindowTitle wt = new WindowTitle();
+		wt.refreshAllTitles();
 		return null;
 	}
 

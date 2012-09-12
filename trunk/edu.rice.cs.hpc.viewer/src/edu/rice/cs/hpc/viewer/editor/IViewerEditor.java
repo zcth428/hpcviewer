@@ -11,14 +11,19 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 public interface IViewerEditor {
 
 	/****
-	 * reset the title of the editor
+	 * get the title of the editor
 	 */
-	public void resetPartName();
-	
-	
+	public String getEditorPartName();
+
+	/****
+	 * set the title of the editor
+	 */
+	public void setEditorPartName(String title);
+
 	/***
 	 * retrieve the associated experiment of this editor
 	 * @return
 	 */
 	public Experiment getExperiment();
+
 }

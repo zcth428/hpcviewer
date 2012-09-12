@@ -5,6 +5,10 @@
 		id="edu.rice.cs.hpc.viewer.metric.metricLabelProvider"
 		name="Metric Label Provider"
 		schema="schema/edu.rice.cs.hpc.viewer.metric.metricLabelProvider.exsd"/>
+   <extension-point 
+      id="edu.rice.cs.hpc.viewer.util.windowTitle"
+      name="Window Title"
+      schema="schema/edu.rice.cs.hpc.viewer.util.windowTitle.exsd"/>
    <extension
          id="application"
          name="hpcviewer"

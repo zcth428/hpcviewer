@@ -1,172 +1,240 @@
 package edu.rice.cs.hpc.viewer.util;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.ISafeRunnable;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
-import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
-import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
-import edu.rice.cs.hpc.viewer.window.ViewerWindow;
-import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
+import edu.rice.cs.hpc.viewer.util.IWindowTitle;
+import edu.rice.cs.hpc.viewer.util.BaseWindowTitle;
 
 /***
  * 
- * class to handle window's title
+ * class to handle titles for windows, views, and editors
  *
  */
-public class WindowTitle {
-	final private static String MAIN_TITLE = "hpcviewer";
-	
-	
-	/***
-	 * A simple title construction given a specified number of databases
-	 * 
-	 * @param window
-	 * @param experiment
-	 * @param sTitle
-	 * @param numDB
-	 * @return
-	 */
-	static private String getViewTitle(IWorkbenchWindow window, Experiment experiment, String sTitle, int numDB) {
-		
-		if (numDB <= 1) {
-			return sTitle;
-		} else {
-			ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-			numDB = 1 + vw.getDbNum(experiment);
-			return numDB + "-" + sTitle + "("+experiment.getName()+")";
-		}
-	}
+public class WindowTitle extends BaseWindowTitle {
+	public enum MethodFlag { WINDOWTITLE, VIEWTITLE, EDITORTITLE};
 
-	/***
-	 * Get the title of the main window
-	 * 
-	 * @param window
-	 * @param experiment
-	 * @return
-	 */
-	static public String getWindowTitle(IWorkbenchWindow window, Experiment experiment) {
-		int numDB =  ViewerWindowManager.getNumberOfDatabases(window);
-		
-		if (numDB > 1) {
-			return (ViewerWindowManager.getWindowNumber(window)+1) + "-" + MAIN_TITLE;
-		} else if (experiment != null) {
-			return MAIN_TITLE + ": "+experiment.getName();
-		} else {
-			if (numDB == 1) {
-				ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-				Experiment exp[] = vw.getExperiments();
-				if (exp != null) {
-					return getWindowTitle(window, exp[0]);
+	// The ID of the extension point
+	private static final String IWINDOWTITLE_ID = "edu.rice.cs.hpc.viewer.util.windowTitle";
+
+	private IWindowTitle extWindowTitle[] = null;
+	private ExtensionSafeRunnable runnable = null;
+
+	public WindowTitle() {
+		super();
+		// find all the extensions and save a list so we do not have to do this every time we want to call them.
+		IConfigurationElement[] configs = Platform.getExtensionRegistry().getConfigurationElementsFor(IWINDOWTITLE_ID);
+		if (configs != null && configs.length>0) {
+			
+			extWindowTitle = new IWindowTitle[configs.length];
+			int i = 0;
+			
+			for (IConfigurationElement e: configs)
+			{
+				try {
+					final Object o = e.createExecutableExtension("class");
+					if (o instanceof IWindowTitle) {
+						extWindowTitle[i] = ((IWindowTitle)o);
+						i++;
+						
+						if (runnable == null)
+							runnable = new ExtensionSafeRunnable();
+					}
+				} catch (CoreException e1) {
+					e1.printStackTrace();
 				}
 			}
-			return MAIN_TITLE;			
-		}
-	}
-	
-	/***
-	 * Get generic title
-	 * 
-	 * @param window
-	 * @param experiment
-	 * @param sTitle
-	 * @return
-	 */
-	static public String getTitle(IWorkbenchWindow window, Experiment experiment, String sTitle) {
-		int numDB =  ViewerWindowManager.getNumberOfDatabases(window);
-		
-		if (numDB <= 1) {
-			return sTitle;
-		} else {
-			ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-			numDB = 1 + vw.getDbNum(experiment);
-			return numDB + "-" + sTitle ;
-		}
+		}		
 	}
 
 	/***
-	 * 
-	 * @param window
-	 * @param dbIndex
-	 * @param sTitle
-	 * @return
-	 */
-	static public String getTitle(IWorkbenchWindow window, int dbIndex, String sTitle) {
-		int numDB =  ViewerWindowManager.getNumberOfDatabases(window);
-		
-		if (numDB <= 1) {
-			return sTitle;
-		} else {
-			return dbIndex + "-" + sTitle ;
-		}
-	}
-
-	/***
-	 * Reset the title of the main window, views and editors
+	 * Reset all window, view and editor titles
 	 * 
 	 * @param window
 	 * @param experiment: current database
 	 */
-	static public void refreshAllTitle(IWorkbenchWindow window, Experiment experiment) {
-		// refresh the main title
-		window.getShell().setText(getWindowTitle(window, experiment));
-		// refresh the view
-		refreshViewTitle(window);
-		// refresh the editors
-		refreshEditorTitle(window);
+	public void refreshAllTitles() {
+
+		final IWorkbenchWindow[] wkBenchWins = PlatformUI.getWorkbench().getWorkbenchWindows();
+		for (IWorkbenchWindow wkBenchWin: wkBenchWins) {
+			// refresh this window title
+			final String title = getWindowTitle(wkBenchWin);
+			wkBenchWin.getShell().setText(title);
+			// refresh the view titles in this window
+			refreshViewTitles(wkBenchWin);
+			// refresh the editor titles in this window
+			refreshEditorTitles(wkBenchWin);
+		}
+		return;
 	}
 	
 
 	/****
-	 * Reset the title of the main window
+	 * Reset all view titles
 	 * @param window
 	 */
-	static public void refreshAllTitle(IWorkbenchWindow window) {
-		// refresh the main title
-		refreshAllTitle(window, null);
-	}
-	
-	
-	/****
-	 * Reset the title of all views
-	 * @param window
-	 */
-	static private void refreshViewTitle(IWorkbenchWindow window) {
-		
-		final int numDB = ViewerWindowManager.getNumberOfDatabases(window); 
-			
+	public void refreshViewTitles(IWorkbenchWindow window) {
 		final IViewReference viewRefs[] = window.getActivePage().getViewReferences();
 		for (IViewReference viewRef: viewRefs) {
-			
 			final IViewPart view = viewRef.getView(false);
-			if (view instanceof BaseScopeView) {
-				final BaseScopeView scopeView = (BaseScopeView) view;
-				final Experiment exp = scopeView.getExperiment();
-				final String title = getViewTitle(window, exp, 
-						((BaseScopeView) view).getRootScope().getRootName(), numDB);
-				((BaseScopeView) view).setViewTitle(title);
-			}
+			setViewTitle(window, view);
 		}
+		return;
 	}
-	
+
 	/***
-	 * reset the title of all editors
+	 * reset all editor titles
 	 * 
 	 * @param window
 	 */
-	static private void refreshEditorTitle(IWorkbenchWindow window) {
+	public void refreshEditorTitles(IWorkbenchWindow window) {
 		final IEditorReference editors[] = window.getActivePage().getEditorReferences();
 		for (IEditorReference editor: editors) {
-			IEditorPart editorPart = editor.getEditor(false);
-			if (editorPart instanceof IViewerEditor) {
-				((IViewerEditor)editorPart).resetPartName();
-			} else {
-				System.err.println("unknown editor for " + editorPart.getTitle() + ":" + editorPart.getClass());
+			final IEditorPart editorPart = editor.getEditor(false);
+			setEditorTitle(window, editorPart);
+		}
+		return;
+	}
+
+	/***
+	 * Get the title of a window
+	 * 
+	 * @param window
+	 * @param experiment
+	 * @return
+	 */
+	public String getWindowTitle(final IWorkbenchWindow window) {
+		if (runnable != null) {
+			if ( this.runExtension(runnable, MethodFlag.WINDOWTITLE, window, null)) {
+				String windowTitle = runnable.getWindowTitle();
+				// if the extension got the window title, just return it
+				if (windowTitle != null) {
+					return windowTitle;
+				}
 			}
 		}
+		// either there was no extension or the extension did not handle window titles, let the super method try and set it
+		return super.getWindowTitle(window);
+	}
+
+	/***
+	 * Set the title of a view
+	 * 
+	 * @param window
+	 * @param view
+	 * @param sTitle
+	 * @param numDB
+	 * @returns - true if the title was set, false otherwise
+	 */
+	public String setViewTitle(IWorkbenchWindow window, IViewPart view) { 
+		if (runnable != null) {
+			if ( this.runExtension(runnable, MethodFlag.VIEWTITLE, window, view) ) {
+				// if the extension sets the view title, just return that we are done
+				return (runnable.setViewTitle()) ;
+			}
+		}
+		// either there was no extension or the extension did not handle this kind of view, let the super method try and set it
+		return super.setViewTitle(window, view);
+	}
+
+	/***
+	 * Set the title of an Editor
+	 * 
+	 * @param window
+	 * @param experiment
+	 * @param sTitle
+	 * @returns - non-null if the title was set, null otherwise
+	 */
+	public String setEditorTitle(IWorkbenchWindow window, IEditorPart editorPart) { //, Experiment experiment, String sTitle) {
+		if (runnable != null) {
+			if ( this.runExtension(runnable, MethodFlag.EDITORTITLE, window, editorPart) ) {
+				String editorTitle = runnable.setEditorTitle();
+				// if the extension set the editor title, just return that we are done
+				if ( editorTitle != null) {
+					return editorTitle;
+				}
+			}
+		}
+		// either there was no extension or the extension did not handle this kind of editor, let the super method try and set it
+		return super.setEditorTitle(window, editorPart);
+	}
+
+	/***
+	 * run all registered extensions of window title
+	 * 
+	 * @param run
+	 * @param element
+	 * @param mf
+	 */
+	private boolean runExtension( ISafeRunnable run, MethodFlag mf, final IWorkbenchWindow window, Object object ) {
 		
+		boolean isCalled = false;
+		
+		for (IWindowTitle ext: this.extWindowTitle) {
+			if (ext != null) {
+				runnable.setInfo(ext, mf, window, object);
+				SafeRunner.run(run);
+				isCalled = true;
+			}
+		}
+		return isCalled;
+	}
+
+	static class ExtensionSafeRunnable implements ISafeRunnable {
+		private IWindowTitle windowTitle;
+		private MethodFlag mf;
+		private IWorkbenchWindow window;
+		private Object object;
+		private String windowResult;
+		private String viewResult;
+		private String editorResult;
+		
+		public void setInfo(IWindowTitle _windowTitle, MethodFlag _mf, final IWorkbenchWindow _window, Object _object) {
+			windowTitle = _windowTitle;
+			mf = _mf;
+			window = _window;
+			object = _object;
+		}
+
+		public void handleException(Throwable exception) {
+			System.out.println("Exception in window title extension.");
+		}
+
+		public void run() throws Exception {
+			if (mf == MethodFlag.WINDOWTITLE)
+			{
+				this.windowResult = windowTitle.getWindowTitle(window);
+				return;
+			}
+			if (mf == MethodFlag.VIEWTITLE)
+			{
+				this.viewResult = windowTitle.setViewTitle(window, (IViewPart)object);
+				return;
+			}
+			if (mf == MethodFlag.EDITORTITLE)
+			{
+				this.editorResult = windowTitle.setEditorTitle(window, (IEditorPart)object);
+				return;
+			}
+			return;
+		}
+		public String getWindowTitle() {
+			return this.windowResult;
+		}
+		public String setViewTitle() {
+			return this.viewResult;
+		}
+		public String setEditorTitle() {
+			return this.editorResult;
+		}
 	}
 }

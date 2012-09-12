@@ -5,6 +5,8 @@ import java.util.Vector;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
+
 /**
  * The viewer window manager keeps track of which performance databases have been opened for each 
  * window created by the hpcviewer.
@@ -55,6 +57,11 @@ public class ViewerWindowManager {
 
 		// see if there are any unused slots
 		vWindows.add(vWin);
+		
+		// after the new window is added, we must update all the old windows titles
+		WindowTitle wt = new WindowTitle();
+		wt.refreshAllTitles();
+
 		return;
 	}
 

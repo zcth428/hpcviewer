@@ -224,7 +224,8 @@ public class ExperimentView {
 		}
 		
 		// update the window title if necessary
-		WindowTitle.refreshAllTitle(window, experiment);		
+		WindowTitle wt = new WindowTitle();
+		wt.refreshAllTitles();
 	}
 	
 	

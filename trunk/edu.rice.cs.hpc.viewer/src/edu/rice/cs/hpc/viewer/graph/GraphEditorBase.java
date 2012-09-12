@@ -20,6 +20,7 @@ import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.editor.IViewerEditor;
 import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
 
 
 /**
@@ -110,6 +111,10 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		
 		this.setPartName( title );
 
+		// set the window title with a possible db number
+		WindowTitle wt = new WindowTitle();
+		wt.setEditorTitle(this.getEditorSite().getWorkbenchWindow(), this); //, exp, editorName);
+
 		//----------------------------------------------
 		// chart creation
 		//----------------------------------------------
@@ -136,16 +141,18 @@ public abstract class GraphEditorBase extends EditorPart implements IViewerEdito
 		this.plotData(scope, metric);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.viewer.editor.IViewerEditor#resetPartName()
-	 */
-	public void resetPartName() {
+
+	public String getEditorPartName() {
 		final GraphEditorInput input = (GraphEditorInput) this.getEditorInput();
 		final String name = input.getName();
-		this.setPartName(name);
+		return name;
 	}
-	
+
+	public void setEditorPartName(String title) {
+		this.setPartName(title);
+		return;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.editor.IViewerEditor#getExperiment()

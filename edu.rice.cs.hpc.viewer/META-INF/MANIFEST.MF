@@ -29,3 +29,11 @@ Import-Package: edu.rice.cs.hpc.common.ui,
 Bundle-ClassPath: hpcviewer.jar,
  external-jars/org.swtchart_0.8.0.v20120301.jar,
  external-jars/org.swtchart.ext_0.8.0.v20120301.jar
+Export-Package: edu.rice.cs.hpc.viewer.editor,
+ edu.rice.cs.hpc.viewer.experiment,
+ edu.rice.cs.hpc.viewer.framework,
+ edu.rice.cs.hpc.viewer.help,
+ edu.rice.cs.hpc.viewer.metric,
+ edu.rice.cs.hpc.viewer.scope,
+ edu.rice.cs.hpc.viewer.util,
+ edu.rice.cs.hpc.viewer.window

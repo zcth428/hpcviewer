@@ -138,8 +138,12 @@ public class WindowTitle extends BaseWindowTitle {
 	public String setViewTitle(IWorkbenchWindow window, IViewPart view) { 
 		if (runnable != null) {
 			if ( this.runExtension(runnable, MethodFlag.VIEWTITLE, window, view) ) {
-				// if the extension sets the view title, just return that we are done
-				return (runnable.getTitle()) ;
+
+				String viewTitle = runnable.getTitle();
+                // if the extension set the view title, just return that we are done
+                if ( viewTitle != null) {
+                        return viewTitle;
+                }
 			}
 		}
 		// either there was no extension or the extension did not handle this kind of view, let the super method try and set it

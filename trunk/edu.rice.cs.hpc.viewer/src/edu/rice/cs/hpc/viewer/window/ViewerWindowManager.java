@@ -61,7 +61,6 @@ public class ViewerWindowManager {
 		// after the new window is added, we must update all the old windows titles
 		WindowTitle wt = new WindowTitle();
 		wt.refreshAllTitles();
-
 		return;
 	}
 
@@ -80,6 +79,9 @@ public class ViewerWindowManager {
 				vw.dispose();
 				// set this to something that will cause problems if used before being reset
 				vWindows.remove(i);
+				// after the window is removed, we must update remaining window titles (may need to remove window numbers)
+				WindowTitle wt = new WindowTitle();
+				wt.refreshAllTitles();
 				return true;
 			}
 		}
@@ -102,7 +104,7 @@ public class ViewerWindowManager {
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * Returns the hpcviewer window class associated with the workbench window passed as an argument.
 	 */
@@ -117,8 +119,8 @@ public class ViewerWindowManager {
 		}
 
 		MessageDialog.openError(window.getShell(), 
-				"Error: Current Window Unknown.", 
-				"Unable to find hpcviewer window associated with " + window.toString());
+			"Error: Current Window Unknown.", 
+			"Unable to find hpcviewer window associated with " + window.toString());
 		return null;
 	}
 	

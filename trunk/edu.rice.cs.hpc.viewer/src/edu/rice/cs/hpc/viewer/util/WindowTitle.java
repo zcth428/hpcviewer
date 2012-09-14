@@ -14,6 +14,7 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.rice.cs.hpc.viewer.util.IWindowTitle;
 import edu.rice.cs.hpc.viewer.util.BaseWindowTitle;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /***
  * 
@@ -66,6 +67,10 @@ public class WindowTitle extends BaseWindowTitle {
 
 		final IWorkbenchWindow[] wkBenchWins = PlatformUI.getWorkbench().getWorkbenchWindows();
 		for (IWorkbenchWindow wkBenchWin: wkBenchWins) {
+			// if there are no databases open in this window, it may have been disposed so we can not update titles
+			if (ViewerWindowManager.getWindowNumber(wkBenchWin) == -1) {
+				continue;
+			}
 			// refresh this window title
 			final String title = getWindowTitle(wkBenchWin);
 			wkBenchWin.getShell().setText(title);

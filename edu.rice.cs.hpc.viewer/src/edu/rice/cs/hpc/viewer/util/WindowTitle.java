@@ -17,7 +17,7 @@ import edu.rice.cs.hpc.viewer.util.BaseWindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /***
- * 
+ *  
  * class to handle titles for windows, views, and editors
  *
  */

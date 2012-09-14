@@ -7,7 +7,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
 
-/**
+/** 
  * The viewer window manager keeps track of which performance databases have been opened for each 
  * window created by the hpcviewer.
  * 

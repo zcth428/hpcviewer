@@ -253,16 +253,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 					removeViews( pageCurrent );
 				}
 				
+				return true;
+			}
+			public void postShutdown(IWorkbench workbench) {
+				
 				//---------------------------------------------------------------------------
 				// we need to explicitly remove all allocated native resources since Eclipse
 				// 	will not do this for us (due to resources that are platform dependent)
 				//---------------------------------------------------------------------------
 				Utilities.dispose();
-				
-				return true;
-			}
-			public void postShutdown(IWorkbench workbench) {
-				// do nothing
 			}
 		});
 	}

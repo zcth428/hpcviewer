@@ -90,11 +90,11 @@ public class BaseWindowTitle implements IWindowTitle {
 			IViewerEditor editor = (IViewerEditor) editorPart;
 			String sTitle = editor.getEditorPartName();
 			int numDB =  ViewerWindowManager.getNumberOfDatabases(window);
-			if (numDB <= 1) {
+			Experiment exp = editor.getExperiment();
+			if ((exp == null) || (numDB <= 1)) {
 				editor.setEditorPartName(sTitle);
 				return sTitle;
 			}
-			Experiment exp = editor.getExperiment();
 
 			ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
 			numDB = 1 + vw.getDbNum(exp);

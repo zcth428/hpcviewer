@@ -67,8 +67,8 @@ public class CallPath
 				cDepth--;
 		}
 		
-		if (!(cDepthScope instanceof CallSiteScope || cDepthScope instanceof ProcedureScope))
-			System.out.println("wtf how");
+		assert (cDepthScope instanceof CallSiteScope || cDepthScope instanceof ProcedureScope);
+
 		return cDepthScope;
 	}
 	

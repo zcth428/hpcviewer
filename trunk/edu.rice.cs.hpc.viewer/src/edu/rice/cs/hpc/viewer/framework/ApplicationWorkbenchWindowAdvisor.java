@@ -22,6 +22,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -61,12 +62,16 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 	 */
 	public void preWindowOpen() {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
+		
+		final IWorkbenchWindow window = configurer.getWindow();
+		if (!Util.checkJavaVendor(window.getShell()))
+			window.close();
+
 		configurer.setShowCoolBar(false);	// remove toolbar/coolbar
 		configurer.setShowStatusLine(true);	// show status bar
         configurer.setShowProgressIndicator(true);
 
 		// tell the viewer window manager we are creating a new window
-		IWorkbenchWindow window = configurer.getWindow();
 		ViewerWindowManager vwm = new ViewerWindowManager();
 		vwm.addNewWindow(window);
 	}

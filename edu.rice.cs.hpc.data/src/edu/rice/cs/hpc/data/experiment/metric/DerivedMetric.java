@@ -27,6 +27,8 @@ public class DerivedMetric extends BaseMetric {
 	// map variable 
 	private MetricVarMap varMap;
 
+	private RootScope root;
+	
 	//===================================================================================
 	// CONSTRUCTORS
 	//===================================================================================
@@ -50,6 +52,8 @@ public class DerivedMetric extends BaseMetric {
 
 		// set up the functions
 		this.fctMap = new ExtFuncMap();
+		
+		root = scopeRoot;
 		
 		final Experiment experiment = (Experiment)scopeRoot.getExperiment();
 		BaseMetric []metrics = experiment.getMetrics(); 
@@ -133,7 +137,7 @@ public class DerivedMetric extends BaseMetric {
 
 	//@Override
 	public BaseMetric duplicate() {
-		return new DerivedMetric(null, expression, displayName, shortName, index, annotationType, metricType);
+		return new DerivedMetric(root, expression, displayName, shortName, index, annotationType, metricType);
 	}
 	
 }

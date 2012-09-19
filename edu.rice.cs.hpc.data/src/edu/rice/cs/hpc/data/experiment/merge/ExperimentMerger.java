@@ -123,10 +123,11 @@ public class ExperimentMerger
 		// step 1: add the first metrics into the merged experiment
 		// ----------------------------------------------------------------
 		for (int i=0; i<m1.length; i++) {
+			// add metric into the merged list
 			BaseMetric mm = m1[i].duplicate();
 			
 			setMetricCombinedName(1, mm);
-
+			
 			metricList.add(mm);
 		}
 		

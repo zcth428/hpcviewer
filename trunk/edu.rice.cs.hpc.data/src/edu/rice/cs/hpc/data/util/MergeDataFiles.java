@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -45,7 +46,8 @@ public class MergeDataFiles {
 	 * @return
 	 * @throws IOException
 	 */
-	static public MergeDataAttribute merge(File directory, String globInputFile, String outputFile, IProgressReport progress) throws IOException {
+	static public MergeDataAttribute merge(File directory, String globInputFile, String outputFile, IProgressReport progress)
+			throws IOException, FileNotFoundException {
 		
 		final int last_dot = globInputFile.lastIndexOf('.');
 		final String suffix = globInputFile.substring(last_dot);

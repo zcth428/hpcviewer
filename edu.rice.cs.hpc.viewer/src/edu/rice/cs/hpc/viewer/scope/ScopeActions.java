@@ -4,7 +4,6 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.CoolBar;
@@ -50,7 +49,7 @@ public abstract class  ScopeActions {
      * @param scope
      * @param columns
      */
-	public abstract void updateContent(Experiment exp, RootScope scope, TreeViewerColumn []columns);
+	public abstract void updateContent(Experiment exp, RootScope scope);
 	
 	/**
 	 * Resize the columns

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.*;
 
@@ -58,7 +57,6 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	// GUI STUFFs
     protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
 	protected ScopeViewActions objViewActions;
-	protected TreeViewerColumn []colMetrics;	// metric columns
 	protected Shell shell;
 	protected IWorkbenchWindow objWindow;
 
@@ -116,11 +114,11 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 * @param scope
 	 * @param columns
 	 */
-	public void updateContent(Experiment exp, RootScope scope, TreeViewerColumn []columns) {
+	public void updateContent(Experiment exp, RootScope scope) {
 		// save the new data and properties
 		this.myExperiment = exp;
 		this.myRootScope = scope;
-		this.colMetrics = columns;
+
 		//this.setLevelText(scope.getTreeNode().iLevel);	// @TODO: initialized with root level
 		
 		// actions needed when a new experiment is loaded
@@ -144,20 +142,22 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      */
     public void insertParentNode(Scope nodeParent) {
     	Scope scope = nodeParent;
+    	
     	// Bug fix: avoid using list of columns from the experiment
     	// formerly: .. = this.myExperiment.getMetricCount() + 1;
-    	int nbColumns = this.colMetrics.length; 	// columns in base metrics
-    	String []sText = new String[nbColumns+1];
+    	TreeColumn []columns = treeViewer.getTree().getColumns();
+    	int nbColumns = columns.length; 	// columns in base metrics
+    	String []sText = new String[nbColumns];
     	sText[0] = new String(scope.getName());
+    	
     	// --- prepare text for base metrics
     	// get the metrics for all columns
-    	for (int i=0; i< nbColumns; i++) {
+    	for (int i=1; i< nbColumns; i++) {
     		// we assume the column is not null
-    		Object o = this.colMetrics[i].getColumn().getData();
+    		Object o = columns[i].getData();
     		if(o instanceof BaseMetric) {
-    			BaseMetric metric = (BaseMetric) o;//this.myExperiment.getMetric(i);
-    			sText[i+1] = metric.getMetricTextValue(scope.getMetricValue(metric));
-    			//sText[i+1] = metric.getMetricTextValue(scope);
+    			BaseMetric metric = (BaseMetric) o;
+    			sText[i] = metric.getMetricTextValue(scope.getMetricValue(metric));
     		}
     	}
     	
@@ -188,9 +188,10 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 */
 	public void resizeTableColumns() {
         // resize the column according to the data size
-		int nbCols = this.colMetrics.length;
-        for (int i=0; i<nbCols; i++) {
-        	TreeColumn column = this.colMetrics[i].getColumn();
+		TreeColumn []columns = treeViewer.getTree().getColumns(); 
+		int nbCols = columns.length;
+        for (int i=1; i<nbCols; i++) {
+        	TreeColumn column = columns[i];
         	// do NOT resize if the column is hidden
         	if(column.getWidth()>1)
         		column.pack();
@@ -260,21 +261,24 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 * Hiding a metric column
 	 * @param iColumnPosition: the index of the metric
 	 */
-	public void hideMetricColumn(int iColumnPosition) {
-			int iWidth = this.colMetrics[iColumnPosition].getColumn().getWidth();
-   			if(iWidth > 0) {
-       			Integer objWidth = Integer.valueOf(iWidth); 
-       			// Laks: bug no 131: we need to have special key for storing the column width
-       			this.colMetrics[iColumnPosition].getColumn().setData(COLUMN_DATA_WIDTH,objWidth);
-       			this.colMetrics[iColumnPosition].getColumn().setWidth(0);
-   			}
+	public void hideMetricColumn(TreeColumn column) {
+			
+		int iWidth = column.getWidth();
+		if(iWidth > 0) {
+   			Integer objWidth = Integer.valueOf(iWidth); 
+   			// Laks: bug no 131: we need to have special key for storing the column width
+   			column.setData(COLUMN_DATA_WIDTH,objWidth);
+   			column.setWidth(0);
+		}
 	}
 	
     /**
      * Show column properties (hidden, visible ...)
      */
     protected void showColumnsProperties() {
-    	ColumnProperties objProp = new ColumnProperties(this.objWindow.getShell(), this.colMetrics);
+    	
+    	ColumnProperties objProp = new ColumnProperties(objWindow.getShell(), 
+    			treeViewer.getTree().getColumns());
     	objProp.open();
     	if(objProp.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.OK_ID) {
         	boolean result[] = objProp.getResult();
@@ -319,40 +323,48 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * Change the column status (hide/show) in this view only
      */
     public void setColumnsStatus(boolean []status) {
-       	for(int i=0;i<status.length;i++) {
-       		// hide this column
-       		if(!status[i]) {
-       			this.hideMetricColumn(i);
-       		} else {
-       			// display the hidden column
-       			// Laks: bug no 131: we need to have special key for storing the column width
-        		Object o = this.colMetrics[i].getColumn().getData(COLUMN_DATA_WIDTH);
-       			if((o != null) && (o instanceof Integer) ) {
-       				int iWidth = ((Integer)o).intValue();
-           			this.colMetrics[i].getColumn().setWidth(iWidth);
-       			}
-       		}
-       	}
+
+		TreeColumn []columns = treeViewer.getTree().getColumns();
+		
+		// the number of table columns have to be bigger than the number of status
+		// since the table also contains tree scope column
+		
+		assert columns.length > status.length;
+		
+		int i=0; // index for status
+		
+		for (TreeColumn column : columns) {
+			if (column.getData() != null) {
+				// it must be metric column
+				if (status[i]) {
+					// display column
+	       			// Laks: bug no 131: we need to have special key for storing the column width
+	        		Object o = column.getData(COLUMN_DATA_WIDTH);
+	       			if((o != null) && (o instanceof Integer) ) {
+	       				int iWidth = ((Integer)o).intValue();
+	           			column.setWidth(iWidth);
+	       			}
+				} else {
+					// hide column
+					hideMetricColumn(column);
+				}
+				i++;
+			}
+		}
     }
+    
+    
     /**
      * Add a new metric column
      * @param colMetric
      */
-    public void addMetricColumns(TreeViewerColumn colMetric) {
-    	int nbCols = this.colMetrics.length + 1;
-    	TreeViewerColumn arrColumns[] = new TreeViewerColumn[nbCols];
-    	for(int i=0;i<nbCols-1;i++)
-    		arrColumns[i] = this.colMetrics[i];
-    	arrColumns[nbCols-1] = colMetric;
-    	this.colMetrics = arrColumns;
+    public void addMetricColumns(TreeColumn colMetric) {
     	// when adding a new column, we have to refresh the viewer
     	// and this means we have to recompute again the top row of the table
     	this.restoreParentNode();
     }
     
-    public TreeViewerColumn[] getMetricColumns() {
-    	return this.colMetrics;
-    }
+
     //======================================================
     // ................ BUTTON ............................
     //======================================================
@@ -626,5 +638,4 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 					internalCollectExpandedItems(result, itemChild.getItems());
 			}
 	}
-
 }

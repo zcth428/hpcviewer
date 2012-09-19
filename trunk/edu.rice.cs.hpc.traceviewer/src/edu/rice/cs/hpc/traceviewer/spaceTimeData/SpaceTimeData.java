@@ -111,16 +111,12 @@ public class SpaceTimeData extends TraceEvents
 		exp.open( expFile, new ProcedureAliasMap() );
 		
 		traceAttributes = exp.getTraceAttribute();
+		if (traceAttributes == null) {
+			throw new Exception("Invalid XML experiment file");
+		}
 		
-		try
-		{
-			// record size = sizeof(long) + sizeof(int) = 24
-			dataTrace = new BaseData(traceFile.getAbsolutePath(), traceAttributes.dbHeaderSize, 24);
-		}
-		catch (IOException e)
-		{
-			System.err.println("Master buffer could not be created");
-		}
+		// record size = sizeof(long) + sizeof(int) = 24
+		dataTrace = new BaseData(traceFile.getAbsolutePath(), traceAttributes.dbHeaderSize, 24);
 
 		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);	
@@ -133,7 +129,6 @@ public class SpaceTimeData extends TraceEvents
 		this.currentDataIdx = Constants.dataIdxNULL;
 		this.currentPosition = new Position(0,0);
 		this.dbName = exp.getName();
-		//System.gc();		
 	}
 
 	/***

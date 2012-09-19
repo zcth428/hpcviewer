@@ -85,8 +85,10 @@ public class SpaceTimeData extends TraceEvents
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
+	 * @throws Exception 
 	 ************************************************************************/
 	public SpaceTimeData(IWorkbenchWindow window, File expFile, File traceFile, IStatusLineManager _statusMgr)
+			throws Exception, InvalExperimentException
 	{
 		this.window = window;
 		statusMgr = _statusMgr;
@@ -104,20 +106,9 @@ public class SpaceTimeData extends TraceEvents
 		this.traceFile = traceFile;
 
 		BaseExperiment exp = new ExperimentWithoutMetrics();
-		try
-		{
-			exp.open( expFile, new ProcedureAliasMap() );
-		}
-		catch (InvalExperimentException e)
-		{
-			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
-			e.printStackTrace();
-			return;
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		
+		// when the open throws an exception, we cannot continue
+		exp.open( expFile, new ProcedureAliasMap() );
 		
 		traceAttributes = exp.getTraceAttribute();
 		

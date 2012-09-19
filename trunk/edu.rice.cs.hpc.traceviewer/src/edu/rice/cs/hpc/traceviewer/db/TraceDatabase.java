@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
@@ -122,7 +123,20 @@ public class TraceDatabase
 			if (database.dataTraces != null)
 				database.dataTraces.dispose();
 			
-			database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+			try {
+				database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+			} 
+			catch (InvalExperimentException e)
+			{
+				MessageDialog.openError(shell, "Error opening the database", 
+						"Parse error in Experiment XML at line " + e.getLineNumber() + "\nError messsage: " + e.getMessage());
+				return false;
+			}
+			catch (Exception e1) {
+				MessageDialog.openError(shell, "Error opening the database", 
+						"Error while opening the database: " + e1.getMessage());
+				return false;
+			}
 			
 			statusMgr.setMessage("Rendering trace data ...");
 			shell.update();

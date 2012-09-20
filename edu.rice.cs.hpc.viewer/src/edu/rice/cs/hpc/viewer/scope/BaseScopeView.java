@@ -27,7 +27,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView#updateDisplay()
 	 */
-	protected void updateDisplay() {
+	public void updateDisplay() {
         if (database == null)
         	return;
                 

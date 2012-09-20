@@ -210,7 +210,7 @@ public class ExperimentView {
 					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
 					objView.initDatabase(db, child);
 					DynamicViewListener dynamicViewListener = hashWindow.get(window);
-					dynamicViewListener.addView(objView, db, child);
+					dynamicViewListener.addView(objView, child);
 					
 				} else {
 					// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
@@ -240,7 +240,6 @@ public class ExperimentView {
 		private ArrayList<ViewObjectDatabase> listOfViews;
 		
 		private class ViewObjectDatabase {
-			public Database database;
 			public BaseScopeView view;
 			public RootScope root;
 		}
@@ -254,10 +253,9 @@ public class ExperimentView {
 		 * add view to the list of listeners
 		 * @param view
 		 */
-		public void addView( BaseScopeView view, Database data, RootScope root )
+		public void addView( BaseScopeView view, RootScope root )
 		{
 			ViewObjectDatabase obj = new ViewObjectDatabase();
-			obj.database = data;
 			obj.root = root;
 			obj.view = view;
 			listOfViews.add(obj);
@@ -282,7 +280,8 @@ public class ExperimentView {
 						experiment.createCallersView(cct, obj.root);
 						
 						// notify the view that we have changed the data
-						obj.view.setInput(obj.database, obj.root);
+						//obj.view.setInput(obj.database, obj.root);
+						obj.view.updateDisplay();
 						
 						// remove this view from the list since we already initialize the tree
 						listOfViews.remove(i);

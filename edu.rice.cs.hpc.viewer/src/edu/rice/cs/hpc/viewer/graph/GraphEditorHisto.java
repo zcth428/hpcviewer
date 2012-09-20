@@ -29,8 +29,6 @@ public class GraphEditorHisto extends GraphEditorBase {
 
 		} catch (IOException e) {
 			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
-			System.err.println(e.getMessage());
-			e.printStackTrace();
 			return;
 		}			
 

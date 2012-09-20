@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.viewer.graph;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.swtchart.IAxisSet;
 import org.swtchart.IAxisTick;
 
@@ -27,18 +26,12 @@ public class GraphEditorPlot extends GraphEditor {
 
 	//@Override
 	protected double[] getValuesY(ThreadLevelDataManager objDataManager, 
-			Scope scope, MetricRaw metric) {
+			Scope scope, MetricRaw metric) throws IOException {
 
-		try {
+		{
 			double []y_values = objDataManager.getMetrics( metric, scope.getCCTIndex() );
 			return y_values;
-			
-		} catch (IOException e) {
-			MessageDialog.openError(this.getSite().getShell(), "Error reading file !", e.getMessage());
-			System.err.println(e.getMessage());
-			e.printStackTrace();
 		}
-		return null;
 	}
 
 

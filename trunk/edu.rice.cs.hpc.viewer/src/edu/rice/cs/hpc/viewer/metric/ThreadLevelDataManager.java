@@ -122,7 +122,7 @@ public class ThreadLevelDataManager {
 		int metric_glob_id = metric.getID();
 		
 		if (data_file[metric_glob_id] == null) {
-			this.checkThreadsMetricDataFiles(metric_glob_id);
+			checkThreadsMetricDataFiles(metric_glob_id);
 		}
 		
 		ThreadLevelDataFile data = this.data_file[metric_glob_id];
@@ -150,22 +150,19 @@ public class ThreadLevelDataManager {
 	//==============================================================================================
 	// PRIVATE METHODS
 	//==============================================================================================
-	private void checkThreadsMetricDataFiles(int metric_raw_id) {
+	private void checkThreadsMetricDataFiles(int metric_raw_id) throws IOException {
 		
 		File directory = experiment.getDefaultDirectory();
 		if (directory.isFile())
 			directory = new File(directory.getParent());
 
-		try {
+		{
 			String file = thread_data.getMergedFile(directory, metric_raw_id);
 			if (file == null)
 				throw new IOException("Data file does not exist in " + directory.getAbsolutePath());
 			
 			// keep it for later uses
 			data_file[metric_raw_id] = new ThreadLevelDataFile(file);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 			
 	}

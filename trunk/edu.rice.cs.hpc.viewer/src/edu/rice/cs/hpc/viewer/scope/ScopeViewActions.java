@@ -433,12 +433,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		this.objActionsGUI.resizeTableColumns();
 	}
 
-	/**
-	 * Resize the columns
-	 */
-	public void resizeColumns(boolean displayed[]) {
-		this.objActionsGUI.resizeTableColumns();
-	}
 
 	/**
 	 * Retrieve the content of the table into a string

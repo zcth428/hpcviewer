@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.viewer.graph;
 
+import java.io.IOException;
+
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
@@ -94,31 +97,39 @@ public abstract class GraphEditor extends GraphEditorBase {
 	 */
 	protected void plotData(Scope scope, MetricRaw metric ) {
 		
-		double y_values[] = this.getValuesY(threadData, scope, metric);
-		double []x_values;
+		double y_values[];
+		try {
+			y_values = this.getValuesY(threadData, scope, metric);
+			
+			double []x_values;
 
-		x_values = this.getValuesX(threadData, scope, metric);
+			x_values = this.getValuesX(threadData, scope, metric);
 
-		Chart chart = this.getChart();
+			Chart chart = this.getChart();
 
-		// -----------------------------------------------------------------
-		// create scatter series
-		// -----------------------------------------------------------------
-		ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()
-				.createSeries(SeriesType.LINE, metric.getDisplayName() );
-		scatterSeries.setLineStyle(LineStyle.NONE);
-		scatterSeries.setSymbolSize(diameter);
-		
-		// -----------------------------------------------------------------
-		// set the values x and y to the plot
-		// -----------------------------------------------------------------
-		scatterSeries.setXSeries(x_values);
-		scatterSeries.setYSeries(y_values);
+			// -----------------------------------------------------------------
+			// create scatter series
+			// -----------------------------------------------------------------
+			ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()
+					.createSeries(SeriesType.LINE, metric.getDisplayName() );
+			scatterSeries.setLineStyle(LineStyle.NONE);
+			scatterSeries.setSymbolSize(diameter);
+			
+			// -----------------------------------------------------------------
+			// set the values x and y to the plot
+			// -----------------------------------------------------------------
+			scatterSeries.setXSeries(x_values);
+			scatterSeries.setYSeries(y_values);
 
-		
-		String axis_x = this.getXAxisTitle( threadData.getThreadLevelDataFile(metric.getID()) );
-		chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );
-		chart.getAxisSet().getYAxis(0).getTitle().setText( "Metric Value" );
+			
+			String axis_x = this.getXAxisTitle( threadData.getThreadLevelDataFile(metric.getID()) );
+			chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );
+			chart.getAxisSet().getYAxis(0).getTitle().setText( "Metric Value" );
+
+		} catch (IOException e) {
+			MessageDialog.openError(getSite().getShell(), "File to open the file", 
+					"Error while openging the file: " + e.getMessage());
+		}
 	}
 
 	/***
@@ -144,7 +155,8 @@ public abstract class GraphEditor extends GraphEditorBase {
 	 * @param metric
 	 * @return
 	 */
-	protected abstract double[] getValuesY(ThreadLevelDataManager objManager, Scope scope, MetricRaw metric);
+	protected abstract double[] getValuesY(ThreadLevelDataManager objManager, Scope scope, MetricRaw metric)
+			 throws IOException;
 
 
 }

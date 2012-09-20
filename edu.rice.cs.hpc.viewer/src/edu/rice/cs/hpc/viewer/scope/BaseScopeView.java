@@ -31,7 +31,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         if (database == null)
         	return;
                 
-        initTableColumns();
+        //initTableColumns();
         
         // Update root scope
         if (myRootScope.getChildCount() > 0) {

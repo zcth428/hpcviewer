@@ -87,20 +87,27 @@ public class FlatScopeViewActions extends ScopeViewActions {
 			}
 		}
 		if(hasKids) {
-			pushElementStates();
-			
-			stackFlatNodes.push(objParentNode);
+			if (objFlattenedNode.hasChildren()) {
+				pushElementStates();
+				
+				stackFlatNodes.push(objParentNode);
 
-			this.treeViewer.getTree().setRedraw(false);
-			// we update the data of the table
-			this.treeViewer.setInput(objFlattenedNode);
-			// refreshing the table to take into account a new data
-			this.treeViewer.refresh();
-			
-			updateAction(FlatAction.Flatten, objFlattenedNode);
+				this.treeViewer.getTree().setRedraw(false);
+				// we update the data of the table
+				this.treeViewer.setInput(objFlattenedNode);
+				// refreshing the table to take into account a new data
+				this.treeViewer.refresh();
+				
+				updateAction(FlatAction.Flatten, objFlattenedNode);
 
-			this.treeViewer.getTree().setRedraw(true);
-			checkStates(getSelectedNode());
+				this.treeViewer.getTree().setRedraw(true);
+				checkStates(getSelectedNode());
+			} else {
+				// the original tree has children, but only contains call sites
+				// since we do not allow call site as a leaf node, we need to
+				// forbid this kind of flatten operation
+				showErrorMessage("Cannot flatten a tree that has only callsite nodes");
+			}
 		}
 	}
 

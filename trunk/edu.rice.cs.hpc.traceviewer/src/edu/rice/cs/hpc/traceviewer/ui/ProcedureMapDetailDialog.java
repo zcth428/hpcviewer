@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.ui;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -84,6 +85,11 @@ public class ProcedureMapDetailDialog extends Dialog {
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(composite);
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(composite);
 		
+		final Label lblIntro = new Label(composite, SWT.LEFT);
+		lblIntro.setText("Please type the name of the procedure or the pattern of procedure name.\n"
+				+ "Symbol * matches all characters, while symbol ? matches only one character.");
+		GridDataFactory.swtDefaults().span(2, 1).applyTo(lblIntro);
+		
 		final Label lblProc = new Label(composite, SWT.LEFT);
 		lblProc.setText("Procedure pattern: ");
 		txtProc = new Text(composite, SWT.LEFT | SWT.SINGLE);
@@ -158,6 +164,12 @@ public class ProcedureMapDetailDialog extends Dialog {
 	 */
 	protected void okPressed() {
 		proc = txtProc.getText();
+		if (proc == null || proc.isEmpty()) {
+			MessageDialog.openError(getShell(), "Error", "Procedure pattern cannot be empty");
+			Display display = getShell().getDisplay();
+			txtProc.setBackground(display.getSystemColor(SWT.COLOR_RED));
+			return;
+		}
 		description = txtClass.getText();
 		super.okPressed();
 	}

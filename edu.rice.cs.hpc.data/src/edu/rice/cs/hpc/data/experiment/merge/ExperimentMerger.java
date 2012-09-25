@@ -42,7 +42,7 @@ public class ExperimentMerger
 	 * @param exp2
 	 * @return
 	 */
-	static public Experiment merge(Experiment exp1, Experiment exp2) {
+	static public Experiment merge(Experiment exp1, Experiment exp2, boolean verbose) {
 		
 		// -----------------------------------------------
 		// step 1: create new base Experiment
@@ -101,7 +101,7 @@ public class ExperimentMerger
 		RootScope root2_copy_cct = (RootScope) root2_copy.getChildAt(0);
 
 		final int metricCount = exp1.getMetricCount();
-		new TreeSimilarity(metricCount, root1, root2_copy_cct);
+		new TreeSimilarity(metricCount, root1, root2_copy_cct, verbose);
 		
 		return merged;
 	}

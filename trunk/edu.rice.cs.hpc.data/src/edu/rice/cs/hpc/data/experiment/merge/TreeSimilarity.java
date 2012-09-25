@@ -27,7 +27,7 @@ import edu.rice.cs.hpc.data.experiment.scope.visitors.ResetCounterVisitor;
 public class TreeSimilarity {
 
 	final private boolean debug = false;
-	final private boolean verbose = false;
+	private boolean verbose = false;
 	
 	int numNodes = 0;
 	int numMerges = 0;
@@ -47,8 +47,10 @@ public class TreeSimilarity {
 	 * @param source: the source root scope
 	 * 
 	 */
-	public TreeSimilarity(int offset, RootScope target, RootScope source)
+	public TreeSimilarity(int offset, RootScope target, RootScope source, boolean verbose)
 	{
+		this.verbose = verbose;
+		
 		// reset counter
 		IScopeVisitor visitor = new ResetCounterVisitor();
 		source.dfsVisitScopeTree(visitor);
@@ -456,15 +458,26 @@ public class TreeSimilarity {
 		//	and similar line number with different function name happens
 		if (same_type && (s1 instanceof CallSiteScope))
 		{
-			score += (same_name? 3:-3) * Constants.WEIGHT_NAME;
+			score += (same_name? 3:-1) * Constants.WEIGHT_NAME;
 		} else
 		{
 			score += (same_name ? Constants.WEIGHT_NAME : 0);
 		}
 		
+		if (isOnlyChild( s1, s2 ))
+			score += Constants.WEIGHT_LOCATION;
+		
 		score += (same_type ? Constants.WEIGHT_TYPE : 0);
 		
 		return score;
+	}
+	
+	private boolean isOnlyChild( Scope s1, Scope s2 )
+	{
+		int ns1 = s1.getParentScope().getChildCount();
+		int ns2 = s2.getParentScope().getChildCount();
+		
+		return (ns1==ns2 && ns1==1);
 	}
 	
 	/****

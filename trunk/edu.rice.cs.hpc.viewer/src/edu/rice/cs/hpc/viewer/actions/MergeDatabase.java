@@ -78,7 +78,7 @@ public class MergeDatabase extends AbstractHandler {
 
 				////@Override
 				public void run() {
-					final Experiment expMerged = ExperimentMerger.merge(db1, db2);
+					final Experiment expMerged = ExperimentMerger.merge(db1, db2, false);
 
 					ExperimentView ev = new ExperimentView(window.getActivePage());
 					ev.generateView(expMerged);

@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
@@ -66,7 +67,8 @@ public class TraceDatabase
 		
 		if (listOfDatabases != null) {
 			final TraceDatabase data = listOfDatabases.get(_window);
-			data.dataTraces.dispose();
+			if (data.dataTraces != null)
+				data.dataTraces.dispose();
 			listOfDatabases.remove(_window);
 		}
 	}
@@ -93,7 +95,7 @@ public class TraceDatabase
 			for(String arg: args) {
 				if (arg != null && arg.charAt(0)!='-') {
 					// this must be the name of the database to open
-					hasDatabase = TraceDatabase.isCorrectDatabase(arg, statusMgr, location);
+					hasDatabase = TraceDatabase.isCorrectDatabase(arg, statusMgr, location, shell);
 				}
 			}
 		}
@@ -122,7 +124,20 @@ public class TraceDatabase
 			if (database.dataTraces != null)
 				database.dataTraces.dispose();
 			
-			database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+			try {
+				database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+			} 
+			catch (InvalExperimentException e)
+			{
+				MessageDialog.openError(shell, "Error opening the database", 
+						"Parse error in Experiment XML at line " + e.getLineNumber() + "\nError messsage: " + e.getMessage());
+				return false;
+			}
+			catch (Exception e1) {
+				MessageDialog.openError(shell, "Error opening the database", 
+						"Error while opening the database: " + e1.getMessage());
+				return false;
+			}
 			
 			statusMgr.setMessage("Rendering trace data ...");
 			shell.update();
@@ -201,13 +216,7 @@ public class TraceDatabase
 				// user click cancel
 				return false;
 			
-			validDatabaseFound = isCorrectDatabase(directory, statusMgr, location);
-						
-			if (!validDatabaseFound) {
-				String sMsg = "The directory selected contains no traces:\n\t" + directory + 
-						"\nPlease select a directory that contains traces.";
-				MessageDialog.openError(shell, "Error opening the database", sMsg);
-			}
+			validDatabaseFound = isCorrectDatabase(directory, statusMgr, location, shell);
 		}
 		
 		return validDatabaseFound;
@@ -226,7 +235,7 @@ public class TraceDatabase
 	 * 
 	 */
 	static private boolean isCorrectDatabase(String directory, final IStatusLineManager statusMgr,
-			FileData location)
+			FileData location, Shell shell)
 	{
 		File dirFile = new File(directory);
 		
@@ -247,17 +256,18 @@ public class TraceDatabase
 						if (location.fileTrace.length() > MIN_TRACE_SIZE) {
 							return true;
 						} else {
-							System.err.println("Warning! Trace file " + location.fileTrace.getName() + " is too small: " 
+							MessageDialog.openError(shell, "Error opening trace file", "Warning! Trace file " 
+									+ location.fileTrace.getName() + " is too small: " 
 									+ location.fileTrace.length() + "bytes .");
-							return false;
 						}
 					} else {
-						System.err.println("Error: trace file(s) does not exist or fail to open " + outputFile);
+						MessageDialog.openError(shell, "Error opening trace file", "Error: the directory doesn't contain trace file(s)\n" 
+													+"or fail to open trace file " + outputFile);
 					}
 
 				} 
 				catch (IOException e) {
-					e.printStackTrace();
+					MessageDialog.openError(shell, "Error opening trace file", "Fail to open trace file: " + e.getMessage());
 				}
 				
 			}

@@ -11,5 +11,5 @@ public class RootScopeType {
 	public String toString() { return value; }
 	
 	private String value;
-	private RootScopeType(String value) { this.value = value; };
+	protected RootScopeType(String value) { this.value = value; };
 }

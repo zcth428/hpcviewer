@@ -600,7 +600,7 @@ public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePro
  * @param index
  * @param value
  ************************************************************************/
-public void accumulateMetricValue(int index, double value)
+private void accumulateMetricValue(int index, double value)
 {
 	ensureMetricStorage();
 	if (index >= this.metrics.length) 

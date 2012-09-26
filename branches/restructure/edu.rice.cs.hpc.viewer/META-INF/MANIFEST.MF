@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: hpcviewer
 Bundle-SymbolicName: edu.rice.cs.hpc.viewer; singleton:=true
-Bundle-Version: 5.3.1.qualifier
+Bundle-Version: 5.3.2.qualifier
 Bundle-Activator: edu.rice.cs.hpc.viewer.framework.Activator
 Bundle-Vendor: Rice University
 Require-Bundle: org.eclipse.core.runtime,
@@ -29,3 +29,11 @@ Import-Package: edu.rice.cs.hpc.common.ui,
 Bundle-ClassPath: hpcviewer.jar,
  external-jars/org.swtchart_0.8.0.v20120301.jar,
  external-jars/org.swtchart.ext_0.8.0.v20120301.jar
+Export-Package: edu.rice.cs.hpc.viewer.editor,
+ edu.rice.cs.hpc.viewer.experiment,
+ edu.rice.cs.hpc.viewer.framework,
+ edu.rice.cs.hpc.viewer.help,
+ edu.rice.cs.hpc.viewer.metric,
+ edu.rice.cs.hpc.viewer.scope,
+ edu.rice.cs.hpc.viewer.util,
+ edu.rice.cs.hpc.viewer.window

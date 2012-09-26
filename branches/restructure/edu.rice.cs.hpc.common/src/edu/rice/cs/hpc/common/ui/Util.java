@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.common.ui;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
@@ -10,6 +11,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.EditorSite;
 import org.eclipse.ui.part.EditorPart;
+
+import edu.rice.cs.hpc.data.util.JavaValidator;
 
 public class Util {
 	
@@ -55,5 +58,25 @@ public class Util {
 	static public IWorkbenchWindow getActiveWindow() {
 		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		return window;
+	}
+	
+	/****
+	 * check if we run the correct version of JVM (assuming all JVM except GIJ will work)
+	 * Up to now, only Gnu Java (GCJ) that doesn't work properly with Eclipse. 
+	 * It works most cases, but it can crash if we use Java API that is not fully supported
+	 * 	by GCJ
+	 * 
+	 * @param shell
+	 * @return true if we can continue, false otherwise
+	 */
+	static public boolean checkJavaVendor(Shell shell) {
+		boolean ok  = true;
+		if (JavaValidator.isGCJ()) {
+			String vendor = JavaValidator.getJavaVendor();
+			ok = MessageDialog.openQuestion(shell, "Java vendor is not supported", 
+					"Warning ! JVM vendor is not supported: " + vendor + "\n" + 
+					"The application may not work properly with this JVM\nDo you want to continue ?");
+		}
+		return ok;
 	}
 }

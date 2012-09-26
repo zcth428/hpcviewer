@@ -22,10 +22,10 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.Utilities;
-import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor 
@@ -62,15 +62,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 	 */
 	public void preWindowOpen() {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
+		
+		final IWorkbenchWindow window = configurer.getWindow();
+		if (!Util.checkJavaVendor(window.getShell()))
+			window.close();
+
 		configurer.setShowCoolBar(false);	// remove toolbar/coolbar
 		configurer.setShowStatusLine(true);	// show status bar
         configurer.setShowProgressIndicator(true);
 
 		// tell the viewer window manager we are creating a new window
-		IWorkbenchWindow window = configurer.getWindow();
 		ViewerWindowManager vwm = new ViewerWindowManager();
 		vwm.addNewWindow(window);
-		configurer.setTitle(WindowTitle.getWindowTitle(window, null));
 	}
 
 	/**
@@ -255,16 +258,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 					removeViews( pageCurrent );
 				}
 				
+				return true;
+			}
+			public void postShutdown(IWorkbench workbench) {
+				
 				//---------------------------------------------------------------------------
 				// we need to explicitly remove all allocated native resources since Eclipse
 				// 	will not do this for us (due to resources that are platform dependent)
 				//---------------------------------------------------------------------------
 				Utilities.dispose();
-				
-				return true;
-			}
-			public void postShutdown(IWorkbench workbench) {
-				// do nothing
 			}
 		});
 	}

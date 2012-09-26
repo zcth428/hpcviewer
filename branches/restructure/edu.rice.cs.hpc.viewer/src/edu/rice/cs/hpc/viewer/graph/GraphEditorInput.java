@@ -7,7 +7,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.metric.MetricRaw;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.Database;
 
 public class GraphEditorInput implements IEditorInput {
@@ -46,18 +45,14 @@ public class GraphEditorInput implements IEditorInput {
 	}
 
 	public String getName() {
-		return getName(_scope, _metric, _type, _database);
+		final String sOrignalTitle = "[" + GraphType.toString(_type) + "] " + _scope.getName()+": " + _metric.getDisplayName();
+		return sOrignalTitle;
 	}
 
 	public String getID() {
 		return getID(_scope, _metric, _type, _database);
 	}
 	
-	private String getName(Scope scope, MetricRaw metric, GraphType.PlotType type, Database database) {
-		final String sOrignalTitle = "[" + GraphType.toString(type) + "] " + scope.getName()+": " + metric.getDisplayName(); 
-		return WindowTitle.getTitle(_window, database.getExperiment(), sOrignalTitle);
-	}
-
 	/****
 	 * return the ID for the editor graph from the combination of scope, metric, graph type and database
 	 * @param scope

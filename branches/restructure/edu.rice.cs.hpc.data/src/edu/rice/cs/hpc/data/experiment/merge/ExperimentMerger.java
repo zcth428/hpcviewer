@@ -42,7 +42,7 @@ public class ExperimentMerger
 	 * @param exp2
 	 * @return
 	 */
-	static public Experiment merge(Experiment exp1, Experiment exp2) {
+	static public Experiment merge(Experiment exp1, Experiment exp2, boolean verbose) {
 		
 		// -----------------------------------------------
 		// step 1: create new base Experiment
@@ -54,7 +54,6 @@ public class ExperimentMerger
 		configuration.searchPaths = exp1.getConfiguration().searchPaths;
 		
 		merged.setConfiguration( configuration );
-
 
 		// Add tree1, walk tree2 & add; just CCT/Flat
 		RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);
@@ -84,17 +83,25 @@ public class ExperimentMerger
 		// step 4: create cct root
 		// -----------------------------------------------		
 
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];	
+
+		RootScope root2_copy = new RootScope(root2.getExperiment(), 
+				"copy root 2","Invisible Outer Root Scope", RootScopeType.Invisible);
+
+		DuplicateScopeTreesVisitor visitor = new DuplicateScopeTreesVisitor(root2_copy);
+		root2.dfsVisitScopeTree(visitor);
+		
 		// -----------------------------------------------
 		// step 5: merge the two experiments
 		// -----------------------------------------------
 
 		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope));		
 		
-		RootScope root1 = (RootScope) merged.getRootScopeChildren()[0];		
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		
-		
+		RootScope root1 = (RootScope) merged.getRootScopeChildren()[0];	
+		RootScope root2_copy_cct = (RootScope) root2_copy.getChildAt(0);
+
 		final int metricCount = exp1.getMetricCount();
-		final TreeSimilarity similar = new TreeSimilarity(metricCount, root1, root2);
+		new TreeSimilarity(metricCount, root1, root2_copy_cct, verbose);
 		
 		return merged;
 	}
@@ -116,10 +123,11 @@ public class ExperimentMerger
 		// step 1: add the first metrics into the merged experiment
 		// ----------------------------------------------------------------
 		for (int i=0; i<m1.length; i++) {
+			// add metric into the merged list
 			BaseMetric mm = m1[i].duplicate();
 			
 			setMetricCombinedName(1, mm);
-
+			
 			metricList.add(mm);
 		}
 		

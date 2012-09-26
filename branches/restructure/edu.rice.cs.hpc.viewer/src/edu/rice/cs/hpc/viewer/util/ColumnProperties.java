@@ -10,7 +10,6 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -50,13 +49,13 @@ public class ColumnProperties extends TitleAreaDialog {
 	static final private String HISTORY_APPLY_ALL = "apply-all";
 	
 	protected ColumnCheckTableViewer objCheckBoxTable ;
-	protected TreeViewerColumn []objColumns;
-	protected boolean []results;
+	protected TreeColumn []objColumns;
+	protected boolean[] results;
 	protected Button btnApplyToAllViews;
 	protected boolean isAppliedToAllViews = false;
 	protected Text objSearchText;
 
-	protected PropertiesModel arrElements[];
+	protected ArrayList<PropertiesModel> arrElements;
 
 	//--------------------------------------------------
 	// CONSTRUCTOR
@@ -77,7 +76,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @param shell
 	 * @param columns
 	 */
-	public ColumnProperties(Shell shell, TreeViewerColumn []columns) {
+	public ColumnProperties(Shell shell, TreeColumn []columns) {
 		super(shell);
 		this.objColumns = columns;
 	}
@@ -183,7 +182,10 @@ public class ColumnProperties extends TitleAreaDialog {
 		// setup the content provider
 		objCheckBoxTable.setContentProvider(new IStructuredContentProvider() {
 			public Object[] getElements(Object parent) {
-				return (PropertiesModel[])parent;
+				if (parent instanceof ArrayList<?>)
+					return ((ArrayList<PropertiesModel>)parent).toArray();
+				else
+					return null;
 			}
 			public void dispose() {
 				// nope
@@ -199,8 +201,8 @@ public class ColumnProperties extends TitleAreaDialog {
 			public void checkStateChanged(CheckStateChangedEvent event) {
 				PropertiesModel objItem = (PropertiesModel) event.getElement();
 				objItem.isVisible = event.getChecked();
-				if (arrElements[objItem.iIndex] != objItem) {
-					arrElements[objItem.iIndex].isVisible = objItem.isVisible;
+				if (arrElements.get(objItem.iIndex) != objItem) {
+					arrElements.get(objItem.iIndex).isVisible = objItem.isVisible;
 				}
 			}
 
@@ -222,12 +224,12 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @return
 	 */
 	protected Object[] getCheckedItemsFromGlobalVariable () {
-		int nb = this.arrElements.length;
+		int nb = this.arrElements.size();
 		ArrayList<PropertiesModel> arrCheckedElements = new ArrayList<PropertiesModel>();
 
 		for (int i=0; i<nb; i++) {
-			if (this.arrElements[i].isVisible)
-				arrCheckedElements.add(this.arrElements[i]);
+			if (arrElements.get(i).isVisible)
+				arrCheckedElements.add(this.arrElements.get(i));
 		} 
 		return arrCheckedElements.toArray();
 
@@ -256,8 +258,9 @@ public class ColumnProperties extends TitleAreaDialog {
 	 */
 	protected void okPressed() {
 		// laksono 2009.04.14: bug fix, retrieving all checked elements into the results
-		for (int i=0; i<arrElements.length; i++) {
-			 this.results[i] = (this.arrElements[i].isVisible);
+		for (int i=0; i<arrElements.size(); i++) {
+			 boolean isVisible = (this.arrElements.get(i).isVisible);
+			 results[i] = isVisible;
 		} 
 
 		this.isAppliedToAllViews = this.btnApplyToAllViews.getSelection();
@@ -275,7 +278,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * Need to call this if the table changes its columns !!
 	 * @param objModels
 	 */
-	public void setData(TreeViewerColumn []columns) {
+	public void setData(TreeColumn []columns) {
 		this.objColumns = columns;
 	}
 
@@ -287,20 +290,32 @@ public class ColumnProperties extends TitleAreaDialog {
 			return; // caller of this object need to set up the column first !
 		int nbColumns = this.objColumns.length;
 		// PropertiesModel objProps[] = new PropertiesModel[nbColumns];
-		this.arrElements = new PropertiesModel[nbColumns];
+		this.arrElements = new ArrayList<PropertiesModel>(nbColumns);
 		ArrayList<PropertiesModel> arrColumns = new ArrayList<PropertiesModel>();
-		this.results = new boolean[nbColumns];
+		
+		int index = 0;
 		for(int i=0;i<nbColumns;i++) {
-			TreeColumn column = this.objColumns[i].getColumn();
-			boolean isVisible = column.getWidth() > 1;
-			String sTitle = column.getText();
-			arrElements[i] = new PropertiesModel(isVisible, sTitle, i);
-			// we need to find which columns are visible
-			if(isVisible) {
-				arrColumns.add(arrElements[i]);
+			if (objColumns[i].getData() != null) {
+				TreeColumn column = this.objColumns[i];
+				boolean isVisible = column.getWidth() > 1;
+				String sTitle = column.getText();
+				
+				PropertiesModel model = new PropertiesModel(isVisible, sTitle, index);
+				index++;
+				
+				arrElements.add( model );
+				// we need to find which columns are visible
+				if(isVisible) {
+					arrColumns.add(model);
+				}
 			}
-			this.results[i] = false; // initialize with false value
 		}
+		
+		this.results = new boolean[index];
+		for(int i=0; i<index; i++) {
+			results[i] = false; // initialize with false value
+		}
+
 		this.objCheckBoxTable.setInput(arrElements);
 		this.objCheckBoxTable.setCheckedElements(arrColumns.toArray());
 	}
@@ -310,7 +325,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @return the array of true/false
 	 */
 	public boolean[] getResult() {
-		return this.results;
+		return results;
 	}
 
 	/**

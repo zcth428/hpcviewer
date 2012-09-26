@@ -85,8 +85,10 @@ public class SpaceTimeData extends TraceEvents
 	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
+	 * @throws Exception 
 	 ************************************************************************/
 	public SpaceTimeData(IWorkbenchWindow window, File expFile, File traceFile, IStatusLineManager _statusMgr)
+			throws Exception, InvalExperimentException
 	{
 		this.window = window;
 		statusMgr = _statusMgr;
@@ -104,32 +106,17 @@ public class SpaceTimeData extends TraceEvents
 		this.traceFile = traceFile;
 
 		BaseExperiment exp = new ExperimentWithoutMetrics();
-		try
-		{
-			exp.open( expFile, new ProcedureAliasMap() );
-		}
-		catch (InvalExperimentException e)
-		{
-			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
-			e.printStackTrace();
-			return;
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		
+		// when the open throws an exception, we cannot continue
+		exp.open( expFile, new ProcedureAliasMap() );
 		
 		traceAttributes = exp.getTraceAttribute();
+		if (traceAttributes == null) {
+			throw new Exception("Invalid XML experiment file");
+		}
 		
-		try
-		{
-			// record size = sizeof(long) + sizeof(int) = 24
-			dataTrace = new BaseData(traceFile.getAbsolutePath(), traceAttributes.dbHeaderSize, 24);
-		}
-		catch (IOException e)
-		{
-			System.err.println("Master buffer could not be created");
-		}
+		// record size = sizeof(long) + sizeof(int) = 24
+		dataTrace = new BaseData(traceFile.getAbsolutePath(), traceAttributes.dbHeaderSize, 24);
 
 		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);	
@@ -142,7 +129,6 @@ public class SpaceTimeData extends TraceEvents
 		this.currentDataIdx = Constants.dataIdxNULL;
 		this.currentPosition = new Position(0,0);
 		this.dbName = exp.getName();
-		//System.gc();		
 	}
 
 	/***

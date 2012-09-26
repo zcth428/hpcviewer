@@ -1,12 +1,10 @@
 package edu.rice.cs.hpc.viewer.editor;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.viewer.util.WindowTitle;
 /**
  * @author laksono
  *
@@ -60,12 +58,15 @@ public class SourceCodeEditor extends TextEditor implements IViewerEditor {
 		return false;
 	}
 
-	public void resetPartName() {
-		final IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
+	public String getEditorPartName() {
 		final FileStoreEditorInput input = (FileStoreEditorInput) this.getEditorInput();
 		final String name = input.getName();
-		final String title = WindowTitle.getTitle(window, _experiment, name);
+		return name;
+	}
+
+	public void setEditorPartName(String title) {
 		this.setPartName(title);
+		return;
 	}
 
 	public Experiment getExperiment() {

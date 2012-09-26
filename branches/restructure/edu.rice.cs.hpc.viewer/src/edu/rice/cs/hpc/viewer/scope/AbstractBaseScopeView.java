@@ -517,7 +517,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * Tell children to update the content with the new database
 	 * Update the content of the tree view when a new experiment is loaded
 	 */
-	abstract protected void updateDisplay();
+	abstract public void updateDisplay();
 
 	abstract protected void initTableColumns();
 	

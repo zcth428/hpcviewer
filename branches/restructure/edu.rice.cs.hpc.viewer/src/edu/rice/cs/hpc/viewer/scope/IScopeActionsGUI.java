@@ -3,9 +3,9 @@
  */
 package edu.rice.cs.hpc.viewer.scope;
 
-import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TreeColumn;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
@@ -38,7 +38,7 @@ public interface IScopeActionsGUI {
 	 * @param scope
 	 * @param columns
 	 */
-	public void updateContent(Experiment exp, RootScope scope, TreeViewerColumn []columns);
+	public void updateContent(Experiment exp, RootScope scope);
 
 	/**
 	 * Set the new tree viewer
@@ -106,7 +106,7 @@ public interface IScopeActionsGUI {
      * Add a new metric column
      * @param colMetric
      */
-    public void addMetricColumns(TreeViewerColumn colMetric);
+    public void addMetricColumns(TreeColumn colMetric);
     
 	/**
 	 * Resize the columns automatically
@@ -114,7 +114,5 @@ public interface IScopeActionsGUI {
 	 */
 	public void resizeTableColumns();
 	
-	public void setColumnsStatus(boolean []status);
-	
-    public TreeViewerColumn[] getMetricColumns();
+	public void setColumnsStatus(boolean []status);	
 }

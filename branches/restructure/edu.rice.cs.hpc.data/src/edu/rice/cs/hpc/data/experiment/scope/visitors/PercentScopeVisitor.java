@@ -16,12 +16,21 @@ import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 
 public class PercentScopeVisitor implements IScopeVisitor {
 	RootScope root;
-	int nMetrics;
+	int metricCount;
+	int metricOffset;
 
 	public PercentScopeVisitor(int metricCount, RootScope r) {
-		nMetrics = metricCount;
+		this.metricCount = metricCount;
+		metricOffset = 0;
 		root = r;
 	}
+	
+	public PercentScopeVisitor(int metricOffset, int metricCount, RootScope r) {
+		this.metricCount = metricCount;
+		this.metricOffset = metricOffset;
+		root = r;
+	}
+	
 	//----------------------------------------------------
 	// visitor pattern instantiations for each Scope type
 	//----------------------------------------------------
@@ -44,7 +53,7 @@ public class PercentScopeVisitor implements IScopeVisitor {
 
 	protected void calc(Scope scope, ScopeVisitType vt) {
 		if (vt == ScopeVisitType.PostVisit) {
-			setPercentValue(scope, root, this.nMetrics);
+			setPercentValue(scope);
 		}
 	}
 	
@@ -55,8 +64,8 @@ public class PercentScopeVisitor implements IScopeVisitor {
 	 * @param root: the root scope
 	 * @param num_metrics: number of metrics
 	 */
-	static public void setPercentValue(Scope scope, RootScope root, int num_metrics) {
-		for (int i = 0; i < num_metrics; i++) {
+	protected void setPercentValue(Scope scope) {
+		for (int i = metricOffset; i < metricCount; i++) {
 			MetricValue m = scope.getMetricValue(i);
 			MetricValue root_value = root.getMetricValue(i);
 			if (m != MetricValue.NONE && root_value != MetricValue.NONE) {
@@ -66,6 +75,5 @@ public class PercentScopeVisitor implements IScopeVisitor {
 			}
 
 		}
-
 	}
 }

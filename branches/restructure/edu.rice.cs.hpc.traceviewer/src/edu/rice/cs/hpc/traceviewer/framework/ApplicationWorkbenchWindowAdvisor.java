@@ -2,11 +2,13 @@ package edu.rice.cs.hpc.traceviewer.framework;
 
 import org.eclipse.jface.action.IStatusLineManager;
 //import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
@@ -33,9 +35,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	 */
 	public void preWindowOpen() {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
-		//configurer.setInitialSize(new Point(1200, 800));
+
 		configurer.setShowCoolBar(false);
 		configurer.setShowStatusLine(true);
+		
+		final IWorkbenchWindow window = configurer.getWindow();
+		if (!Util.checkJavaVendor(window.getShell()))
+			window.close();
 	}
 	
 	

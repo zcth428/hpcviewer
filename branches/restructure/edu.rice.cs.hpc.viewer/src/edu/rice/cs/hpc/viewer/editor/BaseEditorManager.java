@@ -51,11 +51,16 @@ public abstract class BaseEditorManager {
 			
 			if (editor instanceof IViewerEditor) {
 				Experiment expEditor = ((IViewerEditor)editor).getExperiment();
-				final String expEditorFile = expEditor.getXMLExperimentFile().getPath();
-				if (expFile.equals(expEditorFile)) {
-					// An editor has already opened, do not split the pane
-					needNewPartition = false;
-					break;
+				// if there is no experiment associated with this editor, just ignore it
+				if (expEditor != null) {
+					final String expEditorFile = expEditor.getXMLExperimentFile().getPath();
+					if (expFile.equals(expEditorFile)) {
+						// An editor has already opened, do not split the pane
+						needNewPartition = false;
+						// make this editor active so the new editor will end up in its pane
+						page.activate(editor.getSite().getPart());
+						break;
+					}
 				}
 			}
 		}

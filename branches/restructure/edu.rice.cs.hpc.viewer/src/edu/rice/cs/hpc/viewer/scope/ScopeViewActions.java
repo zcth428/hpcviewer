@@ -78,9 +78,9 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      * @param scope
      * @param columns
      */
-	public void updateContent(Experiment exp, RootScope scope, TreeViewerColumn []columns) {
+	public void updateContent(Experiment exp, RootScope scope) {
     	this.myRootScope = scope;
-    	this.objActionsGUI.updateContent(exp, scope, columns);
+    	this.objActionsGUI.updateContent(exp, scope);
     }
 	
     /**
@@ -348,7 +348,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * add a new column for metric
 	 * @param colMetric
 	 */
-	protected void addTreeColumn(TreeViewerColumn colMetric) {
+	protected void addTreeColumn(TreeColumn colMetric) {
 		this.objActionsGUI.addMetricColumns(colMetric);
 	}
 	
@@ -405,23 +405,31 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 				System.out.printf("ScopeViewActions.addExtNewMetric: Database class not found\n");
 				return;
 			}
-			BaseScopeView arrScopeViews[] = db.getExperimentView().getViews();
-
-			for(int i=0; i<arrScopeViews.length; i++) {
-				ScopeTreeViewer objTreeViewer = arrScopeViews[i].getTreeViewer();
+			
+			for(BaseScopeView view: db.getExperimentView().getViews()) {
+				
+				ScopeTreeViewer objTreeViewer = view.getTreeViewer();
+				
 				objTreeViewer.getTree().setRedraw(false);
 				TreeViewerColumn colDerived = objTreeViewer.addTreeColumn(objMetric,  false);
+				
 				// update the viewer, to refresh its content and invoke the provider
 				// bug SWT https://bugs.eclipse.org/bugs/show_bug.cgi?id=199811
 				// we need to hold the UI to draw until all the data is available
-				objTreeViewer.refresh();	// we refresh to update the data model of the table
+				// 2012.09.21: do not refresh. It crashes on linux/gtk/ppc
+				//objTreeViewer.refresh();	// we refresh to update the data model of the table
+				
 				// notify the GUI that we have added a new column
-				ScopeViewActions objAction = arrScopeViews[i].getViewActions();
-				objAction.addTreeColumn(colDerived);
+				ScopeViewActions objAction = view.getViewActions();
+				objAction.addTreeColumn(colDerived.getColumn());
 				//this.objActionsGUI.addMetricColumns(colDerived); 
 				objTreeViewer.getTree().setRedraw(true);
 				// adjust the column width 
-				colDerived.getColumn().pack();
+				//colDerived.getColumn().pack();
+				
+				// instead of refresh, we use update which will reset the input and
+				//	reinitialize the table. It isn't elegant, but works in all platforms
+				view.updateDisplay();
 			}
 		}
 	}
@@ -433,12 +441,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		this.objActionsGUI.resizeTableColumns();
 	}
 
-	/**
-	 * Resize the columns
-	 */
-	public void resizeColumns(boolean displayed[]) {
-		this.objActionsGUI.resizeTableColumns();
-	}
 
 	/**
 	 * Retrieve the content of the table into a string
@@ -457,7 +459,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     		// let get the metrics if the selected item is a scope node
     		if (o instanceof Scope) {
     			Scope objScope = (Scope) o;
-    			this.getContent(objScope, this.objActionsGUI.getMetricColumns(), sSeparator, sbText);
+    			this.getContent(objScope, sSeparator, sbText);
     		} else {
     			// in case user click the first row, we need a special treatment
     			// first row of the table is supposed to be a sub-header, but at the moment we allow user
@@ -479,13 +481,14 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * @param sSeparator
 	 * @param sbText
 	 */
-	private void getContent( Scope objScope, TreeViewerColumn colMetrics[], String sSeparator, StringBuffer sbText ) {
+	private void getContent( Scope objScope, String sSeparator, StringBuffer sbText ) {
 
+		final TreeColumn []columns = treeViewer.getTree().getColumns();
 		sbText.append( "\"" + objScope.getName() + "\"" );
 		
 		final Experiment exp = (Experiment) objScope.getExperiment();
-		for(int j=0; j<colMetrics.length; j++) {
-			if (colMetrics[j].getColumn().getWidth()>0) {
+		for(int j=1; j<columns.length; j++) {
+			if (columns[j].getWidth()>0) {
 				// the column is not hidden
 				BaseMetric metric = exp.getMetric(j);
 				sbText.append(sSeparator + metric.getMetricTextValue(objScope));
@@ -496,11 +499,10 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	/**
 	 * Function to copy all visible nodes into a buffer string
 	 * @param elements
-	 * @param colMetrics
 	 * @param sSeparator
 	 * @return
 	 */
-	public String getContent(TreePath []elements, TreeViewerColumn colMetrics[], String sSeparator) {
+	public String getContent(TreePath []elements, String sSeparator) {
     	StringBuffer sbText = new StringBuffer();
 		for (int i=0; i<elements.length; i++ ) {
 			TreePath item = elements[i];
@@ -508,7 +510,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			for ( int j=0; j<nbSegments; j++ ) {
 				Object o = item.getSegment(j);
 				if (o instanceof Scope) {
-					this.getContent((Scope)o, colMetrics, sSeparator, sbText);
+					this.getContent((Scope)o, sSeparator, sbText);
 				}
 			}
 			sbText.append(Utilities.NEW_LINE);

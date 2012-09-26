@@ -24,7 +24,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     // ................ ATTRIBUTES..........................
     //======================================================
 	
-	private TreeViewerColumn []colMetrics = null;
+	//private TreeViewerColumn []colMetrics = null;
 	/** we have to make sure that the listener is added only once for a given window **/
 	static private HashMap<IWorkbenchWindow, DynamicViewListener> hashWindow;
 
@@ -114,17 +114,17 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView#updateDisplay()
 	 */
-	protected void updateDisplay() {
+	public void updateDisplay() {
         if (database == null)
         	return;
                 
-        initTableColumns();
+        //initTableColumns();
         
         // Update root scope
         if (myRootScope.getChildCount() > 0) {
             treeViewer.setInput(myRootScope);
             
-            this.objViewActions.updateContent(getExperiment(), myRootScope, colMetrics);
+            this.objViewActions.updateContent(getExperiment(), myRootScope);
 
             // FIXME: For unknown reason, the updateContent method above does not resize the column automatically,
             // so we need to do it here, manually ... sigh
@@ -152,8 +152,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	 * @see edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView#initTableColumns()
 	 */
 	protected void initTableColumns() {
-		if (colMetrics != null)
-			return;
 		
         final Experiment myExperiment = database.getExperiment();        
 
@@ -171,7 +169,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         int nbMetrics = myExperiment.getMetricCount();
         boolean status[] = new boolean[nbMetrics];
         // dirty solution to update titles
-        colMetrics = new TreeViewerColumn[nbMetrics];
+        TreeViewerColumn []colMetrics = new TreeViewerColumn[nbMetrics];
         {
             // Update metric title labels
             String[] titles = new String[nbMetrics+1];
@@ -186,7 +184,7 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
             treeViewer.setColumnProperties(titles); // do we need this ??
         }
         // update the root scope of the actions !
-        this.objViewActions.updateContent(myExperiment, (RootScope)this.myRootScope, colMetrics);
+        this.objViewActions.updateContent(myExperiment, (RootScope)this.myRootScope);
     	this.objViewActions.objActionsGUI.setColumnsStatus(status);
 	}
 	

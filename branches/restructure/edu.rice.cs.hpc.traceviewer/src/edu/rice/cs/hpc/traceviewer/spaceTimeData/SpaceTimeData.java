@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
 import java.util.HashMap;
 import java.io.File;
-import java.io.IOException;
 import java.lang.Math;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.GC;

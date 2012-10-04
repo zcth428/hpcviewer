@@ -7,7 +7,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
-import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
@@ -27,9 +26,6 @@ public class TimelineThread extends Thread
 	/**Stores whether or not the bounds have been changed*/
 	private boolean changedBounds;
 	
-	/**Stores whether a SpaceTimeDetailCanvas or a DepthTimeCanvas is being painted*/
-	private boolean detailPaint;
-	
 	/**The canvas on which to paint.*/
 	private Canvas canvas;
 	
@@ -43,7 +39,7 @@ public class TimelineThread extends Thread
 	private double scaleY;
 
 	/**The minimum height the samples need to be in order to paint the white separator lines.*/
-	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
+	final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 	
 	final private TimelineProgressMonitor monitor;
 	
@@ -64,7 +60,6 @@ public class TimelineThread extends Thread
 		width = _width;
 		scaleX = _scaleX;
 		scaleY = _scaleY;
-		detailPaint = canvas instanceof SpaceTimeDetailCanvas;
 		
 		monitor = _monitor;
 		this.window = window;
@@ -78,71 +73,38 @@ public class TimelineThread extends Thread
 	 ***************************************************************/
 	public void run()
 	{
-		if (detailPaint)
+		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
+		while(nextTrace != null)
 		{
-			ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
-			while(nextTrace != null)
+			if(changedBounds)
 			{
-				if(changedBounds)
-				{
-					nextTrace.readInData(stData.getHeight());
-					stData.addNextTrace(nextTrace);
-				}
-				
-				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-					imageHeight--;
-				else
-					imageHeight++;
-				
-				Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
-				Image lineOriginal = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gcFinal = new GC(lineFinal);
-				GC gcOriginal = new GC(lineOriginal);
-				
-				SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
-						scaleX, scaleY );
-				stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
-				
-				gcFinal.dispose();
-				gcOriginal.dispose();
-				
-				stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
-				
-				monitor.announceProgress();
-				
-				nextTrace = stData.getNextTrace(changedBounds);
+				nextTrace.readInData(stData.getHeight());
+				stData.addNextTrace(nextTrace);
 			}
-		}
-		else
-		{
-			ProcessTimeline nextTrace = stData.getNextDepthTrace();
-			while (nextTrace != null)
-			{
-				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-					imageHeight--;
-				else
-					imageHeight++;
-				
-				Image line = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY) {
-
-					//@Override
-					public void paintSample(int startPixel, int endPixel,
-							int height, String function) {
-
-						this.internalPaint(gc, startPixel, endPixel, height, function);
-					}
-				};
-				
-				stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
-				gc.dispose();
-				
-				stData.addNextImage(line, nextTrace.line());
-				nextTrace = stData.getNextDepthTrace();
-			}
+			
+			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
+			if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
+				imageHeight--;
+			else
+				imageHeight++;
+			
+			Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
+			Image lineOriginal = new Image(canvas.getDisplay(), width, imageHeight);
+			GC gcFinal = new GC(lineFinal);
+			GC gcOriginal = new GC(lineOriginal);
+			
+			SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
+					scaleX, scaleY );
+			stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
+			
+			gcFinal.dispose();
+			gcOriginal.dispose();
+			
+			stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
+			
+			monitor.announceProgress();
+			
+			nextTrace = stData.getNextTrace(changedBounds);
 		}
 	}
 }

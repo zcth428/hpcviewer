@@ -5,6 +5,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
 
@@ -80,13 +81,18 @@ public abstract class BaseViewPaint {
 		// Create multiple threads to paint the view
 		// -------------------------------------------------------------------
 		lineNum = 0;
-		TimelineThread[] threads = new TimelineThread[num_threads];
+		Thread[] threads = new Thread[num_threads];
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			threads[threadNum] = new TimelineThread(this.window, data, changedBounds, canvas, attributes.numPixelsH, 
-					xscale, yscale, monitor);
+			if (canvas instanceof SpaceTimeDetailCanvas) {
+				threads[threadNum] = new TimelineThread(this.window, data, changedBounds, canvas, attributes.numPixelsH, 
+						xscale, yscale, monitor);
+			} else {
+				threads[threadNum] = new TimelineDepthThread(data, canvas, 
+						xscale, yscale, attributes.numPixelsH);
+			}
 			threads[threadNum].start();
 		}
 		
@@ -97,7 +103,7 @@ public abstract class BaseViewPaint {
 			// especially when we resize the window. this approach should reduce
 			// deadlock by polling each thread
 			while (numThreads > 0) {
-				for (TimelineThread thread : threads) {
+				for (Thread thread : threads) {
 					if (thread.isAlive()) {
 						monitor.reportProgress();
 					} else {
@@ -110,12 +116,6 @@ public abstract class BaseViewPaint {
 					Thread.sleep(30);
 				}
 			}
-/*			for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-				while (threads[threadNum].isAlive()) {
-					Thread.sleep(30);
-					monitor.reportProgress();
-				}
-			}*/
 		}
 		catch (InterruptedException e) {
 			e.printStackTrace();

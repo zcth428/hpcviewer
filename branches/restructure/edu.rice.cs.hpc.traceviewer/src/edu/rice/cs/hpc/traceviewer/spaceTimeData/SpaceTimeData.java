@@ -420,36 +420,6 @@ public class SpaceTimeData extends TraceEvents
 	
 
 	
-	/**********************************************************************
-	 * Paints one "line" (the timeline for one processor) to its own image,
-	 * which is later copied to a master image with the rest of the lines.
-	 ********************************************************************/
-	public void paintDepthLine(SpaceTimeSamplePainter spp, int depth, int height)
-	{
-		//System.out.println("I'm painting process "+process+" at depth "+depth);
-		ProcessTimeline ptl = depthTrace;
-
-		if (ptl.size() < 2)
-			return;
-		
-		double pixelLength = (attributes.endTime - attributes.begTime)/(double)attributes.numPixelsH;
-		BasePaintLine depthPaint = new BasePaintLine(colorTable, ptl, spp, attributes.begTime, depth, height, pixelLength)
-		{
-			//@Override
-			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
-			{
-				if (currDepth >= depth)
-				{
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
-				}
-			}
-		};
-		
-		// do the paint
-		depthPaint.paint();
-	}
-
-	
 	/*************************************************************************
 	 * paint a space time detail line 
 	 *  

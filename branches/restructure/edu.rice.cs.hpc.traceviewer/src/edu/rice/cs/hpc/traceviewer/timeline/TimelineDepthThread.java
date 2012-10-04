@@ -4,6 +4,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
+import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
@@ -72,11 +73,40 @@ public class TimelineDepthThread extends Thread {
 				}
 			};
 			
-			stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
+			paintDepthLine(nextTrace, spp, nextTrace.line(), imageHeight);
 			gc.dispose();
 			
 			stData.addNextImage(line, nextTrace.line());
 			nextTrace = stData.getNextDepthTrace();
 		}
 	}
+	
+	
+	/**********************************************************************
+	 * Paints one "line" (the timeline for one processor) to its own image,
+	 * which is later copied to a master image with the rest of the lines.
+	 ********************************************************************/
+	public void paintDepthLine(ProcessTimeline ptl, SpaceTimeSamplePainter spp, int depth, int height)
+	{
+		if (ptl.size() < 2)
+			return;
+		
+		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
+		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.attributes.begTime, depth, height, pixelLength)
+		{
+			//@Override
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
+			{
+				if (currDepth >= depth)
+				{
+					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
+				}
+			}
+		};
+		
+		// do the paint
+		depthPaint.paint();
+	}
+
+
 }

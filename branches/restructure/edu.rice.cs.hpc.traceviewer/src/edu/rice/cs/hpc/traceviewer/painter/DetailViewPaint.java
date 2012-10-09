@@ -81,6 +81,7 @@ public class DetailViewPaint extends BaseViewPaint {
 		
 		assert(proc >=  0);
 		
+		// TODO hack to force proc within the range
 		int p = Math.min(proc, traces.length-1);
 		
 		return traces[p];

@@ -14,9 +14,6 @@ import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
-import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
-import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
-import edu.rice.cs.hpc.traceviewer.painter.DepthViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.DetailViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
@@ -129,6 +126,16 @@ public class SpaceTimeData extends TraceEvents
 			// if the current process is beyond the range, make it in the middle
 			currentPosition.process = (attributes.endProcess >> 1);
 		}
+	}
+	
+	public IStatusLineManager getStatusLineManager()
+	{
+		return statusMgr;
+	}
+	
+	public IWorkbenchWindow getWindow()
+	{
+		return window;
 	}
 	
 	public HashMap<Integer, CallPath> getScopeMap()
@@ -318,31 +325,6 @@ public class SpaceTimeData extends TraceEvents
 		detailPaint = new DetailViewPaint(masterGC, origGC, this, 
 					attributes, changedBounds, this.statusMgr, window); 
 		detailPaint.paint(canvas);
-	}
-	
-	
-	/*************************************************************************
-	 * Paint the depth view
-	 * 
-	 * @param masterGC
-	 * @param canvas
-	 * @param _begTime
-	 * @param _endTime
-	 * @param _numPixelsH
-	 * @param _numPixelsV
-	 *************************************************************************/
-	public void paintDepthViewport(final GC masterGC, DepthTimeCanvas canvas, 
-			long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
-	{
-		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
-
-		attributes.numPixelsDepthV = _numPixelsV;
-		attributes.setTime(_begTime, _endTime);
-		
-		oldAttributes.copy(attributes);
-		
-		BaseViewPaint depthPaint = new DepthViewPaint(masterGC, this, attributes, changedBounds, this.statusMgr, window);		
-		depthPaint.paint(canvas);
 	}
 	
 

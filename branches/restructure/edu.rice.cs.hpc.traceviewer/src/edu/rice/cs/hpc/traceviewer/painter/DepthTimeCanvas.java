@@ -353,7 +353,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		
 		try
 		{
-			stData.paintDepthViewport(bufferGC, this, 
+			paintDepthViewport(bufferGC,  
 					stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight);
 		}
 		catch(Exception e)
@@ -366,6 +366,32 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		redraw();
 	}
 
+	
+	/*************************************************************************
+	 * Paint the depth view
+	 * 
+	 * @param masterGC
+	 * @param canvas
+	 * @param _begTime
+	 * @param _endTime
+	 * @param _numPixelsH
+	 * @param _numPixelsV
+	 *************************************************************************/
+	public void paintDepthViewport(final GC masterGC, 
+			long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	{
+		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
+		
+		ImageTraceAttributes attributes = stData.attributes;
+		attributes.numPixelsDepthV = _numPixelsV;
+		attributes.setTime(_begTime, _endTime);
+		
+		//oldAttributes.copy(attributes);
+		
+		BaseViewPaint depthPaint = new DepthViewPaint(masterGC, stData, attributes, changedBounds);		
+		depthPaint.paint(this);
+	}
+	
 
 	/******************************************************************
 	 *		

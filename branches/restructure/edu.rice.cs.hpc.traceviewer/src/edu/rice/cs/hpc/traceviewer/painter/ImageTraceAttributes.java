@@ -13,8 +13,6 @@ public class ImageTraceAttributes {
 	public int begProcess, endProcess;
 	public int numPixelsH, numPixelsV;
 	public int numPixelsDepthV;
-	
-	public int lineNum;
 
 	/*************************************************************************
 	 * Asserts the process bounds to make sure they're within the actual

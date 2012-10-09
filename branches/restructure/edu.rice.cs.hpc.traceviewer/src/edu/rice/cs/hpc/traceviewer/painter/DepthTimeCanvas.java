@@ -32,8 +32,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	
 	int maxDepth;
 	
-	SpaceTimeData stData;
-	
 	Image imageBuffer;
 	
 	/**The left pixel's x location*/

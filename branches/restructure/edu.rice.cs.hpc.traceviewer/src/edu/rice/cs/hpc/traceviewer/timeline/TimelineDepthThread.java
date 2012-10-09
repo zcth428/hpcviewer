@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
@@ -29,7 +31,10 @@ public class TimelineDepthThread extends Thread {
 	/**The width that the images that this thread draws should be.*/
 	private int width;
 	
-	
+	final private ProcessTimeline depthTrace;
+	final private Image[] compositeFinalLines;
+	final private AtomicInteger lineNum;
+
 	/*****
 	 * Thread initialization
 	 *  
@@ -39,20 +44,23 @@ public class TimelineDepthThread extends Thread {
 	 * @param scaleY : The scale in the y-direction of max depth
 	 * @param width  : the width
 	 */
-	public TimelineDepthThread(SpaceTimeData data, Canvas canvas, 
-			double scaleX, double scaleY, int width)
+	public TimelineDepthThread(SpaceTimeData data, Canvas canvas, Image[] compositeFinalLines,
+			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width, AtomicInteger lineNum)
 	{
 		this.stData = data;
 		this.canvas = canvas;
 		this.scaleX = scaleX;
 		this.scaleY = scaleY;
 		this.width  = width; 
+		this.depthTrace = depthTrace;
+		this.compositeFinalLines = compositeFinalLines;
+		this.lineNum = lineNum;
 	}
 
 	
 	public void run() 
 	{
-		ProcessTimeline nextTrace = stData.getNextDepthTrace();
+		ProcessTimeline nextTrace = getNextDepthTrace();
 		while (nextTrace != null)
 		{
 			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
@@ -76,8 +84,8 @@ public class TimelineDepthThread extends Thread {
 			paintDepthLine(nextTrace, spp, nextTrace.line(), imageHeight);
 			gc.dispose();
 			
-			stData.addNextImage(line, nextTrace.line());
-			nextTrace = stData.getNextDepthTrace();
+			addNextImage(line, nextTrace.line());
+			nextTrace = getNextDepthTrace();
 		}
 	}
 	
@@ -108,5 +116,39 @@ public class TimelineDepthThread extends Thread {
 		depthPaint.paint();
 	}
 
+	/***********************************************************************
+	 * Gets the next available trace to be filled/painted from the DepthTimeView
+	 * @return The next trace.
+	 **********************************************************************/
+	public ProcessTimeline getNextDepthTrace()
+	{
+		ProcessTimeline ptl = null;
+		int line = lineNum.getAndIncrement();
+		
+		if (line < Math.min(stData.attributes.numPixelsDepthV, stData.getMaxDepth()))
+		{
+			if (line==0)
+			{
+				ptl = depthTrace;
+			}else
+			{
+				ptl = new ProcessTimeline(line, stData.getScopeMap(),
+						stData.getBaseData(), stData.getPosition().process, 
+						stData.attributes.numPixelsH, stData.attributes.endTime-stData.attributes.begTime, 
+						stData.getMinBegTime()+stData.attributes.begTime);
+				ptl.copyData(depthTrace);
+			}
+			
+			//System.out.println("Depth line: " + line);
+		}
+		return ptl;
+	}
+	
+	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
+	public synchronized void addNextImage(Image line, int index)
+	{
+		compositeFinalLines[index] = line;
+		//System.out.println("set image line " + index);
+	}
 
 }

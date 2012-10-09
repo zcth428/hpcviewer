@@ -1,11 +1,14 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
+import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -45,12 +48,21 @@ public class TimelineThread extends Thread
 	
 	final private IWorkbenchWindow window;
 	
+	final private ProcessTimeline traces[];
+	final private Image[] compositeFinalLines;
+	
+	/**The composite images created by painting all of the samples in a given line to it.*/
+	final private Image[] compositeOrigLines;
+	
+	final private AtomicInteger lineNum;
+
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, 
-			boolean _changedBounds, Canvas _canvas, int _width, 
+	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, ProcessTimeline []traces,
+			AtomicInteger lineNum, boolean _changedBounds, Canvas _canvas, 
+			Image[] compositeOrigLines, Image[] compositeFinalLines, int _width, 
 			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
@@ -62,7 +74,11 @@ public class TimelineThread extends Thread
 		scaleY = _scaleY;
 		
 		monitor = _monitor;
+		this.lineNum = lineNum;
 		this.window = window;
+		this.traces = traces;
+		this.compositeOrigLines = compositeOrigLines;
+		this.compositeFinalLines = compositeFinalLines;
 	}
 	
 	/***************************************************************
@@ -73,13 +89,13 @@ public class TimelineThread extends Thread
 	 ***************************************************************/
 	public void run()
 	{
-		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
+		ProcessTimeline nextTrace = getNextTrace(changedBounds);
 		while(nextTrace != null)
 		{
 			if(changedBounds)
 			{
 				nextTrace.readInData(stData.getHeight());
-				stData.addNextTrace(nextTrace);
+				addNextTrace(nextTrace);
 			}
 			
 			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
@@ -95,16 +111,109 @@ public class TimelineThread extends Thread
 			
 			SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
 					scaleX, scaleY );
-			stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
+			paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
 			
 			gcFinal.dispose();
 			gcOriginal.dispose();
 			
-			stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
+			addNextImage(lineOriginal, lineFinal, nextTrace.line());
 			
 			monitor.announceProgress();
 			
-			nextTrace = stData.getNextTrace(changedBounds);
+			nextTrace = getNextTrace(changedBounds);
 		}
 	}
+	
+	/*************************************************************************
+	 * paint a space time detail line 
+	 *  
+	 * @param spp
+	 * @param process
+	 * @param height
+	 * @param changedBounds
+	 *************************************************************************/
+	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, boolean changedBounds)
+	{
+		ProcessTimeline ptl = traces[process];
+		if (ptl == null || ptl.size()<2 )
+			return;
+		
+		if (changedBounds)
+			ptl.shiftTimeBy(stData.getMinBegTime());
+		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
+		
+		// do the paint
+		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
+				stData.attributes.begTime, stData.getDepth(), height, pixelLength)
+		{
+			//@Override
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
+			{
+				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
+				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
+				
+				final boolean isOverDepth = (currDepth < depth);
+				// write texts (depth and number of samples) if needed
+				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, stData.attributes.numPixelsH), 
+						currDepth, functionName, isOverDepth, sampleCount);
+			}
+		};
+		detailPaint.paint();
+	}
+
+	
+	/**Returns the index of the file to which the line-th line corresponds.*/
+	public int lineToPaint(int line)
+	{
+		int numTimelinesToPaint = stData.attributes.endProcess - stData.attributes.begProcess;
+		if(numTimelinesToPaint > stData.attributes.numPixelsV)
+			return stData.attributes.begProcess + (line * numTimelinesToPaint)/(stData.attributes.numPixelsV);
+		else
+			return stData.attributes.begProcess + line;
+	}
+
+	/***********************************************************************
+	 * Gets the next available trace to be filled/painted
+	 * @param changedBounds Whether or not the thread should get the data.
+	 * @return The next trace.
+	 **********************************************************************/
+	public ProcessTimeline getNextTrace(boolean changedBounds)
+	{
+		ProcessTimeline ptr = null;
+		int line = lineNum.getAndIncrement();
+		
+		if(line < Math.min(stData.attributes.numPixelsV, 
+				stData.attributes.endProcess-stData.attributes.begProcess))
+		{
+			if(changedBounds) {
+				ptr = new ProcessTimeline(line, stData.getScopeMap(), 
+						stData.getBaseData(), 
+						lineToPaint(line), stData.attributes.numPixelsH, 
+						stData.attributes.endTime-stData.attributes.begTime, 
+						stData.getMinBegTime() + stData.attributes.begTime);
+			} else {
+				if (traces.length >= line)
+					ptr = traces[line];
+				else
+					System.err.println("STD error: trace paints " + traces.length + " < line number " + line);
+			}
+		}
+		return ptr;
+	}
+	
+	
+	/**Adds a filled ProcessTimeline to traces - used by TimelineThreads.*/
+	synchronized public void addNextTrace(ProcessTimeline nextPtl)
+	{
+		traces[nextPtl.line()] = nextPtl;
+	}
+
+	
+	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
+	synchronized public void addNextImage(Image imgOriginal, Image imgFinal, int index)
+	{
+		compositeOrigLines[index] = imgOriginal;
+		compositeFinalLines[index] = imgFinal;
+	}
+
 }

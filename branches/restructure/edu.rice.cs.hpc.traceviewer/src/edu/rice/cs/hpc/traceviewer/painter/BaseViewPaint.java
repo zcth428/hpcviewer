@@ -5,8 +5,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
-import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
-import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
 
 /******************************************************
@@ -20,14 +18,13 @@ import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
  *******************************************************/
 public abstract class BaseViewPaint {
 	
-	private ImageTraceAttributes attributes;
-	private SpaceTimeData data;
-	private boolean changedBounds;
+	protected ImageTraceAttributes attributes;
+	protected SpaceTimeData data;
+	protected boolean changedBounds;
 	
-	final private TimelineProgressMonitor monitor;
+	protected TimelineProgressMonitor monitor;
 	
-	protected int lineNum;
-	private final IWorkbenchWindow window;
+	protected final IWorkbenchWindow window;
 	
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -80,19 +77,13 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		// Create multiple threads to paint the view
 		// -------------------------------------------------------------------
-		lineNum = 0;
+
 		Thread[] threads = new Thread[num_threads];
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			if (canvas instanceof SpaceTimeDetailCanvas) {
-				threads[threadNum] = new TimelineThread(this.window, data, changedBounds, canvas, attributes.numPixelsH, 
-						xscale, yscale, monitor);
-			} else {
-				threads[threadNum] = new TimelineDepthThread(data, canvas, 
-						xscale, yscale, attributes.numPixelsH);
-			}
+			threads[threadNum] = getTimelineThread(canvas, xscale, yscale);
 			threads[threadNum].start();
 		}
 		
@@ -127,6 +118,7 @@ public abstract class BaseViewPaint {
 		endPainting(linesToPaint, xscale, yscale);
 		
 		monitor.endProgress();
+		changedBounds = false;
 	}
 
 
@@ -159,4 +151,5 @@ public abstract class BaseViewPaint {
 	 */
 	abstract protected int getNumberOfLines();
 	
+	abstract protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale);
 }

@@ -321,7 +321,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			stData.attributes.begProcess = (int)stData.attributes.begProcess;
 			stData.attributes.endProcess = stData.attributes.begProcess+MIN_PROC_DISP;
 		}
-				
+
+		Position position = adjustPosition(stData.attributes.begTime, stData.attributes.begProcess,
+				stData.attributes.endTime, stData.attributes.endProcess );
+
+		stData.setPosition(position);
+		
 		this.rebuffer(true);
 		
 		this.updateButtonStates();
@@ -329,7 +334,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		//----------------------------------------------------------------------------
 		// we have new region. Check if the cross hair is still within the new region
 		//----------------------------------------------------------------------------
-		this.adjustCrossHair(_topLeftTime, _topLeftProcess, _bottomRightTime, _bottomRightProcess);
+		
+	    /******
+	     * If necessary adjust the position of cross hair with the view region
+	     * If the cross hair is outside the region, we force to position it within the region
+	     * 	in order to avoid exposed bugs and confusion that the depth and the call path are not
+	     * 	consistent with the trace view
+	     ***/ 
+		position = this.getAdjustedProcess(position);
+    	
+    	// tell other views that we have new position 
+    	this.stData.updatePosition(position);
 
 	}
 	
@@ -696,7 +711,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         					+ ((long)stData.getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-        final IBaseData traceData = this.stData.getTraceData();
+        final IBaseData traceData = stData.getBaseData();
         if (traceData == null)
         	// we don't want to throw an exception here, so just do nothing
         	return;
@@ -767,18 +782,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
     
-    /******
-     * If necessary adjust the position of cross hair with the view region
-     * If the cross hair is outside the region, we force to position it within the region
-     * 	in order to avoid exposed bugs and confusion that the depth and the call path are not
-     * 	consistent with the trace view
-     * 
-     * @param t1
-     * @param p1
-     * @param t2
-     * @param p2
-     */
-    private void adjustCrossHair(long t1, int p1, long t2, int p2) {
+	/**************************************************************************
+	 * adjust the cursor position to be always in the display zone
+	 * 
+	 * @param t1
+	 * @param p1
+	 * @param t2
+	 * @param p2
+	 * @return
+	 **************************************************************************/
+	private Position adjustPosition(long t1, int p1, long t2, int p2) 
+	{
     	
     	Position current = this.stData.getPosition();
     	int process = (current.process);
@@ -795,12 +809,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     	if (time < t1 || time > t2) {
     		time = (t1+t2)>>1;
     	}
-    	Position newPosition = new Position(time,process);
-    	newPosition = this.getAdjustedProcess(newPosition);
-    	
-    	// tell other views that we have new position 
-    	this.stData.updatePosition(newPosition);
-    }
+    	return new Position(time,process);
+	}
+	
 
     /****
      * Adjust the position of cross hair depending of the availability of traces
@@ -983,23 +994,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
 	}
 
-	private void setCSSample()
-    {
-    	if(mouseDown == null)
-    		return;
+	private Position updatePosition()
+	{
     	int selectedProcess;
-    	//int procIndex;
 
     	//need to do different things if there are more traces to paint than pixels
     	if(viewHeight > getNumProcessesDisplayed())
     	{
     		selectedProcess = (int)(stData.attributes.begProcess+mouseDown.y/getScaleY());
-    		//procIndex = (int)(mouseDown.y/getScaleY());
     	}
     	else
     	{
     		selectedProcess = (int)(stData.attributes.begProcess+(mouseDown.y*(getNumProcessesDisplayed()))/viewHeight);
-    		//procIndex = mouseDown.y;
     	}
     	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
     	if (closeTime > stData.attributes.endTime) {
@@ -1009,8 +1015,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
     		
     	}
     	
-    	Position position = new Position(closeTime, selectedProcess);
-    	//position.processInCS = procIndex;
+    	return new Position(closeTime, selectedProcess);
+	}
+	
+	
+	private void setCSSample()
+    {
+    	if(mouseDown == null)
+    		return;
+    	
+    	Position position = updatePosition();
     	
     	this.stData.updatePosition(position);
     }

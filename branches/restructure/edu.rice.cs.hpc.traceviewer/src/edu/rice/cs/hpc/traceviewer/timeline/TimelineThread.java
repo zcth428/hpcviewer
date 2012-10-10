@@ -11,6 +11,7 @@ import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /***********************************************************
@@ -48,7 +49,7 @@ public class TimelineThread extends Thread
 	
 	final private IWorkbenchWindow window;
 	
-	final private ProcessTimeline traces[];
+	final private ProcessTimelineService traceService;
 	final private Image[] compositeFinalLines;
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/
@@ -60,7 +61,7 @@ public class TimelineThread extends Thread
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, ProcessTimeline []traces,
+	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, ProcessTimelineService traceService,
 			AtomicInteger lineNum, boolean _changedBounds, Canvas _canvas, 
 			Image[] compositeOrigLines, Image[] compositeFinalLines, int _width, 
 			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
@@ -76,7 +77,7 @@ public class TimelineThread extends Thread
 		monitor = _monitor;
 		this.lineNum = lineNum;
 		this.window = window;
-		this.traces = traces;
+		this.traceService = traceService;
 		this.compositeOrigLines = compositeOrigLines;
 		this.compositeFinalLines = compositeFinalLines;
 	}
@@ -134,7 +135,7 @@ public class TimelineThread extends Thread
 	 *************************************************************************/
 	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, boolean changedBounds)
 	{
-		ProcessTimeline ptl = traces[process];
+		ProcessTimeline ptl = traceService.getProcessTimeline(process);
 		if (ptl == null || ptl.size()<2 )
 			return;
 		
@@ -192,10 +193,11 @@ public class TimelineThread extends Thread
 						stData.attributes.endTime-stData.attributes.begTime, 
 						stData.getMinBegTime() + stData.attributes.begTime);
 			} else {
-				if (traces.length >= line)
-					ptr = traces[line];
+				int num_traces = traceService.getNumProcessTimeline();
+				if (num_traces >= line)
+					ptr = traceService.getProcessTimeline(line);
 				else
-					System.err.println("STD error: trace paints " + traces.length + " < line number " + line);
+					System.err.println("STD error: trace paints " + num_traces + " < line number " + line);
 			}
 		}
 		return ptr;
@@ -205,7 +207,7 @@ public class TimelineThread extends Thread
 	/**Adds a filled ProcessTimeline to traces - used by TimelineThreads.*/
 	synchronized public void addNextTrace(ProcessTimeline nextPtl)
 	{
-		traces[nextPtl.line()] = nextPtl;
+		traceService.setProcessTimeline(nextPtl.line(), nextPtl);
 	}
 
 	

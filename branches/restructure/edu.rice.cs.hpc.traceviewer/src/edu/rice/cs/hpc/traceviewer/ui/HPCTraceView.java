@@ -179,7 +179,7 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		 * Detail View Canvas
 		 ************************************************************************/
 		
-		detailCanvas = new SpaceTimeDetailCanvas(parent); 
+		detailCanvas = new SpaceTimeDetailCanvas(getSite().getWorkbenchWindow(), parent); 
 		
 		detailCanvas.setLabels(labelGroup);
 		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);

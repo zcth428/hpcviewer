@@ -17,8 +17,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
@@ -32,7 +34,9 @@ public class DataViewer extends TableViewer
 	private SpaceTimeData stData;
 	
 	private final TableViewerColumn viewerColumn;
-		
+	
+	private final ProcessTimelineService ptlService;
+
 	public DataViewer(Composite parent, final HPCDataView dataview)
 	{
 		super(parent, SWT.SINGLE | SWT.NO_SCROLL);
@@ -110,6 +114,11 @@ public class DataViewer extends TableViewer
 		viewerColumn.setLabelProvider(myLableProvider);
 		viewerColumn.getColumn().setWidth(100);
 		ColumnViewerToolTipSupport.enableFor(dataviewer, ToolTip.NO_RECREATE);
+		
+		final ISourceProviderService service = (ISourceProviderService)dataview.getSite().
+				getWorkbenchWindow().getService(ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) service.
+				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER);
 	}
 	
 	
@@ -134,12 +143,9 @@ public class DataViewer extends TableViewer
 		if (position.time == -20)
 			return;
 		
-		//-------------------------------------------------------------------------------------------
-		// dirty hack: cf. edu.rice.cs.hpc.traceviewer.ui.CallStackViewer.setSample()
-		//-------------------------------------------------------------------------------------------
-		int adjustedPosition = position.process; 
+		int proc = stData.getProcessRelativePosition(ptlService.getNumProcessTimeline());
+		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 
-		ProcessTimeline ptl = stData.getProcess(adjustedPosition);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time);
 			
@@ -154,8 +160,6 @@ public class DataViewer extends TableViewer
 			viewerColumn.getColumn().pack();
 		}
 		else {
-			System.err.println("Internal error: unable to get process " + adjustedPosition+"\tProcess range: " +
-					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
 			Debugger.printTrace("CSV traces: ");
 		}
 	}

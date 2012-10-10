@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 import java.util.HashMap;
 import java.io.File;
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
@@ -14,11 +13,8 @@ import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
-import edu.rice.cs.hpc.traceviewer.painter.DetailViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
-import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /*************************************************************************
@@ -41,8 +37,6 @@ public class SpaceTimeData extends TraceEvents
 	private TraceAttribute traceAttributes;
 	
 	final public ImageTraceAttributes attributes;
-	
-	final private ImageTraceAttributes oldAttributes;
 	
 	/** Stores the current depth and data object that are being displayed.*/
 	private int currentDepth;
@@ -70,7 +64,6 @@ public class SpaceTimeData extends TraceEvents
 		statusMgr = _statusMgr;
 
 		attributes = new ImageTraceAttributes();
-		oldAttributes = new ImageTraceAttributes();
 		
 		statusMgr.getProgressMonitor();
 		
@@ -279,72 +272,6 @@ public class SpaceTimeData extends TraceEvents
 		return maxDepth;
 	}
 
-
-	private DetailViewPaint detailPaint;
-	/** Contains all of the ProcessTimelines. It's a HashMap because,
-	 * due to the multithreading, the traces may not get added in order.
-	 * So, each ProcessTimeline now knows which line it is, and the
-	 * HashMap is a map between that line and the ProcessTimeline.*/
-	private ProcessTimeline []traces;
-
-	public ProcessTimeline [] getProcessTimeline()
-	{
-		return traces;
-	}
-	/*************************************************************************
-	 *	Paints the specified time units and processes at the specified depth
-	 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
-	 *	the sample's max depth before becoming overDepth on samples that have gone over depth.
-	 * 
-	 *	@param masterGC   		 The GC that will contain the combination of all the 1-line GCs.
-	 * 	@param origGC			 The original GC without texts
-	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
-	 *	@param begProcess        The first process that will be painted.
-	 *	@param endProcess 		 The last process that will be painted.
-	 *	@param begTime           The first time unit that will be displayed.
-	 *	@param endTime 			 The last time unit that will be displayed.
-	 *  @param numPixelsH		 The number of horizontal pixels to be painted.
-	 *  @param numPixelsV		 The number of vertical pixels to be painted.
-	 *************************************************************************/
-	public void paintDetailViewport(final GC masterGC, final GC origGC, SpaceTimeDetailCanvas canvas, 
-			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
-			boolean refreshData)
-	{	
-		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
-		
-		
-		attributes.numPixelsH = _numPixelsH;
-		attributes.numPixelsV = _numPixelsV;
-		
-		oldAttributes.copy(attributes);
-		if (changedBounds) {
-			final int num_traces = Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
-			traces = new ProcessTimeline[ num_traces ];
-		}
-
-		detailPaint = new DetailViewPaint(masterGC, origGC, this, 
-					attributes, changedBounds, this.statusMgr, window); 
-		detailPaint.paint(canvas);
-	}
-	
-
-
-	/*************************************************************************
-	 *	Returns the process that has been specified.
-	 ************************************************************************/
-	public ProcessTimeline getProcess(int process)
-	{
-		int relativeProcess = Math.min(process - attributes.begProcess, attributes.endProcess-1);
-		
-		return detailPaint.getProcessTimeline(relativeProcess);
-	}
-
-	public int getNumberOfDisplayedProcesses()
-	{
-		return detailPaint.getNumProcess();
-	}
-	 
-	
 	
 	/****
 	 * dispose allocated native resources (image, colors, ...)
@@ -375,5 +302,11 @@ public class SpaceTimeData extends TraceEvents
 	public Position getPosition()
 	{
 		return this.currentPosition;
+	}
+	
+	public int getProcessRelativePosition(int numDisplayedProcess)
+	{
+    	int estimatedProcess = (int) (currentPosition.process - attributes.begProcess);			
+    	return (int) ((float)estimatedProcess* ((float)numDisplayedProcess/(attributes.endProcess-attributes.begProcess)));
 	}
 }

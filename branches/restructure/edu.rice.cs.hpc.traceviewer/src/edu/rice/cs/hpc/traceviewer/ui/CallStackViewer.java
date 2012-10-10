@@ -17,8 +17,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
@@ -33,6 +35,8 @@ public class CallStackViewer extends TableViewer
 	private final TableViewerColumn viewerColumn;
 	
 	private final static String EMPTY_FUNCTION = "--------------";
+	
+	private final ProcessTimelineService ptlService;
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, final HPCCallStackView csview)
@@ -115,6 +119,11 @@ public class CallStackViewer extends TableViewer
 		viewerColumn.setLabelProvider(myLableProvider);
 		viewerColumn.getColumn().setWidth(100);
 		ColumnViewerToolTipSupport.enableFor(csviewer, ToolTip.NO_RECREATE);
+		
+		final ISourceProviderService service = (ISourceProviderService)csview.getSite().
+				getWorkbenchWindow().getService(ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) service.
+				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER);
 	}
 	
 	
@@ -155,8 +164,8 @@ public class CallStackViewer extends TableViewer
 		// however, if the selected process is less than the start of displayed process, 
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
-		ProcessTimeline ptl;
-		ptl = stData.getProcess(position.process);
+		int proc = stData.getProcessRelativePosition(ptlService.getNumProcessTimeline());
+		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time);
 
@@ -184,8 +193,6 @@ public class CallStackViewer extends TableViewer
 		}
 		else
 		{
-			System.err.println("Internal error: unable to get process " + position.process+"\tProcess range: " +
-					stData.getBegProcess() + "-" + stData.getEndProcess() + " \tNum Proc: " + stData.getNumberOfDisplayedProcesses());
 			Debugger.printTrace("CSV traces: ");
 		}
 	}

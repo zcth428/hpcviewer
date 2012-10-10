@@ -21,11 +21,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
@@ -117,12 +121,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
         
     /**The min number of process units you can zoom in.*/
     private final static int MIN_PROC_DISP = 1;
-    
+	
+	final private ImageTraceAttributes oldAttributes;
+	
+	final private ProcessTimelineService ptlService;
+
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
-	public SpaceTimeDetailCanvas(Composite _composite)
+	public SpaceTimeDetailCanvas(IWorkbenchWindow window, Composite _composite)
 	{
 		super(_composite );
-		
+		oldAttributes = new ImageTraceAttributes();
+
 		//homeScreen = true;
 		undoStack = new Stack<Frame>();
 		redoStack = new Stack<Frame>();
@@ -136,7 +145,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		if (this.stData != null) {
 			this.addCanvasListener();
 		}
-		
+		ISourceProviderService service = (ISourceProviderService)window.
+				getService(ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) service.
+				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER);
 	}
 
 
@@ -821,7 +833,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
      */
     private Position getAdjustedProcess(Position position) {
     	
-    	double numDisplayedProcess = stData.getNumberOfDisplayedProcesses();
+    	double numDisplayedProcess = getNumProcessesDisplayed();
+    	
     	int estimatedProcess = (int) (position.process - stData.attributes.begProcess);			
     	double scaleProcess = numDisplayedProcess/(double)this.getNumProcessesDisplayed();
     	
@@ -1154,7 +1167,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		GC origGC = new GC(imageOrig);
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,viewWidth,viewHeight);
-		stData.paintDetailViewport(bufferGC, origGC, this, stData.attributes.begProcess, stData.attributes.endProcess, 
+		paintDetailViewport(bufferGC, origGC, stData.attributes.begProcess, stData.attributes.endProcess, 
 				stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight, refreshData);
 		
 		bufferGC.dispose();
@@ -1201,6 +1214,49 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 		miniCanvas.setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
 	}
+	
+	private DetailViewPaint detailPaint;
+
+	/*************************************************************************
+	 *	Paints the specified time units and processes at the specified depth
+	 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
+	 *	the sample's max depth before becoming overDepth on samples that have gone over depth.
+	 * 
+	 *	@param masterGC   		 The GC that will contain the combination of all the 1-line GCs.
+	 * 	@param origGC			 The original GC without texts
+	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
+	 *	@param begProcess        The first process that will be painted.
+	 *	@param endProcess 		 The last process that will be painted.
+	 *	@param begTime           The first time unit that will be displayed.
+	 *	@param endTime 			 The last time unit that will be displayed.
+	 *  @param numPixelsH		 The number of horizontal pixels to be painted.
+	 *  @param numPixelsV		 The number of vertical pixels to be painted.
+	 *************************************************************************/
+	public void paintDetailViewport(final GC masterGC, final GC origGC, 
+			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
+			boolean refreshData)
+	{	
+		ImageTraceAttributes attributes = stData.attributes;
+		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
+		
+		
+		attributes.numPixelsH = _numPixelsH;
+		attributes.numPixelsV = _numPixelsV;
+		
+		oldAttributes.copy(attributes);
+		if (changedBounds) {
+			final int num_traces = Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
+			ProcessTimeline []traces = new ProcessTimeline[ num_traces ];
+			ptlService.setProcessTimeline(traces);
+		}
+
+		detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
+					attributes, changedBounds, stData.getStatusLineManager(), stData.getWindow()); 
+		
+		detailPaint.paint(this);
+	}
+	
+
 	
 	/*
 	 * (non-Javadoc)

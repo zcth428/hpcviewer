@@ -4,6 +4,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.eclipse.core.commands.operations.IOperationHistoryListener;
+import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.commands.operations.OperationHistoryEvent;
+import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
@@ -17,14 +21,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
-public class SummaryTimeCanvas extends Canvas implements PaintListener
+public class SummaryTimeCanvas extends Canvas implements PaintListener, IOperationHistoryListener
 {
 	
-	/**image data that describes current image in detail canvas*/
 	private ImageData detailData;
-	
 	private Image imageBuffer;
 	
 	public SummaryTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas)
@@ -36,6 +39,7 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		this.getHorizontalBar().setVisible(false);
 		
 		this.addCanvasListener();
+		OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 	}
 	
 	public void addCanvasListener()
@@ -168,7 +172,7 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		redraw();
 	}
 	
-	public void refresh(ImageData _detailData)
+	private void refresh(ImageData _detailData)
 	{
 		//if we are already printing out the correct thing, then just redraw - else, perform necessary calculations
 		if (_detailData.equals(detailData))
@@ -192,6 +196,26 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener
 		public void rebuffering()
 		{
 			rebuffer();
+		}
+	}
+
+	@Override
+	public void historyNotification(final OperationHistoryEvent event) {
+		if (event.getOperation().hasContext(BufferRefreshOperation.context)) {
+			if (event.getEventType() == OperationHistoryEvent.DONE) {
+				final IUndoableOperation operation = event.getOperation();
+				
+				// we are not interested with other operation
+				if (operation instanceof BufferRefreshOperation) {
+					getDisplay().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							BufferRefreshOperation operation = (BufferRefreshOperation) event.getOperation();
+							refresh(operation.getImageData());
+						}
+					});
+				}
+			}
 		}
 	}
 }

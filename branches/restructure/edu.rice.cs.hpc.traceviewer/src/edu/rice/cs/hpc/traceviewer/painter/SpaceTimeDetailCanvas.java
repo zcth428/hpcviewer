@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
@@ -78,8 +79,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	private SpaceTimeMiniCanvas miniCanvas;
 	
-	/** The SummaryTimeCanvas that is changed by the detailCanva.*/
-	private SummaryTimeCanvas summaryCanvas = null;
 	
 	/** Relates to the condition that the mouse is in.*/
 	private MouseState mouseState;
@@ -1122,11 +1121,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		miniCanvas = _miniCanvas;
 	}
 	
-	public void setSummaryCanvas(SummaryTimeCanvas _summaryCanvas)
-	{
-		summaryCanvas = _summaryCanvas;
-	}
-
 	
 	/*********************************************************************************
 	 * Refresh the content of the canvas with new input data or boundary or parameters
@@ -1168,8 +1162,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		
 		super.redraw();
 
-		if (summaryCanvas != null)	
-			summaryCanvas.refresh(imageOrig.getImageData());
+		BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageOrig.getImageData());
+		try {
+			TraceOperation.getOperationHistory().execute(brOp, null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
 		
 		imageOrig.dispose();
 	}

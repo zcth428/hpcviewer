@@ -67,9 +67,7 @@ public class HPCSummaryView extends ViewPart implements ITracePosition
 		summaryCanvas = new SummaryTimeCanvas(master, traceview.detailCanvas);
 		summaryCanvas.setLayout(new GridLayout());
 		summaryCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		summaryCanvas.setVisible(false);
-		
-		traceview.detailCanvas.setSummaryCanvas(summaryCanvas);
+		summaryCanvas.setVisible(false);		
 	}
 	
 	private void setListener() {

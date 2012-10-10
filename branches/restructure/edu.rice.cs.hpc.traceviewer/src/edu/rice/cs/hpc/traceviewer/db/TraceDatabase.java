@@ -125,7 +125,7 @@ public class TraceDatabase
 				database.dataTraces.dispose();
 			
 			try {
-				database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+				database.dataTraces = new SpaceTimeData(location.fileXML, location.fileTrace, statusMgr);
 			} 
 			catch (InvalExperimentException e)
 			{

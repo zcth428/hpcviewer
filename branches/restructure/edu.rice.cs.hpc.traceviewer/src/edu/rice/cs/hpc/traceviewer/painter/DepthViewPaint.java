@@ -4,6 +4,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IWorkbenchWindow;
+
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
@@ -17,10 +19,10 @@ public class DepthViewPaint extends BaseViewPaint {
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	private Image[] compositeFinalLines;
 	
-	public DepthViewPaint(final GC masterGC, SpaceTimeData _data,
+	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeData _data,
 			ImageTraceAttributes _attributes, boolean _changeBound) {
 		
-		super(_data, _attributes, _changeBound, _data.getStatusLineManager(), _data.getWindow());
+		super(_data, _attributes, _changeBound, _data.getStatusLineManager(), window);
 		this.masterGC = masterGC;
 		this.lineNum = new AtomicInteger();
 	}

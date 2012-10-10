@@ -4,6 +4,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 
@@ -42,7 +43,7 @@ public abstract class BaseViewPaint {
 		attributes = _attributes;
 		changedBounds = _changeBound;
 		monitor = new TimelineProgressMonitor(_statusMgr );
-		this.window = window;
+		this.window = (window == null ? Util.getActiveWindow() : window);
 	}
 	
 	/**********************************************************************************

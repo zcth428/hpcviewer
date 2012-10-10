@@ -3,8 +3,6 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 import java.util.HashMap;
 import java.io.File;
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
@@ -48,7 +46,6 @@ public class SpaceTimeData extends TraceEvents
 	private String dbName;
 	
 	private IStatusLineManager statusMgr;
-	final private IWorkbenchWindow window;
 	
 	private IBaseData dataTrace;
 	final private File traceFile;
@@ -57,17 +54,16 @@ public class SpaceTimeData extends TraceEvents
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 * @throws Exception 
 	 ************************************************************************/
-	public SpaceTimeData(IWorkbenchWindow window, File expFile, File traceFile, IStatusLineManager _statusMgr)
+	public SpaceTimeData(File expFile, File traceFile, IStatusLineManager _statusMgr)
 			throws Exception, InvalExperimentException
 	{
-		this.window = window;
 		statusMgr = _statusMgr;
 
 		attributes = new ImageTraceAttributes();
 		
 		statusMgr.getProgressMonitor();
 		
-		colorTable = new ColorTable(window.getShell().getDisplay());
+		colorTable = new ColorTable();
 		
 		//Initializes the CSS that represents time values outside of the time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
@@ -126,10 +122,6 @@ public class SpaceTimeData extends TraceEvents
 		return statusMgr;
 	}
 	
-	public IWorkbenchWindow getWindow()
-	{
-		return window;
-	}
 	
 	public HashMap<Integer, CallPath> getScopeMap()
 	{
@@ -306,7 +298,16 @@ public class SpaceTimeData extends TraceEvents
 	
 	public int getProcessRelativePosition(int numDisplayedProcess)
 	{
-    	int estimatedProcess = (int) (currentPosition.process - attributes.begProcess);			
-    	return (int) ((float)estimatedProcess* ((float)numDisplayedProcess/(attributes.endProcess-attributes.begProcess)));
+		// general case
+    	int estimatedProcess = (int) (currentPosition.process - attributes.begProcess);
+    	
+    	// case for num displayed processes is less than the number of processes
+    	estimatedProcess = (int) ((float)estimatedProcess* 
+    			((float)numDisplayedProcess/(attributes.endProcess-attributes.begProcess)));
+    	
+    	// case for single process
+    	estimatedProcess = Math.min(estimatedProcess, numDisplayedProcess-1);
+    	
+    	return estimatedProcess;
 	}
 }

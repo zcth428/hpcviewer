@@ -388,7 +388,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		
 		//oldAttributes.copy(attributes);
 		
-		BaseViewPaint depthPaint = new DepthViewPaint(masterGC, stData, attributes, changedBounds);		
+		BaseViewPaint depthPaint = new DepthViewPaint(null, masterGC, stData, attributes, changedBounds);		
 		depthPaint.paint(this);
 	}
 	

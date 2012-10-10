@@ -125,6 +125,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	final private ImageTraceAttributes oldAttributes;
 	
 	final private ProcessTimelineService ptlService;
+	
+	final IWorkbenchWindow window;
 
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
 	public SpaceTimeDetailCanvas(IWorkbenchWindow window, Composite _composite)
@@ -149,6 +151,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 				getService(ISourceProviderService.class);
 		ptlService = (ProcessTimelineService) service.
 				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER);
+		
+		this.window = window;
 	}
 
 
@@ -1251,7 +1255,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 
 		detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
-					attributes, changedBounds, stData.getStatusLineManager(), stData.getWindow()); 
+					attributes, changedBounds, stData.getStatusLineManager(), window); 
 		
 		detailPaint.paint(this);
 	}

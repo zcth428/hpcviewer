@@ -78,9 +78,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
 	private SpaceTimeMiniCanvas miniCanvas;
 	
-	/** The DepthTimeCanvas that is changed by the detailCanvas.*/
-	private DepthTimeCanvas depthCanvas = null;
-	
 	/** The SummaryTimeCanvas that is changed by the detailCanva.*/
 	private SummaryTimeCanvas summaryCanvas = null;
 	
@@ -181,9 +178,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		Position position = new Position(rangeX>>1, rangeY>>1);
 		stData.updatePosition(position);
 		
-		// forcing the depth canvas to update the position
-		this.depthCanvas.setPosition(position);
-
 		// clear undo button
 		this.undoStack.clear();
 		this.undoButton.setEnabled(false);
@@ -1126,11 +1120,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void setMiniCanvas(SpaceTimeMiniCanvas _miniCanvas)
 	{
 		miniCanvas = _miniCanvas;
-	}
-	
-	public void setDepthCanvas(DepthTimeCanvas _depthCanvas)
-	{
-		depthCanvas = _depthCanvas;
 	}
 	
 	public void setSummaryCanvas(SummaryTimeCanvas _summaryCanvas)

@@ -67,7 +67,7 @@ public class HPCDepthView extends ViewPart implements ITraceDepth, ITracePositio
 		 * Depth View Canvas
 		 */
 		
-		depthCanvas = new DepthTimeCanvas(master, traceview.detailCanvas, 0);
+		depthCanvas = new DepthTimeCanvas(master);
 		depthCanvas.setLayout(new GridLayout());
 		depthCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		depthCanvas.setVisible(false);		

@@ -1,7 +1,9 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
+import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
@@ -62,15 +64,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	
 	private int currentProcess = -1;
     
-    public SpaceTimeDetailCanvas detailCanvas;
 	private IOperationHistory history = OperationHistoryFactory
 			.getOperationHistory();
 
 	
-	public DepthTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas, int _process)
+	public DepthTimeCanvas(Composite composite)
     {
 		super(composite);
-		detailCanvas = _detailCanvas;
 
 		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
 
@@ -301,7 +301,15 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		// TODO: we need to avoid having tightly coupled interaction between views.
 		//		 it makes to code hard to code
 		
-		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new ZoomOperation("Time zoom out", TraceOperation.OperationType.DepthTime, 
+							topLeftTime, bottomRightTime, 
+							stData.getBegProcess(), stData.getEndProcess()), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
 		zoom(topLeftTime, bottomRightTime);
     }
 	
@@ -452,18 +460,22 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 * @see org.eclipse.core.commands.operations.IOperationHistoryListener#historyNotification(org.eclipse.core.commands.operations.OperationHistoryEvent)
 	 */
 	public void historyNotification(final OperationHistoryEvent event) {
-		if (event.getOperation().hasContext(TraceOperation.context)) {
+		final IUndoableOperation operation = event.getOperation();
+		
+		if (operation.hasContext(TraceOperation.context)) {
+			final TraceOperation traceOperation =  (TraceOperation) operation;
+			
+			if (traceOperation.getType()==TraceOperation.OperationType.DepthTime) {
+				return;
+			}
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
 				getDisplay().syncExec(new Runnable() {
 
 					@Override
 					public void run() {
-						TraceOperation operation =  (TraceOperation) event.getOperation();
-						if (operation.getType() != TraceOperation.OperationType.DepthTime) {
-							if (operation instanceof ZoomOperation) {
-								Frame frame = operation.getFrame();
-								zoom(frame.begTime, frame.endTime);
-							}
+						if (traceOperation instanceof ZoomOperation) {
+							Frame frame = traceOperation.getFrame();
+							zoom(frame.begTime, frame.endTime);
 						}
 					}
 				});

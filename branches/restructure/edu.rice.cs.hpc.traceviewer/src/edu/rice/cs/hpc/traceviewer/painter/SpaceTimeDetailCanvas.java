@@ -3,6 +3,10 @@ package edu.rice.cs.hpc.traceviewer.painter;
 import java.util.Stack;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.operations.IOperationHistoryListener;
+import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.commands.operations.OperationHistoryEvent;
+import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -41,7 +45,8 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
  *	zooming responsibilities of the detail view.
  *
  ************************************************************************/
-public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
+public class SpaceTimeDetailCanvas extends SpaceTimeCanvas 
+	implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
 {
 	
 	/**The buffer image that is copied onto the actual canvas.*/
@@ -75,11 +80,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	private Action pZoomOutButton;
 
 	private Action goEastButton, goNorthButton, goWestButton, goSouthButton;
-	
-	/** The SpaceTimeMiniCanvas that is changed by the detailCanvas.*/
-	private SpaceTimeMiniCanvas miniCanvas;
-	
-	
+		
 	/** Relates to the condition that the mouse is in.*/
 	private MouseState mouseState;
 	
@@ -163,6 +164,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		{
 			mouseState = MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
+			OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 		}
 		// reinitialize the selection rectangle
 		initSelectionRectangle();
@@ -1116,11 +1118,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 		}
 	}
 	
-	public void setMiniCanvas(SpaceTimeMiniCanvas _miniCanvas)
-	{
-		miniCanvas = _miniCanvas;
-	}
-	
 	
 	/*********************************************************************************
 	 * Refresh the content of the canvas with new input data or boundary or parameters
@@ -1203,7 +1200,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		miniCanvas.setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
 	}
 	
 	private DetailViewPaint detailPaint;
@@ -1256,6 +1252,31 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas implements MouseListe
 	public void dispose () { 
 		if (imageBuffer != null) {
 			imageBuffer.dispose();
+		}
+	}
+
+
+	@Override
+	public void historyNotification(final OperationHistoryEvent event) {
+		final IUndoableOperation operation = event.getOperation();
+
+		if (operation.hasContext(TraceOperation.context)) {
+			final TraceOperation traceOperation =  (TraceOperation) operation;
+			if (traceOperation.getType() == TraceOperation.OperationType.SpaceTime) {
+				return;
+			}
+			if (event.getEventType() == OperationHistoryEvent.DONE) {
+				getDisplay().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						if (traceOperation instanceof ZoomOperation) {
+							Frame frame = traceOperation.getFrame();
+							setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+						}
+					}
+				});
+			}
 		}
 	}
 }

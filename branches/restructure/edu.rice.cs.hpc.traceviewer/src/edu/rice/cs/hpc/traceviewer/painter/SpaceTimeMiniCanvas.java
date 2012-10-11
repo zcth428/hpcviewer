@@ -1,5 +1,10 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.operations.IOperationHistoryListener;
+import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.commands.operations.OperationHistoryEvent;
+import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -11,18 +16,19 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
 
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
+import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.ui.Frame;
 /*****************************************************************************
  * 
  * The Canvas onto which the MiniMap is painted.
  * 
  ****************************************************************************/
 
-public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
+public class SpaceTimeMiniCanvas extends SpaceTimeCanvas 
+	implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
 {
-	/**The detail canvas that correlates to this mini map.*/
-	private SpaceTimeDetailCanvas detailCanvas;
-	
 	/** The top-left point of the current selection box.*/
 	private Point selectionTopLeft;
 	
@@ -70,7 +76,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 			addMouseListener(this);
 			addMouseMoveListener(this);
 			addPaintListener(this);
-
+			
+			OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 		}
 		Rectangle r = this.getClientArea();
 		this.viewingHeight = r.height;
@@ -82,12 +89,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 	public void updateView()
 	{
 		setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
-	}
-	
-	/**Sets the detail canvas.*/
-	public void setDetailCanvas(SpaceTimeDetailCanvas _detailCanvas)
-	{
-		detailCanvas = _detailCanvas;
 	}
 	
 	/**The painting of the miniMap.*/
@@ -168,10 +169,19 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 		
 		long detailBottomRightTime = (long)((double)miniBottomRight.x / getScaleX());
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
-		
-		detailCanvas.pushUndo();
-		detailCanvas.setDetailZoom(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
-		setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
+
+		setBox(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
+
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new ZoomOperation("Change region", TraceOperation.OperationType.Mini, 
+							detailTopLeftTime, detailBottomRightTime, 
+							detailTopLeftProcess, detailBottomRightProcess),
+					null, null);
+		} catch (ExecutionException e) 
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	/**Updates the selectionBox on the MiniMap to have corners at p1 and p2.*/
@@ -285,6 +295,34 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas implements MouseListene
 				adjustSelection(mouseDown, mouseCurrent);
 			
 			redraw();
+		}
+	}
+
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.core.commands.operations.IOperationHistoryListener#historyNotification(org.eclipse.core.commands.operations.OperationHistoryEvent)
+	 */
+	public void historyNotification(final OperationHistoryEvent event) {
+		final IUndoableOperation operation = event.getOperation();
+
+		if (operation.hasContext(TraceOperation.context)) {
+			final TraceOperation traceOperation =  (TraceOperation) operation;
+			if (traceOperation.getType() == TraceOperation.OperationType.Mini) {
+				return;
+			}
+			if (event.getEventType() == OperationHistoryEvent.DONE) {
+				getDisplay().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						if (traceOperation instanceof ZoomOperation) {
+							Frame frame = traceOperation.getFrame();
+							setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+						}
+					}
+				});
+			}
 		}
 	}
 	

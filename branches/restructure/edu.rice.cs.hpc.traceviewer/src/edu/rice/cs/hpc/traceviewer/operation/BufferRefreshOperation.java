@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.operation;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
-import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,7 +13,7 @@ public class BufferRefreshOperation extends AbstractOperation {
 
 	/**image data that describes current image in detail canvas*/
 	final private ImageData detailData;
-	final static public IUndoContext context = IOperationHistory.GLOBAL_UNDO_CONTEXT;
+	static final public IUndoContext context = new BufferOperationContext();
 
 	public BufferRefreshOperation(String label, ImageData detailData) {
 		super(label);

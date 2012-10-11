@@ -9,7 +9,7 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
 
 public abstract class TraceOperation extends AbstractOperation {
 	
-	static public IUndoContext context = IOperationHistory.GLOBAL_UNDO_CONTEXT;
+	final static public IUndoContext context = new TraceOperationContext();
 	static public enum OperationType {SpaceTime, DepthTime, Callstack, Mini};
 
 	protected OperationItem item;
@@ -17,7 +17,7 @@ public abstract class TraceOperation extends AbstractOperation {
 	public TraceOperation(String label) {
 		super(label);
 		item = new OperationItem();
-		addContext(IOperationHistory.GLOBAL_UNDO_CONTEXT);
+		addContext(context);
 	}
 	
 	public TraceOperation(String label, OperationType source) {

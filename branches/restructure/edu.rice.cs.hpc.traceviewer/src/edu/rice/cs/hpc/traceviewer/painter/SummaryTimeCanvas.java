@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
-import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
@@ -201,20 +200,16 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener, IOperati
 
 	@Override
 	public void historyNotification(final OperationHistoryEvent event) {
+		// we are not interested with other operation
 		if (event.getOperation().hasContext(BufferRefreshOperation.context)) {
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
-				final IUndoableOperation operation = event.getOperation();
-				
-				// we are not interested with other operation
-				if (operation instanceof BufferRefreshOperation) {
-					getDisplay().syncExec(new Runnable() {
-						@Override
-						public void run() {
-							BufferRefreshOperation operation = (BufferRefreshOperation) event.getOperation();
-							refresh(operation.getImageData());
-						}
-					});
-				}
+				getDisplay().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						BufferRefreshOperation operation = (BufferRefreshOperation) event.getOperation();
+						refresh(operation.getImageData());
+					}
+				});
 			}
 		}
 	}

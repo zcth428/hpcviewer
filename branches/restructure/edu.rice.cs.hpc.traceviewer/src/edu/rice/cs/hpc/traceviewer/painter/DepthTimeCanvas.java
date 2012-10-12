@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.traceviewer.operation.IZoomAction;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -290,7 +291,15 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		oldEndTime = stData.attributes.endTime;
 	}
 
-    
+	/**** time zoom action **/
+	final private IZoomAction zoomAction = new IZoomAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			zoom(frame.begTime, frame.endTime);
+		}
+	};
+	
     private void setDetail()
     {
 		long topLeftTime = (long)((double)leftSelection / getScaleX());
@@ -303,14 +312,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Time zoom out", TraceOperation.OperationType.DepthTime, 
+					new ZoomOperation("Time zoom out", zoomAction, 
 							topLeftTime, bottomRightTime, 
 							stData.getBegProcess(), stData.getEndProcess()), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
-		zoom(topLeftTime, bottomRightTime);
     }
 	
     private void zoom(long time1, long time2)
@@ -465,9 +473,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		if (operation.hasContext(TraceOperation.context)) {
 			final TraceOperation traceOperation =  (TraceOperation) operation;
 			
-			if (traceOperation.getType()==TraceOperation.OperationType.DepthTime) {
-				return;
-			}
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
 				getDisplay().syncExec(new Runnable() {
 

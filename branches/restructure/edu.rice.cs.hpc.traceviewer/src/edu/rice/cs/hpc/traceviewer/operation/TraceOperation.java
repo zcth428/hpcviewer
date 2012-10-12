@@ -12,43 +12,24 @@ public abstract class TraceOperation extends AbstractOperation {
 	final static public IUndoContext context = new TraceOperationContext();
 	static public enum OperationType {SpaceTime, DepthTime, Callstack, Mini};
 
-	protected OperationItem item;
+	protected Frame frame;
 	
 	public TraceOperation(String label) {
 		super(label);
-		item = new OperationItem();
 		addContext(context);
 	}
 	
-	public TraceOperation(String label, OperationType source) {
-		this(label);
-		item.source = source;
-	}
-
-	public TraceOperation(String label, Frame frame, OperationType source) {
+	public TraceOperation(String label, Frame frame) {
 		super(label);
-		item = new OperationItem();
-		item.frame = frame;
-		item.source = source;
+		this.frame = frame;
 	}
 
-	public OperationType getType() {
-		return item.source;
-	}
-	
 	public Frame getFrame() {
-		return item.frame;
+		return frame;
 	}
 	
 	static public IOperationHistory getOperationHistory() {
 		return PlatformUI.getWorkbench().getOperationSupport()
 				.getOperationHistory();
-	}
-	
-	protected class OperationItem 
-	{
-		Frame frame;
-		OperationType source;
-	}
-	
+	}	
 }

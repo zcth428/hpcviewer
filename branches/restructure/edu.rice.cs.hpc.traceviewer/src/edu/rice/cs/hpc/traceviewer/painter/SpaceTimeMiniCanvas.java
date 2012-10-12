@@ -16,6 +16,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
 
+import edu.rice.cs.hpc.traceviewer.operation.IZoomAction;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -158,6 +159,15 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		mousePrevious = mouseCurrent;
 	}
 	
+	/**** zoom action **/
+	final private IZoomAction zoomAction = new IZoomAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+		}
+	};
+
 	/**Scales coordinates and sends them to detailCanvas.*/
 	private void setDetailSelection()
 	{
@@ -170,11 +180,9 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		long detailBottomRightTime = (long)((double)miniBottomRight.x / getScaleX());
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
 
-		setBox(detailTopLeftTime, detailTopLeftProcess, detailBottomRightTime, detailBottomRightProcess);
-
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Change region", TraceOperation.OperationType.Mini, 
+					new ZoomOperation("Change region", zoomAction, 
 							detailTopLeftTime, detailBottomRightTime, 
 							detailTopLeftProcess, detailBottomRightProcess),
 					null, null);
@@ -308,9 +316,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 
 		if (operation.hasContext(TraceOperation.context)) {
 			final TraceOperation traceOperation =  (TraceOperation) operation;
-			if (traceOperation.getType() == TraceOperation.OperationType.Mini) {
-				return;
-			}
+
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
 				getDisplay().syncExec(new Runnable() {
 

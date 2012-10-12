@@ -154,9 +154,6 @@ public class CallStackViewer extends TableViewer
 	 *********************************************************************/
 	public void setSample(Position position, int depth)
 	{
-		if (position.time == -20)
-			return;
-		
 		//-------------------------------------------------------------------------------------------
 		// dirty hack: the call stack viewer requires relative index of process, not the absolute !
 		// so if the region is zoomed, then the relative index is based on the displayed processes

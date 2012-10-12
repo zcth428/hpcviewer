@@ -30,6 +30,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
+import edu.rice.cs.hpc.traceviewer.operation.IZoomAction;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
@@ -302,7 +303,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private class DetailBufferPaint implements BufferPaint {
 		public void rebuffering() {
 			// force the paint to refresh the data
-			rebuffer(true);
+			notifyChanges(stData.attributes.begTime, stData.attributes.begProcess,
+					stData.attributes.endTime, stData.attributes.endProcess);
 		}
 	}
 
@@ -338,9 +340,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
 		stData.setPosition(position);
 		
-		this.rebuffer(true);
-		
 		this.updateButtonStates();
+    	
+		// ----------------------------------------------------------------------------
+		// hack solution: we need to gather the data first, then we ask other views 
+		//	to update their contents
+		// ----------------------------------------------------------------------------
+		refresh(true);
 		
 		//----------------------------------------------------------------------------
 		// we have new region. Check if the cross hair is still within the new region
@@ -356,7 +362,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     	
     	// tell other views that we have new position 
     	this.stData.updatePosition(position);
-
 	}
 	
 	/*******************************************************************************
@@ -460,7 +465,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//					   from home to a zoom (or another area) and vice-versa
 		//imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 
-		setDetailZoom(0, 0, stData.getWidth(), stData.getHeight());
+		notifyChanges(0, 0, stData.getWidth(), stData.getHeight());
 	}
 	
 	/**************************************************************************
@@ -547,7 +552,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				&& current.begProcess == stData.getBegProcess() && current.endProcess == stData.getEndProcess()) {
 			
 		} else {
-			setDetailZoom(current.begTime, current.begProcess, current.endTime, current.endProcess);	
+			notifyChanges(current.begTime, current.begProcess, current.endTime, current.endProcess);	
 			return;
 		}
 		
@@ -590,7 +595,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 		
-		this.setDetailZoom(stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges(stData.attributes.begTime, p1, stData.attributes.endTime, p2);
 	}
 
 	/**************************************************************************
@@ -622,7 +627,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 
-		this.setDetailZoom(stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges(stData.attributes.begTime, p1, stData.attributes.endTime, p2);
 	}
 
 	
@@ -642,7 +647,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long t2 = xMid + (long)((double)numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)((double)numTimeUnitsDisp * SCALE);
 		
-		this.setDetailZoom(t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges(t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
 	}
 
 	/**************************************************************************
@@ -663,7 +668,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final long td1 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
-		this.setDetailZoom(t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges(t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
 	}
 	
 	/**************************************************************************
@@ -688,7 +693,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void setDepth(int newDepth)
 	{
 		stData.setDepth(newDepth);
-		rebuffer();
+		refresh(false);
     }
 	
 	/**************************************************************************
@@ -790,7 +795,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		int bottomRightProcess = (int) Math.ceil( ((double) selectionBottomRightY / getScaleY()) );
 		long bottomRightTime = (long)Math.ceil( ((double)selectionBottomRightX / getScaleX()) );
 		
-		setDetailZoom(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
+		notifyChanges(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
     
 	/**************************************************************************
@@ -957,7 +962,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
     	pushUndo();
-    	setDetailZoom(topLeftTime, stData.attributes.begProcess, bottomRightTime, stData.attributes.endProcess);
+    	notifyChanges(topLeftTime, stData.attributes.begProcess, bottomRightTime, stData.attributes.endProcess);
     }
 
     /*******
@@ -1003,7 +1008,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
 	private void setProcessRange(int pBegin, int pEnd) {
 		pushUndo();
-		this.setDetailZoom(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
+		notifyChanges(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
 	}
 
 	private Position updatePosition()
@@ -1169,14 +1174,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		imageOrig.dispose();
 	}
 	
-	/***********************************************************************************
-	 * Forcing to create image buffer
-	 * Attention: this method will take some time to generate an image buffer, so
-	 * 	please do not call this if not necessary
-	 ***********************************************************************************/
-	public void rebuffer() {
-		rebuffer(false);
-	}
+	
+	/**** zoom action **/
+	final private IZoomAction zoomAction = new IZoomAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+		}
+	};
 	
 	/***********************************************************************************
 	 * Forcing to refresh data. In case of resizing the program, it is possible that 
@@ -1185,16 +1191,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *  
 	 * @param refreshData
 	 ***********************************************************************************/
-	public void rebuffer(boolean refreshData) {
-		refresh(refreshData);
+	private void notifyChanges(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess) {
 		
 		// forces all other views to refresh with the new region
 		//depthCanvas.refresh(stData.attributes.begTime, stData.attributes.endTime);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("zoom", TraceOperation.OperationType.SpaceTime, 
-							stData.attributes.begTime, stData.attributes.endTime,
-							stData.attributes.begProcess, stData.attributes.endProcess), 
+					new ZoomOperation("zoom", zoomAction, 
+							_topLeftTime, _bottomRightTime,
+							_topLeftProcess, _bottomRightProcess), 
 					null, null);
 		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
@@ -1202,7 +1207,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 	}
 	
-	private DetailViewPaint detailPaint;
 
 	/*************************************************************************
 	 *	Paints the specified time units and processes at the specified depth
@@ -1237,7 +1241,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			ptlService.setProcessTimeline(traces);
 		}
 
-		detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
+		DetailViewPaint detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
 					attributes, changedBounds, stData.getStatusLineManager(), window); 
 		
 		detailPaint.paint(this);
@@ -1256,27 +1260,39 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	}
 
 
+	private HistoryOperation historyOperation = new HistoryOperation();
+	
 	@Override
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 
 		if (operation.hasContext(TraceOperation.context)) {
-			final TraceOperation traceOperation =  (TraceOperation) operation;
-			if (traceOperation.getType() == TraceOperation.OperationType.SpaceTime) {
-				return;
-			}
-			if (event.getEventType() == OperationHistoryEvent.DONE) {
-				getDisplay().syncExec(new Runnable() {
-
-					@Override
-					public void run() {
-						if (traceOperation instanceof ZoomOperation) {
-							Frame frame = traceOperation.getFrame();
-							setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
-						}
-					}
-				});
+			// warning: hack solution
+			// this space time detail canvas has priority to execute first before the others
+			// the reason is most objects requires a new value of process time lines
+			//	however this objects are set by this class
+			if (event.getEventType() == OperationHistoryEvent.ABOUT_TO_EXECUTE) {
+				historyOperation.setOperation(operation);
+				getDisplay().syncExec(historyOperation);
 			}
 		}
+	}
+	
+	private class HistoryOperation implements Runnable
+	{
+		private IUndoableOperation operation;
+		
+		public void setOperation(IUndoableOperation operation) {
+			this.operation = operation;
+		}
+		
+		@Override
+		public void run() {
+			if (operation instanceof ZoomOperation) {
+				Frame frame = ((ZoomOperation)operation).getFrame();
+				setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+			}
+		}
+
 	}
 }

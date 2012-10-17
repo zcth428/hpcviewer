@@ -8,8 +8,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
@@ -29,23 +27,10 @@ public class HPCDepthView extends ViewPart
 	
 	/** Paints and displays the detail view. */
 	DepthTimeCanvas depthCanvas;
-	
-	HPCTraceView traceview;
-	
+		
 	public void createPartControl(Composite _master)
 	{
 		master = _master;
-		
-		try 
-		{
-			traceview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-		}
-		catch (PartInitException e) 
-		{
-			traceview = null;
-			e.printStackTrace();
-			System.exit(0);
-		}
 		
 		setupEverything();
 		setListener();

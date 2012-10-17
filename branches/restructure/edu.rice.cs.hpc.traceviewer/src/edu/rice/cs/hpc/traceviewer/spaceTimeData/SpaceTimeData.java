@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
 import java.util.HashMap;
 import java.io.File;
-import org.eclipse.jface.action.IStatusLineManager;
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
@@ -44,7 +43,7 @@ public class SpaceTimeData
 	
 	private String dbName;
 	
-	private IStatusLineManager statusMgr;
+	//private IStatusLineManager statusMgr;
 	
 	private IBaseData dataTrace;
 	final private File traceFile;
@@ -53,14 +52,14 @@ public class SpaceTimeData
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 * @throws Exception 
 	 ************************************************************************/
-	public SpaceTimeData(File expFile, File traceFile, IStatusLineManager _statusMgr)
+	public SpaceTimeData(File expFile, File traceFile/*, IStatusLineManager _statusMgr*/)
 			throws Exception, InvalExperimentException
 	{
-		statusMgr = _statusMgr;
+		//statusMgr = _statusMgr;
 
 		attributes = new ImageTraceAttributes();
 		
-		statusMgr.getProgressMonitor();
+		//statusMgr.getProgressMonitor();
 		
 		colorTable = new ColorTable();
 		
@@ -116,10 +115,10 @@ public class SpaceTimeData
 		}
 	}
 	
-	public IStatusLineManager getStatusLineManager()
+/*	public IStatusLineManager getStatusLineManager()
 	{
 		return statusMgr;
-	}
+	}*/
 	
 	
 	public HashMap<Integer, CallPath> getScopeMap()

@@ -1,6 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -37,13 +37,14 @@ public abstract class BaseViewPaint {
 	 * @param _monitor: progress monitor
 	 */
 	public BaseViewPaint(SpaceTimeData _data, ImageTraceAttributes _attributes, boolean _changeBound, 
-			IStatusLineManager _statusMgr, IWorkbenchWindow window) 
+			IWorkbenchWindow window) 
 	{
 		data = _data;
 		attributes = _attributes;
 		changedBounds = _changeBound;
-		monitor = new TimelineProgressMonitor(_statusMgr );
 		this.window = (window == null ? Util.getActiveWindow() : window);
+		IViewSite site = (IViewSite) window.getActivePage().getActivePart().getSite();
+		monitor = new TimelineProgressMonitor( site.getActionBars().getStatusLineManager() );
 	}
 	
 	/**********************************************************************************

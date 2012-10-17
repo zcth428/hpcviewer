@@ -22,7 +22,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeData _data,
 			ImageTraceAttributes _attributes, boolean _changeBound) {
 		
-		super(_data, _attributes, _changeBound, _data.getStatusLineManager(), window);
+		super(_data, _attributes, _changeBound,  window);
 		this.masterGC = masterGC;
 		this.lineNum = new AtomicInteger();
 	}

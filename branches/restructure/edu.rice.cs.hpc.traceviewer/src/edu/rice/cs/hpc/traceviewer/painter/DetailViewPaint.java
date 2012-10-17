@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -28,9 +27,9 @@ public class DetailViewPaint extends BaseViewPaint {
 	
 	public DetailViewPaint(final GC masterGC, final GC origGC, SpaceTimeData _data,
 			ImageTraceAttributes _attributes, boolean _changeBound,
-			IStatusLineManager _statusMgr, IWorkbenchWindow window) 
+			IWorkbenchWindow window) 
 	{
-		super(_data, _attributes, _changeBound, _statusMgr, window);
+		super(_data, _attributes, _changeBound, window);
 		this.masterGC = masterGC;
 		this.origGC   = origGC;
 		lineNum = new AtomicInteger(0);

@@ -31,7 +31,6 @@ import org.eclipse.ui.services.ISourceProviderService;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
-import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
@@ -1112,7 +1111,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 
 		DetailViewPaint detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
-					attributes, changedBounds, stData.getStatusLineManager(), window); 
+					attributes, changedBounds, window); 
 		
 		detailPaint.paint(this);
 	}
@@ -1133,24 +1132,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	// Part for notifying changes to other views
 	//-----------------------------------------------------------------------------------------
 	
-	/**** zoom action **/
-	final private ITraceAction zoomAction = new ITraceAction() {
-		@Override
-		public void doAction(Frame frame) 
-		{
-			//setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
-		}
-	};
-	
-	final private ITraceAction positionAction = new ITraceAction() {
-		@Override
-		public void doAction(Frame frame) 
-		{
-			//stData.setPosition(frame.position);
-
-			//refresh(false);
-		}
-	};
 	
 	/***********************************************************************************
 	 * notify changes to other views
@@ -1191,7 +1172,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new PositionOperation("cursor position", position, positionAction), 
+					new PositionOperation("cursor position", position, null), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();

@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
@@ -410,7 +411,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		
 		//oldAttributes.copy(attributes);
 		
-		BaseViewPaint depthPaint = new DepthViewPaint(null, masterGC, stData, attributes, changedBounds);		
+		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), masterGC, stData, attributes, changedBounds);		
 		depthPaint.paint(this);
 	}
 	

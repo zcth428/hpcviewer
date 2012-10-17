@@ -32,7 +32,8 @@ public class PositionOperation extends TraceOperation {
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException {
-		action.doAction(frame);
+		if (action != null)
+			action.doAction(frame);
 		return Status.OK_STATUS;
 	}
 

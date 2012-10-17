@@ -16,7 +16,7 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
 public class ZoomOperation extends TraceOperation {
 	ITraceAction action;
 	
-	public ZoomOperation(String label, ITraceAction action, Frame frame) {
+	public ZoomOperation(String label, Frame frame, ITraceAction action) {
 		super(label, frame);
 		this.action = action;
 	}
@@ -25,7 +25,8 @@ public class ZoomOperation extends TraceOperation {
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException 
 			{
-		action.doAction(frame);
+		if (action != null)
+			action.doAction(frame);
 		return Status.OK_STATUS;
 	}
 

@@ -134,7 +134,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		super(_composite );
 		oldAttributes = new ImageTraceAttributes();
 
-		//homeScreen = true;
 		undoStack = new Stack<Frame>();
 		redoStack = new Stack<Frame>();
 		mouseState = MouseState.ST_MOUSE_INIT;
@@ -1139,7 +1138,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		@Override
 		public void doAction(Frame frame) 
 		{
-			setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+			//setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
 		}
 	};
 	
@@ -1147,9 +1146,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		@Override
 		public void doAction(Frame frame) 
 		{
-			stData.setPosition(frame.position);
+			//stData.setPosition(frame.position);
 
-			refresh(false);
+			//refresh(false);
 		}
 	};
 	
@@ -1174,7 +1173,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		try {
 			// notify change of ROI
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("zoom", zoomAction, frame), 
+					new ZoomOperation("zoom", frame, null), 
 					null, null);
 			
 		} catch (ExecutionException e) {

@@ -311,7 +311,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		Frame frame = new Frame(stData.attributes, selectedDepth, (long)selectedTime, currentProcess);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Time zoom out", zoomAction, frame), 
+					new ZoomOperation("Time zoom out", frame, zoomAction), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();

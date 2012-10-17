@@ -188,7 +188,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				stData.getPosition().time, stData.getPosition().process);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Change region", zoomAction, frame),
+					new ZoomOperation("Change region", frame, zoomAction),
 					null, null);
 		} catch (ExecutionException e) 
 		{

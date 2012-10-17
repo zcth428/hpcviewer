@@ -7,20 +7,24 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 
+/********************************************
+ * 
+ * generic trace operation
+ *
+ ********************************************/
 public abstract class TraceOperation extends AbstractOperation {
 	
 	final static public IUndoContext context = new TraceOperationContext();
-	static public enum OperationType {SpaceTime, DepthTime, Callstack, Mini};
 
 	protected Frame frame;
 	
 	public TraceOperation(String label) {
-		super(label);
-		addContext(context);
+		this(label,null);
 	}
 	
 	public TraceOperation(String label, Frame frame) {
 		super(label);
+		addContext(context);
 		this.frame = frame;
 	}
 

@@ -142,6 +142,14 @@ public class TraceDatabase
 			statusMgr.setMessage("Rendering trace data ...");
 			shell.update();
 
+			// get a window service to store the new database
+			ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
+					ISourceProviderService.class);
+			
+			// keep the current data in "shared" variable
+			DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
+			dataService.setData(database.dataTraces);
+
 			try {
 				//---------------------------------------------------------------------
 				// Update the title of the application
@@ -171,13 +179,6 @@ public class TraceDatabase
 				
 				HPCCallStackView cview = (HPCCallStackView) page.showView(HPCCallStackView.ID);
 				cview.updateView(database.dataTraces);
-
-				ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
-						ISourceProviderService.class);
-				
-				// keep the current data in "shared" variable
-				DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
-				dataService.setData(database.dataTraces);
 				
 				return true;
 				

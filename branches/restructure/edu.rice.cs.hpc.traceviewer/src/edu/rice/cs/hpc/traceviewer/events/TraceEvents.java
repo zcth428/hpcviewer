@@ -104,20 +104,6 @@ public abstract class TraceEvents {
 		index_position++;
 	}	
 	
-	/***
-	 * tell the manager that an event has changed
-	 * @param region
-	 */
-	public void updatePosition(Position position) {
-		
-		setPosition(position);
-		
-		for(ITracePosition position_listener: listPositionListener) {
-			if (position_listener != null) {
-				position_listener.setPosition(position);
-			}
-		}
-	}
 	
 	/***
 	 * tell the child that we need to update the current depth

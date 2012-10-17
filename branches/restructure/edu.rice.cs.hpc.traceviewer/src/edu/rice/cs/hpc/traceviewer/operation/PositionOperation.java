@@ -6,25 +6,32 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 
-/********************************************
+/**********************************
  * 
- * zoom operation
- *
- ********************************************/
-public class ZoomOperation extends TraceOperation {
-	ITraceAction action;
+ * Operation for changes of cursor position
+ * @see getPosition 
+ * 	method to retrieve the current position
+ **********************************/
+public class PositionOperation extends TraceOperation {
+	final private ITraceAction action;
 	
-	public ZoomOperation(String label, ITraceAction action, Frame frame) {
-		super(label, frame);
+	public PositionOperation(String label, Position position, ITraceAction action) {
+		super(label);
+		frame = new Frame(0, 0, 0, 0, 0, position.time, position.process);
+		frame.position = position;
 		this.action = action;
+	}
+	
+	public Position getPosition() {
+		return frame.position;
 	}
 
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info)
-			throws ExecutionException 
-			{
+			throws ExecutionException {
 		action.doAction(frame);
 		return Status.OK_STATUS;
 	}

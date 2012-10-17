@@ -24,21 +24,27 @@ public class Frame implements Serializable
 	public Frame(ImageTraceAttributes attributes,
 			int _depth, long _selectedTime, int _selectedProcess)
 	{
-		begTime = attributes.begTime;
-		endTime = attributes.endTime;
-		begProcess = attributes.begProcess;
-		endProcess = attributes.endProcess;
-		depth = _depth;
-		
-		position = new Position(_selectedTime, _selectedProcess);
+		this(attributes.begTime, attributes.endTime,
+				attributes.begProcess, attributes.endProcess, 
+				_depth, _selectedTime, _selectedProcess);
 	}
 	
-	public Frame(long timeBeg, long timeEnd, int ProcBeg, int ProcEnd)
+	public Frame(long timeBeg, long timeEnd, int ProcBeg, int ProcEnd,
+			int depth, long time, int process)
 	{
 		begProcess 	= ProcBeg;
 		endProcess  = ProcEnd;
 		begTime	 	= timeBeg;
 		endTime		= timeEnd;
+		this.depth  = depth;
+
+		if (time < begTime || time > endTime) {
+			time = (begTime + endTime) >> 1;
+		}
+		if (process < begProcess || process > endProcess) {
+			process = (begProcess + endProcess) >> 1;
+		}
+		position	= new Position(time, process);
 	}
 	
 	public Frame(Frame frame)

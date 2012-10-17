@@ -30,7 +30,8 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
-import edu.rice.cs.hpc.traceviewer.operation.IZoomAction;
+import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
+import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
@@ -170,15 +171,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		// reinitialize the selection rectangle
 		initSelectionRectangle();
 		
-		long rangeX = this.stData.getWidth();
-		int rangeY = this.stData.getHeight();
-		
-		this.home();
-
+		// init configuration
+		Position position = new Position(-1,-1);
+		stData.setPosition(position);
 		stData.setDepth(0);
 		
-		Position position = new Position(rangeX>>1, rangeY>>1);
-		stData.updatePosition(position);
+		this.home();
 		
 		// clear undo button
 		this.undoStack.clear();
@@ -335,33 +333,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			stData.attributes.endProcess = stData.attributes.begProcess+MIN_PROC_DISP;
 		}
 
-		Position position = adjustPosition(stData.attributes.begTime, stData.attributes.begProcess,
-				stData.attributes.endTime, stData.attributes.endProcess );
-
-		stData.setPosition(position);
-		
-		this.updateButtonStates();
+		updateButtonStates();
     	
 		// ----------------------------------------------------------------------------
 		// hack solution: we need to gather the data first, then we ask other views 
 		//	to update their contents
 		// ----------------------------------------------------------------------------
 		refresh(true);
-		
-		//----------------------------------------------------------------------------
-		// we have new region. Check if the cross hair is still within the new region
-		//----------------------------------------------------------------------------
-		
-	    /******
-	     * If necessary adjust the position of cross hair with the view region
-	     * If the cross hair is outside the region, we force to position it within the region
-	     * 	in order to avoid exposed bugs and confusion that the depth and the call path are not
-	     * 	consistent with the trace view
-	     ***/ 
-		position = this.getAdjustedProcess(position);
-    	
-    	// tell other views that we have new position 
-    	this.stData.updatePosition(position);
 	}
 	
 	/*******************************************************************************
@@ -461,10 +439,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (viewHeight <= 0)
 			viewHeight = 1;
 		
-		// laksono 2012.03.07: this following line causes white paint when changing
-		//					   from home to a zoom (or another area) and vice-versa
-		//imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-
 		notifyChanges(0, 0, stData.getWidth(), stData.getHeight());
 	}
 	
@@ -562,7 +536,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 		
 		if (!current.position.isEqual(stData.getPosition())) {
-			stData.updatePosition(current.position);
+	    	notifyChangePosition(current.position);
 		}
 	}
 	
@@ -798,77 +772,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		notifyChanges(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
     
-	/**************************************************************************
-	 * adjust the cursor position to be always in the display zone
-	 * 
-	 * @param t1
-	 * @param p1
-	 * @param t2
-	 * @param p2
-	 * @return
-	 **************************************************************************/
-	private Position adjustPosition(long t1, int p1, long t2, int p2) 
-	{
-    	
-    	Position current = this.stData.getPosition();
-    	int process = (current.process);
-    	long time = current.time;
-    	
-    	if (process < p1 || process > p2) {
-    		process = (int) ((long) p1+p2) >> 1;
-		
-			// if the new location is bigger than the max proc, set it to the min proc
-			// this situation only happens when there is only 1 proc to display
-			if (process >= (int)p2)
-				process = (int)p1;
-    	}
-    	if (time < t1 || time > t2) {
-    		time = (t1+t2)>>1;
-    	}
-    	return new Position(time,process);
-	}
-	
-
-    /****
-     * Adjust the position of cross hair depending of the availability of traces
-     * 
-     * @param position
-     * @return adjusted position
-     */
-    private Position getAdjustedProcess(Position position) {
-    	
-    	double numDisplayedProcess = getNumProcessesDisplayed();
-    	
-    	int estimatedProcess = (int) (position.process - stData.attributes.begProcess);			
-    	double scaleProcess = numDisplayedProcess/(double)this.getNumProcessesDisplayed();
-    	
-    	//---------------------------------------------------------------------------------------
-    	// computing the relative process rank: 
-    	//	the relative rank is adjusted based on the number of displayed process
-    	//	for instance, if the mouse click computes that the position of process rank is 100
-    	//		from range 50 to 500 (so the range is 450), but the number of displayed process
-    	//		is only 200, then we need to adjust the relative position of the process into
-    	//		200/450 * (100-50)
-    	//---------------------------------------------------------------------------------------
-    	int relativeProcess = (int) (scaleProcess * estimatedProcess);
-    	
-    	// generalization of case where there is only one single process to display
-    	if (relativeProcess>=numDisplayedProcess)
-    		relativeProcess = (int) (numDisplayedProcess - 1);
-    	
-    	//position.processInCS = relativeProcess;
-    	if (estimatedProcess != relativeProcess) {
-        	//---------------------------------------------------------------------------------------
-        	// if there is any change between the estimated process by mouse click and the
-    		//	estimated process by the array of displayed process, we need to adjust
-    		//	the absolute process
-        	//---------------------------------------------------------------------------------------
-        	position.process = (int) (relativeProcess/scaleProcess + stData.attributes.begProcess);
-    	}
-    	return position;
-    	
-    }
-    
+	    
     private boolean canGoEast() {
     	return (stData.attributes.begTime > 0);
     }
@@ -1042,8 +946,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     		return;
     	
     	Position position = updatePosition();
-    	
-    	this.stData.updatePosition(position);
+    	notifyChangePosition(position);
     }
 
 	
@@ -1174,39 +1077,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		imageOrig.dispose();
 	}
 	
-	
-	/**** zoom action **/
-	final private IZoomAction zoomAction = new IZoomAction() {
-		@Override
-		public void doAction(Frame frame) 
-		{
-			setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
-		}
-	};
-	
-	/***********************************************************************************
-	 * Forcing to refresh data. In case of resizing the program, it is possible that 
-	 * the size (width x height) is the same, although in fact it is not (due to Eclipse
-	 * limitation of handling resizing window)
-	 *  
-	 * @param refreshData
-	 ***********************************************************************************/
-	private void notifyChanges(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess) {
-		
-		// forces all other views to refresh with the new region
-		//depthCanvas.refresh(stData.attributes.begTime, stData.attributes.endTime);
-		try {
-			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("zoom", zoomAction, 
-							_topLeftTime, _bottomRightTime,
-							_topLeftProcess, _bottomRightProcess), 
-					null, null);
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 
 	/*************************************************************************
 	 *	Paints the specified time units and processes at the specified depth
@@ -1259,7 +1129,78 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 	}
 
+	//-----------------------------------------------------------------------------------------
+	// Part for notifying changes to other views
+	//-----------------------------------------------------------------------------------------
+	
+	/**** zoom action **/
+	final private ITraceAction zoomAction = new ITraceAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+		}
+	};
+	
+	final private ITraceAction positionAction = new ITraceAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			stData.setPosition(frame.position);
 
+			refresh(false);
+		}
+	};
+	
+	/***********************************************************************************
+	 * notify changes to other views
+	 * 
+	 * @param _topLeftTime
+	 * @param _topLeftProcess
+	 * @param _bottomRightTime
+	 * @param _bottomRightProcess
+	 ***********************************************************************************/
+	private void notifyChanges(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess) 
+	{
+		stData.attributes.begTime = _topLeftTime;
+		stData.attributes.endTime = _bottomRightTime;
+		stData.attributes.begProcess = _topLeftProcess;
+		stData.attributes.endProcess = _bottomRightProcess;
+		Frame frame = new Frame(stData.attributes, stData.getDepth(), 
+				stData.getPosition().time, stData.getPosition().process);
+		
+		// forces all other views to refresh with the new region
+		try {
+			// notify change of ROI
+			TraceOperation.getOperationHistory().execute(
+					new ZoomOperation("zoom", zoomAction, frame), 
+					null, null);
+			
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/***********************************************************************************
+	 * notify cursor position change to other views
+	 * 
+	 * @param position
+	 ***********************************************************************************/
+	private void notifyChangePosition(Position position) 
+	{
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new PositionOperation("cursor position", position, positionAction), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+	}
+
+	//-----------------------------------------------------------------------------------------
+	// Part for handling operation triggered from other views
+	//-----------------------------------------------------------------------------------------
 	private HistoryOperation historyOperation = new HistoryOperation();
 	
 	@Override
@@ -1288,9 +1229,19 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		@Override
 		public void run() {
+			// zoom in/out or change of ROI ?
 			if (operation instanceof ZoomOperation) {
 				Frame frame = ((ZoomOperation)operation).getFrame();
+				stData.setPosition(frame.position);
 				setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+			}
+			// change of cursor position ?
+			else if (operation instanceof PositionOperation) {
+				Position p = ((PositionOperation)operation).getPosition();
+				stData.setPosition(p);
+
+				// just change the position, doesn't need to fully refresh
+				redraw();
 			}
 		}
 

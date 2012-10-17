@@ -1,11 +1,9 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
-import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -20,7 +18,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import edu.rice.cs.hpc.traceviewer.operation.IZoomAction;
+import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
+import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -65,9 +64,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	
 	private int currentProcess = -1;
     
-	private IOperationHistory history = OperationHistoryFactory
-			.getOperationHistory();
-
 	
 	public DepthTimeCanvas(Composite composite)
     {
@@ -81,7 +77,10 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		rightSelection = 0;
 	}
 	
-	
+	/****
+	 * new data update
+	 * @param _stData
+	 */
 	public void updateView(SpaceTimeData _stData)
 	{
 		this.stData = _stData;
@@ -95,7 +94,9 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		this.home();
 	}
 	
-
+	/***
+	 * add listeners (need to called only once)
+	 */
 	private void addCanvasListener() {
 		addMouseListener(this);
 		addMouseMoveListener(this);
@@ -115,9 +116,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 				}
 			}
 		});
-		history.addOperationHistoryListener(this);
+		TraceOperation.getOperationHistory().addOperationHistoryListener(this);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
+	 */
 	public void paintControl(PaintEvent event)
 	{
 		if (this.stData == null || imageBuffer == null)
@@ -166,7 +171,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 * Also updates the rest of the program to know that this is the selected
 	 * point (so that the CallStackViewer can update, etc.).
 	 **************************************************************************/
-	public void setPosition(Position position)
+	private void setPosition(Position position)
 	{
 		selectedTime = (double)position.time;
 		if (currentProcess != position.process) {
@@ -177,41 +182,27 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			redraw();
 	}
 	
-
+	/***
+	 * set new depth
+	 * @param _selectedDepth
+	 */
 	public void setDepth(int _selectedDepth) {
 		selectedDepth = _selectedDepth;
+		redraw();
 	}
 	
-	public void adjustSelection(Point p1, Point p2)
+	/****
+	 * update the new range position
+	 * 
+	 * @param p1
+	 * @param p2
+	 */
+	private void adjustSelection(Point p1, Point p2)
 	{
 		final int viewWidth = getClientArea().width;
 
     	leftSelection = topLeftPixelX + Math.max(Math.min(p1.x, p2.x), 0);
         rightSelection = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
-    }
-    
-	/*****
-	 * Refresh the content of the depth canvas based on the given time range.
-	 * If the old time range is different from the new one, we will create a 
-	 * new image buffer, otherwise just repaint the canvas
-	 * @param _begTime
-	 * @param _endTime
-	 */
-    public void refresh(long _begTime, long _endTime)
-    {
-    	if (stData == null)
-    		return;
-    	
-    	//------------------------------------------------------
-    	// check if the new time range is the same as the existing time range
-    	// if it is the same then repaint the canvas, otherwise we have to 
-    	//	create a new image buffer
-    	//------------------------------------------------------
-    	if (oldBegTime != _begTime || oldEndTime != _endTime) {
-    		// different time range. Needs to create a new image buffer
-    		setTimeZoom(_begTime, _endTime);
-    	} else
-    		this.redraw();
     }
     
     /***
@@ -222,7 +213,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     }
     
     
-    public void setCSSample()
+    private void setCSSample()
     {
     	if(mouseDown == null)
     		return;
@@ -231,11 +222,11 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     	
     	Position currentPosition = stData.getPosition();
     	Position position = new Position(closeTime, currentPosition.process);
-    	//position.processInCS = currentPosition.processInCS;
     	
-    	this.stData.updatePosition(position);
+    	notifyPositionChange(position);
     }
 
+    @Override
 	public double getScaleX()
 	{
 		final int viewWidth = getClientArea().width;
@@ -243,7 +234,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		return (double)viewWidth / (double)getNumTimeDisplayed();
 	}
 
-	//@Override
+	@Override
 	public double getScaleY() {
 		final Rectangle r = this.getClientArea();
 		return Math.max(r.height/(double)maxDepth, 1);
@@ -292,7 +283,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	}
 
 	/**** time zoom action **/
-	final private IZoomAction zoomAction = new IZoomAction() {
+	final private ITraceAction zoomAction = new ITraceAction() {
 		@Override
 		public void doAction(Frame frame) 
 		{
@@ -300,27 +291,43 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		}
 	};
 	
+	final private ITraceAction positionAction = new ITraceAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			setPosition(frame.position);
+		}		
+	};
+	
     private void setDetail()
     {
 		long topLeftTime = (long)((double)leftSelection / getScaleX());
 		long bottomRightTime = (long)((double)rightSelection / getScaleX());
-
-		// hack fix. Attention: we have to update first the detail view before others
-		// 	this is to allow the detail view to push undo stack
-		// TODO: we need to avoid having tightly coupled interaction between views.
-		//		 it makes to code hard to code
 		
+		stData.attributes.begTime = topLeftTime;
+		stData.attributes.endTime = bottomRightTime;
+		
+		Frame frame = new Frame(stData.attributes, selectedDepth, (long)selectedTime, currentProcess);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Time zoom out", zoomAction, 
-							topLeftTime, bottomRightTime, 
-							stData.getBegProcess(), stData.getEndProcess()), 
+					new ZoomOperation("Time zoom out", zoomAction, frame), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
     }
 	
+    private void notifyPositionChange(Position newPosition)
+    {    	
+    	try {
+			TraceOperation.getOperationHistory().execute(
+					new PositionOperation("change time position", newPosition, positionAction), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+    }
+    
     private void zoom(long time1, long time2)
     {
     	setTimeZoom(time1, time2);
@@ -341,9 +348,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     		time = (t1+t2)>>1;
 		
     	Position position = new Position(time, currentPosition.process);
-    	
-    	this.stData.updatePosition(position);
-	
+    	setPosition(position);
     }
     
 	private void rebuffer()
@@ -393,7 +398,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 * @param _numPixelsH
 	 * @param _numPixelsV
 	 *************************************************************************/
-	public void paintDepthViewport(final GC masterGC, 
+	private void paintDepthViewport(final GC masterGC, 
 			long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
 	{
 		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
@@ -474,16 +479,19 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			final TraceOperation traceOperation =  (TraceOperation) operation;
 			
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
-				getDisplay().syncExec(new Runnable() {
-
-					@Override
-					public void run() {
-						if (traceOperation instanceof ZoomOperation) {
+				if (traceOperation instanceof ZoomOperation) {
+					getDisplay().syncExec(new Runnable() {
+						@Override
+						public void run() {
 							Frame frame = traceOperation.getFrame();
 							zoom(frame.begTime, frame.endTime);
+							setPosition(frame.position);
 						}
-					}
-				});
+					});
+				} else if (traceOperation instanceof PositionOperation) {
+					Position p = ((PositionOperation)traceOperation).getPosition();
+					setPosition(p);
+				}
 			}
 		}
 	}

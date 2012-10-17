@@ -31,15 +31,13 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
-import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
-import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
-public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePosition, ITraceViewAction
+public class HPCTraceView extends ViewPart implements ITraceDepth, ITraceViewAction
 {
 	
 	/**The ID needed to create this view (used in plugin.xml).*/
@@ -83,7 +81,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		this.detailCanvas.updateView(_stData);
 		
 		this.stData.addDepthListener(this);
-		this.stData.addPositionListener(this);
 		detailCanvas.setVisible(true);
 	}
 	
@@ -108,11 +105,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		return stData;
 	}
 
-	public void setPosition(Position position)
-	{
-		this.detailCanvas.setCrossHair(position.time, position.process);
-	}
-	
 
 	/*************************************************************************
 	 * method to add listener

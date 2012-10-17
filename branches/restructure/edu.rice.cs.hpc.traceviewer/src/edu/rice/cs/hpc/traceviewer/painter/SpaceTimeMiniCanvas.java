@@ -16,7 +16,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
 
-import edu.rice.cs.hpc.traceviewer.operation.IZoomAction;
+import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -160,7 +160,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	}
 	
 	/**** zoom action **/
-	final private IZoomAction zoomAction = new IZoomAction() {
+	final private ITraceAction zoomAction = new ITraceAction() {
 		@Override
 		public void doAction(Frame frame) 
 		{
@@ -180,11 +180,15 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		long detailBottomRightTime = (long)((double)miniBottomRight.x / getScaleX());
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
 
+		stData.attributes.begProcess = detailTopLeftProcess;
+		stData.attributes.endProcess = detailBottomRightProcess;
+		stData.attributes.begTime    = detailTopLeftTime;
+		stData.attributes.endTime	 = detailBottomRightTime;
+		Frame frame = new Frame(stData.attributes, stData.getDepth(), 
+				stData.getPosition().time, stData.getPosition().process);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Change region", zoomAction, 
-							detailTopLeftTime, detailBottomRightTime, 
-							detailTopLeftProcess, detailBottomRightProcess),
+					new ZoomOperation("Change region", zoomAction, frame),
 					null, null);
 		} catch (ExecutionException e) 
 		{

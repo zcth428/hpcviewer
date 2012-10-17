@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
@@ -186,7 +187,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 * set new depth
 	 * @param _selectedDepth
 	 */
-	public void setDepth(int _selectedDepth) {
+	private void setDepth(int _selectedDepth) {
 		selectedDepth = _selectedDepth;
 		redraw();
 	}
@@ -491,6 +492,9 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 				} else if (traceOperation instanceof PositionOperation) {
 					Position p = ((PositionOperation)traceOperation).getPosition();
 					setPosition(p);
+				} else if (traceOperation instanceof DepthOperation) {
+					int depth = ((DepthOperation)traceOperation).getDepth();
+					setDepth(depth);
 				}
 			}
 		}

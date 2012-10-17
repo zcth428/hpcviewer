@@ -18,16 +18,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
-import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
-import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeMiniCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the call path viewer and minimap.*/
 //all the GUI setup for the call path and minimap are here//
-public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceDepth
+public class HPCCallStackView extends ViewPart implements ISizeProvider
 {
 	
 	public static final String ID = "hpccallstackview.view";
@@ -79,7 +76,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		/*************************************************************************
 		 * Depth View Spinner (the thing with the text box and little arrow buttons)
 		 ************************************************************************/
-		final HPCCallStackView csview = this;
 		depthEditor = new Spinner(master, SWT.EMBEDDED);
 		depthEditor.setMinimum(0);
 		depthEditor.setPageIncrement(1);
@@ -108,7 +104,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 					value = minimum;
 				if(stData.getDepth() != value)
 				{
-					stData.updateDepth(value, csview);
 					csViewer.setDepth(value);
 				}
 			}
@@ -172,7 +167,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider, ITraceD
 		this.csViewer.updateView();
 		this.miniCanvas.updateView(_stData);
 		
-		stData.addDepthListener(this);
 		miniCanvas.setVisible(true);
 	}
 

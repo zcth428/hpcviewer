@@ -13,13 +13,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SummaryTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
-public class HPCSummaryView extends ViewPart implements ITracePosition
+public class HPCSummaryView extends ViewPart
 {
 
 	public static final String ID = "hpcsummaryview.view";
@@ -97,10 +96,5 @@ public class HPCSummaryView extends ViewPart implements ITracePosition
 	public void setFocus() 
 	{
 		this.summaryCanvas.setFocus();
-	}
-
-	public void setPosition(Position position) 
-	{
-		summaryCanvas.setPosition(position);
 	}
 }

@@ -13,14 +13,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
-import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
-import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
-public class HPCDepthView extends ViewPart implements ITraceDepth
+public class HPCDepthView extends ViewPart
 {
 	public static final String ID = "hpcdepthview.view";
 	
@@ -93,16 +90,11 @@ public class HPCDepthView extends ViewPart implements ITraceDepth
 	public void updateView(SpaceTimeData _stData)
 	{
 		this.depthCanvas.updateView(_stData);
-		_stData.addDepthListener(this);
 		depthCanvas.setVisible(true);
 	}
 
 	public void setFocus()
 	{
 		this.depthCanvas.setFocus();
-	}
-
-	public void setDepth(int new_depth) {
-		this.depthCanvas.setDepth(new_depth);
 	}
 }

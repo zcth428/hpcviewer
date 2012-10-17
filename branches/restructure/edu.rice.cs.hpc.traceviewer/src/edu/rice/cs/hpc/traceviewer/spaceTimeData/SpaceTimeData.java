@@ -10,7 +10,6 @@ import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
-import edu.rice.cs.hpc.traceviewer.events.TraceEvents;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
@@ -21,7 +20,7 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
  *	the view including all of the ProcessTimelines.
  *
  ************************************************************************/
-public class SpaceTimeData extends TraceEvents
+public class SpaceTimeData
 {
 	/** Stores the color to function name assignments for all of the functions in all of the processes.*/
 	private ColorTable colorTable;

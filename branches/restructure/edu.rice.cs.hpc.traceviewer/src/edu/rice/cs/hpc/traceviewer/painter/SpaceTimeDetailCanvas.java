@@ -30,6 +30,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
+import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
@@ -532,7 +533,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		if (current.depth != stData.getDepth()) {
 			// we have change of depth
-			stData.updateDepth(current.depth, this);
+			stData.setDepth(current.depth);
 		}
 		
 		if (!current.position.isEqual(stData.getPosition())) {
@@ -1242,6 +1243,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
 				// just change the position, doesn't need to fully refresh
 				redraw();
+			} 
+			else if (operation instanceof DepthOperation) {
+				int depth = ((DepthOperation)operation).getDepth();
+				setDepth(depth);
 			}
 		}
 

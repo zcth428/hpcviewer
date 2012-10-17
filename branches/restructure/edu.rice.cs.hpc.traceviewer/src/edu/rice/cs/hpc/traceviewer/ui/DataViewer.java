@@ -72,7 +72,7 @@ public class DataViewer extends TableViewer
 			{
 				int dataIdx = dataTbl.getSelectionIndex();
 				if (dataIdx != Constants.dataIdxNULL && dataIdx != stData.getData()) {
-					stData.updateData(dataIdx, dataviewer);
+					//stData.updateData(dataIdx, dataviewer);
 				}
 			}
 		});

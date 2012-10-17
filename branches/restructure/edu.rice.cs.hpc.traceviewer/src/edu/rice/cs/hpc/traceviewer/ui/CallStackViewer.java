@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.ui;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
@@ -23,6 +24,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
@@ -32,6 +34,8 @@ import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
+
+
 /**************************************************
  * A viewer for CallStackSamples.
  *************************************************/
@@ -94,7 +98,7 @@ public class CallStackViewer extends TableViewer
 				if(depth !=-1 && depth != stData.getDepth()) {
 					// ask the depth editor to update the depth and launch the updateDepth event
 					csview.depthEditor.setSelection(depth);
-					stData.updateDepth(depth, csviewer);
+					notifyChange(depth);
 				}
 			}
 		});
@@ -197,7 +201,7 @@ public class CallStackViewer extends TableViewer
 			}
 			this.setInput(new ArrayList<String>(sampleVector));
 		
-			this.selectDepth(depth);
+			selectDepth(depth);
 			
 			viewerColumn.getColumn().pack();
 		}
@@ -222,11 +226,12 @@ public class CallStackViewer extends TableViewer
 				this.add(EMPTY_FUNCTION);
 			}
 		}
-		this.selectDepth(_depth);
+		selectDepth(_depth);
+		
+		notifyChange(_depth);
 	}
 	
 	
-
 	/*****
 	 * Select a specified depth in the call path
 	 * @param _depth
@@ -236,6 +241,20 @@ public class CallStackViewer extends TableViewer
 		this.getTable().select(_depth);
 		this.getTable().redraw();
 	}
+	
+	
+	private void notifyChange(int depth)
+	{
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new DepthOperation("Set depth to "+depth, depth),
+					null, null);
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	
 	@Override
 	public void historyNotification(final OperationHistoryEvent event) {

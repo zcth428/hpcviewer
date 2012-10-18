@@ -319,11 +319,16 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		}
     }
 	
+    /****
+     * broadcast a new position to other views
+     * 
+     * @param newPosition
+     */
     private void notifyPositionChange(Position newPosition)
     {    	
     	try {
 			TraceOperation.getOperationHistory().execute(
-					new PositionOperation("change time position", newPosition, positionAction), 
+					new PositionOperation(newPosition, positionAction), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
@@ -480,24 +485,34 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		if (operation.hasContext(TraceOperation.context)) {
 			final TraceOperation traceOperation =  (TraceOperation) operation;
 			
-			if (event.getEventType() == OperationHistoryEvent.DONE) {
-				if (traceOperation instanceof ZoomOperation) {
-					getDisplay().syncExec(new Runnable() {
-						@Override
-						public void run() {
-							Frame frame = traceOperation.getFrame();
-							zoom(frame.begTime, frame.endTime);
-							setPosition(frame.position);
-						}
-					});
-				} else if (traceOperation instanceof PositionOperation) {
-					Position p = ((PositionOperation)traceOperation).getPosition();
-					setPosition(p);
-				} else if (traceOperation instanceof DepthOperation) {
-					int depth = ((DepthOperation)traceOperation).getDepth();
-					setDepth(depth);
-				}
+			switch(event.getEventType()) 
+			{
+			case OperationHistoryEvent.DONE:
+			case OperationHistoryEvent.UNDONE:
+			case OperationHistoryEvent.REDONE:
+				executeOperation(traceOperation);
+				break;
 			}
+		}
+	}
+	
+	public void executeOperation(final TraceOperation operation)
+	{
+		if (operation instanceof ZoomOperation) {
+			getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					Frame frame = operation.getFrame();
+					zoom(frame.begTime, frame.endTime);
+					setPosition(frame.position);
+				}
+			});
+		} else if (operation instanceof PositionOperation) {
+			Position p = ((PositionOperation)operation).getPosition();
+			setPosition(p);
+		} else if (operation instanceof DepthOperation) {
+			int depth = ((DepthOperation)operation).getDepth();
+			setDepth(depth);
 		}
 	}
 

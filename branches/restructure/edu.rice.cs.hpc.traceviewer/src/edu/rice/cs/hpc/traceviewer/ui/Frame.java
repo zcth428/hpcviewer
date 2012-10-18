@@ -92,4 +92,11 @@ public class Frame implements Serializable
 				&& endTime == other.endTime
 				&& depth == other.depth);
 	}
+	
+	@Override
+	public String toString() {
+		long t1 = begTime/1000000;
+		long t2 = endTime/1000000;
+		return "["+t1+"s : "+t2+"s , " + begProcess+" : "+endProcess+"]";
+	}
 }

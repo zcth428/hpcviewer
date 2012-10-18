@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.operation;
 import org.eclipse.core.commands.operations.AbstractOperation;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.ui.PlatformUI;
 
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
@@ -35,5 +36,15 @@ public abstract class TraceOperation extends AbstractOperation {
 	static public IOperationHistory getOperationHistory() {
 		return PlatformUI.getWorkbench().getOperationSupport()
 				.getOperationHistory();
-	}	
+	}
+	
+	public static IUndoableOperation[] getUndoHistory()
+	{
+		return getOperationHistory().getUndoHistory(context);
+	}
+	
+	public static IUndoableOperation[] getRedoHistory()
+	{
+		return getOperationHistory().getRedoHistory(context);
+	}
 }

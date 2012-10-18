@@ -34,7 +34,7 @@ public class DepthOperation extends TraceOperation {
 	@Override
 	public IStatus undo(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException {
-		return Status.OK_STATUS;
+		return execute(monitor, info);
 	}
 
 }

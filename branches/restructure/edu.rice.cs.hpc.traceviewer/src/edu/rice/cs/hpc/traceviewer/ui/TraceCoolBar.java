@@ -1,9 +1,14 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import edu.rice.cs.hpc.traceviewer.operation.OperationHistoryAction;
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 
 public class TraceCoolBar {
 
@@ -112,19 +117,47 @@ public class TraceCoolBar {
 		toolbar.add(new Separator());
 		
 		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
-		undo = new Action(null, undoSamp) {
-			public void run() {
-				action.undo();
-			}		
+		undo = new OperationHistoryAction(undoSamp) {
+
+			@Override
+			protected IUndoableOperation[] getHistory() {
+				return TraceOperation.getUndoHistory();
+			}
+
+			@Override
+			protected void execute() {
+				try {
+					IStatus status = TraceOperation.getOperationHistory().
+							undo(TraceOperation.context, null, null);
+					if (status.isOK()) {
+						undo.setEnabled(TraceOperation.getOperationHistory()
+								.canUndo(TraceOperation.context));
+					} else {
+						System.err.println("Cannot undo: " + status.getMessage());
+					}
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+
+			@Override
+			protected void execute(IUndoableOperation operation) {
+				try {
+					TraceOperation.getOperationHistory().undoOperation(operation, null, null);
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}			
 		};
 		this.createAction(toolbar, undo, "Undo the last action");
 				
 		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
-		redo = new Action(null, redoSamp) {
+		redo = new Action(null, Action.AS_DROP_DOWN_MENU) {
 			public void run() {
 				action.redo();
 			}		
 		};
+		redo.setImageDescriptor(redoSamp);
 		this.createAction(toolbar, redo, "Redo the last undo");
 				
 		toolbar.add(new Separator());
@@ -158,5 +191,4 @@ public class TraceCoolBar {
 		action.setEnabled(false);
 		toolbar.add(action);
 	}
-
 }

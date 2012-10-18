@@ -300,7 +300,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private class DetailBufferPaint implements BufferPaint {
 		public void rebuffering() {
 			// force the paint to refresh the data
-			notifyChanges(stData.attributes.begTime, stData.attributes.begProcess,
+			notifyChanges("Resize", stData.attributes.begTime, stData.attributes.begProcess,
 					stData.attributes.endTime, stData.attributes.endProcess);
 		}
 	}
@@ -438,7 +438,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (viewHeight <= 0)
 			viewHeight = 1;
 		
-		notifyChanges(0, 0, stData.getWidth(), stData.getHeight());
+		notifyChanges("Home", 0, 0, stData.getWidth(), stData.getHeight());
 	}
 	
 	/**************************************************************************
@@ -519,13 +519,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/**************************************************************************
 	 * Sets everything to the data stored in the Frame 'current.'
 	 **************************************************************************/
-	public void setFrame(Frame current)
+	private void setFrame(Frame current)
 	{
 		if (current.begTime == stData.getViewTimeBegin() && current.endTime == stData.getViewTimeEnd() 
 				&& current.begProcess == stData.getBegProcess() && current.endProcess == stData.getEndProcess()) {
 			
 		} else {
-			notifyChanges(current.begTime, current.begProcess, current.endTime, current.endProcess);	
+			notifyChanges("Frame", current.begTime, current.begProcess, 
+					current.endTime, current.endProcess);	
 			return;
 		}
 		
@@ -568,7 +569,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 		
-		notifyChanges(stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges("Zoom in V", stData.attributes.begTime, p1, stData.attributes.endTime, p2);
 	}
 
 	/**************************************************************************
@@ -600,7 +601,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 
-		notifyChanges(stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges("Zoom out V", stData.attributes.begTime, p1, stData.attributes.endTime, p2);
 	}
 
 	
@@ -620,7 +621,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long t2 = xMid + (long)((double)numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)((double)numTimeUnitsDisp * SCALE);
 		
-		notifyChanges(t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges("Zoom in H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
 	}
 
 	/**************************************************************************
@@ -641,7 +642,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final long td1 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
-		notifyChanges(t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges("Zoom out H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
 	}
 	
 	/**************************************************************************
@@ -768,7 +769,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		int bottomRightProcess = (int) Math.ceil( ((double) selectionBottomRightY / getScaleY()) );
 		long bottomRightTime = (long)Math.ceil( ((double)selectionBottomRightX / getScaleX()) );
 		
-		notifyChanges(topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
+		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
     
 	    
@@ -865,7 +866,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
     	pushUndo();
-    	notifyChanges(topLeftTime, stData.attributes.begProcess, bottomRightTime, stData.attributes.endProcess);
+    	notifyChanges("Zoom H", topLeftTime, stData.attributes.begProcess, 
+    			bottomRightTime, stData.attributes.endProcess);
     }
 
     /*******
@@ -911,7 +913,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
 	private void setProcessRange(int pBegin, int pEnd) {
 		pushUndo();
-		notifyChanges(stData.getViewTimeBegin(), pBegin, stData.getViewTimeEnd(), pEnd);
+		notifyChanges("Zoom V", stData.getViewTimeBegin(), pBegin, 
+				stData.getViewTimeEnd(), pEnd);
 	}
 
 	private Position updatePosition()
@@ -1141,7 +1144,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 * @param _bottomRightTime
 	 * @param _bottomRightProcess
 	 ***********************************************************************************/
-	private void notifyChanges(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess) 
+	private void notifyChanges(String label, long _topLeftTime, int _topLeftProcess, 
+			long _bottomRightTime, int _bottomRightProcess) 
 	{
 		stData.attributes.begTime = _topLeftTime;
 		stData.attributes.endTime = _bottomRightTime;
@@ -1150,11 +1154,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		Frame frame = new Frame(stData.attributes, stData.getDepth(), 
 				stData.getPosition().time, stData.getPosition().process);
 		
+		String sLabel = (label == null ? "Set region" : label);
+		
 		// forces all other views to refresh with the new region
 		try {
 			// notify change of ROI
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("zoom", frame, null), 
+					new ZoomOperation(sLabel, frame, null), 
 					null, null);
 			
 		} catch (ExecutionException e) {
@@ -1172,7 +1178,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new PositionOperation("cursor position", position, null), 
+					new PositionOperation(position, null), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
@@ -1188,14 +1194,20 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 
-		if (operation.hasContext(TraceOperation.context)) {
+		if (operation.hasContext(TraceOperation.context)) 
+		{
+			int type = event.getEventType();
 			// warning: hack solution
 			// this space time detail canvas has priority to execute first before the others
 			// the reason is most objects requires a new value of process time lines
 			//	however this objects are set by this class
-			if (event.getEventType() == OperationHistoryEvent.ABOUT_TO_EXECUTE) {
+			switch (type){
+			case OperationHistoryEvent.ABOUT_TO_EXECUTE:
+			case OperationHistoryEvent.ABOUT_TO_REDO:
+			case OperationHistoryEvent.ABOUT_TO_UNDO:
 				historyOperation.setOperation(operation);
 				getDisplay().syncExec(historyOperation);
+				break;
 			}
 		}
 	}

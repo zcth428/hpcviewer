@@ -18,8 +18,8 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
 public class PositionOperation extends TraceOperation {
 	final private ITraceAction action;
 	
-	public PositionOperation(String label, Position position, ITraceAction action) {
-		super(label);
+	public PositionOperation(Position position, ITraceAction action) {
+		super("Set cursor: " + position);
 		frame = new Frame(0, 0, 0, 0, 0, position.time, position.process);
 		frame.position = position;
 		this.action = action;
@@ -46,7 +46,7 @@ public class PositionOperation extends TraceOperation {
 	@Override
 	public IStatus undo(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException {
-		return Status.OK_STATUS;
+		return execute(monitor, info);
 	}
 
 }

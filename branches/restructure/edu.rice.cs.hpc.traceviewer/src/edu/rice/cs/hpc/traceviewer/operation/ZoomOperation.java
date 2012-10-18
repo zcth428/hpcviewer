@@ -39,6 +39,8 @@ public class ZoomOperation extends TraceOperation {
 	@Override
 	public IStatus undo(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException {
+		if (action != null)
+			action.doAction(frame);
 		return Status.OK_STATUS;
 	}
 

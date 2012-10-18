@@ -261,7 +261,10 @@ public class CallStackViewer extends TableViewer
 		final IUndoableOperation operation = event.getOperation();
 
 		if (operation.hasContext(TraceOperation.context)) {
-			if (event.getEventType() == OperationHistoryEvent.DONE) 
+			int type = event.getEventType();
+			if (type == OperationHistoryEvent.DONE ||
+					type == OperationHistoryEvent.UNDONE ||
+					type == OperationHistoryEvent.REDONE) 
 			{
 				if (operation instanceof PositionOperation) 
 				{

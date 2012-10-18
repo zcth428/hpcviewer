@@ -15,13 +15,12 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
  * @see getPosition 
  * 	method to retrieve the current position
  **********************************/
-public class PositionOperation extends TraceOperation {
+public class PositionOperation extends TraceOperation 
+{
 	final private ITraceAction action;
 	
 	public PositionOperation(Position position, ITraceAction action) {
-		super("Set cursor: " + position);
-		frame = new Frame(0, 0, 0, 0, 0, position.time, position.process);
-		frame.position = position;
+		super("Set cursor: " + position, new Frame(0, 0, 0, 0, 0, position.time, position.process));
 		this.action = action;
 	}
 	
@@ -32,8 +31,9 @@ public class PositionOperation extends TraceOperation {
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException {
-		if (action != null)
+		if (action != null) {
 			action.doAction(frame);
+		}
 		return Status.OK_STATUS;
 	}
 

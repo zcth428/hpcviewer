@@ -318,7 +318,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 
-		if (operation.hasContext(TraceOperation.context)) {
+		if (operation.hasContext(TraceOperation.traceContext)) {
 			final TraceOperation traceOperation =  (TraceOperation) operation;
 
 			if (event.getEventType() == OperationHistoryEvent.DONE) {

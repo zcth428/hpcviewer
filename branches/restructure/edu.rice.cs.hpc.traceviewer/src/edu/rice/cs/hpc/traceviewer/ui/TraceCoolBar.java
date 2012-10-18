@@ -128,10 +128,10 @@ public class TraceCoolBar {
 			protected void execute() {
 				try {
 					IStatus status = TraceOperation.getOperationHistory().
-							undo(TraceOperation.context, null, null);
+							undo(TraceOperation.undoableContext, null, null);
 					if (status.isOK()) {
 						undo.setEnabled(TraceOperation.getOperationHistory()
-								.canUndo(TraceOperation.context));
+								.canUndo(TraceOperation.traceContext));
 					} else {
 						System.err.println("Cannot undo: " + status.getMessage());
 					}

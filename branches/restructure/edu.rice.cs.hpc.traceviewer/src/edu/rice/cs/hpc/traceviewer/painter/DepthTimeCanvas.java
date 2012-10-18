@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.operations.AbstractOperation;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
@@ -482,7 +483,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 		
-		if (operation.hasContext(TraceOperation.context)) {
+		if (operation.hasContext(TraceOperation.traceContext)) {
 			final TraceOperation traceOperation =  (TraceOperation) operation;
 			
 			switch(event.getEventType()) 
@@ -496,13 +497,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		}
 	}
 	
-	public void executeOperation(final TraceOperation operation)
+	public void executeOperation(final AbstractOperation operation)
 	{
 		if (operation instanceof ZoomOperation) {
 			getDisplay().syncExec(new Runnable() {
 				@Override
 				public void run() {
-					Frame frame = operation.getFrame();
+					Frame frame = ((ZoomOperation)operation).getFrame();
 					zoom(frame.begTime, frame.endTime);
 					setPosition(frame.position);
 				}

@@ -15,7 +15,8 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
  ********************************************/
 public abstract class TraceOperation extends AbstractOperation {
 	
-	final static public IUndoContext context = new TraceOperationContext();
+	final static public IUndoContext traceContext = new TraceOperationContext();
+	final static public IUndoContext undoableContext = new UndoableOperationContext();
 
 	protected Frame frame;
 	
@@ -25,7 +26,7 @@ public abstract class TraceOperation extends AbstractOperation {
 	
 	public TraceOperation(String label, Frame frame) {
 		super(label);
-		addContext(context);
+		addContext(traceContext);
 		this.frame = frame;
 	}
 
@@ -40,11 +41,11 @@ public abstract class TraceOperation extends AbstractOperation {
 	
 	public static IUndoableOperation[] getUndoHistory()
 	{
-		return getOperationHistory().getUndoHistory(context);
+		return getOperationHistory().getUndoHistory(undoableContext);
 	}
 	
 	public static IUndoableOperation[] getRedoHistory()
 	{
-		return getOperationHistory().getRedoHistory(context);
+		return getOperationHistory().getRedoHistory(undoableContext);
 	}
 }

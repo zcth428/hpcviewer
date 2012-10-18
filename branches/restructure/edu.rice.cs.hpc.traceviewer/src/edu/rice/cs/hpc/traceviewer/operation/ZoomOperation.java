@@ -19,6 +19,7 @@ public class ZoomOperation extends TraceOperation {
 	public ZoomOperation(String label, Frame frame, ITraceAction action) {
 		super(label, frame);
 		this.action = action;
+		addContext(undoableContext);
 	}
 
 	@Override

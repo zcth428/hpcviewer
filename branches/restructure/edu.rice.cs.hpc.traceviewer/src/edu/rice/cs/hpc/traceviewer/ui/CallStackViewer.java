@@ -260,7 +260,7 @@ public class CallStackViewer extends TableViewer
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 
-		if (operation.hasContext(TraceOperation.context)) {
+		if (operation.hasContext(TraceOperation.traceContext)) {
 			int type = event.getEventType();
 			if (type == OperationHistoryEvent.DONE ||
 					type == OperationHistoryEvent.UNDONE ||

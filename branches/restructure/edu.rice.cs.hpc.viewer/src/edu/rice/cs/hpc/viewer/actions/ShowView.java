@@ -29,7 +29,7 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
  */
 public class ShowView extends AbstractHandler {
 
-	@Override
+	//@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
@@ -93,7 +93,7 @@ public class ShowView extends AbstractHandler {
 	
 	private class DatabaseLabelProvider extends BaseLabelProvider implements ILabelProvider
 	{
-		@Override
+		//@Override
 		public Image getImage(Object element) {
 			Object o = ((TreeNode)element).getValue();
 			if (o instanceof BaseScopeView) {
@@ -103,7 +103,7 @@ public class ShowView extends AbstractHandler {
 			return null;
 		}
 
-		@Override
+		//@Override
 		public String getText(Object element) {
 			Object o = ((TreeNode)element).getValue();
 			if (o instanceof BaseScopeView) {

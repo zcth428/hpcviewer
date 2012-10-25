@@ -320,18 +320,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 
 		if (operation.hasContext(TraceOperation.traceContext)) {
 			final TraceOperation traceOperation =  (TraceOperation) operation;
-
-			if (event.getEventType() == OperationHistoryEvent.DONE) {
-				getDisplay().syncExec(new Runnable() {
-
-					@Override
-					public void run() {
-						if (traceOperation instanceof ZoomOperation) {
-							Frame frame = traceOperation.getFrame();
-							setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
-						}
-					}
-				});
+			
+			switch(event.getEventType()) 
+			{
+			case OperationHistoryEvent.DONE:
+			case OperationHistoryEvent.UNDONE:
+			case OperationHistoryEvent.REDONE:
+				if (traceOperation instanceof ZoomOperation) {
+					Frame frame = traceOperation.getFrame();
+					setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+				}
 			}
 		}
 	}

@@ -63,9 +63,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/**Triggers save function to save current frame to file.*/
 	private Action saveButton;
 	
-	/**Triggers undo of screen.*/
-	private Action undoButton;
-	
 	/**Triggers screen re-do.*/
 	private Action redoButton;
 	
@@ -100,9 +97,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private long selectionBottomRightX;
 	private long selectionBottomRightY;
 	
-	/**The stack holding all the frames previously done.*/
-	private Stack<Frame> undoStack;
-	
 	/**The stack holding all the frames previously undone.*/
 	private Stack<Frame> redoStack;
 	
@@ -133,7 +127,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		super(_composite );
 		oldAttributes = new ImageTraceAttributes();
 
-		undoStack = new Stack<Frame>();
 		redoStack = new Stack<Frame>();
 		mouseState = MouseState.ST_MOUSE_INIT;
 
@@ -178,8 +171,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		this.home();
 		
 		// clear undo button
-		this.undoStack.clear();
-		this.undoButton.setEnabled(false);
+		//this.undoStack.clear();
+		//this.undoButton.setEnabled(false);
 		
 		this.saveButton.setEnabled(true);
 		this.openButton.setEnabled(true);
@@ -403,7 +396,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		homeButton = toolItems[0];
 		openButton = toolItems[1];
 		saveButton = toolItems[2];
-		undoButton = toolItems[3];
 		redoButton = toolItems[4];
 		tZoomInButton = toolItems[5];
 		tZoomOutButton = toolItems[6];
@@ -475,10 +467,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		redoStack.clear();
 		redoStack = new Stack<Frame>();
 		redoButton.setEnabled(false);
-		long selectedTime = stData.getPosition().time;
-		int selectedProcess = stData.getPosition().process;
-		undoStack.push(new Frame(stData.attributes,stData.getDepth(),selectedTime,selectedProcess));
-		undoButton.setEnabled(true);
+		//undoButton.setEnabled(true);
 	}
 	
 	/**************************************************************************
@@ -488,14 +477,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void popUndo()
 	{
-		Frame nextFrame = undoStack.pop();
 		long selectedTime = stData.getPosition().time;
 		int selectedProcess = stData.getPosition().process;
 		Frame currentFrame = new Frame(stData.attributes,stData.getDepth(),selectedTime,selectedProcess);
 		redoStack.push(currentFrame);
 		redoButton.setEnabled(true);
-		if (undoStack.isEmpty()) undoButton.setEnabled(false);
-		setFrame(nextFrame);
 	}
 	
 	/**************************************************************************
@@ -506,11 +492,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void popRedo()
 	{
 		Frame nextFrame = redoStack.pop();
-		long selectedTime = stData.getPosition().time;
-		int selectedProcess = stData.getPosition().process;
-		Frame currentFrame = new Frame(stData.attributes,stData.getDepth(),selectedTime,selectedProcess);
-		undoStack.push(currentFrame);
-		undoButton.setEnabled(true);
+		//undoButton.setEnabled(true);
 		if (redoStack.isEmpty()) redoButton.setEnabled(false);
 		setFrame(nextFrame);
 	}
@@ -793,7 +775,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
     private void updateButtonStates() {
     	
-		this.undoButton.setEnabled( this.undoStack.size()>0 );
 		this.redoButton.setEnabled( this.redoStack.size()>0 );
 		
 		this.tZoomInButton.setEnabled( this.getNumTimeUnitDisplayed() > Constants.MIN_TIME_UNITS_DISP );
@@ -1194,6 +1175,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 
+		// handling the operations
 		if (operation.hasContext(TraceOperation.traceContext)) 
 		{
 			int type = event.getEventType();
@@ -1201,7 +1183,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			// this space time detail canvas has priority to execute first before the others
 			// the reason is most objects requires a new value of process time lines
 			//	however this objects are set by this class
-			switch (type){
+			switch (type)
+			{
 			case OperationHistoryEvent.ABOUT_TO_EXECUTE:
 			case OperationHistoryEvent.ABOUT_TO_REDO:
 			case OperationHistoryEvent.ABOUT_TO_UNDO:
@@ -1212,6 +1195,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 	}
 	
+	/*****
+	 * 
+	 * Thread-centric operation to perform undoable operations asynchronously
+	 *
+	 *****/
 	private class HistoryOperation implements Runnable
 	{
 		private IUndoableOperation operation;

@@ -48,4 +48,10 @@ public abstract class TraceOperation extends AbstractOperation {
 	{
 		return getOperationHistory().getRedoHistory(undoableContext);
 	}
+	
+	public static void clear() 
+	{
+		TraceOperation.getOperationHistory().
+			dispose(undoableContext, false, false, false);
+	}
 }

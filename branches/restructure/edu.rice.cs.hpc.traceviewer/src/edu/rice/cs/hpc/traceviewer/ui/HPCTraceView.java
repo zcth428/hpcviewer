@@ -175,7 +175,7 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);
 		GridDataFactory.fillDefaults().grab(true, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(labelGroup);
 		
-		detailCanvas.setButtons(new Action[]{traceCoolBar.home, traceCoolBar.open, traceCoolBar.save, traceCoolBar.undo,
+		detailCanvas.setButtons(new Action[]{traceCoolBar.home, traceCoolBar.open, traceCoolBar.save, null,
 				traceCoolBar.redo, traceCoolBar.tZoomIn, traceCoolBar.tZoomOut, traceCoolBar.pZoomIn, traceCoolBar.pZoomOut,
 				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		

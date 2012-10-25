@@ -1,14 +1,10 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.operations.IUndoableOperation;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import edu.rice.cs.hpc.traceviewer.operation.OperationHistoryAction;
-import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
+import edu.rice.cs.hpc.traceviewer.operation.UndoOperationAction;
 
 public class TraceCoolBar {
 
@@ -17,7 +13,6 @@ public class TraceCoolBar {
 	final Action tZoomOut;
 	final Action pZoomIn;
 	final Action pZoomOut;
-	final Action undo;
 	final Action redo;
 	final Action save;
 	final Action open;
@@ -117,38 +112,7 @@ public class TraceCoolBar {
 		toolbar.add(new Separator());
 		
 		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
-		undo = new OperationHistoryAction(undoSamp) {
-
-			@Override
-			protected IUndoableOperation[] getHistory() {
-				return TraceOperation.getUndoHistory();
-			}
-
-			@Override
-			protected void execute() {
-				try {
-					IStatus status = TraceOperation.getOperationHistory().
-							undo(TraceOperation.undoableContext, null, null);
-					if (status.isOK()) {
-						undo.setEnabled(TraceOperation.getOperationHistory()
-								.canUndo(TraceOperation.traceContext));
-					} else {
-						System.err.println("Cannot undo: " + status.getMessage());
-					}
-				} catch (ExecutionException e) {
-					e.printStackTrace();
-				}
-			}
-
-			@Override
-			protected void execute(IUndoableOperation operation) {
-				try {
-					TraceOperation.getOperationHistory().undoOperation(operation, null, null);
-				} catch (ExecutionException e) {
-					e.printStackTrace();
-				}
-			}			
-		};
+		UndoOperationAction undo = new UndoOperationAction(undoSamp);
 		this.createAction(toolbar, undo, "Undo the last action");
 				
 		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");

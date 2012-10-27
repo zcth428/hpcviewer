@@ -4,6 +4,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+
+import edu.rice.cs.hpc.traceviewer.operation.RedoOperationAction;
 import edu.rice.cs.hpc.traceviewer.operation.UndoOperationAction;
 
 public class TraceCoolBar {
@@ -13,7 +15,6 @@ public class TraceCoolBar {
 	final Action tZoomOut;
 	final Action pZoomIn;
 	final Action pZoomOut;
-	final Action redo;
 	final Action save;
 	final Action open;
 	final Action goEast;
@@ -116,12 +117,7 @@ public class TraceCoolBar {
 		this.createAction(toolbar, undo, "Undo the last action");
 				
 		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
-		redo = new Action(null, Action.AS_DROP_DOWN_MENU) {
-			public void run() {
-				action.redo();
-			}		
-		};
-		redo.setImageDescriptor(redoSamp);
+		RedoOperationAction redo = new RedoOperationAction(redoSamp);
 		this.createAction(toolbar, redo, "Redo the last undo");
 				
 		toolbar.add(new Separator());

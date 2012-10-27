@@ -14,6 +14,9 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
  *
  ********************************************/
 public class ZoomOperation extends TraceOperation {
+	
+	static final public String ActionHome = "Home";
+	
 	ITraceAction action;
 	
 	public ZoomOperation(String label, Frame frame, ITraceAction action) {

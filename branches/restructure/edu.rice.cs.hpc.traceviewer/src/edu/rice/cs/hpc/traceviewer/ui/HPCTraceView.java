@@ -176,7 +176,7 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 		GridDataFactory.fillDefaults().grab(true, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(labelGroup);
 		
 		detailCanvas.setButtons(new Action[]{traceCoolBar.home, traceCoolBar.open, traceCoolBar.save, null,
-				traceCoolBar.redo, traceCoolBar.tZoomIn, traceCoolBar.tZoomOut, traceCoolBar.pZoomIn, traceCoolBar.pZoomOut,
+				null, traceCoolBar.tZoomIn, traceCoolBar.tZoomOut, traceCoolBar.pZoomIn, traceCoolBar.pZoomOut,
 				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		
 		detailCanvas.setVisible(false);
@@ -205,14 +205,6 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 
 	public void processZoomOut() {
 		detailCanvas.processZoomOut();
-	}
-
-	public void undo() {
-		detailCanvas.popUndo();		
-	}
-
-	public void redo() {
-		detailCanvas.popRedo();		
 	}
 	
 	public void save() {

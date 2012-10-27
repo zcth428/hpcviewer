@@ -1,7 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import java.util.Stack;
-
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
@@ -63,9 +61,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/**Triggers save function to save current frame to file.*/
 	private Action saveButton;
 	
-	/**Triggers screen re-do.*/
-	private Action redoButton;
-	
 	/** Triggers zoom-in on the time axis.*/
 	private Action tZoomInButton;
 	
@@ -97,9 +92,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private long selectionBottomRightX;
 	private long selectionBottomRightY;
 	
-	/**The stack holding all the frames previously undone.*/
-	private Stack<Frame> redoStack;
-	
 	/**The Group containing the labels. labelGroup.redraw() is called from the Detail Canvas.*/
 	private Composite labelGroup;
    
@@ -127,7 +119,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		super(_composite );
 		oldAttributes = new ImageTraceAttributes();
 
-		redoStack = new Stack<Frame>();
 		mouseState = MouseState.ST_MOUSE_INIT;
 
 		selectionTopLeftX = 0;
@@ -169,10 +160,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		stData.setDepth(0);
 		
 		this.home();
-		
-		// clear undo button
-		//this.undoStack.clear();
-		//this.undoButton.setEnabled(false);
 		
 		this.saveButton.setEnabled(true);
 		this.openButton.setEnabled(true);
@@ -396,7 +383,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		homeButton = toolItems[0];
 		openButton = toolItems[1];
 		saveButton = toolItems[2];
-		redoButton = toolItems[4];
 		tZoomInButton = toolItems[5];
 		tZoomOutButton = toolItems[6];
 		pZoomInButton = toolItems[7];
@@ -415,8 +401,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void home()
 	{
-		pushUndo();
-		
 		//if this is the first time painting,
 		//some stuff needs to get initialized
 		topLeftPixelX = 0;
@@ -430,7 +414,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (viewHeight <= 0)
 			viewHeight = 1;
 		
-		notifyChanges("Home", 0, 0, stData.getWidth(), stData.getHeight());
+		notifyChanges(ZoomOperation.ActionHome, 0, 0, stData.getWidth(), stData.getHeight());
 	}
 	
 	/**************************************************************************
@@ -439,7 +423,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void open(Frame toBeOpened)
 	{
-		pushUndo();
 		setFrame(toBeOpened);
 	}
 	
@@ -454,47 +437,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		int selectedProcess = stData.getPosition().process;
 
 		return new Frame(stData.attributes, stData.getDepth(), selectedTime, selectedProcess);
-	}
-	
-	/**************************************************************************
-	 * Whenever something happens that the user might want to undo at some point,
-	 * the relevant data to the current configuration gets stored in a new frame
-	 * that then gets pushed onto the undo stack. The undo and redo buttons then
-	 * get adjusted accordingly.
-	 **************************************************************************/
-	public void pushUndo()
-	{
-		redoStack.clear();
-		redoStack = new Stack<Frame>();
-		redoButton.setEnabled(false);
-		//undoButton.setEnabled(true);
-	}
-	
-	/**************************************************************************
-	 * The action that gets performed when the 'undo' button is pressed - 
-	 * pops a Frame from the undo stack and sets everything to the data stored
-	 * in that Frame, then pushes that Frame onto the redo stack.
-	 **************************************************************************/
-	public void popUndo()
-	{
-		long selectedTime = stData.getPosition().time;
-		int selectedProcess = stData.getPosition().process;
-		Frame currentFrame = new Frame(stData.attributes,stData.getDepth(),selectedTime,selectedProcess);
-		redoStack.push(currentFrame);
-		redoButton.setEnabled(true);
-	}
-	
-	/**************************************************************************
-	 * The action that gets performed when the 'redo' button is pressed - 
-	 * pops a Frame from the redo stack and sets everything to the data stored
-	 * in that Frame, then pushes that Frame onto the undo stack.
-	 **************************************************************************/
-	public void popRedo()
-	{
-		Frame nextFrame = redoStack.pop();
-		//undoButton.setEnabled(true);
-		if (redoStack.isEmpty()) redoButton.setEnabled(false);
-		setFrame(nextFrame);
 	}
 	
 	
@@ -528,7 +470,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void processZoomIn()
 	{
-		pushUndo();
 		final double SCALE = .4;
 		
 		double yMid = (stData.attributes.endProcess+stData.attributes.begProcess)/2.0;
@@ -560,7 +501,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void processZoomOut()
 	{
-		pushUndo();
 		final double SCALE = .625;
 		
 		//zoom out works as follows: find mid point of times (yMid).
@@ -593,7 +533,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void timeZoomIn()
 	{
-		pushUndo();
 		final double SCALE = .4;
 		
 		long xMid = (stData.attributes.endTime + stData.attributes.begTime) / 2;
@@ -612,7 +551,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void timeZoomOut()
 	{
-		pushUndo();
 		final double SCALE = 0.625;
 		
 		//zoom out works as follows: find mid point of times (xMid).
@@ -773,10 +711,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     /**********
      * check the status of all buttons
      */
-    private void updateButtonStates() {
-    	
-		this.redoButton.setEnabled( this.redoStack.size()>0 );
-		
+    private void updateButtonStates() 
+    {
 		this.tZoomInButton.setEnabled( this.getNumTimeUnitDisplayed() > Constants.MIN_TIME_UNITS_DISP );
 		this.tZoomOutButton.setEnabled(stData.attributes.begTime>0 || stData.attributes.endTime<stData.getWidth() );
 		
@@ -846,7 +782,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
-    	pushUndo();
     	notifyChanges("Zoom H", topLeftTime, stData.attributes.begProcess, 
     			bottomRightTime, stData.attributes.endProcess);
     }
@@ -892,8 +827,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      * @param pBegin: the top position
      * @param pEnd: the bottom position
      */
-	private void setProcessRange(int pBegin, int pEnd) {
-		pushUndo();
+	private void setProcessRange(int pBegin, int pEnd) 
+	{
 		notifyChanges("Zoom V", stData.getViewTimeBegin(), pBegin, 
 				stData.getViewTimeEnd(), pEnd);
 	}
@@ -981,14 +916,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 					{
 						mouseDown.x = 0;
 						mouseUp.x = viewWidth;
-						pushUndo();
 						adjustSelection(mouseDown,mouseUp);
 						setDetail();
 					}
 				}
 				else
 				{
-					pushUndo();
 					adjustSelection(mouseDown,mouseUp);
 					setDetail();
 				}

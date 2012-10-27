@@ -37,4 +37,31 @@ public class UndoOperationAction extends OperationHistoryAction {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	protected void setStatus() {
+		final IUndoableOperation []ops = getHistory(); 
+		boolean status = (ops.length>0);
+/*		if (ops.length==1) {
+			status = !(ops[0].getLabel().equals(ZoomOperation.ActionHome));
+		}
+		if (ops.length > 0)
+			System.out.println("UOA " + status + "\tl: " + ops.length +" \t[0]="+ops[0]);*/
+		setEnabled(status);
+	}
+
+	@Override
+	protected boolean canAct(IUndoableOperation operation, int index,
+			int indexEnd) 
+	{
+		boolean can = true;
+/*		if (index == 0) {
+			// the first "home" operation is not undoable. It's the init
+			if (operation instanceof ZoomOperation) {
+				final String label = ((ZoomOperation)operation).getLabel();
+				can = !(label.equals(ZoomOperation.ActionHome));
+			}
+		}*/
+		return can;
+	}
 }

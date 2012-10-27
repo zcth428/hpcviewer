@@ -10,9 +10,6 @@ public interface ITraceViewAction {
 	public void processZoomIn();
 	public void processZoomOut();
 
-	public void undo();
-	public void redo();
-	
 	public void save();
 	public void open();
 	

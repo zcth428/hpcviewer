@@ -47,14 +47,13 @@ public abstract class OperationHistoryAction extends Action
 		IUndoableOperation[] operations = getHistory();
 		
 		// create a list of menus of undoable operations
-		for (int i=operations.length-2; i>=0; i--) {
+		for (int i=operations.length-1; i>=0; i--) {
 			final IUndoableOperation op = operations[i];
-			if (op.canUndo()) 
+			if (canAct(op, i, operations.length-1)) 
 			{
 				Action action = new Action(op.getLabel()) {
 					public void run() {
 						execute(op);
-						setStatus();
 					}
 				};
 				addActionToMenu(menu, action);
@@ -71,7 +70,6 @@ public abstract class OperationHistoryAction extends Action
 	@Override
 	public void run() {
 		execute();
-		setStatus();
 	}
 	
 	protected void addActionToMenu(Menu parent, Action action) {
@@ -90,21 +88,18 @@ public abstract class OperationHistoryAction extends Action
 		
 		if (operation.hasContext(TraceOperation.undoableContext)) {
 			switch(event.getEventType()) {
-			case OperationHistoryEvent.OPERATION_ADDED:
-			case OperationHistoryEvent.OPERATION_REMOVED:
+			case OperationHistoryEvent.DONE:
+			case OperationHistoryEvent.UNDONE:
+			case OperationHistoryEvent.REDONE:
 				setStatus();
 				break;
 			}
 		}
 	}
 	
-	private void setStatus() 
-	{
-		final IUndoableOperation []ops = getHistory(); 
-		setEnabled(ops.length>1);
-	}
-	
-	abstract protected IUndoableOperation[] getHistory(); 
+	abstract protected IUndoableOperation[] getHistory();
+	abstract protected boolean canAct(IUndoableOperation operation, int index, int indexEnd);
 	abstract protected void execute();
 	abstract protected void execute(IUndoableOperation operation) ;
+	abstract protected void setStatus();
 }

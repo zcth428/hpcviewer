@@ -22,6 +22,9 @@ public class PositionOperation extends TraceOperation
 	public PositionOperation(Position position, ITraceAction action) {
 		super("Set cursor: " + position, new Frame(0, 0, 0, 0, 0, position.time, position.process));
 		this.action = action;
+		// hack frame position: by default, frame will adjust the position to be within the range
+		// however, for position operation, we don't care with ROI and we don't have this information
+		this.frame.position = position;
 	}
 	
 	public Position getPosition() {

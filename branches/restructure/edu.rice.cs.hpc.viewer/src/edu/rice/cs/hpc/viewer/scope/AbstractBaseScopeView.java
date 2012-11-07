@@ -344,6 +344,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         		
         	}
         });
+        
+		Utilities.listenerToResetRowHeight( treeViewer );
 
 		// allow other views to listen for selections in this view (site)
 		this.getSite().setSelectionProvider(treeViewer);

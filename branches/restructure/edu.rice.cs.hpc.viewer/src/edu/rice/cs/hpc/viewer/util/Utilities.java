@@ -11,6 +11,9 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -282,12 +285,48 @@ public class Utilities {
 	 * @param tree
 	 */
 	static private void resetView ( TreeItemManager objItemManager, TreeViewer tree) {
+		resetViewRowHeight(tree);
 		// save the context first
 		objItemManager.saveContext(tree);
 		// refresh
 		tree.refresh();
 		// restore the context
 		objItemManager.restoreContext(tree);
+	}
+	
+	/**
+	 * activate a listener to reset Row Height for Windows only
+	 * @param tree
+	 */
+	static public void listenerToResetRowHeight ( TreeViewer tree ) {
+		if (OSValidator.isWindows()) { 
+			Tree treeItem = tree.getTree();
+			// resize the table row height using a MeasureItem listener
+			Listener measurementListener = new Listener() {
+				public void handleEvent(Event event) {
+					final ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+					FontData []objFontsMetric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_METRIC);
+					FontData []objFontsGeneric = PreferenceConverter.getFontDataArray(objPref, PreferenceConstants.P_FONT_GENERIC);
+					// get font height (from preferences) for each font
+					int objFontMetricHeight = objFontsMetric[0].getHeight();
+					int objFontGenericHeight = objFontsGeneric[0].getHeight();
+					event.height = objFontMetricHeight>objFontGenericHeight?objFontMetricHeight:objFontGenericHeight + 10;
+				} // end handleEvent
+			}; // end measurementListener
+			treeItem.addListener(SWT.MeasureItem, measurementListener);
+		}
+	}
+	
+	/**
+	 * refresh size of rows for a particular view - non Windows
+	 * @param tree
+	 */
+	static public void resetViewRowHeight ( TreeViewer tree ) {
+		if (!OSValidator.isWindows()) { 
+			int saveWidth = tree.getTree().getColumn(0).getWidth();
+			tree.getTree().getColumn(0).setWidth(saveWidth==0?1:0);
+			tree.getTree().getColumn(0).setWidth(saveWidth);
+		}
 	}
 	
 	/**

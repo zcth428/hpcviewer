@@ -62,7 +62,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 * 			 	not a valid experiment.
 	 *************************************************************************/
 	
-	public void open(File experimentFile, IUserData userData)
+	public void open(File experimentFile, IUserData<String, String> userData)
 			throws Exception
 	{
 		open(experimentFile, userData, true);

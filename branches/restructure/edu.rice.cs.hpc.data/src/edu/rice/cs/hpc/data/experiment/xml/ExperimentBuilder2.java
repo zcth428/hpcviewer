@@ -49,7 +49,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 	 * 
 	 * @param need_metrics: do we need metrics ?
 	 */
-	public ExperimentBuilder2(BaseExperiment experiment, String defaultName, IUserData userData) {
+	public ExperimentBuilder2(BaseExperiment experiment, String defaultName, IUserData<String, String> userData) {
 		
 		super(experiment, defaultName, userData);
 		this.metricList = new ArrayList<BaseMetric>();

@@ -5,6 +5,13 @@ import java.io.Serializable;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 
+
+/***********************************************************************************
+ * 
+ * Frame class to store ROI (process and time range) and cursor position 
+ *  	(time, process and depth)
+ *
+ ***********************************************************************************/
 public class Frame implements Serializable
 {
 	
@@ -21,6 +28,16 @@ public class Frame implements Serializable
 	/**The depth of the frame saved*/
 	public int depth;
 	
+	/****
+	 * initialize frame with ROI and the cursor position (time, process and depth)
+	 * if the position is not within the range, it will automatically adjust it
+	 * into the middle of ROI
+	 * 
+	 * @param attributes
+	 * @param _depth
+	 * @param _selectedTime
+	 * @param _selectedProcess
+	 */
 	public Frame(ImageTraceAttributes attributes,
 			int _depth, long _selectedTime, int _selectedProcess)
 	{
@@ -29,6 +46,19 @@ public class Frame implements Serializable
 				_depth, _selectedTime, _selectedProcess);
 	}
 	
+	/****
+	 * initialize frame with ROI and the cursor position (time, process and depth)
+	 * if the position is not within the range, it will automatically adjust it
+	 * into the middle of ROI
+	 * 
+	 * @param timeBeg
+	 * @param timeEnd
+	 * @param ProcBeg
+	 * @param ProcEnd
+	 * @param depth
+	 * @param time
+	 * @param process
+	 */
 	public Frame(long timeBeg, long timeEnd, int ProcBeg, int ProcEnd,
 			int depth, long time, int process)
 	{
@@ -47,6 +77,13 @@ public class Frame implements Serializable
 		position	= new Position(time, process);
 	}
 	
+	/****
+	 * initialize frame by copying with the specified frame
+	 * if the position is not within the range, it will automatically adjust it
+	 * into the middle of ROI
+	 * 
+	 * @param frame
+	 */
 	public Frame(Frame frame)
 	{
 		this.begProcess = frame.begProcess;
@@ -55,6 +92,12 @@ public class Frame implements Serializable
 		this.endTime    = frame.endTime;
 		this.depth	 	= frame.depth;
 		this.position	= new Position(frame.position.time, frame.position.process);
+	}
+	
+	
+	public Frame(Position position)
+	{
+		this.position = position;
 	}
 	
 	public void set(int depth)

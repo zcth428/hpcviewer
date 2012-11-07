@@ -78,7 +78,7 @@ public class RichDocumentUndoManager implements IRichDocumentUndoManager {
 	 * Based on the DefaultUndoManager.TextCommand from R3.1.
 	 * </p>
 	 */
-	private class UndoableRichTextChange extends AbstractOperation {
+	public class UndoableRichTextChange extends AbstractOperation {
 
 		/** The start index of the replaced text. */
 		protected int fStart = -1;
@@ -529,7 +529,7 @@ public class RichDocumentUndoManager implements IRichDocumentUndoManager {
 	private class UndoableCompoundTextChange extends UndoableRichTextChange {
 
 		/** The list of individual changes */
-		private List fChanges = new ArrayList();
+		private ArrayList<UndoableRichTextChange> fChanges = new ArrayList<UndoableRichTextChange>();
 
 		/**
 		 * Creates a new compound text change.
@@ -943,7 +943,7 @@ public class RichDocumentUndoManager implements IRichDocumentUndoManager {
 	private ListenerList fDocumentUndoListeners;
 
 	/** The list of clients connected. */
-	private List fConnected;
+	private List<Object> fConnected;
 
 	private LayerManager manager;
 
@@ -961,7 +961,7 @@ public class RichDocumentUndoManager implements IRichDocumentUndoManager {
 		this.manager = manager;
 		fHistory = OperationHistoryFactory.getOperationHistory();
 		fUndoContext = new ObjectUndoContext(fDocument);
-		fConnected = new ArrayList();
+		fConnected = new ArrayList<Object>();
 		fDocumentUndoListeners = new ListenerList(ListenerList.IDENTITY);
 	}
 

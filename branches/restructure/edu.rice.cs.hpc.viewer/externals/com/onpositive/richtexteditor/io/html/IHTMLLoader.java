@@ -11,12 +11,6 @@
 
 package com.onpositive.richtexteditor.io.html;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-
-import com.onpositive.richtexteditor.model.ISimpleRichTextModel;
-
 /**
  * @author kor
  * Basic interface of html loader

@@ -34,9 +34,6 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
 public class DepthTimeCanvas extends SpaceTimeCanvas 
 implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
 {
-	
-	int maxDepth;
-	
 	Image imageBuffer;
 	
 	/**The left pixel's x location*/
@@ -87,14 +84,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	public void updateView(SpaceTimeData _stData)
 	{
 		this.stData = _stData;
-		this.maxDepth = _stData.getMaxDepth();
 		
 		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT)
 		{
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		this.home();
+		setTimeZoom(0, (long)stData.getWidth());
 	}
 	
 	/***
@@ -108,12 +104,9 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
 			{
-				//init();
 				final int viewWidth = getClientArea().width;
 				final int viewHeight = getClientArea().height;
 
-				//assertTimeBounds();
-				
 				if (viewWidth > 0 && viewHeight > 0) {
 					getDisplay().asyncExec(new ResizeThread( new DepthBufferPaint()));
 				}
@@ -161,13 +154,11 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScaleX())-2-topLeftPixelX);
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
+		
+		int maxDepth = stData.getMaxDepth();
 		event.gc.fillRectangle(topPixelCrossHairX-8,selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth)-1,20,4);
 	}
 	
-	public void home()
-	{
-		setTimeZoom(0, (long)stData.getWidth());
-	}
 	
 	/**************************************************************************
 	 * Sets the location of the crosshair to (_selectedTime, _selectedProcess).
@@ -240,7 +231,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	@Override
 	public double getScaleY() {
 		final Rectangle r = this.getClientArea();
-		return Math.max(r.height/(double)maxDepth, 1);
+		return Math.max(r.height/(double)stData.getMaxDepth(), 1);
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -496,8 +487,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			}
 		}
 	}
-	
-	public void executeOperation(final AbstractOperation operation)
+
+	/****
+	 * execute an operation
+	 * 
+	 * @param operation
+	 */
+	private void executeOperation(final AbstractOperation operation)
 	{
 		if (operation instanceof ZoomOperation) {
 			getDisplay().syncExec(new Runnable() {
@@ -516,5 +512,4 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			setDepth(depth);
 		}
 	}
-
 }

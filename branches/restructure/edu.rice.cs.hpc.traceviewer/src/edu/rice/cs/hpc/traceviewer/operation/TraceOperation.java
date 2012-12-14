@@ -52,6 +52,6 @@ public abstract class TraceOperation extends AbstractOperation {
 	public static void clear() 
 	{
 		TraceOperation.getOperationHistory().
-			dispose(undoableContext, false, false, false);
+			dispose(undoableContext, true, true, true);
 	}
 }

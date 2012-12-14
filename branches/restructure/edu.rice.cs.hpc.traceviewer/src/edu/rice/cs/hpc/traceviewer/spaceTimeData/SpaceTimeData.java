@@ -43,8 +43,6 @@ public class SpaceTimeData
 	
 	private String dbName;
 	
-	//private IStatusLineManager statusMgr;
-	
 	private IBaseData dataTrace;
 	final private File traceFile;
 	
@@ -52,14 +50,10 @@ public class SpaceTimeData
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 * @throws Exception 
 	 ************************************************************************/
-	public SpaceTimeData(File expFile, File traceFile/*, IStatusLineManager _statusMgr*/)
+	public SpaceTimeData(File expFile, File traceFile)
 			throws Exception, InvalExperimentException
 	{
-		//statusMgr = _statusMgr;
-
 		attributes = new ImageTraceAttributes();
-		
-		//statusMgr.getProgressMonitor();
 		
 		colorTable = new ColorTable();
 		
@@ -114,11 +108,6 @@ public class SpaceTimeData
 			currentPosition.process = (attributes.endProcess >> 1);
 		}
 	}
-	
-/*	public IStatusLineManager getStatusLineManager()
-	{
-		return statusMgr;
-	}*/
 	
 	
 	public HashMap<Integer, CallPath> getScopeMap()

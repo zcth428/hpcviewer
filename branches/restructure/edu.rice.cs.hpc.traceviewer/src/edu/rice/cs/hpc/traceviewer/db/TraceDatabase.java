@@ -16,6 +16,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
@@ -150,6 +151,8 @@ public class TraceDatabase
 			DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
 			dataService.setData(database.dataTraces);
 
+			TraceOperation.clear();
+			
 			try {
 				//---------------------------------------------------------------------
 				// Update the title of the application

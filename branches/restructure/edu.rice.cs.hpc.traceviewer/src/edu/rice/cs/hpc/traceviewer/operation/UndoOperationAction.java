@@ -3,7 +3,10 @@ package edu.rice.cs.hpc.traceviewer.operation;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 
 public class UndoOperationAction extends OperationHistoryAction {
 
@@ -39,29 +42,32 @@ public class UndoOperationAction extends OperationHistoryAction {
 	}
 
 	@Override
-	protected void setStatus() {
-		final IUndoableOperation []ops = getHistory(); 
-		boolean status = (ops.length>0);
-/*		if (ops.length==1) {
-			status = !(ops[0].getLabel().equals(ZoomOperation.ActionHome));
-		}
-		if (ops.length > 0)
-			System.out.println("UOA " + status + "\tl: " + ops.length +" \t[0]="+ops[0]);*/
-		setEnabled(status);
+	public Menu getMenu(Control parent) {
+		Menu menu = getMenu();
+		if (menu != null) 
+			menu.dispose();
+		
+		menu = new Menu(parent);
+		
+		IUndoableOperation[] operations = getHistory();
+		
+		// create a list of menus of undoable operations
+		for (int i=operations.length-2; i>=0; i--) {
+			final IUndoableOperation op = operations[i];
+			Action action = new Action(op.getLabel()) {
+				public void run() {
+					execute(op);
+				}
+			};
+			addActionToMenu(menu, action);
+		} 
+		return menu;
 	}
 
 	@Override
-	protected boolean canAct(IUndoableOperation operation, int index,
-			int indexEnd) 
-	{
-		boolean can = true;
-/*		if (index == 0) {
-			// the first "home" operation is not undoable. It's the init
-			if (operation instanceof ZoomOperation) {
-				final String label = ((ZoomOperation)operation).getLabel();
-				can = !(label.equals(ZoomOperation.ActionHome));
-			}
-		}*/
-		return can;
+	protected void setStatus() {
+		final IUndoableOperation []ops = getHistory(); 
+		boolean status = (ops.length>1);
+		setEnabled(status);
 	}
 }

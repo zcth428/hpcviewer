@@ -3,7 +3,10 @@ package edu.rice.cs.hpc.traceviewer.operation;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 
 public class RedoOperationAction extends OperationHistoryAction {
 
@@ -17,6 +20,30 @@ public class RedoOperationAction extends OperationHistoryAction {
 		return TraceOperation.getRedoHistory();
 	}
 
+	@Override
+	public Menu getMenu(Control parent) {
+		Menu menu = getMenu();
+		if (menu != null) 
+			menu.dispose();
+		
+		menu = new Menu(parent);
+		
+		IUndoableOperation[] operations = getHistory();
+		
+		// create a list of menus of undoable operations
+		for (int i=operations.length-1; i>=0; i--) {
+			final IUndoableOperation op = operations[i];
+			Action action = new Action(op.getLabel()) {
+				public void run() {
+					execute(op);
+				}
+			};
+			addActionToMenu(menu, action);
+		} 
+		return menu;
+	}
+
+	
 	@Override
 	protected void execute() {
 		try {
@@ -45,12 +72,4 @@ public class RedoOperationAction extends OperationHistoryAction {
 		final IUndoableOperation []ops = getHistory(); 
 		setEnabled(ops.length>0);
 	}
-
-
-	@Override
-	protected boolean canAct(IUndoableOperation operation, int index,
-			int indexEnd) {
-		return true;
-	}
-
 }

@@ -9,7 +9,6 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 
 /******
@@ -37,34 +36,15 @@ public abstract class OperationHistoryAction extends Action
 		}
 	}
 
-	@Override
-	public Menu getMenu(Control parent) {
-		if (menu != null) 
-			menu.dispose();
-		
-		menu = new Menu(parent);
-		
-		IUndoableOperation[] operations = getHistory();
-		
-		// create a list of menus of undoable operations
-		for (int i=operations.length-1; i>=0; i--) {
-			final IUndoableOperation op = operations[i];
-			if (canAct(op, i, operations.length-1)) 
-			{
-				Action action = new Action(op.getLabel()) {
-					public void run() {
-						execute(op);
-					}
-				};
-				addActionToMenu(menu, action);
-			}
-		} 
-		return menu;
-	}
 
 	@Override
 	public Menu getMenu(Menu parent) {
 		return null;
+	}
+	
+	protected Menu getMenu()
+	{
+		return menu;
 	}
 	
 	@Override
@@ -98,7 +78,6 @@ public abstract class OperationHistoryAction extends Action
 	}
 	
 	abstract protected IUndoableOperation[] getHistory();
-	abstract protected boolean canAct(IUndoableOperation operation, int index, int indexEnd);
 	abstract protected void execute();
 	abstract protected void execute(IUndoableOperation operation) ;
 	abstract protected void setStatus();

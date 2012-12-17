@@ -37,6 +37,18 @@ public class ScopeView extends BaseScopeView {
 	
     public static final String ID = "edu.rice.cs.hpc.viewer.scope.ScopeView";
 	
+    private int lastClickColumn = -1;
+    
+    
+    /***
+     * retrieve the last clicked column
+     * 
+     * @return the index of the last selected column. -1 if user hasn't clicked yet
+     */
+    public int getSelectedColumn() {
+    	return lastClickColumn;
+    }
+    
 	//@Override
     protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
@@ -51,7 +63,7 @@ public class ScopeView extends BaseScopeView {
 
 	//@Override
 	protected void mouseDownEvent(Event event) {
-    	this.getColumnMouseDown(event);
+		lastClickColumn = getColumnMouseDown(event);
 		
 	}
 

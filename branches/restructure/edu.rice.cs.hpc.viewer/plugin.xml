@@ -252,7 +252,7 @@
             </command>
             <command
                   commandId="edu.rice.cs.hpc.viewer.command.debug.showCCT"
-                  label="Show CCT label"
+                  label="Show CCT ID"
                   mnemonic="C"
                   style="toggle"
                   tooltip="Show the CCT ID label in the tree ">

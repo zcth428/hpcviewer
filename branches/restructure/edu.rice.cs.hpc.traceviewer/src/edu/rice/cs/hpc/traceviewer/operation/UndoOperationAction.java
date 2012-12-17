@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.operation;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IUndoableOperation;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Control;
@@ -21,15 +20,10 @@ public class UndoOperationAction extends OperationHistoryAction {
 
 	@Override
 	protected void execute() {
-		try {
-			IStatus status = TraceOperation.getOperationHistory().
-					undo(TraceOperation.undoableContext, null, null);
-			if (!status.isOK()) {
-				System.err.println("Cannot undo: " + status.getMessage());
-			}
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
+		IUndoableOperation[] operations = getHistory();
+		if (operations.length<2)
+			return;
+		execute(operations[operations.length-2]);
 	}
 
 	@Override
@@ -67,7 +61,7 @@ public class UndoOperationAction extends OperationHistoryAction {
 	@Override
 	protected void setStatus() {
 		final IUndoableOperation []ops = getHistory(); 
-		boolean status = (ops.length>1);
+		boolean status = (ops != null) && (ops.length>1);
 		setEnabled(status);
 	}
 }

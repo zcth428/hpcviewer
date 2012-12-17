@@ -30,7 +30,6 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**A view for displaying the depthview.*/
-//all the GUI setup for the depth view is here
 public class DepthTimeCanvas extends SpaceTimeCanvas 
 implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
 {
@@ -293,6 +292,9 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		}		
 	};
 	
+	/***
+	 * time zoom and notify other views
+	 */
     private void setDetail()
     {
 		long topLeftTime = (long)((double)leftSelection / getScaleX());

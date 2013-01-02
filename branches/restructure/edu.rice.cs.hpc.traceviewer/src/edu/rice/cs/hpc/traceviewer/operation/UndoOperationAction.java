@@ -7,6 +7,14 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 
+/***********************************************************************
+ * 
+ * Class to manage undo operations such as region change, depth change
+ * 	or processes pattern change
+ * 
+ * $Id$
+ *
+ ***********************************************************************/
 public class UndoOperationAction extends OperationHistoryAction {
 
 	public UndoOperationAction(ImageDescriptor img) {

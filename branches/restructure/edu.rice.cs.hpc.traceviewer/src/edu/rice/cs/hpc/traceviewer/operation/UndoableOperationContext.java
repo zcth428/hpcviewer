@@ -2,9 +2,17 @@ package edu.rice.cs.hpc.traceviewer.operation;
 
 import org.eclipse.core.commands.operations.IUndoContext;
 
+/***********************************************************************
+ * 
+ * Operation context for any undoable operations
+ * 
+ * $Id$
+ *
+ ***********************************************************************/
+
 public class UndoableOperationContext implements IUndoContext {
 
-	private final static String label = "PositionOperationContext";
+	private final static String label = "UndoableOperationContext";
 
 	@Override
 	public String getLabel() {

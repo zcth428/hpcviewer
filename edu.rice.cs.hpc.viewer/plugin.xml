@@ -264,6 +264,13 @@
                   style="toggle"
                   tooltip="Show the flat ID label in the tree ">
             </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.actions.ShowView"
+                  label="Show views"
+                  mnemonic="v"
+                  style="push"
+                  tooltip="Show views">
+            </command>
          </menu>
          <menu
          	   id="edu.rice.cs.hpc.viewer.menu.window"
@@ -362,6 +369,11 @@
                class="org.eclipse.ui.handlers.RegistryToggleState:false"
                id="org.eclipse.ui.commands.toggleState">
          </state>
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.ShowView"
+            id="edu.rice.cs.hpc.viewer.actions.ShowView"
+            name="Show view">
       </command>
    </extension>
    <extension

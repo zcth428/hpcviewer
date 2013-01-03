@@ -175,10 +175,10 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		Point miniBottomRight = new Point((int)topLeftPixelX+viewingWidth, (int)topLeftPixelY+viewingHeight);
 		
 		long detailTopLeftTime = (long)(miniTopLeft.x/getScaleX());
-		double detailTopLeftProcess = miniTopLeft.y/getScaleY();
+		int detailTopLeftProcess = (int) (miniTopLeft.y/getScaleY());
 		
 		long detailBottomRightTime = (long)((double)miniBottomRight.x / getScaleX());
-		double detailBottomRightProcess = miniBottomRight.y/getScaleY();
+		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
 
 		stData.attributes.begProcess = detailTopLeftProcess;
 		stData.attributes.endProcess = detailBottomRightProcess;

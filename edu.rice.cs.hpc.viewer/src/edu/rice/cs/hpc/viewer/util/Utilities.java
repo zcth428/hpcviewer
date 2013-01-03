@@ -158,8 +158,12 @@ public class Utilities {
 		boolean isChanged = false;
 		for (int i=0; i<fontTarget.length; i++) {
 			if (i < fontSource.length) {
-				FontData target = fontTarget[i];
 				FontData source = fontSource[i];
+				// bug: if the height is not common, we just do nothing, consider everything work fine
+				if (source.getHeight()<4 || source.getHeight()>99)
+					return false;
+				
+				FontData target = fontTarget[i];
 				isChanged = !( target.getName().equals(source.getName()) &&
 						(target.getHeight()==source.getHeight()) && 
 						(target.getStyle()==source.getStyle()) ) ;
@@ -220,9 +224,8 @@ public class Utilities {
 		}
 		
 		// find each open database so we can reset its views
-		for (int i=0 ; i<ViewerWindow.maxDbNum ; i++) {
+		for (Database db : vWin.getDatabases()) {
 			// get the views created for our database
-			Database db = vWin.getDb(i);
 			if (db == null) {
 				continue;		// not open just skip it
 			}

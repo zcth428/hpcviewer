@@ -1,10 +1,10 @@
 package edu.rice.cs.hpc.viewer.window;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.State;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.RegistryToggleState;
@@ -13,7 +13,6 @@ import org.eclipse.ui.services.ISourceProviderService;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
-import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.provider.DatabaseState;
 
 /**
@@ -44,7 +43,7 @@ public class ViewerWindow {
 	 * An array of performance databases (indexed by database number) that have 
 	 * been opened in this window.
 	 */
-	Database[] dbObj = new Database[maxDbNum];
+	ArrayList<Database> dbObj = new ArrayList<Database>(maxDbNum);
 
 	private Command cmdDebugCCT;
 	private Command cmdDebugFlat;
@@ -65,83 +64,33 @@ public class ViewerWindow {
 	 * @return
 	 */
 	public int getNextDbNum() {
-		for (int i=0 ; i<dbObj.length ; i++) {
-			if (dbObj[i] == null) {
-				return i;
-			}
-		}
-		return -1;
+		return dbObj.size();
 	}
 
-	public int getDbNum(Experiment experiment) {
-		return this.getDbNum(experiment.getXMLExperimentFile().getPath());
-	}
-	
-	public int getDbNum(String dbPath) {
-		for (int i=0 ; i<dbObj.length ; i++) {
-			if (dbObj[i] == null) {
-				continue;
-			}
-			String path = dbObj[i].getExperiment().getXMLExperimentFile().getPath();
-			if (dbPath.equals(path)) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	public Database getDb(int index) {
-		return dbObj[index];
-	}
 
 	public Database getDb(String dbPath) {
-		for (int i=0 ; i<dbObj.length ; i++) {
-			if (dbObj[i] == null) {
+		for (Database db: dbObj) {
+			if (db == null) {
 				continue;
 			}
-			String path = dbObj[i].getExperiment().getXMLExperimentFile().getPath();
+			String path = db.getExperiment().getXMLExperimentFile().getPath();
 			if (dbPath.equals(path)) {
-				return dbObj[i];
+				return db;
 			}
 		}
 		return null;
 	}
 
 	public Database getDb(Experiment experiment) {
-		for (int i=0 ; i<dbObj.length ; i++) {
-			if (dbObj[i] == null) {
-				continue;
-			}
-			if (dbObj[i].getExperiment().equals(experiment)) {
-				return dbObj[i];
-			}
-		}
-		return null;
+		return getDb(experiment.getXMLExperimentFile().getPath());
 	}
 
-	public Database getDb(ExperimentView view) {
-		for (int i=0 ; i<dbObj.length ; i++) {
-			if (dbObj[i] == null) {
-				continue;
-			}
-			if (dbObj[i].getExperimentView().equals(view)) {
-				return dbObj[i];
-			}
-		}
-		return null;
-	}
 
 	/**
 	 * Returns the number of open databases in this window.
 	 */
 	public int getOpenDatabases () {
-		int opened=0;
-		for (int i=0 ; i<maxDbNum ; i++) {
-			if (dbObj[i] != null) {
-				opened++;
-			}
-		}
-		return opened;
+		return dbObj.size();
 	}
 
 	/**
@@ -151,22 +100,9 @@ public class ViewerWindow {
 	 * @return
 	 */
 	public int addDatabase(Database database) {
-		// find an available spot in the array
-		for (int i=0 ; i<dbObj.length ; i++) {
-			if (dbObj[i] == null) {
-				dbObj[i] = database;
-
-				// refresh the menu state
-				checkService();
-				
-				return i;
-			}
-		}
-		// no empty slots, put out a dialog box to report we are unable to open another database
-		MessageDialog.openError(winObj.getShell(), 
-				"Error: Maximum Performance Database's already open.", 
-				"There are already " + maxDbNum + " performance databases opened in this window, can not open any more.");
-		return -1;
+		dbObj.add(database);
+		checkService();
+		return dbObj.size()-1;
 	}
 
 	/**
@@ -176,31 +112,31 @@ public class ViewerWindow {
 	 * @return
 	 */
 	public int removeDatabase (String databasePath) {
-		// look for the pathname of the database we want to remove
-		for (int i=0 ; i<maxDbNum ; i++) {
-			if (dbObj[i] == null) {
-				continue;
-			}
-			Experiment experiment = dbObj[i].getExperiment();
-			String xmlFileName = experiment.getXMLExperimentFile().getPath();
-			int dbDir = xmlFileName.lastIndexOf(File.separator);
-			// if this is the guy we want to go away, take him out now
-			if (xmlFileName.substring(0,dbDir).equals(databasePath)) {
-				dbObj[i].dispose();
-				// Database numbers are visible to the user (in titles).  So we do not
-				// compact the list, we only make this entry empty (set pointer to its 
-				// database class to null) so it can be reused if another open is done.
-				dbObj[i] = null;
-				
-				// refresh the menu state
-				checkService();
-				
-				return i;
-			}
-		}
-		return -1;
+		Database db = getDb(databasePath);
+		assert(db != null);
+		
+		dbObj.remove(db);
+		checkService();
+
+		return dbObj.size()-1;
 	}
 
+	public int getDbNum(Experiment experiment) {
+		int i=0;
+		for (Database db: dbObj) {
+			if (db == null) {
+				continue;
+			}
+			Experiment current = db.getExperiment();
+			if (experiment.equals(current)) {
+				break;
+			}
+			i++;
+		}
+		return i;
+	}
+
+	
 	/****
 	 * Remove (nullify) all the allocated resources
 	 */
@@ -210,6 +146,12 @@ public class ViewerWindow {
 				db.dispose();
 		}
 		dbObj = null;
+	}
+	
+	public Database[] getDatabases() {
+		Database []db = new Database[dbObj.size()];
+		dbObj.toArray(db);
+		return db;
 	}
 	
 	/*****
@@ -222,11 +164,12 @@ public class ViewerWindow {
 			return null;
 		Experiment []experiments = new Experiment[numDb];
 		
-		for (int i=0, j=0; i<maxDbNum; i++) {
-			if (dbObj[i] == null)
+		int i=0;
+		for (Database db: dbObj) {
+			if (db == null)
 				continue;
-			experiments[j] = dbObj[i].getExperiment();
-			j++;
+			experiments[i] = db.getExperiment();
+			i++;
 		}
 		return experiments;
 	}
@@ -239,14 +182,15 @@ public class ViewerWindow {
 	public String[] getDatabasePaths () {
 		String[] dbArray = new String[getOpenDatabases()];
 		
-		for (int i=0, j=0 ; i<maxDbNum ; i++) {
-			if (dbObj[i] == null) {
+		int i=0;
+		for (Database db : dbObj) {
+			if (dbObj == null) {
 				continue;
 			}
-			Experiment experiment = dbObj[i].getExperiment();
+			Experiment experiment = db.getExperiment();
 			String xmlFileName = experiment.getXMLExperimentFile().getPath();
 			int dbDir = xmlFileName.lastIndexOf(File.separator);
-			dbArray[j++] = xmlFileName.substring(0,dbDir);
+			dbArray[i++] = xmlFileName.substring(0,dbDir);
 		}
 
 		return dbArray;

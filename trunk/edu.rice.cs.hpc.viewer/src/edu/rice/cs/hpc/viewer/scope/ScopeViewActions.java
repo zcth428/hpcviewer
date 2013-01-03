@@ -393,7 +393,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 				System.out.printf("ScopeViewActions.addExtNewMetric: ViewerWindow class not found\n");
 				return;
 			}
-			int dbNum = vWin.getDbNum(sFilename);
+			int dbNum = vWin.getDbNum(exp);
 			if (dbNum < 0) {
 				System.out.printf("ScopeViewActions.addExtNewMetric: Database for path " + sFilename + " not found\n");
 				return;

@@ -508,7 +508,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     	return this.myRootScope;
     }
     
-    protected Database getDatabase() {
+    public Database getDatabase() {
     	return database;
     }
     //======================================================

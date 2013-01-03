@@ -25,7 +25,7 @@ using namespace MPI;
 namespace TraceviewerServer
 {
 	bool Compression = true;
-	int MainPort = 21590;
+	int MainPort = DEFAULT_PORT;
 	int XMLPort = 0;
 
 	static SpaceTimeDataControllerLocal* STDCL;
@@ -60,7 +60,7 @@ namespace TraceviewerServer
 		} catch (std::exception& e)
 		{
 			std::cerr << e.what() << std::endl;
-			return -3;
+			return ERROR_STREAM_OPEN_FAILED;
 		}
 		MainPort = socketptr->GetPort();
 		cout << "Received connection" << endl;
@@ -68,7 +68,7 @@ namespace TraceviewerServer
 		//vector<char> test(4);
 		//as::read(*socketptr, as::buffer(test));
 		int Command = socketptr->ReadInt();
-		if (Command == Constants::OPEN)
+		if (Command == OPEN)
 		{
 			while( RunConnection(socketptr)==1)
 				;
@@ -76,7 +76,7 @@ namespace TraceviewerServer
 		else
 		{
 			cerr << "Expected an open command, got " << Command << endl;
-			return -77;
+			return ERROR_EXPECTED_OPEN_COMMAND;
 		}
 		return 0;
 	}
@@ -90,7 +90,7 @@ namespace TraceviewerServer
 		{
 			cout << "Could not open database" << endl;
 			SendDBOpenFailed(socketptr);
-			return -4;
+			return ERROR_DB_OPEN_FAILED;
 		}
 		else
 		{
@@ -99,7 +99,7 @@ namespace TraceviewerServer
 		}
 
 		int Message = socketptr->ReadInt();
-		if (Message == Constants::INFO)
+		if (Message == INFO)
 			ParseInfo(socketptr);
 		else
 			cerr << "Did not receive info packet" << endl;
@@ -110,18 +110,18 @@ namespace TraceviewerServer
 			int NextCommand = socketptr->ReadInt();
 			switch (NextCommand)
 			{
-				case Constants::DATA:
+				case DATA:
 					GetAndSendData(socketptr);
 					break;
-				case Constants::DONE:
+				case DONE:
 					EndingConnection = true;
 					break;
-				case Constants::OPEN:
+				case OPEN:
 					EndingConnection = true;
 					return 1;
 				default:
 					cerr << "Unknown command received" << endl;
-					return (-7);
+					return (ERROR_UNKNOWN_COMMAND);
 					break;
 			}
 		}
@@ -137,7 +137,7 @@ namespace TraceviewerServer
 		STDCL->SetInfo(minBegTime, maxEndTime, headerSize);
 #ifdef UseMPI
 		MPICommunication::CommandMessage Info;
-		Info.Command = Constants::INFO;
+		Info.Command = INFO;
 		Info.minfo.minBegTime = minBegTime;
 		Info.minfo.maxEndTime = maxEndTime;
 		Info.minfo.headerSize = headerSize;
@@ -147,7 +147,7 @@ namespace TraceviewerServer
 	void Server::SendDBOpenedSuccessfully(DataSocketStream* socket)
 	{
 
-		socket->WriteInt(Constants::DBOK);
+		socket->WriteInt(DBOK);
 
 		//int port = 2224;
 
@@ -194,7 +194,7 @@ namespace TraceviewerServer
 		}
 		else
 		{
-			XmlSocket->WriteInt(Constants::EXML);
+			XmlSocket->WriteInt(EXML);
 		}
 		vector<char> CompressedXML = CompressXML();
 		XmlSocket->WriteInt(CompressedXML.size());
@@ -281,11 +281,11 @@ namespace TraceviewerServer
 		if (STDCL != NULL)
 		{
 		MPICommunication::CommandMessage cmdPathToDB;
-		cmdPathToDB.Command = Constants::OPEN;
-		if (PathToDB.length() > 1023)
+		cmdPathToDB.Command = OPEN;
+		if (PathToDB.length() > MAX_DB_PATH_LENGTH)
 		{
 			cerr << "Path too long" << endl;
-			throw 1008;
+			throw ERROR_PATH_TOO_LONG;
 		}
 		copy(PathToDB.begin(), PathToDB.end(), cmdPathToDB.ofile.Path);
 		cmdPathToDB.ofile.Path[PathToDB.size()] = '\0';
@@ -300,7 +300,7 @@ namespace TraceviewerServer
 
 	void Server::SendDBOpenFailed(DataSocketStream* socket)
 	{
-		socket->WriteInt(Constants::NODB);
+		socket->WriteInt(NODB);
 		socket->WriteInt(0);
 		socket->Flush();
 	}
@@ -324,7 +324,7 @@ namespace TraceviewerServer
 			cerr
 					<< "A data request with invalid parameters was received. This sometimes happens if the client shuts down in the middle of a request. The server will now shut down."
 					<< endl;
-			throw(-99);
+			throw(ERROR_INVALID_PARAMETERS);
 		}
 
 #ifdef NoMPI
@@ -348,7 +348,7 @@ namespace TraceviewerServer
 		STDCL->FillTraces(-1, true);
 #else
 		MPICommunication::CommandMessage toBcast;
-		toBcast.Command = Constants::DATA;
+		toBcast.Command = DATA;
 		toBcast.gdata.processStart = processStart;
 		toBcast.gdata.processEnd = processEnd;
 		toBcast.gdata.timeStart = timeStart;
@@ -359,7 +359,7 @@ namespace TraceviewerServer
 				MPICommunication::SOCKET_SERVER);
 #endif
 
-		Stream->WriteInt(Constants::HERE);
+		Stream->WriteInt(HERE);
 		Stream->Flush();
 
 
@@ -407,7 +407,7 @@ namespace TraceviewerServer
 		{
 			MPICommunication::ResultMessage msg;
 			COMM_WORLD.Recv(&msg, sizeof(msg), MPI_PACKED, MPI_ANY_SOURCE, MPI_ANY_TAG);
-			if (msg.Tag == Constants::SLAVE_REPLY)
+			if (msg.Tag == SLAVE_REPLY)
 			{
 
 				//Stream->WriteInt(msg.Data.Line);
@@ -426,7 +426,7 @@ namespace TraceviewerServer
 				//delete(&msg);
 				Stream->Flush();
 			}
-			else if (msg.Tag == Constants::SLAVE_DONE)
+			else if (msg.Tag == SLAVE_DONE)
 			{
 				cout << "Rank " << msg.Done.RankID << " done" << endl;
 				RanksDone++;

@@ -37,7 +37,7 @@ namespace TraceviewerServer
 					MPICommunication::SOCKET_SERVER);
 			switch (Message.Command)
 			{
-				case Constants::OPEN:
+				case OPEN:
 					if (STDCLNeedsDeleting)
 					{
 						delete (STDCL);
@@ -49,25 +49,25 @@ namespace TraceviewerServer
 						STDCLNeedsDeleting = true;
 					}
 					break;
-				case Constants::INFO:
+				case INFO:
 					STDCL->SetInfo(Message.minfo.minBegTime, Message.minfo.maxEndTime,
 							Message.minfo.headerSize);
 					break;
-				case Constants::DATA:
+				case DATA:
 				{
 					int LinesSent = GetData(&Message);
 					MPICommunication::ResultMessage NodeFinishedMsg;
-					NodeFinishedMsg.Tag = Constants::SLAVE_DONE;
+					NodeFinishedMsg.Tag = SLAVE_DONE;
 					NodeFinishedMsg.Done.RankID = COMM_WORLD.Get_rank();
 					NodeFinishedMsg.Done.TraceLinesSent = LinesSent;
 					cout << "Rank " << NodeFinishedMsg.Done.RankID << " done, having created "
 							<< LinesSent << " trace lines." << endl;
-					int SizeToSend = 3 * Constants::SIZEOF_INT;
+					int SizeToSend = 3 * SIZEOF_INT;
 					COMM_WORLD.Send(&NodeFinishedMsg, SizeToSend, MPI_PACKED,
 							MPICommunication::SOCKET_SERVER, 0);
 					break;
 				}
-				case Constants::DONE: //Server shutdown
+				case DONE: //Server shutdown
 					return;
 				default:
 					cerr << "Unexpected message command: " << Message.Command << endl;
@@ -149,7 +149,7 @@ namespace TraceviewerServer
 
 			vector<TimeCPID>* ActualData = &NextTrace->Data->ListCPID;
 			MPICommunication::ResultMessage msg;
-			msg.Tag = Constants::SLAVE_REPLY;
+			msg.Tag = SLAVE_REPLY;
 			msg.Data.Line = NextTrace->Line();
 			int entries = ActualData->size();
 			msg.Data.Entries = entries;
@@ -183,7 +183,7 @@ namespace TraceviewerServer
 			else
 			{
 
-				OutputBuffer = new unsigned char[entries*Constants::SIZEOF_INT];
+				OutputBuffer = new unsigned char[entries*SIZEOF_INT];
 				char* ptrToFirstElem = (char*)&(OutputBuffer[0]);
 				int CurrIndexInBuff = 0;
 				for (i = 0; i < entries; i++)

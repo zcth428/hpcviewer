@@ -9,34 +9,34 @@
 #define CONSTANTS_H_
 namespace TraceviewerServer
 {
-	class Constants
-	{
-	public:
-		static const int MULTI_PROCESSES = 1;
-		static const int MULTI_THREADING = 2;
 
-		static const int SIZEOF_LONG = 8;
-		static const int SIZEOF_INT = 4;
+#define SIZEOF_LONG 8
+#define SIZEOF_INT 4
+#define MULTI_PROCESSES  1
+#define MULTI_THREADING  2
 
-		static const char* XML_FILENAME()
-		{
-			return "experiment.xml";
-		}
-		static const char* TRACE_FILENAME()
-		{
-			return "experiment.mt";
-		}
+	#define DEFAULT_PORT 21590
+	#define MAX_DB_PATH_LENGTH 1023
 
-		static const int DATA = 0x44415441;
-		static const int OPEN = 0x4F50454E;
-		static const int HERE = 0x48455245;
-		static const int DONE = 0x444F4E45;
-		static const int DBOK = 0x44424F4B;
-		static const int INFO = 0x494E464F;
-		static const int NODB = 0x4E4F4442;
-		static const int EXML = 0x45584D4C;
-		static const int SLAVE_REPLY = 0x12345678;
-		static const int SLAVE_DONE = 0x87654321;
-	};
+	//Message headers:
+	#define DATA 0x44415441
+	#define OPEN 0x4F50454E
+	#define HERE 0x48455245
+	#define DONE 0x444F4E45
+	#define DBOK 0x44424F4B
+	#define INFO 0x494E464F
+	#define NODB 0x4E4F4442
+	#define EXML 0x45584D4C
+	#define SLAVE_REPLY 0x12345678
+	#define SLAVE_DONE 0x87654321
+
+	//Error Codes
+	#define ERROR_STREAM_OPEN_FAILED -3
+	#define ERROR_EXPECTED_OPEN_COMMAND -77
+	#define ERROR_DB_OPEN_FAILED -4
+	#define ERROR_UNKNOWN_COMMAND -7
+	#define ERROR_PATH_TOO_LONG -9
+	#define ERROR_INVALID_PARAMETERS -99
+
 }
 #endif /* CONSTANTS_H_ */

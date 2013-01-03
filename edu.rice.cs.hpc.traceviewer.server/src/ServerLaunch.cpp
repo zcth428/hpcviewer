@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 		}
 		cout<<"Server done, closing..."<<endl;
 		TraceviewerServer::MPICommunication::CommandMessage serverShutdown;
-		serverShutdown.Command = TraceviewerServer::Constants::DONE;
+		serverShutdown.Command = DONE;
 		COMM_WORLD.Bcast(&serverShutdown, sizeof(serverShutdown), MPI_PACKED,
 				TraceviewerServer::MPICommunication::SOCKET_SERVER);
 	}

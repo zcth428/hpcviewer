@@ -220,7 +220,7 @@ cerr<<"Maxloc is smaller than Minloc!! Maxloc= "<<Maxloc << " Minloc= " << Minlo
 	{
 		LargeByteBuffer* const MasterBuff = Data->getMasterBuffer();
 		const double time = MasterBuff->GetLong(location);
-		const int CPID = MasterBuff->GetInt(location + Constants::SIZEOF_LONG);
+		const int CPID = MasterBuff->GetInt(location + SIZEOF_LONG);
 		TimeCPID ToReturn(time, CPID);
 		return ToReturn;
 	}

@@ -7,13 +7,14 @@
 
 #include "LocalDBOpener.h"
 #include <iostream>
-#include "Constants.h"
 #include "MergeDataFiles.h"
 #include "TraceDataByRankLocal.h"
 #include "FileUtils.h"
 
 namespace TraceviewerServer
 {
+	#define XML_FILENAME "experiment.xml"
+	#define TRACE_FILENAME "experiment.mt"
 
 	LocalDBOpener::LocalDBOpener()
 	{
@@ -61,7 +62,7 @@ namespace TraceviewerServer
 		if (FileUtils::ExistsAndIsDir(directory))
 		{
 			cout << "\tExists and is a directory"<<endl;
-			location->fileXML = FileUtils::CombinePaths(directory, Constants::XML_FILENAME());
+			location->fileXML = FileUtils::CombinePaths(directory, XML_FILENAME);
 			cout << "\tTrying to open "<<location->fileXML<<endl;
 			FILE* XMLfile = fopen(location->fileXML.c_str(), "r");
 			//Equivalent of canRead, I believe.
@@ -70,7 +71,7 @@ namespace TraceviewerServer
 				cout<<"\tXML file is not null"<<endl;
 				try
 				{
-					std::string OutputFile = FileUtils::CombinePaths(directory, Constants::TRACE_FILENAME());
+					std::string OutputFile = FileUtils::CombinePaths(directory, TRACE_FILENAME);
 					cout<<"\tTrying to open "<<OutputFile<<endl;
 					MergeDataAttribute att = MergeDataFiles::merge(directory, "*.hpctrace",
 							OutputFile);

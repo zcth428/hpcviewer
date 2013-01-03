@@ -7,8 +7,8 @@
 
 #include "BaseDataFile.h"
 #include <iostream>
-#include "Constants.h"
 #include <sstream>
+#include "Constants.h"
 
 using namespace std;
 
@@ -17,6 +17,9 @@ namespace TraceviewerServer
 //-----------------------------------------------------------
 // Global variables
 //-----------------------------------------------------------
+
+
+
 
 	BaseDataFile::BaseDataFile(string filename, int HeaderSize)
 	{
@@ -57,24 +60,24 @@ namespace TraceviewerServer
 		MasterBuff = new LargeByteBuffer(filename, HeaderSize);
 
 		Type = MasterBuff->GetInt(0);
-		NumFiles = MasterBuff->GetInt(Constants::SIZEOF_INT);
+		NumFiles = MasterBuff->GetInt(SIZEOF_INT);
 
 		ProcessIDs = new int[NumFiles];
 		ThreadIDs = new short[NumFiles];
 		Offsets = new Long[NumFiles];
 
-		Long current_pos = Constants::SIZEOF_INT * 2;
+		Long current_pos = SIZEOF_INT * 2;
 
 		// get the procs and threads IDs
 		for (int i = 0; i < NumFiles; i++)
 		{
 			const int proc_id = MasterBuff->GetInt(current_pos);
-			current_pos += Constants::SIZEOF_INT;
+			current_pos += SIZEOF_INT;
 			const int thread_id = MasterBuff->GetInt(current_pos);
-			current_pos += Constants::SIZEOF_INT;
+			current_pos += SIZEOF_INT;
 
 			Offsets[i] = MasterBuff->GetLong(current_pos);
-			current_pos += Constants::SIZEOF_LONG;
+			current_pos += SIZEOF_LONG;
 
 			//--------------------------------------------------------------------
 			// adding list of x-axis
@@ -106,12 +109,12 @@ namespace TraceviewerServer
 //Check if the application is a multi-processing program (like MPI)
 	bool BaseDataFile::IsMultiProcess()
 	{
-		return (Type & Constants::MULTI_PROCESSES) != 0;
+		return (Type & MULTI_PROCESSES) != 0;
 	}
 //Check if the application is a multi-threading program (OpenMP for instance)
 	bool BaseDataFile::IsMultiThreading()
 	{
-		return (Type & Constants::MULTI_THREADING) != 0;
+		return (Type & MULTI_THREADING) != 0;
 	}
 //Check if the application is a hybrid program (MPI+OpenMP)
 	bool BaseDataFile::IsHybrid()

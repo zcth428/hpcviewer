@@ -68,9 +68,9 @@ namespace TraceviewerServer
 		sort(Filtered.begin(), Filtered.end());
 
 		dos.WriteInt(Filtered.size());
-		const Long num_metric_header = 2 * Constants::SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes)
+		const Long num_metric_header = 2 * SIZEOF_INT; // type of app (4 bytes) + num procs (4 bytes)
 		const Long num_metric_index = Filtered.size()
-				* (Constants::SIZEOF_LONG + 2 * Constants::SIZEOF_INT);
+				* (SIZEOF_LONG + 2 * SIZEOF_INT);
 		Long offset = num_metric_header + num_metric_index;
 
 		int name_format = 0; // FIXME hack:some hpcprof revisions have different format name !!
@@ -111,11 +111,11 @@ namespace TraceviewerServer
 			}
 			dos.WriteInt(proc);
 			if (proc != 0)
-				type |= Constants::MULTI_PROCESSES;
+				type |= MULTI_PROCESSES;
 			const int Thread = atoi(tokens[name_format + num_tokens - THREAD_POS].c_str());
 			dos.WriteInt(Thread);
 			if (Thread != 0)
-				type |= Constants::MULTI_THREADING;
+				type |= MULTI_THREADING;
 			dos.WriteLong(offset);
 			offset += FileUtils::GetFileSize(Filename);
 		}
@@ -175,7 +175,7 @@ namespace TraceviewerServer
 	{
 		ifstream f(filename->c_str(), ios_base::binary | ios_base::in);
 		bool IsCorrect = false;
-		const Long pos = FileUtils::GetFileSize(*filename) - Constants::SIZEOF_LONG;
+		const Long pos = FileUtils::GetFileSize(*filename) - SIZEOF_LONG;
 		int diff;
 		if (pos > 0)
 		{

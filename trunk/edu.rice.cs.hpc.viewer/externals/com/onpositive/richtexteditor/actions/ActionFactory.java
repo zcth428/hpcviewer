@@ -35,7 +35,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
@@ -44,7 +43,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import com.onpositive.richtexteditor.dialogs.FontConfigurationDialog;
 import com.onpositive.richtexteditor.dialogs.HyperlinkDialog;
 import com.onpositive.richtexteditor.model.FontStyle;
-import com.onpositive.richtexteditor.model.FontStylesChangeListener;
 import com.onpositive.richtexteditor.model.LayerManager;
 import com.onpositive.richtexteditor.model.RichSelectionState;
 import com.onpositive.richtexteditor.model.partitions.BasePartition;
@@ -690,7 +688,7 @@ public class ActionFactory implements ISelectionChangedListener,IRichDocumentLis
 	public void fillToolbarManager(IContributionManager toolbarManager) 
 	{
 		List<IContributionItem> itemsList = createActionsList();
-		for (Iterator iterator = itemsList.iterator(); iterator.hasNext();)
+		for (Iterator<IContributionItem> iterator = itemsList.iterator(); iterator.hasNext();)
 		{
 			IContributionItem contributionItem = (IContributionItem) iterator
 					.next();
@@ -871,7 +869,6 @@ public class ActionFactory implements ISelectionChangedListener,IRichDocumentLis
 		partition.setItalic(getItalicAction().isChecked());
 		partition.setUnderlined(getUnderlineAction().isChecked());
 		partition.setStrikethrough(getStrikeThroughAction().isChecked());
-		String fontDataName = FontStyle.NORMAL_FONT_NAME; //by default
 		if (combo.getSelectionIndex() > -1)
 		{
 			manager.getFontStyleManager().getFontStyle(combo.getItem(combo.getSelectionIndex())).applyStyle(partition);

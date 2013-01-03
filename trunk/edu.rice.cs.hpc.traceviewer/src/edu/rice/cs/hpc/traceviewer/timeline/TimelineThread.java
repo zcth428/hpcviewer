@@ -1,14 +1,17 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
+import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
-import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /***********************************************************
@@ -27,9 +30,6 @@ public class TimelineThread extends Thread
 	/**Stores whether or not the bounds have been changed*/
 	private boolean changedBounds;
 	
-	/**Stores whether a SpaceTimeDetailCanvas or a DepthTimeCanvas is being painted*/
-	private boolean detailPaint;
-	
 	/**The canvas on which to paint.*/
 	private Canvas canvas;
 	
@@ -43,18 +43,27 @@ public class TimelineThread extends Thread
 	private double scaleY;
 
 	/**The minimum height the samples need to be in order to paint the white separator lines.*/
-	private final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
+	final static byte MIN_HEIGHT_FOR_SEPARATOR_LINES = 15;
 	
 	final private TimelineProgressMonitor monitor;
 	
 	final private IWorkbenchWindow window;
 	
+	final private ProcessTimelineService traceService;
+	final private Image[] compositeFinalLines;
+	
+	/**The composite images created by painting all of the samples in a given line to it.*/
+	final private Image[] compositeOrigLines;
+	
+	final private AtomicInteger lineNum;
+
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, 
-			boolean _changedBounds, Canvas _canvas, int _width, 
+	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, ProcessTimelineService traceService,
+			AtomicInteger lineNum, boolean _changedBounds, Canvas _canvas, 
+			Image[] compositeOrigLines, Image[] compositeFinalLines, int _width, 
 			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
@@ -64,10 +73,13 @@ public class TimelineThread extends Thread
 		width = _width;
 		scaleX = _scaleX;
 		scaleY = _scaleY;
-		detailPaint = canvas instanceof SpaceTimeDetailCanvas;
 		
 		monitor = _monitor;
+		this.lineNum = lineNum;
 		this.window = window;
+		this.traceService = traceService;
+		this.compositeOrigLines = compositeOrigLines;
+		this.compositeFinalLines = compositeFinalLines;
 	}
 	
 	/***************************************************************
@@ -78,71 +90,132 @@ public class TimelineThread extends Thread
 	 ***************************************************************/
 	public void run()
 	{
-		if (detailPaint)
+		ProcessTimeline nextTrace = getNextTrace(changedBounds);
+		while(nextTrace != null)
 		{
-			ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
-			while(nextTrace != null)
+			if(changedBounds)
 			{
-				if(changedBounds)
-				{
-					nextTrace.readInData(stData.getHeight());
-					stData.addNextTrace(nextTrace);
-				}
-				
-				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-					imageHeight--;
-				else
-					imageHeight++;
-				
-				Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
-				Image lineOriginal = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gcFinal = new GC(lineFinal);
-				GC gcOriginal = new GC(lineOriginal);
-				
-				SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
-						scaleX, scaleY );
-				stData.paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
-				
-				gcFinal.dispose();
-				gcOriginal.dispose();
-				
-				stData.addNextImage(lineOriginal, lineFinal, nextTrace.line());
-				
-				monitor.announceProgress();
-				
-				nextTrace = stData.getNextTrace(changedBounds);
+				nextTrace.readInData(stData.getHeight());
+				addNextTrace(nextTrace);
 			}
-		}
-		else
-		{
-			ProcessTimeline nextTrace = stData.getNextDepthTrace();
-			while (nextTrace != null)
-			{
-				int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-				if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-					imageHeight--;
-				else
-					imageHeight++;
-				
-				Image line = new Image(canvas.getDisplay(), width, imageHeight);
-				GC gc = new GC(line);
-				SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY) {
-
-					//@Override
-					public void paintSample(int startPixel, int endPixel,
-							int height, String function) {
-
-						this.internalPaint(gc, startPixel, endPixel, height, function);
-					}
-				};
-				
-				stData.paintDepthLine(spp, nextTrace.line(), imageHeight);
-				gc.dispose();
-				
-				stData.addNextImage(line, nextTrace.line());
-				nextTrace = stData.getNextDepthTrace();
-			}
+			
+			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
+			if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
+				imageHeight--;
+			else
+				imageHeight++;
+			
+			Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
+			Image lineOriginal = new Image(canvas.getDisplay(), width, imageHeight);
+			GC gcFinal = new GC(lineFinal);
+			GC gcOriginal = new GC(lineOriginal);
+			
+			SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
+					scaleX, scaleY );
+			paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
+			
+			gcFinal.dispose();
+			gcOriginal.dispose();
+			
+			addNextImage(lineOriginal, lineFinal, nextTrace.line());
+			
+			monitor.announceProgress();
+			
+			nextTrace = getNextTrace(changedBounds);
 		}
 	}
+	
+	/*************************************************************************
+	 * paint a space time detail line 
+	 *  
+	 * @param spp
+	 * @param process
+	 * @param height
+	 * @param changedBounds
+	 *************************************************************************/
+	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, boolean changedBounds)
+	{
+		ProcessTimeline ptl = traceService.getProcessTimeline(process);
+		if (ptl == null || ptl.size()<2 )
+			return;
+		
+		if (changedBounds)
+			ptl.shiftTimeBy(stData.getMinBegTime());
+		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
+		
+		// do the paint
+		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
+				stData.attributes.begTime, stData.getDepth(), height, pixelLength)
+		{
+			//@Override
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
+			{
+				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
+				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
+				
+				final boolean isOverDepth = (currDepth < depth);
+				// write texts (depth and number of samples) if needed
+				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, stData.attributes.numPixelsH), 
+						currDepth, functionName, isOverDepth, sampleCount);
+			}
+		};
+		detailPaint.paint();
+	}
+
+	
+	/**Returns the index of the file to which the line-th line corresponds.*/
+	public int lineToPaint(int line)
+	{
+		int numTimelinesToPaint = stData.attributes.endProcess - stData.attributes.begProcess;
+		if(numTimelinesToPaint > stData.attributes.numPixelsV)
+			return stData.attributes.begProcess + (line * numTimelinesToPaint)/(stData.attributes.numPixelsV);
+		else
+			return stData.attributes.begProcess + line;
+	}
+
+	/***********************************************************************
+	 * Gets the next available trace to be filled/painted
+	 * @param changedBounds Whether or not the thread should get the data.
+	 * @return The next trace.
+	 **********************************************************************/
+	public ProcessTimeline getNextTrace(boolean changedBounds)
+	{
+		ProcessTimeline ptr = null;
+		int line = lineNum.getAndIncrement();
+		
+		if(line < Math.min(stData.attributes.numPixelsV, 
+				stData.attributes.endProcess-stData.attributes.begProcess))
+		{
+			if(changedBounds) {
+				ptr = new ProcessTimeline(line, stData.getScopeMap(), 
+						stData.getBaseData(), 
+						lineToPaint(line), stData.attributes.numPixelsH, 
+						stData.attributes.endTime-stData.attributes.begTime, 
+						stData.getMinBegTime() + stData.attributes.begTime);
+			} else {
+				int num_traces = traceService.getNumProcessTimeline();
+				if (num_traces >= line)
+					ptr = traceService.getProcessTimeline(line);
+				else
+					System.err.println("STD error: trace paints " + num_traces + " < line number " + line);
+			}
+		}
+		return ptr;
+	}
+	
+	
+	/**Adds a filled ProcessTimeline to traces - used by TimelineThreads.*/
+	synchronized public void addNextTrace(ProcessTimeline nextPtl)
+	{
+		traceService.setProcessTimeline(nextPtl.line(), nextPtl);
+	}
+
+	
+	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
+	synchronized public void addNextImage(Image imgOriginal, Image imgFinal, int index)
+	{
+		compositeOrigLines[index] = imgOriginal;
+		compositeFinalLines[index] = imgFinal;
+	}
+
 }

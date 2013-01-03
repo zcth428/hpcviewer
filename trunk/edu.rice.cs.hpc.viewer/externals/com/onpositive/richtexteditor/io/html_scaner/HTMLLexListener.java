@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.RGB;
 import com.onpositive.richtexteditor.model.BulletFactory;
 import com.onpositive.richtexteditor.model.BasePartitionLayer;
 import com.onpositive.richtexteditor.model.LayerManager;
-import com.onpositive.richtexteditor.model.Logger;
 import com.onpositive.richtexteditor.model.partitions.BasePartition;
 import com.onpositive.richtexteditor.model.partitions.HRPartition;
 import com.onpositive.richtexteditor.model.partitions.ImagePartition;
@@ -511,7 +510,7 @@ public class HTMLLexListener implements ILexListener {
 	 */
 	protected String getStyleStringForStyleMap(HashMap<String, String> styleMap) {
 		String resString = "";
-		for (Iterator iterator = styleMap.keySet().iterator(); iterator
+		for (Iterator<String> iterator = styleMap.keySet().iterator(); iterator
 				.hasNext();) {
 			String key = (String) iterator.next();
 			resString = resString + key + ":" + styleMap.get(key) + ";";

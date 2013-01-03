@@ -63,7 +63,7 @@ public abstract class ExperimentFile
  ************************************************************************/
 	
 public abstract void parse(File file, BaseExperiment experiment, 
-		boolean need_metrics, IUserData userData)
+		boolean need_metrics, IUserData<String, String> userData)
 throws
 	Exception;
 

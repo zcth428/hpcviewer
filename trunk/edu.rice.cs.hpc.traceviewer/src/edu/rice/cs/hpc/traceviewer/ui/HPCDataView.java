@@ -9,13 +9,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
-import edu.rice.cs.hpc.traceviewer.events.ITraceData;
-import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
+//import edu.rice.cs.hpc.traceviewer.events.ITraceData;
+//import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /// A view for displaying application data objects
-public class HPCDataView extends ViewPart implements ISizeProvider, ITraceData, ITracePosition
+public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData, ITracePosition
 {
 	public static final String ID = "hpcdataview.view";
 	
@@ -64,8 +64,8 @@ public class HPCDataView extends ViewPart implements ISizeProvider, ITraceData, 
 		this.stData = _stData;		
 		this.dataViewer.updateView(_stData);
 		
-		stData.addDataListener(this);
-		stData.addPositionListener(this);
+//		stData.addDataListener(this);
+//		stData.addPositionListener(this);
 	}
 
 	public void setFocus()

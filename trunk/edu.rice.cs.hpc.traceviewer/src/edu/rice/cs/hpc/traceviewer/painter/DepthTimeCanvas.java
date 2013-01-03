@@ -1,5 +1,10 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.operations.AbstractOperation;
+import org.eclipse.core.commands.operations.IOperationHistoryListener;
+import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -14,18 +19,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import edu.rice.cs.hpc.common.ui.Util;
+import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
+import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
+import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
+import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**A view for displaying the depthview.*/
-//all the GUI setup for the depth view is here
-public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, MouseMoveListener, PaintListener
+public class DepthTimeCanvas extends SpaceTimeCanvas 
+implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
 {
-	
-	int maxDepth;
-	
-	SpaceTimeData stData;
-	
 	Image imageBuffer;
 	
 	/**The left pixel's x location*/
@@ -56,13 +63,10 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 	
 	private int currentProcess = -1;
     
-    public SpaceTimeDetailCanvas detailCanvas;
-    
 	
-	public DepthTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas, int _process)
+	public DepthTimeCanvas(Composite composite)
     {
 		super(composite);
-		detailCanvas = _detailCanvas;
 
 		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
 
@@ -72,22 +76,26 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		rightSelection = 0;
 	}
 	
-	
+	/****
+	 * new data update
+	 * @param _stData
+	 */
 	public void updateView(SpaceTimeData _stData)
 	{
 		this.stData = _stData;
-		this.maxDepth = _stData.getMaxDepth();
 		
 		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT)
 		{
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		this.home();
+		setTimeZoom(0, (long)stData.getWidth());
 	}
 	
-
-	public void addCanvasListener() {
+	/***
+	 * add listeners (need to called only once)
+	 */
+	private void addCanvasListener() {
 		addMouseListener(this);
 		addMouseMoveListener(this);
 		addPaintListener(this);
@@ -95,19 +103,21 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
 			{
-				//init();
 				final int viewWidth = getClientArea().width;
 				final int viewHeight = getClientArea().height;
 
-				//assertTimeBounds();
-				
 				if (viewWidth > 0 && viewHeight > 0) {
 					getDisplay().asyncExec(new ResizeThread( new DepthBufferPaint()));
 				}
 			}
 		});
+		TraceOperation.getOperationHistory().addOperationHistoryListener(this);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
+	 */
 	public void paintControl(PaintEvent event)
 	{
 		if (this.stData == null || imageBuffer == null)
@@ -143,20 +153,18 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScaleX())-2-topLeftPixelX);
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
+		
+		int maxDepth = stData.getMaxDepth();
 		event.gc.fillRectangle(topPixelCrossHairX-8,selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth)-1,20,4);
 	}
 	
-	public void home()
-	{
-		setTimeZoom(0, (long)stData.getWidth());
-	}
 	
 	/**************************************************************************
 	 * Sets the location of the crosshair to (_selectedTime, _selectedProcess).
 	 * Also updates the rest of the program to know that this is the selected
 	 * point (so that the CallStackViewer can update, etc.).
 	 **************************************************************************/
-	public void setPosition(Position position)
+	private void setPosition(Position position)
 	{
 		selectedTime = (double)position.time;
 		if (currentProcess != position.process) {
@@ -167,41 +175,27 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 			redraw();
 	}
 	
-
-	public void setDepth(int _selectedDepth) {
+	/***
+	 * set new depth
+	 * @param _selectedDepth
+	 */
+	private void setDepth(int _selectedDepth) {
 		selectedDepth = _selectedDepth;
+		redraw();
 	}
 	
-	public void adjustSelection(Point p1, Point p2)
+	/****
+	 * update the new range position
+	 * 
+	 * @param p1
+	 * @param p2
+	 */
+	private void adjustSelection(Point p1, Point p2)
 	{
 		final int viewWidth = getClientArea().width;
 
     	leftSelection = topLeftPixelX + Math.max(Math.min(p1.x, p2.x), 0);
         rightSelection = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
-    }
-    
-	/*****
-	 * Refresh the content of the depth canvas based on the given time range.
-	 * If the old time range is different from the new one, we will create a 
-	 * new image buffer, otherwise just repaint the canvas
-	 * @param _begTime
-	 * @param _endTime
-	 */
-    public void refresh(long _begTime, long _endTime)
-    {
-    	if (stData == null)
-    		return;
-    	
-    	//------------------------------------------------------
-    	// check if the new time range is the same as the existing time range
-    	// if it is the same then repaint the canvas, otherwise we have to 
-    	//	create a new image buffer
-    	//------------------------------------------------------
-    	if (oldBegTime != _begTime || oldEndTime != _endTime) {
-    		// different time range. Needs to create a new image buffer
-    		setTimeZoom(_begTime, _endTime);
-    	} else
-    		this.redraw();
     }
     
     /***
@@ -212,7 +206,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     }
     
     
-    public void setCSSample()
+    private void setCSSample()
     {
     	if(mouseDown == null)
     		return;
@@ -221,11 +215,11 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     	
     	Position currentPosition = stData.getPosition();
     	Position position = new Position(closeTime, currentPosition.process);
-    	//position.processInCS = currentPosition.processInCS;
     	
-    	this.stData.updatePosition(position);
+    	notifyPositionChange(position);
     }
 
+    @Override
 	public double getScaleX()
 	{
 		final int viewWidth = getClientArea().width;
@@ -233,10 +227,10 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		return (double)viewWidth / (double)getNumTimeDisplayed();
 	}
 
-	//@Override
+	@Override
 	public double getScaleY() {
 		final Rectangle r = this.getClientArea();
-		return Math.max(r.height/(double)maxDepth, 1);
+		return Math.max(r.height/(double)stData.getMaxDepth(), 1);
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -281,23 +275,66 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		oldEndTime = stData.attributes.endTime;
 	}
 
-    
+	/**** time zoom action **/
+	final private ITraceAction zoomAction = new ITraceAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			zoom(frame.begTime, frame.endTime);
+		}
+	};
+	
+	final private ITraceAction positionAction = new ITraceAction() {
+		@Override
+		public void doAction(Frame frame) 
+		{
+			setPosition(frame.position);
+		}		
+	};
+	
+	/***
+	 * time zoom and notify other views
+	 */
     private void setDetail()
     {
 		long topLeftTime = (long)((double)leftSelection / getScaleX());
 		long bottomRightTime = (long)((double)rightSelection / getScaleX());
-
-		// hack fix. Attention: we have to update first the detail view before others
-		// 	this is to allow the detail view to push undo stack
-		// TODO: we need to avoid having tightly coupled interaction between views.
-		//		 it makes to code hard to code
 		
-		detailCanvas.setTimeRange(topLeftTime, bottomRightTime);
-		setTimeZoom(topLeftTime, bottomRightTime);
+		stData.attributes.begTime = topLeftTime;
+		stData.attributes.endTime = bottomRightTime;
 		
-		adjustCrossHair(topLeftTime, bottomRightTime);
+		Frame frame = new Frame(stData.attributes, selectedDepth, (long)selectedTime, currentProcess);
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new ZoomOperation("Time zoom out", frame, zoomAction), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
     }
 	
+    /****
+     * broadcast a new position to other views
+     * 
+     * @param newPosition
+     */
+    private void notifyPositionChange(Position newPosition)
+    {    	
+    	try {
+			TraceOperation.getOperationHistory().execute(
+					new PositionOperation(newPosition, positionAction), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    private void zoom(long time1, long time2)
+    {
+    	setTimeZoom(time1, time2);
+    	adjustCrossHair(time1, time2);
+    }
+    
     /******************
      * Forcing the crosshair to be always inside the region
      * 
@@ -312,9 +349,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
     		time = (t1+t2)>>1;
 		
     	Position position = new Position(time, currentPosition.process);
-    	
-    	this.stData.updatePosition(position);
-	
+    	setPosition(position);
     }
     
 	private void rebuffer()
@@ -340,7 +375,7 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		
 		try
 		{
-			stData.paintDepthViewport(bufferGC, this, 
+			paintDepthViewport(bufferGC,  
 					stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight);
 		}
 		catch(Exception e)
@@ -353,6 +388,32 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		redraw();
 	}
 
+	
+	/*************************************************************************
+	 * Paint the depth view
+	 * 
+	 * @param masterGC
+	 * @param canvas
+	 * @param _begTime
+	 * @param _endTime
+	 * @param _numPixelsH
+	 * @param _numPixelsV
+	 *************************************************************************/
+	private void paintDepthViewport(final GC masterGC, 
+			long _begTime, long _endTime, int _numPixelsH, int _numPixelsV)
+	{
+		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
+		
+		ImageTraceAttributes attributes = stData.attributes;
+		attributes.numPixelsDepthV = _numPixelsV;
+		attributes.setTime(_begTime, _endTime);
+		
+		//oldAttributes.copy(attributes);
+		
+		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), masterGC, stData, attributes, changedBounds);		
+		depthPaint.paint(this);
+	}
+	
 
 	/******************************************************************
 	 *		
@@ -406,4 +467,51 @@ public class DepthTimeCanvas extends SpaceTimeCanvas implements MouseListener, M
 		}
 	}
 
+
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.core.commands.operations.IOperationHistoryListener#historyNotification(org.eclipse.core.commands.operations.OperationHistoryEvent)
+	 */
+	public void historyNotification(final OperationHistoryEvent event) {
+		final IUndoableOperation operation = event.getOperation();
+		
+		if (operation.hasContext(TraceOperation.traceContext)) {
+			final TraceOperation traceOperation =  (TraceOperation) operation;
+			
+			switch(event.getEventType()) 
+			{
+			case OperationHistoryEvent.DONE:
+			case OperationHistoryEvent.UNDONE:
+			case OperationHistoryEvent.REDONE:
+				executeOperation(traceOperation);
+				break;
+			}
+		}
+	}
+
+	/****
+	 * execute an operation
+	 * 
+	 * @param operation
+	 */
+	private void executeOperation(final AbstractOperation operation)
+	{
+		if (operation instanceof ZoomOperation) {
+			getDisplay().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					Frame frame = ((ZoomOperation)operation).getFrame();
+					zoom(frame.begTime, frame.endTime);
+					setPosition(frame.position);
+				}
+			});
+		} else if (operation instanceof PositionOperation) {
+			Position p = ((PositionOperation)operation).getPosition();
+			setPosition(p);
+		} else if (operation instanceof DepthOperation) {
+			int depth = ((DepthOperation)operation).getDepth();
+			setDepth(depth);
+		}
+	}
 }

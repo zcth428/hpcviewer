@@ -29,16 +29,13 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
-import edu.rice.cs.hpc.traceviewer.events.ITraceDepth;
-import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
-import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
-public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePosition, ITraceViewAction
+public class HPCTraceView extends ViewPart implements ITraceViewAction
 {
 	
 	/**The ID needed to create this view (used in plugin.xml).*/
@@ -81,8 +78,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		this.stData = _stData;
 		this.detailCanvas.updateView(_stData);
 		
-		this.stData.addDepthListener(this);
-		this.stData.addPositionListener(this);
 		detailCanvas.setVisible(true);
 	}
 	
@@ -107,11 +102,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		return stData;
 	}
 
-	public void setPosition(Position position)
-	{
-		this.detailCanvas.setCrossHair(position.time, position.process);
-	}
-	
 
 	/*************************************************************************
 	 * method to add listener
@@ -178,14 +168,14 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 		 * Detail View Canvas
 		 ************************************************************************/
 		
-		detailCanvas = new SpaceTimeDetailCanvas(parent); 
+		detailCanvas = new SpaceTimeDetailCanvas(getSite().getWorkbenchWindow(), parent); 
 		
 		detailCanvas.setLabels(labelGroup);
 		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(labelGroup);
 		GridDataFactory.fillDefaults().grab(true, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(labelGroup);
 		
-		detailCanvas.setButtons(new Action[]{traceCoolBar.home, traceCoolBar.open, traceCoolBar.save, traceCoolBar.undo,
-				traceCoolBar.redo, traceCoolBar.tZoomIn, traceCoolBar.tZoomOut, traceCoolBar.pZoomIn, traceCoolBar.pZoomOut,
+		detailCanvas.setButtons(new Action[]{traceCoolBar.home, traceCoolBar.open, traceCoolBar.save, null,
+				null, traceCoolBar.tZoomIn, traceCoolBar.tZoomOut, traceCoolBar.pZoomIn, traceCoolBar.pZoomOut,
 				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		
 		detailCanvas.setVisible(false);
@@ -214,14 +204,6 @@ public class HPCTraceView extends ViewPart implements ITraceDepth, ITracePositio
 
 	public void processZoomOut() {
 		detailCanvas.processZoomOut();
-	}
-
-	public void undo() {
-		detailCanvas.popUndo();		
-	}
-
-	public void redo() {
-		detailCanvas.popRedo();		
 	}
 	
 	public void save() {

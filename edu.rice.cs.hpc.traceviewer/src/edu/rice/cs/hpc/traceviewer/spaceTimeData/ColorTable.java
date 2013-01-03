@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.common.util.ProcedureClassData;
 import edu.rice.cs.hpc.data.util.IProcedureTable;
 import edu.rice.cs.hpc.traceviewer.util.ProcedureClassMap;
@@ -36,10 +37,10 @@ public class ColorTable implements IProcedureTable
 	private ProcedureClassMap classMap;
 	
 	/**Creates a new ColorTable with Display _display.*/
-	public ColorTable(Display _display)
+	public ColorTable()
 	{
 		procNames = new ArrayList<String>();
-		display = _display;
+		display = Util.getActiveShell().getDisplay();
 		
 		// create our own white color so we can dispose later, instead of disposing
 		//	Eclipse's white color

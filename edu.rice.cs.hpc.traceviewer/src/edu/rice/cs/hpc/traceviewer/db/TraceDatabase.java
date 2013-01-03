@@ -16,6 +16,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
@@ -125,7 +126,7 @@ public class TraceDatabase
 				database.dataTraces.dispose();
 			
 			try {
-				database.dataTraces = new SpaceTimeData(window, location.fileXML, location.fileTrace, statusMgr);
+				database.dataTraces = new SpaceTimeData(location.fileXML, location.fileTrace);
 			} 
 			catch (InvalExperimentException e)
 			{
@@ -142,6 +143,16 @@ public class TraceDatabase
 			statusMgr.setMessage("Rendering trace data ...");
 			shell.update();
 
+			// get a window service to store the new database
+			ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
+					ISourceProviderService.class);
+			
+			// keep the current data in "shared" variable
+			DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
+			dataService.setData(database.dataTraces);
+
+			TraceOperation.clear();
+			
 			try {
 				//---------------------------------------------------------------------
 				// Update the title of the application
@@ -171,13 +182,6 @@ public class TraceDatabase
 				
 				HPCCallStackView cview = (HPCCallStackView) page.showView(HPCCallStackView.ID);
 				cview.updateView(database.dataTraces);
-
-				ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
-						ISourceProviderService.class);
-				
-				// keep the current data in "shared" variable
-				DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
-				dataService.setData(database.dataTraces);
 				
 				return true;
 				

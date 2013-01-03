@@ -81,9 +81,14 @@ public class ExperimentView {
 		if(experiment != null) {
 			try {
 				experiment.postprocess(bCallerView);
-			} catch (java.lang.OutOfMemoryError e) {
+			} catch (java.lang.OutOfMemoryError e) 
+			{
 				MessageDialog.openError(this.objPage.getWorkbenchWindow().getShell(), "Out of memory", 
 						"hpcviewer requires more heap memory allocation.\nJava heap size can be increased by modifying \"-Xmx\" parameter in hpcivewer.ini file.");
+			} catch (java.lang.RuntimeException e) 
+			{
+				MessageDialog.openError(objPage.getWorkbenchWindow().getShell(), "Critical error", 
+						"XML file is not in correct format: \n"+e.getMessage());
 			}
 	        this.generateView(experiment);
 	        return true;

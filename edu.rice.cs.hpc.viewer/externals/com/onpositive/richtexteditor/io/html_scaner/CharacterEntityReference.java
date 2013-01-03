@@ -544,9 +544,7 @@ public class CharacterEntityReference {
 	 */
 	public static final char _apos='\'';
 
-	private static Map NAME_TO_CODE_POINT_MAP=new HashMap(512,1.0F); // 253 entities in total
-
-	private static int MAX_NAME_LENGTH=0;
+	private static Map<String, Integer> NAME_TO_CODE_POINT_MAP=new HashMap<String, Integer>(512,1.0F); // 253 entities in total
 
 	static {
 		NAME_TO_CODE_POINT_MAP.put("nbsp",new Integer(_nbsp));

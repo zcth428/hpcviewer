@@ -67,7 +67,7 @@ public class BaseExperimentBuilder extends Builder {
 
 	private boolean csviewer;
 	
-	final private IUserData userData;
+	final private IUserData<String, String> userData;
 
 	protected Token2.TokenXML previousToken = TokenXML.T_INVALID_ELEMENT_NAME;
 	protected Token2.TokenXML elemInfoState = TokenXML.T_INVALID_ELEMENT_NAME;
@@ -100,7 +100,7 @@ public class BaseExperimentBuilder extends Builder {
 	 *  @param defaultName: the default name of the experiment
 	 *
 	 ************************************************************************/
-	public BaseExperimentBuilder(BaseExperiment experiment, String defaultName, IUserData userData) {
+	public BaseExperimentBuilder(BaseExperiment experiment, String defaultName, IUserData<String, String> userData) {
 		super();
 		this.csviewer = false;
 		viewRootScope = new RootScope[3];

@@ -60,7 +60,7 @@ public class ExperimentFileXML extends ExperimentFile
  *
  ************************************************************************/
 	
-public void parse(File file, BaseExperiment experiment, boolean need_metrics, IUserData userData)
+public void parse(File file, BaseExperiment experiment, boolean need_metrics, IUserData<String, String> userData)
 		throws	Exception
 		{
 	// get an appropriate input stream

@@ -87,7 +87,7 @@ public abstract class BaseExperiment implements IExperiment {
 	 * @param userData
 	 * @throws Exception
 	 */
-	public void open(File fileExperiment, IUserData userData)
+	public void open(File fileExperiment, IUserData<String, String> userData)
 			throws	Exception
 	{
 		open(fileExperiment, userData, false);
@@ -101,7 +101,7 @@ public abstract class BaseExperiment implements IExperiment {
 	 * @param withMetric
 	 * @throws Exception
 	 */
-	public void open(File fileExperiment, IUserData userData, boolean withMetric)
+	public void open(File fileExperiment, IUserData<String, String> userData, boolean withMetric)
 			throws	Exception
 	{
 		// protect ourselves against filename being `foo' with no parent

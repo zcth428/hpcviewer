@@ -165,8 +165,11 @@ public class TraceDataByRank {
 		int low = 0;
 		int high = listcpid.size() - 1;
 		
+		double timeMin = listcpid.get(low).timestamp;
+		double timeMax = listcpid.get(high).timestamp;
+		
 		// do not search the sample if the time is out of range
-		if (time < listcpid.get(low).timestamp || time>listcpid.get(high).timestamp) 
+		if (time<timeMin  || time>timeMax) 
 			return -1;
 		
 		int mid = ( low + high ) / 2;

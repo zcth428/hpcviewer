@@ -228,5 +228,12 @@
                priorityLevel="workbench">
          </variable>
       </sourceProvider>
+      <sourceProvider
+            provider="edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService">
+         <variable
+               name="edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService.data"
+               priorityLevel="workbench">
+         </variable>
+      </sourceProvider>
    </extension>
 </plugin>

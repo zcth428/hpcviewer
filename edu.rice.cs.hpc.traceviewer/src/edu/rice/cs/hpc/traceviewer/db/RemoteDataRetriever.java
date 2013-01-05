@@ -28,6 +28,10 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
  * 
  */
 public class RemoteDataRetriever {
+	//For more information on message structure, see protocol documentation at the end of this file. 
+	private static final int DONE = 0x444F4E45;
+	private static final int DATA = 0x44415441;
+	private static final int HERE = 0x48455245;
 	private final Socket socket;
 	DataInputStream receiver;
 	BufferedInputStream rcvBacking;
@@ -86,7 +90,7 @@ public class RemoteDataRetriever {
 		statusMgr.setMessage("Receiving data");
 		shell.update();
 		
-		if (ResponseCommand != 0x48455245)//"HERE" in ASCII
+		if (ResponseCommand != HERE)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
 		System.out.println("Data receive begin");
 		
@@ -114,8 +118,8 @@ public class RemoteDataRetriever {
 			int rankNumber = DataReader.readInt();
 			int Length = DataReader.readInt();//Number of CPID's
 			
-			if (RanksExpected - RanksReceived < 3)
-				System.out.println(RanksReceived + "/" + RanksExpected );
+			//if (RanksExpected - RanksReceived < 3)
+			//	System.out.println(RanksReceived + "/" + RanksExpected );
 			
 			double startTimeForThisTimeline = DataReader.readDouble();
 			double endTimeForThisTimeline = DataReader.readDouble();
@@ -135,8 +139,8 @@ public class RemoteDataRetriever {
 				else
 					break;
 			}
-			if (EndingZeroCount > 3)
-				System.out.println("Message of size: " + compressedSize + " ended with " + EndingZeroCount + " zeros.");
+			//if (EndingZeroCount > 3)
+			//	System.out.println("Message of size: " + compressedSize + " ended with " + EndingZeroCount + " zeros.");
 			//if (numRead != compressedSize)
 			//	System.out.println("Only read " + numRead + " instead of "+ compressedSize);
 			
@@ -154,7 +158,7 @@ public class RemoteDataRetriever {
 	
 	private void requestData(int P0, int Pn, double t0, double tn, int vertRes,
 			int horizRes) throws IOException {
-		sender.writeInt(0x44415441);//"DATA" in ASCII
+		sender.writeInt(DATA);
 		sender.writeInt(P0);
 		sender.writeInt(Pn);
 		sender.writeDouble(t0);
@@ -209,7 +213,7 @@ public class RemoteDataRetriever {
 		return nextCommand;
 	}
 	public void Close() throws IOException {
-		sender.writeInt(0x444F4E45);
+		sender.writeInt(DONE);
 		sender.flush();
 		sender.close();
 		receiver.close();

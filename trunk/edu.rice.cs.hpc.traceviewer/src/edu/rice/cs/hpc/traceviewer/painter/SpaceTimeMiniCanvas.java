@@ -58,7 +58,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	private boolean insideBox;
 
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
-	public SpaceTimeMiniCanvas(Composite _composite, SpaceTimeData _stData)
+	public SpaceTimeMiniCanvas(Composite _composite)
 	{	
 		super(_composite);
 		

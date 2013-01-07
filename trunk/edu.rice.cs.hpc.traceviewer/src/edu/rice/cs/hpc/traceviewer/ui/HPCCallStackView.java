@@ -27,8 +27,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	public static final String ID = "hpccallstackview.view";
 	
-	SpaceTimeData stData;
-	
 	CallStackViewer csViewer;
 	
 	/** Paints and displays the miniMap.*/
@@ -81,10 +79,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 					value = maximum;
 				if (value < minimum)
 					value = minimum;
-				if(stData.getDepth() != value)
-				{
-					csViewer.setDepth(value);
-				}
+				csViewer.setDepth(value);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -102,7 +97,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		
 		Label l = new Label(master, SWT.SINGLE);
 		l.setText("Mini Map");
-		miniCanvas = new SpaceTimeMiniCanvas(master, stData);
+		miniCanvas = new SpaceTimeMiniCanvas(master);
 		miniCanvas.setLayout(new GridLayout());
 		GridData miniCanvasData = new GridData(SWT.CENTER, SWT.BOTTOM, true, false);
 		miniCanvasData.heightHint = 100;
@@ -137,9 +132,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	public void updateView(SpaceTimeData _stData) 
 	{
-		this.stData = _stData;
-		
-		depthEditor.setMaximum(stData.getMaxDepth());
+		depthEditor.setMaximum(_stData.getMaxDepth());
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 

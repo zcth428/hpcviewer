@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.ui;
+	package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.util.Map;
 
@@ -13,8 +13,6 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.ISizeProvider;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
@@ -31,8 +29,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	SpaceTimeData stData;
 	
-	Composite master;
-	
 	CallStackViewer csViewer;
 	
 	/** Paints and displays the miniMap.*/
@@ -40,31 +36,14 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	Spinner depthEditor;
 	
-	public HPCTraceView traceview;
-	
-	public HPCDepthView depthview;
 
-	public void createPartControl(Composite _master) 
+	public void createPartControl(Composite master) 
 	{
-		master = _master;
-		try 
-		{
-			depthview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
-			traceview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-		}
-		catch (PartInitException e) 
-		{
-			depthview = null;
-			traceview = null;
-			e.printStackTrace();
-			System.exit(0);
-		}
-				
-		setupEverything();
+		setupEverything(master);
 		setListener();
 	}
 	
-	private void setupEverything()
+	private void setupEverything(Composite master)
 	{
 		/*************************************************************************
 		 * Master Composite

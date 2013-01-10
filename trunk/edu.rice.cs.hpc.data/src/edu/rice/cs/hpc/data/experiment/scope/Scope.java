@@ -149,7 +149,7 @@ public int getFlatIndex() {
 }
 
 public int getCCTIndex() {
-	return (int) this.cct_node_index;
+	return this.cct_node_index;
 }
 
 //////////////////////////////////////////////////////////////////////////

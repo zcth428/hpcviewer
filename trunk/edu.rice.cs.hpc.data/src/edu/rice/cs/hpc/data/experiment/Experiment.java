@@ -85,7 +85,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 
 		for( int k = 0;  k < count;  k++ )
 		{	
-			BaseMetric m = (BaseMetric)this.metrics.get(k);
+			BaseMetric m = this.metrics.get(k);
 			m.setIndex(k);
 		}
 	}
@@ -174,7 +174,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 		this.finalizeAggregateMetrics(callersViewRootScope, diVisitor);
 		
 		// bug fix 2010.06.17: move the percent after finalization
-		addPercents(callersViewRootScope, (RootScope) callersViewRootScope);
+		addPercents(callersViewRootScope, callersViewRootScope);
 
 		return callersViewRootScope;
 	}
@@ -209,7 +209,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 
 	protected void copyMetricsToPartner(Scope scope, MetricType sourceType, MetricValuePropagationFilter filter) {
 		for (int i = 0; i< this.getMetricCount(); i++) {
-			BaseMetric metric = (BaseMetric)this.getMetric(i);
+			BaseMetric metric = this.getMetric(i);
 			// Laksono 2009.12.11: aggregate metrc doesn't have partner
 			if (metric instanceof Metric) {
 				if (metric.getMetricType() == sourceType) {
@@ -311,7 +311,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 			Scope flatViewRootScope = null;
 			// While creating the flat tree, we attribute the cost for procedure scopes
 			// One the tree has been created, we compute the inclusive cost for other scopes
-			flatViewRootScope = (RootScope) createFlatView(callingContextViewRootScope);
+			flatViewRootScope = createFlatView(callingContextViewRootScope);
 
 			//----------------------------------------------------------------------------------------------
 			// FINALIZATION

@@ -68,7 +68,7 @@ public class LargeByteBuffer
 	 */
 	private MappedByteBuffer setBuffer(int page) throws IOException
 	{
-		long start = ((long)page) * pageSize;
+		long start = page * pageSize;
 		MappedByteBuffer buffer = fcInput.map(FileChannel.MapMode.READ_ONLY, start, 
 				getCurrentSize(page));
 		masterBuffer[page] = buffer;
@@ -107,7 +107,7 @@ public class LargeByteBuffer
 		if (loc < pageSize - 4) {
 			return getBuffer(page).getLong(loc);
 		} else {
-			return (((long) getBuffer(page).getInt(loc)) << 32) + (long) getBuffer(page+1).getInt(0);
+			return (((long) getBuffer(page).getInt(loc)) << 32) + getBuffer(page+1).getInt(0);
 		}
 	}
 	

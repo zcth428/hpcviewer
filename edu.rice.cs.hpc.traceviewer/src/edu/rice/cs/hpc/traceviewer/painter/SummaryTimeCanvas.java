@@ -29,7 +29,7 @@ public class SummaryTimeCanvas extends Canvas implements PaintListener, IOperati
 	private ImageData detailData;
 	private Image imageBuffer;
 	
-	public SummaryTimeCanvas(Composite composite, SpaceTimeDetailCanvas _detailCanvas)
+	public SummaryTimeCanvas(Composite composite)
     {
 		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
 		

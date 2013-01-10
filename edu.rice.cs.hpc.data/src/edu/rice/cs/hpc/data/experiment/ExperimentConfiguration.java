@@ -128,7 +128,7 @@ public File getSearchPath(int index)
 	
 public void setSearchPaths(List<File> pathList)
 {
-	this.searchPaths = (File[]) pathList.toArray(new File[0]);
+	this.searchPaths = pathList.toArray(new File[0]);
 }
 
 

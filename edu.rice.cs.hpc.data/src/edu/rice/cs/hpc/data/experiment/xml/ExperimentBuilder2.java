@@ -155,7 +155,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		// but we cannot trust hpcprof to do properly
 		// ----------------------------------------------------------------------------
 		for (int i=0; i<nbMetrics; i++) {
-			BaseMetric objMetric = (BaseMetric) this.metricList.get(i);
+			BaseMetric objMetric = this.metricList.get(i);
 			is_raw_metric_only &= (objMetric instanceof Metric);
 		}
 		

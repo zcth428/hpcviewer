@@ -52,7 +52,7 @@ public class CallerScopeBuilder {
 					
 				}	else if (next instanceof CallSiteScope) {
 					enclosingCS = (CallSiteScope) next;
-					mycaller = (ProcedureScope) enclosingCS.getProcedureScope(); 
+					mycaller = enclosingCS.getProcedureScope(); 
 				}
 				
 				LineScope lineScope = innerCS.getLineScope();
@@ -166,7 +166,7 @@ public class CallerScopeBuilder {
 		callee.addSubscope(first);
 		first.setParentScope(callee);
 		for (Scope prev = first; callerPathList.size() > 0; ) {
-			Scope next = (Scope) callerPathList.removeFirst();
+			Scope next = callerPathList.removeFirst();
 			prev.addSubscope(next);
 			next.setParentScope(prev);
 			prev = next;

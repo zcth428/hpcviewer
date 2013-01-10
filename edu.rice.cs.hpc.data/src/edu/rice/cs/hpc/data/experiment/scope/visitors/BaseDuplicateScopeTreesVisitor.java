@@ -49,7 +49,7 @@ public abstract class BaseDuplicateScopeTreesVisitor implements IScopeVisitor {
 			return;
 		
 		if (vt == ScopeVisitType.PreVisit) {
-			Scope newParent = (Scope)scopeStack.peek();
+			Scope newParent = scopeStack.peek();
 			
 			Scope kid = findMatch(newParent, scope);
 			

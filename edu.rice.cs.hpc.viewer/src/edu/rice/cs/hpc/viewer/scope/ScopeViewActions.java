@@ -487,10 +487,12 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 		sbText.append( "\"" + objScope.getName() + "\"" );
 		
 		final Experiment exp = (Experiment) objScope.getExperiment();
-		for(int j=1; j<columns.length; j++) {
+		
+		for(int j=1; j<columns.length; j++) 
+		{
 			if (columns[j].getWidth()>0) {
 				// the column is not hidden
-				BaseMetric metric = exp.getMetric(j);
+				BaseMetric metric = exp.getMetric(j-1); // bug fix: the metric starts from 0
 				sbText.append(sSeparator + metric.getMetricTextValue(objScope));
 			}
 		}

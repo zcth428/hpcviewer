@@ -73,7 +73,7 @@ public class ViewerWindow {
 			if (db == null) {
 				continue;
 			}
-			String path = db.getExperiment().getXMLExperimentFile().getPath();
+			String path = db.getExperiment().getDefaultDirectory().getAbsolutePath(); //.getXMLExperimentFile().getPath();
 			if (dbPath.equals(path)) {
 				return db;
 			}
@@ -109,16 +109,19 @@ public class ViewerWindow {
 	 * Removes a database from the list of open databases in this window.
 	 * 
 	 * @param databasePath
-	 * @return
+	 * @return 	the current number of database (usually db.size - 1 if no error occurs)
+	 * 			<0 if there's an error
 	 */
 	public int removeDatabase (String databasePath) {
 		Database db = getDb(databasePath);
 		assert(db != null);
 		
-		dbObj.remove(db);
-		checkService();
+		if (dbObj.remove(db)) {
+			checkService();
 
-		return dbObj.size()-1;
+			return dbObj.size();
+		}
+		return -1;
 	}
 
 	public int getDbNum(Experiment experiment) {

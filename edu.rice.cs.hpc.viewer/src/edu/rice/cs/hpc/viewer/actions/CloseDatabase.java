@@ -141,7 +141,7 @@ public class CloseDatabase extends AbstractHandler {
 					if (experiment != null) {
 						String xmlFileName = experiment.getXMLExperimentFile().getPath();
 						final int dbDir = xmlFileName.lastIndexOf(File.separator);
-						xmlFileName = xmlFileName.substring(0, dbDir);
+						xmlFileName = experiment.getDefaultDirectory().getAbsolutePath();
 						
 						if (selectedDatabase.equals(xmlFileName)) {
 							curPage.hideView(objView);

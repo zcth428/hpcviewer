@@ -139,9 +139,7 @@ public class CloseDatabase extends AbstractHandler {
 					final AbstractBaseScopeView objView = (AbstractBaseScopeView) objPart;
 					final Experiment experiment = objView.getExperiment();
 					if (experiment != null) {
-						String xmlFileName = experiment.getXMLExperimentFile().getPath();
-						final int dbDir = xmlFileName.lastIndexOf(File.separator);
-						xmlFileName = experiment.getDefaultDirectory().getAbsolutePath();
+						String xmlFileName = experiment.getDefaultDirectory().getAbsolutePath();
 						
 						if (selectedDatabase.equals(xmlFileName)) {
 							curPage.hideView(objView);

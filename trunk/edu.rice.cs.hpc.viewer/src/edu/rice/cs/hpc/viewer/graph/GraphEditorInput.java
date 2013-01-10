@@ -15,8 +15,6 @@ public class GraphEditorInput implements IEditorInput {
 	private final MetricRaw _metric;
 	
 	private final GraphType.PlotType _type;
-	private final IWorkbenchWindow _window;
-	
 	/***
 	 * Create a new editor input for a give scope, metric, plot type and database
 	 * @param experiment
@@ -31,7 +29,6 @@ public class GraphEditorInput implements IEditorInput {
 		this._metric = metric;
 		this._type = type;
 		this._database = database;
-		this._window = window;
 	}
 	
 	public boolean exists() {

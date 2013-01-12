@@ -18,16 +18,25 @@ namespace TraceviewerServer
 	{
 		Data = data;
 		Rank = rank;
-		Long* Offsets = Data->getOffsets();
-		Minloc = Offsets[Rank] + header_size;
-		Maxloc = (
-				(Rank + 1 < Data->getNumberOfFiles()) ?
-						Offsets[Rank + 1] : data->getMasterBuffer()->Size() - 1)
-				- SIZE_OF_TRACE_RECORD;
-if (Maxloc< Minloc)
-cerr<<"Maxloc is smaller than Minloc!! Maxloc= "<<Maxloc << " Minloc= " << Minloc << " Rank: " << Rank << " Num files= " << Data->getNumberOfFiles() << "MastB size=" << Data->getMasterBuffer()->Size()<<endl; 
+		Offset myOffset = Data->getOffset(Rank);
+		Minloc = myOffset.start +header_size;
+		Maxloc = myOffset.end - SIZE_OF_TRACE_RECORD;
+
+/*
+				Minloc = Offsets[Rank] + header_size;
+				Maxloc = (
+						(Rank + 1 < Data->getNumberOfFiles()) ?
+								Offsets[Rank + 1] : data->getMasterBuffer()->Size() - 1)
+						- SIZE_OF_TRACE_RECORD;
+				*/
+		//Why size-1 but Offsets[Rank+1]? Offset[Rank+1] is the start of the next one,
+		//and if there were another, Size() would be the start of the next one.
+		if (Maxloc < Minloc)
+			cerr << "Maxloc is smaller than Minloc!! Maxloc= " << Maxloc << " Minloc= "
+					<< Minloc << " Rank: " << Rank << " Num files= " << Data->getNumberOfFiles()
+					<< "MastB size=" << Data->getMasterBuffer()->Size() << endl;
 		NumPixelsH = numPixelH;
-		TimeCPID empty(0, 0);
+		//TimeCPID empty(0, 0);
 		vector<TimeCPID> _listcpid;
 		ListCPID = _listcpid;
 

@@ -1,7 +1,6 @@
 TO DO
 - Server launch into two shared libraries: (1) MPI, (2) head node version
 - User responsiveness (user can cancel)
-- Rename the hex constants
 - Check on closing when switching local vs. remote
 - Query whether we want to close the server or not
 - Message dialog instead of print

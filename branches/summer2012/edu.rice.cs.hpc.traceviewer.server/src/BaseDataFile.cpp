@@ -40,9 +40,9 @@ namespace TraceviewerServer
 		return NumFiles;
 	}
 
-	Long* BaseDataFile::getOffsets()
+	Offset BaseDataFile::getOffset(int index)
 	{
-		return Offsets;
+		return Offsets[index];
 	}
 
 	LargeByteBuffer* BaseDataFile::getMasterBuffer()
@@ -64,9 +64,11 @@ namespace TraceviewerServer
 
 		ProcessIDs = new int[NumFiles];
 		ThreadIDs = new short[NumFiles];
-		Offsets = new Long[NumFiles];
+		Offsets = new Offset[NumFiles];
+		lOffsets = new Long[NumFiles];
 
 		Long current_pos = SIZEOF_INT * 2;
+		Offsets[NumFiles-1].end = MasterBuff->Size();
 
 		// get the procs and threads IDs
 		for (int i = 0; i < NumFiles; i++)
@@ -76,7 +78,11 @@ namespace TraceviewerServer
 			const int thread_id = MasterBuff->GetInt(current_pos);
 			current_pos += SIZEOF_INT;
 
-			Offsets[i] = MasterBuff->GetLong(current_pos);
+			Long oset = MasterBuff->GetLong(current_pos);
+			lOffsets[i] = oset;
+			Offsets[i].start = oset;
+			if (i>0)
+				Offsets[i-1].end = Offsets[i].start;
 			current_pos += SIZEOF_LONG;
 
 			//--------------------------------------------------------------------

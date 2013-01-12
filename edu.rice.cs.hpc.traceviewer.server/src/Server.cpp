@@ -1,5 +1,5 @@
 //#define UseBoost
-//#define UseMPI
+//#define USE_MPI
 /*
  * Server.cpp
  *
@@ -16,23 +16,25 @@
 #include "CompressingDataSocketLayer.h"
 #include <iostream>
 #include <fstream>
-#include <mpi.h>
 #include "zlib.h"
-//#include "SpaceTimeDataControllerLocal.h"
+
+#ifdef USE_MPI
+#include <mpi.h>
+using namespace MPI;
+#endif
 
 using namespace std;
-using namespace MPI;
+
 namespace TraceviewerServer
 {
 	bool Compression = true;
 	int MainPort = DEFAULT_PORT;
 	int XMLPort = 0;
 
-	static SpaceTimeDataControllerLocal* STDCL;
+	static SpaceTimeDataControllerLocal* STDCL = NULL;
 
 	Server::Server()
 	{
-		// TODO Auto-generated constructor stub
 
 	}
 
@@ -47,16 +49,9 @@ namespace TraceviewerServer
 		try
 		{
 //TODO: Change the port to 21591 because 21590 has some other use...
-			//DataSocketStream CLsocket = new DataSocketStream(21590);
-			socketptr = new DataSocketStream(MainPort, true);
-			/*
-			 ip::tcp::socket CLsocket(io_service);
-			 //CLsocket.open(ip::tcp::v4());
-			 acceptor.accept(CLsocket);
-			 socketptr = (DataSocketStream*) &CLsocket;
-			 */
 
-			//socketptr = &CLsocket;
+			socketptr = new DataSocketStream(MainPort, true);
+
 		} catch (std::exception& e)
 		{
 			std::cerr << e.what() << std::endl;
@@ -65,12 +60,11 @@ namespace TraceviewerServer
 		MainPort = socketptr->GetPort();
 		cout << "Received connection" << endl;
 
-		//vector<char> test(4);
-		//as::read(*socketptr, as::buffer(test));
+
 		int Command = socketptr->ReadInt();
 		if (Command == OPEN)
 		{
-			while( RunConnection(socketptr)==1)
+			while(RunConnection(socketptr)==1)
 				;
 		}
 		else
@@ -135,7 +129,7 @@ namespace TraceviewerServer
 		Long maxEndTime = socket->ReadLong();
 		int headerSize = socket->ReadInt();
 		STDCL->SetInfo(minBegTime, maxEndTime, headerSize);
-#ifdef UseMPI
+#ifdef USE_MPI
 		MPICommunication::CommandMessage Info;
 		Info.Command = INFO;
 		Info.minfo.minBegTime = minBegTime;
@@ -149,7 +143,6 @@ namespace TraceviewerServer
 
 		socket->WriteInt(DBOK);
 
-		//int port = 2224;
 
 		//socket->WriteInt(port);
 		DataSocketStream* XmlSocket;
@@ -277,7 +270,7 @@ namespace TraceviewerServer
 		LocalDBOpener DBO;
 		cout << "Opening database: " << PathToDB << endl;
 		STDCL = DBO.OpenDbAndCreateSTDC(PathToDB);
-#ifdef UseMPI
+#ifdef USE_MPI
 		if (STDCL != NULL)
 		{
 		MPICommunication::CommandMessage cmdPathToDB;
@@ -327,7 +320,7 @@ namespace TraceviewerServer
 			throw(ERROR_INVALID_PARAMETERS);
 		}
 
-#ifdef NoMPI
+#ifdef NO_MPI
 		ImageTraceAttributes correspondingAttributes;
 
 		correspondingAttributes.begProcess = processStart;
@@ -368,7 +361,7 @@ namespace TraceviewerServer
 		 #define stWr(type,val) Stream->Write##type((val))
 		 #endif*/
 
-#ifdef NoMPI
+#ifdef NO_MPI
 
 		for (int i = 0; i < STDCL->TracesLength; i++)
 		{
@@ -428,7 +421,7 @@ namespace TraceviewerServer
 			}
 			else if (msg.Tag == SLAVE_DONE)
 			{
-				cout << "Rank " << msg.Done.RankID << " done" << endl;
+				cout << "All data from rank " << msg.Done.RankID << " has been received and processed." << endl;
 				RanksDone++;
 			}
 		}

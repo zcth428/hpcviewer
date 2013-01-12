@@ -4,6 +4,7 @@
  *  Created on: Jul 19, 2012
  *      Author: pat2
  */
+#ifndef NO_MPI
 
 #include "Slave.h"
 #include <mpi.h>
@@ -102,7 +103,7 @@ namespace TraceviewerServer
 		//If rank < (n % (p-1)) this node should compute ceil(n/(p-1)) trace lines,
 		//otherwise it should compute floor(n/(p-1))
 
-		//=MIN(F5, $D$1)*(CEILING($B$1/($B$2-1),1)) + (F5-MIN(F5, $D$1))*(FLOOR($B$1/($B$2-1),1))
+		//Excel form for testing: =MIN(F5, $D$1)*(CEILING($B$1/($B$2-1),1)) + (F5-MIN(F5, $D$1))*(FLOOR($B$1/($B$2-1),1))
 		int LowerInclusiveBound = (int) (min(mod, rank) * ceil(q)
 				+ (rank - min(mod, rank)) * floor(q) + gc.processStart);
 		int UpperInclusiveBound = (int) (min(mod, rank + 1) * ceil(q)
@@ -120,20 +121,25 @@ namespace TraceviewerServer
 
 		correspondingAttributes.begTime = gc.timeStart;
 		correspondingAttributes.endTime = gc.timeEnd;
-		correspondingAttributes.lineNum = 0;
+
+		int totalTracesToSend = min(gc.verticalResolution, n);
+
+		//TODO: Make sure this is correct. It is at least very close.
+		correspondingAttributes.lineNum = ceil(rank*totalTracesToSend/(size-1.0));//head node doesn't count
+
 		STDCL->Attributes = &correspondingAttributes;
 
 		ProcessTimeline* NextTrace = STDCL->GetNextTrace(true);
 		int LinesSentCount = 0;
-		int waitcount = 0;
+
+		/*int waitcount = 0;
 
 		if (NextTrace == NULL)
-			cout << "First trace was null..." << endl;
+			cout << "First trace was null..." << endl;*/
 
-		while (NextTrace != NULL)
+		while (NextTrace != NULL && (NextTrace->Data->Rank <= UpperInclusiveBound))
 		{
-			if ((NextTrace->Data->Rank < LowerInclusiveBound)
-					|| (NextTrace->Data->Rank > UpperInclusiveBound))
+			/*if (NextTrace->Data->Rank < LowerInclusiveBound)
 			{
 				NextTrace = STDCL->GetNextTrace(true);
 				waitcount++;
@@ -144,7 +150,7 @@ namespace TraceviewerServer
 				cout << Truerank << " skipped " << waitcount
 						<< " processes before actually starting work" << endl;
 				waitcount = 0;
-			}
+			}*/
 			NextTrace->ReadInData();
 
 			vector<TimeCPID>* ActualData = &NextTrace->Data->ListCPID;
@@ -212,10 +218,10 @@ namespace TraceviewerServer
 				delete[] OutputBuffer;
 			}
 			LinesSentCount++;
-			if (LinesSentCount % 100 == 0)
+			/*if (LinesSentCount % 100 == 0)
 				cout << Truerank << " Has sent " << LinesSentCount
 						<< ". Most recent message was " << NextTrace->Line() << " and contained "
-						<< entries << " entries" << endl;
+						<< entries << " entries" << endl;*/
 
 			NextTrace = STDCL->GetNextTrace(true);
 		}
@@ -232,3 +238,4 @@ namespace TraceviewerServer
 	}
 
 } /* namespace TraceviewerServer */
+#endif//NO_MPI

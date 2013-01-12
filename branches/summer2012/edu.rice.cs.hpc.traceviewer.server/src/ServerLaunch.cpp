@@ -2,7 +2,7 @@
 #include <vector>
 #include <map>
 
-#include "mpi.h"
+
 #include "FileUtils.h"
 #include "Server.h"
 #include "Slave.h"
@@ -10,9 +10,13 @@
 #include "zlib.h"
 #include "Constants.h"
 
+#ifdef USE_MPI
+#include "mpi.h"
+using namespace MPI;
+#endif
 
 using namespace std;
-using namespace MPI;
+
 
 bool ParseCommandLineArgs(int, char*[]);
 bool StringActuallyZero(string);
@@ -23,7 +27,7 @@ int main(int argc, char *argv[])
 	if (!ActuallyRun)
 		return 0;
 
-#ifdef UseMPI
+#ifdef USE_MPI
 	MPI::Init(argc, argv);
 	int rank, size;
 	rank = MPI::COMM_WORLD.Get_rank();
@@ -80,7 +84,7 @@ int main(int argc, char *argv[])
 	 MPI_Bcast(val, 10, MPI_INT, 0, COMM_WORLD);
 	 cout << "Rank: " << rank << " val: " << val[0] << ".." << val[9] << "\n";
 	 */
-#ifdef UseMPI
+#ifdef USE_MPI
 	MPI::Finalize();
 #endif
 	return 0;

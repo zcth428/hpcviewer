@@ -8,6 +8,8 @@
 #ifndef SLAVE_H_
 #define SLAVE_H_
 
+#ifndef NO_MPI//I don't want to include Server.h, which is where USE_MPI is declared
+
 #include "SpaceTimeDataControllerLocal.h"
 #include "MPICommunication.h"
 namespace TraceviewerServer
@@ -28,4 +30,6 @@ namespace TraceviewerServer
 	};
 
 } /* namespace TraceviewerServer */
+
+#endif//NO_MPI
 #endif /* SLAVE_H_ */

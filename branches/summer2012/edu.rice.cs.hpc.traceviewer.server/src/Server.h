@@ -8,8 +8,8 @@
 #ifndef Server_H_
 #define Server_H_
 
-#ifndef NoMPI//MPI version should be default. If it is compiled with -DNoMPI, then we shouldn't use MPI
-	#define UseMPI
+#ifndef NO_MPI//MPI version should be default. If it is compiled with -DNO_MPI, then we shouldn't use MPI
+	#define USE_MPI
 #endif
 
 #include <vector>

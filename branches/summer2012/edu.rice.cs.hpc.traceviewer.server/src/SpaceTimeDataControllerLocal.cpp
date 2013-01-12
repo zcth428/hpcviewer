@@ -168,7 +168,7 @@ namespace TraceviewerServer
 
 	SpaceTimeDataControllerLocal::~SpaceTimeDataControllerLocal()
 	{
-#ifdef NoMPI //The MPI implementation actually doesn't use the Traces array at all! It does call GetNextTrace, but ChangedBounds is always true!
+#ifdef NO_MPI //The MPI implementation actually doesn't use the Traces array at all! It does call GetNextTrace, but ChangedBounds is always true!
 		if (Traces != (ProcessTimeline**)0xfffffffe) {
 			cout<<"Freeing Traces @"<< Traces << " and all "<<TracesLength << " elements"<<endl;
 			for (int var = 0; var < TracesLength; var++)

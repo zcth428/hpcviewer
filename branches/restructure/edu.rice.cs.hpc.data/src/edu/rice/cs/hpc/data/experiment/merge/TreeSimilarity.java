@@ -69,8 +69,8 @@ public class TreeSimilarity {
 		target.dfsVisitScopeTree(percentVisitor);
 		
 		if (verbose) {
-			float mergePercent = (float) (numMerges * 100.0 / (float) numNodes);
-			float unmergePercent = (float) (numUnmerges * 100.0 / (float) numNodes);
+			float mergePercent = (float) (numMerges * 100.0 / numNodes);
+			float unmergePercent = (float) (numUnmerges * 100.0 / numNodes);
 			
 			System.out.println("Merged: " + numMerges + "\t " + mergePercent + 
 					" %\t Unmerges: " + numUnmerges + " \t" + unmergePercent + " %\t Nodes: "
@@ -567,7 +567,7 @@ public class TreeSimilarity {
 	{
 		final float v1 = getAnnotationValue(s1);
 		final float v2 = getAnnotationValue(s2);
-		return (float) (Math.abs(v2-v1));
+		return (Math.abs(v2-v1));
 	}
 	
 

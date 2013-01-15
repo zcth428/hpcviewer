@@ -60,7 +60,7 @@ public class ExclusiveCallingContextVisitor implements IScopeVisitor {
 		if (vt == ScopeVisitType.PostVisit) {
 			Scope parent = scope.getParentScope();
 			if(parent != null)
-				parent.accumulateMetrics(((CallSiteScope)scope).getLineScope(), this.filterExclusive, numberOfPrimaryMetrics);
+				parent.accumulateMetrics(scope.getLineScope(), this.filterExclusive, numberOfPrimaryMetrics);
 		}
 
 	}

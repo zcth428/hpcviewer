@@ -13,8 +13,6 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.ISizeProvider;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
@@ -29,10 +27,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	public static final String ID = "hpccallstackview.view";
 	
-	SpaceTimeData stData;
-	
-	Composite master;
-	
 	CallStackViewer csViewer;
 	
 	/** Paints and displays the miniMap.*/
@@ -40,31 +34,14 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	Spinner depthEditor;
 	
-	public HPCTraceView traceview;
-	
-	public HPCDepthView depthview;
 
-	public void createPartControl(Composite _master) 
+	public void createPartControl(Composite master) 
 	{
-		master = _master;
-		try 
-		{
-			depthview = (HPCDepthView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCDepthView.ID);
-			traceview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-		}
-		catch (PartInitException e) 
-		{
-			depthview = null;
-			traceview = null;
-			e.printStackTrace();
-			System.exit(0);
-		}
-				
-		setupEverything();
+		setupEverything(master);
 		setListener();
 	}
 	
-	private void setupEverything()
+	private void setupEverything(Composite master)
 	{
 		/*************************************************************************
 		 * Master Composite
@@ -102,10 +79,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 					value = maximum;
 				if (value < minimum)
 					value = minimum;
-				if(stData.getDepth() != value)
-				{
-					csViewer.setDepth(value);
-				}
+				csViewer.setDepth(value);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -123,7 +97,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		
 		Label l = new Label(master, SWT.SINGLE);
 		l.setText("Mini Map");
-		miniCanvas = new SpaceTimeMiniCanvas(master, stData);
+		miniCanvas = new SpaceTimeMiniCanvas(master);
 		miniCanvas.setLayout(new GridLayout());
 		GridData miniCanvasData = new GridData(SWT.CENTER, SWT.BOTTOM, true, false);
 		miniCanvasData.heightHint = 100;
@@ -158,9 +132,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	public void updateView(SpaceTimeData _stData) 
 	{
-		this.stData = _stData;
-		
-		depthEditor.setMaximum(stData.getMaxDepth());
+		depthEditor.setMaximum(_stData.getMaxDepth());
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 

@@ -50,7 +50,7 @@
             class="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             icon="icons/caller.png"
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
-            name="CallerView">
+            name="Callers View">
       </view>
    </extension>
    <extension

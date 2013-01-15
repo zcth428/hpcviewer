@@ -434,7 +434,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			  try {
 				  Formatter format = new Formatter();
 				  format.format(sFormat, 1.0);
-				  
+				  format.close();
 			  } catch (IllegalFormatException e) {
 				  sError = "Format is incorrect.";
 				  bResult = false;

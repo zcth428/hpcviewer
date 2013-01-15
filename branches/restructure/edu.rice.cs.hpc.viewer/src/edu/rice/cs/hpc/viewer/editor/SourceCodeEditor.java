@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.viewer.editor;
 
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 /**
@@ -35,7 +34,6 @@ public class SourceCodeEditor extends TextEditor implements IViewerEditor {
 	 * the line number
 	 */
 	protected boolean isLineNumberRulerVisible() {
-		this.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER, true);
 		return true;
 	}
 	

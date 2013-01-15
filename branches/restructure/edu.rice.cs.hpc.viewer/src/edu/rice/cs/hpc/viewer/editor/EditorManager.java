@@ -13,7 +13,6 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -36,7 +35,6 @@ public class EditorManager extends BaseEditorManager{
      */
     public EditorManager(IWorkbenchWindow window) {
     	String sLine = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER;
-    	EditorsUI.getPreferenceStore().setValue(sLine, true);
     	this.windowCurrent = window;
     }
     

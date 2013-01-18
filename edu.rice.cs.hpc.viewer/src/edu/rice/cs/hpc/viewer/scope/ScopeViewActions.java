@@ -387,7 +387,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			}
 						
 			// get our database file and the experiment index assigned for it
-			String sFilename = exp.getXMLExperimentFile().getPath();
+			String dbPath = exp.getDefaultDirectory().getAbsolutePath();
 			ViewerWindow vWin = ViewerWindowManager.getViewerWindow(this.objWindow);
 			if (vWin == null) {
 				System.out.printf("ScopeViewActions.addExtNewMetric: ViewerWindow class not found\n");
@@ -395,12 +395,12 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 			}
 			int dbNum = vWin.getDbNum(exp);
 			if (dbNum < 0) {
-				System.out.printf("ScopeViewActions.addExtNewMetric: Database for path " + sFilename + " not found\n");
+				System.out.printf("ScopeViewActions.addExtNewMetric: Database for path " + dbPath + " not found\n");
 				return;
 			}
 
 			// get the views created for our database
-			Database db = vWin.getDb(sFilename);
+			Database db = vWin.getDb(dbPath);
 			if (db == null) {
 				System.out.printf("ScopeViewActions.addExtNewMetric: Database class not found\n");
 				return;

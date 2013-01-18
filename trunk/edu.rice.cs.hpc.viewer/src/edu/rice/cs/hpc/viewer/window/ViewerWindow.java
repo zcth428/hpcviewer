@@ -81,10 +81,6 @@ public class ViewerWindow {
 		return null;
 	}
 
-	public Database getDb(Experiment experiment) {
-		return getDb(experiment.getXMLExperimentFile().getPath());
-	}
-
 
 	/**
 	 * Returns the number of open databases in this window.

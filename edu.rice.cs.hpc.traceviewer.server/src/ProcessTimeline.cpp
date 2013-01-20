@@ -21,7 +21,7 @@ namespace TraceviewerServer
 
 		PixelLength = TimeRange / (double) numPixelH;
 
-		Data = new TraceDataByRankLocal(dataTrace, processNumber, numPixelH, header_size);
+		Data = new TraceDataByRank(dataTrace, processNumber, numPixelH, header_size);
 
 	}
 	void ProcessTimeline::ReadInData()

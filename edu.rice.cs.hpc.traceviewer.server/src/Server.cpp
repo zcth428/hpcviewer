@@ -8,7 +8,7 @@
  */
 
 #include "Server.h"
-#include "SpaceTimeDataControllerLocal.h"
+#include "SpaceTimeDataController.h"
 #include "DataSocketStream.h"
 #include "LocalDBOpener.h"
 #include "Constants.h"
@@ -31,7 +31,7 @@ namespace TraceviewerServer
 	int MainPort = DEFAULT_PORT;
 	int XMLPort = 0;
 
-	static SpaceTimeDataControllerLocal* STDCL = NULL;
+	static SpaceTimeDataController* STDCL = NULL;
 
 	Server::Server()
 	{

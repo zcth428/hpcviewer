@@ -1,11 +1,11 @@
 /*
- * TraceDataByRankLocal.cpp
+ * TraceDataByRank.cpp
  *
  *  Created on: Jul 9, 2012
  *      Author: pat2
  */
 
-#include "TraceDataByRankLocal.h"
+#include "TraceDataByRank.h"
 #include <cmath>
 #include "Constants.h"
 #include <iostream>
@@ -13,7 +13,7 @@
 namespace TraceviewerServer
 {
 
-	TraceDataByRankLocal::TraceDataByRankLocal(BaseDataFile* data, int rank,
+	TraceDataByRank::TraceDataByRank(BaseDataFile* data, int rank,
 			int numPixelH, int header_size)
 	{
 		Data = data;
@@ -32,7 +32,7 @@ namespace TraceviewerServer
 		ListCPID = _listcpid;
 
 	}
-	void TraceDataByRankLocal::GetData(double timeStart, double timeRange,
+	void TraceDataByRank::GetData(double timeStart, double timeRange,
 			double pixelLength)
 	{
 		// get the start location
@@ -104,7 +104,7 @@ namespace TraceviewerServer
 	 * @return Returns the index that shows the size of the recursive subtree that has been read.
 	 * Used for calculating the index in which the data is to be inserted.
 	 ******************************************************************************************/
-	int TraceDataByRankLocal::SampleTimeLine(Long minLoc, Long maxLoc, int startPixel,
+	int TraceDataByRank::SampleTimeLine(Long minLoc, Long maxLoc, int startPixel,
 			int endPixel, int minIndex, double pixelLength, double startingTime)
 	{
 		int midPixel = (startPixel + endPixel) / 2;
@@ -130,7 +130,7 @@ namespace TraceviewerServer
 	 * @param left_boundary_offset: the start location. 0 means the beginning of the data in a process
 	 * @param right_boundary_offset: the end location.
 	 ********************************************************************************/
-	Long TraceDataByRankLocal::FindTimeInInterval(double time, Long l_boundOffset,
+	Long TraceDataByRank::FindTimeInInterval(double time, Long l_boundOffset,
 			Long r_boundOffset)
 	{
 		if (l_boundOffset == r_boundOffset)
@@ -193,16 +193,16 @@ namespace TraceviewerServer
 		else
 			return Maxloc;
 	}
-	Long TraceDataByRankLocal::GetAbsoluteLocation(Long RelativePosition)
+	Long TraceDataByRank::GetAbsoluteLocation(Long RelativePosition)
 	{
 		return Minloc + (RelativePosition * SIZE_OF_TRACE_RECORD);
 	}
 
-	Long TraceDataByRankLocal::GetRelativeLocation(Long AbsolutePosition)
+	Long TraceDataByRank::GetRelativeLocation(Long AbsolutePosition)
 	{
 		return (AbsolutePosition - Minloc) / SIZE_OF_TRACE_RECORD;
 	}
-	void TraceDataByRankLocal::AddSample(int index, TimeCPID dataCpid)
+	void TraceDataByRank::AddSample(int index, TimeCPID dataCpid)
 	{
 		if (index == ListCPID.size())
 		{
@@ -216,7 +216,7 @@ namespace TraceviewerServer
 		}
 	}
 
-	TimeCPID TraceDataByRankLocal::GetData(Long location)
+	TimeCPID TraceDataByRank::GetData(Long location)
 	{
 		LargeByteBuffer* const MasterBuff = Data->getMasterBuffer();
 		const double time = MasterBuff->GetLong(location);
@@ -225,7 +225,7 @@ namespace TraceviewerServer
 		return ToReturn;
 	}
 
-	Long TraceDataByRankLocal::GetNumberOfRecords(Long start, Long end)
+	Long TraceDataByRank::GetNumberOfRecords(Long start, Long end)
 	{
 		return (end - start) / SIZE_OF_TRACE_RECORD;
 	}
@@ -236,7 +236,7 @@ namespace TraceviewerServer
 	 * as we would know when painting that it should be the same color all the way through.
 	 ********************************************************************************************/
 	//Because we lose the timing data when we just send the CPIDs, no CPID is superfluous.
-	/*void TraceDataByRankLocal::PostProcess()
+	/*void TraceDataByRank::PostProcess()
 	{
 		int len = ListCPID.size();
 		for (int i = 0; i < len - 2; i++)
@@ -253,7 +253,7 @@ namespace TraceviewerServer
 		}
 	}*/
 
-	TraceDataByRankLocal::~TraceDataByRankLocal()
+	TraceDataByRank::~TraceDataByRank()
 	{
 		ListCPID.clear();
 		//delete(Data);

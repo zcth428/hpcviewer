@@ -1,5 +1,5 @@
 /*
- * SpaceTimeDataControllerLocal.h
+ * SpaceTimeDataController.h
  *
  *  Created on: Jul 9, 2012
  *      Author: pat2
@@ -15,12 +15,12 @@
 namespace TraceviewerServer
 {
 
-	class SpaceTimeDataControllerLocal
+	class SpaceTimeDataController
 	{
 	public:
-		SpaceTimeDataControllerLocal();
-		SpaceTimeDataControllerLocal(FileData*);
-		virtual ~SpaceTimeDataControllerLocal();
+		SpaceTimeDataController();
+		SpaceTimeDataController(FileData*);
+		virtual ~SpaceTimeDataController();
 		void SetInfo(Long, Long, int);
 		ProcessTimeline* GetNextTrace(bool);
 		void AddNextTrace(ProcessTimeline*);

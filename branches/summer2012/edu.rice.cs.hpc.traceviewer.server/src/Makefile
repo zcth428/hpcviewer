@@ -18,9 +18,9 @@ SRC = \
 	Server.cpp \
 	ServerLaunch.cpp \
 	Slave.cpp \
-	SpaceTimeDataControllerLocal.cpp \
+	SpaceTimeDataController.cpp \
 	VersatileMemoryPage.cpp \
-	TraceDataByRankLocal.cpp
+	TraceDataByRank.cpp
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 
@@ -47,14 +47,14 @@ all: $(TARGET)
 #
 #mpicxx -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"Slave.d" -MT"Slave.d" -o "Slave.o" "../Slave.cpp"  -DMPICH_IGNORE_CXX_SEEK
 #
-#mpicxx -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"SpaceTimeDataControllerLocal.d" -MT"SpaceTimeDataControllerLocal.d" -o "SpaceTimeDataControllerLocal.o" "../SpaceTimeDataControllerLocal.cpp"
+#mpicxx -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"SpaceTimeDataController.d" -MT"SpaceTimeDataController.d" -o "SpaceTimeDataController.o" "../SpaceTimeDataController.cpp"
 #
-#mpicxx -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TraceDataByRankLocal.d" -MT"TraceDataByRankLocal.d" -o "TraceDataByRankLocal.o" "../TraceDataByRankLocal.cpp"
+#mpicxx -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TraceDataByRank.d" -MT"TraceDataByRank.d" -o "TraceDataByRank.o" "../TraceDataByRank.cpp"
 #
 
 $(TARGET): $(OBJ)
 	mpicxx  -o $@  $(OBJ)  $(LDFLAGS)
-# ./BaseDataFile.o ./CompressingDataSocketLayer.o ./ServerLaunch.o ./DataOutputFileStream.o ./DataSocketStream.o ./LargeByteBuffer.o ./LocalDBOpener.o ./MergeDataFiles.o ./ProcessTimeline.o ./Server.o ./Slave.o ./SpaceTimeDataControllerLocal.o ./TraceDataByRankLocal.o ./VersatileMemoryPage.o  
+# ./BaseDataFile.o ./CompressingDataSocketLayer.o ./ServerLaunch.o ./DataOutputFileStream.o ./DataSocketStream.o ./LargeByteBuffer.o ./LocalDBOpener.o ./MergeDataFiles.o ./ProcessTimeline.o ./Server.o ./Slave.o ./SpaceTimeDataController.o ./TraceDataByRank.o ./VersatileMemoryPage.o  
 
 clean:
 	/bin/rm  -f $(OBJ) $(TARGET)

@@ -8,7 +8,7 @@
 #ifndef PROCESSTIMELINE_H_
 #define PROCESSTIMELINE_H_
 #include "BaseDataFile.h"
-#include "TraceDataByRankLocal.h"
+#include "TraceDataByRank.h"
 namespace TraceviewerServer
 {
 
@@ -20,7 +20,7 @@ namespace TraceviewerServer
 		virtual ~ProcessTimeline();
 		int Line();
 		void ReadInData();
-		TraceDataByRankLocal* Data;
+		TraceDataByRank* Data;
 	private:
 		/** This ProcessTimeline's line number. */
 		int LineNum;

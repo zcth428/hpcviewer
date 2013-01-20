@@ -10,7 +10,7 @@
 
 #ifndef NO_MPI//I don't want to include Server.h, which is where USE_MPI is declared
 
-#include "SpaceTimeDataControllerLocal.h"
+#include "SpaceTimeDataController.h"
 #include "MPICommunication.h"
 namespace TraceviewerServer
 {
@@ -24,7 +24,7 @@ namespace TraceviewerServer
 		void RunLoop();
 
 	private:
-		SpaceTimeDataControllerLocal* STDCL;
+		SpaceTimeDataController* STDCL;
 		int GetData(MPICommunication::CommandMessage*);
 		bool STDCLNeedsDeleting;
 	};

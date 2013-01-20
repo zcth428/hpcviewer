@@ -8,7 +8,7 @@
 #ifndef LOCALDBOPENER_H_
 #define LOCALDBOPENER_H_
 #include <string>
-#include "SpaceTimeDataControllerLocal.h"
+#include "SpaceTimeDataController.h"
 #include "FileData.h"
 
 
@@ -22,10 +22,10 @@ namespace TraceviewerServer
 		LocalDBOpener();
 		virtual ~LocalDBOpener();
 
-		SpaceTimeDataControllerLocal* OpenDbAndCreateSTDC(string);
+		SpaceTimeDataController* OpenDbAndCreateSTDC(string);
 	private:
 		static const int MIN_TRACE_SIZE = 32 + 8 + 24
-				+ TraceDataByRankLocal::SIZE_OF_TRACE_RECORD * 2;
+				+ TraceDataByRank::SIZE_OF_TRACE_RECORD * 2;
 		static bool IsCorrectDatabase(string, FileData*);
 
 	};

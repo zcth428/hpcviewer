@@ -1,5 +1,5 @@
 /*
- * TraceDataByRankLocal.h
+ * TraceDataByRank.h
  *
  *  Created on: Jul 9, 2012
  *      Author: pat2
@@ -16,12 +16,12 @@
 namespace TraceviewerServer
 {
 
-	class TraceDataByRankLocal
+	class TraceDataByRank
 	{
 	public:
-		//TraceDataByRankLocal();
-		TraceDataByRankLocal(BaseDataFile*, int, int, int);
-		virtual ~TraceDataByRankLocal();
+		//TraceDataByRank();
+		TraceDataByRank(BaseDataFile*, int, int, int);
+		virtual ~TraceDataByRank();
 
 		void GetData(double, double, double);
 		int SampleTimeLine(Long, Long, int, int, int, double, double);

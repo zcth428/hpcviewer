@@ -1,11 +1,11 @@
 /*
- * SpaceTimeDataControllerLocal.cpp
+ * SpaceTimeDataController.cpp
  *
  *  Created on: Jul 9, 2012
  *      Author: pat2
  */
 
-#include "SpaceTimeDataControllerLocal.h"
+#include "SpaceTimeDataController.h"
 #include "FileData.h"
 #include "Server.h"
 #include <iostream>
@@ -17,7 +17,7 @@ namespace TraceviewerServer
 //ProcessTimeline** Traces;
 //int TracesLength;
 
-	SpaceTimeDataControllerLocal::SpaceTimeDataControllerLocal(FileData* locations)
+	SpaceTimeDataController::SpaceTimeDataController(FileData* locations)
 	{
 		Attributes = new ImageTraceAttributes();
 		OldAttributes = new ImageTraceAttributes();
@@ -30,7 +30,7 @@ namespace TraceviewerServer
 	}
 
 //called once the INFO packet has been received to add the information to the stdc
-	void SpaceTimeDataControllerLocal::SetInfo(Long minBegTime, Long maxEndTime,
+	void SpaceTimeDataController::SetInfo(Long minBegTime, Long maxEndTime,
 			int headerSize)
 	{
 		MinBegTime = minBegTime;
@@ -44,17 +44,17 @@ namespace TraceviewerServer
 		}
 	}
 
-	int SpaceTimeDataControllerLocal::GetHeight()
+	int SpaceTimeDataController::GetHeight()
 	{
 		return Height;
 	}
 
-	string SpaceTimeDataControllerLocal::GetExperimentXML()
+	string SpaceTimeDataController::GetExperimentXML()
 	{
 		return ExperimentXML;
 	}
 
-	ProcessTimeline* SpaceTimeDataControllerLocal::GetNextTrace(bool ChangedBounds)
+	ProcessTimeline* SpaceTimeDataController::GetNextTrace(bool ChangedBounds)
 	{
 		if (Attributes->lineNum
 				< min(Attributes->numPixelsV, Attributes->endProcess - Attributes->begProcess))
@@ -90,14 +90,14 @@ namespace TraceviewerServer
 		return NULL;
 	}
 
-	void SpaceTimeDataControllerLocal::AddNextTrace(ProcessTimeline* NextPtl)
+	void SpaceTimeDataController::AddNextTrace(ProcessTimeline* NextPtl)
 	{
 		if (NextPtl == NULL)
 			cerr << "Saving a null PTL?" << endl;
 		Traces[NextPtl->Line()] = NextPtl;
 	}
 
-	void SpaceTimeDataControllerLocal::FillTraces(int LinesToPaint, bool ChangedBounds)
+	void SpaceTimeDataController::FillTraces(int LinesToPaint, bool ChangedBounds)
 	{
 		//Traces might be null. Initialize it by calling prepareViewportPainting
 		PrepareViewportPainting(ChangedBounds);
@@ -119,7 +119,7 @@ namespace TraceviewerServer
 		}
 	}
 
-	int SpaceTimeDataControllerLocal::LineToPaint(int Line)
+	int SpaceTimeDataController::LineToPaint(int Line)
 	{
 		int NumTimelinesToPaint = Attributes->endProcess - Attributes->begProcess;
 		if (NumTimelinesToPaint > Attributes->numPixelsV)
@@ -129,16 +129,16 @@ namespace TraceviewerServer
 			return Attributes->begProcess + Line;
 	}
 
-	const int* SpaceTimeDataControllerLocal::GetValuesXProcessID()
+	const int* SpaceTimeDataController::GetValuesXProcessID()
 	{
 		return DataTrace->ProcessIDs;
 	}
-	const short* SpaceTimeDataControllerLocal::GetValuesXThreadID()
+	const short* SpaceTimeDataController::GetValuesXThreadID()
 	{
 		return DataTrace->ThreadIDs;
 	}
 
-	void SpaceTimeDataControllerLocal::PrepareViewportPainting(bool ChangedBounds)
+	void SpaceTimeDataController::PrepareViewportPainting(bool ChangedBounds)
 	{
 		if (ChangedBounds)
 		{
@@ -160,12 +160,12 @@ namespace TraceviewerServer
 		}
 	}
 
-	SpaceTimeDataControllerLocal::SpaceTimeDataControllerLocal()
+	SpaceTimeDataController::SpaceTimeDataController()
 	{
 		cout << "Calling the blank constructor" << endl;
 	}
 
-	SpaceTimeDataControllerLocal::~SpaceTimeDataControllerLocal()
+	SpaceTimeDataController::~SpaceTimeDataController()
 	{
 #ifdef NO_MPI //The MPI implementation actually doesn't use the Traces array at all! It does call GetNextTrace, but ChangedBounds is always true!
 		if (Traces != (ProcessTimeline**)0xfffffffe) {

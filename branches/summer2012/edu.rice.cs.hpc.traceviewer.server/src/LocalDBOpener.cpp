@@ -8,7 +8,7 @@
 #include "LocalDBOpener.h"
 #include <iostream>
 #include "MergeDataFiles.h"
-#include "TraceDataByRankLocal.h"
+#include "TraceDataByRank.h"
 #include "FileUtils.h"
 
 namespace TraceviewerServer
@@ -25,8 +25,8 @@ namespace TraceviewerServer
 	{
 		// TODO Auto-generated destructor stub
 	}
-	SpaceTimeDataControllerLocal* stdcl;
-	SpaceTimeDataControllerLocal* LocalDBOpener::OpenDbAndCreateSTDC(string PathToDB)
+	SpaceTimeDataController* stdcl;
+	SpaceTimeDataController* LocalDBOpener::OpenDbAndCreateSTDC(string PathToDB)
 	{
 		FileData location;
 		FileData* ptrLocation = &location;
@@ -38,7 +38,7 @@ namespace TraceviewerServer
 		if (!HasDatabase)
 			return NULL;
 
-		stdcl = new SpaceTimeDataControllerLocal(ptrLocation); //I think this should allocate it on the heap
+		stdcl = new SpaceTimeDataController(ptrLocation); //I think this should allocate it on the heap
 		return stdcl;
 	}
 	/****

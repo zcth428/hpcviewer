@@ -23,7 +23,6 @@ namespace TraceviewerServer
 		OldAttributes = new ImageTraceAttributes();
 		DataTrace = new BaseDataFile(locations->fileTrace, DEFAULT_HEADER_SIZE);
 		Height = DataTrace->getNumberOfFiles();
-		cout << "STDCL at: " << this << " Height= " << Height << endl;
 		ExperimentXML = locations->fileXML;
 		FileTrace = locations->fileTrace;
 		TracesInitialized = false;
@@ -40,7 +39,7 @@ namespace TraceviewerServer
 
 		if (DataTrace != NULL)
 		{
-			delete (DataTrace);
+			delete (DataTrace);//So we don't leak memory if two INFO packets are sent.
 			DataTrace = new BaseDataFile(FileTrace, HEADER_SIZE);
 		}
 	}

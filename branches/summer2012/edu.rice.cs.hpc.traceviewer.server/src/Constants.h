@@ -25,6 +25,7 @@ namespace TraceviewerServer
 	#define DONE 0x444F4E45
 	#define DBOK 0x44424F4B
 	#define INFO 0x494E464F
+	#define FLTR 0x464C5452
 	#define NODB 0x4E4F4442
 	#define EXML 0x45584D4C
 	#define SLAVE_REPLY 0x12345678
@@ -37,6 +38,9 @@ namespace TraceviewerServer
 	#define ERROR_UNKNOWN_COMMAND -7
 	#define ERROR_PATH_TOO_LONG -9
 	#define ERROR_INVALID_PARAMETERS -99
-
+	#define ERROR_ZLIB_COMPRESSION_ERROR -33445
+	//Success Codes
+	#define SUCCESS_AND_OPEN_NEW 1
+	#define SUCCESS_AND_SERVER_SHUTDOWN 0
 }
 #endif /* CONSTANTS_H_ */

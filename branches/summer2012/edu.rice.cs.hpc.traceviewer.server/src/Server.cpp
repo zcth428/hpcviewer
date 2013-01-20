@@ -42,7 +42,7 @@ namespace TraceviewerServer
 	{
 		delete (STDCL);
 	}
-	int Server::main(int argc, char *argv[])
+	int Server::Begin()
 	{
 
 		DataSocketStream* socketptr;
@@ -64,7 +64,7 @@ namespace TraceviewerServer
 		int Command = socketptr->ReadInt();
 		if (Command == OPEN)
 		{
-			while(RunConnection(socketptr)==1)
+			while(RunConnection(socketptr)==SUCCESS_AND_OPEN_NEW)
 				;
 		}
 		else
@@ -107,12 +107,16 @@ namespace TraceviewerServer
 				case DATA:
 					GetAndSendData(socketptr);
 					break;
+				case FLTR:
+					ChangeFilter(socketptr);
+					break;
 				case DONE:
 					EndingConnection = true;
+					return SUCCESS_AND_SERVER_SHUTDOWN;
 					break;
 				case OPEN:
 					EndingConnection = true;
-					return 1;
+					return SUCCESS_AND_OPEN_NEW;
 				default:
 					cerr << "Unknown command received" << endl;
 					return (ERROR_UNKNOWN_COMMAND);
@@ -179,8 +183,7 @@ namespace TraceviewerServer
 
 		socket->Flush();
 
-		cout << "Waiting to send XML on port " << XMLPort << ". Num traces was "
-				<< STDCL->GetHeight() << endl;
+		cout << "Waiting to send XML on port " << XMLPort << "." << endl;
 		if (XMLPort != MainPort)
 		{
 			XmlSocket->AcceptS();
@@ -200,7 +203,6 @@ namespace TraceviewerServer
 	vector<char> Server::CompressXML()
 	{
 		vector<char> Compressed;
-		FILE* testfile = fopen("/Users/pat2/Downloads/hpctoolkit-chombo-crayxe6-1024pe-trace/test12AUTO.gz", "w+");
 
 		FILE* in = fopen(STDCL->GetExperimentXML().c_str(), "r");
 		//From http://zlib.net/zpipe.c with some editing
@@ -228,7 +230,7 @@ namespace TraceviewerServer
 			amtprocessed += Compressor.avail_in;
 			//cout<<"Processed " << amtprocessed << " / " <<size<<endl;
 			if (ferror(in)) {
-				cerr<<"Error"<<endl;
+				cerr<<"XML Compression Error"<<endl;
 				(void)deflateEnd(&Compressor);
 				throw Z_ERRNO;
 			}
@@ -242,29 +244,26 @@ namespace TraceviewerServer
 				Compressor.avail_out = CHUNK;
 				Compressor.next_out = OutBuffer;
 				ret = deflate(&Compressor, flush);    /* no bad return value */
-				if (ret == Z_STREAM_ERROR) throw -33445;  /* state not clobbered */
+				if (ret == Z_STREAM_ERROR) throw ERROR_ZLIB_COMPRESSION_ERROR;  /* state not clobbered */
 				have = CHUNK - Compressor.avail_out;
 				compramt += have;
-				//cout<<"Writing "<<have<< " compressed bytes. Length of compressed file so far is "<< compramt<<endl;
 				Compressed.insert(Compressed.end(), OutBuffer, OutBuffer+have);
-				fwrite(OutBuffer, 1, have, testfile);
+
 			} while (Compressor.avail_out == 0);
 
 
 			/* done when last data in file processed */
 		} while (flush != Z_FINISH);
 		deflateEnd(&Compressor);
-		fflush(testfile);
-		fclose(testfile);
-		cout<<"Size of vector: "<<Compressed.size()<<endl;
+		//cout<<"Size of vector: "<<Compressed.size()<<endl;
 		return Compressed;
 	}
 
 	void Server::ParseOpenDB(DataSocketStream* receiver)
 	{
 
-		if (false) //(!receiver->is_open())
-			cout << "Socket not open!" << endl;
+		//if (false) //(!receiver->is_open())
+		//	cout << "Socket not open!" << endl;
 
 		string PathToDB = receiver->ReadString();
 		LocalDBOpener DBO;
@@ -298,6 +297,11 @@ namespace TraceviewerServer
 		socket->Flush();
 	}
 
+	void Server::ChangeFilter(DataSocketStream* socket)
+	{
+		//TODO: Parse message, add filter.
+	}
+
 #define ISN(g) (g<0)
 
 	void Server::GetAndSendData(DataSocketStream* Stream)
@@ -310,6 +314,7 @@ namespace TraceviewerServer
 		int verticalResolution = Stream->ReadInt();
 		int horizontalResolution = Stream->ReadInt();
 
+		//Check to make sure they are all positive values.
 		if (ISN(processStart) || ISN(processEnd) || (processStart > processEnd)
 				|| ISN(verticalResolution) || ISN(horizontalResolution)
 				|| (timeEnd < timeStart))
@@ -370,14 +375,14 @@ namespace TraceviewerServer
 			Stream->WriteInt( T->Line());
 			vector<TimeCPID> data = T->Data->ListCPID;
 			Stream->WriteInt( data.size());
-			Stream->WriteDouble( data[0].Timestamp);
-			// Begin time
-			Stream->WriteDouble( data[data.size() - 1].Timestamp);
-			//End time
+
+			Stream->WriteDouble( data[0].Timestamp);// Begin time
+			Stream->WriteDouble( data[data.size() - 1].Timestamp);//End time
+
 			CompressingDataSocketLayer Compr;
 
 			vector<TimeCPID>::iterator it;
-			cout << "Sending process timeline with " << data.size() << " entries" << endl;
+			//cout << "Sending process timeline with " << data.size() << " entries" << endl;
 			for (it = data.begin(); it != data.end(); ++it)
 			{
 				Compr.WriteInt( it->CPID);
@@ -402,8 +407,6 @@ namespace TraceviewerServer
 			COMM_WORLD.Recv(&msg, sizeof(msg), MPI_PACKED, MPI_ANY_SOURCE, MPI_ANY_TAG);
 			if (msg.Tag == SLAVE_REPLY)
 			{
-
-				//Stream->WriteInt(msg.Data.Line);
 				Stream->WriteInt(msg.Data.Line);
 				Stream->WriteInt(msg.Data.Entries);
 				Stream->WriteDouble(msg.Data.Begtime); // Begin time

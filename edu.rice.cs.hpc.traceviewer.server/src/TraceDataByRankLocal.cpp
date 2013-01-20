@@ -22,15 +22,6 @@ namespace TraceviewerServer
 		Minloc = myOffset.start +header_size;
 		Maxloc = myOffset.end - SIZE_OF_TRACE_RECORD;
 
-/*
-				Minloc = Offsets[Rank] + header_size;
-				Maxloc = (
-						(Rank + 1 < Data->getNumberOfFiles()) ?
-								Offsets[Rank + 1] : data->getMasterBuffer()->Size() - 1)
-						- SIZE_OF_TRACE_RECORD;
-				*/
-		//Why size-1 but Offsets[Rank+1]? Offset[Rank+1] is the start of the next one,
-		//and if there were another, Size() would be the start of the next one.
 		if (Maxloc < Minloc)
 			cerr << "Maxloc is smaller than Minloc!! Maxloc= " << Maxloc << " Minloc= "
 					<< Minloc << " Rank: " << Rank << " Num files= " << Data->getNumberOfFiles()
@@ -244,8 +235,8 @@ namespace TraceviewerServer
 	 * i.e. if timeLine had three of the same cpid's in a row, the middle one would be superfluous,
 	 * as we would know when painting that it should be the same color all the way through.
 	 ********************************************************************************************/
-
-	void TraceDataByRankLocal::PostProcess()
+	//Because we lose the timing data when we just send the CPIDs, no CPID is superfluous.
+	/*void TraceDataByRankLocal::PostProcess()
 	{
 		int len = ListCPID.size();
 		for (int i = 0; i < len - 2; i++)
@@ -260,7 +251,7 @@ namespace TraceviewerServer
 			}
 
 		}
-	}
+	}*/
 
 	TraceDataByRankLocal::~TraceDataByRankLocal()
 	{

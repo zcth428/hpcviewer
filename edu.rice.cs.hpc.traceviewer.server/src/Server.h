@@ -27,7 +27,7 @@ namespace TraceviewerServer
 	public:
 		Server();
 		virtual ~Server();
-		static int main(int argc, char *argv[]);
+		static int Begin();
 
 	private:
 		static int RunConnection(DataSocketStream*);
@@ -35,6 +35,7 @@ namespace TraceviewerServer
 		static void SendDBOpenedSuccessfully(DataSocketStream*);
 		static void ParseOpenDB(DataSocketStream*);
 		static void GetAndSendData(DataSocketStream*);
+		static void ChangeFilter(DataSocketStream*);
 		static vector<char> CompressXML();
 		static void SendDBOpenFailed(DataSocketStream*);
 

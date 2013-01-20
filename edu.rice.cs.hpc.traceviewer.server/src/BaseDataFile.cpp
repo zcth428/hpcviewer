@@ -65,11 +65,11 @@ namespace TraceviewerServer
 		ProcessIDs = new int[NumFiles];
 		ThreadIDs = new short[NumFiles];
 		Offsets = new Offset[NumFiles];
-		lOffsets = new Long[NumFiles];
+		//lOffsets = new Long[NumFiles];
 
 		Long current_pos = SIZEOF_INT * 2;
 		Offsets[NumFiles-1].end = MasterBuff->Size();
-
+		bool first = true;
 		// get the procs and threads IDs
 		for (int i = 0; i < NumFiles; i++)
 		{
@@ -79,7 +79,12 @@ namespace TraceviewerServer
 			current_pos += SIZEOF_INT;
 
 			Long oset = MasterBuff->GetLong(current_pos);
-			lOffsets[i] = oset;
+			//lOffsets[i] = oset;
+			if (first)
+			{
+				cout<<"First offset: " << oset<<endl;
+				first = false;
+			}
 			Offsets[i].start = oset;
 			if (i>0)
 				Offsets[i-1].end = Offsets[i].start;

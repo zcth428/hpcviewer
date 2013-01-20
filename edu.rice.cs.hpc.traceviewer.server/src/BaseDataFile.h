@@ -41,7 +41,7 @@ namespace TraceviewerServer
 		int NumFiles; // = 0;
 
 		Offset* Offsets;
-		Long* lOffsets;
+		//Long* lOffsets;
 	};
 
 } /* namespace TraceviewerServer */

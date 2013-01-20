@@ -1,14 +1,15 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <sstream>
 
 
 #include "FileUtils.h"
 #include "Server.h"
 #include "Slave.h"
 #include "MPICommunication.h"
-#include "zlib.h"
 #include "Constants.h"
+//#include "optionparser.h"
 
 #ifdef USE_MPI
 #include "mpi.h"
@@ -19,7 +20,7 @@ using namespace std;
 
 
 bool ParseCommandLineArgs(int, char*[]);
-bool StringActuallyZero(string);
+int GetIntFromString(string st, bool& valid);
 
 int main(int argc, char *argv[])
 {
@@ -33,15 +34,18 @@ int main(int argc, char *argv[])
 	rank = MPI::COMM_WORLD.Get_rank();
 	size = MPI::COMM_WORLD.Get_size();
 
-	if (rank == TraceviewerServer::MPICommunication::SOCKET_SERVER)
+	if (size == 1)
+		cout<<"In order to use the MPI implementation of this server, you need more than one node. "
+		<<"Please try running again, or run the non-MPI version. See the docs for more information."<<endl;
+	else if (rank == TraceviewerServer::MPICommunication::SOCKET_SERVER)
 	{
 		try
 		{
-			TraceviewerServer::Server::main(argc, argv);
+			TraceviewerServer::Server::Begin();
 		}
 		catch (int e)
 		{
-
+			cerr<<"Error code " << e<<endl;
 		}
 		cout<<"Server done, closing..."<<endl;
 		TraceviewerServer::MPICommunication::CommandMessage serverShutdown;
@@ -89,19 +93,56 @@ int main(int argc, char *argv[])
 #endif
 	return 0;
 }
-void PrintHelp()
-{
-	cout << "This is a server for the HPCTraceviewer. Usage: INSERT THE USAGE HERE"<<endl
-			<<"Some notes: Allowed flags: --help, --compression, --port, --xmlport"<<endl
-			<<"For compression, allowed options are on/off"<<endl
-			<<"For main data port, allowed values are 0, which means auto-choose, and any integer 1024< n <65535. Default is 21590"<<endl
-			<<"For the xml port, any integer 1024< n <65535. -1 forces usage of the data port to send xml. This should be used with --port 0. Do not include this flag to have the XML port automatically negotiated."
-			<< endl;
-}
-typedef enum
+
+enum CLoption
 {
 	null, help, compression, com_port, xml_port, yes, no
-} CLoption;
+};
+#define EXECUTABLE_NAME "edu.rice.cs.hpc.traceviewer.server"
+
+#ifdef USE_MPI
+#define USAGE_TEXT "USAGE: mpirun -n {nodes to use} " EXECUTABLE_NAME " [options]\n" \
+"mpiexec -n {nodes to use} " EXECUTABLE_NAME " [options]\n\nOptions:"
+#else
+#define USAGE_TEXT "USAGE: " EXECUTABLE_NAME " [options]\n\nOptions:"
+#endif
+void PrintHelp()
+{
+	cout << "This is a server for hpctraceviewer. "<<endl<< USAGE_TEXT<<endl
+			<<"  -h, --help	\n\t\tPrint help then exit."<<endl
+			<<"  -c, --compression [on/off, yes/no, true/false] \n\t\tTurns data compression on or off"<<endl
+			<<"  -p [port number], --port [port number]\n\t\tSpecifies the port number to use for communication."
+			<<"Should be at least 1024. Use 0 to autoselect an open port, or do not specify option for default port (21590)."<<endl
+			<<"  --xml_port [port number], --xmlport [port number]\n\t\tSpecifies the port on which the xml data will be sent. Also should be at least 1024."
+			"Use -1 to force using the main port (typically used with --port 0). Use 0 to autoselect an open port."
+						<< endl;
+}
+/*http://optionparser.sourceforge.net/index.html
+ * bool ParseCommandLineArgs2(int argc, char *argv[])
+{
+	const option::Descriptor usage[] = {
+			//Index,			type (for index conflicts),	Short form,		Long form, 		Arg checker, 					Help text
+			{null,				0, 													"", 					"", 					option::Arg::None, 		USAGE_TEXT},
+			{help,				0,													"hH", 				"help",				option::Arg::None,		"  -h, --help	\tPrint help then exit."},
+			{compression, 0,													"c",					"compression",option::Arg::Optional,"  -c, --compression [on/off, yes/no, true/false] \tTurns data compression on or off"},
+			{compression, 0, 													"C", 					"compr",			option::Arg::Optional,"  --compr \tA synonym for --compression"},
+			{com_port,		0,													"pP",					"port",				option::Arg::Optional,"  -p [port number], --port [port number]\tSpecifies the port number to use for communication."
+																																																	"Should be at least 1024. Use 0 to autoselect an open port, or do not specify option for default port (21590)."},
+			{xml_port,		0,													"",						"xml_port",		option::Arg::Optional,"  --xml_port [port number]\tSpecifies the port on which the xml data will be sent. Also should be at least 1024."
+																																																	"Use -1 to force using the main port (typically used with --port 0). Use 0 to autoselect an open port."}
+	};
+	 option::Stats  stats(usage, argc, argv);
+	 option::Option options[stats.options_max], buffer[stats.buffer_max];
+	 option::Parser parse(usage, argc, argv, options, buffer);
+	 if (parse.error())
+		 return false;
+   if (options[help] || argc == 0) {
+     option::printUsage(std::cout, usage);
+     return 0;
+    string Compresion(options[compression].last()->arg);
+
+   }
+}*/
 
 bool ParseCommandLineArgs(int argc, char *argv[])
 {
@@ -111,55 +152,47 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 	{
 	make_pair( "", null),
 	make_pair( "-h", help ),
-	make_pair( "-help", help ),
 	make_pair( "--help", help ),
-	make_pair( "--Help", help ),
 	make_pair( "-c", compression ),
 	make_pair( "--compression", compression ),
-	make_pair( "--Compression", compression ),
 	make_pair( "--comp", compression ),
-	make_pair( "--Comp", compression ),
 	make_pair( "-p", com_port ),
 	make_pair( "--port", com_port ),
-	make_pair( "--Port", com_port ),
-	make_pair( "--xmlport", xml_port ),//This should be undocumented, because the server should auto-negotiate it
+	make_pair( "--xmlport", xml_port ),
+	make_pair( "--xml_port", xml_port),
 	make_pair( "true", yes ),
 	make_pair( "t", yes ),
-	make_pair( "True", yes ),
 	make_pair( "yes", yes ),
-	make_pair( "Yes", yes ),
 	make_pair( "y", yes ),
 	make_pair( "on", yes),
 	make_pair( "false", no ),
 	make_pair( "f", no ),
-	make_pair( "False", no ),
 	make_pair( "no", no ),
-	make_pair( "No", no ),
 	make_pair( "n", no ),
 	make_pair( "off", no)
 	};
 	const Map Parser (vals, vals + sizeof(vals) / sizeof (vals[0]));
 
-
-	for (int c = 1; c < argc; c += 2)
+	int c  = 0;
+	while (++c < argc)
 	{
-		CLoption op = Parser.find(argv[c])->second;
+		char* strOpt = argv[c];
+		int i;
+		//Convert to lower case
+		while (strOpt[i]) {strOpt[i] = tolower(strOpt[i]); i++;}
+
+		CLoption op = Parser.find(strOpt)->second;
 		switch (op)
 		{
 			case compression:
-				if (c + 1 < argc)
+				c++;//compression takes two arguments, so advance. Also a pun :)
+				if (c < argc)
 				{ //Possibly passed a true/false
-					CLoption OnOrOff = Parser.find(argv[c+1])->second;
+					CLoption OnOrOff = Parser.find(argv[c])->second;
 					if (OnOrOff == yes)
-					{
 						TraceviewerServer::Compression = true;
-						break;
-					}
 					else if (OnOrOff == no)
-					{
 						TraceviewerServer::Compression = false;
-						break;
-					}
 					else
 					{
 						PrintHelp();
@@ -171,28 +204,27 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 					PrintHelp();
 					return false;
 				}
+				break;
 			case com_port:
-				if (c + 1 < argc)
-				{ //Possibly a number following
-					int val = atoi(argv[c + 1]);
-					if (val == 0 && !StringActuallyZero(argv[c+1]))
+				c++;//See similar line above
+				if (c < argc)
+				{ //Possibly a number follows
+					bool valid = false;
+					int val = GetIntFromString(argv[c], valid);
+					if (!valid)
 					{
 						cout<<"Could not parse port number"<<endl;
 						PrintHelp();
 						return false;
 					}
-					if ((val < 1024)&& (val != 0))
+					if ((val < 1024) && (val != 0))
 					{
 						cout << "Port cannot be less than 1024"<<endl;
 						PrintHelp();
 						return false;
 					}
 					else
-					{
-
 						TraceviewerServer::MainPort = val;
-						break;
-					}
 				}
 				else //--port was the last argument
 				{
@@ -201,11 +233,20 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 				}
 				break;
 			case xml_port:
-				if (c + 1 < argc)
-				{ //Possibly a number following
-					int val = atoi(argv[c + 1]);
-					if ((val < 1024) &&(val != -1))
+				c++;//See similar line above.
+				if (c < argc)
+				{ //Possibly a number follows
+					bool valid = false;
+					int val = GetIntFromString(argv[c], valid);
+					if (!valid)
 					{
+						cout << "Could not parse xml port number" << endl;
+						PrintHelp();
+						return false;
+					}
+					if ((val < 1024) &&(val != 0) && (val != -1))
+					{
+						cout<<"Invalid XML port number."<<endl;
 						PrintHelp();
 						return false;
 					}
@@ -215,7 +256,7 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 						break;
 					}
 				}
-				else //--port was the last argument
+				else //--xml_port was the last argument
 				{
 					PrintHelp();
 					return false;
@@ -229,15 +270,20 @@ bool ParseCommandLineArgs(int argc, char *argv[])
 	}
 	return true;
 }
-bool StringActuallyZero(string ToTest)
-	{
-		for (int var = 0; var < ToTest.length(); var++)
+#define STRING_NOT_A_NUMBER -1
+int GetIntFromString(string st, bool& valid)
+{
+	int result;
+	if(stringstream(st) >> result)
 		{
-			if (ToTest[var] != '0')
-				return false;
+		valid = true;
+		return result;}
+	else
+	{
+		valid = false; return STRING_NOT_A_NUMBER;
 		}
-		return true;
-	}
+}
+
 /*void WriteVector(vector<string> t)
  {
  cout << "Writing vector of length "<< t.size()<<endl;

@@ -10,7 +10,7 @@ Require-Bundle: edu.rice.cs.hpc.data,
  org.eclipse.core.runtime,
  org.eclipse.ui,
  edu.rice.cs.hpc.common
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.jface.action,
  org.eclipse.jface.resource,

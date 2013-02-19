@@ -51,12 +51,10 @@ public class BaseWindowTitle implements IWindowTitle {
 	 * Set the title of the view window
 	 * 
 	 * @param window
-	 * @param experiment
-	 * @param sTitle
-	 * @param numDB
+	 * @param view
 	 * @return the new title
 	 */
-	public String setViewTitle(IWorkbenchWindow window, IViewPart view) { 
+	public String setTitle(IWorkbenchWindow window, IViewPart view) { 
 
 		if (view instanceof BaseScopeView) {
 			String sTitle = ((BaseScopeView) view).getRootScope().getRootName();

@@ -91,7 +91,7 @@ public class WindowTitle extends BaseWindowTitle {
 		final IViewReference viewRefs[] = window.getActivePage().getViewReferences();
 		for (IViewReference viewRef: viewRefs) {
 			final IViewPart view = viewRef.getView(false);
-			setViewTitle(window, view);
+			setTitle(window, view);
 		}
 		return;
 	}
@@ -136,11 +136,9 @@ public class WindowTitle extends BaseWindowTitle {
 	 * 
 	 * @param window
 	 * @param view
-	 * @param sTitle
-	 * @param numDB
-	 * @returns - true if the title was set, false otherwise
+	 * @returns - the suggested title of the view
 	 */
-	public String setViewTitle(IWorkbenchWindow window, IViewPart view) { 
+	public String setTitle(IWorkbenchWindow window, IViewPart view) { 
 		if (runnable != null) {
 			if ( this.runExtension(runnable, MethodFlag.VIEWTITLE, window, view) ) {
 
@@ -152,7 +150,7 @@ public class WindowTitle extends BaseWindowTitle {
 			}
 		}
 		// either there was no extension or the extension did not handle this kind of view, let the super method try and set it
-		return super.setViewTitle(window, view);
+		return super.setTitle(window, view);
 	}
 
 	/***
@@ -224,7 +222,7 @@ public class WindowTitle extends BaseWindowTitle {
 			}
 			if (mf == MethodFlag.VIEWTITLE)
 			{
-				strResult = windowTitle.setViewTitle(window, (IViewPart)object);
+				strResult = windowTitle.setTitle(window, (IViewPart)object);
 				return;
 			}
 			if (mf == MethodFlag.EDITORTITLE)

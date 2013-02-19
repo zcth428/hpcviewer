@@ -57,7 +57,7 @@ public class MergeDatabase extends AbstractHandler {
 			{
 				// selecting database
 				ListSelectionDialog dlg = new ListSelectionDialog(window.getShell(), dbArray, 
-						new ArrayContentProvider(), new ExperimentLabelProvider(), "Select two database to merge:");
+						new ArrayContentProvider(), new ExperimentLabelProvider(), "Select two databases to merge:");
 				dlg.setTitle("Merging database");
 				dlg.open();
 				Object[] selectedDatabases = dlg.getResult();

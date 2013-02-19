@@ -17,6 +17,7 @@ import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
+import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.Database;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
@@ -28,10 +29,12 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
  *
  */
 public class ShowView extends AbstractHandler {
-
+	
+	private IWorkbenchWindow window;
 	//@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
+		
+		window= HandlerUtil.getActiveWorkbenchWindow(event);
 		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
 		
 		// ------------------------------------------------------------
@@ -57,8 +60,11 @@ public class ShowView extends AbstractHandler {
 		// ------------------------------------------------------------
 		// show dialog box so that users can choose which view to show
 		// ------------------------------------------------------------
+		final DatabaseLabelProvider dbLabelProvider = new DatabaseLabelProvider();
+		
 		ElementTreeSelectionDialog dlg = new ElementTreeSelectionDialog(window.getShell(),
-				new DatabaseLabelProvider(), new TreeNodeContentProvider());
+				dbLabelProvider, new TreeNodeContentProvider());
+		
 		dlg.setInput(dbNode);
 		dlg.setMessage("Please select a view to activate");
 		dlg.setTitle("Show a view");
@@ -77,7 +83,7 @@ public class ShowView extends AbstractHandler {
 						// ------------------------------------------------------------
 						BaseScopeView.openView(page, view.getRootScope(), site.getSecondaryId(), 
 									view.getDatabase(), IWorkbenchPage.VIEW_ACTIVATE);
-
+   
 					} catch (PartInitException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -85,6 +91,9 @@ public class ShowView extends AbstractHandler {
 				}
 			}
 		}
+		// hack: force all parts to refresh the title
+		// we should instead refresh only activated parts
+		dbLabelProvider.wt.refreshViewTitles(window);
 		
 		dispose(dbNode);
 		
@@ -93,6 +102,8 @@ public class ShowView extends AbstractHandler {
 	
 	private class DatabaseLabelProvider extends BaseLabelProvider implements ILabelProvider
 	{
+		final private WindowTitle wt = new WindowTitle();
+		
 		//@Override
 		public Image getImage(Object element) {
 			Object o = ((TreeNode)element).getValue();
@@ -108,9 +119,10 @@ public class ShowView extends AbstractHandler {
 			Object o = ((TreeNode)element).getValue();
 			if (o instanceof BaseScopeView) {
 				BaseScopeView view = (BaseScopeView) o;
-				String title = view.getTitle();
+				String title = wt.setTitle(window, view);
+				//String title = view.getTitle();
 				if (view.getTreeViewer().getTree().isDisposed()) {
-					title += " (closed)"; 
+					title += " *closed*"; 
 				}
 				return title;
 			}

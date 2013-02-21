@@ -1,17 +1,9 @@
 package edu.rice.cs.hpc.viewer.scope;
 
-import java.util.HashMap;
-
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
-import edu.rice.cs.hpc.viewer.window.Database;
 
 /**
  * 
@@ -24,87 +16,12 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     // ................ ATTRIBUTES..........................
     //======================================================
 	
-	//private TreeViewerColumn []colMetrics = null;
-	/** we have to make sure that the listener is added only once for a given window **/
-	static private HashMap<IWorkbenchWindow, DynamicViewListener> hashWindow;
 
     //======================================================
     // ................ METHODS  ..........................
     //======================================================
 	
-	/***
-	 * Standard method to open a scope view (cct, caller tree or flat tree)
-	 * 
-	 * @param page : current page where the view has to be hosted
-	 * @param root : the root scope
-	 * @param secondaryID : aux id for the view
-	 * @param db : database
-	 * @param viewState : state of the view (VIEW_ACTIVATE, VIEW_VISIBLE, ... )
-	 * 
-	 * @return	the view
-	 * @throws PartInitException
-	 */
-	static public BaseScopeView openView(IWorkbenchPage page, RootScope root, String secondaryID, 
-			Database db, int viewState ) 
-			throws PartInitException {
-		
-		BaseScopeView objView = null;
-		
-		if (root.getType() == RootScopeType.CallingContextTree) {
-			int state = (viewState<=0? IWorkbenchPage.VIEW_ACTIVATE : viewState);
-			// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
-			objView = (BaseScopeView) page.showView(ScopeView.ID , secondaryID, state); 
-			
-			if (objView.getTreeViewer().getInput() == null) {
-				objView.setInput(db, root);
-			}
-
-		} else if (root.getType() == RootScopeType.CallerTree) {
-			if (viewState>0) {
-				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE);
-
-				if (objView.getTreeViewer().getInput() == null) {
-					// the view has been closed. Need to set the input again
-					objView.setInput(db, root);
-				}
-				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_ACTIVATE);
-			} else {
-				// default situation (or first creation)
-				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE); 
-				
-				if (objView.getTreeViewer().getInput() == null) {
-					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
-					objView.initDatabase(db, root);
-					
-					if (hashWindow == null) {
-						hashWindow = new HashMap<IWorkbenchWindow, DynamicViewListener>();
-					}
-					final IWorkbenchWindow window = page.getWorkbenchWindow();
-					
-					DynamicViewListener dynamicViewListener = hashWindow.get(window);
-					if (dynamicViewListener == null) {
-						dynamicViewListener = new DynamicViewListener(window);
-						window.getPartService().addPartListener(dynamicViewListener);
-						hashWindow.put(window, dynamicViewListener);
-					}
-					dynamicViewListener.addView(objView, db, root);
-				}
-			}
-
-		} else if (root.getType() == RootScopeType.Flat) {
-			int state = (viewState<=0? IWorkbenchPage.VIEW_VISIBLE : viewState);
-			objView = (BaseScopeView) page.showView(FlatScopeView.ID, secondaryID, state); 
-			if (objView.getTreeViewer().getInput() == null) {
-				objView.setInput(db, root);
-			}
-		}
-		return objView;
-	}
 	
-	static public BaseScopeView openView(IWorkbenchPage page, RootScope root, String secondaryID, 
-			Database db) throws PartInitException {
-		return openView(page, root, secondaryID, db, -1);
-	}
 	
     //======================================================
     // ................ UPDATE ............................

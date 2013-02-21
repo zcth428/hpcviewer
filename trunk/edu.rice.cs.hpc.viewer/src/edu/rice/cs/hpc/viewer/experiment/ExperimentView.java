@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.viewer.experiment;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -9,6 +8,7 @@ import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
+import edu.rice.cs.hpc.viewer.scope.DynamicViewListener;
 import edu.rice.cs.hpc.viewer.scope.ScopeView;
 import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
@@ -22,9 +22,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 
-import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
@@ -44,6 +42,7 @@ public class ExperimentView {
 	
 	/** we have to make sure that the listener is added only once for a given window **/
 	static private HashMap<IWorkbenchWindow, DynamicViewListener> hashWindow;
+	
 	/**
 	 * Constructor for Data experiment. Needed to link with the view
 	 * @param objTarget: the scope view to link with
@@ -204,24 +203,8 @@ public class ExperimentView {
 			RootScope child = (RootScope) rootChildren[k];
 			try {
 				BaseScopeView objView; 
-
+				objView = openView(objPage, child, viewIdx, db, -1);
 				// every root scope type has its own view
-				if(child.getType() == RootScopeType.Flat) {
-					objView = (BaseScopeView) this.objPage.showView(FlatScopeView.ID, viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
-					objView.setInput(db, child);
-					
-				} else if(child.getType() == RootScopeType.CallerTree) {
-					objView = (BaseScopeView) this.objPage.showView(CallerScopeView.ID , viewIdx, IWorkbenchPage.VIEW_VISIBLE); 
-					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
-					objView.initDatabase(db, child);
-					DynamicViewListener dynamicViewListener = hashWindow.get(window);
-					dynamicViewListener.addView(objView, child);
-					
-				} else {
-					// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
-					objView = (BaseScopeView)this.objPage.showView(ScopeView.ID , viewIdx, IWorkbenchPage.VIEW_ACTIVATE); 
-					objView.setInput(db, child);
-				}
 				arrScopeViews[k] = objView;
 			} catch (PartInitException e) {
 				e.printStackTrace();
@@ -233,75 +216,73 @@ public class ExperimentView {
 		wt.refreshAllTitles();
 	}
 	
-	
 	/***
+	 * Standard method to open a scope view (cct, caller tree or flat tree)
 	 * 
-	 * class to manage the dynamic creation of caller tree
-	 * the tree is only created if the user click the tab view header
-	 *
+	 * @param page : current page where the view has to be hosted
+	 * @param root : the root scope
+	 * @param secondaryID : aux id for the view
+	 * @param db : database
+	 * @param viewState : state of the view (VIEW_ACTIVATE, VIEW_VISIBLE, ... ) OR -1 for the default
+	 * 
+	 * @return	the view
+	 * @throws PartInitException
 	 */
-	private class DynamicViewListener implements IPartListener2 
-	{
-		private ArrayList<ViewObjectDatabase> listOfViews;
+	static public BaseScopeView openView(IWorkbenchPage page, RootScope root, String secondaryID, 
+			Database db, int viewState ) 
+			throws PartInitException {
 		
-		private class ViewObjectDatabase {
-			public BaseScopeView view;
-			public RootScope root;
-		}
+		BaseScopeView objView = null;
 		
-		
-		public DynamicViewListener(IWorkbenchWindow window) 
-		{
-			listOfViews = new ArrayList<ViewObjectDatabase>();
-		}
-		/***
-		 * add view to the list of listeners
-		 * @param view
-		 */
-		public void addView( BaseScopeView view, RootScope root )
-		{
-			ViewObjectDatabase obj = new ViewObjectDatabase();
-			obj.root = root;
-			obj.view = view;
-			listOfViews.add(obj);
-		}
-		
-		/*
-		 * (non-Javadoc)
-		 * @see org.eclipse.ui.IPartListener2#partActivated(org.eclipse.ui.IWorkbenchPartReference)
-		 */
-		public void partActivated(IWorkbenchPartReference partRef) {
+		if (root.getType() == RootScopeType.CallingContextTree) {
+			int state = (viewState<=0? IWorkbenchPage.VIEW_ACTIVATE : viewState);
+			// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
+			objView = (BaseScopeView) page.showView(ScopeView.ID , secondaryID, state); 
 			
-			for (int i=0; i<listOfViews.size(); i++) {
-				ViewObjectDatabase obj = listOfViews.get(i);
+			if (objView.getTreeViewer().getInput() == null) {
+				objView.setInput(db, root);
+			}
 
-				if (obj.view.getPartName().equals(partRef.getPartName())) {
-					final Experiment experiment = obj.view.getExperiment();
-					TreeNode []roots = experiment.getRootScopeChildren();
-					if (roots != null) {
-						final RootScope cct = (RootScope)roots[0];
-						
-						// create the tree
-						experiment.createCallersView(cct, obj.root);
-						
-						// notify the view that we have changed the data
-						//obj.view.setInput(obj.database, obj.root);
-						obj.view.updateDisplay();
-						
-						// remove this view from the list since we already initialize the tree
-						listOfViews.remove(i);
-						
-						return;
+		} else if (root.getType() == RootScopeType.CallerTree) {
+			if (viewState>0) {
+				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE);
+
+				if (objView.getTreeViewer().getInput() == null) {
+					// the view has been closed. Need to set the input again
+					objView.setInput(db, root);
+				}
+				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_ACTIVATE);
+			} else {
+				// default situation (or first creation)
+				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE); 
+				
+				if (objView.getTreeViewer().getInput() == null) {
+					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
+					objView.initDatabase(db, root);
+					
+					if (hashWindow == null) {
+						hashWindow = new HashMap<IWorkbenchWindow, DynamicViewListener>();
 					}
+					final IWorkbenchWindow window = page.getWorkbenchWindow();
+					
+					DynamicViewListener dynamicViewListener = hashWindow.get(window);
+					if (dynamicViewListener == null) {
+						dynamicViewListener = new DynamicViewListener(window);
+						window.getPartService().addPartListener(dynamicViewListener);
+						hashWindow.put(window, dynamicViewListener);
+					}
+					dynamicViewListener.addView(objView, db, root);
 				}
 			}
+
+		} else if (root.getType() == RootScopeType.Flat) {
+			int state = (viewState<=0? IWorkbenchPage.VIEW_VISIBLE : viewState);
+			objView = (BaseScopeView) page.showView(FlatScopeView.ID, secondaryID, state); 
+			if (objView.getTreeViewer().getInput() == null) {
+				objView.setInput(db, root);
+			}
 		}
-		public void partBroughtToTop(IWorkbenchPartReference partRef) {}
-		public void partClosed(IWorkbenchPartReference partRef) {}
-		public void partDeactivated(IWorkbenchPartReference partRef) {}
-		public void partOpened(IWorkbenchPartReference partRef) {}
-		public void partHidden(IWorkbenchPartReference partRef) {}
-		public void partVisible(IWorkbenchPartReference partRef) {}
-		public void partInputChanged(IWorkbenchPartReference partRef) {}
+		return objView;
 	}
+
 }

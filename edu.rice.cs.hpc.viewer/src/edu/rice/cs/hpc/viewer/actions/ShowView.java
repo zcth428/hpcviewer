@@ -16,6 +16,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
 import edu.rice.cs.hpc.viewer.window.Database;
@@ -81,7 +82,7 @@ public class ShowView extends AbstractHandler {
 						// ------------------------------------------------------------
 						// Activate the view
 						// ------------------------------------------------------------
-						BaseScopeView.openView(page, view.getRootScope(), site.getSecondaryId(), 
+						ExperimentView.openView(page, view.getRootScope(), site.getSecondaryId(), 
 									view.getDatabase(), IWorkbenchPage.VIEW_ACTIVATE);
    
 					} catch (PartInitException e) {

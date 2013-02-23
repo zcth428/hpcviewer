@@ -260,7 +260,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         Menu menu = menuMgr.createContextMenu(this.treeViewer.getControl());
         this.treeViewer.getControl().setMenu(menu);
         
-        // Register menu for extension. 
+        // Register menu for extension.    
         // Using an id allows code that extends this class to add entries to this context menu.
         getSite().registerContextMenu("edu.rice.cs.hpc.viewer.scope.ScopeView", menuMgr, this.treeViewer);
     }

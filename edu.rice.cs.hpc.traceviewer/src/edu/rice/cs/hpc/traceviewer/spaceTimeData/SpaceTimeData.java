@@ -46,6 +46,8 @@ public class SpaceTimeData
 	private IBaseData dataTrace;
 	final private File traceFile;
 	
+	private boolean enableMidpoint = false;
+	
 	/*************************************************************************
 	 *	Creates, stores, and adjusts the ProcessTimelines and the ColorTable.
 	 * @throws Exception 
@@ -296,5 +298,15 @@ public class SpaceTimeData
     	estimatedProcess = Math.min(estimatedProcess, numDisplayedProcess-1);
     	
     	return estimatedProcess;
+	}
+	
+	public void setEnableMidpoint(boolean enable)
+	{
+		this.enableMidpoint = enable;
+	}
+	
+	public boolean isEnableMidpoint()
+	{
+		return enableMidpoint;
 	}
 }

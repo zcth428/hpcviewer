@@ -6,6 +6,12 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
+/*************************************************************************
+ * 
+ * Class to handle data trace per rank
+ * Each rank should instantiate its own class
+ *
+ *************************************************************************/
 public class TraceDataByRank {
 
 	/** File header information, including trace record size */
@@ -160,7 +166,7 @@ public class TraceDataByRank {
 	 * @param time: the requested time
 	 * @return the index of the sample if the time is within the range, -1 otherwise 
 	 * */
-	public int findMidpointBefore(double time)
+	public int findMidpointBefore(double time, boolean usingMidpoint)
 	{
 		int low = 0;
 		int high = listcpid.size() - 1;
@@ -176,7 +182,7 @@ public class TraceDataByRank {
 		
 		while( low != mid )
 		{
-			final double time_current = getTimeMidPoint(mid,mid+1);
+			final double time_current = (usingMidpoint ? getTimeMidPoint(mid,mid+1) : listcpid.get(mid).timestamp);
 			
 			if (time > time_current)
 				low = mid;
@@ -185,10 +191,16 @@ public class TraceDataByRank {
 			mid = ( low + high ) / 2;
 			
 		}
-		if (time >= getTimeMidPoint(low,low+1))
+		if (usingMidpoint)
+		{
+			if (time >= getTimeMidPoint(low,low+1))
+				return low+1;
+			else
+				return low;
+		} else 
+		{
 			return low+1;
-		else
-			return low;
+		}
 	}
 
 	
@@ -258,13 +270,6 @@ public class TraceDataByRank {
 				predicted_index = Math.max((long) ((time - left_time) / rate) + left_index, left_index);
 			} else {
 				predicted_index = Math.min((right_index - (long) ((right_time - time) / rate)), right_index); 
-/*				if (tmp_index<0) {
-					predicted_index = Math.max(tmp_index, left_index);
-				} else {
-					// original code: predicted_index = Math.min((right_index - (long) ((right_time - time) / rate)), right_index);
-					predicted_index = Math.min(tmp_index, right_index);
-				}*/
-				
 			}
 			
 			// adjust so that the predicted index differs from both ends

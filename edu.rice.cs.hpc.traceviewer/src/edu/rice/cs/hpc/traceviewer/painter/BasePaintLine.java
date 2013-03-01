@@ -23,10 +23,24 @@ public abstract class BasePaintLine
 	protected int height;
 	protected double pixelLength;
 	protected ColorTable colorTable;
+	
 	private long begTime;
-		
+	private boolean usingMidpoint;
+	
+	/****
+	 * Abstract class constructor to paint a line (whether it's detail view or depth view) 
+	 * 
+	 * @param _colorTable : color table
+	 * @param _ptl : the time line manager of a process
+	 * @param _spp : the painter
+	 * @param _begTime : time start of the current view
+	 * @param _depth : the current depth
+	 * @param _height : the height (in pixel) of the line to paint
+	 * @param _pixelLength : the length (in pixel)
+	 * @param usingMidpoint : flag whether we should use midpoint or not
+	 */
 	public BasePaintLine(ColorTable _colorTable, ProcessTimeline _ptl, SpaceTimeSamplePainter _spp, 
-			long _begTime, int _depth, int _height, double _pixelLength)
+			long _begTime, int _depth, int _height, double _pixelLength, boolean usingMidpoint)
 	{
 		this.ptl = _ptl;
 		this.spp = _spp;
@@ -35,6 +49,7 @@ public abstract class BasePaintLine
 		this.pixelLength = _pixelLength;
 		this.colorTable = _colorTable;
 		this.begTime = _begTime;
+		this.usingMidpoint = usingMidpoint;
 	}
 	
 	/**Painting action*/
@@ -86,7 +101,8 @@ public abstract class BasePaintLine
 				// start and middle samples: the rightmost point is the midpoint between
 				// 	the two samples
 				// --------------------------------------------------------------------
-				succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(end),ptl.getTime(end+1))-begTime)/pixelLength));
+				double succ = usingMidpoint ? midpoint(ptl.getTime(end),ptl.getTime(end+1)) : ptl.getTime(end);
+				succSampleMidpoint = (int) Math.max(0, ((succ-begTime)/pixelLength));
 			}
 			else
 			{
@@ -114,10 +130,11 @@ public abstract class BasePaintLine
 	/***
 	 * Abstract method to finalize the painting given its range, depth and the function name
 	 * 
-	 * @param currSampleMidpoint
-	 * @param succSampleMidpoint
-	 * @param currDepth
-	 * @param functionName
+	 * @param currSampleMidpoint : current sample
+	 * @param succSampleMidpoint : next sample
+	 * @param currDepth : current depth
+	 * @param functionName : name of the function (for coloring purpose)
+	 * @param sampleCount : the number of "samples"
 	 */
 	public abstract void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount);
 }

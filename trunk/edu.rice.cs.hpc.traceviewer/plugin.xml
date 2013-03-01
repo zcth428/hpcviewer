@@ -112,6 +112,15 @@
             id="edu.rice.cs.hpc.traceviewer.actions.FilterRanks"
             name="Filter ranks">
       </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint"
+            id="edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint"
+            name="midpoint">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
+      </command>
    </extension>
    <extension
          id="edu.rice.cs.hpc.traceviewer.menus"
@@ -151,6 +160,14 @@
                   mnemonic="S"
                   style="toggle"
                   tooltip="Show the number of trace records displayed in the trace view (useful for identifying blocking operations and debugging)">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint"
+                  id="edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint"
+                  label="Using midpoint painting"
+                  mnemonic="u"
+                  style="toggle"
+                  tooltip="Enable using midpoint painting to present  a paint line as a midpoint between two samples  ">
             </command>
             <command
                   commandId="edu.rice.cs.hpc.traceviewer.actions.ProcedureClassMapAction"

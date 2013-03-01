@@ -26,6 +26,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
+import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
@@ -181,7 +182,7 @@ public class CallStackViewer extends TableViewer
 		}
 		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 		if (ptl != null) {
-			int sample = ptl.findMidpointBefore(position.time);
+			int sample = ptl.findMidpointBefore(position.time, stData.isEnableMidpoint());
 
 			final Vector<String> sampleVector;
 			if (sample>=0)
@@ -278,6 +279,11 @@ public class CallStackViewer extends TableViewer
 					int depth = getTable().getSelectionIndex();
 					setSample(p,depth);
 				}
+			}
+		} else if (operation.hasContext(RefreshOperation.context)) {
+			if (event.getEventType() == OperationHistoryEvent.DONE) 
+			{
+				updateView();
 			}
 		}
 	}

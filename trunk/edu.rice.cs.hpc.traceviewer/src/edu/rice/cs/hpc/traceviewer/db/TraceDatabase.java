@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -13,9 +14,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
+import edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -140,6 +143,13 @@ public class TraceDatabase
 				return false;
 			}
 			
+			// ---------------------------------------------------------------------
+			// initialize whether using midpoint or not
+			// ---------------------------------------------------------------------
+			final Command command = Util.getCommand(window, OptionMidpoint.commandId);
+			boolean enableMidpoint = Util.isOptionEnabled(command);
+			database.dataTraces.setEnableMidpoint(enableMidpoint);
+			
 			statusMgr.setMessage("Rendering trace data ...");
 			shell.update();
 
@@ -151,6 +161,7 @@ public class TraceDatabase
 			DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
 			dataService.setData(database.dataTraces);
 
+			// reset the operation history
 			TraceOperation.clear();
 			
 			try {

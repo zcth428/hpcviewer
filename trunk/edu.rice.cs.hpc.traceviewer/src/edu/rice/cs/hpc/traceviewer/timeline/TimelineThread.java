@@ -91,6 +91,9 @@ public class TimelineThread extends Thread
 	public void run()
 	{
 		ProcessTimeline nextTrace = getNextTrace(changedBounds);
+
+		boolean usingMidpoint = stData.isEnableMidpoint();
+		
 		while(nextTrace != null)
 		{
 			if(changedBounds)
@@ -112,7 +115,7 @@ public class TimelineThread extends Thread
 			
 			SpaceTimeSamplePainter spp = new DetailSpaceTimePainter( window, gcOriginal, gcFinal, stData.getColorTable(), 
 					scaleX, scaleY );
-			paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds);
+			paintDetailLine(spp, nextTrace.line(), imageHeight, changedBounds, usingMidpoint);
 			
 			gcFinal.dispose();
 			gcOriginal.dispose();
@@ -133,7 +136,8 @@ public class TimelineThread extends Thread
 	 * @param height
 	 * @param changedBounds
 	 *************************************************************************/
-	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, boolean changedBounds)
+	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, 
+			boolean changedBounds, boolean usingMidpoint)
 	{
 		ProcessTimeline ptl = traceService.getProcessTimeline(process);
 		if (ptl == null || ptl.size()<2 )
@@ -145,7 +149,7 @@ public class TimelineThread extends Thread
 		
 		// do the paint
 		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
-				stData.attributes.begTime, stData.getDepth(), height, pixelLength)
+				stData.attributes.begTime, stData.getDepth(), height, pixelLength, usingMidpoint)
 		{
 			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)

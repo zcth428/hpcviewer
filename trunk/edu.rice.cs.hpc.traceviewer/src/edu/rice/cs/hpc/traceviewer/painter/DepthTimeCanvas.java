@@ -23,6 +23,7 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
+import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
@@ -206,18 +207,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     }
     
     
-    private void setCSSample()
-    {
-    	if(mouseDown == null)
-    		return;
-
-    	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
-    	
-    	Position currentPosition = stData.getPosition();
-    	Position position = new Position(closeTime, currentPosition.process);
-    	
-    	notifyPositionChange(position);
-    }
 
     @Override
 	public double getScaleX()
@@ -318,8 +307,16 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
      * 
      * @param newPosition
      */
-    private void notifyPositionChange(Position newPosition)
+    private void notifyPositionChange()
     {    	
+    	if(mouseDown == null)
+    		return;
+
+    	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
+    	
+    	Position currentPosition = stData.getPosition();
+    	Position newPosition = new Position(closeTime, currentPosition.process);
+    	
     	try {
 			TraceOperation.getOperationHistory().execute(
 					new PositionOperation(newPosition, positionAction), 
@@ -442,7 +439,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			//difference in mouse movement < 3 constitutes a "single click"
 			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
 			{
-				setCSSample();
+				notifyPositionChange();
 			}
 			else
 			{
@@ -486,6 +483,11 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			case OperationHistoryEvent.REDONE:
 				executeOperation(traceOperation);
 				break;
+			}
+		} else if (operation.hasContext(RefreshOperation.context)) {
+			if (event.getEventType() == OperationHistoryEvent.DONE)
+			{
+				rebuffer();
 			}
 		}
 	}

@@ -122,9 +122,9 @@ public class ProcessTimeline
 	 * @param time: the requested time
 	 * @return the index of the sample if the time is within the range, -1 otherwise 
 	 * */
-	public int findMidpointBefore(double time)
+	public int findMidpointBefore(double time, boolean usingMidpoint)
 	{
-		return data.findMidpointBefore(time);
+		return data.findMidpointBefore(time, usingMidpoint);
 	}
 	
 }

@@ -67,7 +67,7 @@ fi
 #------------------------------------------------------------
 
 if test -d "$HOME" ; then
-    exec "$viewer" -data "$workspace" "$@"
+    exec "$viewer" -data "$workspace" -configuration "$workspace" "$@"
 else
     warn "HOME is not set, proceeding anyway"
     exec "$viewer" "$@"

@@ -48,11 +48,14 @@ public class ShowView extends AbstractHandler {
 			
 			Database db = databases[i];
 			dbNode[i] = new TreeNode(db.getExperiment().getName());
-			BaseScopeView []views = db.getExperimentView().getViews();
+			
+			final ExperimentView ev = db.getExperimentView();
+			BaseScopeView []views = ev.getViews();
 			
 			TreeNode []viewNode = new TreeNode[views.length];
 			for(int j=0; j<views.length; j++) {
-				viewNode[j] = new TreeNode(views[j]);
+				TreeItemNode item = new TreeItemNode(ev, j, views[j]);
+				viewNode[j] = new TreeNode(item);
 				viewNode[j].setParent(dbNode[i]);
 			}
 			dbNode[i].setChildren(viewNode);
@@ -74,20 +77,32 @@ public class ShowView extends AbstractHandler {
 			Object []results = dlg.getResult();
 			if (results != null && results.length>0) {
 				for (Object obj: results) {
-					BaseScopeView view = (BaseScopeView) ((TreeNode) obj).getValue();
-					try {
-						IViewSite site = (IViewSite) view.getSite();
-						IWorkbenchPage page = window.getActivePage();
+					Object item = ((TreeNode) obj).getValue();
+					
+					if (item instanceof TreeItemNode) {
+						TreeItemNode itemNode = (TreeItemNode) item;
+						BaseScopeView view = itemNode.view;
+						try {
+							IViewSite site = (IViewSite) view.getSite();
+							IWorkbenchPage page = window.getActivePage();
 
-						// ------------------------------------------------------------
-						// Activate the view
-						// ------------------------------------------------------------
-						ExperimentView.openView(page, view.getRootScope(), site.getSecondaryId(), 
+							// ------------------------------------------------------------
+							// Activate the view
+							// ------------------------------------------------------------
+							BaseScopeView newView = ExperimentView.openView(page, 
+									view.getRootScope(), site.getSecondaryId(), 
 									view.getDatabase(), IWorkbenchPage.VIEW_ACTIVATE);
-   
-					} catch (PartInitException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+							
+							BaseScopeView []views = itemNode.ev.getViews();
+							views[itemNode.index] = newView;
+							itemNode.ev.setViews(views);
+							
+							newView.setInput(view.getDatabase(), view.getRootScope());
+	   
+						} catch (PartInitException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 			}
@@ -108,8 +123,8 @@ public class ShowView extends AbstractHandler {
 		//@Override
 		public Image getImage(Object element) {
 			Object o = ((TreeNode)element).getValue();
-			if (o instanceof BaseScopeView) {
-				BaseScopeView view = (BaseScopeView) o;
+			if (o instanceof TreeItemNode) {
+				BaseScopeView view = (BaseScopeView) ((TreeItemNode)o).view;
 				return view.getTitleImage();
 			}
 			return null;
@@ -118,10 +133,10 @@ public class ShowView extends AbstractHandler {
 		//@Override
 		public String getText(Object element) {
 			Object o = ((TreeNode)element).getValue();
-			if (o instanceof BaseScopeView) {
-				BaseScopeView view = (BaseScopeView) o;
+			if (o instanceof TreeItemNode) {
+				BaseScopeView view = (BaseScopeView) ((TreeItemNode)o).view;
 				String title = wt.setTitle(window, view);
-				//String title = view.getTitle();
+
 				if (view.getTreeViewer().getTree().isDisposed()) {
 					title += " *closed*"; 
 				}
@@ -131,6 +146,23 @@ public class ShowView extends AbstractHandler {
 		}
 	}
 	
+	private class TreeItemNode {
+		private ExperimentView ev;
+		private int index;
+		private BaseScopeView view;
+		
+		public TreeItemNode(ExperimentView ev, int index, BaseScopeView view) {
+			this.ev = ev;
+			this.index = index;
+			this.view = view;
+		}
+	}
+	
+	/****
+	 * remove the tree to allow garbage collector to retain the memory
+	 * 
+	 * @param root
+	 */
 	private void dispose(TreeNode []root) {
 		
 		for(TreeNode node: root ) {

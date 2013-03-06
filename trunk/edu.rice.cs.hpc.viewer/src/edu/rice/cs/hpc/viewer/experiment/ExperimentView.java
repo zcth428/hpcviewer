@@ -1,7 +1,6 @@
 package edu.rice.cs.hpc.viewer.experiment;
 
 import java.util.HashMap;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
@@ -34,6 +33,8 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
  */
 public class ExperimentView {
 
+	static final private int VIEW_STATE_INIT = -1;
+	
 	private IWorkbenchPage objPage;		// workbench current page
 	/**
 	 * List of registered views in the current experiment
@@ -188,10 +189,8 @@ public class ExperimentView {
 
 		db.setExperiment(experiment);		// set the experiment class used for the database
         
-		// the database index has values from 1-5 and is used in view titles
-		final int dbIdx = vWin.getDbNum(experiment);
 		// the view index has values from 0-4 and is used to index arrays (layout folders and possibly others)
-		final String viewIdx = Integer.toString(dbIdx);
+		final String viewIdx = Integer.toString(vWin.reserveDatabaseNumber());
 
 		// next, we retrieve all children of the scope and display them in separate views
 		TreeNode []rootChildren = experiment.getRootScopeChildren();
@@ -203,7 +202,7 @@ public class ExperimentView {
 			RootScope child = (RootScope) rootChildren[k];
 			try {
 				BaseScopeView objView; 
-				objView = openView(objPage, child, viewIdx, db, -1);
+				objView = openView(objPage, child, viewIdx, db, VIEW_STATE_INIT);
 				// every root scope type has its own view
 				arrScopeViews[k] = objView;
 			} catch (PartInitException e) {
@@ -216,6 +215,8 @@ public class ExperimentView {
 		wt.refreshAllTitles();
 	}
 	
+	
+	
 	/***
 	 * Standard method to open a scope view (cct, caller tree or flat tree)
 	 * 
@@ -223,7 +224,8 @@ public class ExperimentView {
 	 * @param root : the root scope
 	 * @param secondaryID : aux id for the view
 	 * @param db : database
-	 * @param viewState : state of the view (VIEW_ACTIVATE, VIEW_VISIBLE, ... ) OR -1 for the default
+	 * @param viewState : state of the view (VIEW_ACTIVATE, VIEW_VISIBLE, ... ) 
+	 * 						OR VIEW_STATE_INIT for the default
 	 * 
 	 * @return	the view
 	 * @throws PartInitException
@@ -239,24 +241,20 @@ public class ExperimentView {
 			// using VIEW_ACTIVATE will cause this one to end up with focus (on top).
 			objView = (BaseScopeView) page.showView(ScopeView.ID , secondaryID, state); 
 			
-			if (objView.getTreeViewer().getInput() == null) {
+			if (viewState == VIEW_STATE_INIT) {
 				objView.setInput(db, root);
 			}
 
 		} else if (root.getType() == RootScopeType.CallerTree) {
-			if (viewState>0) {
-				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE);
-
-				if (objView.getTreeViewer().getInput() == null) {
-					// the view has been closed. Need to set the input again
-					objView.setInput(db, root);
-				}
+			if (viewState != VIEW_STATE_INIT) {
 				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_ACTIVATE);
+				// the view has been closed. Need to set the input again
+				objView.setInput(db, root);
 			} else {
 				// default situation (or first creation)
 				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE); 
 				
-				if (objView.getTreeViewer().getInput() == null) {
+				if (viewState == VIEW_STATE_INIT) {
 					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
 					objView.initDatabase(db, root);
 					
@@ -278,7 +276,7 @@ public class ExperimentView {
 		} else if (root.getType() == RootScopeType.Flat) {
 			int state = (viewState<=0? IWorkbenchPage.VIEW_VISIBLE : viewState);
 			objView = (BaseScopeView) page.showView(FlatScopeView.ID, secondaryID, state); 
-			if (objView.getTreeViewer().getInput() == null) {
+			if (viewState == VIEW_STATE_INIT) {
 				objView.setInput(db, root);
 			}
 		}

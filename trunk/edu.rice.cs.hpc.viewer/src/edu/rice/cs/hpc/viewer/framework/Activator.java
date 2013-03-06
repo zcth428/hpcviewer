@@ -1,7 +1,15 @@
 package edu.rice.cs.hpc.viewer.framework;
 
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -10,8 +18,10 @@ import org.osgi.framework.BundleContext;
 public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "edu.rice.cs.hpc";
+	public static final String PLUGIN_ID = "edu.rice.cs.hpc.viewer";
 
+	final public static String IMG_GRAPH = "hpcviewer.image.graph";
+	
 	// The shared instance
 	private static Activator plugin;
 	
@@ -57,5 +67,20 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#initializeImageRegistry(org.eclipse.jface.resource.ImageRegistry)
+	 */
+	protected void initializeImageRegistry(ImageRegistry registry) {
+		
+		final String imgGraph = "src/edu/rice/cs/hpc/viewer/resources/Graph.png";
+		
+		Bundle bundle = Platform.getBundle(PLUGIN_ID);
+        IPath path = new Path(imgGraph);
+        URL url = FileLocator.find(bundle, path, null);
+        ImageDescriptor desc = ImageDescriptor.createFromURL(url);
+        registry.put(IMG_GRAPH, desc);
 	}
 }

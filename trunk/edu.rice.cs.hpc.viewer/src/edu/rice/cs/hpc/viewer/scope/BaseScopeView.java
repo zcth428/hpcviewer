@@ -35,8 +35,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         if (database == null)
         	return;
                 
-        //initTableColumns();
-        
         // Update root scope
         if (myRootScope.getChildCount() > 0) {
             treeViewer.setInput(myRootScope);

@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.viewer.window;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.State;
@@ -48,6 +49,9 @@ public class ViewerWindow {
 	private Command cmdDebugCCT;
 	private Command cmdDebugFlat;
 	
+	/** number of databases (whether has been closed or not) 
+	 *  this number is useful to make sure the view is always unique */
+	private AtomicInteger numAggregateDatabase = new AtomicInteger(1);
 
 	public IWorkbenchWindow getWinObj() {
 		return winObj;
@@ -214,6 +218,17 @@ public class ViewerWindow {
 		commandStateService.toogleEnabled(winObj);
 	}
 	
+	/****
+	 * get the ID of the database. This ID has to be unique for each window, and always incremented
+	 * 
+	 * Every time we open a database, we only increment by 1
+	 * 
+	 * @return
+	 */
+	public int reserveDatabaseNumber() {
+		return numAggregateDatabase.incrementAndGet();
+	}
+
 	// --------------------------------------------------------------
 	// Debug mode for this window
 	// --------------------------------------------------------------

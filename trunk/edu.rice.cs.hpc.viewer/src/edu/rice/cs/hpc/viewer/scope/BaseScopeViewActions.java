@@ -29,6 +29,15 @@ public class BaseScopeViewActions extends ScopeViewActions {
 		objActionsGUI.enableHotCallPath( bCanZoomIn );
 	}
 
+    /**
+     * Each class has its own typical GUI creation
+     */
+	protected  Composite createGUI(Composite parent, CoolBar coolbar) {
+    	this.objActionsGUI = new ScopeViewActionsGUI(this.objShell, this.objWindow, parent, this);
+    	return objActionsGUI.buildGUI(parent, coolbar);
+	}
+
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.scope.ScopeViewActions#actionZoom(edu.rice.cs.hpc.viewer.scope.ScopeViewActions.ZoomType)

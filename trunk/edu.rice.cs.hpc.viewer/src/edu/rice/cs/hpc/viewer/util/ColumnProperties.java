@@ -183,7 +183,7 @@ public class ColumnProperties extends TitleAreaDialog {
 		objCheckBoxTable.setContentProvider(new IStructuredContentProvider() {
 			public Object[] getElements(Object parent) {
 				if (parent instanceof ArrayList<?>)
-					return ((ArrayList<PropertiesModel>)parent).toArray();
+					return ((ArrayList<?>)parent).toArray();
 				else
 					return null;
 			}

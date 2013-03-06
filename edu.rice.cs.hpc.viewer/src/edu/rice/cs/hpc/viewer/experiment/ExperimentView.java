@@ -164,6 +164,15 @@ public class ExperimentView {
 		return this.arrScopeViews;
 	}
 	
+	/***
+	 * set the list of views of this experiment
+	 * 
+	 * @param views
+	 */
+	public void setViews(BaseScopeView[] views) {
+		arrScopeViews = views;
+	}
+	
 	/**
 	 * Generate multiple views for an experiment depending on the number of root scopes
 	 * @param experiment Experiment data

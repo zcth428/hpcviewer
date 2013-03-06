@@ -20,6 +20,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.graph.GraphMenu;
+import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
 
 /*****************************************************
  * 
@@ -31,6 +32,8 @@ import edu.rice.cs.hpc.viewer.graph.GraphMenu;
 public class CallingContextActionsGUI extends ScopeViewActionsGUI {
 	
 	private GraphMenu graphMenuManager;
+	
+	private ToolItem tiGraph;
 
 	public CallingContextActionsGUI(Shell objShell, IWorkbenchWindow window,
 			Composite parent, CallingContextViewActions objActions) 
@@ -72,7 +75,7 @@ public class CallingContextActionsGUI extends ScopeViewActionsGUI {
 		Image imgGraph = imageRegistry.get(Activator.IMG_GRAPH);
 		
 		// add an item into the toolbar
-		final ToolItem tiGraph = new ToolItem(toolbar, SWT.DROP_DOWN);
+		tiGraph = new ToolItem(toolbar, SWT.DROP_DOWN);
 		tiGraph.setImage(imgGraph);
 		tiGraph.setToolTipText("Show the graph of metric values of the selected CCT node for all processes/threads");
 		tiGraph.addListener(SWT.Selection, new Listener() {
@@ -104,8 +107,25 @@ public class CallingContextActionsGUI extends ScopeViewActionsGUI {
 		return c;
 	}
 	
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.viewer.scope.ScopeViewActionsGUI#enableActions()
+	 */
+	public void enableActions() {
+		if (database != null) {
+			ThreadLevelDataManager tld_mgr = database.getThreadLevelDataManager();
+			if (tld_mgr != null) {
+				boolean available = tld_mgr.isDataAvailable();
+				tiGraph.setEnabled(available);
+				return;
+			}
+		}
+		tiGraph.setEnabled(false);
+	}
+	
 	private Scope getSelectedScope()
 	{
 		return objViewActions.getSelectedNode();
-	}	
+	}
 }

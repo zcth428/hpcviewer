@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.*;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -31,7 +30,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Label;
 
 import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.resources.Icons;
@@ -70,7 +68,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	
 	//------------------------------------DATA
 	protected Scope nodeTopParent; // the current node which is on the top of the table (used as the aggregate node)
-	protected Experiment 	myExperiment;		// experiment data	
+	protected Database 	database;		// experiment data	
 	protected RootScope 		myRootScope;		// the root scope of this view
 
     // ----------------------------------- CONSTANTS
@@ -99,11 +97,12 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	/**
 	 * Method to start to build the GUI for the actions
 	 * @param parent
-	 * @return
+	 * @return toolbar composite
 	 */
 	public Composite buildGUI(Composite parent, CoolBar coolbar) {
 		Composite newParent = this.addTooBarAction(coolbar);
 		this.finalizeToolBar(parent, coolbar);
+
 		return newParent;
 	}
 
@@ -116,7 +115,14 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 */
 	public void updateContent(Experiment exp, RootScope scope) {
 		// save the new data and properties
-		this.myExperiment = exp;
+		String sFilename = exp.getDefaultDirectory().getAbsolutePath();
+		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(this.objWindow);
+		if (vWin == null) {
+			System.out.printf("ScopeViewActionsGUI.updateContent: ViewerWindow class not found\n");
+			return;
+		}
+		database = vWin.getDb(sFilename);
+
 		this.myRootScope = scope;
 
 		//this.setLevelText(scope.getTreeNode().iLevel);	// @TODO: initialized with root level
@@ -300,20 +306,8 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      */
     private void showHideColumnsAllViews(boolean []status) {
 		// get our database file and the and the class that contains its information
-		String sFilename = myExperiment.getDefaultDirectory().getAbsolutePath();
-		ViewerWindow vWin = ViewerWindowManager.getViewerWindow(this.objWindow);
-		if (vWin == null) {
-			System.out.printf("ScopeViewActionsGUI.showHideColumnsAllViews: ViewerWindow class not found\n");
-			return;
-		}
-		Database db = vWin.getDb(sFilename);
-		if (db == null) {
-			System.out.printf("ScopeViewActionsGUI.showHideColumnsAllViews: Database class not found\n");
-			return;
-		}
-
 		// get the views created for our database
-		BaseScopeView arrScopeViews[] = db.getExperimentView().getViews();
+		BaseScopeView arrScopeViews[] = database.getExperimentView().getViews();
 		for(int i=0; i<arrScopeViews.length; i++) {
 			arrScopeViews[i].getViewActions().setColumnStatus(status);
 		}
@@ -445,7 +439,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * @param aParent
      * @return Composite of the view. The tree should be based on this composite.
      */
-    public Composite addTooBarAction(CoolBar coolbar) {
+    protected Composite addTooBarAction(CoolBar coolbar) {
     	// prepare the toolbar
     	ToolBar toolbar = new ToolBar(coolbar, SWT.FLAT);
     	Icons iconsCollection = Icons.getInstance();
@@ -549,8 +543,11 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      * Method to export the displayed items in the current view into a CSV format file
      */
 	protected void exportCSV() {
+		
+		Experiment experiment = database.getExperiment();
+		
 		FileDialog fileDlg = new FileDialog(this.shell, SWT.SAVE);
-		fileDlg.setFileName(this.myExperiment.getName() + ".csv");
+		fileDlg.setFileName(experiment.getName() + ".csv");
 		fileDlg.setFilterExtensions(new String [] {"*.csv", "*.*"});
 		fileDlg.setText("Save the data in the table to a file (CSV format)");
 		final String sFilename = fileDlg.open();
@@ -638,4 +635,5 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 					internalCollectExpandedItems(result, itemChild.getItems());
 			}
 	}
+	
 }

@@ -75,7 +75,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	 * @param parent
 	 * @return
 	 */
-	public Composite addTooBarAction(CoolBar parent)  {
+	protected Composite addTooBarAction(CoolBar parent)  {
     	// prepare the toolbar
     	ToolBar toolbar = new ToolBar(parent, SWT.FLAT);
     	Icons iconsCollection = Icons.getInstance();

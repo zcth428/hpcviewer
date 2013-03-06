@@ -25,9 +25,6 @@ public class ScopeView extends BaseScopeView {
     private int lastClickColumn = -1;
     
     
-    public ScopeView() {
-		graphMenu = new GraphMenu(getSite().getWorkbenchWindow());
-    }
     /***
      * retrieve the last clicked column
      * 
@@ -40,7 +37,11 @@ public class ScopeView extends BaseScopeView {
 	//@Override
     protected ScopeViewActions createActions(Composite parent, CoolBar coolbar) {
     	IWorkbenchWindow window = this.getSite().getWorkbenchWindow();
-        return new BaseScopeViewActions(this.getViewSite().getShell(), window, parent, coolbar); 
+    	ScopeViewActions action = new CallingContextViewActions(this.getViewSite().getShell(), window, parent, coolbar);
+
+		graphMenu = new GraphMenu(getSite().getWorkbenchWindow());
+    	
+    	return action;
     }
 
 	//@Override
@@ -73,9 +74,7 @@ public class ScopeView extends BaseScopeView {
 
 	//@Override
 	protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope) {
-		if (scope != null) {
-			graphMenu.createAdditionalContextMenu(mgr, database, scope);
-		}		
+		graphMenu.createAdditionalContextMenu(mgr, database, scope);
 	} 
 
 
@@ -86,8 +85,9 @@ public class ScopeView extends BaseScopeView {
 
 	
 	
-
+    
 	//@Override
-	protected void updateDatabase(Experiment newDatabase) {}
+	protected void updateDatabase(Experiment newDatabase) {
+	}
     
 }

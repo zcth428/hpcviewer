@@ -49,6 +49,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     protected enum ActionType implements IActionType {ZoomIn, ZoomOut} ;
 	
 	protected IWorkbenchWindow objWindow;
+	
     /**
      * Constructor: create actions and the GUI (which is a coolbar)
      * @param viewSite the site of the view (used for retrieving shell, display, ...)
@@ -56,8 +57,9 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      */
     public ScopeViewActions(Shell shell, IWorkbenchWindow window, Composite parent, CoolBar coolbar) {
     	super(shell, parent, coolbar);
+    	
     	this.objWindow  = window;
-		createGUI(parent, coolbar);
+    	createGUI(parent, coolbar);
 		// need to instantiate the zoom class after the creation of GUIs
 		objZoom = new ScopeZoom(treeViewer, (ScopeViewActionsGUI) this.objActionsGUI);
     }
@@ -65,11 +67,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     /**
      * Each class has its own typical GUI creation
      */
-	protected  Composite createGUI(Composite parent, CoolBar coolbar) {
-    	this.objActionsGUI = new ScopeViewActionsGUI(this.objShell, this.objWindow, parent, this);
-    	this.objActionsGUI.buildGUI(parent, coolbar);
-		return parent;
-	}
+	abstract protected  Composite createGUI(Composite parent, CoolBar coolbar);
 
     /**
      * The tree has been updated or has new content. This object needs to refresh
@@ -564,6 +562,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     public void disableButtons () {
     	objActionsGUI.disableNodeButtons();
     }
+    
+    
     
     /**
      * An abstract method to be implemented: check the state of buttons for the selected node

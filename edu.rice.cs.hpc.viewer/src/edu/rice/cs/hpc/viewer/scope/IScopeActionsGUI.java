@@ -24,12 +24,6 @@ public interface IScopeActionsGUI {
 	 */
 	public Composite buildGUI(Composite parent, CoolBar coolbar);
 	
-	/**
-	 * Method to start to build the GUI for the actions
-	 * @param parent
-	 * @return
-	 */
-	public Composite addTooBarAction(CoolBar parent) ;
 	
 	/**
 	 * IMPORTANT: need to call this method once the content of tree is changed !

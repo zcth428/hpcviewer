@@ -232,6 +232,10 @@ public class TraceDatabase
 				return false;
 			
 			validDatabaseFound = isCorrectDatabase(directory, statusMgr, location, shell);
+			if (!validDatabaseFound) {
+				MessageDialog.openError(shell, "Fail to open the database", 
+						directory + " is not a database directory");
+			}
 		}
 		
 		return validDatabaseFound;

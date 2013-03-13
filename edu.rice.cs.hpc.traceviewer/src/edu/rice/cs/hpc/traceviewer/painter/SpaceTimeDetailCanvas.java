@@ -1122,7 +1122,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			case OperationHistoryEvent.ABOUT_TO_REDO:
 			case OperationHistoryEvent.ABOUT_TO_UNDO:
 				historyOperation.setOperation(operation);
-				getDisplay().syncExec(historyOperation);
+				historyOperation.run();
+				
+				// Note: Eclipse Linux SWT bug: syncExec causes to acquire locks which 
+				//  degrades the performance significantly
+				
+				//getDisplay().syncExec(historyOperation);
 				break;
 			}
 		}

@@ -97,7 +97,10 @@ public class ShowView extends AbstractHandler {
 							views[itemNode.index] = newView;
 							itemNode.ev.setViews(views);
 							
-							newView.setInput(view.getDatabase(), view.getRootScope(), true);
+							// when a view is closed, we lose the information of hide/show columns
+							// at the moment, the only thing to fix this, is to reset the column status
+							
+							newView.setInput(view.getDatabase(), view.getRootScope(), false);
 	   
 						} catch (PartInitException e) {
 							// TODO Auto-generated catch block

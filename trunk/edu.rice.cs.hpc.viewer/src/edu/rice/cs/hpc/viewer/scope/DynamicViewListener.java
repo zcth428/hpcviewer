@@ -64,7 +64,7 @@ public class DynamicViewListener implements IPartListener2
 					experiment.createCallersView(cct, obj.root);
 					
 					// notify the view that we have changed the data
-					obj.view.setInput(obj.database, obj.root);
+					obj.view.setInput(obj.database, obj.root, true);
 					
 					// remove this view from the list since we already initialize the tree
 					listOfViews.remove(i);

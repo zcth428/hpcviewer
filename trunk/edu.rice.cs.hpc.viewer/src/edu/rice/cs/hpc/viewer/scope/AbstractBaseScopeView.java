@@ -442,8 +442,8 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
     /**
      * Update the data input for Scope View, depending also on the scope
      */
-    public void setInput(Database db, RootScope scope) {
-    	initDatabase(db, scope);
+    public void setInput(Database db, RootScope scope, boolean keepColumnStatus) {
+    	initDatabase(db, scope, keepColumnStatus);
     	updateDisplay();
     }
     
@@ -453,14 +453,14 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
      * @param db
      * @param scope
      */
-    public void initDatabase(Database db, RootScope scope) {
+    public void initDatabase(Database db, RootScope scope, boolean keepColumnStatus) {
     	database = db;
     	myRootScope = scope;// try to get the aggregate value
 
         // tell the action class that we have built the tree
         this.objViewActions.setTreeViewer(treeViewer);
         
-        initTableColumns();
+        initTableColumns(keepColumnStatus);
     }
     
     
@@ -521,7 +521,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 	 */
 	abstract public void updateDisplay();
 
-	abstract protected void initTableColumns();
+	abstract protected void initTableColumns(boolean keepColumnStatus);
 	
     /**
      * The derived class has to implement this method to create its own actions

@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
@@ -66,23 +67,29 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView#initTableColumns()
 	 */
-	protected void initTableColumns() {
+	protected void initTableColumns(boolean keepColumnStatus) {
 		
         final Experiment myExperiment = database.getExperiment();        
+        int nbMetrics = myExperiment.getMetricCount();
+        boolean status[] = new boolean[nbMetrics];
 
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
         	// remove the metric columns blindly
         	// TODO we need to have a more elegant solution here
         	for(int i=1;i<iColCount;i++) {
-        		this.treeViewer.getTree().getColumn(1).dispose();
+        		TreeColumn column = treeViewer.getTree().getColumn(1);
+        		
+        		// bug fix: for callers view activation, we have to reserve the current status
+        		if (keepColumnStatus) {
+        			status[i-1] = column.getWidth()>0;
+        		}
+        		column.dispose();
         	}
         }
         // prepare the data for the sorter class for tree
         sorterTreeColumn.setMetric(myExperiment.getMetric(0));
 
-        int nbMetrics = myExperiment.getMetricCount();
-        boolean status[] = new boolean[nbMetrics];
         // dirty solution to update titles
         TreeViewerColumn []colMetrics = new TreeViewerColumn[nbMetrics];
         {
@@ -94,7 +101,11 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         	{
         		titles[i+1] = myExperiment.getMetric(i).getDisplayName();	// get the title
         		colMetrics[i] = this.treeViewer.addTreeColumn(myExperiment.getMetric(i), (i==0));
-        		status[i] = myExperiment.getMetric(i).getDisplayed();
+        		
+        		// bug fix: for view initialization, we need to reset the status of hide/view
+        		if (!keepColumnStatus) {
+            		status[i] = myExperiment.getMetric(i).getDisplayed();
+        		}
         	}
             treeViewer.setColumnProperties(titles); // do we need this ??
         }

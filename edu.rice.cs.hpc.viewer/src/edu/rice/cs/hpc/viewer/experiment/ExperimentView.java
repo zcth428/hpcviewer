@@ -251,21 +251,21 @@ public class ExperimentView {
 			objView = (BaseScopeView) page.showView(ScopeView.ID , secondaryID, state); 
 			
 			if (viewState == VIEW_STATE_INIT) {
-				objView.setInput(db, root);
+				objView.setInput(db, root, false);
 			}
 
 		} else if (root.getType() == RootScopeType.CallerTree) {
 			if (viewState != VIEW_STATE_INIT) {
 				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_ACTIVATE);
 				// the view has been closed. Need to set the input again
-				objView.setInput(db, root);
+				objView.setInput(db, root, false);
 			} else {
 				// default situation (or first creation)
 				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE); 
 				
 				if (viewState == VIEW_STATE_INIT) {
 					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
-					objView.initDatabase(db, root);
+					objView.initDatabase(db, root, false);
 					
 					if (hashWindow == null) {
 						hashWindow = new HashMap<IWorkbenchWindow, DynamicViewListener>();
@@ -286,7 +286,7 @@ public class ExperimentView {
 			int state = (viewState<=0? IWorkbenchPage.VIEW_VISIBLE : viewState);
 			objView = (BaseScopeView) page.showView(FlatScopeView.ID, secondaryID, state); 
 			if (viewState == VIEW_STATE_INIT) {
-				objView.setInput(db, root);
+				objView.setInput(db, root, false);
 			}
 		}
 		return objView;

@@ -97,7 +97,7 @@ public class ShowView extends AbstractHandler {
 							views[itemNode.index] = newView;
 							itemNode.ev.setViews(views);
 							
-							newView.setInput(view.getDatabase(), view.getRootScope());
+							newView.setInput(view.getDatabase(), view.getRootScope(), true);
 	   
 						} catch (PartInitException e) {
 							// TODO Auto-generated catch block

@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.Canvas;
 
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /*************
  * 
@@ -17,7 +17,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
  */
 public class TimelineDepthThread extends Thread {
 
-	final private SpaceTimeData stData;
+	final private SpaceTimeDataController stData;
 
 	/**The canvas on which to paint.*/
 	final private Canvas canvas;
@@ -30,8 +30,6 @@ public class TimelineDepthThread extends Thread {
 	
 	/**The width that the images that this thread draws should be.*/
 	private int width;
-	
-	private boolean usingMidpoint;
 	
 	final private ProcessTimeline depthTrace;
 	final private Image[] compositeFinalLines;
@@ -46,9 +44,8 @@ public class TimelineDepthThread extends Thread {
 	 * @param scaleY : The scale in the y-direction of max depth
 	 * @param width  : the width
 	 */
-	public TimelineDepthThread(SpaceTimeData data, Canvas canvas, Image[] compositeFinalLines,
-			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width, 
-			AtomicInteger lineNum, boolean usingMidpoint)
+	public TimelineDepthThread(SpaceTimeDataController data, Canvas canvas, Image[] compositeFinalLines,
+			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width, AtomicInteger lineNum)
 	{
 		this.stData = data;
 		this.canvas = canvas;
@@ -58,7 +55,6 @@ public class TimelineDepthThread extends Thread {
 		this.depthTrace = depthTrace;
 		this.compositeFinalLines = compositeFinalLines;
 		this.lineNum = lineNum;
-		this.usingMidpoint = usingMidpoint;
 	}
 
 	
@@ -104,8 +100,7 @@ public class TimelineDepthThread extends Thread {
 			return;
 		
 		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
-		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.attributes.begTime, depth, height, 
-				pixelLength, usingMidpoint)
+		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.attributes.begTime, depth, height, pixelLength)
 		{
 			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)

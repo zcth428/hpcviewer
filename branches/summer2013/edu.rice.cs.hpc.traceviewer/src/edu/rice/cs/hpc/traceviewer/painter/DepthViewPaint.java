@@ -6,7 +6,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 
@@ -19,7 +19,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	private Image[] compositeFinalLines;
 	
-	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeData _data,
+	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeDataController _data,
 			ImageTraceAttributes _attributes, boolean _changeBound) {
 		
 		super(_data, _attributes, _changeBound,  window);
@@ -29,13 +29,14 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected boolean startPainting(int linesToPaint, boolean changedBounds) {
-		depthTrace = new ProcessTimeline(0, data.getScopeMap(), data.getBaseData(), 
-				data.getPosition().process, 
+		depthTrace = new ProcessTimeline(0, controller.getScopeMap(), controller.getBaseData(), 
+				controller.getPosition().process, 
 				attributes.numPixelsH, attributes.endTime-attributes.begTime,
-				data.getMinBegTime()+attributes.begTime);
+				controller.getMinBegTime()+attributes.begTime);
 		
-		depthTrace.readInData(data.getHeight());
-		depthTrace.shiftTimeBy(data.getMinBegTime());
+		//depthTrace.readInData(controller.getHeight());
+		depthTrace.readInData();
+		depthTrace.shiftTimeBy(controller.getMinBegTime());
 		compositeFinalLines = new Image[linesToPaint];
 
 		return changedBounds;
@@ -58,13 +59,13 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected int getNumberOfLines() {
-		return Math.min(attributes.numPixelsDepthV, data.getMaxDepth());
+		return Math.min(attributes.numPixelsDepthV, controller.getMaxDepth());
 	}
 
 	@Override
 	protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale) {
-		return new TimelineDepthThread(data, canvas, compositeFinalLines, depthTrace,
-				xscale, yscale, attributes.numPixelsH, lineNum, data.isEnableMidpoint());
+		return new TimelineDepthThread(controller, canvas, compositeFinalLines, depthTrace,
+				xscale, yscale, attributes.numPixelsH, lineNum);
 	}
 
 }

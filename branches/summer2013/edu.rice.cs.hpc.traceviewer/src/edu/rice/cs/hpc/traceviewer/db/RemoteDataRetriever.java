@@ -66,7 +66,7 @@ public class RemoteDataRetriever {
 	 * @param t0 The lower bound for the time to get
 	 * @param tn The upper bound for the time to get
 	 * @param vertRes The number of pixels in the vertical direction (process axis). This is used to compute a stride so that not every rank is included
-	 * @param horizRes The number of pixels in the horizontal direction (time axis). This is used to compute a delta t that controls how many samples are returned per rank
+	 * @param horizRes The number of pixels in the horizontal direction (time axis). This is used to compute a delta_t that controls how many samples are returned per rank
 	 * @return
 	 * @throws IOException 
 	 */
@@ -144,7 +144,7 @@ public class RemoteDataRetriever {
 			//if (numRead != compressedSize)
 			//	System.out.println("Only read " + numRead + " instead of "+ compressedSize);
 			
-			//This part will be moved to another thread
+			
 			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, rankNumber, dataCompressed));
 			
 			RanksReceived++;
@@ -273,7 +273,7 @@ public class RemoteDataRetriever {
  * 0x1E		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
  * 
  * Message HERE Server -> Client
- * Notes: This is a response to the DATA request. After this message, the client may send another DATA request or a DONE shutdown command. After each rank is received, k should be incremented by (28+c). The client should expect the message to contain min(Last Process-First Process, Vertical Resolution) traceline.
+ * Notes: This is a response to the DATA request. After this message, the client may send another DATA request or a DONE shutdown command. After each rank is received, k should be incremented by (28+c). The client should expect the message to contain min(Last Process-First Process, Vertical Resolution) tracelines.
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x48455245 (HERE in ASCII)
  * 0x04+k	Line Number		int-4				The rank number whose data follows. Should be unique in the message

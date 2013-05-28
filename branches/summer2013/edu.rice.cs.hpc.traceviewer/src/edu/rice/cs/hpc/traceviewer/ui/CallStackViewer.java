@@ -31,6 +31,7 @@ import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
@@ -94,8 +95,8 @@ public class CallStackViewer extends TableViewer
 			public void handleEvent(Event event)
 			{
 				int depth = stack.getSelectionIndex(); 
-				SpaceTimeDataController stData = dataService.getData();
-				if(depth !=-1 && depth != stData.getMaxDepth()) {
+				PaintManager painter = dataService.getData().getPainter();
+				if(depth !=-1 && depth != painter.getMaxDepth()) {
 					// ask the depth editor to update the depth and launch the updateDepth event
 					csview.depthEditor.setSelection(depth);
 					notifyChange(depth);
@@ -152,8 +153,8 @@ public class CallStackViewer extends TableViewer
 	 */
 	public void updateView()
 	{
-		SpaceTimeDataController stData = dataService.getData();
-		this.setSample(stData.getPosition(), stData.getMaxDepth());
+		PaintManager painter = dataService.getData().getPainter();
+		this.setSample(painter.getPosition(), painter.getMaxDepth());
 		this.getTable().setVisible(true);
 	}
 	
@@ -174,7 +175,7 @@ public class CallStackViewer extends TableViewer
 		int proc;
 		SpaceTimeDataController stData = dataService.getData();
 		if (stData != null)
-			proc = stData.getProcessRelativePosition(ptlService.getNumProcessTimeline());
+			proc = stData.getPainter().getProcessRelativePosition(ptlService.getNumProcessTimeline());
 		else 
 		{
 			return;

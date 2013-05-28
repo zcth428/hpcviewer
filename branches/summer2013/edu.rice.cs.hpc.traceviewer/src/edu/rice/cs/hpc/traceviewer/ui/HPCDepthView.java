@@ -13,7 +13,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 public class HPCDepthView extends ViewPart
 {
@@ -72,7 +72,7 @@ public class HPCDepthView extends ViewPart
 		});
 	}
 
-	public void updateView(SpaceTimeData _stData)
+	public void updateView(SpaceTimeDataController _stData)
 	{
 		this.depthCanvas.updateView(_stData);
 		depthCanvas.setVisible(true);

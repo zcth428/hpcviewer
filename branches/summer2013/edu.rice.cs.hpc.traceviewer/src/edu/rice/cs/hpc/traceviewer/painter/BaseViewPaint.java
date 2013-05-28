@@ -5,6 +5,7 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 
@@ -27,6 +28,7 @@ public abstract class BaseViewPaint {
 	protected final IWorkbenchWindow window;
 	
 	protected SpaceTimeDataController controller;
+	protected PaintManager painter;
 	
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -44,6 +46,7 @@ public abstract class BaseViewPaint {
 	{
 		changedBounds = _changeBound;
 		controller = _data;
+		painter = _data.getPainter();
 		this.window = (window == null ? Util.getActiveWindow() : window);
 		IViewSite site = (IViewSite) window.getActivePage().getActivePart().getSite();
 		monitor = new TimelineProgressMonitor( site.getActionBars().getStatusLineManager() );

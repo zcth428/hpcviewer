@@ -15,7 +15,8 @@ public abstract class SpaceTimeDataController {
 
 	PaintManager painter;
 	static int[] MethodCounts = new int[15];
-	protected ImageTraceAttributes attributes;// Should this be final?
+	//FIXME: Some places access this directly while others use the getter.
+	public ImageTraceAttributes attributes;// Should this be final?
 	protected String dbName;
 	/**
 	 * The minimum beginning and maximum ending time stamp across all traces (in
@@ -42,12 +43,13 @@ public abstract class SpaceTimeDataController {
 	 * The number of processes in the database, independent of the current
 	 * display size
 	 */
-	protected int Height;
+	protected int height;
 	
 	/** The maximum depth of any single CallStackSample in any trace. */
 	protected int maxDepth;
 	
 	protected ColorTable colorTable;
+	
 
 	// So, I'd like to declare attributes and dbName final and give them their
 	// values in the child class's constructor, but that doesn't work in Java.
@@ -117,7 +119,7 @@ public abstract class SpaceTimeDataController {
 	 * SpaceTimeData.
 	 ******************************************************************************/
 	public int getHeight() {
-		return Height;
+		return height;
 	}
 	
 	public HashMap<Integer, CallPath> getScopeMap() {
@@ -176,6 +178,8 @@ public abstract class SpaceTimeDataController {
 		return minBegTime;
 	}
 
+	@Deprecated
+	//Use PaintManager.getMaxDepth instead.
 	public int getMaxDepth() {
 		return maxDepth;
 	}

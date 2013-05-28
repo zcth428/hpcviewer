@@ -1,11 +1,11 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.File;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -32,7 +32,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
@@ -43,7 +43,7 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 	public static final String ID = "hpctraceview.view";
 	
 	/** Stores/Creates all of the data that is used in the view.*/
-	private SpaceTimeData stData = null;
+	private SpaceTimeDataController stData = null;
 	
 	/** Paints and displays the detail view.*/
 	SpaceTimeDetailCanvas detailCanvas;
@@ -74,7 +74,7 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 	/*************************************************************************
 	 * update new data
 	 *************************************************************************/
-	public void updateView(SpaceTimeData _stData)
+	public void updateView(SpaceTimeDataController _stData)
 	{
 		this.stData = _stData;
 		this.detailCanvas.updateView(_stData);
@@ -98,7 +98,7 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 		this.detailCanvas.setFocus();
 	}
 	
-	public SpaceTimeData getData()
+	public SpaceTimeDataController getData()
 	{
 		return stData;
 	}

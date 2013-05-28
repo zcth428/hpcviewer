@@ -151,7 +151,7 @@ public class TimelineThread extends Thread
 		
 		// do the paint
 		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
-				attrib.begTime, stData.getMaxDepth(), height, pixelLength)
+				attrib.begTime, stData.getPainter().getMaxDepth(), height, pixelLength)
 		{
 			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)

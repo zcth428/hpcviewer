@@ -16,7 +16,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.Filter;
 import edu.rice.cs.hpc.traceviewer.filter.FilterDialog;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /*****
  * 
@@ -34,7 +34,7 @@ public class FilterRanks extends AbstractHandler {
 		
 		DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
 
-		final SpaceTimeData data = dataService.getData();
+		final SpaceTimeDataController data = dataService.getData();
 		IBaseData baseData = data.getBaseData();
 		
 		Filter filter;

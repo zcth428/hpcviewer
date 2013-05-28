@@ -8,45 +8,67 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SummaryTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 public class HPCSummaryView extends ViewPart
 {
 
 	public static final String ID = "hpcsummaryview.view";
 	
+	/**The composite that holds everything in the view*/
+	Composite master;
+	
 	/**The canvas that actually displays this view*/
 	SummaryTimeCanvas summaryCanvas;
 	
+	/**all gui is held here*/
+	HPCTraceView traceview;
 	
 	public void createPartControl(Composite _master)
 	{
-		setupEverything(_master);
+		master = _master;
+		
+		try 
+		{
+			traceview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
+		}
+		catch (PartInitException e) 
+		{
+			traceview = null;
+			e.printStackTrace();
+			System.exit(0);
+		}
+		setupEverything();
 		setListener();
 	}
 	
-	private void setupEverything(Composite master)
+	private void setupEverything()
 	{
 		/*************************************************************************
 		 * Master Composite
-		 *************************************************************************/
+		 */
 		
 		master.setLayout(new GridLayout());
 		master.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		/*************************************************************************
 		 * Summary View Canvas
-		 *************************************************************************/
+		 */
 		
 		summaryCanvas = new SummaryTimeCanvas(master);
 		summaryCanvas.setLayout(new GridLayout());
 		summaryCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		summaryCanvas.setVisible(false);		
+		summaryCanvas.setVisible(false);
+		
+		//traceview.detailCanvas.setSummaryCanvas(summaryCanvas);
 	}
 	
 	private void setListener() {
@@ -66,13 +88,20 @@ public class HPCSummaryView extends ViewPart
 		});
 	}
 
-	public void updateView(SpaceTimeData stData)
+	public void updateData(SpaceTimeDataController dataTraces)
 	{
+		//stData.addPositionListener(this);
 		summaryCanvas.setVisible(true);
+		//traceview.detailCanvas.rebuffer();
 	}
 	
 	public void setFocus() 
 	{
 		this.summaryCanvas.setFocus();
+	}
+
+	public void setPosition(Position position) 
+	{
+		summaryCanvas.setPosition(position);
 	}
 }

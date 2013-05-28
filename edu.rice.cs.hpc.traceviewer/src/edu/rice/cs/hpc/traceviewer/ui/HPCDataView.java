@@ -95,6 +95,6 @@ public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData
 	 * @see edu.rice.cs.hpc.traceviewer.events.ITracePosition#setPosition(edu.rice.cs.hpc.traceviewer.painter.Position)
 	 */
 	public void setPosition(Position position) {
-		this.dataViewer.setSample(position, stData.getDepth(), stData.getData());
+		this.dataViewer.setSample(position, stData.getMaxDepth(), stData.getData());
 	}
 }

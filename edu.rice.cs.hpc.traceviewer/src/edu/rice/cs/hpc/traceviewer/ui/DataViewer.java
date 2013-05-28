@@ -129,7 +129,7 @@ public class DataViewer extends TableViewer
 	public void updateView(SpaceTimeData _stData) 
 	{
 		this.stData = _stData;
-		this.setSample(stData.getPosition(), this.stData.getDepth(), this.stData.getData());
+		this.setSample(stData.getPosition(), this.stData.getMaxDepth(), this.stData.getData());
 		this.getTable().setVisible(true);
 	}
 	
@@ -147,7 +147,7 @@ public class DataViewer extends TableViewer
 		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 
 		if (ptl != null) {
-			int sample = ptl.findMidpointBefore(position.time, stData.isEnableMidpoint());
+			int sample = ptl.findMidpointBefore(position.time);
 			
 			Vector<String> dataVec = new Vector<String>();
 			if (sample >= 0) {

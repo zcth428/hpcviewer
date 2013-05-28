@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 
@@ -40,8 +41,8 @@ public abstract class SpaceTimeSamplePainter
 		int rectWidth = endPixel - startPixel;
 		if(rectWidth == 0)
 			return;
-
-		gcToDraw.setBackground(colorTable.getColor(function));
+Color pColor = colorTable.getColor(function);
+		gcToDraw.setBackground(pColor);
 		gcToDraw.fillRectangle(startPixel, 0, rectWidth, height);
 	}
 	

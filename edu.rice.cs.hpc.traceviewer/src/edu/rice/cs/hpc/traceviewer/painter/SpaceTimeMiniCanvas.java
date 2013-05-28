@@ -184,7 +184,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		stData.attributes.endProcess = detailBottomRightProcess;
 		stData.attributes.begTime    = detailTopLeftTime;
 		stData.attributes.endTime	 = detailBottomRightTime;
-		Frame frame = new Frame(stData.attributes, stData.getDepth(), 
+		Frame frame = new Frame(stData.attributes, stData.getMaxDepth(), 
 				stData.getPosition().time, stData.getPosition().process);
 		try {
 			TraceOperation.getOperationHistory().execute(

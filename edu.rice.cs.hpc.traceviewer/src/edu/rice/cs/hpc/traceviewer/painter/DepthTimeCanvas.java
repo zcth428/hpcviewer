@@ -82,14 +82,14 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 */
 	public void updateView(SpaceTimeDataController _stData)
 	{
-		this.stDataC = _stData;
+		this.stData = _stData;
 		
 		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT)
 		{
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		setTimeZoom(0, (long)stDataC.getWidth());
+		setTimeZoom(0, (long)stData.getWidth());
 	}
 	
 	/***
@@ -120,7 +120,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 */
 	public void paintControl(PaintEvent event)
 	{
-		if (this.stDataC == null || imageBuffer == null)
+		if (this.stData == null || imageBuffer == null)
 			return;
 		
 		topLeftPixelX = Math.round(attributes.begTime*getScaleX());
@@ -154,7 +154,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		
-		int maxDepth = stDataC.getMaxDepth();
+		int maxDepth = painter.getMaxDepth();
 		event.gc.fillRectangle(topPixelCrossHairX-8,selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth)-1,20,4);
 	}
 	
@@ -213,7 +213,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 
     	long closeTime = attributes.begTime + (long)((double)mouseDown.x / getScaleX());
     	
-    	Position currentPosition = stDataC.getPosition();
+    	Position currentPosition = painter.getPosition();
     	Position position = new Position(closeTime, currentPosition.process);
     	
     	notifyPositionChange(position);
@@ -230,7 +230,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	@Override
 	public double getScaleY() {
 		final Rectangle r = this.getClientArea();
-		return Math.max(r.height/(double)stDataC.getMaxDepth(), 1);
+		return Math.max(r.height/(double)painter.getMaxDepth(), 1);
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -259,14 +259,14 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		attributes.begTime= leftTime;
 		attributes.endTime = rightTime;
 		
-		attributes.assertTimeBounds(stDataC.getWidth());
+		attributes.assertTimeBounds(stData.getWidth());
 		
 		if (getNumTimeDisplayed() < Constants.MIN_TIME_UNITS_DISP)
 		{
 			attributes.begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
 			attributes.endTime = attributes.begTime + getNumTimeDisplayed();
 			
-			attributes.assertTimeBounds(stDataC.getWidth());
+			attributes.assertTimeBounds(stData.getWidth());
 		}
 		
 		rebuffer();
@@ -342,7 +342,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
      * @param t2: the rightmost time
      */
     private void adjustCrossHair(long t1, long t2) {
-    	Position currentPosition = stDataC.getPosition();
+    	Position currentPosition = painter.getPosition();
     	long time = currentPosition.time;
     	
     	if (time<t1 || time>t2)
@@ -354,7 +354,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     
 	private void rebuffer()
 	{
-		if (stDataC == null)
+		if (stData == null)
 			return;
 
 		final int viewWidth = getClientArea().width;
@@ -404,13 +404,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	{
 		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
 		
-		ImageTraceAttributes attributes = stDataC.getAttributes();
+		ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.numPixelsDepthV = _numPixelsV;
 		attributes.setTime(_begTime, _endTime);
 		
 		//oldAttributes.copy(attributes);
 		
-		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), masterGC, stDataC, attributes, changedBounds);		
+		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), masterGC, stData, attributes, changedBounds);		
 		depthPaint.paint(this);
 	}
 	

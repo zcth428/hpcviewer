@@ -6,20 +6,19 @@ import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.PaintEvent;
-
 import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 /*****************************************************************************
  * 
@@ -68,7 +67,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		selectionBottomRight = new Point(0,0);
 	}
 	
-	public void updateView(SpaceTimeData _stData) {
+	public void updateView(SpaceTimeDataController _stData) {
 		this.setSpaceTimeData(_stData);
 
 		if (this.mouseState == MouseState.ST_MOUSE_INIT) {
@@ -184,8 +183,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		stData.attributes.endProcess = detailBottomRightProcess;
 		stData.attributes.begTime    = detailTopLeftTime;
 		stData.attributes.endTime	 = detailBottomRightTime;
-		Frame frame = new Frame(stData.attributes, stData.getMaxDepth(), 
-				stData.getPosition().time, stData.getPosition().process);
+		Frame frame = new Frame(stData.attributes, painter.getMaxDepth(), 
+				painter.getPosition().time, painter.getPosition().process);
 		try {
 			TraceOperation.getOperationHistory().execute(
 					new ZoomOperation("Change region", frame, zoomAction),

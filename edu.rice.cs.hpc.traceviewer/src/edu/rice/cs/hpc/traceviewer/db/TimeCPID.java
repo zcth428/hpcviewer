@@ -4,8 +4,9 @@ package edu.rice.cs.hpc.traceviewer.db;
  * struct object of time and CPID pair
  * 
  * @author laksonoadhianto
- * 
+ * @see TraceDataByRank.Record
  */
+@Deprecated
 public class TimeCPID {
 	public double timestamp;
 	public int cpid;

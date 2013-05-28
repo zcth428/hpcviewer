@@ -30,7 +30,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	@Override
 	protected boolean startPainting(int linesToPaint, boolean changedBounds) {
 		depthTrace = new ProcessTimeline(0, controller.getScopeMap(), controller.getBaseData(), 
-				controller.getPosition().process, 
+				painter.getPosition().process, 
 				attributes.numPixelsH, attributes.endTime-attributes.begTime,
 				controller.getMinBegTime()+attributes.begTime);
 		
@@ -48,7 +48,7 @@ public class DepthViewPaint extends BaseViewPaint {
 		for (int i = 0; i < linesToPaint; i++)
 		{
 			masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
-					compositeFinalLines[i].getBounds().height, 0,(int)Math.round(i*attributes.numPixelsDepthV/(float)data.getMaxDepth()), 
+					compositeFinalLines[i].getBounds().height, 0,(int)Math.round(i*attributes.numPixelsDepthV/(float)painter.getMaxDepth()), 
 					compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
 		}
 		// disposing resources
@@ -59,7 +59,7 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected int getNumberOfLines() {
-		return Math.min(attributes.numPixelsDepthV, controller.getMaxDepth());
+		return Math.min(attributes.numPixelsDepthV, painter.getMaxDepth());
 	}
 
 	@Override

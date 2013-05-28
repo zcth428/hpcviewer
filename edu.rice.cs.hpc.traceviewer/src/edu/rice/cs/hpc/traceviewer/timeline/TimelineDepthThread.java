@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Canvas;
 
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /*************
@@ -18,6 +19,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 public class TimelineDepthThread extends Thread {
 
 	final private SpaceTimeDataController stData;
+	final private PaintManager painter;
 
 	/**The canvas on which to paint.*/
 	final private Canvas canvas;
@@ -48,6 +50,7 @@ public class TimelineDepthThread extends Thread {
 			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width, AtomicInteger lineNum)
 	{
 		this.stData = data;
+		this.painter = stData.getPainter();
 		this.canvas = canvas;
 		this.scaleX = scaleX;
 		this.scaleY = scaleY;
@@ -125,7 +128,7 @@ public class TimelineDepthThread extends Thread {
 		ProcessTimeline ptl = null;
 		int line = lineNum.getAndIncrement();
 		
-		if (line < Math.min(stData.attributes.numPixelsDepthV, stData.getMaxDepth()))
+		if (line < Math.min(stData.attributes.numPixelsDepthV, painter.getMaxDepth()))
 		{
 			if (line==0)
 			{
@@ -133,10 +136,10 @@ public class TimelineDepthThread extends Thread {
 			}else
 			{
 				ptl = new ProcessTimeline(line, stData.getScopeMap(),
-						stData.getBaseData(), stData.getPosition().process, 
+						stData.getBaseData(), painter.getPosition().process, 
 						stData.attributes.numPixelsH, stData.attributes.endTime-stData.attributes.begTime, 
 						stData.getMinBegTime()+stData.attributes.begTime);
-				ptl.copyData(depthTrace);
+				ptl.copyDataFrom(depthTrace);
 			}
 			
 			//System.out.println("Depth line: " + line);

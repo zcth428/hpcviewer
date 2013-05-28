@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 /******************************************************************
  * An abstract class for the two canvases on the viewer to extend.
@@ -14,7 +15,8 @@ public abstract class SpaceTimeCanvas extends Canvas
 
 	
 	/**The SpaceTimeData corresponding to this canvas.*/
-	protected SpaceTimeDataController stDataC;
+	protected SpaceTimeDataController stData;
+	protected PaintManager painter;
 	protected ImageTraceAttributes attributes;
 	
     /**The width of the current screen in this canvas.*/
@@ -44,7 +46,8 @@ public abstract class SpaceTimeCanvas extends Canvas
         
     
     public void setSpaceTimeData(SpaceTimeDataController dataTraces) {
-    	this.stDataC = dataTraces;
-    	this.attributes = stDataC.getAttributes();
+    	this.stData = dataTraces;
+    	this.attributes = stData.getAttributes();
+    	this.painter = stData.getPainter();
     }
 }

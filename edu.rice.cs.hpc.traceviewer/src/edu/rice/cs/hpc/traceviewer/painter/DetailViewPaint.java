@@ -8,7 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
 public class DetailViewPaint extends BaseViewPaint {
@@ -25,7 +25,7 @@ public class DetailViewPaint extends BaseViewPaint {
 	private AtomicInteger lineNum;
 	final private ProcessTimelineService ptlService;
 	
-	public DetailViewPaint(final GC masterGC, final GC origGC, SpaceTimeData _data,
+	public DetailViewPaint(final GC masterGC, final GC origGC, SpaceTimeDataController _data,
 			ImageTraceAttributes _attributes, boolean _changeBound,
 			IWorkbenchWindow window) 
 	{
@@ -75,7 +75,7 @@ public class DetailViewPaint extends BaseViewPaint {
 	protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale,
 			double yscale) {
 
-		return new TimelineThread(this.window, data, ptlService, lineNum, changedBounds, canvas,
+		return new TimelineThread(this.window, controller, ptlService, lineNum, changedBounds, canvas,
 				compositeOrigLines, compositeFinalLines, attributes.numPixelsH, 
 				xscale, yscale, monitor);
 	}	

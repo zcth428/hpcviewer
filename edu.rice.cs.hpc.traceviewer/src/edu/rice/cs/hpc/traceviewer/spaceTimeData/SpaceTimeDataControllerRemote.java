@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -12,6 +13,7 @@ import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
@@ -35,11 +37,12 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	
 	private final String[] valuesX;
 	
+	AtomicInteger lineNum;
+	
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, String[] _valuesX) {
 
-		MethodCounts[0]++;
 
 		attributes = new ImageTraceAttributes();
 		ImageTraceAttributes oldAtributes = new ImageTraceAttributes();
@@ -68,8 +71,10 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		dbName = exp.getName();
 		
 		dataRetriever = _dataRet;
-		Height = _numTraces;
+		height = _numTraces;
 		valuesX = _valuesX;
+		
+		lineNum = new AtomicInteger(0);
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
 				_statusMgr, visitor, maxDepth, minBegTime);
@@ -193,22 +198,21 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
 	private ProcessTimeline getNextDepthTrace() {
 
-		if (attributes.lineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
-			if (attributes.lineNum == 0) {
-				attributes.lineNum++;
+		if (lineNum.get() < Math.min(attributes.numPixelsDepthV, maxDepth)) {
+			if (lineNum.compareAndSet(0, 1)) {
 				return depthTrace;
 			}
 			// I can't get the data from the ProcessTimeline directly, so create
 			// a ProcessTimeline with data=null and then copy the actual data to
 			// it.
 			ProcessTimeline toDonate = new ProcessTimeline(null, scopeMap,
-					attributes.lineNum, attributes.numPixelsH,
+					lineNum.get(), attributes.numPixelsH,
 					attributes.numPixelsV, minBegTime + attributes.begTime);
 			int scaledDTProcess = computeScaledProcess();
 			toDonate.copyDataFrom(traces[scaledDTProcess]);
 			// toDonate.copyDataFrom(depthTrace);
 
-			attributes.lineNum++;
+			lineNum.incrementAndGet();
 			return toDonate;
 		} else
 			return null;
@@ -224,5 +228,12 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 			System.out.println("Could not close the connection.");
 		}
 		
+	}
+
+
+	@Override
+	public IBaseData getBaseData() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

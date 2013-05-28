@@ -18,6 +18,7 @@ import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**
  * This contains the painting components from SpaceTimeData
@@ -49,14 +50,17 @@ public class PaintManager {
 	 */
 	private ColorTable colorTable;
 
-	/** Stores the current depth that is being displayed. */
-	private int currentDepth;
+
 
 	private IStatusLineManager statusMgr;
 	final private IWorkbenchWindow window;
 	
 	/** Stores the current position of cursor */
+	
 	private Position currentPosition;
+	/** Stores the current depth and data object that are being displayed.*/
+	private int currentDepth;
+	private int currentDataIdx;
 	
 	/**
 	 * The composite images created by painting all of the samples in a given
@@ -101,6 +105,8 @@ public class PaintManager {
 		minBegTime = _minBegTime;
 		
 		//defaut position
+		this.currentDepth = 0;
+		this.currentDataIdx = Constants.dataIdxNULL;
 		currentPosition = new Position(0, 0);
 	}
 
@@ -179,8 +185,6 @@ public class PaintManager {
 		depthPaint.paint();
 	}
 
-	// TODO: Redirect calls to this accessor and mutator. The old STData class
-	// doesn't need currentDepth
 	public void setDepth(int _depth) {
 		this.currentDepth = _depth;
 	}
@@ -188,6 +192,25 @@ public class PaintManager {
 	public int getDepth() {
 		return this.currentDepth;
 	}
+	/***
+	 * set the current index data
+	 * This is used by data centric view 
+	 * @param dataIdx
+	 */
+	public void setData(int dataIdx)
+	{
+		this.currentDataIdx = dataIdx;
+	}
+	
+	/**
+	 * get the current index data
+	 * @return
+	 */
+	public int getData()
+	{
+		return this.currentDataIdx;
+	}
+	
 
 	// Redirect these calls as well
 	public int getBegProcess() {
@@ -236,7 +259,7 @@ public class PaintManager {
 
 		oldAttributes.copy(attributes);
 
-		attributes.lineNum = 0; 
+		//attributes.lineNum = 0; 
 
 		BaseViewPaint detailPaint = new BaseViewPaint( _controller, attributes,
 				changedBounds, window) {
@@ -380,7 +403,7 @@ public class PaintManager {
 										// &&
 										// attributes.sameDepth(oldAttributes));
 
-		attributes.lineNum = 0;
+		//attributes.lineNum = 0;
 		attributes.numPixelsDepthV = _numPixelsV;
 		attributes.setTime(_begTime, _endTime);
 
@@ -494,6 +517,20 @@ public class PaintManager {
 		return this.currentPosition;
 	}
 	
+	public int getProcessRelativePosition(int numDisplayedProcess)
+	{
+		// general case
+    	int estimatedProcess = (int) (currentPosition.process - attributes.begProcess);
+    	
+    	// case for num displayed processes is less than the number of processes
+    	estimatedProcess = (int) ((float)estimatedProcess* 
+    			((float)numDisplayedProcess/(attributes.endProcess-attributes.begProcess)));
+    	
+    	// case for single process
+    	estimatedProcess = Math.min(estimatedProcess, numDisplayedProcess-1);
+    	
+    	return estimatedProcess;
+	}
 	/**
 	 * This makes a new DetailSpaceTimePainter. The line of code that is in this
 	 * method was in TimelineThread, but TimelineThread shouldn't need access to
@@ -513,5 +550,12 @@ public class PaintManager {
 		// controller some how, or will this not be an issue once TraceEvents is
 		// removed.
 		this.currentPosition = position;
+	}
+	
+	public void resetPosition(){
+		if (currentPosition.process >= attributes.endProcess) {
+			// if the current process is beyond the range, make it in the middle
+			currentPosition.process = (attributes.endProcess >> 1);
+		}
 	}
 }

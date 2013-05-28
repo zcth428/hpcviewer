@@ -18,7 +18,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeMiniCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /**A view for displaying the call path viewer and minimap.*/
 //all the GUI setup for the call path and minimap are here//
@@ -118,7 +118,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 				// eclipse bug: even if we set a very specific source provider, eclipse still
 				//	gather event from other source. we then require to put a guard to avoid this.
 				if (sourceName.equals(DataService.DATA_UPDATE)) {
-					if (sourceValue instanceof SpaceTimeData) {
+					if (sourceValue instanceof SpaceTimeDataController) {
 						csViewer.updateView();
 					} else if (sourceValue instanceof Boolean) {
 						csViewer.updateView();
@@ -130,9 +130,9 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	}
 	
 	
-	public void updateView(SpaceTimeData _stData) 
+	public void updateView(SpaceTimeDataController _stData) 
 	{
-		depthEditor.setMaximum(_stData.getMaxDepth());
+		depthEditor.setMaximum(_stData.getPainter().getMaxDepth());
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 

@@ -226,6 +226,9 @@ public abstract class SpaceTimeDataController {
 		return enableMidpoint;
 	}
 
+	public void resetDepthCounter() {
+	}
+
 
 
 

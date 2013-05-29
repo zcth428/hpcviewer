@@ -170,7 +170,11 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		} else
 			return null;
 	}
-
+	
+	@Override
+	public void resetDepthCounter() {
+		depthLineNum.set(0);
+	};
 
 	@Override
 	public void dispose() {

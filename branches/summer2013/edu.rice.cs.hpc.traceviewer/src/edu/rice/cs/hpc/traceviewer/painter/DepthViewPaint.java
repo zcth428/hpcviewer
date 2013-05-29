@@ -58,6 +58,8 @@ public class DepthViewPaint extends BaseViewPaint {
 		for (Image img: compositeFinalLines) {
 			img.dispose();
 		}
+		//FIXME: Ugly solution to the counter not being reset...
+		controller.resetDepthCounter();
 	}
 
 	@Override

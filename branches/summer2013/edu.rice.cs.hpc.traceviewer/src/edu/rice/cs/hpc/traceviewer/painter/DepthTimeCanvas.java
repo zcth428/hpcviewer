@@ -82,7 +82,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 */
 	public void updateView(SpaceTimeDataController _stData)
 	{
-		this.stData = _stData;
+		setSpaceTimeData(_stData); 
 		
 		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT)
 		{

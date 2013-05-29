@@ -100,8 +100,19 @@ public class TraceDatabase {
 			return false;
 
 		database.dataTraces = STDC;
+		
 		statusMgr.setMessage("Rendering trace data ...");
 		shell.update();
+		
+		// get a window service to store the new database
+		ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(ISourceProviderService.class);
+
+		// keep the current data in "shared" variable
+		DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
+		dataService.setData(database.dataTraces);
+
+		// reset the operation history
+		TraceOperation.clear();
 
 		try {
 			// ---------------------------------------------------------------------

@@ -3,8 +3,8 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 import java.util.HashMap;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
-import edu.rice.cs.hpc.traceviewer.db.TimeCPID;
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank;
+import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank.Record;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 
 /** A data structure that stores one line of timestamp-cpid data. */
@@ -63,7 +63,7 @@ public class ProcessTimeline {
 
 		pixelLength = timeRange / (double) _numPixelH;
 		if (_data == null)
-			data = new TraceDataByRank(new TimeCPID[0], /*IBaseData*/, lineNum, _numPixelH);
+			data = new TraceDataByRank(new Record[0]);
 		else
 			data = _data;
 	}

@@ -43,9 +43,11 @@ public class TraceDataByRank {
 		listcpid = new Vector<Record>(numPixelH);
 	}
 	
-	//Do I really need all these parameters? Before it worked with just the Record[].
-	public TraceDataByRank(Record[] data, IBaseData _data, int _rank, int _numPixelH) {
-		this(_data, _rank, _numPixelH);
+	// FIXME: When it is in remote mode, it doesn't use _data, _rank, or
+	// _numPixelH, so it'll work if we don't initialize them, but this is
+	// horrible design. It probably should go back to two classes
+	public TraceDataByRank(Record[] data) {
+		this(null, 0, 0);
 		listcpid = new Vector<Record>(Arrays.asList(data));
 	}
 	
@@ -461,7 +463,7 @@ public class TraceDataByRank {
 	 * @author laksonoadhianto
 	 *
 	 */
-	protected class Record 
+	public static class Record 
 	{
 		public double timestamp;
 		public int cpId;

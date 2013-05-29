@@ -2,20 +2,16 @@ package edu.rice.cs.hpc.traceviewer.db;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.zip.InflaterInputStream;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
-import edu.rice.cs.hpc.traceviewer.db.TimeCPID;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
 /**
  * Handles communication with the remote server, including asking for data and

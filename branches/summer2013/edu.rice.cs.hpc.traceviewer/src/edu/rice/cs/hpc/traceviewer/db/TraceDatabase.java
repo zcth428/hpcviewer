@@ -123,8 +123,7 @@ public class TraceDatabase {
 
 			IWorkbenchPage page = window.getActivePage();
 
-			HPCSummaryView sview = (HPCSummaryView) page
-					.showView(HPCSummaryView.ID);
+			HPCSummaryView sview = (HPCSummaryView) page.showView(HPCSummaryView.ID);
 			sview.updateView(database.dataTraces);
 
 			HPCDepthView dview = (HPCDepthView) page.showView(HPCDepthView.ID);
@@ -133,8 +132,7 @@ public class TraceDatabase {
 			HPCTraceView tview = (HPCTraceView) page.showView(HPCTraceView.ID);
 			tview.updateView(database.dataTraces);
 
-			HPCCallStackView cview = (HPCCallStackView) page
-					.showView(HPCCallStackView.ID);
+			HPCCallStackView cview = (HPCCallStackView) page.showView(HPCCallStackView.ID);
 			cview.updateView(database.dataTraces);
 
 			return true;

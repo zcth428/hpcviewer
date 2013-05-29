@@ -220,6 +220,7 @@ public class TimelineThread extends Thread
 	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
 	synchronized public void addNextImage(Image imgOriginal, Image imgFinal, int index)
 	{
+		
 		compositeOrigLines[index] = imgOriginal;
 		compositeFinalLines[index] = imgFinal;
 	}

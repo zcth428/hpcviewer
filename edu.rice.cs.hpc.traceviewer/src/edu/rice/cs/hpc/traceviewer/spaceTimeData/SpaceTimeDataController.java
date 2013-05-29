@@ -48,6 +48,7 @@ public abstract class SpaceTimeDataController {
 	protected int maxDepth;
 	
 	protected ColorTable colorTable;
+	private boolean enableMidpoint;
 	
 
 	// So, I'd like to declare attributes and dbName final and give them their
@@ -190,5 +191,16 @@ public abstract class SpaceTimeDataController {
 	public void dispose() {
 		colorTable.dispose();
 	}
+
+	public void setEnableMidpoint(boolean enable)
+	{
+		this.enableMidpoint = enable;
+	}
+	
+	public boolean isEnableMidpoint()
+	{
+		return enableMidpoint;
+	}
+
 
 }

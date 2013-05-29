@@ -101,11 +101,15 @@ public class DecompressionAndRenderThread extends Thread {
 				//System.out.println("Rendering, rem=" + ranksRemainingToRender);
 				
 				RenderItemToDo toRender = (RenderItemToDo)wi;
-				painter.renderTrace(canvas, changedBounds, scaleX, scaleY, width,
-						timelines[toRender.index]);
+				render(toRender);
+				
 			}
 		}
 		
+	}
+	//TODO: Do I want to move the rendering code here from PaintManager?
+	private void render(RenderItemToDo toRender) {
+		painter.renderTrace(canvas, changedBounds, scaleX, scaleY, width, timelines[toRender.index]);
 	}
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException
 	{
@@ -153,10 +157,10 @@ public class DecompressionAndRenderThread extends Thread {
 
 
 
-public static class WorkItemToDo {
+public static interface WorkItemToDo {
 
 }
-public static class DecompressionItemToDo extends WorkItemToDo {
+public static class DecompressionItemToDo implements WorkItemToDo {
 	final byte[] Packet;
 	final int itemCount;//The number of Time-CPID pairs
 	final double startTime, endTime;
@@ -171,7 +175,7 @@ public static class DecompressionItemToDo extends WorkItemToDo {
 		compressed = _dataCompressed;
 	}
 }
-public static class RenderItemToDo extends WorkItemToDo {
+public static class RenderItemToDo implements WorkItemToDo {
 	final int index;//The index in the Timelines array
 	public RenderItemToDo(int _index) {
 		index = _index;

@@ -314,33 +314,9 @@ public class PaintManager {
 		this.addNextDepthImage(line, nextTrace.line());
 	}
 
-	public synchronized void renderTrace(Canvas canvas, boolean changedBounds,
+	public void renderTrace(Canvas canvas, boolean changedBounds,
 			double scaleX, double scaleY, int width, ProcessTimeline trace) {
-		int imageHeight = (int) (Math
-				.round(scaleY * (trace.line() + 1)) - Math.round(scaleY
-				* trace.line()));// The height of each individual Image,
-										// not the full vertical height of
-										// the window
-		if (scaleY > MIN_HEIGHT_FOR_SEPARATOR_LINES)
-			imageHeight--;
-		else
-			imageHeight++;
-
-		Image lineFinal = new Image(canvas.getDisplay(), width, imageHeight);
-		Image lineOriginal = new Image(canvas.getDisplay(), width,
-				imageHeight);
-		GC gcFinal = new GC(lineFinal);
-		GC gcOriginal = new GC(lineOriginal);
-
-		SpaceTimeSamplePainter spp = this
-				.CreateDetailSpaceTimePainter(gcOriginal, gcFinal, scaleX,
-						scaleY);
-		this.paintDetailLine(spp, trace,
-				imageHeight, changedBounds);
-		gcFinal.dispose();
-		gcOriginal.dispose();
-		this.addNextImage(lineOriginal, lineFinal,
-				trace.line());
+		
 	}
 
 	/*************************************************************************

@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.services.ISourceProviderService;
+
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
@@ -18,6 +21,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
@@ -47,6 +51,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 	IStatusLineManager statusMgr;
 	IWorkbenchWindow window;
+	
+	final private ProcessTimelineService ptlService;
 
 	/*public static void dumpAllCounts() {
 		String[] MethodNames = { "Constructor", "getNextTrace",
@@ -96,6 +102,11 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		minBegTime = trAttribute.dbTimeMin;
 		maxEndTime = trAttribute.dbTimeMax;
 		headerSize = trAttribute.dbHeaderSize;
+		
+		ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
+				ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) sourceProviderService.
+				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
 
 		dbName = exp.getName();
 		try {
@@ -225,9 +236,12 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
 		
 		TimelineThread[] threads = new TimelineThread[num_threads];
+		Image[] compositeOrig = new Image[linesToPaint];
+		Image[] compositeFinal = new Image[linesToPaint];
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			threads[threadNum] = new TimelineThread(window, this, /*<ProcessTimelineService>*/ , lineNum, changedBounds,
-					canvas, attributes.numPixelsH, xscale, yscale, monitor);
+			
+			threads[threadNum] = new TimelineThread(window, this, ptlService , lineNum, changedBounds,
+					canvas, compositeOrig, compositeFinal, attributes.numPixelsH, xscale, yscale, monitor);
 			threads[threadNum].start();
 		}
 

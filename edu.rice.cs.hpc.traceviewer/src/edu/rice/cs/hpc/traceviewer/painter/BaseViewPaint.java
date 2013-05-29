@@ -6,6 +6,7 @@ import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
 
 
 
@@ -45,6 +46,7 @@ public abstract class BaseViewPaint {
 	{
 		changedBounds = _changeBound;
 		controller = _data;
+		attributes = _data.getAttributes();
 		painter = _data.getPainter();
 		this.window = (window == null ? Util.getActiveWindow() : window);
 		IViewSite site = (IViewSite) window.getActivePage().getActivePart().getSite();
@@ -62,37 +64,77 @@ public abstract class BaseViewPaint {
 	public void paint(SpaceTimeCanvas canvas)
 	{	
 		
-		//depending upon how zoomed out you are, the iteration you will be making will be either the number of pixels or the processors
+		// depending upon how zoomed out you are, the iteration you will be
+		// making will be either the number of pixels or the processors
 		int linesToPaint = getNumberOfLines();
+		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime()
+				.availableProcessors());
 
 		// -------------------------------------------------------------------
-		// hack fix: if the number of horizontal pixels is less than 1 we 
-		//			 return immediately, otherwise it throws an exception
+		// hack fix: if the number of horizontal pixels is less than 1 we
+		// return immediately, otherwise it throws an exception
 		// -------------------------------------------------------------------
 		if (attributes.numPixelsH <= 0)
 			return;
-		
-		startPainting(linesToPaint, changedBounds);
 
-		
-		monitor.beginProgress(linesToPaint, "Rendering space time view...", "Trace painting", window.getShell());
-		
-		
+		// -------------------------------------------------------------------
+		// initialize the painting (to be implemented by the instance
+		// -------------------------------------------------------------------
+		if (!startPainting(linesToPaint, changedBounds))
+			return;
+
+		monitor.beginProgress(linesToPaint, "Rendering space time view...",
+				"Trace painting", window.getShell());
+
+		// -------------------------------------------------------------------
+		// Create multiple threads to paint the view
+		// -------------------------------------------------------------------
+
+		Thread[] threads = new Thread[num_threads];
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 
-		//Threading is implemented by fillTraces, to allow a slightly different use of threads for remote
-		controller.fillTraces(canvas, linesToPaint, xscale, yscale, changedBounds);
+		//Not the prettiest or the most OO way of doing it, but...
+		if(controller instanceof SpaceTimeDataControllerRemote) {
+			
+		}
+		
+		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
+			threads[threadNum] = getTimelineThread(canvas, xscale, yscale);
+			threads[threadNum].start();
+		}
 
+		int numThreads = threads.length;
+		try {
+			// listen all threads (one by one) if they are all finish
+			// somehow, a thread can be alive forever waiting to lock a
+			// resource,
+			// especially when we resize the window. this approach should reduce
+			// deadlock by polling each thread
+			while (numThreads > 0) {
+				for (Thread thread : threads) {
+					if (thread.isAlive()) {
+						monitor.reportProgress();
+					} else {
+						if (!thread.getName().equals("end")) {
+							numThreads--;
+							// mark that this thread has ended
+							thread.setName("end");
+						}
+					}
+					Thread.sleep(30);
+				}
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 		// -------------------------------------------------------------------
 		// Finalize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
+		endPainting(linesToPaint, xscale, yscale);
 
-		//endPainting(linesToPaint, xscale, yscale);
-		
 		monitor.endProgress();
-
 		changedBounds = false;
 
 	}

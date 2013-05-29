@@ -118,7 +118,8 @@ public class TraceDataByRank {
 			this.addSample(0, dataFirst);
 		}
 
-		postProcess();
+		//TODO: Figure out what changed and caused postProcess to make things worse.
+		//postProcess();
 		
 	}
 	

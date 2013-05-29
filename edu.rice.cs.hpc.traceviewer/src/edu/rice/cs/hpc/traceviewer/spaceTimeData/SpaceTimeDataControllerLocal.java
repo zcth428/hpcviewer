@@ -94,7 +94,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		height = dataTrace.getNumberOfRanks();
+		
 		
 		buildScopeMapAndColorTable(_window, exp);
 
@@ -114,7 +114,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		} catch (IOException e) {
 			System.err.println("Master buffer could not be created");
 		}
-
+		height = dataTrace.getNumberOfRanks();
+		
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
 				_statusMgr, colorTable, maxDepth, minBegTime);
 		
@@ -225,6 +226,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	 * actual work of creating the ProcessTimelines.
 	 */
 	@Override
+	@Deprecated
 	public void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
 			double xscale, double yscale, boolean changedBounds) {
 		System.out.println("Lines to Paint: "+ linesToPaint+ ", attr.max-min: "+ (attributes.endProcess - attributes.endProcess));
@@ -344,8 +346,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 	@Override
 	public IBaseData getBaseData() {
-		// TODO Auto-generated method stub
-		return null;
+		return dataTrace;
 	}
 	
 	public String getTraceFileAbsolutePath(){

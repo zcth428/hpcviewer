@@ -25,7 +25,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
-	// Set dataRetreiver before using any methods besides the constructor!
+	
 	final RemoteDataRetriever dataRetriever;
 
 	public final int HEADER_SIZE;
@@ -127,7 +127,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	public String[] getTraceDataValuesX() {
 		return valuesX;
 	}
-
+	//TODO: Figure out how to integrate this with BaseViewPaint.paint() so that it is called.
 	@Override
 	public void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
 			double xscale, double yscale, boolean changedBounds) {

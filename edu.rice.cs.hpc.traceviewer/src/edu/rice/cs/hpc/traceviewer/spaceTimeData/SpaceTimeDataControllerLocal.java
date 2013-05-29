@@ -133,6 +133,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	 *            Whether or not the thread should get the data.
 	 * @return The next trace.
 	 **********************************************************************/
+	@Override
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds) {
 
 		if (lineNum.get() < Math.min(attributes.numPixelsV,
@@ -218,66 +219,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		return traces[relativeProcess];
 	}
 
-	// From BaseViewPaint
-	/**
-	 * This fills the Traces array with the proper ProcessTimelines. In the
-	 * local implementation, it launches n TimelineThreads, where n is the
-	 * available number of processors on the local computer, which then do the
-	 * actual work of creating the ProcessTimelines.
-	 */
-	@Override
-	@Deprecated
-	public void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
-			double xscale, double yscale, boolean changedBounds) {
-		System.out.println("Lines to Paint: "+ linesToPaint+ ", attr.max-min: "+ (attributes.endProcess - attributes.endProcess));
-
-		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime()
-				.availableProcessors());
-		lineNum.set(0);
-
-		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
-		
-		TimelineThread[] threads = new TimelineThread[num_threads];
-		Image[] compositeOrig = new Image[linesToPaint];
-		Image[] compositeFinal = new Image[linesToPaint];
-		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			
-			threads[threadNum] = new TimelineThread(window, this, ptlService , lineNum, changedBounds,
-					canvas, compositeOrig, compositeFinal, attributes.numPixelsH, xscale, yscale, monitor);
-			threads[threadNum].start();
-		}
-
-		int numThreads = threads.length;
-		try {
-			// listen all threads (one by one) if they are all finish
-			// somehow, a thread can be alive forever waiting to lock a
-			// resource,
-			// especially when we resize the window. this approach should reduce
-			// deadlock by polling each thread
-			while (numThreads > 0) {
-				for (TimelineThread thread : threads) {
-					if (thread.isAlive()) {
-						monitor.reportProgress();
-					} else {
-						if (!thread.getName().equals("end")) {
-							numThreads--;
-							// mark that this thread has ended
-							thread.setName("end");
-						}
-					}
-					Thread.sleep(30);
-				}
-			}
-			/*
-			 * for (int threadNum = 0; threadNum < threads.length; threadNum++)
-			 * { while (threads[threadNum].isAlive()) { Thread.sleep(30);
-			 * monitor.reportProgress(); } }
-			 */
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-	}
+	
 
 	/** Returns the index of the file to which the line-th line corresponds. */
 
@@ -290,6 +232,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		else
 			return attributes.begProcess + line;
 	}
+	
+	
 	
 	/***
 	 * changing the trace data, caller needs to make sure to refresh the views

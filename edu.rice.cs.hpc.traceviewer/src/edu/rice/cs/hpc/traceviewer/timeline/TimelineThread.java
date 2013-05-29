@@ -95,10 +95,10 @@ public class TimelineThread extends Thread
 	 ***************************************************************/
 	public void run()
 	{
-		ProcessTimeline nextTrace = getNextTrace(changedBounds);
+		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
 		while(nextTrace != null)
 		{
-			if(changedBounds)
+			if(changedBounds && nextTrace.data.isEmpty())
 			{
 				nextTrace.readInData();
 				addNextTrace(nextTrace);
@@ -126,7 +126,7 @@ public class TimelineThread extends Thread
 			
 			monitor.announceProgress();
 			
-			nextTrace = getNextTrace(changedBounds);
+			nextTrace = stData.getNextTrace(changedBounds);
 		}
 	}
 	
@@ -179,36 +179,7 @@ public class TimelineThread extends Thread
 			return attrib.begProcess + line;
 	}
 
-	/***********************************************************************
-	 * Gets the next available trace to be filled/painted
-	 * @param changedBounds Whether or not the thread should get the data.
-	 * @return The next trace.
-	 **********************************************************************/
-	public ProcessTimeline getNextTrace(boolean changedBounds)
-	{
-		ProcessTimeline ptr = null;
-		int line = lineNum.getAndIncrement();
-		
-		if(line < Math.min(attrib.numPixelsV, 
-				attrib.endProcess-attrib.begProcess))
-		{
-			if(changedBounds) {
-				ptr = new ProcessTimeline(line, stData.getScopeMap(), 
-						stData.getBaseData(), 
-						lineToPaint(line), attrib.numPixelsH, 
-						attrib.endTime-attrib.begTime, 
-						stData.getMinBegTime() + attrib.begTime);
-			} else {
-				int num_traces = traceService.getNumProcessTimeline();
-				if (num_traces >= line)
-					ptr = traceService.getProcessTimeline(line);
-				else
-					System.err.println("STD error: trace paints " + num_traces + " < line number " + line);
-			}
-		}
-		return ptr;
-	}
-	
+
 	
 	/**Adds a filled ProcessTimeline to traces - used by TimelineThreads.*/
 	synchronized public void addNextTrace(ProcessTimeline nextPtl)

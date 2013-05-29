@@ -29,13 +29,16 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected boolean startPainting(int linesToPaint, boolean changedBounds) {
-		depthTrace = new ProcessTimeline(0, controller.getScopeMap(), controller.getBaseData(), 
+		/*depthTrace = new ProcessTimeline(0, controller.getScopeMap(), controller.getBaseData(), 
 				painter.getPosition().process, 
 				attributes.numPixelsH, attributes.endTime-attributes.begTime,
 				controller.getMinBegTime()+attributes.begTime);
-		
+		*/
+		depthTrace = controller.getTrace(controller.computeScaledProcess());
+	
 		//depthTrace.readInData(controller.getHeight());
-		depthTrace.readInData();
+
+		//depthTrace.readInData();
 		depthTrace.shiftTimeBy(controller.getMinBegTime());
 		compositeFinalLines = new Image[linesToPaint];
 

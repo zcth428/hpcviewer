@@ -15,9 +15,9 @@ import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
-import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread;
+import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
-import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread.WorkItemToDo;
+import edu.rice.cs.hpc.traceviewer.db.DecompressionThread.WorkItemToDo;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
@@ -37,7 +37,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	
 	private final String[] valuesX;
 	
-	AtomicInteger lineNum;
+	AtomicInteger lineNum, depthLineNum;
 	
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
@@ -75,37 +75,13 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		valuesX = _valuesX;
 		
 		lineNum = new AtomicInteger(0);
+		depthLineNum = new AtomicInteger(0);
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
 				_statusMgr, colorTable, maxDepth, minBegTime);
 
 	}
 
-
-	/**
-	 * dtProcess scaled to be the index in traces[] that corresponds to this
-	 * process. dtProcess is in the range [0, number of files in data trace]
-	 * while scaledDTProcess is in the range [0, number of vertical pixels in
-	 * SpaceTimeDetailView]. If it returns 0, chances are the index it should
-	 * return would be outside the array, so the 0 is a sort of safeguard.
-	 */
-	private int computeScaledProcess() {
-		if ((getCurrentlySelectedProcess() <= attributes.endProcess) && getCurrentlySelectedProcess() >= attributes.begProcess) {
-			int scaledDTProcess = (int) (((double) traces.length - 1)
-					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (getCurrentlySelectedProcess() - attributes.begProcess));// -atr.begPro-1??
-			return scaledDTProcess;
-		} else// So this means that it's in that weird state where the length of
-				// traces and attributes has been updated, but the position of
-				// the crosshair has not. For now, we have a bad bug fix and
-				// just return 0. This may cause it to render depth trace 0
-				// first before switching to 0.
-		{
-			System.out
-					.println("Mapping skipped because of state. Returning 0.");
-			return 0;
-		}
-
-	}
 
 	@Override
 	public void prepareViewportPainting(boolean changedBounds) {
@@ -127,59 +103,37 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	public String[] getTraceDataValuesX() {
 		return valuesX;
 	}
-	//TODO: Figure out how to integrate this with BaseViewPaint.paint() so that it is called.
-	@Override
-	public void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
-			double xscale, double yscale, boolean changedBounds) {
-
-		// This relies on the fact that fillTraces will always be called with
-		// the DetailCanvas before the DepthViewCanvas. Can I guarantee this?
-		if (canvas instanceof SpaceTimeDetailCanvas) {
-			int numThreadsToLaunch = Math.min(linesToPaint, Runtime.getRuntime().availableProcessors());
-			DecompressionAndRenderThread[] workThreads = new DecompressionAndRenderThread[numThreadsToLaunch];
+	/**
+	 * This performs the network request and does a small amount of processing on the reply. Namely, it does not decompress the traces. Instead, it returns threads that will do that work when executed.
+	 */
+	public Thread[] fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) {
+		if (changedBounds) {
+			
+			DecompressionThread[] workThreads = new DecompressionThread[numThreadsToLaunch];
 			int RanksExpected = Math.min(attributes.endProcess-attributes.begProcess, attributes.numPixelsV);
 			
-			if (changedBounds)
-				traces = new ProcessTimeline[RanksExpected];
+			traces = new ProcessTimeline[RanksExpected];
 
 			for (int i = 0; i < workThreads.length; i++) {
 
-				workThreads[i] = new DecompressionAndRenderThread(traces, scopeMap, RanksExpected, attributes.begTime, attributes.endTime, painter, canvas, changedBounds, xscale, yscale, attributes.numPixelsH, !changedBounds);
-				workThreads[i].start();
+				workThreads[i] = new DecompressionThread(traces, scopeMap, RanksExpected, attributes.begTime, attributes.endTime);
 			}
 			
-			if (changedBounds) {
-				
-				try {
-					/*traces = */dataRetriever.getData(attributes.begProcess,
-							attributes.endProcess, attributes.begTime, attributes.endTime, //minBegTime, maxEndTime,
-							attributes.numPixelsV, attributes.numPixelsH,
-							scopeMap);//This will fill the workToDo queue with decompression and rendering. After the threads join, traces will be full
-				} catch (IOException e) {
-					// UI Notify user...
-					e.printStackTrace();
-				}
-				
-			}
-			else
-			{
-				painter.renderTraces(traces);
-			}
-			//Wait until they are all done
-			System.out.println("Threads launched. Waiting");
-			for (int i = 0; i < workThreads.length; i++) {
-				try {
-					workThreads[i].join();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			DecompressionAndRenderThread.workToDo = new ConcurrentLinkedQueue<WorkItemToDo>();
-		} else// Depth view
-		{
-			renderDepthTraces(canvas, changedBounds, xscale, yscale);
-		}
 
+			try {
+				// This will fill the workToDo queue with decompression and
+				// rendering. After the threads join, traces will be full
+				dataRetriever.getData(attributes.begProcess,
+						attributes.endProcess, attributes.begTime,
+						attributes.endTime, attributes.numPixelsV,
+						attributes.numPixelsH, scopeMap);
+			} catch (IOException e) {
+				// UI Notify user...
+				e.printStackTrace();
+			}
+			return workThreads;
+		}
+		return new Thread[0];
 	}
 
 	private void renderDepthTraces(SpaceTimeCanvas canvas,
@@ -196,23 +150,22 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
 	
 
-	private ProcessTimeline getNextDepthTrace() {
-
-		if (lineNum.get() < Math.min(attributes.numPixelsDepthV, maxDepth)) {
-			if (lineNum.compareAndSet(0, 1)) {
+	public ProcessTimeline getNextDepthTrace() {
+		int depthLineNumCurrVal = depthLineNum.getAndIncrement();
+		if (depthLineNumCurrVal < Math.min(attributes.numPixelsDepthV, maxDepth)) {
+			if (depthLineNumCurrVal == 0 && depthTrace != null) {
 				return depthTrace;
 			}
 			// I can't get the data from the ProcessTimeline directly, so create
 			// a ProcessTimeline with data=null and then copy the actual data to
 			// it.
 			ProcessTimeline toDonate = new ProcessTimeline(null, scopeMap,
-					lineNum.get(), attributes.numPixelsH,
+					depthLineNumCurrVal, attributes.numPixelsH,
 					attributes.numPixelsV, minBegTime + attributes.begTime);
 			int scaledDTProcess = computeScaledProcess();
 			toDonate.copyDataFrom(traces[scaledDTProcess]);
 			// toDonate.copyDataFrom(depthTrace);
 
-			lineNum.incrementAndGet();
 			return toDonate;
 		} else
 			return null;
@@ -235,5 +188,13 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	public IBaseData getBaseData() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+
+	@Override
+	public ProcessTimeline getNextTrace(boolean changedBounds) {
+		int index = lineNum.getAndIncrement();
+		if (index >= traces.length) return null;
+		return traces[index];
 	}
 }

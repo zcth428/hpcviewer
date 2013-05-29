@@ -43,11 +43,18 @@ public class TraceDataByRank {
 		listcpid = new Vector<Record>(numPixelH);
 	}
 	
+	public boolean isEmpty() {
+		return listcpid == null || listcpid.size()==0;
+	}
+	
 	// FIXME: When it is in remote mode, it doesn't use _data, _rank, or
 	// _numPixelH, so it'll work if we don't initialize them, but this is
 	// horrible design. It probably should go back to two classes
 	public TraceDataByRank(Record[] data) {
-		this(null, 0, 0);
+		//this(null, 0, 0);
+		this.data = null; rank = 0; numPixelH = 0;
+		header = new Header(-1, 0);
+		
 		listcpid = new Vector<Record>(Arrays.asList(data));
 	}
 	
@@ -60,7 +67,7 @@ public class TraceDataByRank {
 	 */
 	public void getData(double timeStart, double timeRange, double pixelLength)
 	{
-		if (listcpid != null || listcpid.size() != 0)
+		if (!isEmpty())
 			System.out.println("Get data called and it may be replacing the existing data.");
 		
 		long minloc = data.getMinLoc(rank);

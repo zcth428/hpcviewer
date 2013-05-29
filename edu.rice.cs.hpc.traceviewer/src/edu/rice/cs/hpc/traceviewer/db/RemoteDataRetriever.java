@@ -141,7 +141,7 @@ public class RemoteDataRetriever {
 			//	System.out.println("Only read " + numRead + " instead of "+ compressedSize);
 			
 			
-			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, rankNumber, dataCompressed));
+			DecompressionThread.workToDo.add(new DecompressionThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, rankNumber, dataCompressed));
 			
 			RanksReceived++;
 			monitor.announceProgress();

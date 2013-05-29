@@ -90,20 +90,39 @@ public abstract class BaseViewPaint {
 		// Create multiple threads to paint the view
 		// -------------------------------------------------------------------
 
-		Thread[] threads = new Thread[num_threads];
+		Thread[] threads;
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 
 		//Not the prettiest or the most OO way of doing it, but...
-		if(controller instanceof SpaceTimeDataControllerRemote) {
-			
+		if(controller instanceof SpaceTimeDataControllerRemote && canvas instanceof SpaceTimeDetailCanvas) {
+			threads = ((SpaceTimeDataControllerRemote)controller).fillTracesWithData( changedBounds, num_threads);
+			for (int i = 0; i < threads.length; i++) {
+				threads[i].start();
+			}
+			waitForAllThreads(threads);
 		}
+		
+		threads = new Thread[num_threads];
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 			threads[threadNum] = getTimelineThread(canvas, xscale, yscale);
 			threads[threadNum].start();
 		}
 
+		waitForAllThreads(threads);
+
+		// -------------------------------------------------------------------
+		// Finalize the painting (to be implemented by the instance
+		// -------------------------------------------------------------------
+		endPainting(linesToPaint, xscale, yscale);
+
+		monitor.endProgress();
+		changedBounds = false;
+
+	}
+
+	private void waitForAllThreads(Thread[] threads) {
 		int numThreads = threads.length;
 		try {
 			// listen all threads (one by one) if they are all finish
@@ -128,15 +147,6 @@ public abstract class BaseViewPaint {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-		// -------------------------------------------------------------------
-		// Finalize the painting (to be implemented by the instance
-		// -------------------------------------------------------------------
-		endPainting(linesToPaint, xscale, yscale);
-
-		monitor.endProgress();
-		changedBounds = false;
-
 	}
 
 	

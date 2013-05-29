@@ -63,7 +63,7 @@ public class TimelineDepthThread extends Thread {
 	
 	public void run() 
 	{
-		ProcessTimeline nextTrace = getNextDepthTrace();
+		ProcessTimeline nextTrace = stData.getNextDepthTrace();
 		while (nextTrace != null)
 		{
 			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
@@ -88,7 +88,7 @@ public class TimelineDepthThread extends Thread {
 			gc.dispose();
 			
 			addNextImage(line, nextTrace.line());
-			nextTrace = getNextDepthTrace();
+			nextTrace = stData.getNextDepthTrace();
 		}
 	}
 	
@@ -122,7 +122,7 @@ public class TimelineDepthThread extends Thread {
 	/***********************************************************************
 	 * Gets the next available trace to be filled/painted from the DepthTimeView
 	 * @return The next trace.
-	 **********************************************************************/
+	 **********************************************************************//*
 	public ProcessTimeline getNextDepthTrace()
 	{
 		ProcessTimeline ptl = null;
@@ -145,7 +145,7 @@ public class TimelineDepthThread extends Thread {
 			//System.out.println("Depth line: " + line);
 		}
 		return ptl;
-	}
+	}*/
 	
 	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
 	public synchronized void addNextImage(Image line, int index)

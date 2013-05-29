@@ -90,6 +90,29 @@ public abstract class SpaceTimeDataController {
 	{
 		return painter.getPosition().process;
 	}
+	
+	/**
+	 * dtProcess scaled to be the index in traces[] that corresponds to this
+	 * process. dtProcess is in the range [0, number of files in data trace]
+	 * while scaledDTProcess is in the range [0, number of vertical pixels in
+	 * SpaceTimeDetailView]. If it returns 0, chances are the index it should
+	 * return would be outside the array, so the 0 is a sort of safeguard.
+	 */
+	public int computeScaledProcess() {
+		if ((getCurrentlySelectedProcess() <= attributes.endProcess) && getCurrentlySelectedProcess() >= attributes.begProcess) {
+			int scaledDTProcess = (int) (((double) traces.length - 1)
+					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (getCurrentlySelectedProcess() - attributes.begProcess));// -atr.begPro-1??
+			return scaledDTProcess;
+		} else// So this means that it's in that weird state where the length of
+				// traces and attributes has been updated, but the position of
+				// the crosshair has not. For now, we have a bad bug fix and
+				// just return 0. This may cause it to render depth trace 0
+				// first before switching to 0.
+		{
+			System.out.println("Mapping skipped because of state. Returning 0.");
+			return 0;
+		}
+	}
 
 
 	public PaintManager getPainter() {
@@ -107,7 +130,10 @@ public abstract class SpaceTimeDataController {
 	public ProcessTimeline getDepthTrace() {
 		return depthTrace;
 	}
-
+	
+	public abstract ProcessTimeline getNextTrace(boolean changedBounds);
+	public abstract ProcessTimeline getNextDepthTrace();
+	
 	public abstract void prepareViewportPainting(boolean changedBounds);
 
 	abstract void prepareDepthViewportPainting();
@@ -135,9 +161,7 @@ public abstract class SpaceTimeDataController {
 		return maxEndTime - minBegTime;
 	}
 
-	public abstract void fillTraces(SpaceTimeCanvas canvas, int linesToPaint,
-			double xscale, double yscale, boolean changedBounds);
-
+	
 	/*************************************************************************
 	 * Returns the process that has been specified.
 	 ************************************************************************/
@@ -201,6 +225,8 @@ public abstract class SpaceTimeDataController {
 	{
 		return enableMidpoint;
 	}
+
+
 
 
 }

@@ -16,7 +16,15 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 //Perhaps this would all be more suited to a ThreadPool 
-public class DecompressionAndRenderThread extends Thread {
+
+/*
+ * Philip 5/29/13 Moved rendering code to the canvases to align the remote
+ * version with changes made to the local version. This used to be responsible
+ * for rendering and decompressing, but now is not. I'm keeping the WorkItemToDo
+ * structure just in case this expands again. 
+ */
+
+public class DecompressionThread extends Thread {
 
 	public static ConcurrentLinkedQueue<WorkItemToDo> workToDo = new ConcurrentLinkedQueue<WorkItemToDo>();
 	// Variables for decompression
@@ -28,42 +36,23 @@ public class DecompressionAndRenderThread extends Thread {
 
 	static AtomicInteger ranksRemainingToDecompress;
 
-	// Variables for rendering
-	final PaintManager painter;
-	final Canvas canvas;
-	final boolean changedBounds;
-	final double scaleX, scaleY;
-	final int width;
-	//final TimelineProgressMonitor monitor;
 
-	static AtomicInteger ranksRemainingToRender;
-
-	public DecompressionAndRenderThread(ProcessTimeline[] _timelines,
+	public DecompressionThread(ProcessTimeline[] _timelines,
 			HashMap<Integer, CallPath> _scopeMap, int _ranksExpected,
-			long _t0, long _tn, PaintManager _painter, Canvas _canvas,
-			boolean _changedBounds, double _scaleX, double _scaleY, int _width,
-			boolean renderOnly) {
+			long _t0, long _tn) {
 		timelines = _timelines;
 		scopeMap = _scopeMap;
 		ranksExpected = _ranksExpected;
 		t0 = _t0;
 		tn = _tn;
 
-		painter = _painter;
-		canvas = _canvas;
-		changedBounds = _changedBounds;
-		scaleX = _scaleX;
-		scaleY = _scaleY;
-		width = _width;
-		//monitor = _monitor;
 
-		ranksRemainingToDecompress = new AtomicInteger(renderOnly ? 0: ranksExpected);
-		ranksRemainingToRender = new AtomicInteger(ranksExpected);
+		ranksRemainingToDecompress = new AtomicInteger(ranksExpected);
 		
 	}
 	@Override
 	public void run() {
-		while ((ranksRemainingToDecompress.get() > 0) || (ranksRemainingToRender.get() > 0))
+		while (ranksRemainingToDecompress.get() > 0)
 		{
 			WorkItemToDo wi = workToDo.poll();
 			if (wi == null)
@@ -90,27 +79,13 @@ public class DecompressionAndRenderThread extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				//Now that it has been compressed, make it available for rendering
-				workToDo.add(new RenderItemToDo(toDecomp.rankNumber));
 				continue;
 
-			}
-			if (wi instanceof RenderItemToDo)
-			{
-				ranksRemainingToRender.getAndDecrement();
-				//System.out.println("Rendering, rem=" + ranksRemainingToRender);
-				
-				RenderItemToDo toRender = (RenderItemToDo)wi;
-				render(toRender);
-				
 			}
 		}
 		
 	}
-	//TODO: Do I want to move the rendering code here from PaintManager?
-	private void render(RenderItemToDo toRender) {
-		painter.renderTrace(canvas, changedBounds, scaleX, scaleY, width, timelines[toRender.index]);
-	}
+
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException
 	{
 		Record[] ranksData = readTimeCPIDArray(toDecomp.Packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
@@ -173,12 +148,6 @@ public static class DecompressionItemToDo implements WorkItemToDo {
 		endTime = _endTime;
 		rankNumber = _rankNumber;
 		compressed = _dataCompressed;
-	}
-}
-public static class RenderItemToDo implements WorkItemToDo {
-	final int index;//The index in the Timelines array
-	public RenderItemToDo(int _index) {
-		index = _index;
 	}
 }
 }

@@ -7,7 +7,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
-import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread;
+import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
@@ -270,19 +270,6 @@ public class PaintManager {
 		
 	}
 	
-	/**
-	 * Renders the SpaceTimeDetailView from an array of ProcessTimelines by enqueueing work to do for the DecompressionAndRenderThreads
-	 * @param workThreads 
-	 */
-	public void renderTraces(ProcessTimeline[] _traces) {
-		
-		for (int i = 0; i < _traces.length; i++) {
-			DecompressionAndRenderThread.workToDo.add(new DecompressionAndRenderThread.RenderItemToDo(i));
-		}
-	
-		
-		monitor.endProgress();
-	}
 	
 	public synchronized void renderDepthTrace(SpaceTimeCanvas canvas, double scaleX,
 			double scaleY, ProcessTimeline nextTrace, int width, ProcessTimeline depthTrace) {

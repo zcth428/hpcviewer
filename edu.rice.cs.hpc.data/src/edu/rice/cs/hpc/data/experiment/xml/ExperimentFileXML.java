@@ -48,7 +48,50 @@ public class ExperimentFileXML extends ExperimentFile
 //	XML PARSING															//
 //////////////////////////////////////////////////////////////////////////
 
+/**
+ * Parses the file and returns the contained experiment subparts. The
+ * subparts are returned by adding them to given lists.
+ * 
+ * This version is able to work with the file not being located on physical
+ * disk, but rather a reference to an in-memory stream from a socket
+ * (potentially compressed).
+ * 
+ * Note: The GREP code has been moved to the <code>SpaceTimeDataControllerLocal</code>
+ * because it is only needed on the local version, and that is the last
+ * place where the actual file (as opposed to a stream referring to the
+ * file) is available.
+ * 
+ * @param name
+ *            The name of the file. For now, this is hard coded, but it
+ *            should be obvious from the file chosen in the remote browser
+ *            UI
+ * @param experiment
+ *            Experiment object to own the parsed subparts.
+ * @param userData
+ *            I don't know why this is here, since it apparently isn't used.
+ *            I'm leaving it for maximum compatibility.
+ * @throws Exception
+ */
+public void parse(InputStream stream, String name,
+		BaseExperiment experiment, boolean need_metrics, IUserData<String, String> userData)
+		throws Exception {
+	final Builder builder;
+	if (need_metrics) {
+		builder = new ExperimentBuilder2(experiment, name, userData);
+	} else {
+		builder = new BaseExperimentBuilder(experiment, name, userData);
+	}
+	// We assume it has already been GREP-ed by the server if it needs to be
 
+	Parser parser = new Parser(name, stream, builder);
+	parser.parse();
+
+	if (builder.getParseOK() == Builder.PARSER_OK) {
+		// parsing is done successfully
+	} else
+		throw new InvalExperimentException(
+				builder.getParseErrorLineNumber());
+}
 
 
 /*************************************************************************

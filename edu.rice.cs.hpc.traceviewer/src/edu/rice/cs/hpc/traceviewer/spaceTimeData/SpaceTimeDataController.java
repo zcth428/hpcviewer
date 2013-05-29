@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
 import java.util.HashMap;
 
-import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
@@ -178,14 +177,18 @@ public abstract class SpaceTimeDataController {
 		return minBegTime;
 	}
 
+	/** @Deprecated Use {@link PaintManager#getMaxDepth} instead.*/
 	@Deprecated
-	//Use PaintManager.getMaxDepth instead.
 	public int getMaxDepth() {
 		return maxDepth;
 	}
 
 	public ColorTable getColorTable() {
 		return colorTable;	
+	}
+
+	public void dispose() {
+		colorTable.dispose();
 	}
 
 }

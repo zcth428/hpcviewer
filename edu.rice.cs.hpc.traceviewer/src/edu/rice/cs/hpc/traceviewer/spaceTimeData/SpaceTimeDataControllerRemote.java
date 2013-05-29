@@ -77,7 +77,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		lineNum = new AtomicInteger(0);
 
 		super.painter = new PaintManager(attributes, oldAtributes, _window,
-				_statusMgr, visitor, maxDepth, minBegTime);
+				_statusMgr, colorTable, maxDepth, minBegTime);
 
 	}
 
@@ -219,15 +219,15 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	}
 
 
-	public void CloseConnection() {
-		try{
-		dataRetriever.Close();
-		}
-		catch (IOException e)
-		{
+	@Override
+	public void dispose() {
+		super.dispose();
+		try {
+			dataRetriever.Close();
+		} catch (IOException e) {
 			System.out.println("Could not close the connection.");
 		}
-		
+
 	}
 
 

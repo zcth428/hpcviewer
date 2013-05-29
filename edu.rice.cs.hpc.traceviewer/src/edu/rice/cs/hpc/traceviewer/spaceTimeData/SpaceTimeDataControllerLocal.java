@@ -341,5 +341,10 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	public TraceAttribute getTraceAttribute() {
 		return trAttribute;
 	}
+	@Override
+	public void dispose() {
+		dataTrace.dispose();
+		super.dispose();
+	}
 
 }

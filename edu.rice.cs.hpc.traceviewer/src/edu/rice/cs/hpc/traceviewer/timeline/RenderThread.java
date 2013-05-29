@@ -1,12 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.eclipse.swt.widgets.Canvas;
-
-import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
-
 /**
  * A thread that renders ProcessTimelines by calling the method in the paint
  * manager. TimelineThread already performs this work, but also gets the data.

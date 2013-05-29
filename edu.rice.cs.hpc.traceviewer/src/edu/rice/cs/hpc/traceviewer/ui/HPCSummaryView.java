@@ -88,7 +88,7 @@ public class HPCSummaryView extends ViewPart
 		});
 	}
 
-	public void updateData(SpaceTimeDataController dataTraces)
+	public void updateView(SpaceTimeDataController dataTraces)
 	{
 		//stData.addPositionListener(this);
 		summaryCanvas.setVisible(true);

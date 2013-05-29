@@ -7,6 +7,7 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 public class OpenDatabase extends AbstractHandler
@@ -17,7 +18,7 @@ public class OpenDatabase extends AbstractHandler
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		final IViewSite vSite = ( IViewSite ) HandlerUtil.getActiveSite(event);
 
-		TraceDatabase.openDatabase(window, null, vSite.getActionBars().getStatusLineManager());
+		TraceDatabase.openDatabase(window, null, vSite.getActionBars().getStatusLineManager(), new LocalDBOpener());
 		return null;
 	}
 }

@@ -11,13 +11,16 @@ import edu.rice.cs.hpc.traceviewer.db.DecompressionAndRenderThread;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.DepthViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
+import edu.rice.cs.hpc.traceviewer.painter.DetailViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**
@@ -261,56 +264,10 @@ public class PaintManager {
 
 		//attributes.lineNum = 0; 
 
-		BaseViewPaint detailPaint = new BaseViewPaint( _controller, attributes,
-				changedBounds, window) {
-
-			// @Override
-			protected boolean startPainting(int linesToPaint,
-					boolean changedBounds) {
-				/*if (compositeFinalLines != null)
-				{
-					System.out.println("Disposing compFinalLines");
-					for (int i = 0; i < compositeFinalLines.length; i++) {
-						compositeFinalLines[i].dispose();
-					}
-				}
-				if (compositeOrigLines != null)
-				{
-					System.out.println("Disposing compOrigLines");
-					for (int i = 0; i < compositeOrigLines.length; i++) {
-						compositeOrigLines[i].dispose();
-					}
-				}*/
-				compositeOrigLines = new Image[linesToPaint];
-				compositeFinalLines = new Image[linesToPaint];
-
-				//Moved to prepareViewportPainting
-				/*if (changedBounds) {
-					numTraces = Math.min(attributes.numPixelsV,
-							attributes.endProcess - attributes.begProcess);
-					traces = new ProcessTimeline[numTraces];
-				}*/
-				return true;
-			}
-
-			// @Override
-			protected void endPainting(int linesToPaint, double xscale,
-					double yscale) {
-				for (int i = 0; i < linesToPaint; i++) {
-					int yposition = (int) Math.round(i * yscale);
-					origGC.drawImage(compositeOrigLines[i], 0, yposition);
-					masterGC.drawImage(compositeFinalLines[i], 0, yposition);
-				}
-			}
-
-			// @Override
-			protected int getNumberOfLines() {
-				return Math.min(attributes.numPixelsV, attributes.endProcess
-						- attributes.begProcess);
-			}
-		};
-
+		DetailViewPaint detailPaint = new DetailViewPaint(masterGC, origGC,  _controller, attributes,
+				changedBounds, window); 
 		detailPaint.paint(canvas);
+		
 	}
 	
 	/**
@@ -411,42 +368,7 @@ public class PaintManager {
 		
 		oldAttributes.copy(attributes);
 
-		BaseViewPaint depthPaint = new BaseViewPaint(
-				changedBounds, this.statusMgr, window, _controller) {
-
-			// @Override
-			protected boolean startPainting(int linesToPaint,
-					boolean changedBounds) {
-				controller.prepareDepthViewportPainting();
-				//TODO: Get the depth viewport working
-				compositeDepthLines = new Image[linesToPaint];
-				return changedBounds;
-			}
-
-			// @Override
-			protected void endPainting(int linesToPaint, double xscale,
-					double yscale) {
-
-				for (int i = 0; i < linesToPaint; i++) {
-					masterGC.drawImage(
-							compositeDepthLines[i],
-							0,
-							0,
-							compositeDepthLines[i].getBounds().width,
-							compositeDepthLines[i].getBounds().height,
-							0,
-							(int) Math.round(i * attributes.numPixelsDepthV
-									/ (float) maxDepth),
-									compositeDepthLines[i].getBounds().width,
-									compositeDepthLines[i].getBounds().height);
-				}
-			}
-
-			// @Override
-			protected int getNumberOfLines() {
-				return Math.min(attributes.numPixelsDepthV, maxDepth);
-			}
-		};
+		DepthViewPaint depthPaint = new DepthViewPaint( window, masterGC, _controller, attributes, changedBounds);
 
 		depthPaint.paint(canvas);
 	}

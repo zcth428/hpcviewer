@@ -8,9 +8,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.InflaterInputStream;
 import org.eclipse.swt.widgets.Canvas;
+
+import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank.Record;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 //Perhaps this would all be more suited to a ThreadPool 
 public class DecompressionAndRenderThread extends Thread {
@@ -106,7 +109,7 @@ public class DecompressionAndRenderThread extends Thread {
 	}
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException
 	{
-		TimeCPID[] ranksData = readTimeCPIDArray(toDecomp.Packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
+		Record[] ranksData = readTimeCPIDArray(toDecomp.Packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
 		TraceDataByRank dataAsTraceDBR = new TraceDataByRank(ranksData);
 
 
@@ -130,22 +133,22 @@ public class DecompressionAndRenderThread extends Thread {
 	 * @return The array of data for this rank
 	 * @throws IOException
 	 */
-	private TimeCPID[] readTimeCPIDArray(byte[] packedTraceLine, int length, double t0, double tn, boolean compressed) throws IOException {
+	private Record[] readTimeCPIDArray(byte[] packedTraceLine, int length, double t0, double tn, boolean compressed) throws IOException {
 
 		DataInputStream decompressor;
 		if (compressed)
 			decompressor= new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(packedTraceLine)));
 		else
 			decompressor = new DataInputStream(new ByteArrayInputStream(packedTraceLine));
-		TimeCPID[] ToReturn = new TimeCPID[length];
+		Record[] toReturn = new Record[length];
 		double deltaT = (tn-t0)/length;
-		for (int i = 0; i < ToReturn.length; i++) {
+		for (int i = 0; i < toReturn.length; i++) {
 			int CPID = decompressor.readInt();
 			/*if (CPID <= 0)
 				System.out.println("CPID too small");*/
-			ToReturn[i] = new TimeCPID(t0+i*deltaT, CPID);//Does this method of getting timestamps actually work???
+			toReturn[i] = new Record(t0+i*deltaT, CPID, Constants.dataIdxNULL);//Does this method of getting timestamps actually work???
 		}
-		return ToReturn;
+		return toReturn;
 	}
 
 

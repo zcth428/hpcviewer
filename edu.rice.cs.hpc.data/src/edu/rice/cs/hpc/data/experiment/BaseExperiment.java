@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.data.experiment;
 
 import java.io.File;
+import java.io.InputStream;
 
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
@@ -108,11 +109,16 @@ public abstract class BaseExperiment implements IExperiment {
 		// information whatsoever.
 		this.fileExperiment = fileExperiment;
 		
-		// parsing may throw exceptions
-		new ExperimentFileXML().parse(fileExperiment, this, withMetric, userData);
+		new ExperimentFileXML().parse(fileExperiment, this, withMetric,
+				userData);		
 	}
 	
+	public void open(InputStream expStream, IUserData<String, String> userData,
+		boolean withMetric, String name) throws Exception {
 	
+		new ExperimentFileXML().parse(expStream, name, this, withMetric, userData);
+	
+}
 
 
 	public void setVersion (String v) 
@@ -178,6 +184,9 @@ public void dispose()
 	rootScope.dfsVisitScopeTree(visitor);
 	this.rootScope = null;
 }
+
+
+
 
 
 }

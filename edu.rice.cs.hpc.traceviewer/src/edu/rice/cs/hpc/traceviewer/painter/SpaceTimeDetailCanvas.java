@@ -641,14 +641,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
         					+ ((long)painter.getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-
-        final IBaseData traceData = stData.getBaseData();
+        //Old way that only works for local.
+        /*final IBaseData traceData = stData.getBaseData();
         if (traceData == null)
         	// we don't want to throw an exception here, so just do nothing
         	return;
 
 
-        final String processes[] = traceData.getListOfRanks();
+        final String processes[] = traceData.getListOfRanks();*/
+        final String[] processes = stData.getTraceDataValuesX();
         final int proc_start = painter.getBegProcess();
         
         // -------------------------------------------------------------------------------------------------

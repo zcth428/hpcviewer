@@ -154,7 +154,7 @@ public class CallStackViewer extends TableViewer
 	public void updateView()
 	{
 		PaintManager painter = dataService.getData().getPainter();
-		this.setSample(painter.getPosition(), painter.getMaxDepth());
+		this.setSample(painter.getPosition(), painter.getDepth());
 		this.getTable().setVisible(true);
 	}
 	
@@ -183,7 +183,6 @@ public class CallStackViewer extends TableViewer
 		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time);
-			System.out.println("Currently selected process has time " + position.time);
 			final Vector<String> sampleVector;
 			if (sample>=0)
 				sampleVector = ptl.getCallPath(sample, depth).getFunctionNames();

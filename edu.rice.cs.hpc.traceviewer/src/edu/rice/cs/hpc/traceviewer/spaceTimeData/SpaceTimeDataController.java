@@ -116,7 +116,7 @@ public abstract class SpaceTimeDataController {
 	}
 
 
-	//TODO: MAKE SURE THIS WORKS.
+
 	public ProcessTimeline getDepthTrace() {
 		int scaledDTProcess = computeScaledProcess();
 		return  ptlService.getProcessTimeline(scaledDTProcess);

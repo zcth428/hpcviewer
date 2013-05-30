@@ -89,7 +89,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		setTimeZoom(0, (long)stData.getWidth());
+		setTimeZoom(0, (long)stData.getTimeWidth());
 	}
 	
 	/***
@@ -259,14 +259,14 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		attributes.begTime= leftTime;
 		attributes.endTime = rightTime;
 		
-		attributes.assertTimeBounds(stData.getWidth());
+		attributes.assertTimeBounds(stData.getTimeWidth());
 		
 		if (getNumTimeDisplayed() < Constants.MIN_TIME_UNITS_DISP)
 		{
 			attributes.begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
 			attributes.endTime = attributes.begTime + getNumTimeDisplayed();
 			
-			attributes.assertTimeBounds(stData.getWidth());
+			attributes.assertTimeBounds(stData.getTimeWidth());
 		}
 		
 		rebuffer();

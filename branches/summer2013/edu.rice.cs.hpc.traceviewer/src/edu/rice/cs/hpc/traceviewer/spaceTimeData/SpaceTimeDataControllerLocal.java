@@ -100,10 +100,9 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		} catch (IOException e) {
 			System.err.println("Master buffer could not be created");
 		}
-		height = dataTrace.getNumberOfRanks();
+		totalTraceCountInDB = dataTrace.getNumberOfRanks();
 		
-		super.painter = new PaintManager(attributes, oldAtributes, _window,
-				_statusMgr, colorTable, maxDepth, minBegTime);
+		super.painter = new PaintManager(attributes, colorTable, maxDepth);
 		
 	}
 
@@ -190,7 +189,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 	@Override
 	//The only part of TraceData that is needed externally is the list of processes, so we do not need to expose the whole TraceData
-	public String[] getTraceDataValuesX() {
+	public String[] getTraceNames() {
 		return this.dataTrace.getListOfRanks();
 	}
 

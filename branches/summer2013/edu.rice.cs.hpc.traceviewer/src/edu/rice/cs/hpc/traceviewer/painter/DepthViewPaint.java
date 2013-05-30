@@ -70,7 +70,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	@Override
 	protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale) {
 		return new TimelineDepthThread(controller, canvas, compositeFinalLines, depthTrace,
-				xscale, yscale, attributes.numPixelsH, lineNum);
+				xscale, yscale, attributes.numPixelsH);
 	}
 
 }

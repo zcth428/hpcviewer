@@ -1,14 +1,11 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /*************
@@ -19,7 +16,6 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 public class TimelineDepthThread extends Thread {
 
 	final private SpaceTimeDataController stData;
-	final private PaintManager painter;
 
 	/**The canvas on which to paint.*/
 	final private Canvas canvas;
@@ -35,7 +31,6 @@ public class TimelineDepthThread extends Thread {
 	
 	final private ProcessTimeline depthTrace;
 	final private Image[] compositeFinalLines;
-	final private AtomicInteger lineNum;
 
 	/*****
 	 * Thread initialization
@@ -47,17 +42,15 @@ public class TimelineDepthThread extends Thread {
 	 * @param width  : the width
 	 */
 	public TimelineDepthThread(SpaceTimeDataController data, Canvas canvas, Image[] compositeFinalLines,
-			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width, AtomicInteger lineNum)
+			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width)
 	{
 		this.stData = data;
-		this.painter = stData.getPainter();
 		this.canvas = canvas;
 		this.scaleX = scaleX;
 		this.scaleY = scaleY;
 		this.width  = width; 
 		this.depthTrace = depthTrace;
 		this.compositeFinalLines = compositeFinalLines;
-		this.lineNum = lineNum;
 	}
 
 	

@@ -36,16 +36,12 @@ public abstract class SpaceTimeDataController {
 	// the same thread class yet get their information differently.
 	final AtomicInteger lineNum, depthLineNum;
 	
-	/**
-	 * The currently selected process;
-	 */
-	int dtProcess;
 
 	/**
 	 * The number of processes in the database, independent of the current
 	 * display size
 	 */
-	protected int height;
+	protected int totalTraceCountInDB;
 	
 	/** The maximum depth of any single CallStackSample in any trace. */
 	protected int maxDepth;
@@ -64,7 +60,6 @@ public abstract class SpaceTimeDataController {
 	// constructor.
 
 	public SpaceTimeDataController() {
-		super();
 		lineNum = new AtomicInteger(0);
 		depthLineNum = new AtomicInteger(0);
 	}
@@ -89,7 +84,7 @@ public abstract class SpaceTimeDataController {
 	}
 
 
-	int getCurrentlySelectedProcess()
+	private int getCurrentlySelectedProcess()
 	{
 		return painter.getPosition().process;
 	}
@@ -102,11 +97,11 @@ public abstract class SpaceTimeDataController {
 	 * return would be outside the array, so the 0 is a sort of safeguard.
 	 */
 	public int computeScaledProcess() {
-		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess - 1, attributes.numPixelsV);//Also equivalent to traces.length when traces is not null.
+		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess - 1, attributes.numPixelsV);
 		int scaledDTProcess = (int) (((double) numTracesShown - 1)
 					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (getCurrentlySelectedProcess() - attributes.begProcess));// -atr.begPro-1??
 		return scaledDTProcess;
-			//FIXME: The cursor position is not updated until after this is called sometimes, which means that the actual scaled process would be outside the region.
+
 	}
 
 
@@ -151,15 +146,15 @@ public abstract class SpaceTimeDataController {
 			return null;
 	}
 	
-
-	public abstract String[] getTraceDataValuesX();
+	public abstract IBaseData getBaseData();
+	public abstract String[] getTraceNames();
 
 	/******************************************************************************
 	 * Returns number of processes (ProcessTimelines) held in this
 	 * SpaceTimeData.
 	 ******************************************************************************/
-	public int getHeight() {
-		return height;
+	public int getTotalTraceCount() {
+		return totalTraceCountInDB;
 	}
 	
 	public HashMap<Integer, CallPath> getScopeMap() {
@@ -171,24 +166,11 @@ public abstract class SpaceTimeDataController {
 	 * Returns width of the spaceTimeData: The width (the last time in the
 	 * ProcessTimeline) of the longest ProcessTimeline.
 	 ************************************************************************/
-	public long getWidth() {
+	public long getTimeWidth() {
 		return maxEndTime - minBegTime;
 	}
 
-	
-	
-	
-	public abstract IBaseData getBaseData();
-
-	// public abstract void addNextTrace(ProcessTimeline nextPtl);//synchronized
-	//
-	// public abstract ProcessTimeline getNextDepthTrace();//synchronized
-
-	// public abstract ProcessTimeline getNextTrace(boolean
-	// changedBounds);//synchronized
-
-	public String getName()
-	{
+	public String getName() {
 		return dbName;
 	}
 
@@ -204,22 +186,19 @@ public abstract class SpaceTimeDataController {
 		return minBegTime;
 	}
 
-
 	public ColorTable getColorTable() {
-		return colorTable;	
+		return colorTable;
 	}
 
 	public void dispose() {
 		colorTable.dispose();
 	}
 
-	public void setEnableMidpoint(boolean enable)
-	{
+	public void setEnableMidpoint(boolean enable) {
 		this.enableMidpoint = enable;
 	}
-	
-	public boolean isEnableMidpoint()
-	{
+
+	public boolean isEnableMidpoint() {
 		return enableMidpoint;
 	}
 
@@ -227,8 +206,6 @@ public abstract class SpaceTimeDataController {
 		lineNum.set(0);
 		depthLineNum.set(0);
 	}
-
-
 
 
 }

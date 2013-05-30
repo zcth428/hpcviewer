@@ -25,37 +25,28 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	final RemoteDataRetriever dataRetriever;
 
 	public final int HEADER_SIZE;
-	/**
-	 * This is part of the code from TimelineThread. The separator lines are the
-	 * thin white lines in between traces that show up when the view is
-	 * sufficiently zoomed (when their heights are greater than this value).
-	 */
 	
 	private final String[] valuesX;
-	
-
 	
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, String[] _valuesX) {
 
-
 		attributes = new ImageTraceAttributes();
-		ImageTraceAttributes oldAtributes = new ImageTraceAttributes();
 
 		BaseExperiment exp = new ExperimentWithoutMetrics();
 		try {
-			//Without metrics, so param 3 is false
+			// Without metrics, so param 3 is false
 			exp.open(expStream, new ProcedureAliasMap(), false, Name);
-		} catch (InvalExperimentException e) {
-			System.out.println("Parse error in Experiment XML at line "
-					+ e.getLineNumber());
+		}
+		catch (InvalExperimentException e) {
+			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
 			e.printStackTrace();
 			// return;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
-		// Height = dataTrace.getNumberOfFiles();
 
 		buildScopeMapAndColorTable(_window, exp);
 
@@ -66,22 +57,19 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
 		dbName = exp.getName();
 		
-		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(
-				ISourceProviderService.class);
-		ptlService = (ProcessTimelineService) sourceProviderService.
-				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
+		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
 		
 		dataRetriever = _dataRet;
-		height = _numTraces;
+		totalTraceCountInDB = _numTraces;
 		valuesX = _valuesX;
 
-		super.painter = new PaintManager(attributes, oldAtributes, _window,
-				_statusMgr, colorTable, maxDepth, minBegTime);
+		super.painter = new PaintManager(attributes, colorTable, maxDepth);
 
 	}
 
 	@Override
-	public String[] getTraceDataValuesX() {
+	public String[] getTraceNames() {
 		return valuesX;
 	}
 	/**

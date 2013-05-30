@@ -48,7 +48,10 @@ public class ProcessTimeline {
 
 		pixelLength = timeRange / (double) _numPixelH;
 		
-		data = new TraceDataByRank(dataTrace, _processNumber, _numPixelH);
+		if (dataTrace == null)//dataTrace should be null only when the data is coming from a remote source.
+			data = new TraceDataByRank(new Record[0]);
+		else
+			data = new TraceDataByRank(dataTrace, _processNumber, _numPixelH);
 	}
 
 	//Remote version

@@ -36,23 +36,17 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	
 	ImageTraceAttributes oldAtributes;
 
-	private IBaseData dataTrace;
+	
 
 	private TraceAttribute trAttribute;
 
 	private int headerSize;
 
-	// We probably want to get away from this. The code that needs it should be
-	// in one of the threads. It's here so that both local and remote can use
-	// the same thread class yet get their information differently.
-	private AtomicInteger lineNum;
 
 	private final File traceFile;
 
 	IStatusLineManager statusMgr;
 	IWorkbenchWindow window;
-	
-	final private ProcessTimelineService ptlService;
 
 	/*public static void dumpAllCounts() {
 		String[] MethodNames = { "Constructor", "getNextTrace",
@@ -72,7 +66,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	IWorkbenchWindow _window, IStatusLineManager _statusMgr, File expFile,
 			File _traceFile) {
 
-		lineNum = new AtomicInteger(0);
 
 		statusMgr = _statusMgr;
 
@@ -135,91 +128,39 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	 **********************************************************************/
 	@Override
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds) {
-
-		if (lineNum.get() < Math.min(attributes.numPixelsV,
-				attributes.endProcess - attributes.begProcess)) {
-			int oldLineNum = lineNum.getAndIncrement();
-			if (changedBounds)
-				return new ProcessTimeline(oldLineNum, scopeMap,
-						dataTrace, lineToPaint(oldLineNum),
-						attributes.numPixelsH, attributes.endTime
-								- attributes.begTime, minBegTime
-								+ attributes.begTime);
+		int tracesToRender = Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
+		
+		
+		if (lineNum.get() < tracesToRender) {
+			int currentLineNum = lineNum.getAndIncrement();
+			
+			if (ptlService.getNumProcessTimeline() == 0)
+				ptlService.setProcessTimeline(new ProcessTimeline[tracesToRender]);
+			
+			if (changedBounds) {
+				ProcessTimeline currentTimeline = new ProcessTimeline(currentLineNum, scopeMap,
+						dataTrace, lineToPaint(currentLineNum),
+						attributes.numPixelsH, attributes.endTime - attributes.begTime, minBegTime + attributes.begTime);
+				
+				ptlService.setProcessTimeline(currentLineNum, currentTimeline);
+				return currentTimeline;
+			}
 			else {
-				if (traces.length > oldLineNum) {
-					if (traces[oldLineNum] == null)// Why is it
-																// sometimes
-																// null????
-					{
-						System.out.println("Was null, auto-fixing");
-						traces[oldLineNum] = new ProcessTimeline(
-								oldLineNum, scopeMap, dataTrace,
-								lineToPaint(oldLineNum),
-								attributes.numPixelsH, attributes.endTime
-										- attributes.begTime, minBegTime
-										+ attributes.begTime);
-					}
-					return traces[oldLineNum];
-				} else
-					System.err.println("STD error: trace paints "
-							+ traces.length + " < line number "
-							+ oldLineNum);
+				if (ptlService.getProcessTimeline(currentLineNum) == null) { // Why is it sometimes null? 
+					System.out.println("Was null, auto-fixing");
+					ptlService.setProcessTimeline(currentLineNum, new ProcessTimeline(currentLineNum, scopeMap,
+							dataTrace, lineToPaint(currentLineNum),
+							attributes.numPixelsH, attributes.endTime - attributes.begTime, minBegTime + attributes.begTime));
+				}
+				return ptlService.getProcessTimeline(currentLineNum);
 			}
 		}
 		return null;
 	}
 
-	/***********************************************************************
-	 * Gets the next available trace to be filled/painted from the DepthTimeView
-	 * 
-	 * @return The next trace.
-	 **********************************************************************/
-	//TODO: Make this actually synchronized and parallel-safe
-	public synchronized ProcessTimeline getNextDepthTrace() {
 
-		if (lineNum.get() < Math.min(attributes.numPixelsDepthV, maxDepth)) {
-			if (lineNum.compareAndSet(0, 1)) {
-				return depthTrace;
-			}
-			ProcessTimeline toDonate = new ProcessTimeline(lineNum.get(),
-					scopeMap, dataTrace, getCurrentlySelectedProcess(), attributes.numPixelsH,
-					attributes.endTime - attributes.begTime, minBegTime
-							+ attributes.begTime);
-			toDonate.copyDataFrom(depthTrace);
 
-			lineNum.incrementAndGet();
-			return toDonate;
-		} else
-			return null;
-	}
 
-	/** Adds a filled ProcessTimeline to traces - used by TimelineThreads. */
-
-	// Does this need to be part of the superclass? I think the remote way would
-	// not need this.
-
-	public synchronized void addNextTrace(ProcessTimeline nextPtl) {
-		//if (nextPtl == null)
-		//	System.out.println("Saving a null PTL?");
-		traces[nextPtl.line()] = nextPtl;
-	}
-
-	/*************************************************************************
-	 * Returns the process that has been specified.
-	 ************************************************************************/
-	@Override
-	public ProcessTimeline getProcess(int process) {
-		MethodCounts[4]++;
-		int relativeProcess = process - attributes.begProcess;
-
-		// in case of single process displayed
-		if (relativeProcess >= traces.length)
-			relativeProcess = traces.length - 1;
-
-		return traces[relativeProcess];
-	}
-
-	
 
 	/** Returns the index of the file to which the line-th line corresponds. */
 
@@ -260,33 +201,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		return this.dataTrace.getListOfRanks();
 	}
 
-	@Override
-	/**
-	 * Makes and fills the depthTrace ProcessTimeline
-	 */
-	void prepareDepthViewportPainting() {
-		MethodCounts[7]++;
-		int lineNum = 0;// ?? It doesn't seem like lineNum is changed in the
-						// BaseViewPaint, but I'm not sure if it is changed
-						// elsewhere.
-		depthTrace = new ProcessTimeline(lineNum, scopeMap, dataTrace,
-				getCurrentlySelectedProcess(), attributes.numPixelsH, attributes.endTime
-						- attributes.begTime, minBegTime + attributes.begTime);
-
-		depthTrace.readInData();
-		depthTrace.shiftTimeBy(minBegTime);
-		
-	}
-
-	@Override
-	public void prepareViewportPainting(boolean changedBounds) {
-		MethodCounts[8]++;
-		if (changedBounds) {
-			int numTraces = Math.min(attributes.numPixelsV,
-					attributes.endProcess - attributes.begProcess);
-			traces = new ProcessTimeline[numTraces];
-		}
-	}
 
 	@Override
 	public IBaseData getBaseData() {

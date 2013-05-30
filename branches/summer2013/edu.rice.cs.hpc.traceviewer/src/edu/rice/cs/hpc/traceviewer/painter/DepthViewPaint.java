@@ -34,7 +34,7 @@ public class DepthViewPaint extends BaseViewPaint {
 				attributes.numPixelsH, attributes.endTime-attributes.begTime,
 				controller.getMinBegTime()+attributes.begTime);
 		*/
-		depthTrace = controller.getTrace(controller.computeScaledProcess());
+		depthTrace = controller.getDepthTrace();
 	
 		//depthTrace.readInData(controller.getHeight());
 
@@ -59,7 +59,7 @@ public class DepthViewPaint extends BaseViewPaint {
 			img.dispose();
 		}
 		//FIXME: Ugly solution to the counter not being reset...
-		controller.resetDepthCounter();
+		controller.resetCounters();
 	}
 
 	@Override

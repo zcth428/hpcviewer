@@ -482,6 +482,10 @@ public class TraceDataByRank {
 			this.cpId = _cpId;
 			this.metricId = _metricId;
 		}
+		@Override
+		public String toString() {
+			return String.format("Time: %f, Call Path ID: %d, Metric ID: %d", timestamp, cpId, metricId);
+		}
 	}
 
 }

@@ -39,7 +39,7 @@ public class DepthViewPaint extends BaseViewPaint {
 		//depthTrace.readInData(controller.getHeight());
 
 		//depthTrace.readInData();
-		depthTrace.shiftTimeBy(controller.getMinBegTime());
+		//depthTrace.shiftTimeBy(controller.getMinBegTime());
 		compositeFinalLines = new Image[linesToPaint];
 
 		return changedBounds;

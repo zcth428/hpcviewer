@@ -232,13 +232,13 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Gets the scale in the X-direction (pixels per time unit).*/
 	public double getScaleX()
 	{
-		return (double)viewWidth / (double)stData.getWidth();
+		return (double)viewWidth / (double)stData.getTimeWidth();
 	}
 
 	/**Gets the scale in the Y-direction (pixels per process).*/
 	public double getScaleY()
 	{
-		return (double)viewHeight / (double)stData.getHeight();
+		return (double)viewHeight / (double)stData.getTotalTraceCount();
 	}
 	
 	/* *****************************************************************

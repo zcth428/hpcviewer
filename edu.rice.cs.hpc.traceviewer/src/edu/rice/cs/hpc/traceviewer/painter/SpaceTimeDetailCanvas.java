@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
@@ -157,8 +156,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		initSelectionRectangle();
 		
 
-		long rangeX = this.stData.getWidth();
-		int rangeY = this.stData.getHeight();
+		long rangeX = this.stData.getTimeWidth();
+		int rangeY = this.stData.getTotalTraceCount();
 
 		// init configuration
 
@@ -302,8 +301,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *************************************************************************/
 	public void setDetailZoom(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess)
 	{
-		attributes.assertProcessBounds(stData.getHeight());
-		attributes.assertTimeBounds(stData.getWidth());
+		attributes.assertProcessBounds(stData.getTotalTraceCount());
+		attributes.assertTimeBounds(stData.getTimeWidth());
 		
 		attributes.setTime(_topLeftTime, _bottomRightTime);
 		attributes.setProcess((int)_topLeftProcess, (int)_bottomRightProcess);
@@ -429,7 +428,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 
 
-		notifyChanges(ZoomOperation.ActionHome, 0, 0, stData.getWidth(), stData.getHeight());
+		notifyChanges(ZoomOperation.ActionHome, 0, 0, stData.getTimeWidth(), stData.getTotalTraceCount());
 	}
 	
 	/**************************************************************************
@@ -498,7 +497,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		int p2 = (int) Math.ceil( yMid+numProcessDisp*SCALE );
 		int p1 = (int) Math.floor( yMid-numProcessDisp*SCALE );
 		
-		attributes.assertProcessBounds(stData.getHeight());
+		attributes.assertProcessBounds(stData.getTotalTraceCount());
 		
 		if(p2 == attributes.endProcess && p1 == attributes.begProcess)
 		{
@@ -530,7 +529,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final double numProcessDisp = attributes.endProcess - attributes.begProcess;
 		
 
-		int p2 = (int) Math.min( stData.getHeight(), Math.ceil( yMid+numProcessDisp*SCALE ) );
+		int p2 = (int) Math.min( stData.getTotalTraceCount(), Math.ceil( yMid+numProcessDisp*SCALE ) );
 		int p1 = (int) Math.max( 0, Math.floor( yMid-numProcessDisp*SCALE ) );
 		
 		if(p2 == attributes.endProcess && p1 == attributes.begProcess)
@@ -578,7 +577,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long xMid = (attributes.endTime + attributes.begTime) / 2;
 		
 		final long td2 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE); 
-		long t2 = Math.min( stData.getWidth(), xMid + td2);
+		long t2 = Math.min( stData.getTimeWidth(), xMid + td2);
 		final long td1 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
@@ -649,7 +648,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
 
         final String processes[] = traceData.getListOfRanks();*/
-        final String[] processes = stData.getTraceDataValuesX();
+        final String[] processes = stData.getTraceNames();
         final int proc_start = painter.getBegProcess();
         
         // -------------------------------------------------------------------------------------------------
@@ -796,7 +795,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     }
     
     private boolean canGoWest() {
-    	return (attributes.endTime< this.stData.getWidth());
+    	return (attributes.endTime< this.stData.getTimeWidth());
     }
     
     private boolean canGoNorth() {
@@ -804,7 +803,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     }
     
     private boolean canGoSouth() {
-    	return (attributes.endProcess<this.stData.getHeight());
+    	return (attributes.endProcess<this.stData.getTotalTraceCount());
     }
     /**********
      * check the status of all buttons
@@ -812,18 +811,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     private void updateButtonStates() 
     {
 		this.tZoomInButton.setEnabled( this.getNumTimeUnitDisplayed() > Constants.MIN_TIME_UNITS_DISP );
-		this.tZoomOutButton.setEnabled(attributes.begTime>0 || attributes.endTime<stData.getWidth() );
+		this.tZoomOutButton.setEnabled(attributes.begTime>0 || attributes.endTime<stData.getTimeWidth() );
 		
 		this.pZoomInButton.setEnabled( getNumProcessesDisplayed() > MIN_PROC_DISP );
-		this.pZoomOutButton.setEnabled( attributes.begProcess>0 || attributes.endProcess<stData.getHeight());
+		this.pZoomOutButton.setEnabled( attributes.begProcess>0 || attributes.endProcess<stData.getTotalTraceCount());
 		
 		this.goEastButton.setEnabled( canGoEast() );
 		this.goWestButton.setEnabled( canGoWest() );
 		this.goNorthButton.setEnabled( canGoNorth() );
 		this.goSouthButton.setEnabled( canGoSouth() );
 		
-		homeButton.setEnabled( attributes.begTime>0 || attributes.endTime<stData.getWidth()
-				|| attributes.begProcess>0 || attributes.endProcess<stData.getHeight() );
+		homeButton.setEnabled( attributes.begTime>0 || attributes.endTime<stData.getTimeWidth()
+				|| attributes.begProcess>0 || attributes.endProcess<stData.getTotalTraceCount() );
 
     }
     
@@ -863,8 +862,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final long moveTime = (long)java.lang.Math.ceil(deltaTime * SCALE_MOVE);
 		bottomRightTime = bottomRightTime + moveTime;
 		
-		if (bottomRightTime > stData.getWidth()) {
-			bottomRightTime = stData.getWidth();
+		if (bottomRightTime > stData.getTimeWidth()) {
+			bottomRightTime = stData.getTimeWidth();
 		}
 		topLeftTime = bottomRightTime - deltaTime;
 		
@@ -914,8 +913,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
     	proc_end = proc_end + move;
     	
-    	if (proc_end > stData.getHeight()) {
-    		proc_end = stData.getHeight();
+    	if (proc_end > stData.getTotalTraceCount()) {
+    		proc_end = stData.getTotalTraceCount();
     	}
     	proc_begin = proc_end - delta;
     	this.setProcessRange(proc_begin, proc_end);

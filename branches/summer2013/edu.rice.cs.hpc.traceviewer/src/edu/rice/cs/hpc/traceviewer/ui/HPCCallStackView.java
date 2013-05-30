@@ -175,6 +175,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	 * @see edu.rice.cs.hpc.traceviewer.events.ITraceDepth#setDepth(int)
 	 */
 	public void setDepth(int new_depth) {
+		System.out.println("Setting depth to " + new_depth);
 		this.depthEditor.setSelection(new_depth);
 		this.csViewer.setDepth(new_depth);
 	}

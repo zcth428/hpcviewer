@@ -1,13 +1,14 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
-import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
 public abstract class SpaceTimeDataController {
@@ -23,15 +24,17 @@ public abstract class SpaceTimeDataController {
 	 */
 	long maxEndTime, minBegTime;
 
-	/**
-	 * The storage location for all the ProcessTimelines
-	 */
-	protected ProcessTimeline traces[];
 
-	protected ProcessTimeline depthTrace;
+	protected ProcessTimelineService ptlService;
+
 	
 	/** The map between the nodes and the cpid's. */
 	protected HashMap<Integer, CallPath> scopeMap;
+	
+	// We probably want to get away from this. The for code that needs it should be
+	// in one of the threads. It's here so that both local and remote can use
+	// the same thread class yet get their information differently.
+	final AtomicInteger lineNum, depthLineNum;
 	
 	/**
 	 * The currently selected process;
@@ -50,7 +53,7 @@ public abstract class SpaceTimeDataController {
 	protected ColorTable colorTable;
 	private boolean enableMidpoint;
 	
-
+	protected IBaseData dataTrace = null;
 	// So, I'd like to declare attributes and dbName final and give them their
 	// values in the child class's constructor, but that doesn't work in Java.
 	// Alternatively, I'd be fine with making them final and having the
@@ -62,6 +65,8 @@ public abstract class SpaceTimeDataController {
 
 	public SpaceTimeDataController() {
 		super();
+		lineNum = new AtomicInteger(0);
+		depthLineNum = new AtomicInteger(0);
 	}
 	
 	protected void buildScopeMapAndColorTable(IWorkbenchWindow _window,
@@ -83,9 +88,7 @@ public abstract class SpaceTimeDataController {
 
 	}
 
-	/**
-	 * The storage location for all the ProcessTimelines
-	 */
+
 	int getCurrentlySelectedProcess()
 	{
 		return painter.getPosition().process;
@@ -99,44 +102,55 @@ public abstract class SpaceTimeDataController {
 	 * return would be outside the array, so the 0 is a sort of safeguard.
 	 */
 	public int computeScaledProcess() {
-		if ((getCurrentlySelectedProcess() <= attributes.endProcess) && getCurrentlySelectedProcess() >= attributes.begProcess) {
-			int scaledDTProcess = (int) (((double) traces.length - 1)
+		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess - 1, attributes.numPixelsV);//Also equivalent to traces.length when traces is not null.
+		int scaledDTProcess = (int) (((double) numTracesShown - 1)
 					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (getCurrentlySelectedProcess() - attributes.begProcess));// -atr.begPro-1??
-			return scaledDTProcess;
-		} else// So this means that it's in that weird state where the length of
-				// traces and attributes has been updated, but the position of
-				// the crosshair has not. For now, we have a bad bug fix and
-				// just return 0. This may cause it to render depth trace 0
-				// first before switching to 0.
-		{
-			System.out.println("Mapping skipped because of state. Returning 0.");
-			return 0;
-		}
+		return scaledDTProcess;
+			//FIXME: The cursor position is not updated until after this is called sometimes, which means that the actual scaled process would be outside the region.
 	}
 
 
 	public PaintManager getPainter() {
-		MethodCounts[9]++;
+		
 		return painter;
 	}
 
-	/**
-	 * Returns a trace from traces[x]
-	 */
-	public ProcessTimeline getTrace(int process) {
-		return traces[process];
-	}
 
+	//TODO: MAKE SURE THIS WORKS.
 	public ProcessTimeline getDepthTrace() {
-		return depthTrace;
+		int scaledDTProcess = computeScaledProcess();
+		return  ptlService.getProcessTimeline(scaledDTProcess);
 	}
 	
 	public abstract ProcessTimeline getNextTrace(boolean changedBounds);
-	public abstract ProcessTimeline getNextDepthTrace();
 	
-	public abstract void prepareViewportPainting(boolean changedBounds);
+	/***********************************************************************
+	 * Gets the next available trace to be filled/painted from the DepthTimeView
+	 * 
+	 * @return The next trace.
+	 **********************************************************************/
+	public synchronized ProcessTimeline getNextDepthTrace() {
+		
+		ProcessTimeline depthTrace = getDepthTrace();
+		
+		int currentDepthLineNum = depthLineNum.getAndIncrement();
+		if (currentDepthLineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
+			
+			// I can't get the data from the ProcessTimeline directly, so create
+			// a ProcessTimeline with data=null and then copy the actual data to
+			// it.
+			ProcessTimeline toDonate = new ProcessTimeline(currentDepthLineNum,
+					scopeMap, dataTrace, getCurrentlySelectedProcess(), attributes.numPixelsH,
+					attributes.endTime - attributes.begTime, minBegTime
+							+ attributes.begTime);
 
-	abstract void prepareDepthViewportPainting();
+			toDonate.copyDataFrom(depthTrace);
+
+			return toDonate;
+		} else
+			return null;
+	}
+	
 
 	public abstract String[] getTraceDataValuesX();
 
@@ -162,19 +176,7 @@ public abstract class SpaceTimeDataController {
 	}
 
 	
-	/*************************************************************************
-	 * Returns the process that has been specified.
-	 ************************************************************************/
-	public ProcessTimeline getProcess(int process) {
-		MethodCounts[4]++;
-		int relativeProcess = process - attributes.begProcess;
-
-		// in case of single process displayed
-		if (relativeProcess >= traces.length)
-			relativeProcess = traces.length - 1;
-
-		return traces[relativeProcess];
-	}
+	
 	
 	public abstract IBaseData getBaseData();
 
@@ -202,11 +204,6 @@ public abstract class SpaceTimeDataController {
 		return minBegTime;
 	}
 
-	/** @Deprecated Use {@link PaintManager#getMaxDepth} instead.*/
-	@Deprecated
-	public int getMaxDepth() {
-		return maxDepth;
-	}
 
 	public ColorTable getColorTable() {
 		return colorTable;	
@@ -226,7 +223,9 @@ public abstract class SpaceTimeDataController {
 		return enableMidpoint;
 	}
 
-	public void resetDepthCounter() {
+	public void resetCounters() {
+		lineNum.set(0);
+		depthLineNum.set(0);
 	}
 
 

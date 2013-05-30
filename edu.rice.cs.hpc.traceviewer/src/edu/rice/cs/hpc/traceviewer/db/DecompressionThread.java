@@ -7,11 +7,10 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.InflaterInputStream;
-import org.eclipse.swt.widgets.Canvas;
 
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank.Record;
+import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
@@ -28,7 +27,7 @@ public class DecompressionThread extends Thread {
 
 	public static ConcurrentLinkedQueue<WorkItemToDo> workToDo = new ConcurrentLinkedQueue<WorkItemToDo>();
 	// Variables for decompression
-	final ProcessTimeline[] timelines;
+	final ProcessTimelineService timelineServ;
 	final HashMap<Integer, CallPath> scopeMap;
 	final int ranksExpected;
 	final double t0;
@@ -37,10 +36,10 @@ public class DecompressionThread extends Thread {
 	static AtomicInteger ranksRemainingToDecompress;
 
 
-	public DecompressionThread(ProcessTimeline[] _timelines,
+	public DecompressionThread(ProcessTimelineService ptlService,
 			HashMap<Integer, CallPath> _scopeMap, int _ranksExpected,
 			long _t0, long _tn) {
-		timelines = _timelines;
+		timelineServ = ptlService;
 		scopeMap = _scopeMap;
 		ranksExpected = _ranksExpected;
 		t0 = _t0;
@@ -99,7 +98,7 @@ public class DecompressionThread extends Thread {
 			lineNumber = RankNumber-P0;*/
 
 		ProcessTimeline PTl = new ProcessTimeline(dataAsTraceDBR, scopeMap, lineNumber, ranksExpected, tn-t0, t0);
-		timelines[lineNumber]= PTl;//RankNumber or RankNumber-P0??
+		timelineServ.setProcessTimeline(lineNumber, PTl); //RankNumber or RankNumber-P0??
 	}
 
 	/**

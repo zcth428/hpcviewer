@@ -63,7 +63,7 @@ public class DetailViewPaint extends BaseViewPaint {
 			compositeFinalLines[i].dispose();
 		}
 		// reset the line number to paint
-		lineNum.set(0);
+		controller.resetCounters();
 	}
 
 	@Override

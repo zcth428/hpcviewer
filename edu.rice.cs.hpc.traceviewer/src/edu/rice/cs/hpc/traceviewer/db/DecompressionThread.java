@@ -119,7 +119,7 @@ public class DecompressionThread extends Thread {
 		else
 			decompressor = new DataInputStream(new ByteArrayInputStream(packedTraceLine));
 		Record[] toReturn = new Record[length];
-		double deltaT = (tn-t0)/length;
+		double deltaT = (tn-t0)/(length-1);
 		for (int i = 0; i < toReturn.length; i++) {
 			int CPID = decompressor.readInt();
 			/*if (CPID <= 0)

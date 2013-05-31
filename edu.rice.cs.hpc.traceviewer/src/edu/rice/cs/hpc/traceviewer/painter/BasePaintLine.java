@@ -24,9 +24,10 @@ public abstract class BasePaintLine
 	protected double pixelLength;
 	protected ColorTable colorTable;
 	private long begTime;
+	private final boolean usingMidpoint;
 		
 	public BasePaintLine(ColorTable _colorTable, ProcessTimeline _ptl, SpaceTimeSamplePainter _spp, 
-			long _begTime, int _depth, int _height, double _pixelLength)
+			long _begTime, int _depth, int _height, double _pixelLength, boolean _usingMidpoint)
 	{
 		this.ptl = _ptl;
 		this.spp = _spp;
@@ -35,6 +36,7 @@ public abstract class BasePaintLine
 		this.pixelLength = _pixelLength;
 		this.colorTable = _colorTable;
 		this.begTime = _begTime;
+		this.usingMidpoint = _usingMidpoint;
 	}
 	
 	/**Painting action*/
@@ -51,7 +53,6 @@ public abstract class BasePaintLine
 		Color succColor = colorTable.getColor(succFunction);
 		int last_ptl_index = ptl.size() - 1;
 		
-		int pIndex = 0;
 
 		for (int index = 0; index < ptl.size(); index++)
 		{
@@ -80,8 +81,7 @@ public abstract class BasePaintLine
 					if (still_the_same)
 						end = indexSucc;
 				}
-				pIndex++;
-			};
+			}
 			
 			if (end < last_ptl_index)
 			{
@@ -93,7 +93,8 @@ public abstract class BasePaintLine
 				//succSampleMidpoint = (int) Math.max(0, ((midpoint(ptl.getTime(end),ptl.getTime(end+1))-begTime)/pixelLength));
 				//if (succSampleMidpoint != pIndex)
 				//	System.out.println(ptl.line()+ ": sample mp: " + succSampleMidpoint + " my guess: " + pIndex);
-				succSampleMidpoint = pIndex;
+				double succ = usingMidpoint ? midpoint(ptl.getTime(end),ptl.getTime(end+1)) : ptl.getTime(end);
+				succSampleMidpoint = (int) Math.max(0, ((succ-begTime)/pixelLength));
 			}
 			else
 			{

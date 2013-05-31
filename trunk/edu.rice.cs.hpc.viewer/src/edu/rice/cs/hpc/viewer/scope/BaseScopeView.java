@@ -75,15 +75,23 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 
         int iColCount = this.treeViewer.getTree().getColumnCount();
         if(iColCount>1) {
+        	TreeColumn []columns = treeViewer.getTree().getColumns();
+        	
+        	// this is Eclipse Indigo bug: when a column is disposed, the next column will have
+        	//	zero as its width. Somehow they didn't preserve the width of the columns.
+        	// Hence, we have to retrieve the information of column width before the dispose action
+        	for(int i=1;i<iColCount;i++) {        		
+        		// bug fix: for callers view activation, we have to reserve the current status
+        		if (keepColumnStatus) {
+        			int width = columns[i].getWidth();
+        			status[i-1] = (width > 0);
+        		}
+        	}
+        	
         	// remove the metric columns blindly
         	// TODO we need to have a more elegant solution here
         	for(int i=1;i<iColCount;i++) {
-        		TreeColumn column = treeViewer.getTree().getColumn(1);
-        		
-        		// bug fix: for callers view activation, we have to reserve the current status
-        		if (keepColumnStatus) {
-        			status[i-1] = column.getWidth()>0;
-        		}
+        		TreeColumn column = columns[i]; //treeViewer.getTree().getColumn(1);
         		column.dispose();
         	}
         }

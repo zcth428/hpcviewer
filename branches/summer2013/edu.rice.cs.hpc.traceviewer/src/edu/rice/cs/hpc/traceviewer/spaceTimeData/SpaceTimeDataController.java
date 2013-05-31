@@ -98,7 +98,7 @@ public abstract class SpaceTimeDataController {
 	 */
 	public int computeScaledProcess() {
 		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess - 1, attributes.numPixelsV);
-		int scaledDTProcess = (int) (((double) numTracesShown - 1)
+		int scaledDTProcess = (int) (((double) numTracesShown)
 					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (getCurrentlySelectedProcess() - attributes.begProcess));// -atr.begPro-1??
 		return scaledDTProcess;
 

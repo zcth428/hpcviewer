@@ -29,6 +29,8 @@ public class TimelineDepthThread extends Thread {
 	/**The width that the images that this thread draws should be.*/
 	private int width;
 	
+	private boolean usingMidpoint;
+	
 	final private ProcessTimeline depthTrace;
 	final private Image[] compositeFinalLines;
 
@@ -42,7 +44,7 @@ public class TimelineDepthThread extends Thread {
 	 * @param width  : the width
 	 */
 	public TimelineDepthThread(SpaceTimeDataController data, Canvas canvas, Image[] compositeFinalLines,
-			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width)
+			ProcessTimeline  depthTrace, double scaleX, double scaleY, int width, boolean usingMidpoint)
 	{
 		this.stData = data;
 		this.canvas = canvas;
@@ -51,6 +53,7 @@ public class TimelineDepthThread extends Thread {
 		this.width  = width; 
 		this.depthTrace = depthTrace;
 		this.compositeFinalLines = compositeFinalLines;
+		this.usingMidpoint = usingMidpoint;
 	}
 
 	
@@ -96,7 +99,7 @@ public class TimelineDepthThread extends Thread {
 			return;
 		
 		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
-		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.attributes.begTime, depth, height, pixelLength)
+		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.attributes.begTime, depth, height, pixelLength, usingMidpoint)
 		{
 			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)

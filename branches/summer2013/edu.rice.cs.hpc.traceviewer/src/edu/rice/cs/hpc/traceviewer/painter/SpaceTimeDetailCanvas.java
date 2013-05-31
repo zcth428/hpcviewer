@@ -154,10 +154,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 		// reinitialize the selection rectangle
 		initSelectionRectangle();
-		
-
-		long rangeX = this.stData.getTimeWidth();
-		int rangeY = this.stData.getTotalTraceCount();
 
 		// init configuration
 

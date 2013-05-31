@@ -126,7 +126,7 @@ public class TraceDataByRank {
 		}
 
 		//TODO: Figure out what changed and caused postProcess to make things worse.
-		//postProcess();
+		postProcess();
 		
 	}
 	

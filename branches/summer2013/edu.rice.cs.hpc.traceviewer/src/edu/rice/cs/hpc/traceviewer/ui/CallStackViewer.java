@@ -182,7 +182,7 @@ public class CallStackViewer extends TableViewer
 		}
 		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 		if (ptl != null) {
-			int sample = ptl.findMidpointBefore(position.time);
+			int sample = ptl.findMidpointBefore(position.time, stData.isEnableMidpoint());
 			final Vector<String> sampleVector;
 			if (sample>=0)
 				sampleVector = ptl.getCallPath(sample, depth).getFunctionNames();

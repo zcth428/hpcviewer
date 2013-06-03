@@ -195,6 +195,7 @@ public abstract class SpaceTimeDataController {
 	}
 
 	public void setEnableMidpoint(boolean enable) {
+		System.out.println("Midpoint set to " + enable);
 		this.enableMidpoint = enable;
 	}
 

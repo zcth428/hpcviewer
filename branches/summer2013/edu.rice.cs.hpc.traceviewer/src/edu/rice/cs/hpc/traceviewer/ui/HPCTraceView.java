@@ -29,7 +29,10 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint;
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
+import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeDetailCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -107,7 +110,28 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 	/*************************************************************************
 	 * method to add listener
 	 *************************************************************************/
-	private void addTraceViewListener() {
+	private void addTraceViewListener() 
+	{
+		final ISourceProviderService service = (ISourceProviderService)getSite().getService(ISourceProviderService.class);
+		final ISourceProvider yourProvider = service.getSourceProvider(DataService.DATA_UPDATE);
+		yourProvider.addSourceProviderListener( new ISourceProviderListener(){
+
+			public void sourceChanged(int sourcePriority, Map sourceValuesByName) {	}
+			public void sourceChanged(int sourcePriority, String sourceName,
+					Object sourceValue) {
+				// eclipse bug: even if we set a very specific source provider, eclipse still
+				//	gather event from other source. we then require to put a guard to avoid this.
+				if (sourceName.equals(DataService.DATA_UPDATE)) {
+					boolean needRefresh = false;
+					if (sourceValue instanceof Boolean) {
+						Boolean refresh = (Boolean) sourceValue;
+						needRefresh = refresh.booleanValue();
+					}
+					detailCanvas.refresh(needRefresh);
+				}
+			}
+		});
+		
 		// ---------------------------------------------------------------
 		// register listener to capture event in menus or commands
 		// ---------------------------------------------------------------
@@ -124,31 +148,25 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 			 */
 			public void postExecuteSuccess(String commandId, Object returnValue) 
 			{
+				if (stData == null)
+					return;
+				
 				// add listener when user change the state of "Show trace record" menu
 				if (commandId.equals(OptionRecordsDisplay.commandId))
 				{
 					// force the canvas to redraw the content
-					if (stData != null)
-						detailCanvas.refresh(false);
-				}
-			}
-		});
-		ISourceProviderService service = (ISourceProviderService)getSite().getService(ISourceProviderService.class);
-		ISourceProvider yourProvider = service.getSourceProvider(DataService.DATA_UPDATE);
-		yourProvider.addSourceProviderListener( new ISourceProviderListener(){
-
-			public void sourceChanged(int sourcePriority, Map sourceValuesByName) {	}
-			public void sourceChanged(int sourcePriority, String sourceName,
-					Object sourceValue) {
-				// eclipse bug: even if we set a very specific source provider, eclipse still
-				//	gather event from other source. we then require to put a guard to avoid this.
-				if (sourceName.equals(DataService.DATA_UPDATE)) {
-					boolean needRefresh = false;
-					if (sourceValue instanceof Boolean) {
-						Boolean refresh = (Boolean) sourceValue;
-						needRefresh = refresh.booleanValue();
-					}
-					detailCanvas.refresh(needRefresh);
+					detailCanvas.refresh(false);
+				} else if (commandId.equals(OptionMidpoint.commandId)) 
+				{
+					// changing painting policy means changing the content
+					// we should force all views to refresh
+					detailCanvas.refresh(true);
+					RefreshOperation r_op = new RefreshOperation("painting policy change");
+					try {
+						TraceOperation.getOperationHistory().execute(r_op, null, null);
+					} catch (ExecutionException e) {
+						e.printStackTrace();
+					}					
 				}
 			}
 		});

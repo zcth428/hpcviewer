@@ -136,13 +136,13 @@ public class ProcessTimeline {
 	 * Finds the sample to which 'time' most closely corresponds in the
 	 * ProcessTimeline.
 	 * 
-	 * @param time
-	 *            : the requested time
-	 * @return the index of the sample if the time is within the range, -1
-	 *         otherwise
+	 * @param time : the requested time
+	 * @return the index of the sample if the time is within the range, -1  otherwise
 	 * */
-	public int findMidpointBefore(double time) {
-		return data.findMidpointBefore(time);
+	public int findMidpointBefore(double time, boolean usingMidpoint)
+	{
+		return data.findMidpointBefore(time, usingMidpoint);
 	}
+	
 
 }

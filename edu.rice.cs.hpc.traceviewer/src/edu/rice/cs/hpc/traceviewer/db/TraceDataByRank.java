@@ -51,7 +51,7 @@ public class TraceDataByRank {
 	// _numPixelH, so it'll work if we don't initialize them, but this is
 	// horrible design. It probably should go back to two classes
 	public TraceDataByRank(Record[] data) {
-		//this(null, 0, 0);
+
 		this.data = null; rank = 0; numPixelH = 0;
 		header = new Header(-1, 0);
 		
@@ -125,7 +125,7 @@ public class TraceDataByRank {
 			this.addSample(0, dataFirst);
 		}
 
-		//TODO: Figure out what changed and caused postProcess to make things worse.
+		
 		postProcess();
 		
 	}
@@ -177,10 +177,11 @@ public class TraceDataByRank {
 
 	
 	/**Finds the sample to which 'time' most closely corresponds in the ProcessTimeline.
+	 * @param usingMidpoint 
 	 * @param time: the requested time
 	 * @return the index of the sample if the time is within the range, -1 otherwise 
 	 * */
-	public int findMidpointBefore(double time)
+	public int findMidpointBefore(double time, boolean usingMidpoint)
 	{
 		int low = 0;
 		int high = listcpid.size() - 1;
@@ -196,7 +197,7 @@ public class TraceDataByRank {
 		
 		while( low != mid )
 		{
-			final double time_current = getTimeMidPoint(mid,mid+1);
+			final double time_current = (usingMidpoint ? getTimeMidPoint(mid,mid+1) : listcpid.get(mid).timestamp);
 			
 			if (time > time_current)
 				low = mid;

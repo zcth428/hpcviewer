@@ -32,6 +32,10 @@ public class DecompressionThread extends Thread {
 	final int ranksExpected;
 	final double t0;
 	final double tn;
+	
+	final static int COMPRESSION_TYPE_MASK = 0xFFFF;//Save two bytes for formatting versions
+	final static short ZLIB_COMPRESSSED  = 1;
+	
 
 	static AtomicInteger ranksRemainingToDecompress;
 
@@ -111,20 +115,30 @@ public class DecompressionThread extends Thread {
 	 * @return The array of data for this rank
 	 * @throws IOException
 	 */
-	private Record[] readTimeCPIDArray(byte[] packedTraceLine, int length, double t0, double tn, boolean compressed) throws IOException {
+	private Record[] readTimeCPIDArray(byte[] packedTraceLine, int length, double t0, double tn, int compressed) throws IOException {
 
 		DataInputStream decompressor;
-		if (compressed)
+		if ((compressed & COMPRESSION_TYPE_MASK) == ZLIB_COMPRESSSED)
 			decompressor= new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(packedTraceLine)));
 		else
 			decompressor = new DataInputStream(new ByteArrayInputStream(packedTraceLine));
 		Record[] toReturn = new Record[length];
-		double deltaT = (tn-t0)/(length-1);
+		double currentTime = t0;
 		for (int i = 0; i < toReturn.length; i++) {
+			// There are more efficient ways to send the timestamps. Namely,
+			// instead of sending t_n - t_(n-1), we can send (t_n - t_(n-1))-T,
+			// where T is the expected delta T, calculated by
+			// (t_n-t_0)/(length-1). These will fit in three bytes for certain
+			// and often will fit in two. Because of the gzip layer on top,
+			// though, the actual savings may be marginal, which is why it is
+			// implemented more simply right now. This is left as a possible
+			// extension with the compression type flag.
+			int deltaT = decompressor.readInt();
+			currentTime += deltaT;
 			int CPID = decompressor.readInt();
 			/*if (CPID <= 0)
 				System.out.println("CPID too small");*/
-			toReturn[i] = new Record(t0+i*deltaT, CPID, Constants.dataIdxNULL);//Does this method of getting timestamps actually work???
+			toReturn[i] = new Record(currentTime, CPID, Constants.dataIdxNULL);//Does this method of getting timestamps actually work???
 		}
 		return toReturn;
 	}
@@ -139,14 +153,14 @@ public static class DecompressionItemToDo implements WorkItemToDo {
 	final int itemCount;//The number of Time-CPID pairs
 	final double startTime, endTime;
 	final int rankNumber;
-	final boolean compressed;
-	public DecompressionItemToDo(byte[] _packet, int _itemCount, double _startTime, double _endTime, int _rankNumber, boolean _dataCompressed) {
+	final int compressed;
+	public DecompressionItemToDo(byte[] _packet, int _itemCount, double _startTime, double _endTime, int _rankNumber, int _compressionType) {
 		Packet = _packet;
 		itemCount = _itemCount;
 		startTime = _startTime;
 		endTime = _endTime;
 		rankNumber = _rankNumber;
-		compressed = _dataCompressed;
+		compressed = _compressionType;
 	}
 }
 }

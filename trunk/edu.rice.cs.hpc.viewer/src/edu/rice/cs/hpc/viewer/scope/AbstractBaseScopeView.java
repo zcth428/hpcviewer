@@ -370,6 +370,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 		        } else {
 		        	// selection on wrong node
 		        	objViewActions.disableButtons();
+		        	objViewActions.checkStates();
 		        }
 		      }
 		}); 

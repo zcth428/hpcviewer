@@ -574,6 +574,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
      */
     public abstract void checkStates ( Scope nodeSelected );
     
+    public abstract void checkStates();
+    
     protected abstract void registerAction( IActionType type );
     
     //===========================================================================

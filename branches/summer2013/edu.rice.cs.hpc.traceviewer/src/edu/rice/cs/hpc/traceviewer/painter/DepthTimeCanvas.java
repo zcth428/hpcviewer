@@ -23,6 +23,7 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
+import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -486,6 +487,11 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			case OperationHistoryEvent.REDONE:
 				executeOperation(traceOperation);
 				break;
+			}
+		} else if (operation.hasContext(RefreshOperation.context)) {
+			if (event.getEventType() == OperationHistoryEvent.DONE)
+			{
+				rebuffer();
 			}
 		}
 	}

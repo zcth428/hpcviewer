@@ -97,7 +97,7 @@ public class TimelineDepthThread extends Thread {
 	{
 		if (ptl.size() < 2)
 			return;
-		
+		//System.out.println("Line: " + ptl.line());
 		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
 		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.attributes.begTime, depth, height, pixelLength, usingMidpoint)
 		{

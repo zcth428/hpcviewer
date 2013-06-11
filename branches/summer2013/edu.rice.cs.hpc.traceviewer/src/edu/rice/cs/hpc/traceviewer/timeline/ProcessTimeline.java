@@ -144,5 +144,14 @@ public class ProcessTimeline {
 		return data.findMidpointBefore(time, usingMidpoint);
 	}
 	
+	@Override
+	public String toString() {
+		// TODO Delete me. For testing purposes.
+		Double hash = 0.0;
+		for (Record r : data.getListOfData()) {
+			hash += r.cpId + Math.log(r.timestamp);
+		}
+		return hash.toString();
+	}
 
 }

@@ -13,19 +13,16 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.zip.GZIPInputStream;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 public class RemoteDBOpener extends AbstractDBOpener {
 	//For more information on message structure, see protocol documentation at the end of RemoteDataReceiver 
-	private static final int DONE = 0x444F4E45;
-	private static final int OPEN = 0x4F50454E;
-	private static final int INFO = 0x494E464F;
-	private static final int XML_HEADER = 0x45584D4C;
-	private static final int DATABASE_NOT_FOUND = 0x4E4F4442;
-	private static final int DB_OK = 0x44424F4B;
 	DataOutputStream sender;
 	DataInputStream receiver;
 
@@ -58,15 +55,12 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			// This is a legitimate catch that we need to expect. The rest
 			// should be very rare (ex. the internet goes down in the middle of
 			// a transmission)
-			System.out.println("Could not connect. Is the server running?");
-			return null;
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MessageDialog.openError(window.getShell(), "Error connecting to remote server", 
+					"Could not connect. Make sure the server is running.");
 			return null;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MessageDialog.openError(window.getShell(), "Error connecting to remote server", 
+					e.getMessage());
 			return null;
 		}
 
@@ -75,47 +69,49 @@ public class RemoteDBOpener extends AbstractDBOpener {
 
 			// Check for DBOK
 			int traceCount;
-			int Message = RemoteDataRetriever.waitAndReadInt(receiver);
+			int messageTag = RemoteDataRetriever.waitAndReadInt(receiver);
 			int XMLMessagePortNumber;
 			int CompressionType;
-			String[] ValuesX;
-			if (Message == DB_OK)// DBOK
+			String[] valuesX;
+			if (messageTag == Constants.DB_OK)// DBOK
 			{
 				XMLMessagePortNumber  = receiver.readInt();
 				traceCount = receiver.readInt();
 				CompressionType = receiver.readInt();
-				ValuesX = new String[traceCount];
-				for (int i = 0; i < ValuesX.length; i++) {
+				valuesX = new String[traceCount];
+				for (int i = 0; i < valuesX.length; i++) {
 					int processID = receiver.readInt();
 					int threadID = receiver.readShort();
 					if (threadID == -1) {
-						ValuesX[i] = Integer.toString(processID);
+						valuesX[i] = Integer.toString(processID);
 					} else {
-						ValuesX[i] = processID + "." + threadID;
+						valuesX[i] = processID + "." + threadID;
 					}
 				}
 				
-			} else if (Message == DATABASE_NOT_FOUND)// NODB
+			} else 
 			{
-				// Tell the user
-				// TODO: Implement some UI notification
+				//NODB message
 				int errorCode = receiver.readInt();// Unused but there for the
 													// future
-				System.err.println("The server could not find that database.");
+				MessageDialog.openError(window.getShell(),"Database not found.", 
+						"The server could not find that database.\nError code: " + errorCode);
 				return null;// We probably actually want it to be in a loop so
 							// that
 							// we just prompt the user to try again
-			} else {
-				throw new IOException("Unrecognized message sent");
 			}
-			System.out.println("About to connect to socket "+ XMLMessagePortNumber + " at "+ System.nanoTime());
+			
+			Debugger.printDebug(2, "About to connect to socket "+ XMLMessagePortNumber + " at "+ System.nanoTime());
 			statusMgr.setMessage("Receiving XML stream");
 			byte[] CompressedXMLMessage;
 			if (XMLMessagePortNumber == port)
 			{
 				int exml = receiver.readInt();
-				if (exml != XML_HEADER)
-					System.out.println("Expected XML Message (" +XML_HEADER +")  on data socket, got " + exml);
+				if (exml != Constants.XML_HEADER) 
+				{
+					System.out.println("Expected XML Message (" +Constants.XML_HEADER +")  on data socket, got " + exml);
+					return null;
+				}
 				int size = receiver.readInt();
 				CompressedXMLMessage = new byte[size];
 				int numRead = 0;
@@ -143,19 +139,17 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			GZIPInputStream XMLStream = new GZIPInputStream(new 
 					ByteArrayInputStream(CompressedXMLMessage));
 
-			SpaceTimeDataControllerRemote stData;
-
 			RemoteDataRetriever DR = new RemoteDataRetriever(serverConnection,
 					statusMgr, window.getShell(), CompressionType);
-			stData = new SpaceTimeDataControllerRemote(DR, window, statusMgr,
-					XMLStream, serverPathToDB + " on " + serverURL, traceCount, ValuesX);
+			SpaceTimeDataControllerRemote stData = new SpaceTimeDataControllerRemote(DR, window, statusMgr,
+					XMLStream, serverPathToDB + " on " + serverURL, traceCount, valuesX);
 
 			sendInfoPacket(sender, stData);
 			
 			return stData;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MessageDialog.openError(window.getShell(), "I/O Error", 
+					e.getMessage());
 		}
 		return null;// If an exception was thrown
 	}
@@ -173,7 +167,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		/*
 		 * Then: overallMinTime (long) overallMaxTime (long) headerSize (int)
 		 */
-		sender.writeInt(INFO);
+		sender.writeInt(Constants.INFO);
 		sender.writeLong(stData.getMinBegTime());
 		sender.writeLong(stData.getMaxEndTime());
 		sender.writeInt(stData.HEADER_SIZE);
@@ -182,7 +176,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	}
 
 	private void sendOpenDB(String serverPathToDB) throws IOException {
-		sender.writeInt(OPEN);
+		sender.writeInt(Constants.OPEN);
 		int len = serverPathToDB.length();
 		sender.writeShort(len);
 		for (int i = 0; i < len; i++) {
@@ -201,7 +195,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	void closeDB() {
 		try {
 			DataOutputStream closer = new DataOutputStream(serverConnection.getOutputStream());
-			closer.writeInt(DONE);
+			closer.writeInt(Constants.DONE);
 			closer.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

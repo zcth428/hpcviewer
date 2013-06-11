@@ -207,18 +207,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     }
     
     
-    private void setCSSample()
-    {
-    	if(mouseDown == null)
-    		return;
 
-    	long closeTime = attributes.begTime + (long)((double)mouseDown.x / getScaleX());
-    	
-    	Position currentPosition = painter.getPosition();
-    	Position position = new Position(closeTime, currentPosition.process);
-    	
-    	notifyPositionChange(position);
-    }
 
     @Override
 	public double getScaleX()
@@ -319,8 +308,16 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
      * 
      * @param newPosition
      */
-    private void notifyPositionChange(Position newPosition)
-    {    	
+    private void notifyPositionChange()
+    {    
+        if(mouseDown == null)
+    		return;
+
+    	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
+    	
+    	Position currentPosition = painter.getPosition();
+    	Position newPosition = new Position(closeTime, currentPosition.process);
+    		
     	try {
 			TraceOperation.getOperationHistory().execute(
 					new PositionOperation(newPosition, positionAction), 
@@ -443,7 +440,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			//difference in mouse movement < 3 constitutes a "single click"
 			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
 			{
-				setCSSample();
+				notifyPositionChange();
 			}
 			else
 			{

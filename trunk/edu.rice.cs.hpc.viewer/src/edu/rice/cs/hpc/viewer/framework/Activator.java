@@ -1,15 +1,8 @@
 package edu.rice.cs.hpc.viewer.framework;
 
-import java.net.URL;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -75,12 +68,10 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	protected void initializeImageRegistry(ImageRegistry registry) {
 		
-		final String imgGraph = "src/edu/rice/cs/hpc/viewer/resources/Graph.png";
+		final String imgGraph = "Graph.png";
 		
-		Bundle bundle = Platform.getBundle(PLUGIN_ID);
-        IPath path = new Path(imgGraph);
-        URL url = FileLocator.find(bundle, path, null);
-        ImageDescriptor desc = ImageDescriptor.createFromURL(url);
+        ImageDescriptor desc = ImageDescriptor.createFromFile(edu.rice.cs.hpc.viewer.resources.Icons.getInstance().getClass(),
+        		imgGraph);
         registry.put(IMG_GRAPH, desc);
 	}
 }

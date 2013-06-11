@@ -18,7 +18,10 @@ public class OpenDatabase extends AbstractHandler
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		final IViewSite vSite = ( IViewSite ) HandlerUtil.getActiveSite(event);
 
-		TraceDatabase.openDatabase(window, null, vSite.getActionBars().getStatusLineManager(), new LocalDBOpener());
+		boolean ret = TraceDatabase.openDatabase(window, null, 
+				vSite.getActionBars().getStatusLineManager(), new LocalDBOpener());
+		
+		
 		return null;
 	}
 }

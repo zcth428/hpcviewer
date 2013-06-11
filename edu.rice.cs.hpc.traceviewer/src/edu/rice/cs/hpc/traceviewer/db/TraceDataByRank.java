@@ -206,10 +206,16 @@ public class TraceDataByRank {
 			mid = ( low + high ) / 2;
 			
 		}
-		if (time >= getTimeMidPoint(low,low+1))
+		if (usingMidpoint)
+		{
+			if (time >= getTimeMidPoint(low,low+1))
+				return low+1;
+			else
+				return low;
+		} else 
+		{
 			return low+1;
-		else
-			return low;
+		}
 	}
 
 	
@@ -436,6 +442,10 @@ public class TraceDataByRank {
 		}
 	}
 		
+	public int getRank()
+	{
+		return rank;
+	}
 	
 	class Header 
 	{

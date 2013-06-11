@@ -93,8 +93,7 @@ public abstract class SpaceTimeDataController {
 	 * dtProcess scaled to be the index in traces[] that corresponds to this
 	 * process. dtProcess has length equal to the number of files in data trace
 	 * while scaledDTProcess typically has length equal to the number of vertical pixels in
-	 * SpaceTimeDetailView. If it returns 0, chances are the index it should
-	 * return would be outside the array, so the 0 is a sort of safeguard.
+	 * SpaceTimeDetailView.
 	 */
 	public int computeScaledProcess() {
 		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess, attributes.numPixelsV);

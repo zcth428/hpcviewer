@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
+import edu.rice.cs.hpc.traceviewer.util.Constants;
 
 /**
  * Handles communication with the remote server, including asking for data and
@@ -25,7 +26,6 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
  */
 public class RemoteDataRetriever {
 	//For more information on message structure, see protocol documentation at the end of this file. 
-	private static final int DONE = 0x444F4E45;
 	private static final int DATA = 0x44415441;
 	private static final int HERE = 0x48455245;
 	private final Socket socket;
@@ -46,7 +46,7 @@ public class RemoteDataRetriever {
 		
 		rcvBacking = new BufferedInputStream(socket.getInputStream());
 		receiver = new DataInputStream(rcvBacking);
-
+		
 		sender = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		
 		
@@ -98,15 +98,9 @@ public class RemoteDataRetriever {
 		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
 		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
 	
-		
-		
-		
 		DataInputStream DataReader;
 		
-		/*if (DataCompressed)
-			 DataReader = new DataInputStream(new InflaterInputStream(rcvBacking));
-		else */
-			DataReader = receiver;
+		DataReader = receiver;
 		
 		while (RanksReceived < RanksExpected)
 		{
@@ -114,8 +108,6 @@ public class RemoteDataRetriever {
 			int rankNumber = DataReader.readInt();
 			int Length = DataReader.readInt();//Number of CPID's
 			
-			//if (RanksExpected - RanksReceived < 3)
-			//	System.out.println(RanksReceived + "/" + RanksExpected );
 			
 			double startTimeForThisTimeline = DataReader.readDouble();
 			double endTimeForThisTimeline = DataReader.readDouble();
@@ -128,19 +120,7 @@ public class RemoteDataRetriever {
 				numRead += DataReader.read(compressedTraceLine, numRead, compressedSize- numRead);
 				
 			}
-			int EndingZeroCount = 0;
-			for (int i = compressedTraceLine.length-1; i >= 0; i--) {
-				if (compressedTraceLine[i]==0)
-					EndingZeroCount++;
-				else
-					break;
-			}
-			//if (EndingZeroCount > 3)
-			//	System.out.println("Message of size: " + compressedSize + " ended with " + EndingZeroCount + " zeros.");
-			//if (numRead != compressedSize)
-			//	System.out.println("Only read " + numRead + " instead of "+ compressedSize);
-			
-			
+					
 			DecompressionThread.workToDo.add(new DecompressionThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, rankNumber, compressionType));
 			
 			RanksReceived++;
@@ -164,14 +144,9 @@ public class RemoteDataRetriever {
 		//That's it for the message
 		sender.flush();
 	}
+
+
 	static int waitAndReadInt(DataInputStream receiver)
-			throws IOException {
-		
-			return waitAndReadUncompressedInt(receiver);
-	}
-
-
-	private static int waitAndReadUncompressedInt(DataInputStream receiver)
 			throws IOException {
 		int nextCommand;
 		// Sometime the buffer is filled with 0s for some reason. This flushes
@@ -209,7 +184,7 @@ public class RemoteDataRetriever {
 		return nextCommand;
 	}
 	public void Close() throws IOException {
-		sender.writeInt(DONE);
+		sender.writeInt(Constants.DONE);
 		sender.flush();
 		sender.close();
 		receiver.close();

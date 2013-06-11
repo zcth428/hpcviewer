@@ -25,8 +25,13 @@ public class BaseScopeViewActions extends ScopeViewActions {
 	public void checkStates(Scope nodeSelected) {
     	boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
 		objActionsGUI.enableZoomIn( bCanZoomIn );
-		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );
 		objActionsGUI.enableHotCallPath( bCanZoomIn );
+		
+		checkStates();
+	}
+
+	public void checkStates() {
+		objActionsGUI.enableZoomOut( objZoom.canZoomOut() );
 	}
 
     /**

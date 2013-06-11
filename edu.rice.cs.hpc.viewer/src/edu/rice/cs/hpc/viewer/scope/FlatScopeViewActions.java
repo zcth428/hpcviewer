@@ -141,14 +141,18 @@ public class FlatScopeViewActions extends ScopeViewActions {
 	public void checkStates(Scope nodeSelected) {
 		boolean bCanZoomIn = objZoom.canZoomIn(nodeSelected);
 		objActionsGUI.enableHotCallPath( bCanZoomIn );
-
 		objActionsGUI.enableZoomIn( bCanZoomIn );
-		
+
+		((FlatScopeViewActionsGUI) objActionsGUI).checkFlattenButtons();
+
+		checkStates();
+	}
+
+	@Override
+	public void checkStates() {
 		boolean bCanZoomOut = objZoom.canZoomOut() && 
 				(!stackActions.isEmpty() && stackActions.peek()==ActionType.ZoomIn);
 		objActionsGUI.enableZoomOut( bCanZoomOut );
-
-		((FlatScopeViewActionsGUI) objActionsGUI).checkFlattenButtons();
 	}
 
 	

@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -56,8 +55,6 @@ public class TimelineThread extends Thread
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	final private Image[] compositeOrigLines;
 	
-	final private AtomicInteger lineNum;
-	
 	final private ImageTraceAttributes attrib;
 
 	/***********************************************************************************************************
@@ -65,9 +62,9 @@ public class TimelineThread extends Thread
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
 	public TimelineThread(IWorkbenchWindow window, SpaceTimeDataController _stData, ProcessTimelineService traceService,
-			AtomicInteger lineNum, boolean _changedBounds, Canvas _canvas, 
-			Image[] compositeOrigLines, Image[] compositeFinalLines, int _width, 
-			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
+			boolean _changedBounds, Canvas _canvas, Image[] compositeOrigLines, 
+			Image[] compositeFinalLines, int _width, double _scaleX, 
+			double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
 		stData = _stData;
@@ -78,7 +75,6 @@ public class TimelineThread extends Thread
 		scaleY = _scaleY;
 		
 		monitor = _monitor;
-		this.lineNum = lineNum;
 		this.window = window;
 		this.traceService = traceService;
 		this.compositeOrigLines = compositeOrigLines;

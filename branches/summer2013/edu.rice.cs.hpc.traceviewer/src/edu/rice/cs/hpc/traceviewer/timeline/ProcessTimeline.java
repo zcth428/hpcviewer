@@ -143,15 +143,20 @@ public class ProcessTimeline {
 	{
 		return data.findMidpointBefore(time, usingMidpoint);
 	}
-	
-	@Override
-	public String toString() {
-		// TODO Delete me. For testing purposes.
-		Double hash = 0.0;
-		for (Record r : data.getListOfData()) {
-			hash += r.cpId + Math.log(r.timestamp);
-		}
-		return hash.toString();
-	}
+
+	// These are potentially useful for debugging, but otherwise serve no use.
+//	@Override
+//	public String toString() {
+//		return hashCode() + "#" + data.getRank();
+//	}
+//
+//	@Override
+//	public int hashCode() {
+//		double hash = 0.0;
+//		for (Record r : data.getListOfData()) {
+//			hash += r.cpId + Math.log(r.timestamp);
+//		}
+//		return (int) Math.round(hash);
+//	}
 
 }

@@ -9,17 +9,17 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 public class TraceDataByRank {
 
-	/** File header information, including trace record size */
-	final public Header header;
-
 	//	tallent: safe to assume version 1.01 and greater here
 	public final static int HeaderSzMin = Header.MagicLen + Header.VersionLen + Header.EndianLen + Header.FlagsLen;
 	public final static int RecordSzMin = Constants.SIZEOF_LONG // time stamp
 										+ Constants.SIZEOF_INT; // call path id
-
-	final private IBaseData data;
-	final private int numPixelH;
-	final int rank;
+	
+	//These must be initialized in local mode. They should be considered final unless the data is remote.
+/** File header information, including trace record size */
+	public Header header;
+	private IBaseData data;
+	private int numPixelH;
+	int rank;
 	
 	protected Vector<Record> listcpid;
 	
@@ -47,14 +47,7 @@ public class TraceDataByRank {
 		return listcpid == null || listcpid.size()==0;
 	}
 	
-	// FIXME: When it is in remote mode, it doesn't use _data, _rank, or
-	// _numPixelH, so it'll work if we don't initialize them, but this is
-	// horrible design. It probably should go back to two classes
 	public TraceDataByRank(Record[] data) {
-
-		this.data = null; rank = 0; numPixelH = 0;
-		header = new Header(-1, 0);
-		
 		listcpid = new Vector<Record>(Arrays.asList(data));
 	}
 	

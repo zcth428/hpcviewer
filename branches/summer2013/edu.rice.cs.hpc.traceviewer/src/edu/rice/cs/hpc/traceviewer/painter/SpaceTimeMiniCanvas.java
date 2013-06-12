@@ -176,7 +176,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		long detailTopLeftTime = (long)(miniTopLeft.x/getScaleX());
 		int detailTopLeftProcess = (int) (miniTopLeft.y/getScaleY());
 		
-		long detailBottomRightTime = (long)((double)miniBottomRight.x / getScaleX());
+		long detailBottomRightTime = (long)(miniBottomRight.x / getScaleX());
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
 
 		stData.attributes.begProcess = detailTopLeftProcess;

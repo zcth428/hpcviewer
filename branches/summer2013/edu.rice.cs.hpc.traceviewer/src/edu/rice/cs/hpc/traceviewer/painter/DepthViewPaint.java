@@ -1,7 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -14,7 +12,7 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	private ProcessTimeline depthTrace;
 	private final GC masterGC;
-	final private AtomicInteger lineNum;
+
 
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	private Image[] compositeFinalLines;
@@ -24,7 +22,6 @@ public class DepthViewPaint extends BaseViewPaint {
 		
 		super(_data, _attributes, _changeBound,  window);
 		this.masterGC = masterGC;
-		this.lineNum = new AtomicInteger();
 	}
 
 	@Override
@@ -51,7 +48,7 @@ public class DepthViewPaint extends BaseViewPaint {
 		for (int i = 0; i < linesToPaint; i++)
 		{
 			masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
-					compositeFinalLines[i].getBounds().height, 0,(int)Math.round(i*attributes.numPixelsDepthV/(float)painter.getMaxDepth()), 
+					compositeFinalLines[i].getBounds().height, 0, Math.round(i*attributes.numPixelsDepthV/(float)painter.getMaxDepth()), 
 					compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
 		}
 		// disposing resources

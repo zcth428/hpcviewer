@@ -175,7 +175,6 @@ public class RemoteDataRetriever {
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -183,7 +182,7 @@ public class RemoteDataRetriever {
 		}
 		return nextCommand;
 	}
-	public void Close() throws IOException {
+	public void closeConnection() throws IOException {
 		sender.writeInt(Constants.DONE);
 		sender.flush();
 		sender.close();

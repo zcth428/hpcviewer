@@ -73,7 +73,8 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		return valuesX;
 	}
 	/**
-	 * This performs the network request and does a small amount of processing on the reply. Namely, it does not decompress the traces. Instead, it returns threads that will do that work when executed.
+	 * This performs the network request and does a small amount of processing on the reply. Namely, it does 
+	 * not decompress the traces. Instead, it returns threads that will do that work when executed.
 	 */
 	public Thread[] fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) {
 		if (changedBounds) {
@@ -109,19 +110,27 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	
 	@Override
 	public void dispose() {
+		closeDB();
 		super.dispose();
+
+	}
+	
+	@Override
+	public void closeDB() {
 		try {
-			dataRetriever.Close();
+			dataRetriever.closeConnection();
 		} catch (IOException e) {
 			System.out.println("Could not close the connection.");
 		}
-
 	}
 
 
+	/** 
+	 * There is no {@link IBaseData} for the remote version. The closest we have is {@link RemoteDataRetriever}, but it
+	 * doesn't make sense for <code>RemoteDataRetriever</code> to <code>implement IBaseData</code>
+	 */
 	@Override
 	public IBaseData getBaseData() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

@@ -167,7 +167,7 @@ public class OpenRemoteDatabse extends AbstractHandler {
 	    }*/
 	    
 	    public String []getHistory() {
-	        return (String [])this.history.toArray(new String[this.history.size()]);
+	        return this.history.toArray(new String[this.history.size()]);
 	    }
 	    
 	    public void addLine(String line) {
@@ -230,7 +230,7 @@ public class OpenRemoteDatabse extends AbstractHandler {
 	    protected void saveHistoryLines() {
 	        String result = ""; //$NON-NLS-1$
 	        for (Iterator<String> it = this.history.iterator(); it.hasNext(); ) {
-	            String str = (String)it.next();
+	            String str = it.next();
 	            try {
 					str = new String(str.getBytes(UserInputHistory.ENCODING), UserInputHistory.ENCODING);
 				} catch (UnsupportedEncodingException e) {

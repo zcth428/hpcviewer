@@ -28,13 +28,6 @@ import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
  */
 public class TraceDatabase {
 
-	/**
-	 * heuristically, the minimum size a trace file must be in order to be
-	 * correctly formatted
-	 */
-	final private static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin
-			+ TraceDataByRank.RecordSzMin * 2;
-
 	static private HashMap<IWorkbenchWindow, TraceDatabase> listOfDatabases = null;
 	private SpaceTimeDataController dataTraces = null;
 
@@ -67,6 +60,7 @@ public class TraceDatabase {
 
 		if (listOfDatabases != null) {
 			final TraceDatabase data = listOfDatabases.get(_window);
+			if (data == null) return;
 			if (data.dataTraces != null)
 				data.dataTraces.dispose();
 			listOfDatabases.remove(_window);

@@ -116,7 +116,7 @@ public abstract class BasePaintLine
 				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(end)-begTime)/pixelLength)); 
 			}
 			
-			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName, (int) end - index + 1);
+			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName, end - index + 1);
 			index = end;
 		}			
 	}

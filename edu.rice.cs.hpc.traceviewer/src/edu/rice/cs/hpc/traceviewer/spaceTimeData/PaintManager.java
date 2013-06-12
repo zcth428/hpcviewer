@@ -118,7 +118,7 @@ public class PaintManager {
 	public int getProcessRelativePosition(int numDisplayedProcess)
 	{
 		// general case
-    	int estimatedProcess = (int) (currentPosition.process - attributes.begProcess);
+    	int estimatedProcess = (currentPosition.process - attributes.begProcess);
     	
     	// case for num displayed processes is less than the number of processes
     	estimatedProcess = (int) ((float)estimatedProcess* 

@@ -2,21 +2,20 @@ package edu.rice.cs.hpc.traceviewer.db;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
-
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /**
- * An abstract class whose only role is to create a SpaceTimeDataController by
- * opening the database. This is extended by LocalDBOpener and RemoteDBOpener
+ * An interface for the DBOpeners. Specifically, it is implemented by
+ * {@link RemoteDBOpener} and {@link LocalDBOpener}. Its main purpose is to
+ * create a {@link SpaceTimeDataController} from the connection to the database
+ * (be it local or remote), but it also partially handles closing that connection.
  * 
  * @author Philip Taffet
  * 
  */
 public abstract class AbstractDBOpener {
 
-	protected final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
-	
-	
+	final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
 
 	/**
 	 * This prepares the database for retrieving data and creates a
@@ -26,12 +25,16 @@ public abstract class AbstractDBOpener {
 	 * SpaceTimeDataControllerRemote.
 	 * 
 	 * @param window
-	 * @param args The command line arguments used to start the application
+	 * @param args
+	 *            The command line arguments used to start the application
 	 * @param statusMgr
 	 * @return
 	 */
-	abstract SpaceTimeDataController openDBAndCreateSTDC(
-			IWorkbenchWindow window, String[] args, IStatusLineManager statusMgr);
-	
-	abstract void closeDB();
+	abstract SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window, String[] args,
+			IStatusLineManager statusMgr);
+
+	// Our current policy on closing: Except for back-to-back connections to the
+	// same server, we should close the server when we are making a new
+	// connection, local or remote.
+
 }

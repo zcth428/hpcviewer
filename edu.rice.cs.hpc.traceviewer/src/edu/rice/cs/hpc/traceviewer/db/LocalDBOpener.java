@@ -20,6 +20,8 @@ public class LocalDBOpener extends AbstractDBOpener {
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
 
+		
+		
 		statusMgr.setMessage("Select a directory containing traces");
 		FileData location = new FileData();
 		
@@ -46,6 +48,8 @@ public class LocalDBOpener extends AbstractDBOpener {
 		// want to open a database, so we return null, which makes the calling method return false.
 		if (!hasDatabase)
 			return null;
+		
+		TraceDatabase.removeInstance(window);
 
 		// ---------------------------------------------------------------------
 		// Try to open the database and refresh the data
@@ -146,18 +150,16 @@ public class LocalDBOpener extends AbstractDBOpener {
 
 						if (location.fileTrace.length() > MIN_TRACE_SIZE) {
 							return true;
-						} else {
-							System.err.println("Warning! Trace file "
-									+ location.fileTrace.getName()
-									+ " is too small: "
-									+ location.fileTrace.length() + "bytes .");
-							return false;
 						}
-					} else {
-						System.err
-								.println("Error: trace file(s) does not exist or fail to open "
-										+ outputFile);
+						System.err.println("Warning! Trace file "
+								+ location.fileTrace.getName()
+								+ " is too small: "
+								+ location.fileTrace.length() + "bytes .");
+						return false;
 					}
+					System.err
+							.println("Error: trace file(s) does not exist or fail to open "
+									+ outputFile);
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -178,11 +180,6 @@ public class LocalDBOpener extends AbstractDBOpener {
 
 		dialog.setMessage("The directory selected contains no traces:\n\t"
 				+ str + "\nPlease select a directory that contains traces.");
-	}
-	@Override
-	void closeDB() {
-		//It doesn't seem like the file handles are ever released. I guess this isn't a problem. 
-		
 	}
 
 }

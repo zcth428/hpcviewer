@@ -13,6 +13,7 @@ import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 //Perhaps this would all be more suited to a ThreadPool 
 
@@ -66,7 +67,6 @@ public class DecompressionThread extends Thread {
 					Thread.sleep(50);
 
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				continue;
@@ -79,7 +79,7 @@ public class DecompressionThread extends Thread {
 				try {
 					decompress(toDecomp);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					Debugger.printDebug(1, "IO Exception in decompression algorithm.");
 					e.printStackTrace();
 				}
 				continue;

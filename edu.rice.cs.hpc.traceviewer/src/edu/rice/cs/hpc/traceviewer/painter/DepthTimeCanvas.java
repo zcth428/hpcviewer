@@ -90,7 +90,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		setTimeZoom(0, (long)stData.getTimeWidth());
+		setTimeZoom(0, stData.getTimeWidth());
 	}
 	
 	/***
@@ -167,7 +167,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 **************************************************************************/
 	private void setPosition(Position position)
 	{
-		selectedTime = (double)position.time;
+		selectedTime = position.time;
 		if (currentProcess != position.process) {
 			rebuffer();
 			currentProcess = position.process;
@@ -287,8 +287,8 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 */
     private void setDetail()
     {
-		long topLeftTime = (long)((double)leftSelection / getScaleX());
-		long bottomRightTime = (long)((double)rightSelection / getScaleX());
+		long topLeftTime = (long)(leftSelection / getScaleX());
+		long bottomRightTime = (long)(rightSelection / getScaleX());
 		
 		attributes.begTime = topLeftTime;
 		attributes.endTime = bottomRightTime;
@@ -313,7 +313,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
         if(mouseDown == null)
     		return;
 
-    	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
+    	long closeTime = stData.attributes.begTime + (long)(mouseDown.x / getScaleX());
     	
     	Position currentPosition = painter.getPosition();
     	Position newPosition = new Position(closeTime, currentPosition.process);

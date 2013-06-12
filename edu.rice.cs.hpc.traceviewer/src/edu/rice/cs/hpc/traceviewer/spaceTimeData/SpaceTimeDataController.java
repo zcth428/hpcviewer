@@ -15,7 +15,7 @@ public abstract class SpaceTimeDataController {
 
 	PaintManager painter;
 	static int[] MethodCounts = new int[15];
-	//FIXME: Some places access this directly while others use the getter.
+	//TODO: Some places access this directly while others use the getter.
 	public ImageTraceAttributes attributes;// Should this be final?
 	protected String dbName;
 	/**
@@ -206,6 +206,8 @@ public abstract class SpaceTimeDataController {
 		lineNum.set(0);
 		depthLineNum.set(0);
 	}
+
+	public abstract void closeDB();
 
 
 }

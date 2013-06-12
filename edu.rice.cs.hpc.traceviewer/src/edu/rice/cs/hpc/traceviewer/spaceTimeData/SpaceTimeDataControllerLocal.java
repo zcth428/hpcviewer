@@ -33,9 +33,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 	private TraceAttribute trAttribute;
 
-	private int headerSize;
-
-
 	private final File traceFile;
 
 	IStatusLineManager statusMgr;
@@ -87,8 +84,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		trAttribute = exp.getTraceAttribute();
 		minBegTime = trAttribute.dbTimeMin;
 		maxEndTime = trAttribute.dbTimeMax;
-		headerSize = trAttribute.dbHeaderSize;
-		
 		ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
 				ISourceProviderService.class);
 		ptlService = (ProcessTimelineService) sourceProviderService.
@@ -137,15 +132,13 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 				ptlService.setProcessTimeline(currentLineNum, currentTimeline);
 				return currentTimeline;
 			}
-			else {
-				if (ptlService.getProcessTimeline(currentLineNum) == null) { // Why is it sometimes null? 
-					System.out.println("Was null, auto-fixing");
-					ptlService.setProcessTimeline(currentLineNum, new ProcessTimeline(currentLineNum, scopeMap,
-							dataTrace, lineToPaint(currentLineNum),
-							attributes.numPixelsH, attributes.endTime - attributes.begTime, minBegTime + attributes.begTime));
-				}
-				return ptlService.getProcessTimeline(currentLineNum);
-			}
+			/*if (ptlService.getProcessTimeline(currentLineNum) == null) { // Why is it sometimes null? 
+				System.out.println("Was null, auto-fixing");
+				ptlService.setProcessTimeline(currentLineNum, new ProcessTimeline(currentLineNum, scopeMap,
+						dataTrace, lineToPaint(currentLineNum),
+						attributes.numPixelsH, attributes.endTime - attributes.begTime, minBegTime + attributes.begTime));
+			}*/
+			return ptlService.getProcessTimeline(currentLineNum);
 		}
 		return null;
 	}
@@ -207,8 +200,13 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		return trAttribute;
 	}
 	@Override
-	public void dispose() {
+	public void closeDB() {
 		dataTrace.dispose();
+	}
+	
+	@Override
+	public void dispose() {
+		closeDB();
 		super.dispose();
 	}
 

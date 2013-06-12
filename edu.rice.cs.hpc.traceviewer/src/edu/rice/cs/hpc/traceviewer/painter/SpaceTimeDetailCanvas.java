@@ -301,7 +301,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		attributes.assertTimeBounds(stData.getTimeWidth());
 		
 		attributes.setTime(_topLeftTime, _bottomRightTime);
-		attributes.setProcess((int)_topLeftProcess, (int)_bottomRightProcess);
+		attributes.setProcess(_topLeftProcess, _bottomRightProcess);
 		
 		final long numTimeDisplayed = this.getNumTimeUnitDisplayed();
 		if (numTimeDisplayed < Constants.MIN_TIME_UNITS_DISP)
@@ -313,7 +313,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final double numProcessDisp = this.getNumProcessesDisplayed();
 		if (numProcessDisp < MIN_PROC_DISP)
 		{
-			attributes.begProcess = (int)attributes.begProcess;
+			attributes.begProcess = attributes.begProcess;
 			attributes.endProcess = attributes.begProcess+MIN_PROC_DISP;
 		}
 
@@ -554,8 +554,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		final double numTimeUnitsDisp = attributes.endTime - attributes.begTime;
 		
-		long t2 = xMid + (long)((double)numTimeUnitsDisp * SCALE);
-		long t1 = xMid - (long)((double)numTimeUnitsDisp * SCALE);
+		long t2 = xMid + (long)(numTimeUnitsDisp * SCALE);
+		long t1 = xMid - (long)(numTimeUnitsDisp * SCALE);
 		
 		notifyChanges("Zoom in H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
 	}
@@ -572,9 +572,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//Add/Subtract 1/2 of the scaled numTimeUnitsDisp to xMid to get new endTime and begTime
 		long xMid = (attributes.endTime + attributes.begTime) / 2;
 		
-		final long td2 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE); 
+		final long td2 = (long)(this.getNumTimeUnitDisplayed() * SCALE); 
 		long t2 = Math.min( stData.getTimeWidth(), xMid + td2);
-		final long td1 = (long)((double) this.getNumTimeUnitDisplayed() * SCALE);
+		final long td1 = (long)(this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
 		notifyChanges("Zoom out H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
@@ -593,7 +593,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public double getScaleY()
 	{
-		return (double)viewHeight / this.getNumProcessesDisplayed();
+		return viewHeight / this.getNumProcessesDisplayed();
 	}
 	
 	/**************************************************************************
@@ -632,8 +632,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	private void adjustLabels()
     {
-        timeLabel.setText("Time Range: [" + ((long)(painter.getViewTimeBegin()/1000))/1000.0 + "s ,"
-        					+ ((long)painter.getViewTimeEnd()/1000)/1000.0 +  "s]");
+        timeLabel.setText("Time Range: [" + (painter.getViewTimeBegin()/1000)/1000.0 + "s ,"
+        					+ (painter.getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         //Old way that only works for local.
@@ -671,7 +671,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     		final int rank = this.painter.getPosition().process;
     		final String selectedProcessLabel = processes[rank];
             
-        	crossHairLabel.setText("Cross Hair: (" + ((long)(selectedTime/1000))/1000.0 + "s, " + selectedProcessLabel + ")");
+        	crossHairLabel.setText("Cross Hair: (" + (selectedTime/1000)/1000.0 + "s, " + selectedProcessLabel + ")");
         }
         
         labelGroup.setSize(labelGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -697,15 +697,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private void setDetail()
     {
 		int topLeftProcess = (int) (selectionTopLeftY / getScaleY());
-		long topLeftTime = (long)((double)selectionTopLeftX / getScaleX());
+		long topLeftTime = (long)(selectionTopLeftX / getScaleX());
 		
 		// ---------------------------------------------------------------------------------------
 		// we should include the partial selection of a time or a process
 		// for instance if the user selects processes where the max process is between
 		// 	10 and 11, we should include process 11 (just like keynote selection)
 		// ---------------------------------------------------------------------------------------
-		int bottomRightProcess = (int) Math.ceil( ((double) selectionBottomRightY / getScaleY()) );
-		long bottomRightTime = (long)Math.ceil( ((double)selectionBottomRightX / getScaleX()) );
+		int bottomRightProcess = (int) Math.ceil( (selectionBottomRightY / getScaleY()) );
+		long bottomRightTime = (long)Math.ceil( (selectionBottomRightX / getScaleX()) );
 		
 		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
@@ -886,7 +886,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     	int proc_begin = painter.getBegProcess();
     	int proc_end = painter.getEndProcess();
     	final int delta = proc_end - proc_begin;
-    	final int move = (int) java.lang.Math.ceil((double)delta * SCALE_MOVE);
+    	final int move = (int) java.lang.Math.ceil(delta * SCALE_MOVE);
 
     	proc_begin = proc_begin - move;
     	
@@ -905,7 +905,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     	int proc_begin = painter.getBegProcess();
     	int proc_end = painter.getEndProcess();
     	final int delta = proc_end - proc_begin;
-    	final int move = (int) java.lang.Math.ceil((double)delta * SCALE_MOVE);
+    	final int move = (int) java.lang.Math.ceil(delta * SCALE_MOVE);
 
     	proc_end = proc_end + move;
     	
@@ -941,7 +941,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     	{
     		selectedProcess = (int)(attributes.begProcess+(mouseDown.y*(getNumProcessesDisplayed()))/viewHeight);
     	}
-    	long closeTime = attributes.begTime + (long)((double)mouseDown.x / getScaleX());
+    	long closeTime = attributes.begTime + (long)(mouseDown.x / getScaleX());
     	if (closeTime > attributes.endTime) {
     		System.err.println("ERR STDC SCSSample time: " + closeTime +" max time: " + 
     				attributes.endTime + "\t new: " + ((attributes.begTime + attributes.endTime) >> 1));

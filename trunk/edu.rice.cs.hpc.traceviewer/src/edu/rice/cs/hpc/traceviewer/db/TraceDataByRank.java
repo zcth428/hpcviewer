@@ -1,32 +1,27 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
-/*************************************************************************
- * 
- * Class to handle data trace per rank
- * Each rank should instantiate its own class
- *
- *************************************************************************/
 public class TraceDataByRank {
-
-	/** File header information, including trace record size */
-	final public Header header;
 
 	//	tallent: safe to assume version 1.01 and greater here
 	public final static int HeaderSzMin = Header.MagicLen + Header.VersionLen + Header.EndianLen + Header.FlagsLen;
 	public final static int RecordSzMin = Constants.SIZEOF_LONG // time stamp
 										+ Constants.SIZEOF_INT; // call path id
-
-	final private IBaseData data;
-	final private int numPixelH;
-	final int rank;
 	
-	private Vector<Record> listcpid;
+	//These must be initialized in local mode. They should be considered final unless the data is remote.
+/** File header information, including trace record size */
+	public Header header;
+	private IBaseData data;
+	private int numPixelH;
+	int rank;
+	
+	protected Vector<Record> listcpid;
 	
 	/***
 	 * Create a new instance of trace data for a given rank of process or thread 
@@ -48,6 +43,14 @@ public class TraceDataByRank {
 		listcpid = new Vector<Record>(numPixelH);
 	}
 	
+	public boolean isEmpty() {
+		return listcpid == null || listcpid.size()==0;
+	}
+	
+	public TraceDataByRank(Record[] data) {
+		listcpid = new Vector<Record>(Arrays.asList(data));
+	}
+	
 	/***
 	 * reading data from file
 	 * 
@@ -57,6 +60,9 @@ public class TraceDataByRank {
 	 */
 	public void getData(double timeStart, double timeRange, double pixelLength)
 	{
+		if (!isEmpty())
+			System.out.println("Get data called and it may be replacing the existing data.");
+		
 		long minloc = data.getMinLoc(rank);
 		long maxloc = data.getMaxLoc(rank, header.RecordSz);
 		
@@ -112,6 +118,7 @@ public class TraceDataByRank {
 			this.addSample(0, dataFirst);
 		}
 
+		
 		postProcess();
 		
 	}
@@ -163,6 +170,7 @@ public class TraceDataByRank {
 
 	
 	/**Finds the sample to which 'time' most closely corresponds in the ProcessTimeline.
+	 * @param usingMidpoint 
 	 * @param time: the requested time
 	 * @return the index of the sample if the time is within the range, -1 otherwise 
 	 * */
@@ -270,6 +278,13 @@ public class TraceDataByRank {
 				predicted_index = Math.max((long) ((time - left_time) / rate) + left_index, left_index);
 			} else {
 				predicted_index = Math.min((right_index - (long) ((right_time - time) / rate)), right_index); 
+/*				if (tmp_index<0) {
+					predicted_index = Math.max(tmp_index, left_index);
+				} else {
+					// original code: predicted_index = Math.min((right_index - (long) ((right_time - time) / rate)), right_index);
+					predicted_index = Math.min(tmp_index, right_index);
+				}*/
+				
 			}
 			
 			// adjust so that the predicted index differs from both ends
@@ -420,8 +435,12 @@ public class TraceDataByRank {
 		}
 	}
 		
+	public int getRank()
+	{
+		return rank;
+	}
 	
-	private class Header 
+	class Header 
 	{
 		public final static String Magic   = "HPCRUN-trace______";
 		public final static int MagicLen   = 18;
@@ -456,7 +475,7 @@ public class TraceDataByRank {
 	 * @author laksonoadhianto
 	 *
 	 */
-	private class Record 
+	public static class Record 
 	{
 		public double timestamp;
 		public int cpId;
@@ -466,6 +485,10 @@ public class TraceDataByRank {
 			this.timestamp = _timestamp;
 			this.cpId = _cpId;
 			this.metricId = _metricId;
+		}
+		@Override
+		public String toString() {
+			return String.format("Time: %f, Call Path ID: %d, Metric ID: %d", timestamp, cpId, metricId);
 		}
 	}
 

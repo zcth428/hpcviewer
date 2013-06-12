@@ -21,7 +21,8 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
@@ -31,7 +32,8 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
  *************************************************/
 public class DataViewer extends TableViewer
 {
-	private SpaceTimeData stData;
+	private SpaceTimeDataController stData;
+	private PaintManager painter;
 	
 	private final TableViewerColumn viewerColumn;
 	
@@ -71,7 +73,7 @@ public class DataViewer extends TableViewer
 			public void handleEvent(Event event)
 			{
 				int dataIdx = dataTbl.getSelectionIndex();
-				if (dataIdx != Constants.dataIdxNULL && dataIdx != stData.getData()) {
+				if (dataIdx != Constants.dataIdxNULL && dataIdx != painter.getData()) {
 					//stData.updateData(dataIdx, dataviewer);
 				}
 			}
@@ -126,10 +128,11 @@ public class DataViewer extends TableViewer
 	 * set new database
 	 * @param _stData
 	 */
-	public void updateView(SpaceTimeData _stData) 
+	public void updateView(SpaceTimeDataController _stData) 
 	{
 		this.stData = _stData;
-		this.setSample(stData.getPosition(), this.stData.getDepth(), this.stData.getData());
+		this.painter = stData.getPainter();
+		this.setSample(painter.getPosition(), painter.getMaxDepth(), painter.getData());
 		this.getTable().setVisible(true);
 	}
 	
@@ -143,7 +146,7 @@ public class DataViewer extends TableViewer
 		if (position.time == -20)
 			return;
 		
-		int proc = stData.getProcessRelativePosition(ptlService.getNumProcessTimeline());
+		int proc = painter.getProcessRelativePosition(ptlService.getNumProcessTimeline());
 		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 
 		if (ptl != null) {

@@ -1,11 +1,14 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.State;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchWindow;
-import edu.rice.cs.hpc.common.ui.Util;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.RegistryToggleState;
+
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
@@ -26,6 +29,8 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 
 	/**The y scale of the space time canvas to be used while painting.*/
 	private final double canvasScaleY;
+	
+	private final Command showCount;
 	
 	private final boolean needToShowRecords;
 
@@ -54,10 +59,11 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 		gcFinal = _gcFinal;
 		canvasScaleY = scaleY;
 		
-		Command showCount = Util.getCommand(winObj, OptionRecordsDisplay.commandId);
+		ICommandService commandService = (ICommandService) winObj.getService(ICommandService.class);
+		showCount = commandService.getCommand( OptionRecordsDisplay.commandId );
 		
 		// initialize if we need to show the number of trace records or not
-		needToShowRecords = Util.isOptionEnabled(showCount);
+		needToShowRecords = needToShowRecords();
 		
 		// initialize the size of maximum text
 		//	the longest text should be: ">99(>99)"
@@ -116,4 +122,21 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 		}
 	}
 
+	/***
+	 * verify if the menu "Show trace records" is checked
+	 * 
+	 * @return true of the menu is checked. false otherwise
+	 */
+	private boolean needToShowRecords()
+	{
+		boolean isDebug = false;
+
+		final State state = showCount.getState(RegistryToggleState.STATE_ID);
+		if (state != null)
+		{
+			final Boolean b = (Boolean) state.getValue();
+			isDebug = b.booleanValue();
+		}
+		return isDebug;
+	}
 }

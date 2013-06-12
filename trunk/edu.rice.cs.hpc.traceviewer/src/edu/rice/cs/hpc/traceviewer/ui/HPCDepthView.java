@@ -2,24 +2,18 @@ package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.util.Map;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.IExecutionListener;
-import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint;
 import edu.rice.cs.hpc.traceviewer.painter.DepthTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 public class HPCDepthView extends ViewPart
 {
@@ -78,7 +72,7 @@ public class HPCDepthView extends ViewPart
 		});
 	}
 
-	public void updateView(SpaceTimeData _stData)
+	public void updateView(SpaceTimeDataController _stData)
 	{
 		this.depthCanvas.updateView(_stData);
 		depthCanvas.setVisible(true);

@@ -26,7 +26,7 @@ import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
 
@@ -81,16 +81,16 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 * new data update
 	 * @param _stData
 	 */
-	public void updateView(SpaceTimeData _stData)
+	public void updateView(SpaceTimeDataController _stData)
 	{
-		this.stData = _stData;
+		setSpaceTimeData(_stData); 
 		
 		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT)
 		{
 			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 		}
-		setTimeZoom(0, (long)stData.getWidth());
+		setTimeZoom(0, stData.getTimeWidth());
 	}
 	
 	/***
@@ -124,7 +124,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		if (this.stData == null || imageBuffer == null)
 			return;
 		
-		topLeftPixelX = Math.round(stData.attributes.begTime*getScaleX());
+		topLeftPixelX = Math.round(attributes.begTime*getScaleX());
 		
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
@@ -155,7 +155,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		
-		int maxDepth = stData.getMaxDepth();
+		int maxDepth = painter.getMaxDepth();
 		event.gc.fillRectangle(topPixelCrossHairX-8,selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth)-1,20,4);
 	}
 	
@@ -167,7 +167,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 **************************************************************************/
 	private void setPosition(Position position)
 	{
-		selectedTime = (double)position.time;
+		selectedTime = position.time;
 		if (currentProcess != position.process) {
 			rebuffer();
 			currentProcess = position.process;
@@ -208,6 +208,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     
     
 
+
     @Override
 	public double getScaleX()
 	{
@@ -219,7 +220,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	@Override
 	public double getScaleY() {
 		final Rectangle r = this.getClientArea();
-		return Math.max(r.height/(double)stData.getMaxDepth(), 1);
+		return Math.max(r.height/(double)painter.getMaxDepth(), 1);
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -240,28 +241,28 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 
 	private long getNumTimeDisplayed()
 	{
-		return (stData.attributes.endTime - stData.attributes.begTime);
+		return (attributes.endTime - attributes.begTime);
 	}
 	
 	private void setTimeZoom(long leftTime, long rightTime)
 	{
-		stData.attributes.begTime= leftTime;
-		stData.attributes.endTime = rightTime;
+		attributes.begTime= leftTime;
+		attributes.endTime = rightTime;
 		
-		stData.attributes.assertTimeBounds(stData.getWidth());
+		attributes.assertTimeBounds(stData.getTimeWidth());
 		
 		if (getNumTimeDisplayed() < Constants.MIN_TIME_UNITS_DISP)
 		{
-			stData.attributes.begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
-			stData.attributes.endTime = stData.attributes.begTime + getNumTimeDisplayed();
+			attributes.begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
+			attributes.endTime = attributes.begTime + getNumTimeDisplayed();
 			
-			stData.attributes.assertTimeBounds(stData.getWidth());
+			attributes.assertTimeBounds(stData.getTimeWidth());
 		}
 		
 		rebuffer();
 		
-		oldBegTime = stData.attributes.begTime;
-		oldEndTime = stData.attributes.endTime;
+		oldBegTime = attributes.begTime;
+		oldEndTime = attributes.endTime;
 	}
 
 	/**** time zoom action **/
@@ -286,13 +287,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 */
     private void setDetail()
     {
-		long topLeftTime = (long)((double)leftSelection / getScaleX());
-		long bottomRightTime = (long)((double)rightSelection / getScaleX());
+		long topLeftTime = (long)(leftSelection / getScaleX());
+		long bottomRightTime = (long)(rightSelection / getScaleX());
 		
-		stData.attributes.begTime = topLeftTime;
-		stData.attributes.endTime = bottomRightTime;
+		attributes.begTime = topLeftTime;
+		attributes.endTime = bottomRightTime;
 		
-		Frame frame = new Frame(stData.attributes, selectedDepth, (long)selectedTime, currentProcess);
+		Frame frame = new Frame(attributes, selectedDepth, (long)selectedTime, currentProcess);
 		try {
 			TraceOperation.getOperationHistory().execute(
 					new ZoomOperation("Time zoom out", frame, zoomAction), 
@@ -308,15 +309,15 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
      * @param newPosition
      */
     private void notifyPositionChange()
-    {    	
-    	if(mouseDown == null)
+    {    
+        if(mouseDown == null)
     		return;
 
-    	long closeTime = stData.attributes.begTime + (long)((double)mouseDown.x / getScaleX());
+    	long closeTime = stData.attributes.begTime + (long)(mouseDown.x / getScaleX());
     	
-    	Position currentPosition = stData.getPosition();
+    	Position currentPosition = painter.getPosition();
     	Position newPosition = new Position(closeTime, currentPosition.process);
-    	
+    		
     	try {
 			TraceOperation.getOperationHistory().execute(
 					new PositionOperation(newPosition, positionAction), 
@@ -339,7 +340,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
      * @param t2: the rightmost time
      */
     private void adjustCrossHair(long t1, long t2) {
-    	Position currentPosition = stData.getPosition();
+    	Position currentPosition = painter.getPosition();
     	long time = currentPosition.time;
     	
     	if (time<t1 || time>t2)
@@ -368,12 +369,12 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 		
-		stData.attributes.numPixelsDepthV = viewHeight;
+		attributes.numPixelsDepthV = viewHeight;
 		
 		try
 		{
 			paintDepthViewport(bufferGC,  
-					stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight);
+					attributes.begTime, attributes.endTime, viewWidth, viewHeight);
 		}
 		catch(Exception e)
 		{
@@ -401,7 +402,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	{
 		boolean changedBounds = true ; //!( dtProcess == currentPosition.process && attributes.sameDepth(oldAttributes));
 		
-		ImageTraceAttributes attributes = stData.attributes;
+		ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.numPixelsDepthV = _numPixelsV;
 		attributes.setTime(_begTime, _endTime);
 		

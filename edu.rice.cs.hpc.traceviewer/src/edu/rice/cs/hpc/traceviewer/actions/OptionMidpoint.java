@@ -10,7 +10,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 public class OptionMidpoint extends AbstractHandler {
 
@@ -27,7 +27,7 @@ public class OptionMidpoint extends AbstractHandler {
 			ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
 					ISourceProviderService.class);
 			DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
-			final SpaceTimeData data = dataService.getData();
+			final SpaceTimeDataController data = dataService.getData();
 
 			boolean enable = !Util.isOptionEnabled(command);
 			data.setEnableMidpoint(enable);

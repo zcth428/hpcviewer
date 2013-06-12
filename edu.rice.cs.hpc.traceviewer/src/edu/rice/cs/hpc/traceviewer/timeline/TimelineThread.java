@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -10,9 +9,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /***********************************************************
  * A thread that reads in the data for one line, 
@@ -25,7 +25,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
 public class TimelineThread extends Thread
 {
 	/**The SpaceTimeData that this thread gets its files from and adds it data and images to.*/
-	private SpaceTimeData stData;
+	private SpaceTimeDataController stData;
 	
 	/**Stores whether or not the bounds have been changed*/
 	private boolean changedBounds;
@@ -55,16 +55,16 @@ public class TimelineThread extends Thread
 	/**The composite images created by painting all of the samples in a given line to it.*/
 	final private Image[] compositeOrigLines;
 	
-	final private AtomicInteger lineNum;
+	final private ImageTraceAttributes attrib;
 
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
-	public TimelineThread(IWorkbenchWindow window, SpaceTimeData _stData, ProcessTimelineService traceService,
-			AtomicInteger lineNum, boolean _changedBounds, Canvas _canvas, 
-			Image[] compositeOrigLines, Image[] compositeFinalLines, int _width, 
-			double _scaleX, double _scaleY, TimelineProgressMonitor _monitor)
+	public TimelineThread(IWorkbenchWindow window, SpaceTimeDataController _stData, ProcessTimelineService traceService,
+			boolean _changedBounds, Canvas _canvas, Image[] compositeOrigLines, 
+			Image[] compositeFinalLines, int _width, double _scaleX, 
+			double _scaleY, TimelineProgressMonitor _monitor)
 	{
 		super();
 		stData = _stData;
@@ -75,11 +75,12 @@ public class TimelineThread extends Thread
 		scaleY = _scaleY;
 		
 		monitor = _monitor;
-		this.lineNum = lineNum;
 		this.window = window;
 		this.traceService = traceService;
 		this.compositeOrigLines = compositeOrigLines;
 		this.compositeFinalLines = compositeFinalLines;
+		
+		attrib = stData.getAttributes();
 	}
 	
 	/***************************************************************
@@ -90,15 +91,14 @@ public class TimelineThread extends Thread
 	 ***************************************************************/
 	public void run()
 	{
-		ProcessTimeline nextTrace = getNextTrace(changedBounds);
-
-		boolean usingMidpoint = stData.isEnableMidpoint();
+		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
 		
+		boolean usingMidpoint = stData.isEnableMidpoint();
 		while(nextTrace != null)
 		{
-			if(changedBounds)
+			if(changedBounds && nextTrace.data.isEmpty())
 			{
-				nextTrace.readInData(stData.getHeight());
+				nextTrace.readInData();
 				addNextTrace(nextTrace);
 			}
 			
@@ -124,7 +124,7 @@ public class TimelineThread extends Thread
 			
 			monitor.announceProgress();
 			
-			nextTrace = getNextTrace(changedBounds);
+			nextTrace = stData.getNextTrace(changedBounds);
 		}
 	}
 	
@@ -136,8 +136,7 @@ public class TimelineThread extends Thread
 	 * @param height
 	 * @param changedBounds
 	 *************************************************************************/
-	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, 
-			boolean changedBounds, boolean usingMidpoint)
+	public void paintDetailLine(SpaceTimeSamplePainter spp, int process, int height, boolean changedBounds, boolean usingMidpoint)
 	{
 		ProcessTimeline ptl = traceService.getProcessTimeline(process);
 		if (ptl == null || ptl.size()<2 )
@@ -145,11 +144,12 @@ public class TimelineThread extends Thread
 		
 		if (changedBounds)
 			ptl.shiftTimeBy(stData.getMinBegTime());
-		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
+		
+		double pixelLength = (attrib.endTime - attrib.begTime)/(double)attrib.numPixelsH;
 		
 		// do the paint
 		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
-				stData.attributes.begTime, stData.getDepth(), height, pixelLength, usingMidpoint)
+				attrib.begTime, stData.getPainter().getDepth(), height, pixelLength, usingMidpoint)
 		{
 			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
@@ -159,7 +159,7 @@ public class TimelineThread extends Thread
 				
 				final boolean isOverDepth = (currDepth < depth);
 				// write texts (depth and number of samples) if needed
-				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, stData.attributes.numPixelsH), 
+				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attrib.numPixelsH), 
 						currDepth, functionName, isOverDepth, sampleCount);
 			}
 		};
@@ -170,43 +170,14 @@ public class TimelineThread extends Thread
 	/**Returns the index of the file to which the line-th line corresponds.*/
 	public int lineToPaint(int line)
 	{
-		int numTimelinesToPaint = stData.attributes.endProcess - stData.attributes.begProcess;
-		if(numTimelinesToPaint > stData.attributes.numPixelsV)
-			return stData.attributes.begProcess + (line * numTimelinesToPaint)/(stData.attributes.numPixelsV);
+		int numTimelinesToPaint = attrib.endProcess - attrib.begProcess;
+		if(numTimelinesToPaint > attrib.numPixelsV)
+			return attrib.begProcess + (line * numTimelinesToPaint)/(attrib.numPixelsV);
 		else
-			return stData.attributes.begProcess + line;
+			return attrib.begProcess + line;
 	}
 
-	/***********************************************************************
-	 * Gets the next available trace to be filled/painted
-	 * @param changedBounds Whether or not the thread should get the data.
-	 * @return The next trace.
-	 **********************************************************************/
-	public ProcessTimeline getNextTrace(boolean changedBounds)
-	{
-		ProcessTimeline ptr = null;
-		int line = lineNum.getAndIncrement();
-		
-		if(line < Math.min(stData.attributes.numPixelsV, 
-				stData.attributes.endProcess-stData.attributes.begProcess))
-		{
-			if(changedBounds) {
-				ptr = new ProcessTimeline(line, stData.getScopeMap(), 
-						stData.getBaseData(), 
-						lineToPaint(line), stData.attributes.numPixelsH, 
-						stData.attributes.endTime-stData.attributes.begTime, 
-						stData.getMinBegTime() + stData.attributes.begTime);
-			} else {
-				int num_traces = traceService.getNumProcessTimeline();
-				if (num_traces >= line)
-					ptr = traceService.getProcessTimeline(line);
-				else
-					System.err.println("STD error: trace paints " + num_traces + " < line number " + line);
-			}
-		}
-		return ptr;
-	}
-	
+
 	
 	/**Adds a filled ProcessTimeline to traces - used by TimelineThreads.*/
 	synchronized public void addNextTrace(ProcessTimeline nextPtl)

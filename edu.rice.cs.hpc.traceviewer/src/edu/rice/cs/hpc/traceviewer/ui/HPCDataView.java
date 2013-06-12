@@ -5,14 +5,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISizeProvider;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-//import edu.rice.cs.hpc.traceviewer.events.ITraceData;
-//import edu.rice.cs.hpc.traceviewer.events.ITracePosition;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /// A view for displaying application data objects
 public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData, ITracePosition
@@ -21,7 +20,8 @@ public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData
 	
 	Composite master;
 
-	SpaceTimeData stData;
+	SpaceTimeDataController stData;
+	PaintManager painter;
 	
 	DataViewer dataViewer;
 		
@@ -59,9 +59,10 @@ public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData
 	}
 	
 	
-	public void updateView(SpaceTimeData _stData) 
+	public void updateView(SpaceTimeDataController _stData) 
 	{
-		this.stData = _stData;		
+		this.stData = _stData;	
+		this.painter = stData.getPainter();
 		this.dataViewer.updateView(_stData);
 		
 //		stData.addDataListener(this);
@@ -95,6 +96,6 @@ public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData
 	 * @see edu.rice.cs.hpc.traceviewer.events.ITracePosition#setPosition(edu.rice.cs.hpc.traceviewer.painter.Position)
 	 */
 	public void setPosition(Position position) {
-		this.dataViewer.setSample(position, stData.getDepth(), stData.getData());
+		this.dataViewer.setSample(position, painter.getMaxDepth(), painter.getData());
 	}
 }

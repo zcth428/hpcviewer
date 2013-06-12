@@ -26,13 +26,13 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
-import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeData;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
@@ -51,7 +51,7 @@ public class CallStackViewer extends TableViewer
 	
 	private final DataService dataService;
 	
-    /**Creates a CallStackViewer with Composite parent, SpaceTimeData _stData, and HPCTraceView _view.*/
+    /**Creates a CallStackViewer with Composite parent, SpaceTimeDataController _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, final HPCCallStackView csview)
 	{
 		super(parent, SWT.SINGLE | SWT.NO_SCROLL);
@@ -95,8 +95,8 @@ public class CallStackViewer extends TableViewer
 			public void handleEvent(Event event)
 			{
 				int depth = stack.getSelectionIndex(); 
-				SpaceTimeData stData = dataService.getData();
-				if(depth !=-1 && depth != stData.getDepth()) {
+				PaintManager painter = dataService.getData().getPainter();
+				if(depth !=-1 && depth != painter.getMaxDepth()) {
 					// ask the depth editor to update the depth and launch the updateDepth event
 					csview.depthEditor.setSelection(depth);
 					notifyChange(depth);
@@ -112,7 +112,7 @@ public class CallStackViewer extends TableViewer
         	public Image getImage(Object element) {
         		if (element instanceof String) {
         			Image img = null;
-    				SpaceTimeData stData = dataService.getData();
+    				SpaceTimeDataController stData = dataService.getData();
         			if (stData != null)
         				img = stData.getColorTable().getImage((String)element);
         			return img;
@@ -153,8 +153,8 @@ public class CallStackViewer extends TableViewer
 	 */
 	public void updateView()
 	{
-		SpaceTimeData stData = dataService.getData();
-		this.setSample(stData.getPosition(), stData.getDepth());
+		PaintManager painter = dataService.getData().getPainter();
+		this.setSample(painter.getPosition(), painter.getDepth());
 		this.getTable().setVisible(true);
 	}
 	
@@ -173,9 +173,9 @@ public class CallStackViewer extends TableViewer
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
 		int proc;
-		SpaceTimeData stData = dataService.getData();
+		SpaceTimeDataController stData = dataService.getData();
 		if (stData != null)
-			proc = stData.getProcessRelativePosition(ptlService.getNumProcessTimeline());
+			proc = stData.getPainter().getProcessRelativePosition(ptlService.getNumProcessTimeline());
 		else 
 		{
 			return;
@@ -183,7 +183,6 @@ public class CallStackViewer extends TableViewer
 		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time, stData.isEnableMidpoint());
-
 			final Vector<String> sampleVector;
 			if (sample>=0)
 				sampleVector = ptl.getCallPath(sample, depth).getFunctionNames();
@@ -279,11 +278,6 @@ public class CallStackViewer extends TableViewer
 					int depth = getTable().getSelectionIndex();
 					setSample(p,depth);
 				}
-			}
-		} else if (operation.hasContext(RefreshOperation.context)) {
-			if (event.getEventType() == OperationHistoryEvent.DONE) 
-			{
-				updateView();
 			}
 		}
 	}

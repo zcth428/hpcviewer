@@ -13,8 +13,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -22,6 +21,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
@@ -48,20 +49,24 @@ public class OpenDatabaseDialog extends Dialog {
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(outerComposite);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(outerComposite);
 		
-		Button btnLocal = new Button(outerComposite, SWT.RADIO);
-		btnLocal.setText("Local");
+		final TabFolder tabFolder = new TabFolder(outerComposite, SWT.TOP);
+		Rectangle r = outerComposite.getClientArea();
+		tabFolder.setLocation(r.x, r.y);
 
-		Composite localComposite = new Composite(outerComposite, SWT.BORDER_SOLID);
-		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(localComposite);
+		// ----------------------------------------------------- local database
+		TabItem tabLocalItem = new TabItem(tabFolder, SWT.NULL);
+		tabLocalItem.setText("Local database");
+		
+		Composite localComposite = new Composite(tabLocalItem.getParent(), SWT.BORDER_SOLID);
+		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(localComposite);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(localComposite);
 		
-		final Label lblBrowse = new Label(localComposite, SWT.LEAD);
+		final Label lblBrowse = new Label(localComposite, SWT.LEFT | SWT.WRAP);
 		lblBrowse.setText("File:");
+		GridDataFactory.fillDefaults().grab(true, false).hint(400, 20).align(SWT.BEGINNING, SWT.CENTER).applyTo(lblBrowse);
 		
 		Button btnBrowse = new Button(localComposite, SWT.PUSH);
 		btnBrowse.setText("Browse");
-		
-		GridDataFactory.swtDefaults().align(SWT.END, SWT.CENTER).applyTo(btnBrowse);
 		
 		btnBrowse.addSelectionListener(new SelectionListener() {
 			
@@ -86,10 +91,15 @@ public class OpenDatabaseDialog extends Dialog {
 			public void widgetDefaultSelected(SelectionEvent e) {}
 		});
 
-		Button btnRemote = new Button(outerComposite, SWT.RADIO);
-		btnRemote.setText("Remote");
+		localComposite.pack();
 		
-		Composite remoteComposite = new Composite(outerComposite, SWT.NULL);
+		tabLocalItem.setControl(localComposite);
+		
+		// ----------------------------------------------------- remote database
+		TabItem tabRemoteItem = new TabItem(tabFolder, SWT.NULL);
+		tabRemoteItem.setText("Remote database");
+		
+		Composite remoteComposite = new Composite(tabRemoteItem.getParent(), SWT.NULL);
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(remoteComposite);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(remoteComposite);
 		
@@ -101,12 +111,11 @@ public class OpenDatabaseDialog extends Dialog {
 		name.setItems(objHistoryName.getHistory());
 		name.setTextLimit(50);
 		name.setToolTipText("Enter the domain name or IP address of the server to use");
-		GridData gdAddr = new GridData(150, 20);
-		name.setLayoutData(gdAddr);
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(name);
+
 		comboBoxes[0] = name;
 
-
-		Label serverPort = new Label(remoteComposite, SWT.LEAD);
+		Label serverPort = new Label(remoteComposite, SWT.LEFT);
 		serverPort.setText("Port:");
 		Combo port = new Combo(remoteComposite, SWT.SINGLE);  
 		objHistoryPort = new UserInputHistory( SERVER_PORT_KEY );
@@ -114,8 +123,7 @@ public class OpenDatabaseDialog extends Dialog {
 		port.setText("21590");
 		port.setTextLimit(5);
 		port.setToolTipText("Enter the port to use"); 
-		GridData gdPort = new GridData(75, 20);
-		port.setLayoutData(gdPort);
+
 		comboBoxes[1] = port;
 
 		Label serverPath = new Label(remoteComposite, SWT.LEAD);
@@ -127,11 +135,14 @@ public class OpenDatabaseDialog extends Dialog {
 		path.setText("");
 		path.setTextLimit(400);
 		path.setToolTipText("Enter the path to the folder containing the database on the server"); 
-		GridData gdPath = new GridData(220, 20);
-		path.setLayoutData(gdPath);
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(path);
+
 		comboBoxes[2] = path;
 
 		remoteComposite.pack();
+		
+		tabRemoteItem.setControl(remoteComposite);
+		
 		outerComposite.pack();
 		
 		return outerComposite;

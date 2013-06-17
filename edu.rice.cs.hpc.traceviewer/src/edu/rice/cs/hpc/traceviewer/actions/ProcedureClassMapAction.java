@@ -9,7 +9,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
 import edu.rice.cs.hpc.traceviewer.ui.ProcedureClassDialog;
@@ -30,21 +29,19 @@ public class ProcedureClassMapAction extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
 		final Shell shell = HandlerUtil.getActiveShell(event);
+		final IWorkbenchWindow win = HandlerUtil.getActiveWorkbenchWindow(event);
+		
 		ProcedureClassMap classMap = new ProcedureClassMap(shell.getDisplay());
 		ProcedureClassDialog dlg = new ProcedureClassDialog(shell, classMap);
 		if ( dlg.open() == Dialog.OK ) {
 			classMap.save();
-			broadcastChanges(event);
+			broadcastChanges(win);
 		}
 		
 		return null;
 	}
 
-	private void broadcastChanges(ExecutionEvent event) {
-		IWorkbenchWindow winObj = HandlerUtil.getActiveWorkbenchWindow(event);
-		if (winObj == null ){
-			winObj = Util.getActiveWindow();
-		}
+	private void broadcastChanges(IWorkbenchWindow winObj) {
 		
 		if (winObj == null) {
 			// impossible to get a window handle

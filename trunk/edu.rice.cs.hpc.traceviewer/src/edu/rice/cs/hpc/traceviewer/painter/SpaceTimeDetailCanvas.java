@@ -552,7 +552,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		long xMid = (attributes.endTime + attributes.begTime) / 2;
 		
-		final double numTimeUnitsDisp = attributes.endTime - attributes.begTime;
+		final long numTimeUnitsDisp = attributes.endTime - attributes.begTime;
 		
 		long t2 = xMid + (long)(numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)(numTimeUnitsDisp * SCALE);

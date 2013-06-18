@@ -66,7 +66,7 @@ public class RemoteDataRetriever {
 	 * @return
 	 * @throws IOException 
 	 */
-	public void getData(int P0, int Pn, double t0, double tn, int vertRes, int horizRes, HashMap<Integer, CallPath> _scopeMap) throws IOException
+	public void getData(int P0, int Pn, long t0, long tn, int vertRes, int horizRes, HashMap<Integer, CallPath> _scopeMap) throws IOException
 	{
 		//Make the call
 		//Check to make sure the server is sending back data
@@ -104,13 +104,13 @@ public class RemoteDataRetriever {
 		
 		while (RanksReceived < RanksExpected)
 		{
-			monitor.announceProgress();
+
 			int rankNumber = DataReader.readInt();
 			int Length = DataReader.readInt();//Number of CPID's
 			
 			
-			double startTimeForThisTimeline = DataReader.readDouble();
-			double endTimeForThisTimeline = DataReader.readDouble();
+			long startTimeForThisTimeline = DataReader.readLong();
+			long endTimeForThisTimeline = DataReader.readLong();
 			int compressedSize = DataReader.readInt();
 			byte[] compressedTraceLine = new byte[compressedSize];
 			
@@ -132,13 +132,13 @@ public class RemoteDataRetriever {
 	}
 
 	
-	private void requestData(int P0, int Pn, double t0, double tn, int vertRes,
+	private void requestData(int P0, int Pn, long t0, long tn, int vertRes,
 			int horizRes) throws IOException {
 		sender.writeInt(DATA);
 		sender.writeInt(P0);
 		sender.writeInt(Pn);
-		sender.writeDouble(t0);
-		sender.writeDouble(tn);
+		sender.writeLong(t0);
+		sender.writeLong(tn);
 		sender.writeInt(vertRes);
 		sender.writeInt(horizRes);
 		//That's it for the message
@@ -237,8 +237,8 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x44415441 (DATA in ASCII)
  * 0x04		First Process	int-4				The lower bound on the processes to be retrieved
  * 0x08		Last Process	int-4				The upper bound on the processes to be retrieved
- * 0x0C		Time Start		double-8			The lower bound on the time of the traces to be retrieved. This is the absolute time, not the time since Global Min Time.
- * 0x12		Time End		double-8			The upper bound on the time of the traces to be retrieved. Again, the absolute time.
+ * 0x0C		Time Start		long-8				The lower bound on the time of the traces to be retrieved. This is the absolute time, not the time since Global Min Time.
+ * 0x12		Time End		long-8				The upper bound on the time of the traces to be retrieved. Again, the absolute time.
  * 0x1A		Vertical Res	int-4				The vertical resolution of the detail view. The server uses this to determine which processes should be returned from the range [First Process, Last Process]
  * 0x1E		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
  * 
@@ -249,8 +249,8 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x48455245 (HERE in ASCII)
  * 0x04+k	Line Number		int-4				The rank number whose data follows. Should be unique in the message
  * 0x08+k	Entry Count		int-4				The number of CPID's that follow
- * 0x0C+k	Begin Time		double-8			The start time of this rank, calculated by taking the timestamp of the first TimeCPID in the line
- * 0x14+k	End Time		double-8			The end time of this rank, calculated by taking the timestamp of the last TimeCPID in the line
+ * 0x0C+k	Begin Time		long-8				The start time of this rank, calculated by taking the timestamp of the first TimeCPID in the line
+ * 0x14+k	End Time		long-8				The end time of this rank, calculated by taking the timestamp of the last TimeCPID in the line
  * 0x1C+k	Compressed Size	int-4				The size of the data, c, that follows. If compression is disabled, this should be equal to 4*(Entry Count)
  * 0x20+k+c	Trace Data		ints or bytes		The raw trace data. If compression is disabled, this is an array of 2x(4 bytes), one after the other. If compression is enabled, this is a compressed array of 2x(4 bytes). See the message notes for more information.
  * 

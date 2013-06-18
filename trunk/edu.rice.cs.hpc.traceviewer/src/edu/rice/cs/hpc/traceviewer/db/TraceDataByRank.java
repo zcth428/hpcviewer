@@ -58,7 +58,7 @@ public class TraceDataByRank {
 	 * @param timeRange
 	 * @param pixelLength : number of records
 	 */
-	public void getData(double timeStart, double timeRange, double pixelLength)
+	public void getData(long timeStart, long timeRange, double pixelLength)
 	{
 		if (!isEmpty())
 			System.out.println("Get data called and it may be replacing the existing data.");
@@ -72,7 +72,7 @@ public class TraceDataByRank {
 		final long startLoc = this.findTimeInInterval(timeStart, minloc, maxloc);
 		
 		// get the end location
-		final double endTime = timeStart + timeRange;
+		final long endTime = timeStart + timeRange;
 		final long endLoc = Math.min(this.findTimeInInterval(endTime, minloc, maxloc) + header.RecordSz, maxloc );
 
 		// get the number of records data to display
@@ -125,7 +125,7 @@ public class TraceDataByRank {
 	
 	
 	/**Gets the time that corresponds to the index sample in times.*/
-	public double getTime(int sample)
+	public long getTime(int sample)
 	{
 		if(sample<0)
 			return 0;
@@ -150,7 +150,7 @@ public class TraceDataByRank {
 
 	
 	/**Shifts all the times in the ProcessTimeline to the left by lowestStartingTime.*/
-	public void shiftTimeBy(double lowestStartingTime)
+	public void shiftTimeBy(long lowestStartingTime)
 	{
 		for(int i = 0; i<listcpid.size(); i++)
 		{
@@ -174,13 +174,13 @@ public class TraceDataByRank {
 	 * @param time: the requested time
 	 * @return the index of the sample if the time is within the range, -1 otherwise 
 	 * */
-	public int findMidpointBefore(double time, boolean usingMidpoint)
+	public int findMidpointBefore(long time, boolean usingMidpoint)
 	{
 		int low = 0;
 		int high = listcpid.size() - 1;
 		
-		double timeMin = listcpid.get(low).timestamp;
-		double timeMax = listcpid.get(high).timestamp;
+		long timeMin = listcpid.get(low).timestamp;
+		long timeMax = listcpid.get(high).timestamp;
 		
 		// do not search the sample if the time is out of range
 		if (time<timeMin  || time>timeMax) 
@@ -190,7 +190,7 @@ public class TraceDataByRank {
 		
 		while( low != mid )
 		{
-			final double time_current = (usingMidpoint ? getTimeMidPoint(mid,mid+1) : listcpid.get(mid).timestamp);
+			final long time_current = (usingMidpoint ? getTimeMidPoint(mid,mid+1) : listcpid.get(mid).timestamp);
 			
 			if (time > time_current)
 				low = mid;
@@ -213,8 +213,8 @@ public class TraceDataByRank {
 
 	
 	
-	private double getTimeMidPoint(int left, int right) {
-		return (listcpid.get(left).timestamp + listcpid.get(right).timestamp) / 2.0;
+	private long getTimeMidPoint(int left, int right) {
+		return (listcpid.get(left).timestamp + listcpid.get(right).timestamp) / 2;
 	}
 	
 	/*******************************************************************************************
@@ -234,13 +234,13 @@ public class TraceDataByRank {
 	 * Used for calculating the index in which the data is to be inserted.
 	 ******************************************************************************************/
 	private int sampleTimeLine(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex, 
-			double pixelLength, double startingTime)
+			double pixelLength, long startingTime)
 	{
 		int midPixel = (startPixel+endPixel)/2;
 		if (midPixel == startPixel)
 			return 0;
 		
-		long loc = findTimeInInterval(midPixel*pixelLength+startingTime, minLoc, maxLoc);
+		long loc = findTimeInInterval((long)(midPixel*pixelLength)+startingTime, minLoc, maxLoc);
 		
 		final Record nextData = this.getData(loc);
 		
@@ -259,21 +259,21 @@ public class TraceDataByRank {
 	 * @param left_boundary_offset: the start location. 0 means the beginning of the data in a process
 	 * @param right_boundary_offset: the end location.
 	 ********************************************************************************/
-	private long findTimeInInterval(double time, long left_boundary_offset, long right_boundary_offset)
+	private long findTimeInInterval(long time, long left_boundary_offset, long right_boundary_offset)
 	{
 		if (left_boundary_offset == right_boundary_offset) return left_boundary_offset;
 
 		long left_index = getRelativeLocation(left_boundary_offset);
 		long right_index = getRelativeLocation(right_boundary_offset);
 		
-		double left_time = data.getLong(left_boundary_offset);
-		double right_time = data.getLong(right_boundary_offset);
+		long left_time = data.getLong(left_boundary_offset);
+		long right_time = data.getLong(right_boundary_offset);
 		
 		// apply "Newton's method" to find target time
 		while (right_index - left_index > 1) {
 			long predicted_index;
 			double rate = (right_time - left_time) / (right_index - left_index);
-			double mtime = (right_time - left_time) / 2;
+			long mtime = (right_time - left_time) / 2;
 			if (time <= mtime) {
 				predicted_index = Math.max((long) ((time - left_time) / rate) + left_index, left_index);
 			} else {
@@ -295,7 +295,7 @@ public class TraceDataByRank {
 			if (predicted_index >= right_index)
 				predicted_index = right_index - 1;
 
-			double temp = data.getLong(getAbsoluteLocation(predicted_index));
+			long temp = data.getLong(getAbsoluteLocation(predicted_index));
 			if (time >= temp) {
 				left_index = predicted_index;
 				left_time = temp;
@@ -402,7 +402,7 @@ public class TraceDataByRank {
 	
 	private Record getData(long location)
 	{
-		final double time = data.getLong(location);
+		final long time = data.getLong(location);
 		final int cpId = data.getInt(location + Constants.SIZEOF_LONG);
 		int metricId = edu.rice.cs.hpc.traceviewer.util.Constants.dataIdxNULL;
 		if (header.isDataCentric) {
@@ -477,18 +477,18 @@ public class TraceDataByRank {
 	 */
 	public static class Record 
 	{
-		public double timestamp;
+		public long timestamp;
 		public int cpId;
 		public int metricId;
 		
-		public Record(double _timestamp, int _cpId, int _metricId) {
+		public Record(long _timestamp, int _cpId, int _metricId) {
 			this.timestamp = _timestamp;
 			this.cpId = _cpId;
 			this.metricId = _metricId;
 		}
 		@Override
 		public String toString() {
-			return String.format("Time: %f, Call Path ID: %d, Metric ID: %d", timestamp, cpId, metricId);
+			return String.format("Time: %d, Call Path ID: %d, Metric ID: %d", timestamp, cpId, metricId);
 		}
 	}
 

@@ -17,10 +17,10 @@ public class ProcessTimeline {
 	private int lineNum;
 
 	/** The initial time in view. */
-	private double startingTime;
+	private long startingTime;
 
 	/** The range of time in view. */
-	private double timeRange;
+	private long timeRange;
 
 	/** The amount of time that each pixel on the screen correlates to. */
 	private double pixelLength;
@@ -37,7 +37,7 @@ public class ProcessTimeline {
 	 * @param _timeRange The difference between the start time and the end time
 	 */
 	public ProcessTimeline(int _lineNum, HashMap<Integer, CallPath> _scopeMap, IBaseData dataTrace, 
-			int _processNumber, int _numPixelH, double _timeRange, double _startingTime)
+			int _processNumber, int _numPixelH, long _timeRange, long _startingTime)
 	{
 
 		lineNum = _lineNum;
@@ -57,7 +57,7 @@ public class ProcessTimeline {
 	//Remote version
 	public ProcessTimeline(TraceDataByRank _data,
 			HashMap<Integer, CallPath> _scopeMap, int _processNumber,
-			int _numPixelH, double _timeRange, double _startingTime) {
+			int _numPixelH, long _timeRange, long _startingTime) {
 		lineNum = _processNumber;
 		scopeMap = _scopeMap;
 
@@ -82,7 +82,7 @@ public class ProcessTimeline {
 	}
 
 	/** Gets the time that corresponds to the index sample in times. */
-	public double getTime(int sample) {
+	public long getTime(int sample) {
 		return data.getTime(sample);
 	}
 
@@ -91,7 +91,7 @@ public class ProcessTimeline {
 		return data.getCpid(sample);
 	}
 
-	public void shiftTimeBy(double lowestStartingTime) {
+	public void shiftTimeBy(long lowestStartingTime) {
 		data.shiftTimeBy(lowestStartingTime);
 	}
 
@@ -139,7 +139,7 @@ public class ProcessTimeline {
 	 * @param time : the requested time
 	 * @return the index of the sample if the time is within the range, -1  otherwise
 	 * */
-	public int findMidpointBefore(double time, boolean usingMidpoint)
+	public int findMidpointBefore(long time, boolean usingMidpoint)
 	{
 		return data.findMidpointBefore(time, usingMidpoint);
 	}

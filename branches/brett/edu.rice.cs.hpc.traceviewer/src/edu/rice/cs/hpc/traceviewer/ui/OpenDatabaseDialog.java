@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -26,30 +27,69 @@ import org.eclipse.swt.widgets.TabItem;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
+import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.RemoteDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
+
 
 public class OpenDatabaseDialog extends Dialog {
 
 	Combo[] comboBoxes = new Combo[3];
 	//This is the most convenient and flexible way to pass around the data.
 	//Index 0 = Server's name/address; Index 1 = Port; Index 2 = Path to database folder on server
-	public String[]  args = new String[3];
+	private String[]  args = new String[3];
+	private String directory=""; //used to pass directory to LocalDBOpener
+	private TabFolder tfCheck; //used to determine which opener to pass to - see okPressed
+	private boolean passToLocal; //used to determine which opener to pass to - see okPressed
+	private boolean okClicked; //has the ok button been clicked
+	private final IStatusLineManager status;
 	
 	private static final String SERVER_NAME_KEY = "server_name", SERVER_PORT_KEY = "server_port", SERVER_PATH_KEY = "server_path";
 	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath;
 	
-
-	protected OpenDatabaseDialog(Shell parentShell) {
+	public OpenDatabaseDialog(Shell parentShell, IStatusLineManager inStatus) { 
 		super(parentShell);
-		// TODO Auto-generated constructor stub
+		status=inStatus;
+	}
+	
+	/**
+	 * This method is used to pass data from the OpenDatabaseDialog box to 
+	 * {@link TraceDatabase#openDatabase(org.eclipse.ui.IWorkbenchWindow, String[], org.eclipse.jface.action.IStatusLineManager, AbstractDBOpener)}.
+	 * It must be called on an OpenDatabaseDialog that has already been constructed AFTER calling {@link #open()}.
+	 * The type of opener it returns depends on which tab the user had open when he clicked ok
+	 * @author Brett Gutstein
+	 * @return a LocalDBOpener or RemoteDBOpener for use with TraceDatabase.openDatabase, null if user cancels (which will make calling method return null)
+	 */
+	public AbstractDBOpener getDBOpener() {
+	
+		if (okClicked) {
+			if (passToLocal) {
+				return new LocalDBOpener(directory);
+			} else {
+				return new RemoteDBOpener(args);
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	protected void configureShell(Shell shell) {
+		super.configureShell(shell);
+		shell.setText("Open a Database");
 	}
 
 	protected Control createDialogArea(Composite parent) {
+		
+		status.setMessage("Select a local or remote directory containing traces");
+		
 		Composite outerComposite = (Composite) super.createDialogArea(parent);
 
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(outerComposite);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(outerComposite);
 		
 		final TabFolder tabFolder = new TabFolder(outerComposite, SWT.TOP);
+		tfCheck = tabFolder;
 		Rectangle r = outerComposite.getClientArea();
 		tabFolder.setLocation(r.x, r.y);
 
@@ -77,7 +117,6 @@ public class OpenDatabaseDialog extends Dialog {
 				dialog = new DirectoryDialog(getShell());
 				dialog.setMessage("Please select a directory containing execution traces.");
 				dialog.setText("Select Data Directory");
-				String directory;
 		
 				directory = dialog.open();
 
@@ -164,8 +203,17 @@ public class OpenDatabaseDialog extends Dialog {
 		objHistoryName.addLine(args[0]);
 		objHistoryPort.addLine(args[1]);
 		objHistoryPath.addLine(args[2]);
+		
+		int selection = tfCheck.getSelectionIndex(); //returns the zero-relative index of the TabItem which is selected in the TabFolder (0 is local 1 is remote)
+		if (selection==0) {
+			passToLocal=true;
+		} else if (selection==1) { //leave null if selectionindex somehow returns not 0 or 1
+			passToLocal=false;
+		}
+		
+		okClicked=true;
+		
 		super.okPressed();
-
 	}
 
 	private static class UserInputHistory {
@@ -279,10 +327,4 @@ public class OpenDatabaseDialog extends Dialog {
 	    }
 	}
 
-
-	static public void main(String []argv) 
-	{
-		OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell());
-		dlg.open();
-	}
 }

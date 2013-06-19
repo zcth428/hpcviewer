@@ -3,12 +3,14 @@ package edu.rice.cs.hpc.traceviewer.actions;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
+import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 public class OpenDatabase extends AbstractHandler
 {
@@ -17,9 +19,11 @@ public class OpenDatabase extends AbstractHandler
 	{
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		final IViewSite vSite = ( IViewSite ) HandlerUtil.getActiveSite(event);
+		final IStatusLineManager status = vSite.getActionBars().getStatusLineManager();
 
-		boolean ret = TraceDatabase.openDatabase(window, null, 
-				vSite.getActionBars().getStatusLineManager(), new LocalDBOpener());
+		OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), status);
+		dlg.open();
+		TraceDatabase.openDatabase(window, null, status, dlg.getDBOpener());
 		
 		
 		return null;

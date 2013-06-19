@@ -30,15 +30,22 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	//For more information on message structure, see protocol documentation at the end of RemoteDataReceiver 
 	DataOutputStream sender;
 	DataInputStream receiver;
+	String[] data = new String[3]; //data passed from OpenDatabaseDialog
+	
+	public RemoteDBOpener(String[] inData) {
+		for (int i=0;i<3;i++) {
+			data[i]=inData[i];
+		}
+	}
 
 	static Socket serverConnection = null;
 	@Override
 	public SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
 
-		String serverURL = args[0];
-		int port = Integer.parseInt(args[1]);
-		String serverPathToDB = args[2];
+		String serverURL = data[0];
+		int port = Integer.parseInt(data[1]);
+		String serverPathToDB = data[2];
 		
 
 		//Socket serverConnection = null;
@@ -223,7 +230,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		
 		sender.flush();
 
-		System.out.println("Open databse message sent");
+		System.out.println("Open database message sent");
 	}
 
 }

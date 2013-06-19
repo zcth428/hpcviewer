@@ -78,6 +78,9 @@ public class TraceDatabase {
 	static public boolean openDatabase(IWorkbenchWindow window,
 			final String[] args, final IStatusLineManager statusMgr,
 			AbstractDBOpener opener) {
+		
+		if (opener == null) //user canceled dialog
+			return false;
 
 		final Shell shell = window.getShell();
 

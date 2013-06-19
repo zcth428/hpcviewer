@@ -15,35 +15,23 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 import edu.rice.cs.hpc.traceviewer.util.TraceProgressReport;
 
 public class LocalDBOpener extends AbstractDBOpener {
+	
+	private String directory;
+	
+	public LocalDBOpener(String inDirectory){
+		directory=inDirectory;
+	}
 
 	@Override
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
 
 		
-		
-		statusMgr.setMessage("Select a directory containing traces");
+		final Shell shell = window.getShell();
 		FileData location = new FileData();
 		
-		Shell shell = window.getShell();
-		boolean hasDatabase = false;
-		// ---------------------------------------------------------------
-		// processing the command line argument
-		// ---------------------------------------------------------------
-		if (args != null && args.length > 0) {
-			for (String arg : args) {
-				if (arg != null && arg.charAt(0) != '-') {
-					// this must be the name of the database to open
-					hasDatabase = isCorrectDatabase(arg,
-							statusMgr, location);
-				}
-			}
-		}
-
-		if (!hasDatabase) {
-			// use dialog box to find the database
-			hasDatabase = open(shell, statusMgr, location);
-		}
+		//check if the database provided by user in OpenDatabaseDialog is correct
+		boolean hasDatabase = isCorrectDatabase(directory,statusMgr, location);
 		// If it still doesn't have a database, we assume that the user doesn't
 		// want to open a database, so we return null, which makes the calling method return false.
 		if (!hasDatabase)
@@ -55,8 +43,8 @@ public class LocalDBOpener extends AbstractDBOpener {
 		// Try to open the database and refresh the data
 		// ---------------------------------------------------------------------
 
-		statusMgr.setMessage("Opening trace data ...");
-		shell.update();
+		
+
 
 		//
 
@@ -77,40 +65,7 @@ public class LocalDBOpener extends AbstractDBOpener {
 		
 		
 	}
-	/***
-	 * Open a database by displaying a directory dialog box return true if the
-	 * database is correct, false otherwise
-	 * 
-	 * @param shell
-	 * @return
-	 */
-	static private boolean open(Shell shell,
-			final IStatusLineManager statusMgr, FileData location) {
-		DirectoryDialog dialog;
-
-		boolean validDatabaseFound = false;
-		dialog = new DirectoryDialog(shell);
-		dialog.setMessage("Please select a directory containing execution traces.");
-		dialog.setText("Select Data Directory");
-		String directory;
-		while (!validDatabaseFound) {
-
-			directory = dialog.open();
-
-			if (directory == null)
-				// user click cancel
-				return false;
-
-			validDatabaseFound = isCorrectDatabase(directory, statusMgr,
-					location);
-
-			if (!validDatabaseFound)
-				msgNoDatabase(dialog, directory);
-		}
-
-		return validDatabaseFound;
-	}
-
+	
 	/****
 	 * Check if the directory is correct or not. If it is correct, it returns
 	 * the XML file and the trace file
@@ -169,17 +124,22 @@ public class LocalDBOpener extends AbstractDBOpener {
 		}
 		return false;
 	}
-
-	/***
-	 * show message in directory dialog box
-	 * 
-	 * @param dialog
-	 * @param str
-	 */
-	private static void msgNoDatabase(DirectoryDialog dialog, String str) {
-
-		dialog.setMessage("The directory selected contains no traces:\n\t"
-				+ str + "\nPlease select a directory that contains traces.");
-	}
-
+	
+	        /***
+	         * show message in directory dialog box
+	         * 
+	         * @param dialog
+	         * @param str
+	         *                                              
+	         */
+	        private static void msgNoDatabase(DirectoryDialog dialog, String str) {
+	        	
+	        	                dialog.setMessage("The directory selected contains no traces:\n\t"
+	        	                		                                + str + "\nPlease select a directory that contains traces.");
+	        	                
+	        }
+	         
+	
 }
+
+

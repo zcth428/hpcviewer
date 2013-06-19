@@ -31,8 +31,8 @@ public class DecompressionThread extends Thread {
 	final ProcessTimelineService timelineServ;
 	final HashMap<Integer, CallPath> scopeMap;
 	final int ranksExpected;
-	final double t0;
-	final double tn;
+	final long t0;
+	final long tn;
 	
 	final static int COMPRESSION_TYPE_MASK = 0xFFFF;//Save two bytes for formatting versions
 	final static short ZLIB_COMPRESSSED  = 1;
@@ -115,7 +115,7 @@ public class DecompressionThread extends Thread {
 	 * @return The array of data for this rank
 	 * @throws IOException
 	 */
-	private Record[] readTimeCPIDArray(byte[] packedTraceLine, int length, double t0, double tn, int compressed) throws IOException {
+	private Record[] readTimeCPIDArray(byte[] packedTraceLine, int length, long t0, long tn, int compressed) throws IOException {
 
 		DataInputStream decompressor;
 		if ((compressed & COMPRESSION_TYPE_MASK) == ZLIB_COMPRESSSED)
@@ -123,7 +123,7 @@ public class DecompressionThread extends Thread {
 		else
 			decompressor = new DataInputStream(new ByteArrayInputStream(packedTraceLine));
 		Record[] toReturn = new Record[length];
-		double currentTime = t0;
+		long currentTime = t0;
 		for (int i = 0; i < toReturn.length; i++) {
 			// There are more efficient ways to send the timestamps. Namely,
 			// instead of sending t_n - t_(n-1), we can send (t_n - t_(n-1))-T,
@@ -151,10 +151,10 @@ public static interface WorkItemToDo {
 public static class DecompressionItemToDo implements WorkItemToDo {
 	final byte[] Packet;
 	final int itemCount;//The number of Time-CPID pairs
-	final double startTime, endTime;
+	final long startTime, endTime;
 	final int rankNumber;
 	final int compressed;
-	public DecompressionItemToDo(byte[] _packet, int _itemCount, double _startTime, double _endTime, int _rankNumber, int _compressionType) {
+	public DecompressionItemToDo(byte[] _packet, int _itemCount, long _startTime, long _endTime, int _rankNumber, int _compressionType) {
 		Packet = _packet;
 		itemCount = _itemCount;
 		startTime = _startTime;

@@ -44,7 +44,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     long oldEndTime;
 	
 	/**The selected time that is open in the csViewer.*/
-	double selectedTime;
+	long selectedTime;
 	
 	/**The selected depth that is open in the csViewer.*/
 	int selectedDepth;

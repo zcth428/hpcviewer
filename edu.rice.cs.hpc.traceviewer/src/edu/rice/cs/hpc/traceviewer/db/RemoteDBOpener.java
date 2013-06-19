@@ -47,6 +47,8 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		int port = Integer.parseInt(data[1]);
 		String serverPathToDB = data[2];
 		
+		//For some reason, serverPathToDB sometimes has junk on the end of it (like a newline)
+		serverPathToDB = serverPathToDB.trim();
 
 		//Socket serverConnection = null;
 		boolean connectionSuccess = connectToServer(window, serverURL, port);

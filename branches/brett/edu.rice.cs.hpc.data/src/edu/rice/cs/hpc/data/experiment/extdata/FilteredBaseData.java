@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 
 /******************************************************************
@@ -18,6 +19,7 @@ import java.util.TreeMap;
  *******************************************************************/
 public class FilteredBaseData extends AbstractBaseData {
 
+	private static final int SIZE_OF_END_OF_FILE_MARKER = 4;//The end of file marker is 0xdeadfood
 	private Filter filter;
 	private String []filteredRanks;
 	private int []indexes;
@@ -57,12 +59,15 @@ public class FilteredBaseData extends AbstractBaseData {
 			// ------------------------------------------------------------------
 			for (int k=0; k<listOfGlobs.size(); k++) {
 				String glob = listOfGlobs.get(k);
-				String globPattern = glob.replace("*", ".*").replace("?",".?");
+				//Compiling outside the loop gives a performance increase
+				String globPatternString = glob.replace("*", ".*").replace("?",".?");
+				Pattern compGlob = Pattern.compile(globPatternString);
+				
 				int j=0;
 				for (int i=0; i<data.length; i++) {
 					
 					String item = data[i];
-					boolean isMatched = item.matches(globPattern);
+					boolean isMatched = compGlob.matcher(item).matches();
 					
 					//-----------------------------------------------------------------------
 					// for show mode: for every glob, we add everything that matches
@@ -170,7 +175,7 @@ public class FilteredBaseData extends AbstractBaseData {
 		int filteredRank = indexes[rank];
 		final long offsets[] = baseDataFile.getOffsets();
 		long maxloc = ( (filteredRank+1<baseDataFile.getNumberOfFiles())? 
-				offsets[filteredRank+1] : baseDataFile.getMasterBuffer().size()-1 )
+				offsets[filteredRank+1] : baseDataFile.getMasterBuffer().size()-SIZE_OF_END_OF_FILE_MARKER )
 				- recordSize;
 		return maxloc;
 	}

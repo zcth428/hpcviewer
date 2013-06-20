@@ -32,6 +32,8 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	DataInputStream receiver;
 	String[] data = new String[3]; //data passed from OpenDatabaseDialog
 	
+	String errorMessage = ""; //used to display error message to user
+	
 	public RemoteDBOpener(String[] inData) {
 		for (int i=0;i<3;i++) {
 			data[i]=inData[i];
@@ -47,13 +49,25 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		int port = Integer.parseInt(data[1]);
 		String serverPathToDB = data[2];
 		
-		//For some reason, serverPathToDB sometimes has junk on the end of it (like a newline)
-		serverPathToDB = serverPathToDB.trim();
+		boolean dbFound=false;
+		//loop to display a new dialog if the connection does not successfully get a database
+		while (!dbFound) {
+			
+			//For some reason, serverPathToDB sometimes has junk on the end of it (like a newline)
+			serverPathToDB = serverPathToDB.trim();
+						
+			//Socket serverConnection = null;
+			boolean connectionSuccess = connectToServer(window, serverURL, port);
+			if (connectionSuccess) {
+			
+				
+			}
+			
+			//TODO popup new dialog asking for different input
+			
+		}
+		
 
-		//Socket serverConnection = null;
-		boolean connectionSuccess = connectToServer(window, serverURL, port);
-		if (!connectionSuccess)
-			return null;
 		
 		try {
 			sendOpenDB(serverPathToDB);
@@ -186,13 +200,11 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			// This is a legitimate catch that we need to expect. The rest
 			// should be very rare (ex. the internet goes down in the middle of
 			// a transmission)
-			MessageDialog.openError(window.getShell(), "Error connecting to remote server",
-					"Could not connect. Make sure the server is running.");
+			errorMessage="Could not connect to the remote server. Make sure it is running.";
 			return false;
 		}
 		catch (IOException e) {
-			MessageDialog.openError(window.getShell(), "Error connecting to remote server",
-					e.getMessage());
+			 errorMessage="Error connecting to remote server: "+e.getMessage();
 			return false;
 		}
 		return true;

@@ -21,17 +21,24 @@ public class LocalDBOpener extends AbstractDBOpener {
 	public LocalDBOpener(String inDirectory){
 		directory=inDirectory;
 	}
+	
+	public String getDirectory() {
+		return directory;
+	}
 
 	@Override
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
-			String[] args, IStatusLineManager statusMgr) {
-
+			String[] args, final IStatusLineManager statusMgr) {
 		
 		final Shell shell = window.getShell();
 		FileData location = new FileData();
 		
 		//check if the database provided by user in OpenDatabaseDialog is correct
 		boolean hasDatabase = isCorrectDatabase(directory,statusMgr, location);
+		//otherwise, prompt with directory dialog asking for new database
+		if (!hasDatabase)
+			hasDatabase=getNewDirectory(shell, statusMgr, location);
+		
 		// If it still doesn't have a database, we assume that the user doesn't
 		// want to open a database, so we return null, which makes the calling method return false.
 		if (!hasDatabase)
@@ -42,10 +49,12 @@ public class LocalDBOpener extends AbstractDBOpener {
 		// ---------------------------------------------------------------------
 		// Try to open the database and refresh the data
 		// ---------------------------------------------------------------------
-
 		
-
-
+		
+		statusMgr.setMessage("Opening trace data...");
+		shell.update();
+		
+		
 		//
 
 		// ---------------------------------------------------------------------
@@ -64,6 +73,37 @@ public class LocalDBOpener extends AbstractDBOpener {
 				window, statusMgr, location.fileXML, location.fileTrace);
 		
 		
+	}
+	/**
+	 * This method is called if the database provided by OpenDatabaseDialog is not correct.
+	 * It prompts the user with a new dialog to select a new directory. Returns true if the 
+	 * database is correct, false otherwise
+	 * 
+	 */
+	private boolean getNewDirectory(Shell shell, final IStatusLineManager statusMgr, FileData location) {
+		DirectoryDialog dialog;
+		
+		boolean validDatabaseFound = false;
+		dialog = new DirectoryDialog(shell);
+		dialog.setText("Select Data Directory");
+		msgNoDatabase(dialog, directory);
+		String newDirectory;
+		while (!validDatabaseFound) {
+			
+			newDirectory = dialog.open();
+			
+			if (newDirectory==null)
+				//user clicked cancel
+				return false;
+			
+			validDatabaseFound = isCorrectDatabase(newDirectory, statusMgr, location);
+			
+			if (!validDatabaseFound)
+				msgNoDatabase(dialog, newDirectory);
+		}
+		
+		return validDatabaseFound;
+		                                                
 	}
 	
 	/****
@@ -132,7 +172,7 @@ public class LocalDBOpener extends AbstractDBOpener {
 	         * @param str
 	         *                                              
 	         */
-	        private static void msgNoDatabase(DirectoryDialog dialog, String str) {
+	        private void msgNoDatabase(DirectoryDialog dialog, String str) {
 	        	
 	        	                dialog.setMessage("The directory selected contains no traces:\n\t"
 	        	                		                                + str + "\nPlease select a directory that contains traces.");

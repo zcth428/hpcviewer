@@ -9,9 +9,12 @@ import java.util.List;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
@@ -39,16 +42,18 @@ public class OpenDatabaseDialog extends Dialog {
 	//This is the most convenient and flexible way to pass around the data.
 	//Index 0 = Server's name/address; Index 1 = Port; Index 2 = Path to database folder on server
 	private String[]  args = new String[3];
-	private String directory=""; //used to pass directory to LocalDBOpener
+	private String directory; //used to pass directory to LocalDBOpener
 	private TabFolder tfCheck; //used to determine which opener to pass to - see okPressed
 	private boolean passToLocal; //used to determine which opener to pass to - see okPressed
 	private boolean okClicked; //has the ok button been clicked
 	private final IStatusLineManager status;
+	private Button okButton;
 	
 	private static final String SERVER_NAME_KEY = "server_name", SERVER_PORT_KEY = "server_port", SERVER_PATH_KEY = "server_path";
 	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath;
 	
-	public OpenDatabaseDialog(Shell parentShell, IStatusLineManager inStatus) { 
+
+	public OpenDatabaseDialog(Shell parentShell, final IStatusLineManager inStatus) { 
 		super(parentShell);
 		status=inStatus;
 	}
@@ -59,7 +64,7 @@ public class OpenDatabaseDialog extends Dialog {
 	 * It must be called on an OpenDatabaseDialog that has already been constructed AFTER calling {@link #open()}.
 	 * The type of opener it returns depends on which tab the user had open when he clicked ok
 	 * @author Brett Gutstein
-	 * @return a LocalDBOpener or RemoteDBOpener for use with TraceDatabase.openDatabase, null if user cancels (which will make calling method return null)
+	 * @return a LocalDBOpener or RemoteDBOpener for use with TraceDatabase.openDatabase, null if user cancels 
 	 */
 	public AbstractDBOpener getDBOpener() {
 	
@@ -74,11 +79,22 @@ public class OpenDatabaseDialog extends Dialog {
 		}
 	}
 	
+	//overridden to get ID of the ok button
+	@Override
+	protected void createButtonsForButtonBar(Composite parent){
+		super.createButtonsForButtonBar(parent);
+		okButton=getButton(IDialogConstants.OK_ID);
+		okButton.setEnabled(false);
+
+	}
+	
+	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		shell.setText("Open a Database");
 	}
 
+	@Override
 	protected Control createDialogArea(Composite parent) {
 		
 		status.setMessage("Select a local or remote directory containing traces");
@@ -92,6 +108,31 @@ public class OpenDatabaseDialog extends Dialog {
 		tfCheck = tabFolder;
 		Rectangle r = outerComposite.getClientArea();
 		tabFolder.setLocation(r.x, r.y);
+		
+		//add listener to TabFolder to see when ok button can be pressed
+		tabFolder.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {}//we dont need to do anything when default selection is made
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int selected = tfCheck.getSelectionIndex();
+				if (selected == 0) {
+					if (directory!=null) {
+						okButton.setEnabled(true);
+					} else {
+						okButton.setEnabled(false);
+					}
+				} else if (selected == 1) {
+					if (!(comboBoxes[0].getText().equals("")) && !(comboBoxes[1].getText().equals("")) && !(comboBoxes[2].getText().equals(""))) {
+						okButton.setEnabled(true);
+					} else {
+						okButton.setEnabled(false);
+					}
+				}
+				
+			}
+		});
 
 		// ----------------------------------------------------- local database
 		TabItem tabLocalItem = new TabItem(tabFolder, SWT.NULL);
@@ -108,6 +149,8 @@ public class OpenDatabaseDialog extends Dialog {
 		Button btnBrowse = new Button(localComposite, SWT.PUSH);
 		btnBrowse.setText("Browse");
 		
+
+		
 		btnBrowse.addSelectionListener(new SelectionListener() {
 			
 			@Override
@@ -119,10 +162,15 @@ public class OpenDatabaseDialog extends Dialog {
 				dialog.setText("Select Data Directory");
 		
 				directory = dialog.open();
-
-				if (directory == null)
-						// user click cancel
-						return;
+				
+				//user clicks cancel
+				if (directory == null) { 
+					okButton.setEnabled(false);
+					return;
+				}
+				
+				okButton.setEnabled(true); //user chooses a directory therefore ok is okay to press
+				
 				lblBrowse.setText("File: " + directory);
 			}
 			
@@ -177,7 +225,23 @@ public class OpenDatabaseDialog extends Dialog {
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(path);
 
 		comboBoxes[2] = path;
-
+		
+		//listener used for all three text fields to determine when ok can be pressed
+		ModifyListener mL = new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				if (!(comboBoxes[0].getText().equals("")) && !(comboBoxes[1].getText().equals("")) && !(comboBoxes[2].getText().equals(""))) {
+					okButton.setEnabled(true);
+				} else {
+					okButton.setEnabled(false);
+				}
+			}
+		};
+		//add listener to all three fields
+		name.addModifyListener(mL);
+		port.addModifyListener(mL);
+		path.addModifyListener(mL);
+		
 		remoteComposite.pack();
 		
 		tabRemoteItem.setControl(remoteComposite);

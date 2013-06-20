@@ -16,6 +16,11 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 public abstract class AbstractDBOpener {
 
 	final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
+	protected String errorMessage="";
+	
+	public String getErrorMessage(){
+		return errorMessage;
+	}
 
 	/**
 	 * This prepares the database for retrieving data and creates a

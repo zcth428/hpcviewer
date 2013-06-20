@@ -14,7 +14,6 @@ import java.net.SocketAddress;
 import java.util.zip.GZIPInputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -32,8 +31,6 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	DataInputStream receiver;
 	String[] data = new String[3]; //data passed from OpenDatabaseDialog
 	
-	String errorMessage = ""; //used to display error message to user
-	
 	public RemoteDBOpener(String[] inData) {
 		for (int i=0;i<3;i++) {
 			data[i]=inData[i];
@@ -49,25 +46,11 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		int port = Integer.parseInt(data[1]);
 		String serverPathToDB = data[2];
 		
-		boolean dbFound=false;
-		//loop to display a new dialog if the connection does not successfully get a database
-		while (!dbFound) {
-			
-			//For some reason, serverPathToDB sometimes has junk on the end of it (like a newline)
-			serverPathToDB = serverPathToDB.trim();
-						
-			//Socket serverConnection = null;
-			boolean connectionSuccess = connectToServer(window, serverURL, port);
-			if (connectionSuccess) {
-			
-				
-			}
-			
-			//TODO popup new dialog asking for different input
-			
-		}
-		
 
+		//Socket serverConnection = null;
+		boolean connectionSuccess = connectToServer(window, serverURL, port);
+		if (!connectionSuccess)
+			return null;
 		
 		try {
 			sendOpenDB(serverPathToDB);
@@ -90,8 +73,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 				//If the message is not a DBOK, it must be a NODB 
 				//Right now, the error code isn't used, but it is there for the future
 				int errorCode = receiver.readInt();
-				MessageDialog.openError(window.getShell(),"Database not found.", 
-						"The server could not find that database.\nError code: " + errorCode);
+				errorMessage="Database not found. The server could not find that database.\nError code: " + errorCode;
 				return null;
 			}
 			
@@ -100,8 +82,10 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			
 			InputStream xmlStream = getXmlStream(serverURL, port, xmlMessagePortNumber);
 			
-			if (xmlStream == null)//null if getting it failed
+			if (xmlStream == null) {//null if getting it failed
+				errorMessage="Could not receive XML stream. Please try again.";
 				return null;
+			}
 
 			RemoteDataRetriever dataRetriever = new RemoteDataRetriever(serverConnection,
 					statusMgr, window.getShell(), compressionType);
@@ -112,8 +96,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			
 			return stData;
 		} catch (IOException e) {
-			MessageDialog.openError(window.getShell(), "I/O Error", 
-					e.getMessage());
+			errorMessage = "I/O Error\n"+ e.getMessage()+"\nPlease try again.";
 			//The protocol is not robust. All exceptions are fatal.
 			return null;
 		}
@@ -200,11 +183,11 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			// This is a legitimate catch that we need to expect. The rest
 			// should be very rare (ex. the internet goes down in the middle of
 			// a transmission)
-			errorMessage="Could not connect to the remote server. Make sure it is running.";
+			errorMessage = "Error connecting to remote server\nCould not connect. Make sure the server is running.";
 			return false;
 		}
 		catch (IOException e) {
-			 errorMessage="Error connecting to remote server: "+e.getMessage();
+			errorMessage = "Error connecting to remote server\n" + e.getMessage()+"\nPlease try again.";
 			return false;
 		}
 		return true;

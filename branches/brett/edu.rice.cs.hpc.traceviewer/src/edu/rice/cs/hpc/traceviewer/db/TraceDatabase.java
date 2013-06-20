@@ -19,6 +19,7 @@ import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
+import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 
 /*************
@@ -80,18 +81,23 @@ public class TraceDatabase {
 			AbstractDBOpener opener) {
 		
 		
-		if (opener == null) //user canceled dialog
+		if (opener == null) //user canceled OpenDatabaseDialog - returns false and nothing happens
 			return false;
 
-		final Shell shell = window.getShell();
+		final Shell shell = window.getShell(); 
 
 		TraceDatabase database = TraceDatabase.getInstance(window);
 
 		SpaceTimeDataController STDC = opener.openDBAndCreateSTDC(window, args,
 				statusMgr);
 
-		if (STDC == null)
-			return false;
+		if (STDC == null) { //if STDC is null, directory, port, or server was incorrect
+			OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, opener.getErrorMessage());//open new dialog for user to choose new directory, port, or server
+			dlg.open();
+			AbstractDBOpener newOpener = dlg.getDBOpener();
+
+			return openDatabase(window, args, statusMgr, newOpener); //recursion but should never become infinite - when user clicks cancel all iterations return false
+		}
 
 		database.dataTraces = STDC;
 		

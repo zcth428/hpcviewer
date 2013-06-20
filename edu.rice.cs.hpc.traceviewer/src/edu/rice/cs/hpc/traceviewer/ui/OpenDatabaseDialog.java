@@ -37,17 +37,20 @@ import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 
 public class OpenDatabaseDialog extends Dialog {
+	
+	static int defaultTab=0; //index of the tab to open by default. changes when user clicks ok
 
 	Combo[] comboBoxes = new Combo[3];
 	//This is the most convenient and flexible way to pass around the data.
 	//Index 0 = Server's name/address; Index 1 = Port; Index 2 = Path to database folder on server
 	private String[]  args = new String[3];
 	private String directory; //used to pass directory to LocalDBOpener
-	private TabFolder tfCheck; //used to determine which opener to pass to - see okPressed
+	private TabFolder tf; //used to determine which opener to pass to - see okPressed
 	private boolean passToLocal; //used to determine which opener to pass to - see okPressed
 	private boolean okClicked; //has the ok button been clicked
 	private final IStatusLineManager status;
 	private Button okButton;
+	private String errorMessage;//empty string means no error
 	
 	private static final String SERVER_NAME_KEY = "server_name", SERVER_PORT_KEY = "server_port", SERVER_PATH_KEY = "server_path";
 	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath;
@@ -56,6 +59,13 @@ public class OpenDatabaseDialog extends Dialog {
 	public OpenDatabaseDialog(Shell parentShell, final IStatusLineManager inStatus) { 
 		super(parentShell);
 		status=inStatus;
+		errorMessage="";
+	}
+	
+	public OpenDatabaseDialog(Shell parentShell, final IStatusLineManager inStatus, String _errorMessage){
+		super(parentShell);
+		status=inStatus;
+		errorMessage = _errorMessage;
 	}
 	
 	/**
@@ -104,19 +114,18 @@ public class OpenDatabaseDialog extends Dialog {
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(outerComposite);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(outerComposite);
 		
-		final TabFolder tabFolder = new TabFolder(outerComposite, SWT.TOP);
-		tfCheck = tabFolder;
+		tf = new TabFolder(outerComposite, SWT.TOP);
 		Rectangle r = outerComposite.getClientArea();
-		tabFolder.setLocation(r.x, r.y);
+		tf.setLocation(r.x, r.y);
 		
 		//add listener to TabFolder to see when ok button can be pressed
-		tabFolder.addSelectionListener(new SelectionListener() {
+		tf.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {}//we dont need to do anything when default selection is made
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				int selected = tfCheck.getSelectionIndex();
+				int selected = tf.getSelectionIndex();
 				if (selected == 0) {
 					if (directory!=null) {
 						okButton.setEnabled(true);
@@ -135,7 +144,7 @@ public class OpenDatabaseDialog extends Dialog {
 		});
 
 		// ----------------------------------------------------- local database
-		TabItem tabLocalItem = new TabItem(tabFolder, SWT.NULL);
+		TabItem tabLocalItem = new TabItem(tf, SWT.NULL);
 		tabLocalItem.setText("Local database");
 		
 		Composite localComposite = new Composite(tabLocalItem.getParent(), SWT.BORDER_SOLID);
@@ -183,7 +192,7 @@ public class OpenDatabaseDialog extends Dialog {
 		tabLocalItem.setControl(localComposite);
 		
 		// ----------------------------------------------------- remote database
-		TabItem tabRemoteItem = new TabItem(tabFolder, SWT.NULL);
+		TabItem tabRemoteItem = new TabItem(tf, SWT.NULL);
 		tabRemoteItem.setText("Remote database");
 		
 		Composite remoteComposite = new Composite(tabRemoteItem.getParent(), SWT.NULL);
@@ -246,7 +255,16 @@ public class OpenDatabaseDialog extends Dialog {
 		
 		tabRemoteItem.setControl(remoteComposite);
 		
+		//add error message if one exists
+		if (!(errorMessage.equals(""))) {
+			final Label lblError = new Label(outerComposite, SWT.CENTER | SWT.WRAP);
+			lblError.setText(errorMessage);
+			GridDataFactory.fillDefaults().grab(true, false).hint(400, SWT.DEFAULT).align(SWT.CENTER, SWT.CENTER).applyTo(lblError);
+		}
+		
 		outerComposite.pack();
+		
+		tf.setSelection(defaultTab);
 		
 		return outerComposite;
 	}
@@ -258,7 +276,7 @@ public class OpenDatabaseDialog extends Dialog {
 			Integer portVal = (Integer.parseInt(comboBoxes[1].getText()));
 			args[1] = portVal.toString();
 		}
-		catch (NumberFormatException r)
+		catch (NumberFormatException r) //if this exception is thrown, clear port and highlight it so user enters a number
 		{
 			comboBoxes[1].setText("");
 			return;
@@ -268,7 +286,8 @@ public class OpenDatabaseDialog extends Dialog {
 		objHistoryPort.addLine(args[1]);
 		objHistoryPath.addLine(args[2]);
 		
-		int selection = tfCheck.getSelectionIndex(); //returns the zero-relative index of the TabItem which is selected in the TabFolder (0 is local 1 is remote)
+		int selection = tf.getSelectionIndex(); //returns the zero-relative index of the TabItem which is selected in the TabFolder (0 is local 1 is remote)
+		defaultTab = selection; //same tab will be opened next time
 		if (selection==0) {
 			passToLocal=true;
 		} else if (selection==1) { //leave null if selectionindex somehow returns not 0 or 1

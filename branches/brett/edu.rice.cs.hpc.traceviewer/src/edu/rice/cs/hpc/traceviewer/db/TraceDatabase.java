@@ -81,25 +81,31 @@ public class TraceDatabase {
 			AbstractDBOpener opener) {
 		
 		
-		if (opener == null) //user canceled OpenDatabaseDialog - returns false and nothing happens
-			return false;
-
+		AbstractDBOpener openThis = opener;
 		final Shell shell = window.getShell(); 
-
 		TraceDatabase database = TraceDatabase.getInstance(window);
+		boolean validDatabaseFound = false;
+		SpaceTimeDataController stdc;
+		
+		 do {
+			if (openThis == null) { //user canceled OpenDatabaseDialog  - do not open a database or another dialog
+				return false;
+			}
+			
+			stdc = openThis.openDBAndCreateSTDC(window, args,
+					statusMgr);
+			
+			if (stdc == null) { //if STDC is null, directory, port, or server was incorrect
+				//open new dialog for user to choose new directory, port, or server
+				OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, openThis.getErrorMessage());
+				dlg.open();
+				openThis = dlg.getDBOpener();
+			} else {
+				validDatabaseFound=true;
+			}
+		} while (!validDatabaseFound); //until user enters a valid database or cancels keep popping up dialogs
 
-		SpaceTimeDataController STDC = opener.openDBAndCreateSTDC(window, args,
-				statusMgr);
-
-		if (STDC == null) { //if STDC is null, directory, port, or server was incorrect
-			OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, opener.getErrorMessage());//open new dialog for user to choose new directory, port, or server
-			dlg.open();
-			AbstractDBOpener newOpener = dlg.getDBOpener();
-
-			return openDatabase(window, args, statusMgr, newOpener); //recursion but should never become infinite - when user clicks cancel all iterations return false
-		}
-
-		database.dataTraces = STDC;
+		database.dataTraces = stdc;
 		
 		// ---------------------------------------------------------------------
 		// initialize whether using midpoint or not

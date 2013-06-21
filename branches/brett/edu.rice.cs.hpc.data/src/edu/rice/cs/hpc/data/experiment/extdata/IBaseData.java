@@ -20,55 +20,6 @@ public interface IBaseData {
 	 */
 	public int getNumberOfRanks();
 	
-	/***
-	 * retrieve the start location of a rank in a database
-	 * @param rank
-	 * @return
-	 */
-	public long getMinLoc(int rank);
-	
-	/****
-	 * retrieve the end of file location of a rank
-	 * @param rank
-	 * @return
-	 */
-	public long getMaxLoc(int rank, int recordSize);
-	
-	/****
-	 * retrieve ...
-	 * @param 
-	 * @return
-	 */
-	public long[] getOffsets();
-
-	/****
-	 * get data in string format
-	 * @param position
-	 * @return
-	 */
-	public String getString(long position, long length);
-
-	/****
-	 * get data in long format
-	 * @param position
-	 * @return
-	 */
-	public long getLong(long position);
-	
-	/***
-	 * get data in integer format
-	 * @param position
-	 * @return
-	 */
-	public int getInt(long position);
-	
-	/****
-	 * get data in double format
-	 * @param position
-	 * @return
-	 */
-	public double getDouble(long position);
-	
 	
 	/****
 	 * Disposing native resources

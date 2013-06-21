@@ -54,7 +54,8 @@ public class RemoteDataRetriever {
 		shell = _shell;
 		
 	}
-	//TODO: Inclusive or exclusive?
+
+	//TODO: I think these are all inclusive, but check.
 	/**
 	 * Issues a command to the remote server for the data requested, and waits for a response.
 	 * @param P0 The lower bound of the ranks to get
@@ -245,6 +246,7 @@ public class RemoteDataRetriever {
  * Message HERE Server -> Client
  * Notes: This is a response to the DATA request. After this message, the client may send another DATA request or a DONE shutdown command. After each rank is received, k should be incremented by (28+c). The client should expect the message to contain min(Last Process-First Process, Vertical Resolution) tracelines.
  * The raw trace data is a pair of 4-byte ints. The first int is the difference between the timestamp for this Record and the previous Record. For the first Record in the message, it should be zero, as that record will have Begin Time as its timestamp. The second int in the pair is the CPID.
+ * In the notation below, increment k by (0x1C + c) every line. 
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x48455245 (HERE in ASCII)
  * 0x04+k	Line Number		int-4				The rank number whose data follows. Should be unique in the message
@@ -252,8 +254,23 @@ public class RemoteDataRetriever {
  * 0x0C+k	Begin Time		long-8				The start time of this rank, calculated by taking the timestamp of the first TimeCPID in the line
  * 0x14+k	End Time		long-8				The end time of this rank, calculated by taking the timestamp of the last TimeCPID in the line
  * 0x1C+k	Compressed Size	int-4				The size of the data, c, that follows. If compression is disabled, this should be equal to 4*(Entry Count)
- * 0x20+k+c	Trace Data		ints or bytes		The raw trace data. If compression is disabled, this is an array of 2x(4 bytes), one after the other. If compression is enabled, this is a compressed array of 2x(4 bytes). See the message notes for more information.
+ * 0x20+k	Trace Data		ints or bytes		The raw trace data. If compression is disabled, this is an array of 2x(4 bytes), one after the other. If compression is enabled, this is a compressed array of 2x(4 bytes). See the message notes for more information.
  * 
+ * Message FLTR Client -> Server
+ * Notes: For example, if the user wants to exclude processes 10, 14, 18, 22 ... 46, set Process Minimum to 10, Process Maximum to 46, Process Stride to 4, Exclude Matches to 1
+ * After this message, the client should send a DATA message, but it is not required.
+ * In the notation below, increment k by 0x18 every filter
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x464C5452 (FLTR in ASCII)
+ * 0x04		Padding			byte-1				Set to 0 or any other value. Must be ignored.
+ * 0x05		Exclude Matches	byte-1				Set to 0 to include only the traces that match the patterns. Set to 1 to include all traces except the ones that match the patterns
+ * 0x06		Filters count	short-2				The number of filters that will follow
+ * 0x08+k	Process Minimum	int-4				The lower inclusive bound of processes that match this filter
+ * 0x0C+k	Process Maximum	int-4				The upper inclusive bound of processes that match this filter
+ * 0x10+k	Process Stride	int-4				The interval in between the processes that match this filter. Do not set to zero.
+ * 0x14+k	Thread Minimum	int-4				The lower inclusive bound of the threads that match this filter
+ * 0x18+k	Thread Maximum	int-4				The upper inclusive bound of the threads that match this filter
+ * 0x1C+k	Thread Stride	int-4				The interval in between the threads that match this filter. Don't set to zero.		
  * 
  * Message DONE Client -> Server
  * Notes: After receiving this message, the server should close. The client cannot send any messages after this without opening a new connection

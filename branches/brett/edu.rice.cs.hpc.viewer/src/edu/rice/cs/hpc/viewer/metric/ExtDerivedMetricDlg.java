@@ -35,7 +35,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.util.UserInputHistory;
+import edu.rice.cs.hpc.common.util.UserInputHistory;
 // math expression
 import com.graphbuilder.math.*;
 import com.graphbuilder.math.func.*;

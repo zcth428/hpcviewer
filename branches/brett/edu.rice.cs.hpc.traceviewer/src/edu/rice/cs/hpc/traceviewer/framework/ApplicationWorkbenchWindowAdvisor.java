@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.framework;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.window.Window;
 //import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -73,9 +74,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		} else { //if no command line argument open dialog box
 			AbstractDBOpener opener;
 			OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), status); 
-			dlg.open();
-			opener=dlg.getDBOpener();
-			TraceDatabase.openDatabase(configurer.getWindow(), args, status, opener);
+			if (dlg.open() == Window.OK) {
+				opener=dlg.getDBOpener();
+				TraceDatabase.openDatabase(configurer.getWindow(), args, status, opener);
+			}
 		}
 	
 	}

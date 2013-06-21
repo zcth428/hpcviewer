@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -88,9 +89,6 @@ public class TraceDatabase {
 		SpaceTimeDataController stdc;
 		
 		 do {
-			if (openThis == null) { //user canceled OpenDatabaseDialog  - do not open a database or another dialog
-				return false;
-			}
 			
 			stdc = openThis.openDBAndCreateSTDC(window, args,
 					statusMgr);
@@ -98,7 +96,8 @@ public class TraceDatabase {
 			if (stdc == null) { //if STDC is null, directory, port, or server was incorrect
 				//open new dialog for user to choose new directory, port, or server
 				OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, openThis.getErrorMessage());
-				dlg.open();
+				if (dlg.open() == Window.CANCEL)
+					return false;
 				openThis = dlg.getDBOpener();
 			} else {
 				validDatabaseFound=true;

@@ -4,6 +4,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -22,8 +23,8 @@ public class OpenDatabase extends AbstractHandler
 		final IStatusLineManager status = vSite.getActionBars().getStatusLineManager();
 
 		OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), status);
-		dlg.open();
-		TraceDatabase.openDatabase(window, null, status, dlg.getDBOpener());
+		if (dlg.open()==Window.OK)
+			TraceDatabase.openDatabase(window, null, status, dlg.getDBOpener());
 		
 		
 		return null;

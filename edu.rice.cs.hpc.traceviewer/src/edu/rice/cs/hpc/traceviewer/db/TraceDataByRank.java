@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.db;
 import java.util.Arrays;
 import java.util.Vector;
 
+import edu.rice.cs.hpc.data.experiment.extdata.AbstractBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
@@ -17,7 +18,7 @@ public class TraceDataByRank {
 	//These must be initialized in local mode. They should be considered final unless the data is remote.
 /** File header information, including trace record size */
 	public Header header;
-	private IBaseData data;
+	private AbstractBaseData data;
 	private int numPixelH;
 	int rank;
 	
@@ -25,14 +26,18 @@ public class TraceDataByRank {
 	
 	/***
 	 * Create a new instance of trace data for a given rank of process or thread 
-	 * 
+	 * Used only for local
 	 * @param _data
 	 * @param _rank
 	 * @param _numPixelH
 	 */
 	public TraceDataByRank(IBaseData _data, int _rank, int _numPixelH)
 	{
-		data = _data;
+
+		assert (_data instanceof AbstractBaseData);
+		//:'( This is a safe cast because this constructor is only
+		//called in local mode but it's so ugly....
+		data = (AbstractBaseData)_data;
 		rank = _rank;
 		numPixelH = _numPixelH;
 
@@ -60,9 +65,7 @@ public class TraceDataByRank {
 	 */
 	public void getData(long timeStart, long timeRange, double pixelLength)
 	{
-		if (!isEmpty())
-			System.out.println("Get data called and it may be replacing the existing data.");
-		
+			
 		long minloc = data.getMinLoc(rank);
 		long maxloc = data.getMaxLoc(rank, header.RecordSz);
 		

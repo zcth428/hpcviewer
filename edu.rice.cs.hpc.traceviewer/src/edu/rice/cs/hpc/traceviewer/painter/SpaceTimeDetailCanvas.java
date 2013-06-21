@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
@@ -636,15 +637,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
         					+ (painter.getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
-        //Old way that only works for local.
-        /*final IBaseData traceData = stData.getBaseData();
+
+        final IBaseData traceData = stData.getBaseData();
         if (traceData == null)
         	// we don't want to throw an exception here, so just do nothing
         	return;
 
+        final String processes[] = traceData.getListOfRanks();
 
-        final String processes[] = traceData.getListOfRanks();*/
-        final String[] processes = stData.getTraceNames();
         final int proc_start = painter.getBegProcess();
         
         // -------------------------------------------------------------------------------------------------

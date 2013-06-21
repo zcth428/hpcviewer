@@ -22,7 +22,8 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.data.experiment.extdata.Filter;
-import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.FilterSet;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 
 
 /*****
@@ -33,7 +34,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 public class FilterDialog extends TitleAreaDialog {
 
 	private List list;
-	private FilteredBaseData filterData;
+	private IFilteredData filterData;
 	private Button btnRemove;
 	private Button btnShow;
 	
@@ -41,9 +42,9 @@ public class FilterDialog extends TitleAreaDialog {
 	 * constructor for displaying filter glob pattern
 	 * @param parentShell
 	 */
-	public FilterDialog(Shell parentShell, FilteredBaseData f) {
+	public FilterDialog(Shell parentShell, IFilteredData filteredBaseData) {
 		super(parentShell);
-		filterData = f;
+		filterData = filteredBaseData;
 	}
 	
 	/*
@@ -64,8 +65,8 @@ public class FilterDialog extends TitleAreaDialog {
 		btnHide.setText("To hide");
 		btnHide.setToolTipText("An option to hide matching patterns");
 		
-		Filter filter = filterData.getFilter();
-		if (filter.isShownMode())
+		FilterSet filter = filterData.getFilter();
+		if (filter != null && filter.isShownMode())
 			btnShow.setSelection(true);
 		else
 			btnHide.setSelection(true);
@@ -100,9 +101,12 @@ public class FilterDialog extends TitleAreaDialog {
 		btnAdd.addSelectionListener( new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
 				InputDialog dlg = new InputDialog(getShell(), "Add a pattern", 
-						"Please type a glob pattern\n" + 
-						"Symbol * matches all characters, while symbol ? matches only one character.\n" +
-						"For instance, *.0 will match 12.0 and 13.0", "", null);
+						"Please type a pattern in the format \n" +"" +
+						"process minimum:process maximum:process stride$thread minimum:thread maximum:thread stride\n" + 
+						"Any omitted sections will match as many as possible\n" +
+						"For instance, 3:7:2$ will match all threads of ranks 3, 5, and 7.\n"+
+						"$1 will match thread 1 of all processes.\n"+
+						"1::2$2:4:2 will match 1.2, 1.4, 3.2, 3.4, 5.2 ...", "", null);
 				if (dlg.open() == Dialog.OK) {
 					list.add(dlg.getValue());
 					checkButtons();
@@ -155,9 +159,9 @@ public class FilterDialog extends TitleAreaDialog {
 		this.setTitle("Filter patterns");
 		
 		// add pattern into the list
-		if (filterData != null && filter.getPatterns() != null) {
-			for (String str : filter.getPatterns()) {
-				list.add(str);
+		if (filterData != null && filter != null && filter.getPatterns() != null) {
+			for (Filter flt : filter.getPatterns()) {
+				list.add(flt.toString());
 			}
 		}
 
@@ -185,21 +189,21 @@ public class FilterDialog extends TitleAreaDialog {
 	 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
 	 */
 	protected void okPressed() {
-		ArrayList<String> filterList = new ArrayList<String>();
+		ArrayList<Filter> filterList = new ArrayList<Filter>();
 		for(int i=0; i<list.getItemCount(); i++) {
 			String item = list.getItem(i);
-			filterList.add(i, item);
+			filterList.add(new Filter(item));
 		}
-		Filter filter = filterData.getFilter();
+		FilterSet filterSet = filterData.getFilter();
 		
 		// put the glob pattern back
-		filter.setPatterns(filterList);
+		filterSet.setPatterns(filterList);
 		// set the show mode (to show or to hide)
-		filter.setShowMode( btnShow.getSelection() );
+		filterSet.setShowMode( btnShow.getSelection() );
 		
 		// check if the filter is correct
-		filterData.setFilter(filter);
-		if (filterData.getNumberOfRanks()>0)
+		filterData.setFilter(filterSet);
+		if (filterData.isGoodFilter())
 			super.okPressed();
 		else {
 			// it is not allowed to filter everything

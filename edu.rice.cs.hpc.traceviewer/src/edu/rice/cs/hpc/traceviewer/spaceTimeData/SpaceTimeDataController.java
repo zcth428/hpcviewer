@@ -7,6 +7,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
@@ -14,7 +15,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 public abstract class SpaceTimeDataController {
 
 	PaintManager painter;
-	static int[] MethodCounts = new int[15];
+
 	//TODO: Some places access this directly while others use the getter.
 	public ImageTraceAttributes attributes;// Should this be final?
 	protected String dbName;
@@ -147,14 +148,13 @@ public abstract class SpaceTimeDataController {
 	}
 	
 	public abstract IBaseData getBaseData();
-	public abstract String[] getTraceNames();
 
 	/******************************************************************************
 	 * Returns number of processes (ProcessTimelines) held in this
 	 * SpaceTimeData.
 	 ******************************************************************************/
 	public int getTotalTraceCount() {
-		return totalTraceCountInDB;
+		return dataTrace.getNumberOfRanks();
 	}
 	
 	public HashMap<Integer, CallPath> getScopeMap() {
@@ -208,6 +208,31 @@ public abstract class SpaceTimeDataController {
 	}
 
 	public abstract void closeDB();
+
+	//see the note where this is called in FilterRanks
+	public IFilteredData getFilteredBaseData() {
+		if (dataTrace instanceof IFilteredData)
+			return (IFilteredData) dataTrace;
+		return null;
+	}
+	/**
+	 * changing the trace data, caller needs to make sure to refresh the views
+	 * @param filteredBaseData
+	 */
+	public void setBaseData(IFilteredData filteredBaseData) {
+		dataTrace = filteredBaseData;
+		// we have to change the range of displayed processes
+		attributes.begProcess = 0;
+
+		// hack: for unknown reason, "endProcess" is exclusive.
+		// TODO: we should change to inclusive just like begProcess
+		attributes.endProcess = dataTrace.getNumberOfRanks();
+
+		painter.resetPosition();
+	}
+
+	public abstract IFilteredData createFilteredBaseData();
+
 
 
 }

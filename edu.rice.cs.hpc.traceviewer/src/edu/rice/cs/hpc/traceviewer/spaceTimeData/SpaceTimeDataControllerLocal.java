@@ -12,7 +12,9 @@ import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
@@ -37,19 +39,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 
 	IStatusLineManager statusMgr;
 	IWorkbenchWindow window;
-
-	/*public static void dumpAllCounts() {
-		String[] MethodNames = { "Constructor", "getNextTrace",
-				"getNextDepthTrace", "addNextTrace", "getProcess",
-				"launchDetailViewThreads", "lineToPaint",
-				"prepareDepthViewportPainting", "prepareViewportPainting",
-				"getPainter" };
-
-		for (int i = 0; i < MethodNames.length; i++) {
-			System.out.println(MethodNames[i] + ": " + MethodCounts[i]);
-		}
-		System.out.println();
-	}*/
 
 	public SpaceTimeDataControllerLocal(
 
@@ -102,10 +91,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	}
 
 
-
-
-
-
 	/***********************************************************************
 	 * Gets the next available trace to be filled/painted
 	 * 
@@ -132,12 +117,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 				ptlService.setProcessTimeline(currentLineNum, currentTimeline);
 				return currentTimeline;
 			}
-			/*if (ptlService.getProcessTimeline(currentLineNum) == null) { // Why is it sometimes null? 
-				System.out.println("Was null, auto-fixing");
-				ptlService.setProcessTimeline(currentLineNum, new ProcessTimeline(currentLineNum, scopeMap,
-						dataTrace, lineToPaint(currentLineNum),
-						attributes.numPixelsH, attributes.endTime - attributes.begTime, minBegTime + attributes.begTime));
-			}*/
+
 			return ptlService.getProcessTimeline(currentLineNum);
 		}
 		return null;
@@ -150,7 +130,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	/** Returns the index of the file to which the line-th line corresponds. */
 
 	private int lineToPaint(int line) {
-		MethodCounts[6]++;
+
 		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
 		if (numTimelinesToPaint > attributes.numPixelsV)
 			return attributes.begProcess + (line * numTimelinesToPaint)
@@ -158,32 +138,18 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		else
 			return attributes.begProcess + line;
 	}
-	
-	
-	
-	/***
-	 * changing the trace data, caller needs to make sure to refresh the views
-	 * @param baseData
-	 */
-	public void setBaseData(IBaseData baseData) 
-	{
-		dataTrace = baseData;
-		
-		// we have to change the range of displayed processes
-		attributes.begProcess = 0;
-		
-		// hack: for unknown reason, "endProcess" is exclusive.
-		// TODO: we should change to inclusive just like begProcess
-		attributes.endProcess = baseData.getNumberOfRanks();
-		
-		painter.resetPosition();
-	}
 
 
 	@Override
-	//The only part of TraceData that is needed externally is the list of processes, so we do not need to expose the whole TraceData
-	public String[] getTraceNames() {
-		return this.dataTrace.getListOfRanks();
+	public IFilteredData createFilteredBaseData() {
+		try{
+			return new FilteredBaseData(getTraceFileAbsolutePath(), 
+					trAttribute.dbHeaderSize, 24);
+		}
+		catch (Exception e){
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 

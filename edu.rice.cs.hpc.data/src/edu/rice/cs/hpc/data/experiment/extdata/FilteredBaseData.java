@@ -2,11 +2,6 @@ package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 
 /******************************************************************
@@ -17,10 +12,9 @@ import java.util.regex.Pattern;
  * @see AbstractBaseData
  * @see BaseDataFile
  *******************************************************************/
-public class FilteredBaseData extends AbstractBaseData {
+public class FilteredBaseData extends AbstractBaseData implements IFilteredData {
 
-	private static final int SIZE_OF_END_OF_FILE_MARKER = 4;//The end of file marker is 0xdeadfood
-	private Filter filter;
+	private FilterSet filter;
 	private String []filteredRanks;
 	private int []indexes;
 
@@ -35,78 +29,33 @@ public class FilteredBaseData extends AbstractBaseData {
 	public FilteredBaseData(String filename, int headerSize, int recordSz) throws IOException 
 	{
 		super( filename, headerSize, recordSz);
+		filter = new FilterSet();
 	}
 
 	/****
 	 * start to filter the ranks
 	 * @param glob : pattern to filter the ranks
 	 */
-	private void filter() {
+	private void applyFilter() {
 		if (baseDataFile == null)
-			throw new RuntimeException("Fata error: cannot find data.");
+			throw new RuntimeException("Fatal error: cannot find data.");
 		
 		String data[] = baseDataFile.getValuesX();
 
 		filteredRanks = null;
-		TreeMap<Integer,Integer> mapIndex = new TreeMap<Integer,Integer>( );
-		ArrayList<String> listOfGlobs = filter.getPatterns();
-		boolean isShownMode = filter.isShownMode();
-		
-		if (listOfGlobs != null && listOfGlobs.size()>0) {
-			// ------------------------------------------------------------------
-			// search for the matching string
-			// this is not an optimized version O(n^2), but at the moment it works
-			// ------------------------------------------------------------------
-			for (int k=0; k<listOfGlobs.size(); k++) {
-				String glob = listOfGlobs.get(k);
-				//Compiling outside the loop gives a performance increase
-				String globPatternString = glob.replace("*", ".*").replace("?",".?");
-				Pattern compGlob = Pattern.compile(globPatternString);
-				
-				int j=0;
-				for (int i=0; i<data.length; i++) {
-					
-					String item = data[i];
-					boolean isMatched = compGlob.matcher(item).matches();
-					
-					//-----------------------------------------------------------------------
-					// for show mode: for every glob, we add everything that matches
-					// for hide mode: we add everything that doesn't match. 
-					//					for the second glob, we remove everything that match
-					//-----------------------------------------------------------------------
-					if (isShownMode) {
-						if (isMatched) {
-							mapIndex.put(i, j);
-						}
-					} else {
-						//if we have multiple glob pattern, we need to match with the existing
-						//	filtered ranks
-						if ( k==0 || (k>0 && mapIndex.containsKey(i)) ) {
-							// Needs to remove duplicates
-							if ( (isMatched && isShownMode) || (!isShownMode && !isMatched)) {
-								mapIndex.put(i, j);
-								j++;
-							} else {
-								// remove from the existing un-filtered list
-								mapIndex.remove(i);
-							}
-						}
-					}
-				}
+
+		ArrayList<Integer> lindexes = new ArrayList<Integer>();
+
+		if (filter.hasAnyFilters()) {
+			for (int i = 0; i < data.length; i++) {
+				if (filter.include(data[i]))
+					lindexes.add(i);
 			}
-			// ------------------------------------------------------------------
-			// flat tree map into an array for ease of access
-			// ------------------------------------------------------------------
-			indexes = new int[mapIndex.size()];
-			Set<Entry<Integer,Integer>> set = mapIndex.entrySet();
-			int i=0;
-			for (Iterator<Entry<Integer, Integer>> iterator = set.iterator(); iterator.hasNext();)
-			{
-				Entry<Integer,Integer> entry = iterator.next();
-				int key = entry.getKey();
-				indexes[i] = key;
-				i++;
-			}			
+			
+			indexes = new int[lindexes.size()];
+			for (int i = 0; i < indexes.length; i++) {
+				indexes[i] = lindexes.get(i);
+			}
 		} else {
 			// no glob pattern to filter
 			// warning: not optimized code
@@ -121,13 +70,13 @@ public class FilteredBaseData extends AbstractBaseData {
 	 * set oatterns to filter ranks
 	 * @param filters
 	 */
-	public void setFilter(Filter filter) {
+	public void setFilter(FilterSet filter) {
 		this.filter = filter;
-		filter();
+		applyFilter();
 	}
 	
 	
-	public Filter getFilter() {
+	public FilterSet getFilter() {
 		return filter;
 	}
 	
@@ -178,6 +127,11 @@ public class FilteredBaseData extends AbstractBaseData {
 				offsets[filteredRank+1] : baseDataFile.getMasterBuffer().size()-SIZE_OF_END_OF_FILE_MARKER )
 				- recordSize;
 		return maxloc;
+	}
+
+	@Override
+	public boolean isGoodFilter() {
+		return getNumberOfRanks() > 0;
 	}
 
 }

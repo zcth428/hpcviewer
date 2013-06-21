@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,7 +13,10 @@ import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
+import edu.rice.cs.hpc.data.experiment.extdata.RemoteFilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
@@ -24,13 +28,12 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	
 	final RemoteDataRetriever dataRetriever;
 
-	public final int HEADER_SIZE;
-	
-	private final String[] valuesX;
-	
+	private final int headerSize;
+	private final TraceName[]  valuesX;
+	private final DataOutputStream server;
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
-			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, String[] _valuesX) {
+			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, TraceName[] valuesX, DataOutputStream connectionToServer) {
 
 		attributes = new ImageTraceAttributes();
 
@@ -53,7 +56,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		TraceAttribute attribute = exp.getTraceAttribute();
 		minBegTime = attribute.dbTimeMin;
 		maxEndTime = attribute.dbTimeMax;
-		HEADER_SIZE = attribute.dbHeaderSize;
+		headerSize = attribute.dbHeaderSize;
 
 		dbName = exp.getName();
 		
@@ -62,16 +65,19 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		
 		dataRetriever = _dataRet;
 		totalTraceCountInDB = _numTraces;
-		valuesX = _valuesX;
+		this.valuesX = valuesX;
+		server = connectionToServer;
 
 		super.painter = new PaintManager(attributes, colorTable, maxDepth);
-
+		super.dataTrace = createFilteredBaseData();
 	}
 
+	
 	@Override
-	public String[] getTraceNames() {
-		return valuesX;
+	public IFilteredData createFilteredBaseData() {
+		return new RemoteFilteredBaseData(valuesX, headerSize, server);
 	}
+
 	/**
 	 * This performs the network request and does a small amount of processing on the reply. Namely, it does 
 	 * not decompress the traces. Instead, it returns threads that will do that work when executed.
@@ -140,5 +146,10 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		int index = lineNum.getAndIncrement();
 		if (index >= ptlService.getNumProcessTimeline()) return null;
 		return ptlService.getProcessTimeline(index);
+	}
+
+
+	public int getHeaderSize() {
+		return headerSize;
 	}
 }

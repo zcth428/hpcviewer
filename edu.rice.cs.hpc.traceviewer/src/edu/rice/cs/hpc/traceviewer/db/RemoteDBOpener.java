@@ -16,6 +16,7 @@ import java.util.zip.GZIPInputStream;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
@@ -29,7 +30,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	//For more information on message structure, see protocol documentation at the end of RemoteDataReceiver 
 	DataOutputStream sender;
 	DataInputStream receiver;
-	String[] data = new String[3]; //data passed from OpenDatabaseDialog
+	final String[] data = new String[3]; //data passed from OpenDatabaseDialog
 	
 	public RemoteDBOpener(String[] inData) {
 		for (int i=0;i<3;i++) {
@@ -60,7 +61,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			int messageTag = RemoteDataRetriever.waitAndReadInt(receiver);
 			int xmlMessagePortNumber;
 			int compressionType;
-			String[] valuesX;
+			TraceName[] valuesX;
 			if (messageTag == Constants.DB_OK)// DBOK
 			{
 				xmlMessagePortNumber  = receiver.readInt();
@@ -91,7 +92,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			RemoteDataRetriever dataRetriever = new RemoteDataRetriever(serverConnection,
 					statusMgr, window.getShell(), compressionType);
 			SpaceTimeDataControllerRemote stData = new SpaceTimeDataControllerRemote(dataRetriever, window, statusMgr,
-					xmlStream, serverPathToDB + " on " + serverURL, traceCount, valuesX);
+					xmlStream, serverPathToDB + " on " + serverURL, traceCount, valuesX, sender);
 
 			sendInfoPacket(sender, stData);
 			
@@ -104,19 +105,14 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	
 	}
 
-	private String[] formatTraceNames(int traceCount) throws IOException {
-		String[] valuesX;
-		valuesX = new String[traceCount];
-		for (int i = 0; i < valuesX.length; i++) {
+	private TraceName[] formatTraceNames(int traceCount) throws IOException {
+		TraceName[] names  = new TraceName[traceCount];
+		for (int i = 0; i < names.length; i++) {
 			int processID = receiver.readInt();
 			int threadID = receiver.readShort();
-			if (threadID == -1) {
-				valuesX[i] = Integer.toString(processID);
-			} else {
-				valuesX[i] = processID + "." + threadID;
-			}
+			names[i] = new TraceName(processID, threadID);
 		}
-		return valuesX;
+		return names;
 	}
 
 	private GZIPInputStream getXmlStream(String serverURL, int port, int xmlMessagePortNumber)
@@ -166,13 +162,14 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			if (serverConnection != null && !serverConnection.isClosed()) {
 				if (!serverConnection.getRemoteSocketAddress().equals(
 						new InetSocketAddress(serverURL, port))) {
-
+					//Connecting to a different server
 					TraceDatabase.removeInstance(window);
 
 					serverConnection = new Socket(serverURL, port);
 				}
+				//Connecting to same server, don't do anything.
 			}
-			else {// First connection
+			else {// First connection 
 				serverConnection = new Socket(serverURL, port);
 			}
 			sender = new DataOutputStream(new BufferedOutputStream(
@@ -210,7 +207,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		sender.writeInt(Constants.INFO);
 		sender.writeLong(stData.getMinBegTime());
 		sender.writeLong(stData.getMaxEndTime());
-		sender.writeInt(stData.HEADER_SIZE);
+		sender.writeInt(stData.getHeaderSize());
 		sender.flush();
 
 	}
@@ -232,3 +229,5 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	}
 
 }
+
+

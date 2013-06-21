@@ -23,9 +23,6 @@ public class LocalDBOpener extends AbstractDBOpener {
 	}
 	
 	
-	
-
-
 	@Override
 	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, final IStatusLineManager statusMgr) {

@@ -9,6 +9,7 @@ public class FilterSet {
 	public FilterSet() {
 		// default is to hide the matching processes
 		excludeMatched = true;
+		patterns = new ArrayList<Filter>();
 	}
 	boolean hasAnyFilters() {
 		return patterns != null && !patterns.isEmpty();

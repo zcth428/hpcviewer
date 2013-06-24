@@ -5,11 +5,12 @@ import java.io.IOException;
 
 
 public class Filter {
+	private static final String PROCESS_THREAD_SEPARATOR = "$";
 	private final Range process;
 	private final Range thread;
 	
 	public Filter(String strForm){
-		String[] pieces = format(strForm).split("\\$");
+		String[] pieces = format(strForm).split("\\"+PROCESS_THREAD_SEPARATOR);
 		process = new Range (pieces[0]);
 		thread = new Range(pieces[1]);
 
@@ -21,9 +22,11 @@ public class Filter {
 	 */
 	private String format(String strForm) {
 		String fixing = strForm;
-		if (fixing.startsWith("$") || fixing.startsWith(":")) 
+		if (fixing.startsWith(PROCESS_THREAD_SEPARATOR) || fixing.startsWith(":")) 
 			fixing = "*" + fixing;
-		if (fixing.endsWith("$")|| fixing.endsWith(":")) 
+		if (!fixing.contains(PROCESS_THREAD_SEPARATOR))
+			fixing = fixing + PROCESS_THREAD_SEPARATOR;
+		if (fixing.endsWith(PROCESS_THREAD_SEPARATOR)|| fixing.endsWith(":")) 
 			fixing = fixing + "*";
 		return fixing;
 	}
@@ -40,7 +43,7 @@ public class Filter {
 	}
 	@Override
 	public String toString() {
-		return process + "$" + thread;
+		return process + PROCESS_THREAD_SEPARATOR + thread;
 	}
 	//Unit test:
 	public static void main(String[] args){

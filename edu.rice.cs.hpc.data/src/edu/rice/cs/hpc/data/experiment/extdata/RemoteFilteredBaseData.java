@@ -20,6 +20,11 @@ public class RemoteFilteredBaseData implements IFilteredData {
 		allNames = names;
 		headerSize = _headerSz;
 		this.server = server;
+		filter = new FilterSet();
+		indexes = new int[names.length];
+		for (int i = 0; i < indexes.length; i++) {
+			indexes[i] = i;
+		}
 	}
 	@Override
 	public void setFilter(FilterSet filter) {

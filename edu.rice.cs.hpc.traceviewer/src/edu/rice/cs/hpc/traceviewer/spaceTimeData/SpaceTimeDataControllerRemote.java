@@ -12,7 +12,6 @@ import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.RemoteFilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
@@ -129,17 +128,6 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 			System.out.println("Could not close the connection.");
 		}
 	}
-
-
-	/** 
-	 * There is no {@link IBaseData} for the remote version. The closest we have is {@link RemoteDataRetriever}, but it
-	 * doesn't make sense for <code>RemoteDataRetriever</code> to <code>implement IBaseData</code>
-	 */
-	@Override
-	public IBaseData getBaseData() {
-		return null;
-	}
-
 
 	@Override
 	public ProcessTimeline getNextTrace(boolean changedBounds) {

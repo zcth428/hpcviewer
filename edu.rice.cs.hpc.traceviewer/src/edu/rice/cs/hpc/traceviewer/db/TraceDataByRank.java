@@ -31,13 +31,13 @@ public class TraceDataByRank {
 	 * @param _rank
 	 * @param _numPixelH
 	 */
-	public TraceDataByRank(IBaseData _data, int _rank, int _numPixelH)
+	public TraceDataByRank(AbstractBaseData _data, int _rank, int _numPixelH)
 	{
 
-		assert (_data instanceof AbstractBaseData);
+	
 		//:'( This is a safe cast because this constructor is only
 		//called in local mode but it's so ugly....
-		data = (AbstractBaseData)_data;
+		data = _data;
 		rank = _rank;
 		numPixelH = _numPixelH;
 

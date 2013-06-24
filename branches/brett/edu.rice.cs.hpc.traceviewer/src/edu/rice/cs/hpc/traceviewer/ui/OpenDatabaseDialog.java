@@ -270,23 +270,23 @@ public class OpenDatabaseDialog extends Dialog {
 	}
 	@Override
 	protected void okPressed() {
-		args[0] = comboBoxes[0].getText();
+		args[0] = comboBoxes[0].getText().trim();
 
 		try{
 			Integer portVal = (Integer.parseInt(comboBoxes[1].getText()));
-			args[1] = portVal.toString();
+			args[1] = portVal.toString().trim();
 		}
 		catch (NumberFormatException r) //if this exception is thrown the dialog box is not submitted and the user must re-enter a port with numbers only
 		{
 			comboBoxes[1].setText("");
 			return;
 		}
-		args[2] = comboBoxes[2].getText();
+		args[2] = comboBoxes[2].getText().trim();
 		objHistoryName.addLine(args[0]);
 		objHistoryPort.addLine(args[1]);
 		objHistoryPath.addLine(args[2]);
 		
-		directory=directoryCombo.getText();
+		directory=directoryCombo.getText().trim();
 		
 		objHistoryDirectory.addLine(directory);
 		

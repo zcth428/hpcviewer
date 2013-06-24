@@ -85,7 +85,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			InputStream xmlStream = getXmlStream(serverURL, port, xmlMessagePortNumber);
 			
 			if (xmlStream == null) {//null if getting it failed
-				errorMessage="Error communicating with server:\nCould not receive XML stream. Please try again.";
+				errorMessage="Error communicating with server:\nCould not receive XML stream. \nPlease try again.";
 				return null;
 			}
 
@@ -181,7 +181,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			// This is a legitimate catch that we need to expect. The rest
 			// should be very rare (ex. the internet goes down in the middle of
 			// a transmission)
-			errorMessage = "Error connecting to remote server:\nCould not connect. Make sure the server is running.";
+			errorMessage = "Error connecting to remote server:\nCould not connect. \nMake sure the server is running.";
 			return false;
 		}
 		catch (IOException e) {

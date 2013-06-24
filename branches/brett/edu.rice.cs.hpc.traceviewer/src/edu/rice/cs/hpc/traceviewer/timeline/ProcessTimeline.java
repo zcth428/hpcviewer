@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.HashMap;
 
+import edu.rice.cs.hpc.data.experiment.extdata.AbstractBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank.Record;
@@ -48,10 +49,11 @@ public class ProcessTimeline {
 
 		pixelLength = timeRange / (double) _numPixelH;
 		
-		if (dataTrace == null)//dataTrace should be null only when the data is coming from a remote source.
-			data = new TraceDataByRank(new Record[0]);
+		//TODO: Beautify
+		if (dataTrace instanceof AbstractBaseData)
+			data = new TraceDataByRank((AbstractBaseData) dataTrace, _processNumber, _numPixelH);
 		else
-			data = new TraceDataByRank(dataTrace, _processNumber, _numPixelH);
+			data = new TraceDataByRank(new Record[0]);
 	}
 
 	//Remote version

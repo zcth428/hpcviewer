@@ -147,7 +147,9 @@ public abstract class SpaceTimeDataController {
 			return null;
 	}
 	
-	public abstract IBaseData getBaseData();
+	public IBaseData getBaseData(){
+		return dataTrace;
+	}
 
 	/******************************************************************************
 	 * Returns number of processes (ProcessTimelines) held in this

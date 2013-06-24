@@ -13,7 +13,6 @@ import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
-import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
@@ -150,12 +149,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 			e.printStackTrace();
 			return null;
 		}
-	}
-
-
-	@Override
-	public IBaseData getBaseData() {
-		return dataTrace;
 	}
 	
 	public String getTraceFileAbsolutePath(){

@@ -15,7 +15,7 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
 public class PaintManager {
 
 
-	private ImageTraceAttributes attributes;
+	private final ImageTraceAttributes attributes;
 	/** The maximum depth of any single CallStackSample in any trace. */
 	private int maxDepth;
 
@@ -138,11 +138,11 @@ public class PaintManager {
 		// removed.
 		this.currentPosition = position;
 	}
-	
-	public void resetPosition(){
-		if (currentPosition.process >= attributes.endProcess) {
+	/** Sets the selected process to the middle if it is outside the bounds.*/
+	public void fixPosition(){
+		if (currentPosition.process >= attributes.endProcess || currentPosition.process <= attributes.begProcess) {
 			// if the current process is beyond the range, make it in the middle
-			currentPosition.process = (attributes.endProcess >> 1);
+			currentPosition.process = (attributes.begProcess + attributes.endProcess)/2;
 		}
 	}
 }

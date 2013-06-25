@@ -17,6 +17,7 @@ public abstract class SpaceTimeCanvas extends Canvas
 	/**The SpaceTimeData corresponding to this canvas.*/
 	protected SpaceTimeDataController stData;
 	protected PaintManager painter;
+	/** Same reference as attributes in stData or painter*/
 	protected ImageTraceAttributes attributes;
 	
     /**The width of the current screen in this canvas.*/

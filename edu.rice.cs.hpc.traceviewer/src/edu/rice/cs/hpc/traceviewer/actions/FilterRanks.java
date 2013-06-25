@@ -49,13 +49,9 @@ public class FilterRanks extends AbstractHandler {
         FilterDialog dlgFilter = new FilterDialog(shell, filteredBaseData);
 		
 		if (dlgFilter.open() == Dialog.OK){
-			
+
 			absData.setBaseData(filteredBaseData);
-			/*
-			 * If it is OK and we don't need to set data, the dialog has already
-			 * made the changes in the okayPressed. We need to broadcast the
-			 * changes though.
-			 */
+
 			dataService.broadcastUpdate(true);
 		}
 		

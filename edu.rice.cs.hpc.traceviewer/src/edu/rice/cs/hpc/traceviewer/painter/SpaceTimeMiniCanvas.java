@@ -55,6 +55,10 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	
 	/**Determines whether the first mouse click was inside the box or not.*/
 	private boolean insideBox;
+	
+	/** We store the ones from the beginning so that we can display correctly even with filtering*/
+	private int begProcess;
+	private int endProcess;
 
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite)
@@ -83,12 +87,15 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		this.viewingHeight = r.height;
 		this.viewingWidth = r.width;
 		
+		begProcess = _stData.getAttributes().begProcess;
+		endProcess = _stData.getAttributes().endProcess;
+		
 		this.redraw();
 	}
 	
 	public void updateView()
 	{
-		setBox(stData.attributes.begTime, stData.attributes.begProcess, stData.attributes.endTime, stData.attributes.endProcess);
+		setBox(attributes.begTime, attributes.begProcess, attributes.endTime, attributes.endProcess);
 	}
 	
 	/**The painting of the miniMap.*/
@@ -120,16 +127,21 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	}
 	
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/
-	public void setBox(long topLeftTime, double topLeftProcess, long bottomRightTime, double bottomRightProcess)
+	public void setBox(long topLeftTime, int topLeftProcess, long bottomRightTime, int bottomRightProcess)
 	{
+		
 		if (this.stData == null)
 			return;
 		
+		//Compensating for filtering
+		int compensatedFirstProcess = stData.getBaseData().getFirstIncluded() + topLeftProcess;
+		int compensatedLastProcess = stData.getBaseData().getFirstIncluded() + bottomRightProcess;
+		
 		topLeftPixelX = (int)Math.round(topLeftTime * getScaleX());
-		topLeftPixelY = (int)Math.round(topLeftProcess * getScaleY());
+		topLeftPixelY = (int)Math.round(compensatedFirstProcess * getScaleY());
 		
 		int bottomRightPixelX = (int)Math.round(bottomRightTime*getScaleX());
-		int bottomRightPixelY = (int)Math.round(bottomRightProcess*getScaleY());
+		int bottomRightPixelY = (int)Math.round(compensatedLastProcess*getScaleY());
 		
 		viewingWidth = bottomRightPixelX-(int)topLeftPixelX;
 		viewingHeight = bottomRightPixelY-(int)topLeftPixelY;
@@ -179,11 +191,11 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		long detailBottomRightTime = (long)(miniBottomRight.x / getScaleX());
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
 
-		stData.attributes.begProcess = detailTopLeftProcess;
-		stData.attributes.endProcess = detailBottomRightProcess;
-		stData.attributes.begTime    = detailTopLeftTime;
-		stData.attributes.endTime	 = detailBottomRightTime;
-		Frame frame = new Frame(stData.attributes, painter.getMaxDepth(), 
+		attributes.begProcess = detailTopLeftProcess;
+		attributes.endProcess = detailBottomRightProcess;
+		attributes.begTime    = detailTopLeftTime;
+		attributes.endTime	 = detailBottomRightTime;
+		Frame frame = new Frame(attributes, painter.getMaxDepth(), 
 				painter.getPosition().time, painter.getPosition().process);
 		try {
 			TraceOperation.getOperationHistory().execute(
@@ -238,7 +250,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Gets the scale in the Y-direction (pixels per process).*/
 	public double getScaleY()
 	{
-		return (double)viewHeight / (double)stData.getTotalTraceCount();
+		return (double)viewHeight / (endProcess - begProcess);
 	}
 	
 	/* *****************************************************************
@@ -281,14 +293,12 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			}
 			else
 			{
+				// If the user draws a very small region to zoom in on, we are
+				// going to assume it was a mistake and not draw anything.
 				if(Math.abs(mouseUp.x-mouseDown.x)>3 || Math.abs(mouseUp.y-mouseDown.y)>3)
-					setSelection(mouseDown, mouseUp);
-				
-//!!-------------------------------------------------------------------------------------------------			
-//!!== WARNING: I don't understand the meaning of this statement. This code doesn't change anything
-//!!-------------------------------------------------------------------------------------------------			
-//				else
-//					setBox(detailCanvas.begTime, detailCanvas.begProcess, detailCanvas.endTime, detailCanvas.endProcess);
+					setSelection(mouseDown, mouseUp);	
+				else //Set the selection box back to what it was because we didn't zoom
+					setBox(attributes.begTime, attributes.begProcess, attributes.endTime, attributes.endProcess);
 			}
 			redraw();
 		}

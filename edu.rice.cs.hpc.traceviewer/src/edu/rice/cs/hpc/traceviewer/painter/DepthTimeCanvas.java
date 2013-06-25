@@ -313,7 +313,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
         if(mouseDown == null)
     		return;
 
-    	long closeTime = stData.attributes.begTime + (long)(mouseDown.x / getScaleX());
+    	long closeTime = attributes.begTime + (long)(mouseDown.x / getScaleX());
     	
     	Position currentPosition = painter.getPosition();
     	Position newPosition = new Position(closeTime, currentPosition.process);

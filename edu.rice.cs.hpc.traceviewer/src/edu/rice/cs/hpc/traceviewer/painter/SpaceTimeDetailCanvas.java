@@ -507,7 +507,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 		
-		notifyChanges("Zoom in V", stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges("Zoom in V", attributes.begTime, p1, attributes.endTime, p2);
 
 	}
 
@@ -539,7 +539,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				p1--;
 			}
 		}
-		notifyChanges("Zoom out V", stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges("Zoom out V", attributes.begTime, p1, attributes.endTime, p2);
 	}
 
 	
@@ -558,7 +558,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long t2 = xMid + (long)(numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)(numTimeUnitsDisp * SCALE);
 		
-		notifyChanges("Zoom in H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges("Zoom in H", t1, attributes.begProcess, t2, attributes.endProcess);
 	}
 
 	/**************************************************************************
@@ -578,7 +578,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final long td1 = (long)(this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
-		notifyChanges("Zoom out H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges("Zoom out H", t1, attributes.begProcess, t2, attributes.endProcess);
 	}
 	
 	/**************************************************************************
@@ -643,6 +643,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
         	// we don't want to throw an exception here, so just do nothing
         	return;
 
+        attributes.assertProcessBounds(traceData.getNumberOfRanks());
+        painter.fixPosition();
         final String processes[] = traceData.getListOfRanks();
 
         final int proc_start = painter.getBegProcess();
@@ -744,7 +746,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     	
     	// tell other views that we have new position 
     	this.painter.updatePosition(newPosition);
-    }
+    }*
 
     /****
      * Adjust the position of cross hair depending of the availability of traces
@@ -875,8 +877,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
-    	notifyChanges("Zoom H", topLeftTime, stData.attributes.begProcess, 
-    			bottomRightTime, stData.attributes.endProcess);
+    	notifyChanges("Zoom H", topLeftTime, attributes.begProcess, 
+    			bottomRightTime, attributes.endProcess);
     }
 
     /*******
@@ -1071,8 +1073,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,viewWidth,viewHeight);
 
-		paintDetailViewport(bufferGC, origGC, stData.attributes.begProcess, stData.attributes.endProcess, 
-				stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight, refreshData);
+		paintDetailViewport(bufferGC, origGC, attributes.begProcess, attributes.endProcess, 
+				attributes.begTime, attributes.endTime, viewWidth, viewHeight, refreshData);
 
 		
 		bufferGC.dispose();
@@ -1110,7 +1112,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
 			boolean refreshData)
 	{	
-		ImageTraceAttributes attributes = stData.attributes;
+		ImageTraceAttributes attributes = stData.getAttributes();
 		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
 		
 		
@@ -1158,11 +1160,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private void notifyChanges(String label, long _topLeftTime, int _topLeftProcess, 
 			long _bottomRightTime, int _bottomRightProcess) 
 	{
-		stData.attributes.begTime = _topLeftTime;
-		stData.attributes.endTime = _bottomRightTime;
-		stData.attributes.begProcess = _topLeftProcess;
-		stData.attributes.endProcess = _bottomRightProcess;
-		Frame frame = new Frame(stData.attributes, painter.getDepth(), 
+		attributes.begTime = _topLeftTime;
+		attributes.endTime = _bottomRightTime;
+		attributes.begProcess = _topLeftProcess;
+		attributes.endProcess = _bottomRightProcess;
+		Frame frame = new Frame(attributes, painter.getDepth(), 
 				painter.getPosition().time, painter.getPosition().process);
 		
 		String sLabel = (label == null ? "Set region" : label);

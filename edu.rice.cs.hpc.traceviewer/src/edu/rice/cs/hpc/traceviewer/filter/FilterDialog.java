@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.traceviewer.filter;
 import java.util.ArrayList;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -20,6 +19,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import edu.rice.cs.hpc.data.experiment.extdata.Filter;
 import edu.rice.cs.hpc.data.experiment.extdata.FilterSet;
@@ -72,8 +72,8 @@ public class FilterDialog extends TitleAreaDialog {
 			btnHide.setSelection(true);
 		
 		Label lblMode = new Label(grpMode, SWT.LEFT | SWT.WRAP);
-		lblMode.setText("Selecting 'To show' radio button will show matching processes, " +
-						 "while selecting 'To hide'button will hide them.");
+		lblMode.setText("Selecting the 'To show' radio button will show matching processes, " +
+						 "while selecting the 'To hide' button \nwill hide them.");
 		
 		GridDataFactory.swtDefaults().span(2, 1).grab(true, false).applyTo(lblMode);
 		
@@ -97,16 +97,15 @@ public class FilterDialog extends TitleAreaDialog {
 		
 		Button btnAdd = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnAdd.setText("Add");
-		btnAdd.setToolTipText("Add a new glob pattern");
+		btnAdd.setToolTipText("Add a new filtering pattern");
 		btnAdd.addSelectionListener( new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
-				InputDialog dlg = new InputDialog(getShell(), "Add a pattern", 
-						"Please type a pattern in the format \n" +"" +
-						"process minimum:process maximum:process stride$thread minimum:thread maximum:thread stride\n" + 
-						"Any omitted sections will match as many as possible\n" +
-						"For instance, 3:7:2$ will match all threads of ranks 3, 5, and 7.\n"+
-						"$1 will match thread 1 of all processes.\n"+
-						"1::2$2:4:2 will match 1.2, 1.4, 3.2, 3.4, 5.2 ...", "", null);
+				DualInputDialog dlg = new DualInputDialog(getShell(), "Add a pattern", 
+						"Please type a pattern in the format minimum:maximum:stride.\n" + 
+						"Any omitted or invalid sections will match as many processes \nor threads as possible.\n\n" +
+						"For instance, 3:7:2 in the process box with the thread box empty \nwill match all threads of processes 3, 5, and 7.\n"+
+						"1 in the thread box with the process box empty will match \nthread 1 of all processes.\n"+
+						"1::2 in the process box and 2:4:2 in the thread box will match \n1.2, 1.4, 3.2, 3.4, 5.2 ...", "Process", "Thread");
 				if (dlg.open() == Dialog.OK) {
 					list.add(dlg.getValue());
 					checkButtons();
@@ -117,7 +116,7 @@ public class FilterDialog extends TitleAreaDialog {
 		
 		btnRemove = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnRemove.setText("remove");
-		btnRemove.setToolTipText("Remove a selected glob pattern");
+		btnRemove.setToolTipText("Remove a selected filtering pattern");
 		btnRemove.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				int i = list.getSelectionCount();
@@ -132,7 +131,7 @@ public class FilterDialog extends TitleAreaDialog {
 		
 		final Button btnRemoveAll = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnRemoveAll.setText("Remove all");
-		btnRemoveAll.setToolTipText("Remove all glob patterns");
+		btnRemoveAll.setToolTipText("Remove all filtering patterns");
 		btnRemoveAll.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				int count = list.getItemCount();
@@ -211,3 +210,67 @@ public class FilterDialog extends TitleAreaDialog {
 		}
 	}	
 }
+class DualInputDialog extends Dialog{
+	private Text firstEntry;
+	private Text secondEntry;
+	final String message;
+	final String prompt1;
+	final String prompt2;
+	final String title;
+	
+	String value;
+	
+	public DualInputDialog(Shell parentShell, String dialogTitle,
+			String dialogMessage, String firstPrompt, String secondPrompt) {
+		super(parentShell);
+		title = dialogTitle;
+		message = dialogMessage;
+		prompt1 = firstPrompt;
+		prompt2 = secondPrompt;
+		
+	}
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		Composite composite = (Composite) super.createDialogArea(parent);
+		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(composite);
+		GridDataFactory.swtDefaults().grab(true, true).align(SWT.CENTER, SWT.CENTER).applyTo(composite);
+
+		Label prompt = new Label(composite, SWT.NONE);
+		prompt.setText(message);
+
+		
+		Group fieldArea = new Group(composite, SWT.SHADOW_IN);
+		
+		Label firstLabel = new Label(fieldArea, SWT.NONE);
+		firstLabel.setText(prompt1);
+		firstEntry = new Text(fieldArea, SWT.SINGLE | SWT.BORDER);
+	
+		
+		Label secondLabel = new Label(fieldArea, SWT.NONE);
+		secondLabel.setText(prompt2);
+		secondEntry = new Text(fieldArea, SWT.SINGLE | SWT.BORDER);
+		
+		
+
+		GridLayoutFactory.fillDefaults().numColumns(2).extendedMargins(2, 4, 3, 5).generateLayout(fieldArea);
+		GridLayoutFactory.fillDefaults().numColumns(1).extendedMargins(10, 10, 10, 10).generateLayout(composite);
+		return composite;
+	}
+	
+	@Override
+	protected void buttonPressed(int buttonId) {
+		if (buttonId == OK)
+			value =  firstEntry.getText() + Filter.PROCESS_THREAD_SEPARATOR + secondEntry.getText();
+		super.buttonPressed(buttonId);
+	}
+	public String getValue() {
+		return value;
+	}
+	
+	static public void main(String []argv) {
+		Shell shell = new Shell();
+		DualInputDialog dlg = new DualInputDialog(shell, "test input", "just a message asd srjt jlkbdfkrejldf ajlwi more asdkhuiq eger \n\n more text alks jlrk adsgf\nja reiotp", "Process", "Threads");
+		dlg.open();
+	}
+}
+

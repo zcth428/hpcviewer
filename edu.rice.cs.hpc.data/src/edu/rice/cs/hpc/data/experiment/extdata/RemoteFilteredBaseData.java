@@ -100,5 +100,8 @@ public class RemoteFilteredBaseData implements IFilteredData {
 	public boolean isGoodFilter() {
 		return getNumberOfRanks() > 0;
 	}
-
+	@Override
+	public int getFirstIncluded() {
+		return indexes[0];
+	}
 }

@@ -7,4 +7,6 @@ public interface IFilteredData extends IBaseData{
 	public void setFilter(FilterSet filter) ;
 	public FilterSet getFilter() ;
 	public boolean isGoodFilter();
+
+	
 }

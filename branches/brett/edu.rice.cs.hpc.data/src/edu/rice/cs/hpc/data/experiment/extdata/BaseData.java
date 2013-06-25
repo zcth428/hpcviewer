@@ -46,4 +46,10 @@ public class BaseData extends AbstractBaseData {
 		return maxloc;
 	}
 
+	@Override
+	public int getFirstIncluded() {
+		return 0;
+	}
+	
+
 }

@@ -134,4 +134,9 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 		return getNumberOfRanks() > 0;
 	}
 
+	@Override
+	public int getFirstIncluded() {
+		return indexes[0];
+	}
+
 }

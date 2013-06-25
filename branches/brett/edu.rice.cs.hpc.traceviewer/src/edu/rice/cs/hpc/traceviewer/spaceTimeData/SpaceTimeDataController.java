@@ -16,8 +16,8 @@ public abstract class SpaceTimeDataController {
 
 	PaintManager painter;
 
-	//TODO: Some places access this directly while others use the getter.
-	public ImageTraceAttributes attributes;// Should this be final?
+	
+	protected ImageTraceAttributes attributes;
 	protected String dbName;
 	/**
 	 * The minimum beginning and maximum ending time stamp across all traces (in
@@ -230,7 +230,7 @@ public abstract class SpaceTimeDataController {
 		// TODO: we should change to inclusive just like begProcess
 		attributes.endProcess = dataTrace.getNumberOfRanks();
 
-		painter.resetPosition();
+		painter.fixPosition();
 	}
 
 	public abstract IFilteredData createFilteredBaseData();

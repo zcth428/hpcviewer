@@ -20,6 +20,12 @@ public interface IBaseData {
 	 */
 	public int getNumberOfRanks();
 	
+	/**
+	 * Get the index of the first included rank. Provided to give a
+	 * window through the filtering abstraction
+	 */
+	public int getFirstIncluded();
+	
 	
 	/****
 	 * Disposing native resources

@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Vector;
 
 import edu.rice.cs.hpc.data.experiment.extdata.AbstractBaseData;
-import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
 

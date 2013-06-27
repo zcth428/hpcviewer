@@ -140,7 +140,7 @@ public class PaintManager {
 	}
 	/** Sets the selected process to the middle if it is outside the bounds.*/
 	public void fixPosition(){
-		if (currentPosition.process >= attributes.endProcess || currentPosition.process <= attributes.begProcess) {
+		if (currentPosition.process >= attributes.endProcess || currentPosition.process < attributes.begProcess) {
 			// if the current process is beyond the range, make it in the middle
 			currentPosition.process = (attributes.begProcess + attributes.endProcess)/2;
 		}

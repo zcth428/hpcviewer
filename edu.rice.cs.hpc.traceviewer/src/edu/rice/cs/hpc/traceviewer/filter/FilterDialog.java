@@ -13,14 +13,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
+import edu.rice.cs.hpc.common.util.UserInputHistory;
 import edu.rice.cs.hpc.data.experiment.extdata.Filter;
 import edu.rice.cs.hpc.data.experiment.extdata.FilterSet;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
@@ -38,6 +39,8 @@ public class FilterDialog extends TitleAreaDialog {
 	private Button btnRemove;
 	private Button btnShow;
 	
+	private static final String THREAD_FILTER_KEY = "thread_filter";
+	private static final String PROCESS_FILTER_KEY = "process_filter";
 	/****
 	 * constructor for displaying filter glob pattern
 	 * @param parentShell
@@ -105,7 +108,7 @@ public class FilterDialog extends TitleAreaDialog {
 						"Any omitted or invalid sections will match as many processes \nor threads as possible.\n\n" +
 						"For instance, 3:7:2 in the process box with the thread box empty \nwill match all threads of processes 3, 5, and 7.\n"+
 						"1 in the thread box with the process box empty will match \nthread 1 of all processes.\n"+
-						"1::2 in the process box and 2:4:2 in the thread box will match \n1.2, 1.4, 3.2, 3.4, 5.2 ...", "Process", "Thread");
+						"1::2 in the process box and 2:4:2 in the thread box will match \n1.2, 1.4, 3.2, 3.4, 5.2 ...", "Process", "Thread", PROCESS_FILTER_KEY, THREAD_FILTER_KEY);
 				if (dlg.open() == Dialog.OK) {
 					list.add(dlg.getValue());
 					checkButtons();
@@ -115,7 +118,7 @@ public class FilterDialog extends TitleAreaDialog {
 		btnAdd.setLayoutData(new RowData(80,20));
 		
 		btnRemove = new Button(coButtons, SWT.PUSH | SWT.FLAT);
-		btnRemove.setText("remove");
+		btnRemove.setText("Remove");
 		btnRemove.setToolTipText("Remove a selected filtering pattern");
 		btnRemove.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -211,22 +214,27 @@ public class FilterDialog extends TitleAreaDialog {
 	}	
 }
 class DualInputDialog extends Dialog{
-	private Text firstEntry;
-	private Text secondEntry;
+	private Combo firstEntry;
+	private Combo secondEntry;
 	final String message;
 	final String prompt1;
 	final String prompt2;
 	final String title;
-	
+	final UserInputHistory firstHistory;
+	final UserInputHistory secondHistory;
 	String value;
+
 	
 	public DualInputDialog(Shell parentShell, String dialogTitle,
-			String dialogMessage, String firstPrompt, String secondPrompt) {
+			String dialogMessage, String firstPrompt, String secondPrompt, String firstHistoryKey, String secondHistoryKey) {
 		super(parentShell);
 		title = dialogTitle;
 		message = dialogMessage;
 		prompt1 = firstPrompt;
 		prompt2 = secondPrompt;
+		
+		firstHistory = new UserInputHistory(firstHistoryKey);
+		secondHistory = new UserInputHistory(secondHistoryKey);
 		
 	}
 	@Override
@@ -243,12 +251,13 @@ class DualInputDialog extends Dialog{
 		
 		Label firstLabel = new Label(fieldArea, SWT.NONE);
 		firstLabel.setText(prompt1);
-		firstEntry = new Text(fieldArea, SWT.SINGLE | SWT.BORDER);
-	
+		firstEntry = new Combo(fieldArea, SWT.SINGLE | SWT.BORDER);
+		firstEntry.setItems(firstHistory.getHistory());
 		
 		Label secondLabel = new Label(fieldArea, SWT.NONE);
 		secondLabel.setText(prompt2);
-		secondEntry = new Text(fieldArea, SWT.SINGLE | SWT.BORDER);
+		secondEntry = new Combo(fieldArea, SWT.SINGLE | SWT.BORDER);
+		secondEntry.setItems(secondHistory.getHistory());
 		
 		
 
@@ -258,10 +267,11 @@ class DualInputDialog extends Dialog{
 	}
 	
 	@Override
-	protected void buttonPressed(int buttonId) {
-		if (buttonId == OK)
-			value =  firstEntry.getText() + Filter.PROCESS_THREAD_SEPARATOR + secondEntry.getText();
-		super.buttonPressed(buttonId);
+	protected void okPressed() {
+		value =  firstEntry.getText() + Filter.PROCESS_THREAD_SEPARATOR + secondEntry.getText();
+		firstHistory.addLine(firstEntry.getText());
+		secondHistory.addLine(secondEntry.getText());
+		super.okPressed();
 	}
 	public String getValue() {
 		return value;
@@ -269,7 +279,7 @@ class DualInputDialog extends Dialog{
 	
 	static public void main(String []argv) {
 		Shell shell = new Shell();
-		DualInputDialog dlg = new DualInputDialog(shell, "test input", "just a message asd srjt jlkbdfkrejldf ajlwi more asdkhuiq eger \n\n more text alks jlrk adsgf\nja reiotp", "Process", "Threads");
+		DualInputDialog dlg = new DualInputDialog(shell, "test input", "just a message asd srjt jlkbdfkrejldf ajlwi more asdkhuiq eger \n\n more text alks jlrk adsgf\nja reiotp", "Process", "Threads", "hist_1", "hist_2");
 		dlg.open();
 	}
 }

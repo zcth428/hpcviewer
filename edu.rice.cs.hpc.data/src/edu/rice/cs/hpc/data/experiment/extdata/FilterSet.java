@@ -26,7 +26,7 @@ public class FilterSet {
 		return !excludeMatched;
 	}
 	//TODO: We should probably use TraceName instead
-	public boolean include(String name){
+	public boolean includes(String name){
 		String[] split = name.split("\\.");
 		int process = Integer.parseInt(split[0]);
 		int thread = Integer.parseInt(split[1]);

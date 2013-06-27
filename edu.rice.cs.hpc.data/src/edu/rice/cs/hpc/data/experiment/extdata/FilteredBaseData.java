@@ -34,7 +34,6 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 
 	/****
 	 * start to filter the ranks
-	 * @param glob : pattern to filter the ranks
 	 */
 	private void applyFilter() {
 		if (baseDataFile == null)
@@ -48,10 +47,10 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 
 		if (filter.hasAnyFilters()) {
 			for (int i = 0; i < data.length; i++) {
-				if (filter.include(data[i]))
+				if (filter.includes(data[i]))
 					lindexes.add(i);
 			}
-			
+			//Convert ArrayList to array
 			indexes = new int[lindexes.size()];
 			for (int i = 0; i < indexes.length; i++) {
 				indexes[i] = lindexes.get(i);

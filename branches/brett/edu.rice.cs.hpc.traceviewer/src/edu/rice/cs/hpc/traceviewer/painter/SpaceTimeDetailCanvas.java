@@ -633,16 +633,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	private void adjustLabels()
     {
-        timeLabel.setText("Time Range: [" + (painter.getViewTimeBegin()/1000)/1000.0 + "s ,"
+        timeLabel.setText("Time Range: [" + (painter.getViewTimeBegin()/1000)/1000.0 + "s, "
         					+ (painter.getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
 
         final IBaseData traceData = stData.getBaseData();
-        if (traceData == null)
+        if (traceData == null) {
         	// we don't want to throw an exception here, so just do nothing
+        	System.out.println("Data null, skipping the rest.");
         	return;
-
+        }
         attributes.assertProcessBounds(traceData.getNumberOfRanks());
         painter.fixPosition();
         final String processes[] = traceData.getListOfRanks();
@@ -1089,6 +1090,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			e.printStackTrace();
 		}
 		
+		updateButtonStates();
 		imageOrig.dispose();
 	}
 	

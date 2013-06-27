@@ -224,12 +224,15 @@ public abstract class SpaceTimeDataController {
 	public void setBaseData(IFilteredData filteredBaseData) {
 		dataTrace = filteredBaseData;
 		// we have to change the range of displayed processes
-		attributes.begProcess = 0;
+		//attributes.begProcess = 0;
 
-		// hack: for unknown reason, "endProcess" is exclusive.
-		// TODO: we should change to inclusive just like begProcess
-		attributes.endProcess = dataTrace.getNumberOfRanks();
-
+		//Snap it back into the acceptable limits.
+		if (attributes.endProcess > dataTrace.getNumberOfRanks())
+			attributes.endProcess  = dataTrace.getNumberOfRanks();
+		
+		if (attributes.begProcess >= attributes.endProcess)
+			attributes.begProcess = 0;
+		
 		painter.fixPosition();
 	}
 

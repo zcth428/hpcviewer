@@ -56,6 +56,7 @@ public class RemoteFilteredBaseData implements IFilteredData {
 			for (Filter filter : pat) {
 				filter.serializeSelfToStream(server);
 			}
+			server.flush();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

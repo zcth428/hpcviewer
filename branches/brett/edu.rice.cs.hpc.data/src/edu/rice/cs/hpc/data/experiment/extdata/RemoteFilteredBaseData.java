@@ -105,4 +105,12 @@ public class RemoteFilteredBaseData implements IFilteredData {
 	public int getFirstIncluded() {
 		return indexes[0];
 	}
+	@Override
+	public int getLastIncluded() {
+		return indexes[indexes.length-1];
+	}
+	@Override
+	public boolean isDenseBetweenFirstAndLast() {
+		return indexes[indexes.length-1] == indexes.length-1;
+	}
 }

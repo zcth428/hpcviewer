@@ -6,15 +6,21 @@ import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
@@ -60,6 +66,15 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	private int begProcess;
 	private int endProcess;
 
+	
+	private final Color COMPLETELY_FILTERED_OUT_COLOR = new Color(this.getDisplay(), 50,50,50);
+	private final Color NOT_FILTERED_OUT_COLOR = new Color(this.getDisplay(), 128,128,128);
+	/**
+	 * The pattern that we draw when we want to show that some ranks in the
+	 * region aren't shown because of filtering
+	 */
+	private final Pattern PARTIALLY_FILTERED_PATTERN; 
+	
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite)
 	{	
@@ -69,8 +84,25 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		insideBox = true;
 		selectionTopLeft = new Point(0,0);
 		selectionBottomRight = new Point(0,0);
+		PARTIALLY_FILTERED_PATTERN = createStripePattern();
 	}
 	
+	private Pattern createStripePattern() {
+		Image image = new Image(getDisplay(), 15, 15);
+		GC gc = new GC(image);
+		gc.setBackground(NOT_FILTERED_OUT_COLOR);
+		gc.fillRectangle(image.getBounds());
+		gc.setForeground(COMPLETELY_FILTERED_OUT_COLOR);
+		// Oddly enough, drawing from points outside of the image makes the
+		// lines look a lot better when the pattern is tiled.
+		for (int i = 5; i < 15; i+= 5) {
+			gc.drawLine(-5, i+5, i+5, -5);
+			gc.drawLine(i-5, 20, 20, i-5);
+		}
+		gc.dispose();
+		return new Pattern(getDisplay(), image);
+	}
+
 	public void updateView(SpaceTimeDataController _stData) {
 		this.setSpaceTimeData(_stData);
 
@@ -108,8 +140,31 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		viewWidth = getClientArea().width;
 		viewHeight = getClientArea().height;
 		
-		event.gc.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+		
+		event.gc.setBackground(COMPLETELY_FILTERED_OUT_COLOR);
 		event.gc.fillRectangle(this.getClientArea());
+		
+		IBaseData basedata = stData.getBaseData();
+		
+		// This is of the middle region, that is either partially filtered away
+		// or not filtered at all
+		int topPx = (int) (basedata.getFirstIncluded()*getScaleY());
+		int botPx = (int) (basedata.getLastIncluded()*getScaleY());
+		
+		if (basedata.isDenseBetweenFirstAndLast()){
+			event.gc.setBackground(NOT_FILTERED_OUT_COLOR);
+		} else {
+			try{
+			event.gc.setBackgroundPattern(PARTIALLY_FILTERED_PATTERN);
+			}
+			catch (SWTException e){
+				System.out.println("Advanced graphics not supported");
+				event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_RED));
+			}
+		}
+		// The width of the region is always the same as the width of the
+		// minimap because you can't filter by time
+		event.gc.fillRectangle(0, topPx, getClientArea().width, botPx-topPx);
 		
 		if (insideBox)
 		{
@@ -132,6 +187,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		
 		if (this.stData == null)
 			return;
+
 		
 		//Compensating for filtering
 		int compensatedFirstProcess = stData.getBaseData().getFirstIncluded() + topLeftProcess;

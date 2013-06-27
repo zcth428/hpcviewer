@@ -25,6 +25,9 @@ public interface IBaseData {
 	 * window through the filtering abstraction
 	 */
 	public int getFirstIncluded();
+	public int getLastIncluded();
+	/** Is every rank included between the first and the last as provided above?*/
+	public boolean isDenseBetweenFirstAndLast();
 	
 	
 	/****

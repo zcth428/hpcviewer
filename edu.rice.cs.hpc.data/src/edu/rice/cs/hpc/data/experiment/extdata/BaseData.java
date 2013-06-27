@@ -50,6 +50,16 @@ public class BaseData extends AbstractBaseData {
 	public int getFirstIncluded() {
 		return 0;
 	}
+
+	@Override
+	public int getLastIncluded() {
+		return baseDataFile.getNumberOfFiles();
+	}
+
+	@Override
+	public boolean isDenseBetweenFirstAndLast() {
+		return true;//No filtering
+	}
 	
 
 }

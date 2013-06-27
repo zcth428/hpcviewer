@@ -138,4 +138,14 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 		return indexes[0];
 	}
 
+	@Override
+	public int getLastIncluded() {
+		return indexes[indexes.length-1];
+	}
+
+	@Override
+	public boolean isDenseBetweenFirstAndLast() {
+		return indexes[indexes.length-1]-indexes[0] == indexes.length-1;
+	}
+
 }

@@ -201,6 +201,7 @@ public class RemoteDataRetriever {
  * Notes: This should be the first message sent. It tells the remote server to open the database file. It also gives the server a little additional information to help it process the database.
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x4F50454E (OPEN in ASCII)
+ * 0x04		Protocol Versionint-4				Currently unused and set to 0x00010001 (Major version = 1, minor version = 1). Behavior is currently undefined if server and client disagree on the version, but the server might want to fall back if possible
  * 0x04		Path length		short-2				The length (in bytes) of the string that follows.
  * 0x06 	Database path	string-m			UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. If the path contains strange characters that don't fit in 8 bits, it is not considered a valid path.
  * 
@@ -222,7 +223,15 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x4E4F4442 (NODB in ASCII)
  * 0x04		Error Code		int-4				Currently unused, but the server could specify a code to make diagnosing the error easier. Set to 0 for right now.
  * 
- * The XML file should be sent as soon as the client connects to the appropriate port. It is GZIP compressed.
+ * 
+ * Message EXML Server -> Client
+ * Notes: The XML file should be sent as soon as the client connects to the port specified in DBOK. If the specified port is the same as the main data port,
+ * this message must be sent on the main data port, without opening or closing the existing connection. In that case, this message should be treated like any other message.
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x45584D4C (EXML in ASCII)
+ * 0x04		Size			int-4				The number of bytes that follow that make up the compressed xml bytes. This is the compressed size, not the uncompressed size.
+ * 0x08		Compressed XML	bytes-s				The GZIP-compressed Experiment.xml file
+ * 
  * 
  * Message INFO Client -> Server
  * Notes: This contains information derived from the XML data that the server needs in order to understand the later data requests

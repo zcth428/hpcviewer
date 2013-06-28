@@ -27,6 +27,7 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
  *
  */
 public class RemoteDBOpener extends AbstractDBOpener {
+	private static final int PROTOCOL_VERSION = 0x00010001;
 	//For more information on message structure, see protocol documentation at the end of RemoteDataReceiver 
 	DataOutputStream sender;
 	DataInputStream receiver;
@@ -117,24 +118,13 @@ public class RemoteDBOpener extends AbstractDBOpener {
 
 	private GZIPInputStream getXmlStream(String serverURL, int port, int xmlMessagePortNumber)
 			throws IOException {
-		
+
 		byte[] compressedXMLMessage;
+		DataInputStream dxmlReader;
 		if (xmlMessagePortNumber == port)
 		{
-			int exml = receiver.readInt();
-			if (exml != Constants.XML_HEADER) 
-			{
-				System.out.println("Expected XML Message (" + Constants.XML_HEADER
-						+ ")  on data socket, got " + exml);
-				return null;
-			}
-			int size = receiver.readInt();
-			compressedXMLMessage = new byte[size];
-			int numRead = 0;
-			while (numRead < size)
-			{
-				numRead += receiver.read(compressedXMLMessage, numRead, size- numRead);
-			}
+			dxmlReader = receiver;
+
 		}
 		else
 		{
@@ -142,16 +132,24 @@ public class RemoteDBOpener extends AbstractDBOpener {
 			SocketAddress xmlAddress = new InetSocketAddress(serverURL, xmlMessagePortNumber);
 			xmlConnection.connect(xmlAddress, 1000);
 			BufferedInputStream buf = new BufferedInputStream(xmlConnection.getInputStream());
-			DataInputStream dxmlreader = new DataInputStream(buf);
-			int size = dxmlreader.readInt();
-			compressedXMLMessage = new byte[size];
-			int numRead = 0;
-			while (numRead < size)
-			{
-				numRead += buf.read(compressedXMLMessage, numRead, size- numRead);
-			}
+			dxmlReader = new DataInputStream(buf);
 		}
+
+		int exml = dxmlReader.readInt();
+		if (exml != Constants.XML_HEADER) 
+		{
+			System.out.println("Expected XML Message (" + Constants.XML_HEADER
+					+ ")  on data socket, got " + exml);
+			return null;
+		}
+		int size = dxmlReader.readInt();
 		
+		compressedXMLMessage = new byte[size];
+		int numRead = 0;
+		while (numRead < size)
+		{
+			numRead += dxmlReader.read(compressedXMLMessage, numRead, size- numRead);
+		}
 		GZIPInputStream xmlStream = new GZIPInputStream(new 
 				ByteArrayInputStream(compressedXMLMessage));
 		return xmlStream;
@@ -214,6 +212,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 
 	private void sendOpenDB(String serverPathToDB) throws IOException {
 		sender.writeInt(Constants.OPEN);
+		sender.writeInt(PROTOCOL_VERSION);
 		int len = serverPathToDB.length();
 		sender.writeShort(len);
 		for (int i = 0; i < len; i++) {

@@ -149,7 +149,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		// This is of the middle region, that is either partially filtered away
 		// or not filtered at all
 		int topPx = (int) (basedata.getFirstIncluded()*getScaleY());
-		int botPx = (int) (basedata.getLastIncluded()*getScaleY());
+		//We need the +1 because we want to paint the last included as well
+		int botPx = (int) ((basedata.getLastIncluded()+1)*getScaleY());
 		
 		if (basedata.isDenseBetweenFirstAndLast()){
 			event.gc.setBackground(NOT_FILTERED_OUT_COLOR);

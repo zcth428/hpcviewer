@@ -91,10 +91,11 @@ public abstract class SpaceTimeDataController {
 	}
 	
 	/**
-	 * dtProcess scaled to be the index in traces[] that corresponds to this
-	 * process. dtProcess has length equal to the number of files in data trace
-	 * while scaledDTProcess typically has length equal to the number of vertical pixels in
-	 * SpaceTimeDetailView.
+	 * {@link getCurrentlySelectedProcess()} returns something on [begProcess,
+	 * endProcess-1]. We need to map that to something on [0, numTracesShown -
+	 * 1]. We use a simple linear mapping:
+	 * begProcess    -> 0,
+	 * endProcess-1  -> numTracesShown-1
 	 */
 	public int computeScaledProcess() {
 		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess, attributes.numPixelsV);

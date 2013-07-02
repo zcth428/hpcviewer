@@ -53,7 +53,7 @@ public class BaseData extends AbstractBaseData {
 
 	@Override
 	public int getLastIncluded() {
-		return baseDataFile.getNumberOfFiles();
+		return baseDataFile.getNumberOfFiles()-1;
 	}
 
 	@Override

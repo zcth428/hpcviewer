@@ -71,7 +71,7 @@ public class Frame implements Serializable
 		if (time < begTime || time > endTime) {
 			time = (begTime + endTime) >> 1;
 		}
-		if (process < begProcess || process > endProcess) {
+		if (process < begProcess || process >= endProcess) {
 			process = (begProcess + endProcess) >> 1;
 		}
 		position	= new Position(time, process);

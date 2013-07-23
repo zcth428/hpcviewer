@@ -169,4 +169,10 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		super.dispose();
 	}
 
+
+	public void fillTracesWithData(boolean changedBounds, int numThreadsToLaunch) {
+		//No need to do anything. The data for local is gotten from the file
+		//on demand on a per-timeline basis.
+	}
+
 }

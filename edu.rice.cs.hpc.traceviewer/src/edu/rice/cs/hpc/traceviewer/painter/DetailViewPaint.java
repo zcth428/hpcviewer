@@ -75,5 +75,11 @@ public class DetailViewPaint extends BaseViewPaint {
 		return new TimelineThread(this.window, controller, ptlService, changedBounds, canvas, compositeOrigLines,
 				compositeFinalLines, attributes.numPixelsH, xscale, 
 				yscale, monitor);
+	}
+
+	@Override
+	protected void launchDataGettingThreads(boolean changedBounds,
+			int numThreads) {
+		controller.fillTracesWithData( changedBounds, numThreads);
 	}	
 }

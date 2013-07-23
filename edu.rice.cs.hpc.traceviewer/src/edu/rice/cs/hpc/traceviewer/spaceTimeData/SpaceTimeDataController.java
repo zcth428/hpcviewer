@@ -239,6 +239,8 @@ public abstract class SpaceTimeDataController {
 
 	public abstract IFilteredData createFilteredBaseData();
 
+	public abstract void fillTracesWithData(boolean changedBounds, int numThreadsToLaunch);
+
 
 
 }

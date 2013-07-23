@@ -6,7 +6,6 @@ import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
 
 
 
@@ -67,7 +66,7 @@ public abstract class BaseViewPaint {
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
 		int linesToPaint = getNumberOfLines();
-		final int num_threads = Math.min(linesToPaint, Runtime.getRuntime()
+		final int numThreads = Math.min(linesToPaint, Runtime.getRuntime()
 				.availableProcessors());
 
 		// -------------------------------------------------------------------
@@ -94,16 +93,9 @@ public abstract class BaseViewPaint {
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 
-		//Not the prettiest or the most OO way of doing it, but...
-		if(controller instanceof SpaceTimeDataControllerRemote && canvas instanceof SpaceTimeDetailCanvas) {
-			threads = ((SpaceTimeDataControllerRemote)controller).fillTracesWithData( changedBounds, num_threads);
-			for (int i = 0; i < threads.length; i++) {
-				threads[i].start();
-			}
-			System.out.println(System.currentTimeMillis() + ": All decompression finished. Beginning rendering.");
-		}
-		
-		threads = new Thread[num_threads];
+		launchDataGettingThreads(changedBounds, numThreads);
+			
+		threads = new Thread[numThreads];
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
 			threads[threadNum] = getTimelineThread(canvas, xscale, yscale);
@@ -122,6 +114,8 @@ public abstract class BaseViewPaint {
 		changedBounds = false;
 
 	}
+
+	abstract protected void launchDataGettingThreads(boolean changedBounds, int numThreads);
 
 	private void waitForAllThreads(Thread[] threads) {
 		int numThreads = threads.length;

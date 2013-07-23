@@ -81,7 +81,8 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	 * This performs the network request and does a small amount of processing on the reply. Namely, it does 
 	 * not decompress the traces. Instead, it returns threads that will do that work when executed.
 	 */
-	public Thread[] fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) {
+	@Override
+	public void fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) {
 		if (changedBounds) {
 			
 			DecompressionThread[] workThreads = new DecompressionThread[numThreadsToLaunch];
@@ -93,6 +94,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 			for (int i = 0; i < workThreads.length; i++) {
 
 				workThreads[i] = new DecompressionThread(ptlService, scopeMap, ranksExpected, attributes.begTime, attributes.endTime);
+				workThreads[i].start();
 			}
 			
 
@@ -106,9 +108,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 				// UI Notify user...
 				e.printStackTrace();
 			}
-			return workThreads;
 		}
-		return new Thread[0];
 	}
 
 	

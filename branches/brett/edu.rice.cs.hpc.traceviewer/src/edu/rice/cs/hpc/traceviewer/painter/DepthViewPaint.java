@@ -63,4 +63,10 @@ public class DepthViewPaint extends BaseViewPaint {
 				yscale, attributes.numPixelsH, controller.isEnableMidpoint());
 	}
 
+	@Override
+	protected void launchDataGettingThreads(boolean changedBounds,
+			int numThreads) {
+		//We don't want to get data here.
+	}
+
 }

@@ -100,7 +100,7 @@ public abstract class BaseViewPaint {
 			for (int i = 0; i < threads.length; i++) {
 				threads[i].start();
 			}
-			waitForAllThreads(threads);
+			System.out.println(System.currentTimeMillis() + ": All decompression finished. Beginning rendering.");
 		}
 		
 		threads = new Thread[num_threads];
@@ -111,12 +111,13 @@ public abstract class BaseViewPaint {
 		}
 
 		waitForAllThreads(threads);
+		System.out.println(System.currentTimeMillis()+": Rendering mostly finished.");
 
 		// -------------------------------------------------------------------
 		// Finalize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
 		endPainting(linesToPaint, xscale, yscale);
-
+		System.out.println(System.currentTimeMillis()+": Detail view rendering finished.");
 		monitor.endProgress();
 		changedBounds = false;
 

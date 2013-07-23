@@ -96,6 +96,7 @@ public class TimelineThread extends Thread
 		boolean usingMidpoint = stData.isEnableMidpoint();
 		while(nextTrace != null)
 		{
+			//nextTrace.data is not empty if the data is from the server
 			if(changedBounds && nextTrace.data.isEmpty())
 			{
 				nextTrace.readInData();

@@ -83,52 +83,72 @@ public class RemoteDataRetriever {
 		requestData(P0, Pn, t0, tn, vertRes, horizRes);
 		System.out.println("Data request finished");
 		
-		int ResponseCommand = waitAndReadInt(receiver);
+		int responseCommand = waitAndReadInt(receiver);
 		statusMgr.setMessage("Receiving data");
 		shell.update();
 		
-		if (ResponseCommand != HERE)//"HERE" in ASCII
+		if (responseCommand != HERE)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
-		System.out.println("Data receive begin");
+		System.out.println(System.currentTimeMillis() + ": Data receive begin");
 		
 		
-		int RanksReceived = 0;
-		int RanksExpected = Math.min(Pn-P0, vertRes);
+		
+		final int ranksExpected = Math.min(Pn-P0, vertRes);
 		
 		
-		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
-		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
-	
-		DataInputStream DataReader;
-		
-		DataReader = receiver;
-		
-		while (RanksReceived < RanksExpected)
-		{
+		final TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
+		monitor.beginProgress(ranksExpected, "Receiving data...", "data", shell);
 
-			int rankNumber = DataReader.readInt();
-			int Length = DataReader.readInt();//Number of CPID's
-			
-			
-			long startTimeForThisTimeline = DataReader.readLong();
-			long endTimeForThisTimeline = DataReader.readLong();
-			int compressedSize = DataReader.readInt();
-			byte[] compressedTraceLine = new byte[compressedSize];
-			
-			int numRead = 0;
-			while (numRead < compressedSize)
-			{
-				numRead += DataReader.read(compressedTraceLine, numRead, compressedSize- numRead);
-				
+		Thread unpacker = new Thread(){
+		@Override
+			public void run() {
+				DataInputStream dataReader;
+				int ranksReceived = 0;
+				dataReader = receiver;
+				boolean first = true;
+				try {
+					while (ranksReceived < ranksExpected) {
+
+						int rankNumber = dataReader.readInt();
+						if (first){
+							System.out.println(System.currentTimeMillis() + ": First real data byte received.");
+							first = false;
+						}
+						int length = dataReader.readInt();// Number of CPID's
+
+						long startTimeForThisTimeline = dataReader.readLong();
+						long endTimeForThisTimeline = dataReader.readLong();
+						int compressedSize = dataReader.readInt();
+						byte[] compressedTraceLine = new byte[compressedSize];
+
+						int numRead = 0;
+						while (numRead < compressedSize) {
+							numRead += dataReader.read(compressedTraceLine,
+									numRead, compressedSize - numRead);
+
+						}
+
+						DecompressionThread.addWorkItemToDo(
+							new DecompressionThread.DecompressionItemToDo(
+										compressedTraceLine, length,
+										startTimeForThisTimeline,
+										endTimeForThisTimeline, rankNumber,
+										compressionType));
+
+						ranksReceived++;
+						monitor.announceProgress();
+					}
+				} catch (IOException e) {
+					//Should we provide some UI notification to the user?
+					e.printStackTrace();
+				}
+				//Updating the progress doesn't work anyways and will throw
+				//an exception because this is a different thread
+				//monitor.endProgress();
+				System.out.println(System.currentTimeMillis() + "Data receive end");
 			}
-					
-			DecompressionThread.workToDo.add(new DecompressionThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, rankNumber, compressionType));
-			
-			RanksReceived++;
-			monitor.announceProgress();
-		}
-		monitor.endProgress();
-		System.out.println("Data receive end");
+		};
+		unpacker.start();
 		
 	}
 
@@ -202,8 +222,8 @@ public class RemoteDataRetriever {
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x4F50454E (OPEN in ASCII)
  * 0x04		Protocol Versionint-4				Currently unused and set to 0x00010001 (Major version = 1, minor version = 1). Behavior is currently undefined if server and client disagree on the version, but the server might want to fall back if possible
- * 0x04		Path length		short-2				The length (in bytes) of the string that follows.
- * 0x06 	Database path	string-m			UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. If the path contains strange characters that don't fit in 8 bits, it is not considered a valid path.
+ * 0x08		Path length		short-2				The length (in bytes) of the string that follows.
+ * 0x0A 	Database path	string-m			UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. If the path contains strange characters that don't fit in 8 bits, it is not considered a valid path.
  * 
  * The server can then reply with DBOK or NODB
  * 
@@ -213,7 +233,7 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x44424F4B (DBOK in ASCII)
  * 0x04		XML Port		int-4				The port to which the client should connect to receive the XML file
  * 0x08		Trace count		int-4				The number of traces contained in the database/trace file
- * 0x0C		Compression		int-4				The compression type and algorithm used. Right now the only values are 0 = uncompressed and 1 = zlib compressed, but this could be extended
+ * 0x0C		Compression		int-4				The compression type and algorithm used. Right now the only values are 0 = uncompressed and 1 = zlib compressed, but this could be extended. The higher-order word (mask 0xFFFF0000) is currently reserved.
  * 0x10+6n	Process ID		int-4				The process number for rank n. This is used only to label the location of the cursor. n goes from 0 to (Traces count-1)
  * 0x14+6n	Thread ID		short-2				The thread number for rank n. If this has a value of -1, then neither it nor the period between the process and thread numbers should be displayed
  * 
@@ -248,9 +268,9 @@ public class RemoteDataRetriever {
  * 0x04		First Process	int-4				The lower bound on the processes to be retrieved
  * 0x08		Last Process	int-4				The upper bound on the processes to be retrieved
  * 0x0C		Time Start		long-8				The lower bound on the time of the traces to be retrieved. This is the absolute time, not the time since Global Min Time.
- * 0x12		Time End		long-8				The upper bound on the time of the traces to be retrieved. Again, the absolute time.
- * 0x1A		Vertical Res	int-4				The vertical resolution of the detail view. The server uses this to determine which processes should be returned from the range [First Process, Last Process]
- * 0x1E		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
+ * 0x14		Time End		long-8				The upper bound on the time of the traces to be retrieved. Again, the absolute time.
+ * 0x1C		Vertical Res	int-4				The vertical resolution of the detail view. The server uses this to determine which processes should be returned from the range [First Process, Last Process]
+ * 0x20		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
  * 
  * Message HERE Server -> Client
  * Notes: This is a response to the DATA request. After this message, the client may send another DATA request or a DONE shutdown command. After each rank is received, k should be incremented by (28+c). The client should expect the message to contain min(Last Process-First Process, Vertical Resolution) tracelines.

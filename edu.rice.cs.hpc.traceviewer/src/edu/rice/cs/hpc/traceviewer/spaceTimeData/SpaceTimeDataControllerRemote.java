@@ -85,19 +85,19 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 		if (changedBounds) {
 			
 			DecompressionThread[] workThreads = new DecompressionThread[numThreadsToLaunch];
-			int RanksExpected = Math.min(attributes.endProcess-attributes.begProcess, attributes.numPixelsV);
+			int ranksExpected = Math.min(attributes.endProcess-attributes.begProcess, attributes.numPixelsV);
 			
-			ptlService.setProcessTimeline(new ProcessTimeline[RanksExpected]);
+			DecompressionThread.setTotalRanksExpected(ranksExpected);
+			ptlService.setProcessTimeline(new ProcessTimeline[ranksExpected]);
 
 			for (int i = 0; i < workThreads.length; i++) {
 
-				workThreads[i] = new DecompressionThread(ptlService, scopeMap, RanksExpected, attributes.begTime, attributes.endTime);
+				workThreads[i] = new DecompressionThread(ptlService, scopeMap, ranksExpected, attributes.begTime, attributes.endTime);
 			}
 			
 
 			try {
-				// This will fill the workToDo queue with decompression and
-				// rendering. After the threads join, traces will be full
+
 				dataRetriever.getData(attributes.begProcess,
 						attributes.endProcess, attributes.begTime,
 						attributes.endTime, attributes.numPixelsV,
@@ -131,9 +131,30 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 
 	@Override
 	public ProcessTimeline getNextTrace(boolean changedBounds) {
-		int index = lineNum.getAndIncrement();
-		if (index >= ptlService.getNumProcessTimeline()) return null;
-		return ptlService.getProcessTimeline(index);
+		Integer nextIndex;
+
+		if (changedBounds) {
+			// TODO: Should this be implemented with real locking?
+			while ((nextIndex = DecompressionThread.getNextTimelineToRender()) == null) {
+				//Make sure a different thread didn't get the last one while 
+				//this thread was waiting:
+				if (lineNum.get() >= ptlService.getNumProcessTimeline())
+					return null;
+				try {
+					Thread.sleep(50);
+
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			lineNum.getAndIncrement();
+		}
+		else{
+			nextIndex = lineNum.getAndIncrement();
+			if (nextIndex >= ptlService.getNumProcessTimeline())
+				return null;
+		}
+		return ptlService.getProcessTimeline(nextIndex.intValue());
 	}
 
 

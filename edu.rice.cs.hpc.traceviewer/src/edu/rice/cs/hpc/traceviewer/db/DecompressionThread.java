@@ -22,11 +22,15 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
  * version with changes made to the local version. This used to be responsible
  * for rendering and decompressing, but now is not. I'm keeping the WorkItemToDo
  * structure just in case this expands again. 
+ * Philip 7/23/13 Got rid of WorkItemToDo. This thread looks like it's only going
+ * to be for decompression now that we have a decent way to do the rendering in
+ * parallel without waiting for all threads to be decompressed.
  */
 
 public class DecompressionThread extends Thread {
 
-	public static ConcurrentLinkedQueue<WorkItemToDo> workToDo = new ConcurrentLinkedQueue<WorkItemToDo>();
+	private static ConcurrentLinkedQueue<DecompressionItemToDo> workToDo = new ConcurrentLinkedQueue<DecompressionItemToDo>();
+	private static ConcurrentLinkedQueue<Integer> timelinesAvailableForRendering = new ConcurrentLinkedQueue<Integer>();
 	// Variables for decompression
 	final ProcessTimelineService timelineServ;
 	final HashMap<Integer, CallPath> scopeMap;
@@ -37,6 +41,7 @@ public class DecompressionThread extends Thread {
 	final static int COMPRESSION_TYPE_MASK = 0xFFFF;//Save two bytes for formatting versions
 	final static short ZLIB_COMPRESSSED  = 1;
 	
+	static boolean first = true;
 
 	static AtomicInteger ranksRemainingToDecompress;
 
@@ -49,16 +54,34 @@ public class DecompressionThread extends Thread {
 		ranksExpected = _ranksExpected;
 		t0 = _t0;
 		tn = _tn;
-
-
-		ranksRemainingToDecompress = new AtomicInteger(ranksExpected);
 		
 	}
+	
+	public static void setTotalRanksExpected(int ranks){
+		ranksRemainingToDecompress = new AtomicInteger(ranks);
+	}
+	
+	public static void addWorkItemToDo(DecompressionItemToDo add) {
+		workToDo.add(add);
+	}
+	
+	/**
+	 * @return The index of a {@link ProcessTimeline} that has been uncompressed
+	 * and is now ready for rendering. Returns null if there aren't any yet for
+	 * any reason. The unavailability may be a temporary condition that will be
+	 * resolved in a moment, or it may mean that all available timelines have 
+	 * been processed. Unless this method returns null, it will not return a
+	 * value that it has returned before.
+	 */
+	public static Integer getNextTimelineToRender() {
+		return timelinesAvailableForRendering.poll();
+	}
+	
 	@Override
 	public void run() {
 		while (ranksRemainingToDecompress.get() > 0)
 		{
-			WorkItemToDo wi = workToDo.poll();
+			DecompressionItemToDo wi = workToDo.poll();
 			if (wi == null)
 			{
 				//There is still work that needs to get done, but it is not available to be worked on at the moment.
@@ -71,38 +94,36 @@ public class DecompressionThread extends Thread {
 				}
 				continue;
 			}
-			if (wi instanceof DecompressionItemToDo)
-			{
-				//System.out.println("Decompressing, rem=" + ranksRemainingToDecompress);
-				ranksRemainingToDecompress.getAndDecrement();
-				DecompressionItemToDo toDecomp = (DecompressionItemToDo)wi;
-				try {
-					decompress(toDecomp);
-				} catch (IOException e) {
-					Debugger.printDebug(1, "IO Exception in decompression algorithm.");
-					e.printStackTrace();
-				}
-				continue;
 
+			if (first){
+				first = false;
+				System.out.println(System.currentTimeMillis()+ " First decompression beginning.");
 			}
+			ranksRemainingToDecompress.getAndDecrement();
+			DecompressionItemToDo toDecomp = (DecompressionItemToDo)wi;
+			try {
+				decompress(toDecomp);
+			} catch (IOException e) {
+				Debugger.printDebug(1, "IO Exception in decompression algorithm.");
+				e.printStackTrace();
+			}
+			continue;
+
+
 		}
 		
 	}
 
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException
 	{
-		Record[] ranksData = readTimeCPIDArray(toDecomp.Packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
+		Record[] ranksData = readTimeCPIDArray(toDecomp.packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
 		TraceDataByRank dataAsTraceDBR = new TraceDataByRank(ranksData);
 
-
 		int lineNumber = toDecomp.rankNumber;
-		/*if (false)//if (Pn-P0 > vertRes)
-			lineNumber = (int)Math.round((RankNumber-P0)*(double)vertRes/(Pn-P0));//Its like a line: P0 -> 0, the slope is number of pixels/number of ranks
-		else
-			lineNumber = RankNumber-P0;*/
 
-		ProcessTimeline PTl = new ProcessTimeline(dataAsTraceDBR, scopeMap, lineNumber, ranksExpected, tn-t0, t0);
-		timelineServ.setProcessTimeline(lineNumber, PTl); //RankNumber or RankNumber-P0??
+		ProcessTimeline ptl = new ProcessTimeline(dataAsTraceDBR, scopeMap, lineNumber, ranksExpected, tn-t0, t0);
+		timelineServ.setProcessTimeline(lineNumber, ptl);
+		timelinesAvailableForRendering.add(lineNumber);
 	}
 
 	/**
@@ -138,24 +159,22 @@ public class DecompressionThread extends Thread {
 			int CPID = decompressor.readInt();
 			/*if (CPID <= 0)
 				System.out.println("CPID too small");*/
-			toReturn[i] = new Record(currentTime, CPID, Constants.dataIdxNULL);//Does this method of getting timestamps actually work???
+			toReturn[i] = new Record(currentTime, CPID, Constants.dataIdxNULL);
 		}
 		return toReturn;
 	}
 
 
 
-public static interface WorkItemToDo {
 
-}
-public static class DecompressionItemToDo implements WorkItemToDo {
-	final byte[] Packet;
+public static class DecompressionItemToDo {
+	final byte[] packet;
 	final int itemCount;//The number of Time-CPID pairs
 	final long startTime, endTime;
 	final int rankNumber;
 	final int compressed;
 	public DecompressionItemToDo(byte[] _packet, int _itemCount, long _startTime, long _endTime, int _rankNumber, int _compressionType) {
-		Packet = _packet;
+		packet = _packet;
 		itemCount = _itemCount;
 		startTime = _startTime;
 		endTime = _endTime;

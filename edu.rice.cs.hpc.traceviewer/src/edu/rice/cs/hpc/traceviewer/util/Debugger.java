@@ -8,6 +8,9 @@ public class Debugger {
 	final static private String MSG_HEADER = "[hpctr] ";
 	static private int debugLevel = 0;
 	
+	//Set to negative of what client says
+	static private int timeCorrection = 976023; //in microseconds
+	private static final boolean printTimeDebugMessages = true;
 	/***
 	 * print the call stack debugging info
 	 * 
@@ -67,5 +70,13 @@ public class Debugger {
 	static public void printDebug( int level, String msg ) {
 		if (debugLevel > level)
 			System.out.println( MSG_HEADER + msg);
+	}
+
+	public static void printTimestampDebug(String msg) {
+		long t = System.nanoTime();
+		if(printTimeDebugMessages) {
+			System.out.println((t/1000 + timeCorrection) + "\t" + msg);
+		}
+		
 	}
 }

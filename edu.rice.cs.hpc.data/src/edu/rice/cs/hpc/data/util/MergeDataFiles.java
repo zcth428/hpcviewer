@@ -59,9 +59,8 @@ public class MergeDataFiles {
 		{
 			if (isMergedFileCorrect(outputFile))			
 				return MergeDataAttribute.SUCCESS_ALREADY_CREATED;
-			
 			// the file exists but corrupted. In this case, we have to remove and create a new one
-			fout.delete();
+			throw new RuntimeException("MT file corrupted.");
 		}
 		
 		// check if the files in glob patterns is correct
@@ -177,10 +176,14 @@ public class MergeDataFiles {
 
 	}
 	
-	
+	// pat2 7/24/13: The marker used to be:
+	//static private long MARKER_END_MERGED_FILE = 0xDEADF00D;
+	// but Java sign-extends the int to a long and it becomes
+	// 0xFFFFFFFFDEADF00D NOT 0x00000000DEADF00D, like you'd probably guess.
+	// Making it explicitly what it was implicitly before to avoid 
+	// compatibility issues.
 	/** Magic marker for the end of the file **/
-	static private long MARKER_END_MERGED_FILE = 0xDEADF00D;
-	
+	static private long MARKER_END_MERGED_FILE = 0xFFFFFFFFDEADF00Dl;
 	
 	/***
 	 * insert a marker at the end of the file
@@ -208,7 +211,6 @@ public class MergeDataFiles {
 		if (pos>0) {
 			f.seek(pos);
 			final long marker = f.readLong();
-			
 			isCorrect = (marker == MARKER_END_MERGED_FILE);
 		}
 		f.close();

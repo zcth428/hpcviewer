@@ -6,6 +6,7 @@ import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 
 
@@ -75,7 +76,7 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		if (attributes.numPixelsH <= 0)
 			return;
-
+		
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
@@ -94,7 +95,7 @@ public abstract class BaseViewPaint {
 		double yscale = Math.max(canvas.getScaleY(), 1);
 
 		launchDataGettingThreads(changedBounds, numThreads);
-			
+		Debugger.printTimestampDebug("Rendering beginning (" + canvas.toString()+")");
 		threads = new Thread[numThreads];
 		
 		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
@@ -103,13 +104,13 @@ public abstract class BaseViewPaint {
 		}
 
 		waitForAllThreads(threads);
-		System.out.println(System.currentTimeMillis()+": Rendering mostly finished.");
+		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
 
 		// -------------------------------------------------------------------
 		// Finalize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
 		endPainting(linesToPaint, xscale, yscale);
-		System.out.println(System.currentTimeMillis()+": Detail view rendering finished.");
+		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
 		monitor.endProgress();
 		changedBounds = false;
 

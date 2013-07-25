@@ -143,7 +143,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	public IFilteredData createFilteredBaseData() {
 		try{
 			return new FilteredBaseData(getTraceFileAbsolutePath(), 
-					trAttribute.dbHeaderSize, 24);
+					trAttribute.dbHeaderSize, TraceAttribute.DEFAULT_RECORD_SIZE);
 		}
 		catch (Exception e){
 			e.printStackTrace();

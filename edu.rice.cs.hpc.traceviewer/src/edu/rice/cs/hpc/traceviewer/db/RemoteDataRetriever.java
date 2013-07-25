@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Shell;
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 /**
  * Handles communication with the remote server, including asking for data and
@@ -80,8 +81,9 @@ public class RemoteDataRetriever {
 		
 		statusMgr.setMessage("Requesting data");
 		shell.update();
+		Debugger.printTimestampDebug("Requesting data");
 		requestData(P0, Pn, t0, tn, vertRes, horizRes);
-		System.out.println("Data request finished");
+		Debugger.printTimestampDebug("Data request finished");
 		
 		int responseCommand = waitAndReadInt(receiver);
 		statusMgr.setMessage("Receiving data");
@@ -89,8 +91,8 @@ public class RemoteDataRetriever {
 		
 		if (responseCommand != HERE)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
-		System.out.println(System.currentTimeMillis() + ": Data receive begin");
-		
+	
+		Debugger.printTimestampDebug("Data receive begin");
 		
 		
 		final int ranksExpected = Math.min(Pn-P0, vertRes);
@@ -111,7 +113,7 @@ public class RemoteDataRetriever {
 
 						int rankNumber = dataReader.readInt();
 						if (first){
-							System.out.println(System.currentTimeMillis() + ": First real data byte received.");
+							Debugger.printTimestampDebug("First real data byte received.");
 							first = false;
 						}
 						int length = dataReader.readInt();// Number of CPID's
@@ -145,7 +147,7 @@ public class RemoteDataRetriever {
 				//Updating the progress doesn't work anyways and will throw
 				//an exception because this is a different thread
 				//monitor.endProgress();
-				System.out.println(System.currentTimeMillis() + "Data receive end");
+				Debugger.printTimestampDebug("Data receive end");
 			}
 		};
 		unpacker.start();

@@ -97,7 +97,7 @@ public class DecompressionThread extends Thread {
 
 			if (first){
 				first = false;
-				System.out.println(System.currentTimeMillis()+ " First decompression beginning.");
+				Debugger.printTimestampDebug("First decompression beginning.");
 			}
 			ranksRemainingToDecompress.getAndDecrement();
 			DecompressionItemToDo toDecomp = (DecompressionItemToDo)wi;

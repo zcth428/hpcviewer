@@ -1,0 +1,70 @@
+#!/bin/bash
+# Script to create packages of hpcviewer or hpctraceviewer from different platforms
+# To run this script, you need to export hpcviewer and/or hpctraceviewer into a
+# directory (called "export/hpcviewer" for instance). Eclipse will then create
+# a set of directories named linux.xxx, macos.yyy, etc.
+# copy this script into export directory, and then run in inside export/hpcviewer 
+# as follows:
+#   ../make-package hpcviewer release_number revision_number
+# (it's ugly, but it works)
+
+# example of variable initialization
+viewer="hpctraceviewer"
+rev="1496"
+release="5.3.2"
+
+if [ $# -eq 3 ]; then
+  viewer=$1
+  release=$2
+  rev=$3
+else
+  echo "Syntax: $0 viewer_name release_number revision_number"
+  echo "viewer_name is either 'hpcviewer' or 'hpctraceviewer'"
+  echo "Example: $0 $viewer $release $rev "
+  exit
+fi
+
+if [ $viewer = "hpcviewer" ]; then
+  pdir=viewer
+elif [ $viewer = "hpctraceviewer" ]; then
+  pdir=traceviewer
+else
+  echo "Unknown viewer: $viewer"
+  exit
+fi
+
+# looking for different platforms
+
+for i in *; do echo $i 
+  cd $i
+  plugin="${viewer}/plugins/edu.rice.cs.hpc.${pdir}_*"
+  
+  for f in $plugin; do echo "plugin: $f"
+  if [ -d $f ] ; then
+     mv ${f}/scripts . 
+     cd scripts 
+     bash make-dist ../$viewer >/tmp/out
+     mv $viewer.tar.gz ../../$viewer-$release-r$rev-$i.tgz
+     cd ../../ 
+     ls -l $viewer-$release-r$rev-$i.tgz
+  else
+     echo "Plugin does not exist: $f"
+     exit
+  fi
+  done
+done
+
+# windows only: create zip instead of tgz
+
+mkdir tmp
+cd tmp
+for f in ../*.win32.*.tgz; do echo $f 
+  tar xzf $f 
+  z=`echo $f | sed -e "s/tgz/zip/g" `
+  echo "new file: $z"
+  zip -r $z $viewer/*
+  ls -l $z
+  rm -rf $viewer; 
+done
+cd ..
+rmdir tmp

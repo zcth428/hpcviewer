@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Common
+Bundle-SymbolicName: edu.rice.cs.hpc.common
+Bundle-Version: 5.3.2.qualifier
+Bundle-Activator: edu.rice.cs.hpc.common.plugin.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: Rice University
+Export-Package: edu.rice.cs.hpc.common.ui,
+ edu.rice.cs.hpc.common.util
+Import-Package: edu.rice.cs.hpc.data.util

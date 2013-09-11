@@ -364,6 +364,10 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			}
 			//paints the current screen
 			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		} else {
+			// Eclipse e4 (kepler): lazy page creation: no client area has been
+			//		created at this stage
+			return;
 		}
 		GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));

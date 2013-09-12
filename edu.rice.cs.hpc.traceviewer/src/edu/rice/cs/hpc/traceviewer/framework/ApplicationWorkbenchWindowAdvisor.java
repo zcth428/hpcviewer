@@ -1,6 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.framework;
 
-import org.eclipse.jface.action.IStatusLineManager;
+//import org.eclipse.jface.action.IStatusLineManager;
 //import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -9,16 +9,16 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import edu.rice.cs.hpc.common.ui.Util;
-import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
+//import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
-	final private String args[];
+	//final private String args[];
 	
 	public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer, String []_args) {
 		super(configurer);
-		args = _args;
+		//args = _args;
 	}
 
 	/*
@@ -56,10 +56,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// once the widgets have been created, we ask user a database to open
 		// ---------------------------------------------------------------------
 		
-		final IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
-		final IStatusLineManager status = configurer.getActionBarConfigurer().getStatusLineManager();
+		//final IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
+		//final IStatusLineManager status = configurer.getActionBarConfigurer().getStatusLineManager();
 		
-		TraceDatabase.openDatabase(configurer.getWindow(), args, status, new LocalDBOpener());
+		//TraceDatabase.openDatabase(configurer.getWindow(), args, status, new LocalDBOpener());
 	}
 
 	/*

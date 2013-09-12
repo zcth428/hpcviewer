@@ -2,8 +2,8 @@ package edu.rice.cs.hpc.traceviewer.util;
 
 public class Debugger {
 	
-	final static int MAX_TRACES = 8;
-	final static int MIN_TRACES = 2;
+	final static int MAX_TRACES = 14;
+	final static int MIN_TRACES = 1;
 	
 	final static private String MSG_HEADER = "[hpctr] ";
 	static private int debugLevel = 0;

@@ -1,7 +1,10 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
@@ -49,8 +52,13 @@ public abstract class BaseViewPaint {
 		attributes = _data.getAttributes();
 		painter = _data.getPainter();
 		this.window = (window == null ? Util.getActiveWindow() : window);
-		IViewSite site = (IViewSite) window.getActivePage().getActivePart().getSite();
-		monitor = new TimelineProgressMonitor( site.getActionBars().getStatusLineManager() );
+		IWorkbenchPart part = window.getActivePage().getActivePart();
+		IStatusLineManager lineManager = null;
+		if (part != null) {
+			IViewSite site = (IViewSite) part.getSite();
+			lineManager = site.getActionBars().getStatusLineManager();
+		}
+		monitor = new TimelineProgressMonitor( lineManager, window.getShell().getDisplay() ) ;
 
 	}
 	
@@ -61,7 +69,7 @@ public abstract class BaseViewPaint {
 	 *
 	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
 	 ***********************************************************************************/
-	public void paint(SpaceTimeCanvas canvas)
+	public synchronized void paint(SpaceTimeCanvas canvas)
 	{	
 		
 		// depending upon how zoomed out you are, the iteration you will be

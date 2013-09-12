@@ -119,7 +119,8 @@ public class ProcessTimeline {
  * @param another
  */
 	public void copyDataFrom(ProcessTimeline another) {
-		this.data.setListOfData(another.data.getListOfData());
+		if (another != null)
+			this.data.setListOfData(another.data.getListOfData());
 	}
 
 	/** Returns the number of elements in this ProcessTimeline. */

@@ -1063,13 +1063,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
 		GC bufferGC = new GC(imageBuffer);
-		bufferGC.setBackground(Constants.COLOR_WHITE);
-		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		//bufferGC.setBackground(Constants.COLOR_WHITE);
+		//bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 		
 		Image imageOrig = new Image(getDisplay(), viewWidth, viewHeight);
 		GC origGC = new GC(imageOrig);
-		origGC.setBackground(Constants.COLOR_WHITE);
-		origGC.fillRectangle(0,0,viewWidth,viewHeight);
+		//origGC.setBackground(Constants.COLOR_WHITE);
+		//origGC.fillRectangle(0,0,viewWidth,viewHeight);
 
 		paintDetailViewport(bufferGC, origGC, stData.attributes.begProcess, stData.attributes.endProcess, 
 				stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight, refreshData);
@@ -1078,7 +1078,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		bufferGC.dispose();
 		origGC.dispose();
 		
-		super.redraw();
+		getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				SpaceTimeDetailCanvas.this.redraw();
+			}
+		});
 
 		BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageOrig.getImageData());
 		try {
@@ -1219,7 +1223,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			case OperationHistoryEvent.ABOUT_TO_REDO:
 			case OperationHistoryEvent.ABOUT_TO_UNDO:
 				historyOperation.setOperation(operation);
-				getDisplay().syncExec(historyOperation);
+				Thread thread = new Thread(historyOperation);
+				thread.start();
+				
+				//getDisplay().syncExec(historyOperation);
 				break;
 			}
 		}
@@ -1252,7 +1259,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				painter.setPosition(p);
 
 				// just change the position, doesn't need to fully refresh
-				redraw();
+				getDisplay().asyncExec(new Runnable() {
+					public void run() {
+						redraw();
+					}
+				});
 			} 
 			else if (operation instanceof DepthOperation) {
 				int depth = ((DepthOperation)operation).getDepth();

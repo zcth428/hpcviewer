@@ -42,7 +42,7 @@ public class ThreadLevelDataFile extends BaseDataFile {
 		final double []metrics = new double[this.getNumberOfFiles()];
 		TimelineProgressMonitor monitor = null;
 		if (statusMgr != null) {
-			monitor = new TimelineProgressMonitor(statusMgr);
+			monitor = new TimelineProgressMonitor(statusMgr, Util.getActiveShell().getDisplay());
 		}
 
 		final int numWork = this.getNumberOfFiles();

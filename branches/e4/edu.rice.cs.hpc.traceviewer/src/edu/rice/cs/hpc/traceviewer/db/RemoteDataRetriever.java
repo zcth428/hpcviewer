@@ -95,7 +95,7 @@ public class RemoteDataRetriever {
 		int RanksExpected = Math.min(Pn-P0, vertRes);
 		
 		
-		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
+		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr, shell.getDisplay());
 		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
 	
 		DataInputStream DataReader;

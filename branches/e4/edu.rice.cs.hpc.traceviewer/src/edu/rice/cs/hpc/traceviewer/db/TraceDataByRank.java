@@ -179,6 +179,9 @@ public class TraceDataByRank {
 		int low = 0;
 		int high = listcpid.size() - 1;
 		
+		if (high < 0)
+			return -1;
+		
 		long timeMin = listcpid.get(low).timestamp;
 		long timeMax = listcpid.get(high).timestamp;
 		

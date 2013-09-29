@@ -15,6 +15,8 @@ import org.eclipse.swt.graphics.Image;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.data.experiment.scope.LineScope;
+import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 //======================================================
 // ................ SORTING ............................
@@ -133,12 +135,23 @@ public class ColumnViewerSorter extends ViewerComparator {
 	}
 
 	/**
-	 * Compare the name of the node 1 and node 2.
+	 * Compare the names of node 1 and node 2.
+	 * However, if both scopes are of type CallSiteScope, compare
+	 * the line numbers of the nodes
 	 * @param node1
 	 * @param node2
 	 * @return
 	 */
 	private int doCompare(Scope node1, Scope node2) {
+		if (node1 instanceof CallSiteScope && 
+			node2 instanceof CallSiteScope) {
+			CallSiteScope cs1 = (CallSiteScope) node1;
+			CallSiteScope cs2 = (CallSiteScope) node2;
+			LineScope ls1 = cs1.getLineScope();
+			LineScope ls2 = cs2.getLineScope();
+			if (ls1 != null && ls2 != null)
+				return ls1.getLineNumber() - ls2.getLineNumber();
+		} 
 		String text1 = node1.getName();
 		String text2 = node2.getName();
 		return text1.compareTo(text2);

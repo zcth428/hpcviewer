@@ -506,7 +506,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 		
-		notifyChanges("Zoom in V", stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges("Zoom in V", stData.getTimeBegin(), p1, stData.getTimeEnd(), p2);
 
 	}
 
@@ -538,7 +538,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				p1--;
 			}
 		}
-		notifyChanges("Zoom out V", stData.attributes.begTime, p1, stData.attributes.endTime, p2);
+		notifyChanges("Zoom out V", stData.getTimeBegin(), p1, stData.getTimeEnd(), p2);
 	}
 
 	
@@ -557,7 +557,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long t2 = xMid + (long)(numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)(numTimeUnitsDisp * SCALE);
 		
-		notifyChanges("Zoom in H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges("Zoom in H", t1, stData.getProcessBegin(), t2, stData.getProcessEnd());
 	}
 
 	/**************************************************************************
@@ -577,7 +577,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final long td1 = (long)(this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
-		notifyChanges("Zoom out H", t1, stData.attributes.begProcess, t2, stData.attributes.endProcess);
+		notifyChanges("Zoom out H", t1, stData.getProcessBegin(), t2, stData.getProcessEnd());
 	}
 	
 	/**************************************************************************
@@ -709,82 +709,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
-    
-/*<<<<<<< .working
-    *//******
-     * If necessary adjust the position of cross hair with the view region
-     * If the cross hair is outside the region, we force to position it within the region
-     * 	in order to avoid exposed bugs and confusion that the depth and the call path are not
-     * 	consistent with the trace view
-     * 
-     * @param t1
-     * @param p1
-     * @param t2
-     * @param p2
-     *//*
-    private void adjustCrossHair(long t1, double p1, long t2, double p2) {
-    	
-    	Position current = this.painter.getPosition();
-    	int process = (current.process);
-    	long time = current.time;
-    	
-    	if (process < p1 || process > p2) {
-    		process = (int) ((long) p1+p2) >> 1;
-		
-			// if the new location is bigger than the max proc, set it to the min proc
-			// this situation only happens when there is only 1 proc to display
-			if (process >= (int)p2)
-				process = (int)p1;
-    	}
-    	if (time < t1 || time > t2) {
-    		time = (t1+t2)>>1;
-    	}
-    	Position newPosition = new Position(time,process);
-    	newPosition = this.getAdjustedProcess(newPosition);
-    	
-    	// tell other views that we have new position 
-    	this.painter.updatePosition(newPosition);
-    }
 
-    /****
-     * Adjust the position of cross hair depending of the availability of traces
-     * 
-     * @param position
-     * @return adjusted position
-     */
-    /*private Position getAdjustedProcess(Position position) {
-    	
-    	double numDisplayedProcess = painter.getNumberOfDisplayedProcesses();
-    	int estimatedProcess = (int) (position.process - attributes.begProcess);			
-    	double scaleProcess = numDisplayedProcess/(double)this.getNumProcessesDisplayed();
-    	
-    	//---------------------------------------------------------------------------------------
-    	// computing the relative process rank: 
-    	//	the relative rank is adjusted based on the number of displayed process
-    	//	for instance, if the mouse click computes that the position of process rank is 100
-    	//		from range 50 to 500 (so the range is 450), but the number of displayed process
-    	//		is only 200, then we need to adjust the relative position of the process into
-    	//		200/450 * (100-50)
-    	//---------------------------------------------------------------------------------------
-    	int relativeProcess = (int) (scaleProcess * estimatedProcess);
-    	
-    	// generalization of case where there is only one single process to display
-    	if (relativeProcess>=numDisplayedProcess)
-    		relativeProcess = (int) (numDisplayedProcess - 1);
-    	
-    	//position.processInCS = relativeProcess;
-    	if (estimatedProcess != relativeProcess) {
-        	//---------------------------------------------------------------------------------------
-        	// if there is any change between the estimated process by mouse click and the
-    		//	estimated process by the array of displayed process, we need to adjust
-    		//	the absolute process
-        	//---------------------------------------------------------------------------------------
-        	position.process = (int) (relativeProcess/scaleProcess + attributes.begProcess);
-    	}
-    	return position;
-    	
-    }
-*/
   
     private boolean canGoEast() {
     	return (attributes.begTime > 0);
@@ -875,8 +800,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
-    	notifyChanges("Zoom H", topLeftTime, stData.attributes.begProcess, 
-    			bottomRightTime, stData.attributes.endProcess);
+    	notifyChanges("Zoom H", topLeftTime, stData.getProcessBegin(), 
+    			bottomRightTime, stData.getProcessEnd());
     }
 
     /*******
@@ -1071,8 +996,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,viewWidth,viewHeight);
 
-		paintDetailViewport(bufferGC, origGC, stData.attributes.begProcess, stData.attributes.endProcess, 
-				stData.attributes.begTime, stData.attributes.endTime, viewWidth, viewHeight, refreshData);
+		paintDetailViewport(bufferGC, origGC, stData.getProcessBegin(), stData.getProcessEnd(), 
+				stData.getTimeBegin(), stData.getTimeEnd(), viewWidth, viewHeight, refreshData);
 
 		
 		bufferGC.dispose();
@@ -1110,7 +1035,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
 			boolean refreshData)
 	{	
-		ImageTraceAttributes attributes = stData.attributes;
+		ImageTraceAttributes attributes = stData.getAttributes();
 		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
 		
 		
@@ -1158,11 +1083,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private void notifyChanges(String label, long _topLeftTime, int _topLeftProcess, 
 			long _bottomRightTime, int _bottomRightProcess) 
 	{
-		stData.attributes.begTime = _topLeftTime;
-		stData.attributes.endTime = _bottomRightTime;
-		stData.attributes.begProcess = _topLeftProcess;
-		stData.attributes.endProcess = _bottomRightProcess;
-		Frame frame = new Frame(stData.attributes, painter.getDepth(), 
+		ImageTraceAttributes attributes = stData.getAttributes();
+		attributes.begTime = _topLeftTime;
+		attributes.endTime = _bottomRightTime;
+		attributes.begProcess = _topLeftProcess;
+		attributes.endProcess = _bottomRightProcess;
+		
+		stData.setTraceAttributes(attributes);
+		
+		Frame frame = new Frame(attributes, painter.getDepth(), 
 				painter.getPosition().time, painter.getPosition().process);
 		
 		String sLabel = (label == null ? "Set region" : label);

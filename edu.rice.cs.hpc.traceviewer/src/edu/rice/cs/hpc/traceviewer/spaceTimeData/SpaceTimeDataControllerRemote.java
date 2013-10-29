@@ -15,13 +15,11 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
-import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
-public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
-
-	
+public class SpaceTimeDataControllerRemote extends SpaceTimeDataController 
+{	
 	final RemoteDataRetriever dataRetriever;
 
 	public final int HEADER_SIZE;
@@ -32,12 +30,11 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController {
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, String[] _valuesX) {
 
-		attributes = new ImageTraceAttributes();
 
 		BaseExperiment exp = new ExperimentWithoutMetrics();
 		try {
 			// Without metrics, so param 3 is false
-			exp.open(expStream, new ProcedureAliasMap(), false, Name);
+			exp.open(expStream, new ProcedureAliasMap(), Name);
 		}
 		catch (InvalExperimentException e) {
 			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());

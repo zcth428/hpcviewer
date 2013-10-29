@@ -24,12 +24,9 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
  * @author Philip Taffet
  * 
  */
-public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
-
-	
+public class SpaceTimeDataControllerLocal extends SpaceTimeDataController 
+{	
 	ImageTraceAttributes oldAtributes;
-
-	
 
 	private TraceAttribute trAttribute;
 
@@ -38,28 +35,11 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 	IStatusLineManager statusMgr;
 	IWorkbenchWindow window;
 
-	/*public static void dumpAllCounts() {
-		String[] MethodNames = { "Constructor", "getNextTrace",
-				"getNextDepthTrace", "addNextTrace", "getProcess",
-				"launchDetailViewThreads", "lineToPaint",
-				"prepareDepthViewportPainting", "prepareViewportPainting",
-				"getPainter" };
-
-		for (int i = 0; i < MethodNames.length; i++) {
-			System.out.println(MethodNames[i] + ": " + MethodCounts[i]);
-		}
-		System.out.println();
-	}*/
-
-	public SpaceTimeDataControllerLocal(
-
-	IWorkbenchWindow _window, IStatusLineManager _statusMgr, File expFile,
-			File _traceFile) {
-
+	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, IStatusLineManager _statusMgr, 
+			File expFile, File _traceFile) {
 
 		statusMgr = _statusMgr;
 
-		attributes = new ImageTraceAttributes();
 		oldAtributes = new ImageTraceAttributes();
 		
 		traceFile = _traceFile;
@@ -101,11 +81,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		
 	}
 
-
-
-
-
-
+	
 	/***********************************************************************
 	 * Gets the next available trace to be filled/painted
 	 * 
@@ -132,25 +108,15 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 				ptlService.setProcessTimeline(currentLineNum, currentTimeline);
 				return currentTimeline;
 			}
-			/*if (ptlService.getProcessTimeline(currentLineNum) == null) { // Why is it sometimes null? 
-				System.out.println("Was null, auto-fixing");
-				ptlService.setProcessTimeline(currentLineNum, new ProcessTimeline(currentLineNum, scopeMap,
-						dataTrace, lineToPaint(currentLineNum),
-						attributes.numPixelsH, attributes.endTime - attributes.begTime, minBegTime + attributes.begTime));
-			}*/
 			return ptlService.getProcessTimeline(currentLineNum);
 		}
 		return null;
 	}
 
-
-
-
-
+	
 	/** Returns the index of the file to which the line-th line corresponds. */
 
 	private int lineToPaint(int line) {
-		MethodCounts[6]++;
 		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
 		if (numTimelinesToPaint > attributes.numPixelsV)
 			return attributes.begProcess + (line * numTimelinesToPaint)
@@ -158,7 +124,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		else
 			return attributes.begProcess + line;
 	}
-	
 	
 	
 	/***

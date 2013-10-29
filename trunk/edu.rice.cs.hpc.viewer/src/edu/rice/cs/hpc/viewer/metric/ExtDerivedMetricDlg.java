@@ -32,10 +32,11 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.SelectionEvent;
 // hpcviewer
+import edu.rice.cs.hpc.common.util.UserInputHistory;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.util.UserInputHistory;
+
 // math expression
 import com.graphbuilder.math.*;
 import com.graphbuilder.math.func.*;

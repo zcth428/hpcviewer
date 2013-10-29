@@ -31,7 +31,6 @@ public class TimelineDepthThread extends Thread {
 	
 	private boolean usingMidpoint;
 	
-	final private ProcessTimeline depthTrace;
 	final private Image[] compositeFinalLines;
 
 	/*****
@@ -51,7 +50,6 @@ public class TimelineDepthThread extends Thread {
 		this.scaleX = scaleX;
 		this.scaleY = scaleY;
 		this.width  = width; 
-		this.depthTrace = depthTrace;
 		this.compositeFinalLines = compositeFinalLines;
 		this.usingMidpoint = usingMidpoint;
 	}
@@ -98,8 +96,8 @@ public class TimelineDepthThread extends Thread {
 		if (ptl.size() < 2)
 			return;
 
-		double pixelLength = (stData.attributes.endTime - stData.attributes.begTime)/(double)stData.attributes.numPixelsH;
-		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.attributes.begTime, depth, height, pixelLength, usingMidpoint)
+		double pixelLength = (stData.getTimeEnd() - stData.getTimeBegin())/(double)stData.getPixelHorizontal();
+		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.getTimeBegin(), depth, height, pixelLength, usingMidpoint)
 		{
 			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
@@ -115,39 +113,11 @@ public class TimelineDepthThread extends Thread {
 		depthPaint.paint();
 	}
 
-	/***********************************************************************
-	 * Gets the next available trace to be filled/painted from the DepthTimeView
-	 * @return The next trace.
-	 **********************************************************************//*
-	public ProcessTimeline getNextDepthTrace()
-	{
-		ProcessTimeline ptl = null;
-		int line = lineNum.getAndIncrement();
-		
-		if (line < Math.min(stData.attributes.numPixelsDepthV, painter.getMaxDepth()))
-		{
-			if (line==0)
-			{
-				ptl = depthTrace;
-			}else
-			{
-				ptl = new ProcessTimeline(line, stData.getScopeMap(),
-						stData.getBaseData(), painter.getPosition().process, 
-						stData.attributes.numPixelsH, stData.attributes.endTime-stData.attributes.begTime, 
-						stData.getMinBegTime()+stData.attributes.begTime);
-				ptl.copyDataFrom(depthTrace);
-			}
-			
-			//System.out.println("Depth line: " + line);
-		}
-		return ptl;
-	}*/
 	
 	/**Adds a painted Image to compositeLines - used by TimelineThreads.*/
 	public synchronized void addNextImage(Image line, int index)
 	{
 		compositeFinalLines[index] = line;
-		//System.out.println("set image line " + index);
 	}
 
 }

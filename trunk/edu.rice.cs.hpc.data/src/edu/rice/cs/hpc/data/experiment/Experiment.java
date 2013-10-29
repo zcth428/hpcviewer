@@ -20,6 +20,7 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
+import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.util.IUserData;
 
 import java.io.File;
@@ -65,7 +66,9 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	public void open(File experimentFile, IUserData<String, String> userData)
 			throws Exception
 	{
-		open(experimentFile, userData, true);
+		this.fileExperiment = experimentFile;
+		new ExperimentFileXML().parse(fileExperiment, this, false,
+				userData);		
 	}
 
 	

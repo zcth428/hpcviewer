@@ -11,18 +11,18 @@ import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
-public abstract class SpaceTimeDataController {
-
-	PaintManager painter;
-	static int[] MethodCounts = new int[15];
+public abstract class SpaceTimeDataController 
+{
+	protected PaintManager painter;
+	
 	//TODO: Some places access this directly while others use the getter.
-	public ImageTraceAttributes attributes;// Should this be final?
+	protected ImageTraceAttributes attributes;// Should this be final?
 	protected String dbName;
 	/**
 	 * The minimum beginning and maximum ending time stamp across all traces (in
 	 * microseconds)).
 	 */
-	long maxEndTime, minBegTime;
+	protected long maxEndTime, minBegTime;
 
 
 	protected ProcessTimelineService ptlService;
@@ -34,7 +34,7 @@ public abstract class SpaceTimeDataController {
 	// We probably want to get away from this. The for code that needs it should be
 	// in one of the threads. It's here so that both local and remote can use
 	// the same thread class yet get their information differently.
-	final AtomicInteger lineNum, depthLineNum;
+	final protected AtomicInteger lineNum;
 	
 
 	/**
@@ -60,8 +60,9 @@ public abstract class SpaceTimeDataController {
 	// constructor.
 
 	public SpaceTimeDataController() {
+		attributes = new ImageTraceAttributes();
+
 		lineNum = new AtomicInteger(0);
-		depthLineNum = new AtomicInteger(0);
 	}
 	
 	protected void buildScopeMapAndColorTable(IWorkbenchWindow _window,
@@ -128,7 +129,7 @@ public abstract class SpaceTimeDataController {
 		
 		ProcessTimeline depthTrace = getDepthTrace();
 		
-		int currentDepthLineNum = depthLineNum.getAndIncrement();
+		int currentDepthLineNum = lineNum.getAndIncrement();
 		if (currentDepthLineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
 			
 			// I can't get the data from the ProcessTimeline directly, so create
@@ -157,10 +158,42 @@ public abstract class SpaceTimeDataController {
 		return totalTraceCountInDB;
 	}
 	
+	
 	public HashMap<Integer, CallPath> getScopeMap() {
 		return scopeMap;
 	}
 
+	/******************************************************************************
+	 * getter/setter trace attributes
+	 * @return
+	 ******************************************************************************/
+	public long getTimeBegin() {
+		return attributes.begTime;
+	}
+	
+	public long getTimeEnd() {
+		return attributes.endTime;
+	}
+	
+	public int getProcessBegin() {
+		return attributes.begProcess;
+	}
+	
+	public int getProcessEnd() {
+		return attributes.endProcess;
+	}
+	
+	public int getPixelHorizontal() {
+		return attributes.numPixelsH;
+	}
+	
+	public ImageTraceAttributes getTraceAttributes() {
+		return attributes;
+	}
+	
+	public void setTraceAttributes(ImageTraceAttributes attributes) {
+		this.attributes = attributes;
+	}
 
 	/*************************************************************************
 	 * Returns width of the spaceTimeData: The width (the last time in the
@@ -204,7 +237,6 @@ public abstract class SpaceTimeDataController {
 
 	public void resetCounters() {
 		lineNum.set(0);
-		depthLineNum.set(0);
 	}
 
 	public abstract void closeDB();

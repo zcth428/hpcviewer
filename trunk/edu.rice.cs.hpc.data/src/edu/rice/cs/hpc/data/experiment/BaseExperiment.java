@@ -83,7 +83,6 @@ public abstract class BaseExperiment implements IExperiment {
 	
 	/****
 	 * open a database
-	 * 
 	 * @param fileExperiment
 	 * @param userData
 	 * @throws Exception
@@ -91,32 +90,18 @@ public abstract class BaseExperiment implements IExperiment {
 	public void open(File fileExperiment, IUserData<String, String> userData)
 			throws	Exception
 	{
-		open(fileExperiment, userData, false);
-	}
-	
-	
-	/****
-	 * open a database, possibly with parsing the metrics as well
-	 * @param fileExperiment
-	 * @param userData
-	 * @param withMetric
-	 * @throws Exception
-	 */
-	public void open(File fileExperiment, IUserData<String, String> userData, boolean withMetric)
-			throws	Exception
-	{
 		// protect ourselves against filename being `foo' with no parent
 		// information whatsoever.
 		this.fileExperiment = fileExperiment;
 		
-		new ExperimentFileXML().parse(fileExperiment, this, withMetric,
+		new ExperimentFileXML().parse(fileExperiment, this, false,
 				userData);		
 	}
 	
 	public void open(InputStream expStream, IUserData<String, String> userData,
-		boolean withMetric, String name) throws Exception {
+		String name) throws Exception {
 	
-		new ExperimentFileXML().parse(expStream, name, this, withMetric, userData);
+		new ExperimentFileXML().parse(expStream, name, this, false, userData);
 	
 }
 

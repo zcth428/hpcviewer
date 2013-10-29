@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.util;
+package edu.rice.cs.hpc.common.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;

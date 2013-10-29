@@ -34,6 +34,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Table;
 
+import edu.rice.cs.hpc.common.util.UserInputHistory;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 

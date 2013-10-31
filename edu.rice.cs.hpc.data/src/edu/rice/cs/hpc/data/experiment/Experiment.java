@@ -67,7 +67,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 			throws Exception
 	{
 		this.fileExperiment = experimentFile;
-		new ExperimentFileXML().parse(fileExperiment, this, false,
+		new ExperimentFileXML().parse(fileExperiment, this, true,
 				userData);		
 	}
 

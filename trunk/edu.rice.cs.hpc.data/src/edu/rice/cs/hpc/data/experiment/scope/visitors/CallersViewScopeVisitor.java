@@ -76,14 +76,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 			// Find (or add) callee in top-level hashtable
 			ProcedureScope callee = this.createProcedureIfNecessary(scope);
 			
-			LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(IMergedScope.MergingStatus.INIT, scope, scope, 
-					combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
-
-			//-------------------------------------------------------
-			// ensure my call path is represented among my children.
-			//-------------------------------------------------------
-			mergeCallerPath(IMergedScope.MergingStatus.INIT, 0, callee, callPathList, 
-					combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
+			prepareCallChain(scope, callee);
 
 		} else if (vt == ScopeVisitType.PostVisit)  {
 			
@@ -102,14 +95,17 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		//--------------------------------------------------------------------------------
 		// if there are no exclusive costs to attribute from this context, we are done here
 		//--------------------------------------------------------------------------------
-		if (!scope.hasNonzeroMetrics() || scope.isAlien()) {
+		if (!scope.hasNonzeroMetrics() ) {
 			return; 
 		}
 		
 		if (vt == ScopeVisitType.PreVisit) {
 			this.listCombinedScopes.push();
 				// Find (or add) callee in top-level hashtable
-			this.createProcedureIfNecessary(scope);
+			ProcedureScope callee = this.createProcedureIfNecessary(scope);
+			if (scope.isAlien()) {
+				prepareCallChain(scope, callee);
+			}
 
 		} else if (vt == ScopeVisitType.PostVisit){
 			
@@ -129,6 +125,23 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 	// helper functions  
 	//----------------------------------------------------
 	
+	
+	/*****
+	 * prepare and initialize call chain of a given scope node and procedure node
+	 * 
+	 * @param scope: the current scope
+	 * @param callee: the callee node (the procedure scope of this call chain)
+	 */
+	private void prepareCallChain(Scope scope, ProcedureScope callee) {
+		LinkedList<CallSiteScopeCallerView> callPathList = createCallChain(scope, scope, 
+				combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
+
+		//-------------------------------------------------------
+		// ensure my call path is represented among my children.
+		//-------------------------------------------------------
+		mergeCallerPath(IMergedScope.MergingStatus.INIT, 0, callee, callPathList, 
+				combinedMetrics, this.inclusiveOnly, this.exclusiveOnly);
+	}
 	
 	/********
 	 * Find caller view's procedure of a given scope. 

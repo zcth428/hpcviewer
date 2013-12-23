@@ -104,7 +104,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		// -------------------
 		// see if the argument provides the database to load
 		// -------------------
-		if(sArgs != null && sArgs.length > 0) {
+		if(sArgs != null && (sArgs.length > 0) &&
+				// only the first window open the database specified in the command line 
+				(ViewerWindowManager.getWindowNumber(window)==0) ) {
+			
 			// possibly we have express the experiment file in the command line
 			IWorkbenchPage pageCurrent = window.getActivePage();
 			assert (pageCurrent != null);

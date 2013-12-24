@@ -219,6 +219,7 @@ public class ShowView extends AbstractHandler {
 				ITreeContentProvider contentProvider) {
 			
 			super(parent, labelProvider, contentProvider);
+			setTitle("Show a view");
 		}
 		
 		/*
@@ -226,14 +227,14 @@ public class ShowView extends AbstractHandler {
 		 * @see org.eclipse.ui.dialogs.ElementTreeSelectionDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
 		 */
 		protected Control createDialogArea(Composite parent) {
+
+	    	setMessage("Please select a view to activate");
+
 			Composite composite = (Composite) super.createDialogArea(parent);
 
 			// force to expand all trees
 	    	final TreeViewer tree = getTreeViewer();
 	    	tree.expandAll();
-
-	    	setMessage("Please select a view to activate");
-			setTitle("Show a view");
 			
 			return composite;			
 		}

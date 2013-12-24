@@ -6,9 +6,14 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.BaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeNode;
 import org.eclipse.jface.viewers.TreeNodeContentProvider;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -16,6 +21,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
 import edu.rice.cs.hpc.viewer.util.WindowTitle;
@@ -47,12 +53,18 @@ public class ShowView extends AbstractHandler {
 		for(int i=0; i<databases.length; i++) {
 			
 			Database db = databases[i];
-			dbNode[i] = new TreeNode(db.getExperiment().getName());
+			Experiment exp = db.getExperiment();
+			
+			// set the name of the root nodes
+			dbNode[i] = new TreeNode(exp.getName() + " (" + 
+					exp.getXMLExperimentFile().getParent() + ") ");
 			
 			final ExperimentView ev = db.getExperimentView();
 			BaseScopeView []views = ev.getViews();
 			
 			TreeNode []viewNode = new TreeNode[views.length];
+			
+			// gather all the views of this database
 			for(int j=0; j<views.length; j++) {
 				TreeItemNode item = new TreeItemNode(ev, j, views[j]);
 				viewNode[j] = new TreeNode(item);
@@ -66,12 +78,10 @@ public class ShowView extends AbstractHandler {
 		// ------------------------------------------------------------
 		final DatabaseLabelProvider dbLabelProvider = new DatabaseLabelProvider();
 		
-		ElementTreeSelectionDialog dlg = new ElementTreeSelectionDialog(window.getShell(),
+		ViewTreeDialog dlg = new ViewTreeDialog(window.getShell(),
 				dbLabelProvider, new TreeNodeContentProvider());
 		
 		dlg.setInput(dbNode);
-		dlg.setMessage("Please select a view to activate");
-		dlg.setTitle("Show a view");
 		
 		if ( dlg.open() == Dialog.OK ) {
 			Object []results = dlg.getResult();
@@ -119,7 +129,13 @@ public class ShowView extends AbstractHandler {
 		return null;
 	}
 	
-	private class DatabaseLabelProvider extends BaseLabelProvider implements ILabelProvider
+	/***
+	 * 
+	 * Label provider for the tree node item
+	 *
+	 */
+	private class DatabaseLabelProvider 
+		extends BaseLabelProvider implements ILabelProvider
 	{
 		final private WindowTitle wt = new WindowTitle();
 		
@@ -135,7 +151,10 @@ public class ShowView extends AbstractHandler {
 
 		//@Override
 		public String getText(Object element) {
-			Object o = ((TreeNode)element).getValue();
+			
+			TreeNode node = (TreeNode)element; 
+			Object o = node.getValue();
+			
 			if (o instanceof TreeItemNode) {
 				BaseScopeView view = (BaseScopeView) ((TreeItemNode)o).view;
 				String title = wt.setTitle(window, view);
@@ -149,6 +168,11 @@ public class ShowView extends AbstractHandler {
 		}
 	}
 	
+	/***
+	 * 
+	 * class to store the information of views
+	 *
+	 */
 	private class TreeItemNode {
 		private ExperimentView ev;
 		private int index;
@@ -176,5 +200,52 @@ public class ShowView extends AbstractHandler {
 			node.setChildren(null);
 			node.setParent(null);
 		}
+	}
+	
+	/**************************
+	 * 
+	 * private class to show all "created "views, whether it's opened or not
+	 *
+	 */
+	private class ViewTreeDialog extends ElementTreeSelectionDialog
+	{
+		/***
+		 * create a view tree dialog
+		 * @param parent
+		 * @param labelProvider
+		 * @param contentProvider
+		 */
+		public ViewTreeDialog(Shell parent, ILabelProvider labelProvider,
+				ITreeContentProvider contentProvider) {
+			
+			super(parent, labelProvider, contentProvider);
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.ui.dialogs.ElementTreeSelectionDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+		 */
+		protected Control createDialogArea(Composite parent) {
+			Composite composite = (Composite) super.createDialogArea(parent);
+
+			// force to expand all trees
+	    	final TreeViewer tree = getTreeViewer();
+	    	tree.expandAll();
+
+	    	setMessage("Please select a view to activate");
+			setTitle("Show a view");
+			
+			return composite;			
+		}
+		
+		   /*
+	     *  (non-Javadoc)
+	     * @see org.eclipse.jface.window.Window#open()
+	     */
+	    public int open() {
+	    	
+	        super.open();
+	        return getReturnCode();
+	    }
 	}
 }

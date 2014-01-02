@@ -34,15 +34,19 @@ import edu.rice.cs.hpc.data.util.Constants;
 public class ExperimentMerger 
 {
 	static final private boolean with_raw_metrics = false;
+	static public enum MergeType {TOP_DOWN, BOTTOM_UP, FLAT};
 	
 	/**
 	 * Merging two experiments, and return the new experiment
 	 * 
-	 * @param exp1
-	 * @param exp2
+	 * @param exp1 : first database 
+	 * @param exp2 : second database
+	 * @param type : root to merge (cct, bottom-up tree, or flat tree)
+	 * @param verbose : true if the verbose mode is on
+	 *  
 	 * @return
 	 */
-	static public Experiment merge(Experiment exp1, Experiment exp2, boolean verbose) {
+	static public Experiment merge(Experiment exp1, Experiment exp2, MergeType type, boolean verbose) {
 		
 		// -----------------------------------------------
 		// step 1: create new base Experiment
@@ -50,7 +54,7 @@ public class ExperimentMerger
 		Experiment merged = exp1.duplicate();
 		
 		final ExperimentConfiguration configuration = new ExperimentConfiguration();
-		configuration.setName( exp1.getName() + " &  " + exp2.getName() );
+		configuration.setName( exp1.getName() + " & " + exp2.getName() );
 		configuration.searchPaths = exp1.getConfiguration().searchPaths;
 		
 		merged.setConfiguration( configuration );
@@ -80,10 +84,20 @@ public class ExperimentMerger
 		merged.setXMLExperimentFile( fileMerged );
 
 		// -----------------------------------------------
-		// step 4: create cct root
+		// step 4: create roots
 		// -----------------------------------------------		
 
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];	
+		int itype = 0;
+		switch (type) {
+		case TOP_DOWN:
+			itype = 0; break;
+		case BOTTOM_UP:
+			itype = 1; break;
+		case FLAT:
+			itype = 2; break;
+		}
+		
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[itype];	
 
 		RootScope root2_copy = new RootScope(root2.getExperiment(), 
 				"copy root 2","Invisible Outer Root Scope", RootScopeType.Invisible);
@@ -97,7 +111,7 @@ public class ExperimentMerger
 
 		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope));		
 		
-		RootScope root1 = (RootScope) merged.getRootScopeChildren()[0];	
+		RootScope root1 = (RootScope) merged.getRootScopeChildren()[itype];	
 		RootScope root2_copy_cct = (RootScope) root2_copy.getChildAt(0);
 
 		final int metricCount = exp1.getMetricCount();

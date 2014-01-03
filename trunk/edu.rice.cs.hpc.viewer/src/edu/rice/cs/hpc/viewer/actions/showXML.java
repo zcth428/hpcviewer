@@ -6,15 +6,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
-import edu.rice.cs.hpc.viewer.editor.SourceCodeEditor;
-import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
-import edu.rice.cs.hpc.viewer.window.ViewerWindow;
-import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 
 
 /********************************************************************************
@@ -34,33 +30,7 @@ public class showXML extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException 
 	{
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-		final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-		
-		if (vw == null)
-			return null;
-		
-		final int numDB = vw.getOpenDatabases();
-		Experiment experiment = null;
-		
-		// try to find the current database
-		if (numDB == 1)
-		{
-			// only one opened database
-			experiment = vw.getExperiments()[0];
-		}else
-		{
-			// multiple databases are opened:
-			// need to select an experiment to show
-			IWorkbenchPart part = window.getActivePage().getActivePart();
-			if (part instanceof BaseScopeView)
-			{
-				experiment = ((BaseScopeView)part).getExperiment();
-				
-			} else if (part instanceof SourceCodeEditor)
-			{
-				experiment = ((SourceCodeEditor)part).getExperiment();
-			}
-		}
+		final Experiment experiment = Utilities.getActiveExperiment(window);
 		
 		if (experiment != null)
 			showXMLEditor( window, experiment);

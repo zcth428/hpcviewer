@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.source.FileSystemSourceFile;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
@@ -34,6 +35,7 @@ import edu.rice.cs.hpc.data.experiment.scope.LineScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.util.OSValidator;
 
+import edu.rice.cs.hpc.viewer.editor.SourceCodeEditor;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
@@ -471,4 +473,46 @@ public class Utilities {
 		return false;
     }
     
+    
+    /****
+     * return the current active experiment. 
+     * If there's only one opened database, then return the experiment
+     * Otherwise, check for the database of the current active view or editor,
+     * 	assuming there's one active view/editor.
+     *  (return null if no part is active)
+     *  
+     * @param window
+     * @return
+     */
+    static public Experiment getActiveExperiment(IWorkbenchWindow window) {
+
+		final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
+		
+		if (vw == null)
+			return null;
+		
+		final int numDB = vw.getOpenDatabases();
+		Experiment experiment = null;
+		
+		// try to find the current database
+		if (numDB == 1)
+		{
+			// only one opened database
+			experiment = vw.getExperiments()[0];
+		}else
+		{
+			// multiple databases are opened:
+			// need to select an experiment to show
+			IWorkbenchPart part = window.getActivePage().getActivePart();
+			if (part instanceof BaseScopeView)
+			{
+				experiment = ((BaseScopeView)part).getExperiment();
+				
+			} else if (part instanceof SourceCodeEditor)
+			{
+				experiment = ((SourceCodeEditor)part).getExperiment();
+			}
+		}
+		return experiment;
+    }
 }

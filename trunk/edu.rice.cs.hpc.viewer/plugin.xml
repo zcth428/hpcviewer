@@ -170,8 +170,24 @@
                   tooltip="Open a database">
             </command>
             <command
-                  commandId="edu.rice.cs.hpc.viewer.command.mergeDatabase"
-                  label="Merge database"
+                  commandId="edu.rice.cs.hpc.viewer.command.mergeDatabaseTopDown"
+                  label="Merge top-down databases"
+                  mnemonic="M"
+                  style="push"
+                  tooltip="Merging two or more databases">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="edu.rice.cs.hpc.viewer.provider.data.merge">
+                     <equals
+                           value="ENABLED">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.mergeDatabaseFlat"
+                  label="Merge flat databases"
                   mnemonic="M"
                   style="push"
                   tooltip="Merging two or more databases">
@@ -345,9 +361,14 @@
             name="Reset layout">
       </command>
       <command
-            defaultHandler="edu.rice.cs.hpc.viewer.actions.MergeDatabase"
-            id="edu.rice.cs.hpc.viewer.command.mergeDatabase"
-            name="Merge database">
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.MergeDatabaseTopDown"
+            id="edu.rice.cs.hpc.viewer.command.mergeDatabaseTopDown"
+            name="Merge database CCT">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.MergeDatabaseFlat"
+            id="edu.rice.cs.hpc.viewer.command.mergeDatabaseFlat"
+            name="Merge database Flat">
       </command>
       <command
             defaultHandler="edu.rice.cs.hpc.viewer.actions.showXML"

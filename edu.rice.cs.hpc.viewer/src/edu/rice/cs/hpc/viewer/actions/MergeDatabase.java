@@ -28,13 +28,20 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
  * needs to decide which databases to be combined
  * 
  *******************************************************************/
-public class MergeDatabase extends AbstractHandler {
+public abstract class MergeDatabase extends AbstractHandler 
+{
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+	/***
+	 * execute merging operation of two databases (or more)
+	 * 	in case of more than 2 database, users have to select two db only
+	 * 
+	 * @param event
+	 * @param type
+	 * @return
+	 * @throws ExecutionException
 	 */
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+	public Object execute(ExecutionEvent event, final ExperimentMerger.MergeType type) 
+			throws ExecutionException {
 
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		final ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
@@ -78,7 +85,7 @@ public class MergeDatabase extends AbstractHandler {
 
 				////@Override
 				public void run() {
-					final Experiment expMerged = ExperimentMerger.merge(db1, db2, ExperimentMerger.MergeType.TOP_DOWN, false);
+					final Experiment expMerged = ExperimentMerger.merge(db1, db2, type, false);
 
 					ExperimentView ev = new ExperimentView(window.getActivePage());
 					ev.generateView(expMerged);

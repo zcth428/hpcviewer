@@ -87,17 +87,17 @@ public class ExperimentMerger
 		// step 4: create roots
 		// -----------------------------------------------		
 
-		int itype = 0;
+		int root_type = 0;
 		switch (type) {
 		case TOP_DOWN:
-			itype = 0; break;
+			root_type = 0; break;
 		case BOTTOM_UP:
-			itype = 1; break;
+			root_type = 1; break;
 		case FLAT:
-			itype = 2; break;
+			root_type = 2; break;
 		}
 		
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[itype];	
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[root_type];	
 
 		RootScope root2_copy = new RootScope(root2.getExperiment(), 
 				"copy root 2","Invisible Outer Root Scope", RootScopeType.Invisible);
@@ -109,9 +109,9 @@ public class ExperimentMerger
 		// step 5: merge the two experiments
 		// -----------------------------------------------
 
-		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope));		
+		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope), root_type);		
 		
-		RootScope root1 = (RootScope) merged.getRootScopeChildren()[itype];	
+		RootScope root1 = (RootScope) merged.getRootScopeChildren()[0];	
 		RootScope root2_copy_cct = (RootScope) root2_copy.getChildAt(0);
 
 		final int metricCount = exp1.getMetricCount();
@@ -181,9 +181,9 @@ public class ExperimentMerger
 	 * @param visitor
 	 */
 	private static void mergeScopeTrees(Experiment exp2, 
-			BaseDuplicateScopeTreesVisitor visitor) {
+			BaseDuplicateScopeTreesVisitor visitor, int iRoot) {
 
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[iRoot];		
 
 		root2.dfsVisitScopeTree(visitor);
 	}

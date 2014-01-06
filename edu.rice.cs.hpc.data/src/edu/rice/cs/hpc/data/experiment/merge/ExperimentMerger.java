@@ -48,6 +48,15 @@ public class ExperimentMerger
 	 */
 	static public Experiment merge(Experiment exp1, Experiment exp2, MergeType type, boolean verbose) {
 		
+		File file1 = exp1.getXMLExperimentFile();
+		String parent_dir = file1.getParentFile().getParent() + "/" + "merged" + "/";
+
+		return merge(exp1, exp2, type, parent_dir, verbose);
+	}
+	
+	static public Experiment merge(Experiment exp1, Experiment exp2, MergeType type, 
+			String parent_dir, boolean verbose) {
+		
 		// -----------------------------------------------
 		// step 1: create new base Experiment
 		// -----------------------------------------------
@@ -78,9 +87,8 @@ public class ExperimentMerger
 		// -----------------------------------------------
 		// step 3: mark the new experiment file
 		// -----------------------------------------------
-		File file1 = exp1.getXMLExperimentFile();
-		String parent_dir = file1.getParentFile().getParent();
-		final File fileMerged  = new File( parent_dir + "/merged/" + Constants.DATABASE_FILENAME); 
+
+		final File fileMerged  = new File( parent_dir + "/" + Constants.DATABASE_FILENAME); 
 		merged.setXMLExperimentFile( fileMerged );
 
 		// -----------------------------------------------

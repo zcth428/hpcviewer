@@ -5,6 +5,7 @@ import java.io.File;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -85,7 +86,24 @@ public abstract class MergeDatabase extends AbstractHandler
 
 				////@Override
 				public void run() {
-					final Experiment expMerged = ExperimentMerger.merge(db1, db2, type, false);
+					boolean need_to_find_name = true;
+					int i = 0;
+					String path = dbArray[0].getXMLExperimentFile().getParentFile().getAbsolutePath() + 
+							IPath.SEPARATOR + "merged" ;
+					// find a unique name for the merged file
+					do {
+						path = path + (i==0? "" : "-"+String.valueOf(i));
+						for (Experiment exp: dbArray) {
+							File file2 = exp.getXMLExperimentFile().getParentFile();
+							need_to_find_name = path.equals( file2.getAbsolutePath() ); 
+							if (need_to_find_name) {
+								i++;
+								break;
+							}
+						}
+					} while (need_to_find_name);
+					
+					final Experiment expMerged = ExperimentMerger.merge(db1, db2, type, path + IPath.SEPARATOR, false);
 
 					ExperimentView ev = new ExperimentView(window.getActivePage());
 					ev.generateView(expMerged);

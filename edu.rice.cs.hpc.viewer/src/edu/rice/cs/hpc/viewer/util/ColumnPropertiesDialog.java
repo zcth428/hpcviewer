@@ -42,10 +42,9 @@ import java.util.Hashtable;
 
 /**
  * Class to show the dialog box of columns properties such as show/hidden
- * @author laksonoadhianto
  *
  */
-public class ColumnProperties extends TitleAreaDialog {
+public class ColumnPropertiesDialog extends TitleAreaDialog {
 	
 	static final private String HISTORY_COLUMN_PROPERTY = "column_property";
 	static final private String HISTORY_APPLY_ALL = "apply-all";
@@ -67,7 +66,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * ATT: need to call setData to setup the column
 	 * @param parentShell
 	 */
-	public ColumnProperties(Shell parentShell) {
+	public ColumnPropertiesDialog(Shell parentShell) {
 		super(parentShell);
 		// TODO Auto-generated constructor stub
 	}
@@ -78,7 +77,7 @@ public class ColumnProperties extends TitleAreaDialog {
 	 * @param shell
 	 * @param columns
 	 */
-	public ColumnProperties(Shell shell, TreeColumn []columns) {
+	public ColumnPropertiesDialog(Shell shell, TreeColumn []columns) {
 		super(shell);
 		this.objColumns = columns;
 	}
@@ -374,7 +373,6 @@ public class ColumnProperties extends TitleAreaDialog {
 	/**
 	 * Data model for the column properties
 	 * Containing two items: the state and the title
-	 * @author laksono
 	 *
 	 */
 	protected class PropertiesModel {
@@ -421,7 +419,6 @@ public class ColumnProperties extends TitleAreaDialog {
 
 	/**
 	 * Class to mimic CheckboxTableViewer to accept the update of checked items
-	 * @author laksonoadhianto
 	 *
 	 */
 	protected class ColumnCheckTableViewer extends CheckboxTableViewer {
@@ -502,7 +499,7 @@ public class ColumnProperties extends TitleAreaDialog {
 		Shell shell = new Shell(display);
 		shell.setLayout(new FillLayout());
 
-		ColumnProperties objProp = new ColumnProperties(shell);
+		ColumnPropertiesDialog objProp = new ColumnPropertiesDialog(shell);
 		//objProp.setExample();
 		objProp.open();
 	}

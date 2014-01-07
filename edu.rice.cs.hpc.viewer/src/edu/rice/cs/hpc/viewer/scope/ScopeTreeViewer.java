@@ -6,6 +6,7 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
@@ -13,10 +14,12 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.swt.widgets.TreeItem;
 
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.metric.MetricLabelProvider;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 
 /**
- * @author laksono
  * we set lazy virtual bit in this viewer
  */
 public class ScopeTreeViewer extends TreeViewer {
@@ -108,6 +111,63 @@ public class ScopeTreeViewer extends TreeViewer {
 		// then get the string based on the column status
 		return this.getTextBasedOnColumnStatus(sTitles, sSeparator, iStartColIndex, 0);
 	}
+	
+	/****
+	 * refresh the title of all metric columns.
+	 * <p/>
+	 * warning: this method uses linear search to see if they are metric column or not,
+	 * 	so the complexity is O(n). 
+	 * 
+	 */
+	public void refreshColumnTitle() {
+		
+		String []sText = Utilities.getTopRowItems(this);
+
+		TreeColumn columns[] = this.getTree().getColumns();
+		boolean need_to_refresh = false;
+		
+		for( int i=0; i<columns.length; i++ ) {
+			
+			TreeColumn column = columns[i]; 
+			Object obj = column.getData();
+			
+			if (obj instanceof BaseMetric) {
+				final String title = ((BaseMetric)obj).getDisplayName();
+				column.setText(title);
+				
+				// -----------------------------------------------------------------
+				// if the column is a derived metric, we need to refresh the table
+				// 	even if the derived metric is not modified at all.
+				// this solution is not optimal, but it works
+				// -----------------------------------------------------------------
+				
+				need_to_refresh |= (obj instanceof DerivedMetric);
+				if (need_to_refresh) {
+					Object objInp = getInput();
+					if (objInp instanceof RootScope) {
+						DerivedMetric dm = (DerivedMetric) obj;
+						String val = dm.getMetricTextValue((RootScope) objInp);
+
+						// change the current value on the top row with the new value
+						sText[i] = val;
+					}
+				}
+			}
+		}
+		if (need_to_refresh) {
+			// -----------------------------------------------------------------
+			// refresh the table, and insert the top row back to the table
+			//	with the new value of the derived metric
+			// -----------------------------------------------------------------
+			TreeItem item = getTree().getItem(0);
+			Image imgItem = item.getImage(0);
+			
+			refresh();
+			
+			Utilities.insertTopRow(this, imgItem, sText);
+		}
+	}
+	
     /**
      * Add new tree column for derived metric
      * @param treeViewer

@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.viewer.util;
 
 import java.util.ArrayList;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -21,7 +22,6 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -34,10 +34,14 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import com.graphbuilder.math.Expression;
+
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
+import edu.rice.cs.hpc.data.experiment.metric.Metric;
+import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.viewer.metric.ExtDerivedMetricDlg;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
@@ -53,16 +57,25 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	private TableViewer viewer;
 	private Button btnEdit;
 	private boolean singleExperiment = true;
+	final private IWorkbenchWindow window;
 	
 	protected ArrayList<PropertiesModel> arrElements;
 
 	/***
-	 * Default constructor 
+	 * Default constructor: 
+	 *  <p/>
+	 *  There is no return value of this window. Each caller is
+	 *  responsible to check the metrics if they are modified or not
 	 * 
-	 * @param parentShell
+	 * @param parentShell : the parent shell of this dialog
+	 * @param window : the window where the database is stored.
+	 * 	in hpcviewer, list of databases is managed based on window
+	 *  if the value of window is null, then users have to use the
+	 *  method setELements() to setup the list of metrics to modify
 	 */
-	public MetricPropertyDialog(Shell parentShell) {
+	public MetricPropertyDialog(Shell parentShell, IWorkbenchWindow window) {
 		super(parentShell);
+		this.window = window;
 	}
 
 	
@@ -97,6 +110,22 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	}
 
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.TrayDialog#createButtonBar(org.eclipse.swt.widgets.Composite)
+	 */
+	protected Control createButtonBar(Composite parent) {
+		
+		Control ctrl = super.createButtonBar(parent);
+		
+		final Button btnOk = getButton(IDialogConstants.OK_ID);
+		btnOk.setText("Quit");
+		
+		final Button btnCancel = getButton(IDialogConstants.CANCEL_ID);
+		btnCancel.setVisible(false);
+		
+		return ctrl;
+	}
 
 	//--------------------------------------------------
 	//	PRIVATE
@@ -213,11 +242,15 @@ public class MetricPropertyDialog extends TitleAreaDialog
 
 
 	/**
-	 * Populate the content of the table with the new information
+	 * Populate the content of the database table if we have more than 1 databases
+	 * 
+	 * @param component : parent composite
 	 */
 	private void updateContent(Composite component) {
 		
-		final IWorkbenchWindow window = Util.getActiveWindow();
+		if (window == null)
+			return;
+		
 		final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
 		
 		if (vw == null)
@@ -226,12 +259,19 @@ public class MetricPropertyDialog extends TitleAreaDialog
 		final int numDB = vw.getOpenDatabases();
 		singleExperiment = (numDB == 1);
 		
+		// -------------------------------------
+		// case of having only 1 database
+		// -------------------------------------
+
 		if (singleExperiment)  {
 			setElements( vw.getExperiments()[0] );
 			return;
 		}
 		
-		// more than 1 databases
+		// -------------------------------------
+		// case of having more than 1 databases: create a list of databases to select
+		// -------------------------------------
+
 		Group group = new Group(component, SWT.SHADOW_IN);
 		group.setText("Select a database");
 		
@@ -312,9 +352,15 @@ public class MetricPropertyDialog extends TitleAreaDialog
 			Experiment experiment = Utilities.getActiveExperiment( Util.getActiveWindow() );
 			ExtDerivedMetricDlg dialog = new ExtDerivedMetricDlg( getShell(), experiment, experiment.getRootScope().getSubscope(0) );
 			
+			DerivedMetric dm = (DerivedMetric) metric;
+			dialog.setMetric(dm);
+			
 			if (dialog.open() == Dialog.OK) {
 				String name = dialog.getName();
-				updateMetricName(metric, name);
+				updateMetricName(dm, name);
+				
+				final Expression expr = dialog.getExpression();
+				dm.setExpression(expr);
 			}
 			
 		} else {
@@ -339,8 +385,6 @@ public class MetricPropertyDialog extends TitleAreaDialog
 		obj.sTitle = sNewName;
 		metric.setDisplayName(sNewName);
 		viewer.update(obj, null);
-
-		// change the title of the column
 	}
 
 	
@@ -389,11 +433,19 @@ public class MetricPropertyDialog extends TitleAreaDialog
 		shell.setLayout(new FillLayout());
 		
 		// first step: create the dialog, and implement all the abstract interfaces
-		MetricPropertyDialog dialog = new MetricPropertyDialog(shell);
+		MetricPropertyDialog dialog = new MetricPropertyDialog(shell, null);
 		
 		// second step: initialize the column, make sure they have all the data to 
 		//	distinguish with user custom column
+		Experiment exp = new Experiment();
+		java.util.List<BaseMetric> list = new java.util.ArrayList<BaseMetric>(10);
 		
+		for (int i=0; i<10; i++) {
+			final String id = String.valueOf(4 * i + 10);
+			list.add( new Metric(id, id, "M" + id, true, null, null, null, i, MetricType.INCLUSIVE, i) );
+		}
+		exp.setMetrics(list);
+		dialog.setElements(exp);
 
 		dialog.open();
 	}

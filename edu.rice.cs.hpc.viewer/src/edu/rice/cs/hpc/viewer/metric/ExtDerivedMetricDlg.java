@@ -65,6 +65,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	private Expression expFormula;
 	private final ExtFuncMap fctMap;
 	private final MetricVarMap varMap;
+	private DerivedMetric metric;
 	
 	// ------------- Others
 	static private final String HISTORY_FORMULA = "formula";			//$NON-NLS-1$
@@ -152,6 +153,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			objHistoryName = new UserInputHistory( ExtDerivedMetricDlg.HISTORY_METRIC_NAME );
 			this.cbName.setItems( this.objHistoryName.getHistory() );
 			
+			if (metric != null) {
+				cbName.setText(metric.getDisplayName());
+			}
+			
 			//--------------------------------------------
 			// formula
 			//--------------------------------------------	    	
@@ -162,7 +167,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	    	objHistoryFormula = new UserInputHistory(HISTORY_FORMULA);
 	    	this.cbExpression.setItems( objHistoryFormula.getHistory() );
 	    	cbExpression.setToolTipText("A spreadsheet-like formula using other metrics (variables), arithmetic operators, functions, and numerical constants");
-	    							
+
+	    	if (metric != null) {
+				cbExpression.setText( metric.getFormula().toString() );
+	    	}
+	    	
 			GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(nameArea);
 
 	    	Label lbl = new Label(grpExpression, SWT.WRAP);
@@ -472,6 +481,11 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  // ---- PUBLIC METHODS
 	  //==========================================================
 		
+	  /****
+	   * setup the dialog with the list of metrics
+	   * 
+	   * @param listOfMetrics
+	   */
 	  public void setMetrics(BaseMetric []listOfMetrics) {
 		  int nbMetrics = listOfMetrics.length;
 		  this.arrStrMetrics = new String[nbMetrics];
@@ -481,12 +495,21 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			  this.arrStrMetrics[i] = metric.getShortName() + ": "+ metric.getDisplayName();
 		  }
 	  }
+	  
+	  /***
+	   * set the default metric to modify
+	   * @param metric to modify
+	   */
+	  public void setMetric( DerivedMetric metric ) {
+		  this.metric = metric;
+	  }
+	  
 	  /**
 	   * get the expression of the derived metric.
 	   * This method should be called once the user click the OK button
 	   */
 	  public Expression getExpression() {
-		  return this.expFormula;
+		  return expFormula;
 	  }
 	  
 	  /**

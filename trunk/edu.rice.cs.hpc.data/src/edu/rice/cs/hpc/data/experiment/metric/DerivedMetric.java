@@ -68,6 +68,15 @@ public class DerivedMetric extends BaseMetric {
 			this.annotationType = AnnotationType.NONE ;
 	}
 
+	
+	/****
+	 * Set the new expression
+	 * 
+	 * @param expr : the new expression
+	 */
+	public void setExpression( Expression expr ) {
+		this.expression = expr;
+	}
 
 //-------------------- MAIN FUNCTION FOR COMPUTING AGGREGATE VALUE ------------------
 	// -----------------------------------------------------------------------
@@ -119,7 +128,9 @@ public class DerivedMetric extends BaseMetric {
 		double dVal;
 		// if the scope is a root scope, then we return the aggregate value
 		if(scope instanceof RootScope) {
-			dVal = (this.dRootValue);
+			dVal = getAggregateMetrics( (RootScope) scope );
+			// reset the new value of root
+			dRootValue = dVal;
 		} else {
 			// otherwise, we need to recompute the value again via the equation
 			Double objVal = this.getDoubleValue(scope);
@@ -134,6 +145,14 @@ public class DerivedMetric extends BaseMetric {
 		}
 	}
 
+	/****
+	 * return the current expression formula
+	 * 
+	 * @return
+	 */
+	public Expression getFormula() {
+		return expression;
+	}
 
 	//@Override
 	public BaseMetric duplicate() {

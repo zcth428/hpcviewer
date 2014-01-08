@@ -16,7 +16,6 @@ package edu.rice.cs.hpc.data.experiment;
 
 
 import edu.rice.cs.hpc.data.experiment.metric.*;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
@@ -26,10 +25,6 @@ import edu.rice.cs.hpc.data.util.IUserData;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-
-//math expression
-import com.graphbuilder.math.*;
 
 //////////////////////////////////////////////////////////////////////////
 //	CLASS EXPERIMENT													//
@@ -168,7 +163,16 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 				this.getMetricCount(), false, filter);
 		callingContextViewRootScope.dfsVisitScopeTree(csv);
 
+		// --------------------------------
 		// compute the aggregate metrics
+		// --------------------------------
+
+		// first, reset the values for the root in callers tree. 
+		// Callers tree is special since we can have the root, but its children are created dynamically.
+		// For the case of derived metric, the root may already have the value, so we need to reset it again
+		//	before we "accumulate" from the CCT
+		callersViewRootScope.resetMetricValues();
+		
 		// bug fix 2008.10.21 : we don't need to recompute the aggregate metrics here. Just copy it from the CCT
 		//	This will solve the problem where there is only nested loops in the programs
 		callersViewRootScope.accumulateMetrics(callingContextViewRootScope, filter, this.getMetricCount());
@@ -392,21 +396,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 * @param expFormula
 	 * @return
 	 */
-	public DerivedMetric addDerivedMetric(RootScope scopeRoot, Expression expFormula, String sName, 
-			AnnotationType annotationType, MetricType metricType) {
-
-
-		// laks 2010.02.27: for aggregate metric, we need to know the ID of the last metric, then increment this ID
-		//					for the new metric
-		// if the last metric has index 7 and ID 10, then the new metric has index 8 and ID 11
-		int metricLastIndex = this.getMetricCount() -1;
-		BaseMetric metricLast = this.getMetric(metricLastIndex);
-		String metricLastID = metricLast.getShortName();
-		metricLastIndex = Integer.valueOf(metricLastID) + 1;
-		metricLastID = String.valueOf(metricLastIndex);
-
-		DerivedMetric objMetric = new DerivedMetric(scopeRoot, expFormula, sName, metricLastID, this.getMetricCount(), 
-				annotationType, MetricType.INCLUSIVE);
+	public DerivedMetric addDerivedMetric(DerivedMetric objMetric) {
 
 		this.metrics.add(objMetric);
 

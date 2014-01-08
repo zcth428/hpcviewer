@@ -17,15 +17,11 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.metric.*;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
-
 import edu.rice.cs.hpc.viewer.metric.*;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
-//math expression
-import com.graphbuilder.math.*;
 /**
  * Class to manage the actions of the tree view such as zooms, flattening,
  * resize the columns, etc. This class will add additional toolbar on the top
@@ -365,24 +361,10 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 
 		// display the dialog box
 		if(dlg.open() == Dialog.OK) {
-			// the expression is valid (already verified in the dialog box)
-			Expression expFormula = dlg.getExpression();
-			String sName = dlg.getName();					// metric name
-			// display the percentage ?
-			AnnotationType bPercent = AnnotationType.NONE; 
-			if (dlg.getPercentDisplay() == true) {
-				bPercent = AnnotationType.PERCENT;
-			}
-			
-			// add a derived metric and register it to the experiment database
-			DerivedMetric objMetric = exp.addDerivedMetric(this.myRootScope, expFormula, sName, bPercent, MetricType.EXCLUSIVE);
 
-			final String sFormat = dlg.getFormat();
-			if (sFormat != null) {
-				// user has specified specific format. Let's set it to the metric
-				IMetricValueFormat objFormat = new MetricValuePredefinedFormat(sFormat);
-				objMetric.setDisplayFormat(objFormat);
-			}
+			final DerivedMetric objMetric = dlg.getMetric();
+			
+			exp.addDerivedMetric(objMetric);
 						
 			// get our database file and the experiment index assigned for it
 			String dbPath = exp.getDefaultDirectory().getAbsolutePath();

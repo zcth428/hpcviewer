@@ -5,6 +5,7 @@ import java.io.File;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -28,13 +29,20 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
  * needs to decide which databases to be combined
  * 
  *******************************************************************/
-public class MergeDatabase extends AbstractHandler {
+public abstract class MergeDatabase extends AbstractHandler 
+{
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
+	/***
+	 * execute merging operation of two databases (or more)
+	 * 	in case of more than 2 database, users have to select two db only
+	 * 
+	 * @param event
+	 * @param type
+	 * @return
+	 * @throws ExecutionException
 	 */
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+	public Object execute(ExecutionEvent event, final ExperimentMerger.MergeType type) 
+			throws ExecutionException {
 
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		final ViewerWindow vWin = ViewerWindowManager.getViewerWindow(window);
@@ -78,7 +86,24 @@ public class MergeDatabase extends AbstractHandler {
 
 				////@Override
 				public void run() {
-					final Experiment expMerged = ExperimentMerger.merge(db1, db2, false);
+					boolean need_to_find_name = true;
+					int i = 0;
+					String path = dbArray[0].getXMLExperimentFile().getParentFile().getAbsolutePath() + 
+							IPath.SEPARATOR + "merged" ;
+					// find a unique name for the merged file
+					do {
+						path = path + (i==0? "" : "-"+String.valueOf(i));
+						for (Experiment exp: dbArray) {
+							File file2 = exp.getXMLExperimentFile().getParentFile();
+							need_to_find_name = path.equals( file2.getAbsolutePath() ); 
+							if (need_to_find_name) {
+								i++;
+								break;
+							}
+						}
+					} while (need_to_find_name);
+					
+					final Experiment expMerged = ExperimentMerger.merge(db1, db2, type, path + IPath.SEPARATOR, false);
 
 					ExperimentView ev = new ExperimentView(window.getActivePage());
 					ev.generateView(expMerged);

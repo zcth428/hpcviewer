@@ -10,7 +10,7 @@ public class Debugger {
 	
 	//Set to negative of what client says
 	static private int timeCorrection = 976023; //in microseconds
-	private static final boolean printTimeDebugMessages = true;
+	private static final boolean printTimeDebugMessages = false;
 	/***
 	 * print the call stack debugging info
 	 * 

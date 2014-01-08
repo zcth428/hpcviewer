@@ -48,4 +48,12 @@ public class MetricValuePredefinedFormat implements IMetricValueFormat {
 		return "";
 	}
 
+	/****
+	 * get the custom format
+	 * 
+	 * @return the format
+	 */
+	public String getFormat() {
+		return format;
+	}
 }

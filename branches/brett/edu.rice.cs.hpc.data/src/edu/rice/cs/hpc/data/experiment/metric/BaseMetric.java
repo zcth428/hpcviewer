@@ -184,6 +184,11 @@ public abstract class BaseMetric {
 		return this.annotationType;
 	}
 
+	public void setAnnotationType( AnnotationType annType ) 
+	{
+		annotationType = annType;
+	}
+	
 	/**
 	 * Return the text to display based on the value of the scope
 	 * @param scope

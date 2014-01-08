@@ -13,6 +13,7 @@ import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
@@ -25,12 +26,9 @@ import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
  * @author Philip Taffet
  * 
  */
-public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
-
-	
+public class SpaceTimeDataControllerLocal extends SpaceTimeDataController 
+{	
 	ImageTraceAttributes oldAtributes;
-
-	
 
 	private TraceAttribute trAttribute;
 
@@ -122,10 +120,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		return null;
 	}
 
-
-
-
-
+	
 	/** Returns the index of the file to which the line-th line corresponds. */
 
 	private int lineToPaint(int line) {
@@ -137,6 +132,26 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController {
 		else
 			return attributes.begProcess + line;
 	}
+	
+	
+	/***
+	 * changing the trace data, caller needs to make sure to refresh the views
+	 * @param baseData
+	 */
+	public void setBaseData(IBaseData baseData) 
+	{
+		dataTrace = baseData;
+		
+		// we have to change the range of displayed processes
+		attributes.begProcess = 0;
+		
+		// hack: for unknown reason, "endProcess" is exclusive.
+		// TODO: we should change to inclusive just like begProcess
+		attributes.endProcess = baseData.getNumberOfRanks();
+		
+		//painter.resetPosition();
+	}
+
 
 
 	@Override

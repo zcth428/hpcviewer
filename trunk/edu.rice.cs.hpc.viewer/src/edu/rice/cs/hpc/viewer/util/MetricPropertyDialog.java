@@ -34,8 +34,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import com.graphbuilder.math.Expression;
-
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
@@ -158,9 +156,16 @@ public class MetricPropertyDialog extends TitleAreaDialog
 				
 				PropertiesModel obj = getSelectElement();
 				
-				BaseMetric metric = obj.metric;
-				btnEdit.setData(metric);
-				btnEdit.setEnabled(true);
+				if (obj != null) {
+					BaseMetric metric = obj.metric;
+					btnEdit.setData(metric);
+					btnEdit.setEnabled(true);
+				} else {
+					// Eclipse bug (or feature?): case of no metric is selected
+					// On Mac, a SelectionChangedEvent is triggered when we refresh the input
+					// 	in this case, no item has been selected since the content of the table is new
+					btnEdit.setEnabled(false);
+				}
 			}
 		});
 		
@@ -347,6 +352,10 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	 */
 	private void doAction() {
 		BaseMetric metric = (BaseMetric) btnEdit.getData();
+		
+		if (metric == null)
+			return;
+		
 		if (metric instanceof DerivedMetric) {
 
 			Experiment experiment = Utilities.getActiveExperiment( Util.getActiveWindow() );
@@ -356,11 +365,10 @@ public class MetricPropertyDialog extends TitleAreaDialog
 			dialog.setMetric(dm);
 			
 			if (dialog.open() == Dialog.OK) {
-				String name = dialog.getName();
-				updateMetricName(dm, name);
 				
-				final Expression expr = dialog.getExpression();
-				dm.setExpression(expr);
+				dm = dialog.getMetric();
+				
+				updateMetricName(dm, dm.getDisplayName() );				
 			}
 			
 		} else {

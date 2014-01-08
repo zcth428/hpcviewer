@@ -267,6 +267,13 @@
                   style="push"
                   tooltip="Show views">
             </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.actions.ShowMetricProperties"
+                  label="Show metric properties"
+                  mnemonic="M"
+                  style="push"
+                  tooltip="Show and modify metric properties such as the name and the formula (case of derived metric)">
+            </command>
             <separator
                   name="edu.rice.cs.hpc.viewer.menu.view.separator"
                   visible="true">
@@ -399,6 +406,11 @@
             defaultHandler="edu.rice.cs.hpc.viewer.actions.ShowView"
             id="edu.rice.cs.hpc.viewer.actions.ShowView"
             name="Show view">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.ShowMetricProperties"
+            id="edu.rice.cs.hpc.viewer.actions.ShowMetricProperties"
+            name="Show metric properties">
       </command>
    </extension>
    <extension

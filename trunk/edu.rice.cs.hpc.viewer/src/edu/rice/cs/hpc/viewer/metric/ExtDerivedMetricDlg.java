@@ -35,6 +35,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import edu.rice.cs.hpc.common.util.UserInputHistory;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 // math expression
@@ -50,6 +51,10 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	static public enum MetricDisplayFormat {
 		Default, Percent, Custom
 	}
+	
+	//------------- Constants
+	
+	final private String FORMAT_PERCENT = "%.2f %%";
 	
 	//------------- GUI variables
 	private Combo cbName;
@@ -70,12 +75,8 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	// ------------- Others
 	static private final String HISTORY_FORMULA = "formula";			//$NON-NLS-1$
 	static private final String HISTORY_METRIC_NAME = "metric_name";	//$NON-NLS-1$
-	private String sMetricName;
-	private boolean bPercent;
 	private Experiment experiment;
 	private Point expression_position;
-	private String sFormat;
-	MetricDisplayFormat displayFormat;
 	
 	// ------------- object for storing history of formula and metric names
 	private UserInputHistory objHistoryFormula;
@@ -315,7 +316,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			this.btnPercent = new Button(cOptions, SWT.CHECK);
 			this.btnPercent.setText("Augment metric value display with a percentage relative to column total");
 			this.btnPercent.setToolTipText("For each metric value, display the annotation of percentage relative to aggregate metric value");
-
+			
 			// format option
 			//final Composite cFormat = new Composite( cOptions, SWT.NONE );
 			final Composite cCustomFormat = new Composite( cOptions, SWT.NONE );
@@ -355,6 +356,21 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			});
 			btnDefaultFormat.setSelection(true);
 
+			if (metric != null) {
+				boolean bPercent = metric.getAnnotationType() == BaseMetric.AnnotationType.PERCENT;
+				btnPercent.setSelection( bPercent );
+				
+				IMetricValueFormat format = metric.getDisplayFormat();
+				if (format instanceof MetricValuePredefinedFormat) {
+					String strFormat = ((MetricValuePredefinedFormat)format ).getFormat();
+					txtFormat.setText( strFormat  );
+					
+					if (strFormat.equals( FORMAT_PERCENT )) {
+						btnPercentFormat.setSelection(true);
+					}
+				}
+			}
+			
 			// make sure to initialize the state of the text
 			txtFormat.setEnabled(false); 
 			
@@ -414,7 +430,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 			String sExpression = this.cbExpression.getText();
 			if(sExpression.length() > 0) {
 				try {
-					this.expFormula = ExpressionTree.parse(sExpression);
+					expFormula = ExpressionTree.parse(sExpression);
 					bResult = evaluateExpression ( this.expFormula );
 				} catch (ExpressionParseException e) {
 					MessageDialog.openError(this.getShell(), "Invalid expression", e.getDescription());
@@ -434,7 +450,7 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 		  boolean bResult = true;
 		  String sError = null;
 		  if (this.btnCustomFormat.getSelection()) {
-			  this.sFormat = this.txtFormat.getText();
+			  String sFormat = txtFormat.getText();
 			  
 			  // custom format if selected, cannot be null
 			  if (sFormat.length()==0) {
@@ -476,6 +492,72 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 
 			return false;
 		}
+	  
+	  
+	  /*****
+	   * perform metric creation or update (depending whether the metric has been 
+	   * 	created or not)
+	   * 
+	   * @return the new metric
+	   */
+	  private DerivedMetric doAction() {
+
+		  AnnotationType annType = AnnotationType.NONE;
+		  
+		  // -----------------------------
+		  // display the percentage ?
+		  // -----------------------------
+		  
+		  if (btnPercent.getSelection()) {
+			  annType = AnnotationType.PERCENT;
+		  }
+
+		  // -----------------------------
+		  // create or update a metric ?
+		  // -----------------------------
+		  
+		  if (metric == null) {
+			  
+			  // create a new metric
+			  
+			  int metricLastIndex   = experiment.getMetricCount() -1;
+			  BaseMetric metricLast = experiment.getMetric(metricLastIndex);
+			  
+			  String metricLastID = metricLast.getShortName();
+			  metricLastIndex = Integer.valueOf(metricLastID) + 1;
+			  metricLastID = String.valueOf(metricLastIndex);
+
+			  metric = new DerivedMetric(experiment, expFormula, 
+					  cbName.getText(), metricLastID, experiment.getMetricCount(), 
+					  annType, MetricType.INCLUSIVE);
+			  
+		  } else {
+			  // update the existing metric
+			  metric.setDisplayName( cbName.getText() );
+			  metric.setAnnotationType(annType);
+			  metric.setExpression(expFormula);
+		  }
+		  
+		  // -----------------------------
+		  // set the displayed format (case of custom format)
+		  // -----------------------------
+
+		  final String sFormat = txtFormat.getText();
+		  IMetricValueFormat objFormat;
+		  
+		  if ( btnCustomFormat.getSelection() && (sFormat != null) ) {
+			  
+			  // user has specified specific format. Let's set it to the metric
+			  objFormat = new MetricValuePredefinedFormat(sFormat);
+			  metric.setDisplayFormat(objFormat);
+			  
+		  } else if (btnPercentFormat.getSelection()) {
+			  objFormat = new MetricValuePredefinedFormat(FORMAT_PERCENT);
+			  metric.setDisplayFormat(objFormat);
+		  }
+
+		  return metric;
+	  }
 
 	  //==========================================================
 	  // ---- PUBLIC METHODS
@@ -503,65 +585,29 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 	  public void setMetric( DerivedMetric metric ) {
 		  this.metric = metric;
 	  }
-	  
-	  /**
-	   * get the expression of the derived metric.
-	   * This method should be called once the user click the OK button
-	   */
-	  public Expression getExpression() {
-		  return expFormula;
-	  }
-	  
-	  /**
-	   * Return the new name of the metric
-	   * @return the name 
-	   */
-	  public String getName() {
-		  return this.sMetricName;
-	  }
-	  
-	  /**
-	   * return if the percent has to be displayed or not.
-	   * @return true if the percent has to be displayed
-	   */
-	  public boolean getPercentDisplay() {
-		  return this.bPercent;
-	  }
-	  
-	  /***
-	   * get the customized format (if defined)
+
+	  /******
+	   * return the new derived or updated metric
 	   * @return
 	   */
-	  public String getFormat() {
-		  return this.sFormat;
+	  public DerivedMetric getMetric() {
+		  return metric;
 	  }
-
+	  
+	  
 	  /**
 	   * Call back method when the OK button is pressed
 	   */
 	  public void okPressed() {
 		if(this.checkExpression() && this.checkFormat()) {
 			// save the options for further usage (required by the caller)
-			bPercent = btnPercent.getSelection();
-			sMetricName = cbName.getText();
+			doAction();
 			
 			// save user history
 			objHistoryFormula.addLine( cbExpression.getText() );
 			objHistoryName.addLine( cbName.getText() );
 
-			sFormat = null;
-			displayFormat = MetricDisplayFormat.Default;
-			
-			if (this.btnCustomFormat.getSelection()) {
-				sFormat = txtFormat.getText();
-				displayFormat = MetricDisplayFormat.Custom;
-			} else if (btnPercentFormat.getSelection()) {
-				displayFormat = MetricDisplayFormat.Percent;
-				sFormat = "%.2f %%";
-			}
-			
 			super.okPressed();
 		}
-	  }
-	
+	  }	
 }

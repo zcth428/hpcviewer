@@ -34,15 +34,28 @@ import edu.rice.cs.hpc.data.util.Constants;
 public class ExperimentMerger 
 {
 	static final private boolean with_raw_metrics = false;
+	static public enum MergeType {TOP_DOWN, BOTTOM_UP, FLAT};
 	
 	/**
 	 * Merging two experiments, and return the new experiment
 	 * 
-	 * @param exp1
-	 * @param exp2
+	 * @param exp1 : first database 
+	 * @param exp2 : second database
+	 * @param type : root to merge (cct, bottom-up tree, or flat tree)
+	 * @param verbose : true if the verbose mode is on
+	 *  
 	 * @return
 	 */
-	static public Experiment merge(Experiment exp1, Experiment exp2, boolean verbose) {
+	static public Experiment merge(Experiment exp1, Experiment exp2, MergeType type, boolean verbose) {
+		
+		File file1 = exp1.getXMLExperimentFile();
+		String parent_dir = file1.getParentFile().getParent() + "/" + "merged" + "/";
+
+		return merge(exp1, exp2, type, parent_dir, verbose);
+	}
+	
+	static public Experiment merge(Experiment exp1, Experiment exp2, MergeType type, 
+			String parent_dir, boolean verbose) {
 		
 		// -----------------------------------------------
 		// step 1: create new base Experiment
@@ -50,7 +63,7 @@ public class ExperimentMerger
 		Experiment merged = exp1.duplicate();
 		
 		final ExperimentConfiguration configuration = new ExperimentConfiguration();
-		configuration.setName( exp1.getName() + " &  " + exp2.getName() );
+		configuration.setName( exp1.getName() + " & " + exp2.getName() );
 		configuration.searchPaths = exp1.getConfiguration().searchPaths;
 		
 		merged.setConfiguration( configuration );
@@ -74,16 +87,25 @@ public class ExperimentMerger
 		// -----------------------------------------------
 		// step 3: mark the new experiment file
 		// -----------------------------------------------
-		File file1 = exp1.getXMLExperimentFile();
-		String parent_dir = file1.getParentFile().getParent();
-		final File fileMerged  = new File( parent_dir + "/merged/" + Constants.DATABASE_FILENAME); 
+
+		final File fileMerged  = new File( parent_dir + "/" + Constants.DATABASE_FILENAME); 
 		merged.setXMLExperimentFile( fileMerged );
 
 		// -----------------------------------------------
-		// step 4: create cct root
+		// step 4: create roots
 		// -----------------------------------------------		
 
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];	
+		int root_type = 0;
+		switch (type) {
+		case TOP_DOWN:
+			root_type = 0; break;
+		case BOTTOM_UP:
+			root_type = 1; break;
+		case FLAT:
+			root_type = 2; break;
+		}
+		
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[root_type];	
 
 		RootScope root2_copy = new RootScope(root2.getExperiment(), 
 				"copy root 2","Invisible Outer Root Scope", RootScopeType.Invisible);
@@ -95,7 +117,7 @@ public class ExperimentMerger
 		// step 5: merge the two experiments
 		// -----------------------------------------------
 
-		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope));		
+		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope), root_type);		
 		
 		RootScope root1 = (RootScope) merged.getRootScopeChildren()[0];	
 		RootScope root2_copy_cct = (RootScope) root2_copy.getChildAt(0);
@@ -167,9 +189,9 @@ public class ExperimentMerger
 	 * @param visitor
 	 */
 	private static void mergeScopeTrees(Experiment exp2, 
-			BaseDuplicateScopeTreesVisitor visitor) {
+			BaseDuplicateScopeTreesVisitor visitor, int iRoot) {
 
-		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[0];		
+		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[iRoot];		
 
 		root2.dfsVisitScopeTree(visitor);
 	}

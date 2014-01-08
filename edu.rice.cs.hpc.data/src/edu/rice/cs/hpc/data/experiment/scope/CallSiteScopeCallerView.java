@@ -135,8 +135,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			Scope scope_cost = this.scopeCost; 
 			
 			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
-				(IMergedScope.MergingStatus.INIT, (CallSiteScope) this.scopeCCT, 
-						scope_cost, combine_without_cond, inclusiveOnly, exclusiveOnly);
+				(this.scopeCCT, scope_cost, combine_without_cond, inclusiveOnly, exclusiveOnly);
 
 			CallSiteScopeCallerView first = listOfChain.removeFirst();
 			CallersViewScopeVisitor.addNewPathIntoTree(this, first, listOfChain);
@@ -153,13 +152,13 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 				CallSiteScopeCallerView scope = iter.next();
 
 				try {
-					CallSiteScope scope_cct = (CallSiteScope) scope.scopeCCT;
+					Scope scope_cct = scope.scopeCCT;
 
 					//-------------------------------------------------------------------------
 					// construct the child of this merged scope
 					//-------------------------------------------------------------------------
 					LinkedList<CallSiteScopeCallerView> listOfChain = CallersViewScopeVisitor.createCallChain
-						(IMergedScope.MergingStatus.INIT, scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
+						(scope_cct, scope, combine_without_cond, inclusiveOnly, exclusiveOnly);
 					
 					//-------------------------------------------------------------------------
 					// For recursive function where the counter is more than 1, the counter to 

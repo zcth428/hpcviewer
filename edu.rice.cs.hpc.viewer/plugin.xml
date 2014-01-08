@@ -170,8 +170,24 @@
                   tooltip="Open a database">
             </command>
             <command
-                  commandId="edu.rice.cs.hpc.viewer.command.mergeDatabase"
-                  label="Merge database"
+                  commandId="edu.rice.cs.hpc.viewer.command.mergeDatabaseTopDown"
+                  label="Merge top-down databases"
+                  mnemonic="M"
+                  style="push"
+                  tooltip="Merging two or more databases">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="edu.rice.cs.hpc.viewer.provider.data.merge">
+                     <equals
+                           value="ENABLED">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.command.mergeDatabaseFlat"
+                  label="Merge flat databases"
                   mnemonic="M"
                   style="push"
                   tooltip="Merging two or more databases">
@@ -245,6 +261,24 @@
                </with>
             </visibleWhen>
             <command
+                  commandId="edu.rice.cs.hpc.viewer.actions.ShowView"
+                  label="Show views"
+                  mnemonic="v"
+                  style="push"
+                  tooltip="Show views">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.actions.ShowMetricProperties"
+                  label="Show metric properties"
+                  mnemonic="M"
+                  style="push"
+                  tooltip="Show and modify metric properties such as the name and the formula (case of derived metric)">
+            </command>
+            <separator
+                  name="edu.rice.cs.hpc.viewer.menu.view.separator"
+                  visible="true">
+            </separator>
+            <command
                   commandId="edu.rice.cs.hpc.viewer.command.debug.showXML"
                   label="Show raw XML file"
                   style="push"
@@ -263,13 +297,6 @@
                   mnemonic="f"
                   style="toggle"
                   tooltip="Show the flat ID label in the tree ">
-            </command>
-            <command
-                  commandId="edu.rice.cs.hpc.viewer.actions.ShowView"
-                  label="Show views"
-                  mnemonic="v"
-                  style="push"
-                  tooltip="Show views">
             </command>
          </menu>
          <menu
@@ -341,9 +368,14 @@
             name="Reset layout">
       </command>
       <command
-            defaultHandler="edu.rice.cs.hpc.viewer.actions.MergeDatabase"
-            id="edu.rice.cs.hpc.viewer.command.mergeDatabase"
-            name="Merge database">
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.MergeDatabaseTopDown"
+            id="edu.rice.cs.hpc.viewer.command.mergeDatabaseTopDown"
+            name="Merge database CCT">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.MergeDatabaseFlat"
+            id="edu.rice.cs.hpc.viewer.command.mergeDatabaseFlat"
+            name="Merge database Flat">
       </command>
       <command
             defaultHandler="edu.rice.cs.hpc.viewer.actions.showXML"
@@ -374,6 +406,11 @@
             defaultHandler="edu.rice.cs.hpc.viewer.actions.ShowView"
             id="edu.rice.cs.hpc.viewer.actions.ShowView"
             name="Show view">
+      </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.actions.ShowMetricProperties"
+            id="edu.rice.cs.hpc.viewer.actions.ShowMetricProperties"
+            name="Show metric properties">
       </command>
    </extension>
    <extension

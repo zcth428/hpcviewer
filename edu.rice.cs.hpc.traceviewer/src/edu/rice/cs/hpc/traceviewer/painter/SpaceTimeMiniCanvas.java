@@ -127,7 +127,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	
 	public void updateView()
 	{
-		setBox(attributes.begTime, attributes.begProcess, attributes.endTime, attributes.endProcess);
+		setBox(stData.getTimeBegin(), stData.getProcessBegin(), stData.getTimeEnd(), stData.getProcessEnd());
 	}
 	
 	/**The painting of the miniMap.*/
@@ -248,10 +248,14 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		long detailBottomRightTime = (long)(miniBottomRight.x / getScaleX());
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
 
+		ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.begProcess = detailTopLeftProcess;
 		attributes.endProcess = detailBottomRightProcess;
 		attributes.begTime    = detailTopLeftTime;
 		attributes.endTime	 = detailBottomRightTime;
+		
+		stData.setTraceAttributes(attributes);
+		
 		Frame frame = new Frame(attributes, painter.getMaxDepth(), 
 				painter.getPosition().time, painter.getPosition().process);
 		try {

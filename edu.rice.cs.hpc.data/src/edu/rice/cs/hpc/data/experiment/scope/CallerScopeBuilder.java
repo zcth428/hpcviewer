@@ -21,8 +21,8 @@ public class CallerScopeBuilder {
 	 * 
 	 * @return list of call path
 	 */
-	static public LinkedList<CallSiteScopeCallerView> createCallChain(IMergedScope.MergingStatus status,
-			CallSiteScope scope_cct, Scope scope_cost, AbstractCombineMetric combine, 
+	static public LinkedList<CallSiteScopeCallerView> createCallChain(
+			Scope scope_cct, Scope scope_cost, AbstractCombineMetric combine, 
 			MetricValuePropagationFilter inclusiveOnly, MetricValuePropagationFilter exclusiveOnly ) {
 		//-----------------------------------------------------------------------
 		// compute callPath: a chain of my callers
@@ -34,7 +34,7 @@ public class CallerScopeBuilder {
 		// tree, the call site is paired with the callee. that's why we
 		// work with a pair of CallSiteScopes at a time (innerCS and enclosingCS)
 		//-----------------------------------------------------------------------
-		CallSiteScope innerCS = scope_cct;
+		Scope innerCS = scope_cct;
 		LinkedList<CallSiteScopeCallerView> callPathList = new LinkedList<CallSiteScopeCallerView>();
 		Scope next = scope_cct.getParentScope();
 		int numKids = 0;
@@ -44,18 +44,33 @@ public class CallerScopeBuilder {
 			// Laksono 2009.01.14: we only deal with call site OR pure procedure scope (no alien)
 			if ( isCallSiteCandidate(next, innerCS)) {
 
-				CallSiteScope enclosingCS = null;
+				Scope enclosingCS = null;
 				ProcedureScope mycaller = null;
 				
 				if (next instanceof ProcedureScope) {
 					mycaller = (ProcedureScope) next;
+					if (((ProcedureScope)next).isAlien()) {
+						// hack for alien procedure: use the current scope
+						//	for the enclosing call site
+						enclosingCS = next;
+					}
 					
 				}	else if (next instanceof CallSiteScope) {
 					enclosingCS = (CallSiteScope) next;
-					mycaller = enclosingCS.getProcedureScope(); 
+					mycaller = ((CallSiteScope)enclosingCS).getProcedureScope(); 
 				}
 				
-				LineScope lineScope = innerCS.getLineScope();
+				LineScope lineScope = null;
+				
+				if (innerCS instanceof CallSiteScope) {
+					// normal call site
+					lineScope = ((CallSiteScope)innerCS).getLineScope();
+				} else {
+					// hack for alien procedure: create a new line scope
+					lineScope = new LineScope(innerCS.getExperiment(), innerCS.getSourceFile(),
+							innerCS.getFirstLineNumber(), innerCS.getCCTIndex(),
+							innerCS.getFlatIndex());
+				}
 				
 				if(lineScope != null) {
 					numKids++;
@@ -180,9 +195,10 @@ public class CallerScopeBuilder {
 	 * @param innerCS
 	 * @return
 	 */
-	static private boolean isCallSiteCandidate(Scope scope, CallSiteScope innerCS) {
+	static private boolean isCallSiteCandidate(Scope scope, Scope innerCS) {
 		return ( ((scope instanceof CallSiteScope) || 
-				(scope instanceof ProcedureScope && !((ProcedureScope)scope).isAlien()) )
-				&& (innerCS != null));
+				// laks 2013.12.2 original code: (scope instanceof ProcedureScope && !((ProcedureScope)scope).isAlien()) )
+				(scope instanceof ProcedureScope) )
+				&& (innerCS != null) );
 	}
 }

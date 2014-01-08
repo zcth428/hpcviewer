@@ -96,10 +96,9 @@ public class TimelineDepthThread extends Thread {
 	{
 		if (ptl.size() < 2)
 			return;
-		ImageTraceAttributes attributes = stData.getAttributes();
-		
-		double pixelLength = (attributes.endTime - attributes.begTime)/(double)attributes.numPixelsH;
-		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, attributes.begTime, depth, height, pixelLength, usingMidpoint)
+
+		double pixelLength = (stData.getTimeEnd() - stData.getTimeBegin())/(double)stData.getPixelHorizontal();
+		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.getTimeBegin(), depth, height, pixelLength, usingMidpoint)
 		{
 			//@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
@@ -120,7 +119,6 @@ public class TimelineDepthThread extends Thread {
 	public synchronized void addNextImage(Image line, int index)
 	{
 		compositeFinalLines[index] = line;
-		//System.out.println("set image line " + index);
 	}
 
 }

@@ -23,7 +23,7 @@ public abstract class SpaceTimeDataController {
 	 * The minimum beginning and maximum ending time stamp across all traces (in
 	 * microseconds)).
 	 */
-	long maxEndTime, minBegTime;
+	protected long maxEndTime, minBegTime;
 
 
 	protected ProcessTimelineService ptlService;
@@ -61,6 +61,8 @@ public abstract class SpaceTimeDataController {
 	// constructor.
 
 	public SpaceTimeDataController() {
+		attributes = new ImageTraceAttributes();
+
 		lineNum = new AtomicInteger(0);
 		depthLineNum = new AtomicInteger(0);
 	}
@@ -164,6 +166,37 @@ public abstract class SpaceTimeDataController {
 		return scopeMap;
 	}
 
+	/******************************************************************************
+	 * getter/setter trace attributes
+	 * @return
+	 ******************************************************************************/
+	public long getTimeBegin() {
+		return attributes.begTime;
+	}
+	
+	public long getTimeEnd() {
+		return attributes.endTime;
+	}
+	
+	public int getProcessBegin() {
+		return attributes.begProcess;
+	}
+	
+	public int getProcessEnd() {
+		return attributes.endProcess;
+	}
+	
+	public int getPixelHorizontal() {
+		return attributes.numPixelsH;
+	}
+	
+	public ImageTraceAttributes getTraceAttributes() {
+		return attributes;
+	}
+	
+	public void setTraceAttributes(ImageTraceAttributes attributes) {
+		this.attributes = attributes;
+	}
 
 	/*************************************************************************
 	 * Returns width of the spaceTimeData: The width (the last time in the

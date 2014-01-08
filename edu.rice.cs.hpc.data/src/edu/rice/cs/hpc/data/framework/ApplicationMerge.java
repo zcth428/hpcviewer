@@ -50,7 +50,7 @@ public class ApplicationMerge {
 			System.err.println("Cannot open database: " + args[1]);
 		}
 	
-		Experiment merge = ExperimentMerger.merge(exp1, exp2, true);
+		Experiment merge = ExperimentMerger.merge(exp1, exp2, ExperimentMerger.MergeType.TOP_DOWN, true);
 		if (merge == null) {
 			System.err.println("Fail to merge");
 		}

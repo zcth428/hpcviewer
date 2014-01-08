@@ -99,10 +99,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		// -------------------
 		Utilities.setFontMetric(window.getShell().getDisplay());
 
+		this.shutdownEvent(this.workbench, window.getActivePage());
+
 		// -------------------
 		// see if the argument provides the database to load
 		// -------------------
-		if(sArgs != null && sArgs.length > 0) {
+		if(sArgs != null && (sArgs.length > 0) &&
+				// only the first window open the database specified in the command line 
+				(ViewerWindowManager.getWindowNumber(window)==0) ) {
+			
 			// possibly we have express the experiment file in the command line
 			IWorkbenchPage pageCurrent = window.getActivePage();
 			assert (pageCurrent != null);
@@ -160,7 +165,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 					this.removeViews();
 		    	}
 
-				this.shutdownEvent(this.workbench, window.getActivePage());
 				return;
 		    } 
 		}
@@ -169,8 +173,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		statusline.setMessage(null, "Load a database to start.");
 		// we need load the file ASAP
 		this.openDatabase(withCallerView);
-
-		this.shutdownEvent(this.workbench, window.getActivePage());
 	}
 	
 	/**

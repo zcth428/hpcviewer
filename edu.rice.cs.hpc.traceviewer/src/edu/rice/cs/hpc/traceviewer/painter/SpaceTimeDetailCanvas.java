@@ -507,7 +507,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 		
-		notifyChanges("Zoom in V", attributes.begTime, p1, attributes.endTime, p2);
+		notifyChanges("Zoom in V", stData.getTimeBegin(), p1, stData.getTimeEnd(), p2);
 
 	}
 
@@ -539,7 +539,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				p1--;
 			}
 		}
-		notifyChanges("Zoom out V", attributes.begTime, p1, attributes.endTime, p2);
+		notifyChanges("Zoom out V", stData.getTimeBegin(), p1, stData.getTimeEnd(), p2);
 	}
 
 	
@@ -558,7 +558,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long t2 = xMid + (long)(numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)(numTimeUnitsDisp * SCALE);
 		
-		notifyChanges("Zoom in H", t1, attributes.begProcess, t2, attributes.endProcess);
+		notifyChanges("Zoom in H", t1, stData.getProcessBegin(), t2, stData.getProcessEnd());
 	}
 
 	/**************************************************************************
@@ -578,7 +578,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final long td1 = (long)(this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
-		notifyChanges("Zoom out H", t1, attributes.begProcess, t2, attributes.endProcess);
+		notifyChanges("Zoom out H", t1, stData.getProcessBegin(), t2, stData.getProcessEnd());
 	}
 	
 	/**************************************************************************
@@ -878,8 +878,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
-    	notifyChanges("Zoom H", topLeftTime, attributes.begProcess, 
-    			bottomRightTime, attributes.endProcess);
+    	notifyChanges("Zoom H", topLeftTime, stData.getProcessBegin(), 
+    			bottomRightTime, stData.getProcessEnd());
     }
 
     /*******
@@ -1074,8 +1074,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,viewWidth,viewHeight);
 
-		paintDetailViewport(bufferGC, origGC, attributes.begProcess, attributes.endProcess, 
-				attributes.begTime, attributes.endTime, viewWidth, viewHeight, refreshData);
+		paintDetailViewport(bufferGC, origGC, stData.getProcessBegin(), stData.getProcessEnd(), 
+				stData.getTimeBegin(), stData.getTimeEnd(), viewWidth, viewHeight, refreshData);
 
 		
 		bufferGC.dispose();
@@ -1162,10 +1162,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private void notifyChanges(String label, long _topLeftTime, int _topLeftProcess, 
 			long _bottomRightTime, int _bottomRightProcess) 
 	{
+		ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.begTime = _topLeftTime;
 		attributes.endTime = _bottomRightTime;
 		attributes.begProcess = _topLeftProcess;
 		attributes.endProcess = _bottomRightProcess;
+		
+		stData.setTraceAttributes(attributes);
+		
 		Frame frame = new Frame(attributes, painter.getDepth(), 
 				painter.getPosition().time, painter.getPosition().process);
 		

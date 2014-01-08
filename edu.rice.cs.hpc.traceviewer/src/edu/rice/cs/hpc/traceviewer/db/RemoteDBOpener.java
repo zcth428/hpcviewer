@@ -138,7 +138,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		int exml = dxmlReader.readInt();
 		if (exml != Constants.XML_HEADER) 
 		{
-			System.out.println("Expected XML Message (" + Constants.XML_HEADER
+			Debugger.printDebug(0,"Expected XML Message (" + Constants.XML_HEADER
 					+ ")  on data socket, got " + exml);
 			return null;
 		}
@@ -224,7 +224,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 		
 		sender.flush();
 
-		System.out.println("Open database message sent");
+		Debugger.printDebug(0,"Open database message sent");
 	}
 
 }

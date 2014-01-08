@@ -33,7 +33,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.resources.Icons;
-import edu.rice.cs.hpc.viewer.util.ColumnProperties;
+import edu.rice.cs.hpc.viewer.util.ColumnPropertiesDialog;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
@@ -283,7 +283,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
      */
     protected void showColumnsProperties() {
     	
-    	ColumnProperties objProp = new ColumnProperties(objWindow.getShell(), 
+    	ColumnPropertiesDialog objProp = new ColumnPropertiesDialog(objWindow.getShell(), 
     			treeViewer.getTree().getColumns());
     	objProp.open();
     	if(objProp.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.OK_ID) {

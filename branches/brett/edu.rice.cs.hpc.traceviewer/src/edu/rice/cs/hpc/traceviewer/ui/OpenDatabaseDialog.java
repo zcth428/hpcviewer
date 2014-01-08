@@ -21,27 +21,25 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.rice.cs.hpc.common.util.UserInputHistory;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
+import edu.rice.cs.hpc.traceviewer.framework.Activator;
 
+/*******************************************************
+ * 
+ * Generic dialog window to open database both locally and remotely
+ *
+ */
 public class OpenDatabaseDialog extends Dialog {
-	
-	private final Combo[] comboBoxes = new Combo[4];
 
-	final static int FieldServerName = 0, FieldPortKey = 1, FieldPathKey = 2;
-	final static int FieldDatabasePath = 3;
-
-	//This is the most convenient and flexible way to pass around the data.
-	//Index 0 = Server's name/address; Index 1 = Port; Index 2 = Path to database folder on server
-	private String[]  args = new String[4];
-
-	private final IStatusLineManager status;
-	private Button okButton;
-	private String errorMessage;//empty string means no error
+	// ----------------------------------------------------------------
+	// constants
+	// ----------------------------------------------------------------
 	
 	private static final String SERVER_NAME_KEY = "server_name";
 	private static final String SERVER_PORT_KEY = "server_port";
@@ -50,19 +48,52 @@ public class OpenDatabaseDialog extends Dialog {
 	private static final String DATABASE_PATH = "database_path";
 	
 	private static final String PORT_KEY_DEFAULT = "21590";
+	private static final String HISTORY_SELECTION = "traceviewer.data.select";
+	
+	private final Combo[] comboBoxes = new Combo[4];
 
-	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath, objHistoryDb;
+	//Index 0 = Server's name/address; Index 1 = Port; Index 2 = Path to database folder on server
+	final static int FieldServerName = 0, FieldPortKey = 1, FieldPathKey = 2;
+	final static int FieldDatabasePath = 3;
+
+	// ----------------------------------------------------------------
+	// variables
+	// ----------------------------------------------------------------
+
+	//This is the most convenient and flexible way to pass around the data.
+	private String[]  args = new String[4];
+
+	private final IStatusLineManager status;
+	private Button okButton;
+	private String errorMessage;//empty string means no error
+	
+	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath,
+							 objHistoryDb;
 	private TabFolder tabFolder ;
 	
 	// the choice is either 
 	private boolean useLocalDatabase = true;
 
+	
+	/*****
+	 * constructor with the default error message
+	 * 
+	 * @param parentShell
+	 * @param inStatus
+	 */
 	public OpenDatabaseDialog(Shell parentShell, final IStatusLineManager inStatus) { 
 		super(parentShell);
 		status=inStatus;
 		errorMessage="";
 	}
 	
+	/*****
+	 * constructor with a customized error message
+	 * 
+	 * @param parentShell
+	 * @param inStatus
+	 * @param error message
+	 */
 	public OpenDatabaseDialog(Shell parentShell, final IStatusLineManager inStatus, String _errorMessage){
 		super(parentShell);
 		status=inStatus;
@@ -102,9 +133,6 @@ public class OpenDatabaseDialog extends Dialog {
 		GridDataFactory.fillDefaults().grab(true, true).align(SWT.FILL, SWT.FILL).applyTo(outerComposite);
 		
 		tabFolder = new TabFolder(outerComposite, SWT.TOP);
-
-		//Rectangle r = outerComposite.getClientArea();
-		//tabFolder.setLocation(r.x, r.y);
 		
 		//add listener to TabFolder to see when ok button can be pressed
 		tabFolder.addSelectionListener(new SelectionListener() {
@@ -114,22 +142,18 @@ public class OpenDatabaseDialog extends Dialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				int selected = tabFolder.getSelectionIndex();
-				if (selected == 0) {
-					if (!comboBoxes[FieldPathKey].getText().equals("")) {
-						okButton.setEnabled(true);
-					} else {
-						okButton.setEnabled(false);
-					}
-				} else if (selected == 1) {
-					if (!(comboBoxes[FieldServerName].getText().equals("")) && 
-							!(comboBoxes[FieldPortKey].getText().equals("")) && 
-							!(comboBoxes[FieldPathKey].getText().equals(""))) {
-						okButton.setEnabled(true);
-					} else {
-						okButton.setEnabled(false);
-					}
-				}
 				
+				boolean bStatus = false;
+				
+				if (selected == 0) {
+					bStatus = !comboBoxes[FieldPathKey].getText().equals("");
+					
+				} else if (selected == 1) {
+					bStatus = (!(comboBoxes[FieldServerName].getText().equals("")) && 
+							!(comboBoxes[FieldPortKey].getText().equals("")) && 
+							!(comboBoxes[FieldPathKey].getText().equals("")));
+				}
+				okButton.setEnabled( bStatus );
 			}
 		});
 
@@ -145,14 +169,15 @@ public class OpenDatabaseDialog extends Dialog {
 		
 		final Label lblBrowse = new Label(localComposite, SWT.LEFT | SWT.WRAP);
 		lblBrowse.setText("Database:");
-		GridDataFactory.swtDefaults().grab(false, false).applyTo(lblBrowse);
+		GridDataFactory.swtDefaults().grab(false, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(lblBrowse);
 		
 		objHistoryDb = new UserInputHistory(DATABASE_PATH);
 		comboBoxes[FieldDatabasePath] = new Combo(localComposite, SWT.DROP_DOWN | SWT.SINGLE);
-		setComboWithHistory(comboBoxes[FieldDatabasePath], objHistoryDb, "");
+		setComboWithHistory(comboBoxes[FieldDatabasePath], objHistoryDb, "", 400,
+				"Enter the path to the folder containing the database");
 
 		GridDataFactory.fillDefaults().grab(true, false).hint(400, 40).
-			align(SWT.END, SWT.CENTER).applyTo(comboBoxes[FieldDatabasePath]);
+			align(SWT.FILL, SWT.CENTER).applyTo(comboBoxes[FieldDatabasePath]);
 		
 		
 		//directory combo listener to determine when OK can be pressed
@@ -160,7 +185,7 @@ public class OpenDatabaseDialog extends Dialog {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				
-				if (!comboBoxes[FieldPathKey].getText().equals("")) { 
+				if (!comboBoxes[FieldDatabasePath].getText().equals("")) { 
 					okButton.setEnabled(true);
 				} else {
 					okButton.setEnabled(false);
@@ -185,7 +210,6 @@ public class OpenDatabaseDialog extends Dialog {
 				dialog.setMessage("Please select a directory containing execution traces.");
 				dialog.setText("Select Data Directory");
 		
-
 				args[FieldDatabasePath] = dialog.open();
 
 				if (args[FieldDatabasePath] == null)
@@ -218,11 +242,9 @@ public class OpenDatabaseDialog extends Dialog {
 
 		Combo name = new Combo(remoteComposite, SWT.SINGLE);		 
 		objHistoryName = new UserInputHistory( SERVER_NAME_KEY );
-		setComboWithHistory(name, objHistoryName, "");
+		setComboWithHistory(name, objHistoryName, "", 50,
+				"Enter the domain name or IP address of the server to use");
 
-		name.setText( (objHistoryName.getHistory().length > 0) ? objHistoryName.getHistory()[0] : "" ); //autofill
-		name.setTextLimit(50);
-		name.setToolTipText("Enter the domain name or IP address of the server to use");
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(name);
 
 		comboBoxes[FieldServerName] = name;
@@ -233,24 +255,23 @@ public class OpenDatabaseDialog extends Dialog {
 		Combo port = new Combo(remoteComposite, SWT.SINGLE);  
 		objHistoryPort = new UserInputHistory( SERVER_PORT_KEY );
 
-		setComboWithHistory(port, objHistoryPort, PORT_KEY_DEFAULT);
+		setComboWithHistory(port, objHistoryPort, PORT_KEY_DEFAULT, 5, 
+				"Enter the port to use");
 
-		port.setTextLimit(5);
-		port.setToolTipText("Enter the port to use");
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(port);
 
 		comboBoxes[FieldPortKey] = port;
 
+		//-------- remote database path
+
 		Label serverPath = new Label(remoteComposite, SWT.LEAD);
 		serverPath.setText("Path to database folder:");
 
-		//-------- remote database path
 		Combo path = new Combo(remoteComposite, SWT.SINGLE);  
 		objHistoryPath = new UserInputHistory( SERVER_PATH_KEY );
-		setComboWithHistory(path, objHistoryPath, "");
+		setComboWithHistory(path, objHistoryPath, "", 400, 
+				"Enter the path to the folder containing the database on the server");
 
-		path.setTextLimit(400);
-		path.setToolTipText("Enter the path to the folder containing the database on the server"); 
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(path);
 
 		comboBoxes[FieldPathKey] = path;
@@ -285,6 +306,14 @@ public class OpenDatabaseDialog extends Dialog {
 		
 		outerComposite.pack();
 		
+		// default selection ?
+		Activator activator = Activator.getDefault();
+		if (activator != null) {
+			ScopedPreferenceStore objPref = (ScopedPreferenceStore) activator.getPreferenceStore();
+			int select = objPref.getInt(HISTORY_SELECTION);
+			tabFolder.setSelection(select);
+		}
+		
 		return outerComposite;
 	}
 	
@@ -294,28 +323,9 @@ public class OpenDatabaseDialog extends Dialog {
 		return useLocalDatabase;
 	}
 	
-	public String getLocalDatabasePath()
-	{
-		return args[FieldDatabasePath];
-	}
 	
-	public String getServerName()
-	{
-		return args[FieldServerName];
-	}
-	
-	public String getPortKey()
-	{
-		return args[FieldPortKey];
-	}
-	
-	public String getPathKey()
-	{
-		return args[FieldPathKey];
-	}
-	
-	
-	private void setComboWithHistory(Combo combo, UserInputHistory history, String defaultValue)
+	private void setComboWithHistory(Combo combo, UserInputHistory history, String defaultValue,
+			int limit, String tooltipText)
 	{
 		final String []logs = history.getHistory();
 		if (logs != null && logs.length > 0)
@@ -327,6 +337,8 @@ public class OpenDatabaseDialog extends Dialog {
 		{
 			combo.setText(defaultValue);
 		}
+		combo.setTextLimit(limit);
+		combo.setToolTipText(tooltipText); 
 	}
 	
 	
@@ -358,7 +370,14 @@ public class OpenDatabaseDialog extends Dialog {
 			objHistoryName.addLine(args[FieldServerName]);
 			objHistoryPort.addLine(args[FieldPortKey]);
 			objHistoryPath.addLine(args[FieldPathKey]);
-		}		
+		}
+		
+		Activator activator = Activator.getDefault();
+		if (activator != null) {
+			ScopedPreferenceStore objPref = (ScopedPreferenceStore) activator.getPreferenceStore();
+			objPref.setValue(HISTORY_SELECTION, tabFolder.getSelectionIndex());
+		}
+		
 		super.okPressed();
 	}
 	

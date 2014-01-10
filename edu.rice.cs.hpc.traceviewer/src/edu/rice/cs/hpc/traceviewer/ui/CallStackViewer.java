@@ -146,10 +146,8 @@ public class CallStackViewer extends TableViewer
 		TraceOperation.getOperationHistory().addOperationHistoryListener(this);
 	}
 	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#refresh()
+	/***
+	 * refresh the call stack in case there's a new data
 	 */
 	public void updateView()
 	{

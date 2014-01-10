@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import java.io.IOException;
+
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -94,7 +97,21 @@ public abstract class BaseViewPaint {
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 
-		launchDataGettingThreads(changedBounds, numThreads);
+		try {
+			launchDataGettingThreads(changedBounds, numThreads);
+			
+		} catch (IOException e) {
+			MessageDialog.openError(window.getShell(), "Error while reading data", 
+					e.getMessage());
+			e.printStackTrace();
+			return;
+		}
+		
+		// -------------------------------------------------------------------
+		// case where everything works fine, and all the data has been read,
+		//	we paint the canvas using multiple threads
+		// -------------------------------------------------------------------
+		
 		Debugger.printTimestampDebug("Rendering beginning (" + canvas.toString()+")");
 		threads = new Thread[numThreads];
 		
@@ -114,9 +131,9 @@ public abstract class BaseViewPaint {
 		monitor.endProgress();
 		changedBounds = false;
 
+		// reset the line number to paint
+		controller.resetCounters();
 	}
-
-	abstract protected void launchDataGettingThreads(boolean changedBounds, int numThreads);
 
 	private void waitForAllThreads(Thread[] threads) {
 		int numThreads = threads.length;
@@ -177,5 +194,8 @@ public abstract class BaseViewPaint {
 	 */
 	abstract protected int getNumberOfLines();
 	
+	abstract protected void launchDataGettingThreads(boolean changedBounds, int numThreads) 
+			throws IOException;
+
 	abstract protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale);
 }

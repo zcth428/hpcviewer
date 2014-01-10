@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -131,6 +132,8 @@ public abstract class SpaceTimeDataController {
 	public synchronized ProcessTimeline getNextDepthTrace() {
 		
 		ProcessTimeline depthTrace = getDepthTrace();
+		if (depthTrace == null)
+			return null;
 		
 		int currentDepthLineNum = depthLineNum.getAndIncrement();
 		if (currentDepthLineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
@@ -272,7 +275,8 @@ public abstract class SpaceTimeDataController {
 
 	public abstract IFilteredData createFilteredBaseData();
 
-	public abstract void fillTracesWithData(boolean changedBounds, int numThreadsToLaunch);
+	public abstract void fillTracesWithData(boolean changedBounds, int numThreadsToLaunch)
+			throws IOException;
 
 
 

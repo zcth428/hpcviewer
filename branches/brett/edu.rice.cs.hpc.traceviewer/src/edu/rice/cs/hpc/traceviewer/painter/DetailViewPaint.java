@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import java.io.IOException;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -48,19 +50,20 @@ public class DetailViewPaint extends BaseViewPaint {
 	protected void endPainting(int linesToPaint, double xscale, double yscale) {
 		for (int i = 0; i < linesToPaint; i++) {
 			int yposition = (int) Math.round(i * yscale);
-			if (compositeOrigLines[i] == null)
-				System.out.println("i="+i);
-			origGC.drawImage(compositeOrigLines[i], 0, yposition);
-			masterGC.drawImage(compositeFinalLines[i], 0, yposition);
+			if (compositeOrigLines[i] != null) {
+				origGC.drawImage(compositeOrigLines[i], 0, yposition);
+				masterGC.drawImage(compositeFinalLines[i], 0, yposition);
+			}
 		}
 		
 		// disposing resources
 		for (int i=0; i<linesToPaint; i++) {
-			compositeOrigLines[i].dispose();
-			compositeFinalLines[i].dispose();
+			if (compositeOrigLines[i] != null)
+				compositeOrigLines[i].dispose();
+			
+			if (compositeFinalLines[i] != null)
+				compositeFinalLines[i].dispose();
 		}
-		// reset the line number to paint
-		controller.resetCounters();
 	}
 
 	@Override
@@ -79,7 +82,7 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected void launchDataGettingThreads(boolean changedBounds,
-			int numThreads) {
+			int numThreads) throws IOException {
 		controller.fillTracesWithData( changedBounds, numThreads);
 	}	
 }

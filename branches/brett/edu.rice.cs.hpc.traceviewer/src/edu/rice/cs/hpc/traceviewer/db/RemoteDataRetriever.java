@@ -26,9 +26,26 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
  * 
  */
 public class RemoteDataRetriever {
+	
+	// -------------------------------------
+	// Constants
+	// -------------------------------------
+	
 	//For more information on message structure, see protocol documentation at the end of this file. 
 	private static final int DATA = 0x44415441;
 	private static final int HERE = 0x48455245;
+	
+	/****
+	 * time out counter is based on TIME_SLEEP ms unit
+	 */
+	private static final int TIME_OUT = 200;
+	
+	private static final int TIME_SLEEP = 50;
+	
+	// -------------------------------------
+	// Variables
+	// -------------------------------------
+
 	private final Socket socket;
 	DataInputStream receiver;
 	BufferedInputStream rcvBacking;
@@ -40,6 +57,16 @@ public class RemoteDataRetriever {
 	
 	private final IStatusLineManager statusMgr;
 
+	/******
+	 * Constructor for communicating with remote data server
+	 * 
+	 * @param _serverConnection : connection socket
+	 * @param _statusMgr : line manager
+	 * @param _shell : window shell
+	 * @param _compressionType : type of compression, see {@link DecompressionThread.COMPRESSION_TYPE_MASK}
+	 * 
+	 * @throws IOException
+	 */
 	public RemoteDataRetriever(Socket _serverConnection, IStatusLineManager _statusMgr, Shell _shell, int _compressionType) throws IOException {
 		socket = _serverConnection;
 		
@@ -121,24 +148,30 @@ public class RemoteDataRetriever {
 						long startTimeForThisTimeline = dataReader.readLong();
 						long endTimeForThisTimeline = dataReader.readLong();
 						int compressedSize = dataReader.readInt();
-						byte[] compressedTraceLine = new byte[compressedSize];
+						
+						// when there's network issue, the value of compressedSize can be negative
+						// this has happened when the server process was suspended and the user keeps
+						//	asking data from the client to the server
+						if (compressedSize >0) {
+							byte[] compressedTraceLine = new byte[compressedSize];
 
-						int numRead = 0;
-						while (numRead < compressedSize) {
-							numRead += dataReader.read(compressedTraceLine,
-									numRead, compressedSize - numRead);
+							int numRead = 0;
+							while (numRead < compressedSize) {
+								numRead += dataReader.read(compressedTraceLine,
+										numRead, compressedSize - numRead);
 
+							}
+
+							DecompressionThread.addWorkItemToDo(
+								new DecompressionThread.DecompressionItemToDo(
+											compressedTraceLine, length,
+											startTimeForThisTimeline,
+											endTimeForThisTimeline, rankNumber,
+											compressionType));
+
+							ranksReceived++;
+							monitor.announceProgress();
 						}
-
-						DecompressionThread.addWorkItemToDo(
-							new DecompressionThread.DecompressionItemToDo(
-										compressedTraceLine, length,
-										startTimeForThisTimeline,
-										endTimeForThisTimeline, rankNumber,
-										compressionType));
-
-						ranksReceived++;
-						monitor.announceProgress();
 					}
 				} catch (IOException e) {
 					//Should we provide some UI notification to the user?
@@ -172,14 +205,18 @@ public class RemoteDataRetriever {
 	static int waitAndReadInt(DataInputStream receiver)
 			throws IOException {
 		int nextCommand;
+		int timeout = 0;
 		// Sometime the buffer is filled with 0s for some reason. This flushes
 		// them out. This is awful, but otherwise we just get 0s
 
 		while (receiver.available() <= 4
 				|| ((nextCommand = receiver.readInt()) == 0)) {
 
+			if (timeout++ > TIME_OUT) {
+				throw new IOException("Timeout: no response from the server.");
+			}
 			try {
-				Thread.sleep(50);
+				Thread.sleep(TIME_SLEEP);
 			} catch (InterruptedException e) {
 
 				e.printStackTrace();
@@ -191,12 +228,17 @@ public class RemoteDataRetriever {
 										// buffer has anything there will be a
 										// message
 		{
+			timeout = 0;
+			if (timeout++ > TIME_OUT) {
+				throw new IOException("Timeout while waiting for command: no response from the server.");
+			}
+
 			receiver.read(new byte[receiver.available()]);// Flush the rest of
 															// the buffer
 			while (receiver.available() <= 0) {
 
 				try {
-					Thread.sleep(50);
+					Thread.sleep(TIME_SLEEP);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -211,9 +253,17 @@ public class RemoteDataRetriever {
 		sender.close();
 		receiver.close();
 		socket.close();
-		
 	}
-}
+	
+	
+	static public int getTimeSleep() {
+		return TIME_SLEEP;
+	}
+	
+	static public int getTimeOut() {
+		return TIME_OUT;
+	}
+} 
 /**
  ******* PROTOCOL DOCUMENTATION *******
  * 

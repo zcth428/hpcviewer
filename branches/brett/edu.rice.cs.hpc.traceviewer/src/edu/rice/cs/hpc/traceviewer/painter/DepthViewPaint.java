@@ -38,18 +38,20 @@ public class DepthViewPaint extends BaseViewPaint {
 	@Override
 	protected void endPainting(int linesToPaint, double xscale, double yscale) {
 
-		for (int i = 0; i < linesToPaint; i++)
-		{
-			masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
-					compositeFinalLines[i].getBounds().height, 0, Math.round(i*attributes.numPixelsDepthV/(float)painter.getMaxDepth()), 
-					compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
+		if (compositeFinalLines != null) {
+			for (int i = 0; i < linesToPaint; i++)
+			{
+				if (compositeFinalLines[i] != null)
+					masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
+						compositeFinalLines[i].getBounds().height, 0, Math.round(i*attributes.numPixelsDepthV/(float)painter.getMaxDepth()), 
+						compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
+			}
+			// disposing resources
+			for (Image img: compositeFinalLines) {
+				if (img != null)
+					img.dispose();
+			}
 		}
-		// disposing resources
-		for (Image img: compositeFinalLines) {
-			img.dispose();
-		}
-		//FIXME: Ugly solution to the counter not being reset...
-		controller.resetCounters();
 	}
 
 	@Override

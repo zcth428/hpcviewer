@@ -17,6 +17,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.RemoteFilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
+import edu.rice.cs.hpc.traceviewer.db.IThreadListener;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
@@ -79,7 +80,8 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 	 * not decompress the traces. Instead, it returns threads that will do that work when executed.
 	 */
 	@Override
-	public void fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) {
+	public void fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) 
+		throws IOException {
 		if (changedBounds) {
 			
 			DecompressionThread[] workThreads = new DecompressionThread[numThreadsToLaunch];
@@ -90,21 +92,16 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 
 			for (int i = 0; i < workThreads.length; i++) {
 
-				workThreads[i] = new DecompressionThread(ptlService, scopeMap, ranksExpected, attributes.begTime, attributes.endTime);
+				workThreads[i] = new DecompressionThread(ptlService, scopeMap, ranksExpected, 
+						attributes.begTime, attributes.endTime, new DecompressionThreadListener());
 				workThreads[i].start();
 			}
 			
 
-			try {
-
-				dataRetriever.getData(attributes.begProcess,
-						attributes.endProcess, attributes.begTime,
-						attributes.endTime, attributes.numPixelsV,
-						attributes.numPixelsH, scopeMap);
-			} catch (IOException e) {
-				// UI Notify user...
-				e.printStackTrace();
-			}
+			dataRetriever.getData(attributes.begProcess,
+					attributes.endProcess, attributes.begTime,
+					attributes.endTime, attributes.numPixelsV,
+					attributes.numPixelsH, scopeMap);
 		}
 	}
 
@@ -138,7 +135,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 				if (lineNum.get() >= ptlService.getNumProcessTimeline())
 					return null;
 				try {
-					Thread.sleep(50);
+					Thread.sleep(RemoteDataRetriever.getTimeSleep());
 
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -157,5 +154,16 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 
 	public int getHeaderSize() {
 		return headerSize;
+	}
+	
+	private class DecompressionThreadListener implements IThreadListener
+	{
+
+		@Override
+		public void notify(String msg) {
+			
+			System.err.println("Error in Decompression: " + msg);
+		}
+		
 	}
 }

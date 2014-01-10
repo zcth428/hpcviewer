@@ -38,8 +38,10 @@ public class DecompressionThread extends Thread {
 	final long t0;
 	final long tn;
 	
-	final static int COMPRESSION_TYPE_MASK = 0xFFFF;//Save two bytes for formatting versions
-	final static short ZLIB_COMPRESSSED  = 1;
+	private final IThreadListener listener;
+	
+	public final static int COMPRESSION_TYPE_MASK = 0xFFFF;//Save two bytes for formatting versions
+	public final static short ZLIB_COMPRESSSED  = 1;
 	
 	static boolean first = true;
 
@@ -48,13 +50,14 @@ public class DecompressionThread extends Thread {
 
 	public DecompressionThread(ProcessTimelineService ptlService,
 			HashMap<Integer, CallPath> _scopeMap, int _ranksExpected,
-			long _t0, long _tn) {
+			long _t0, long _tn, IThreadListener listener) {
 		timelineServ = ptlService;
 		scopeMap = _scopeMap;
 		ranksExpected = _ranksExpected;
 		t0 = _t0;
 		tn = _tn;
 		
+		this.listener = listener;
 	}
 	
 	public static void setTotalRanksExpected(int ranks){
@@ -79,39 +82,47 @@ public class DecompressionThread extends Thread {
 	
 	@Override
 	public void run() {
+		int i = 0;
 		while (ranksRemainingToDecompress.get() > 0)
 		{
 			DecompressionItemToDo wi = workToDo.poll();
 			if (wi == null)
 			{
+				if ( i++ > RemoteDataRetriever.getTimeOut() ) {
+					// time out
+					break;
+				}
 				//There is still work that needs to get done, but it is not available to be worked on at the moment.
 				//Wait a little and try again
 				try {
-					Thread.sleep(50);
+					Thread.sleep( RemoteDataRetriever.getTimeSleep() );
 
 				} catch (InterruptedException e) {
+					// error in I/O
 					e.printStackTrace();
+					break;
 				}
-				continue;
+			} else {
+				i = 0;
+				if (first){
+					first = false;
+					Debugger.printTimestampDebug("First decompression beginning.");
+				}
+				ranksRemainingToDecompress.getAndDecrement();
+				DecompressionItemToDo toDecomp = (DecompressionItemToDo)wi;
+				try {
+					decompress(toDecomp);
+				} catch (IOException e) {
+					// error in decompression
+					Debugger.printDebug(1, "IO Exception in decompression algorithm.");
+					e.printStackTrace();
+					break;
+				}
 			}
-
-			if (first){
-				first = false;
-				Debugger.printTimestampDebug("First decompression beginning.");
-			}
-			ranksRemainingToDecompress.getAndDecrement();
-			DecompressionItemToDo toDecomp = (DecompressionItemToDo)wi;
-			try {
-				decompress(toDecomp);
-			} catch (IOException e) {
-				Debugger.printDebug(1, "IO Exception in decompression algorithm.");
-				e.printStackTrace();
-			}
-			continue;
-
-
 		}
-		
+		if (ranksRemainingToDecompress.get() > 0) {
+			listener.notify("Decompression error due to time out");
+		}
 	}
 
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException

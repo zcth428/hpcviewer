@@ -138,8 +138,8 @@ public class Frame implements Serializable
 	
 	@Override
 	public String toString() {
-		long t1 = begTime/1000000;
-		long t2 = endTime/1000000;
-		return "["+t1+"s : "+t2+"s , " + begProcess+" : "+endProcess+"]";
+		String time = "[ " + (begTime/1000)/1000.0 + "s, " + (endTime/1000)/1000.0+"s ]";
+		String proc = " and [ " + begProcess + ", " + endProcess + " ]";
+		return time + proc;
 	}
 }

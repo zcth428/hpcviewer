@@ -68,7 +68,7 @@ public class TraceDataByRank {
 		long minloc = data.getMinLoc(rank);
 		long maxloc = data.getMaxLoc(rank, header.RecordSz);
 		
-		Debugger.printDebug(1, "getData loc [" + minloc+","+ maxloc + "]");
+		Debugger.printDebug(4, "getData loc [" + minloc+","+ maxloc + "]");
 		
 		// get the start location
 		final long startLoc = this.findTimeInInterval(timeStart, minloc, maxloc);

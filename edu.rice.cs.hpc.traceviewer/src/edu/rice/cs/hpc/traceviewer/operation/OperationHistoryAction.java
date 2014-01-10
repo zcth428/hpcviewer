@@ -20,6 +20,7 @@ public abstract class OperationHistoryAction extends Action
 	implements IAction, IOperationHistoryListener, IMenuCreator 
 {
 	private Menu menu;
+	private IUndoableOperation []operations;
 	
 	public OperationHistoryAction(ImageDescriptor img) {
 		super(null, Action.AS_DROP_DOWN_MENU);
@@ -47,6 +48,14 @@ public abstract class OperationHistoryAction extends Action
 		return menu;
 	}
 	
+	/****
+	 * get the list of operations for undo/redo
+	 * @return
+	 */
+	protected IUndoableOperation[] getOperations() {
+		return operations;
+	}
+	
 	@Override
 	public void run() {
 		execute();
@@ -71,14 +80,27 @@ public abstract class OperationHistoryAction extends Action
 			case OperationHistoryEvent.DONE:
 			case OperationHistoryEvent.UNDONE:
 			case OperationHistoryEvent.REDONE:
-				setStatus();
+				operations = setStatus();
 				break;
 			}
 		}
 	}
 	
+	protected void debug(String prefix, IUndoableOperation []ops) {
+		System.out.print(prefix + " [ ");
+		boolean comma = false;
+		for (IUndoableOperation op: ops) {
+			if (comma)
+				System.out.print(" , ");
+			System.out.print(op.getLabel());
+			if (!comma)
+				comma = true;
+		}
+		System.out.println(" ]");
+	}
+	
 	abstract protected IUndoableOperation[] getHistory();
 	abstract protected void execute();
 	abstract protected void execute(IUndoableOperation operation) ;
-	abstract protected void setStatus();
+	abstract protected IUndoableOperation[] setStatus();
 }

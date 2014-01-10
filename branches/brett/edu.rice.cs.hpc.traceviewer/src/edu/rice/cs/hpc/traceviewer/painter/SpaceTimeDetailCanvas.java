@@ -1045,6 +1045,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/*********************************************************************************
 	 * Refresh the content of the canvas with new input data or boundary or parameters
 	 *  
+	 *  @param refreshData boolean whether we need to refresh and read again the data or not
 	 *********************************************************************************/
 	public void refresh(boolean refreshData) {
 		//Debugger.printTrace("STDC rebuffer");
@@ -1062,36 +1063,49 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			viewWidth = this.getClientArea().width;
 			viewHeight = this.getClientArea().height;
 		}
-		if (imageBuffer != null) {
-			imageBuffer.dispose();
-		}
-		imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
-		GC bufferGC = new GC(imageBuffer);
+		// imageFinal is the final image with all the depth and number of samples
+		
+		final Image imageFinal = new Image(getDisplay(), viewWidth, viewHeight);
+		GC bufferGC = new GC(imageFinal);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		
+		// imageOrig is the original image without "attributes" such as depth
+		// this imageOrig will be used by SummaryView to count the number of colors
 		
 		Image imageOrig = new Image(getDisplay(), viewWidth, viewHeight);
 		GC origGC = new GC(imageOrig);
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,viewWidth,viewHeight);
 
-		paintDetailViewport(bufferGC, origGC, stData.getProcessBegin(), stData.getProcessEnd(), 
-				stData.getTimeBegin(), stData.getTimeEnd(), viewWidth, viewHeight, refreshData);
+		// main method to paint to the canvas
+		if ( paintDetailViewport(bufferGC, origGC, stData.getProcessBegin(), stData.getProcessEnd(), 
+				stData.getTimeBegin(), stData.getTimeEnd(), viewWidth, viewHeight, refreshData) ) {
+			
+			if (imageBuffer != null) {
+				imageBuffer.dispose();
+			}
+			imageBuffer = imageFinal;
+			
+			super.redraw();
 
-		
+			// notify to SummaryView that a new image has been created, and it needs to refresh the view
+			
+			BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageOrig.getImageData());
+			try {
+				TraceOperation.getOperationHistory().execute(brOp, null, null);
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
+			
+			updateButtonStates();
+		} else {
+			// we don't need this "new image" since the paint fails
+			imageFinal.dispose();
+		}
+		// free resources 
 		bufferGC.dispose();
 		origGC.dispose();
-		
-		super.redraw();
-
-		BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageOrig.getImageData());
-		try {
-			TraceOperation.getOperationHistory().execute(brOp, null, null);
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-		
-		updateButtonStates();
 		imageOrig.dispose();
 	}
 	
@@ -1110,8 +1124,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *	@param endTime 			 The last time unit that will be displayed.
 	 *  @param numPixelsH		 The number of horizontal pixels to be painted.
 	 *  @param numPixelsV		 The number of vertical pixels to be painted.
+	 *  
+	 *  @return boolean true of the pain is successful, false otherwise
 	 *************************************************************************/
-	public void paintDetailViewport(final GC masterGC, final GC origGC, 
+	public boolean paintDetailViewport(final GC masterGC, final GC origGC, 
 			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
 			boolean refreshData)
 	{	
@@ -1132,7 +1148,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		DetailViewPaint detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
 					attributes, changedBounds, window); 
 		
-		detailPaint.paint(this);
+		return detailPaint.paint(this);
 	}
 	
 

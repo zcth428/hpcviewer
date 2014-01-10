@@ -270,12 +270,16 @@ public class CallStackViewer extends TableViewer
 				{
 					Position p = ((PositionOperation)operation).getPosition();
 					int depth = getTable().getSelectionIndex();
+					Debugger.printDebug(1, "CT-p: " + p + "\t d: " + depth);
+
 					setSample(p,depth);
 				}
 				else if (operation instanceof ZoomOperation) 
 				{
 					Position p = ((ZoomOperation)operation).getFrame().position;
 					int depth = getTable().getSelectionIndex();
+					Debugger.printDebug(1, "CT-z: " + p + "\t d: " + depth);
+
 					setSample(p,depth);
 				}
 			}

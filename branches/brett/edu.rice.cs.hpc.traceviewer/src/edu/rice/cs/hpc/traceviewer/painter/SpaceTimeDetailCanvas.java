@@ -37,6 +37,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 
 /*************************************************************************
@@ -1251,6 +1252,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			// zoom in/out or change of ROI ?
 			if (operation instanceof ZoomOperation) {
 				Frame frame = ((ZoomOperation)operation).getFrame();
+				Debugger.printDebug(1, "STDC: " + attributes + "\t New: " + frame);
 				painter.setPosition(frame.position);
 				setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
 			}

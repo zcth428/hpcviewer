@@ -29,6 +29,7 @@ import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Constants;
+import edu.rice.cs.hpc.traceviewer.util.Debugger;
 
 /**A view for displaying the depthview.*/
 public class DepthTimeCanvas extends SpaceTimeCanvas 
@@ -506,6 +507,8 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 				@Override
 				public void run() {
 					Frame frame = ((ZoomOperation)operation).getFrame();
+					Debugger.printDebug(1, "Current: " + attributes + "\t New: " + frame);
+
 					zoom(frame.begTime, frame.endTime);
 					setPosition(frame.position);
 				}

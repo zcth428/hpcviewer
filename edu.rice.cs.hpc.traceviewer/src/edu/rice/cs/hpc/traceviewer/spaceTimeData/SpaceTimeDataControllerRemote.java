@@ -128,12 +128,19 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 		Integer nextIndex;
 
 		if (changedBounds) {
+			int i = 0;
+			
 			// TODO: Should this be implemented with real locking?
 			while ((nextIndex = DecompressionThread.getNextTimelineToRender()) == null) {
 				//Make sure a different thread didn't get the last one while 
 				//this thread was waiting:
 				if (lineNum.get() >= ptlService.getNumProcessTimeline())
 					return null;
+				
+				// check for the timeout
+				if (i++ > RemoteDataRetriever.getTimeOut()) {
+					return null;
+				}
 				try {
 					Thread.sleep(RemoteDataRetriever.getTimeSleep());
 

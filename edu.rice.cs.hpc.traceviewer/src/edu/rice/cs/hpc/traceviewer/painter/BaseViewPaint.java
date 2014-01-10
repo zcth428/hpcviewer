@@ -63,8 +63,9 @@ public abstract class BaseViewPaint {
 	 *	the sample's max depth before becoming overDepth on samples that have gone over depth.
 	 *
 	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
+	 *  @return boolean true of the pain is successful, false otherwise
 	 ***********************************************************************************/
-	public void paint(SpaceTimeCanvas canvas)
+	public boolean paint(SpaceTimeCanvas canvas)
 	{	
 		
 		// depending upon how zoomed out you are, the iteration you will be
@@ -78,13 +79,13 @@ public abstract class BaseViewPaint {
 		// return immediately, otherwise it throws an exception
 		// -------------------------------------------------------------------
 		if (attributes.numPixelsH <= 0)
-			return;
+			return false;
 		
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
 		if (!startPainting(linesToPaint, changedBounds))
-			return;
+			return false;
 
 		monitor.beginProgress(linesToPaint, "Rendering space time view...",
 				"Trace painting", window.getShell());
@@ -104,7 +105,7 @@ public abstract class BaseViewPaint {
 			MessageDialog.openError(window.getShell(), "Error while reading data", 
 					e.getMessage());
 			e.printStackTrace();
-			return;
+			return false;
 		}
 		
 		// -------------------------------------------------------------------
@@ -133,6 +134,8 @@ public abstract class BaseViewPaint {
 
 		// reset the line number to paint
 		controller.resetCounters();
+		
+		return true;
 	}
 
 	private void waitForAllThreads(Thread[] threads) {

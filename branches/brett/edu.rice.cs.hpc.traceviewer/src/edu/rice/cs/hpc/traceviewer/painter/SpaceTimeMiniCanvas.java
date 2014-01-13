@@ -227,14 +227,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		mousePrevious = mouseCurrent;
 	}
 	
-	/**** zoom action **/
-	final private ITraceAction zoomAction = new ITraceAction() {
+	/**** zoom action 
+	 * we don't need a specific zoomAction since the execution is handled by historyNotification()
+	 * **/
+/*	final private ITraceAction zoomAction = new ITraceAction() {
 		@Override
 		public void doAction(Frame frame) 
 		{
 			setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
 		}
-	};
+	};*/
 
 	/**Scales coordinates and sends them to detailCanvas.*/
 	private void setDetailSelection()
@@ -260,7 +262,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				painter.getPosition().time, painter.getPosition().process);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Change region", frame, zoomAction),
+					new ZoomOperation("Change region", frame, null),
 					null, null);
 		} catch (ExecutionException e) 
 		{

@@ -267,22 +267,24 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		oldEndTime = attributes.endTime;
 	}
 
-	/**** time zoom action **/
-	final private ITraceAction zoomAction = new ITraceAction() {
+	/**** time zoom action 
+	 * we don't need a specific zoomAction since the execution is handled by executeOperation()
+	 * **/
+/*	final private ITraceAction zoomAction = new ITraceAction() {
 		@Override
 		public void doAction(Frame frame) 
 		{
 			zoom(frame.begTime, frame.endTime);
 		}
-	};
+	};*/
 	
-	final private ITraceAction positionAction = new ITraceAction() {
+/*	final private ITraceAction positionAction = new ITraceAction() {
 		@Override
 		public void doAction(Frame frame) 
 		{
 			setPosition(frame.position);
 		}		
-	};
+	};*/
 	
 	/***
 	 * time zoom and notify other views
@@ -298,7 +300,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		Frame frame = new Frame(attributes, selectedDepth, (long)selectedTime, currentProcess);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Time zoom out", frame, zoomAction), 
+					new ZoomOperation("Time zoom out", frame, null/*zoomAction*/), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
@@ -322,7 +324,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     		
     	try {
 			TraceOperation.getOperationHistory().execute(
-					new PositionOperation(newPosition, positionAction), 
+					new PositionOperation(newPosition, null), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();

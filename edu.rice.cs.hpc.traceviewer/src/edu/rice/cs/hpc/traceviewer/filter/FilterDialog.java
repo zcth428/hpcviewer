@@ -10,8 +10,6 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -68,11 +66,16 @@ public class FilterDialog extends TitleAreaDialog {
 		btnHide.setText("To hide");
 		btnHide.setToolTipText("An option to hide matching patterns");
 		
-		FilterSet filter = filterData.getFilter();
-		if (filter != null && filter.isShownMode())
-			btnShow.setSelection(true);
-		else
-			btnHide.setSelection(true);
+		
+		FilterSet filter = null;
+		if (filterData != null) {
+			filter = filterData.getFilter();
+			
+			if (filter != null && filter.isShownMode())
+				btnShow.setSelection(true);
+			else
+				btnHide.setSelection(true);
+		}
 		
 		Label lblMode = new Label(grpMode, SWT.LEFT | SWT.WRAP);
 		lblMode.setText("Selecting the 'To show' radio button will show matching processes, " +
@@ -91,12 +94,8 @@ public class FilterDialog extends TitleAreaDialog {
 
 		Composite coButtons = new Composite(grpFilter, SWT.NONE);
 
-		RowLayout rl = new RowLayout();
-		rl.pack = true;
-		rl.center = true;
-		rl.type = SWT.VERTICAL;
-		
-		coButtons.setLayout(rl);
+		GridDataFactory.fillDefaults().grab(false, true).applyTo(coButtons);
+		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(coButtons);
 		
 		Button btnAdd = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnAdd.setText("Add");
@@ -115,7 +114,8 @@ public class FilterDialog extends TitleAreaDialog {
 				}
 			}
 		});
-		btnAdd.setLayoutData(new RowData(80,20));
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(btnAdd);
+		//btnAdd.setLayoutData(new RowData(80,20));
 		
 		btnRemove = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnRemove.setText("Remove");
@@ -130,7 +130,8 @@ public class FilterDialog extends TitleAreaDialog {
 				}
 			}
 		});
-		btnRemove.setLayoutData(new RowData(80,20));
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(btnRemove);
+		//btnRemove.setLayoutData(new RowData(80,20));
 		
 		final Button btnRemoveAll = new Button(coButtons, SWT.PUSH | SWT.FLAT);
 		btnRemoveAll.setText("Remove all");
@@ -147,7 +148,8 @@ public class FilterDialog extends TitleAreaDialog {
 				}
 			}
 		}) ;
-		btnRemoveAll.setLayoutData(new RowData(80,20));
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(btnRemoveAll);
+		//btnRemoveAll.setLayoutData(new RowData(80,20));
 		
 		list = new List(grpFilter, SWT.SINGLE | SWT.V_SCROLL);
 		list.addSelectionListener(new SelectionAdapter(){
@@ -211,8 +213,20 @@ public class FilterDialog extends TitleAreaDialog {
 			// it is not allowed to filter everything
 			MessageDialog.openError(getShell(), "Error", "The result of filter is empty ranks.\nIt isn't allowed to filter all the ranks.");
 		}
-	}	
+	}
+	
+	static public void main(String []args) {
+		Shell shell = new Shell();
+		FilterDialog dlgMain = new FilterDialog(shell, null);
+		dlgMain.open();
+	}
 }
+
+/*******
+ * 
+ * Input dialog with two input fields using user history
+ *
+ */
 class DualInputDialog extends Dialog{
 	private Combo firstEntry;
 	private Combo secondEntry;

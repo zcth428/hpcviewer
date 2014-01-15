@@ -7,6 +7,7 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
+import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.util.Debugger;
@@ -71,9 +72,18 @@ public abstract class BaseViewPaint {
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
 		int linesToPaint = getNumberOfLines();
-		final int numThreads = Math.min(linesToPaint, Runtime.getRuntime()
-				.availableProcessors());
+		int numThreads = 1; 
 
+		// -------------------------------------------------------------------
+		// hack: On Linux, gtk is not threads-safe, and SWT-gtk implementation
+		//		 uses lock everytime it calls gtk functions. This greatly impact
+		//		 the performance, we don't have the solution until now.
+		//	At the moment we don't see any reason to use multi-threading to render
+		//	 	 the canvas
+		// -------------------------------------------------------------------
+		if (!OSValidator.isUnix()) {
+			numThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
+		}
 		// -------------------------------------------------------------------
 		// hack fix: if the number of horizontal pixels is less than 1 we
 		// return immediately, otherwise it throws an exception
@@ -97,9 +107,12 @@ public abstract class BaseViewPaint {
 		Thread[] threads;
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
-
+		
+		// decompression can be done with multiple threads without accesing gtk (on linux)
+		// It looks like there's no major performance effect though
+		int launch_threads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
 		try {
-			launchDataGettingThreads(changedBounds, numThreads);
+			launchDataGettingThreads(changedBounds, launch_threads);
 			
 		} catch (IOException e) {
 			MessageDialog.openError(window.getShell(), "Error while reading data", 

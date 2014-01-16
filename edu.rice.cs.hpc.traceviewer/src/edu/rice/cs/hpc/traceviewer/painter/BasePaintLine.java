@@ -116,7 +116,7 @@ public abstract class BasePaintLine
 				succSampleMidpoint = (int) Math.max(0, ((ptl.getTime(end)-begTime)/pixelLength)); 
 			}
 			
-			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, functionName, end - index + 1);
+			this.finishPaint(currSampleMidpoint, succSampleMidpoint, currDepth, currColor, end - index + 1);
 			index = end;
 		}			
 	}
@@ -137,5 +137,5 @@ public abstract class BasePaintLine
 	 * @param functionName : name of the function (for coloring purpose)
 	 * @param sampleCount : the number of "samples"
 	 */
-	public abstract void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount);
+	public abstract void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount);
 }

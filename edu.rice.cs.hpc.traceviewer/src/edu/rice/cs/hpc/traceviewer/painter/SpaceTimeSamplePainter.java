@@ -31,18 +31,18 @@ public abstract class SpaceTimeSamplePainter
 	 * Paints a rectangle to the GC gc from startPixel to endPixel with height = height
 	 * and color = the color that corresponds to function in the colorTable.
 	 *********************************************************************************/
-	abstract public void paintSample(int startPixel, int endPixel, int height, String function);
+	abstract public void paintSample(int startPixel, int endPixel, int height, Color color);
 	
 	//We don't need to worry about y-coordinates because the sample is painted to an image of height = height
 	//that just corresponds to one line, and these images are then compiled into the master image
-	protected void internalPaint(GC gcToDraw, int startPixel, int endPixel, int height, String function)
+	protected void internalPaint(GC gcToDraw, int startPixel, int endPixel, int height, Color color)
 	{
 		// sets up the rectangle to be filled
 		int rectWidth = endPixel - startPixel;
 		if(rectWidth == 0)
 			return;
-Color pColor = colorTable.getColor(function);
-		gcToDraw.setBackground(pColor);
+
+		gcToDraw.setBackground(color);
 		gcToDraw.fillRectangle(startPixel, 0, rectWidth, height);
 	}
 	

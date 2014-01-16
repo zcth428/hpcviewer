@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
@@ -72,9 +73,9 @@ public class TimelineDepthThread extends Thread {
 
 				//@Override
 				public void paintSample(int startPixel, int endPixel,
-						int height, String function) {
+						int height, Color color) {
 
-					this.internalPaint(gc, startPixel, endPixel, height, function);
+					this.internalPaint(gc, startPixel, endPixel, height, color);
 				}
 			};
 			
@@ -100,11 +101,11 @@ public class TimelineDepthThread extends Thread {
 		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, stData.getTimeBegin(), depth, height, pixelLength, usingMidpoint)
 		{
 			//@Override
-			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount)
 			{
 				if (currDepth >= depth)
 				{
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
+					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, color);
 				}
 			}
 		};

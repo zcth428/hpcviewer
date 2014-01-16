@@ -2,8 +2,10 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
+
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -148,20 +150,23 @@ public class TimelineThread extends Thread
 		
 		double pixelLength = (attrib.endTime - attrib.begTime)/(double)attrib.numPixelsH;
 		
+		// ---------------------------------
 		// do the paint
+		// ---------------------------------
+
 		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
 				attrib.begTime, stData.getPainter().getDepth(), height, pixelLength, usingMidpoint)
 		{
-			//@Override
-			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, String functionName, int sampleCount)
+			@Override
+			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount)
 			{
 				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
-				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, functionName);
+				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, color);
 				
 				final boolean isOverDepth = (currDepth < depth);
 				// write texts (depth and number of samples) if needed
 				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attrib.numPixelsH), 
-						currDepth, functionName, isOverDepth, sampleCount);
+						currDepth, color, isOverDepth, sampleCount);
 			}
 		};
 		detailPaint.paint();

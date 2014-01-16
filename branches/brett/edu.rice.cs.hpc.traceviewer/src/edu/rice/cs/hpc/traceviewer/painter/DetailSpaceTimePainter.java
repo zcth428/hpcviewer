@@ -70,15 +70,27 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 		MAX_TEXT_SIZE = gcFinal.textExtent(TOO_MANY_RECORDS + "(" + TOO_MANY_RECORDS + ")");
 	}
 
-	
-	public void paintSample(int startPixel, int endPixel, int height, String function)
+	/***
+	 * paint a rectangle filled with a color.
+	 * see {@link edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter#paintSample}
+	 * 
+	 * @param startPixel : the x start
+	 * @param endPixel : the x end
+	 * @param height : the heigh of the rectangle
+	 * @param color : color of the rectangle
+	 */
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter#paintSample(int, int, int, org.eclipse.swt.graphics.Color)
+	 */
+	public void paintSample(int startPixel, int endPixel, int height, Color color)
 	{
-		super.internalPaint(gc, startPixel, endPixel, height, function);
-		super.internalPaint(gcFinal, startPixel, endPixel, height, function);
+		super.internalPaint(gc, startPixel, endPixel, height, color);
+		super.internalPaint(gcFinal, startPixel, endPixel, height, color);
 	}
 	
 	/**Gets the correct color to paint the over depth text and then paints the text, centered, on the process/time block.*/
-	public void paintOverDepthText(int odInitPixel, int odFinalPixel, int depth, String function, boolean overDepth, int sampleCount)
+	public void paintOverDepthText(int odInitPixel, int odFinalPixel, int depth, Color color, boolean overDepth, int sampleCount)
 	{	
 		if (!overDepth && !needToShowRecords)
 			return;
@@ -106,12 +118,12 @@ public class DetailSpaceTimePainter extends SpaceTimeSamplePainter {
 			int box_height = (int) Math.floor(canvasScaleY);
 			// want 2 pixels on above and below
 			if ((box_height - MAX_TEXT_SIZE.y) >= 4) {
-				Color bgColor = colorTable.getColor(function);
-				gcFinal.setBackground(bgColor);
+
+				gcFinal.setBackground(color);
 
 				// Pick the color of the text indicating sample depth. 
 				// If the background is suffciently light, pick black, otherwise white
-				if (bgColor.getRed()+bgColor.getBlue()+bgColor.getGreen()>Constants.DARKEST_COLOR_FOR_BLACK_TEXT)
+				if (color.getRed()+color.getBlue()+color.getGreen()>Constants.DARKEST_COLOR_FOR_BLACK_TEXT)
 					gcFinal.setForeground(Constants.COLOR_BLACK);
 				else
 					gcFinal.setForeground(Constants.COLOR_WHITE);

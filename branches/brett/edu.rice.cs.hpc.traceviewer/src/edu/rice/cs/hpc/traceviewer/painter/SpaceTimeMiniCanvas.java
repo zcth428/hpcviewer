@@ -119,15 +119,17 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		this.viewingHeight = r.height;
 		this.viewingWidth = r.width;
 		
-		begProcess = _stData.getAttributes().begProcess;
-		endProcess = _stData.getAttributes().endProcess;
+		begProcess = _stData.getAttributes().getProcessBegin();
+		endProcess = _stData.getAttributes().getProcessEnd();
 		
 		this.redraw();
 	}
 	
 	public void updateView()
 	{
-		setBox(stData.getTimeBegin(), stData.getProcessBegin(), stData.getTimeEnd(), stData.getProcessEnd());
+		ImageTraceAttributes attributes = stData.getAttributes();
+		setBox(attributes.getTimeBegin(), attributes.getProcessBegin(), 
+				attributes.getTimeEnd(), attributes.getProcessEnd());
 	}
 	
 	/**The painting of the miniMap.*/
@@ -251,15 +253,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
 
 		ImageTraceAttributes attributes = stData.getAttributes();
-		attributes.begProcess = detailTopLeftProcess;
-		attributes.endProcess = detailBottomRightProcess;
-		attributes.begTime    = detailTopLeftTime;
-		attributes.endTime	 = detailBottomRightTime;
+		attributes.setProcess(detailTopLeftProcess, detailBottomRightProcess);
+		attributes.setTime(detailTopLeftTime, detailBottomRightTime);
 		
 		stData.setTraceAttributes(attributes);
+		final Position position = attributes.getPosition();
 		
-		Frame frame = new Frame(attributes, painter.getMaxDepth(), 
-				painter.getPosition().time, painter.getPosition().process);
+		Frame frame = new Frame(attributes.getTimeBegin(), attributes.getTimeEnd(), 
+				attributes.getProcessBegin(), attributes.getProcessEnd(), 
+				painter.getMaxDepth(), position.time, position.process);
+				
 		try {
 			TraceOperation.getOperationHistory().execute(
 					new ZoomOperation("Change region", frame, null),
@@ -361,7 +364,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				if(Math.abs(mouseUp.x-mouseDown.x)>3 || Math.abs(mouseUp.y-mouseDown.y)>3)
 					setSelection(mouseDown, mouseUp);	
 				else //Set the selection box back to what it was because we didn't zoom
-					setBox(attributes.begTime, attributes.begProcess, attributes.endTime, attributes.endProcess);
+					setBox(attributes.getTimeBegin(), attributes.getProcessBegin(), 
+							attributes.getTimeEnd(), attributes.getProcessEnd());
 			}
 			redraw();
 		}

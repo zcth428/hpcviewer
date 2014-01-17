@@ -148,14 +148,14 @@ public class TimelineThread extends Thread
 		if (changedBounds)
 			ptl.shiftTimeBy(stData.getMinBegTime());
 		
-		double pixelLength = (attrib.endTime - attrib.begTime)/(double)attrib.numPixelsH;
+		double pixelLength = (attrib.getTimeInterval())/(double)attrib.numPixelsH;
 		
 		// ---------------------------------
 		// do the paint
 		// ---------------------------------
 
 		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
-				attrib.begTime, stData.getPainter().getDepth(), height, pixelLength, usingMidpoint)
+				attrib.getTimeBegin(), stData.getPainter().getDepth(), height, pixelLength, usingMidpoint)
 		{
 			@Override
 			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount)
@@ -176,11 +176,11 @@ public class TimelineThread extends Thread
 	/**Returns the index of the file to which the line-th line corresponds.*/
 	public int lineToPaint(int line)
 	{
-		int numTimelinesToPaint = attrib.endProcess - attrib.begProcess;
+		int numTimelinesToPaint = attrib.getProcessInterval();
 		if(numTimelinesToPaint > attrib.numPixelsV)
-			return attrib.begProcess + (line * numTimelinesToPaint)/(attrib.numPixelsV);
+			return attrib.getProcessBegin() + (line * numTimelinesToPaint)/(attrib.numPixelsV);
 		else
-			return attrib.begProcess + line;
+			return attrib.getProcessBegin() + line;
 	}
 
 

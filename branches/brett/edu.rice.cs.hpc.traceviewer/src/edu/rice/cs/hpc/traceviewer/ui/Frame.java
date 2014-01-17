@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.Serializable;
 
-import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 
 
@@ -28,22 +27,12 @@ public class Frame implements Serializable
 	/**The depth of the frame saved*/
 	public int depth;
 	
-	/****
-	 * initialize frame with ROI and the cursor position (time, process and depth)
-	 * if the position is not within the range, it will automatically adjust it
-	 * into the middle of ROI
-	 * 
-	 * @param attributes
-	 * @param _depth
-	 * @param _selectedTime
-	 * @param _selectedProcess
-	 */
-	public Frame(ImageTraceAttributes attributes,
-			int _depth, long _selectedTime, int _selectedProcess)
+	public Frame()
 	{
-		this(attributes.begTime, attributes.endTime,
-				attributes.begProcess, attributes.endProcess, 
-				_depth, _selectedTime, _selectedProcess);
+		begTime = endTime = 0L;
+		begProcess = endProcess = 0;
+		position = new Position(0,0);
+		depth = 0;
 	}
 	
 	/****
@@ -94,20 +83,9 @@ public class Frame implements Serializable
 		this.position	= new Position(frame.position.time, frame.position.process);
 	}
 	
-	
 	public Frame(Position position)
 	{
 		this.position = position;
-	}
-	
-	public void set(int depth)
-	{
-		this.depth = depth;
-	}
-	
-	public void set(Position p)
-	{
-		this.position = p;
 	}
 	
 	public void set(long begTime, long endTime, int begProcess, int endProcess)
@@ -116,6 +94,8 @@ public class Frame implements Serializable
 		this.endProcess = endProcess;
 		this.begTime	= begTime;
 		this.endTime	= endTime;
+		
+		fixPosition();
 	}
 	
 	public boolean equals(Frame other)
@@ -136,6 +116,19 @@ public class Frame implements Serializable
 				&& depth == other.depth);
 	}
 	
+	/** Sets the selected process to the middle if it is outside the bounds.*/
+	public void fixPosition(){
+		if (position.process >= endProcess
+				|| position.process < begProcess ) {
+			// if the current process is beyond the range, make it in the middle
+			position.process = (begProcess + endProcess) >> 1;
+		}
+		if (position.time <= begTime || position.time >= endTime) {
+			// if the current time is beyond the range, make it in the middle
+			position.time = (begTime + endTime ) >> 1;
+		}
+	}
+
 	@Override
 	public String toString() {
 		String time = "[ " + (begTime/1000)/1000.0 + "s, " + (endTime/1000)/1000.0+"s ]";

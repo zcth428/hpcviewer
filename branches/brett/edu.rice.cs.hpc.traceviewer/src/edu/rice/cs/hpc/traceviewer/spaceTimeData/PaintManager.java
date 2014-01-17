@@ -25,12 +25,6 @@ public class PaintManager {
 	 */
 	private ColorTable colorTable;
 
-
-	/** Stores the current position of cursor */
-	
-	private Position currentPosition;
-	/** Stores the current depth and data object that are being displayed.*/
-	private int currentDepth;
 	private int currentDataIdx;
 
 	public PaintManager(ImageTraceAttributes _attributes,
@@ -43,20 +37,17 @@ public class PaintManager {
 		
 		maxDepth = _maxDepth;
 		
-		//defaut position
-		this.currentDepth = 0;
 		this.currentDataIdx = Constants.dataIdxNULL;
-		currentPosition = new Position(0, 0);
 	}
 
 
 
 	public void setDepth(int _depth) {
-		this.currentDepth = _depth;
+		attributes.setDepth(_depth);
 	}
 
 	public int getDepth() {
-		return this.currentDepth;
+		return attributes.getDepth();
 	}
 	/***
 	 * set the current index data
@@ -80,11 +71,11 @@ public class PaintManager {
 
 	// Redirect these calls as well
 	public int getBegProcess() {
-		return attributes.begProcess;
+		return attributes.getProcessBegin();
 	}
 
 	public int getEndProcess() {
-		return attributes.endProcess;
+		return attributes.getProcessEnd();
 	}
 	
 	/*************************************************************************
@@ -96,11 +87,11 @@ public class PaintManager {
 	}
 
 	public long getViewTimeBegin() {
-		return attributes.begTime;
+		return attributes.getTimeBegin();
 	}
 
 	public long getViewTimeEnd() {
-		return attributes.endTime;
+		return attributes.getTimeEnd();
 	}
 
 	/*************************************************************************
@@ -112,17 +103,17 @@ public class PaintManager {
 	}
 
 	public Position getPosition() {
-		return this.currentPosition;
+		return attributes.getPosition();
 	}
 	
 	public int getProcessRelativePosition(int numDisplayedProcess)
 	{
 		// general case
-    	int estimatedProcess = (currentPosition.process - attributes.begProcess);
+    	int estimatedProcess = (getPosition().process - attributes.getProcessBegin());
     	
     	// case for num displayed processes is less than the number of processes
     	estimatedProcess = (int) ((float)estimatedProcess* 
-    			((float)numDisplayedProcess/(attributes.endProcess-attributes.begProcess)));
+    			((float)numDisplayedProcess/(attributes.getProcessInterval())));
     	
     	// case for single process
     	estimatedProcess = Math.min(estimatedProcess, numDisplayedProcess-1);
@@ -136,13 +127,6 @@ public class PaintManager {
 		// PaintManger does. Should the PaintManager share the data with the
 		// controller some how, or will this not be an issue once TraceEvents is
 		// removed.
-		this.currentPosition = position;
-	}
-	/** Sets the selected process to the middle if it is outside the bounds.*/
-	public void fixPosition(){
-		if (currentPosition.process >= attributes.endProcess || currentPosition.process < attributes.begProcess) {
-			// if the current process is beyond the range, make it in the middle
-			currentPosition.process = (attributes.begProcess + attributes.endProcess)/2;
-		}
+		attributes.setPosition(position);
 	}
 }

@@ -294,7 +294,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.
 	 *************************************************************************/
-	public void setDetailZoom(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess)
+	public void zoom(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess)
 	{
 		attributes.assertProcessBounds(stData.getTotalTraceCount());
 		attributes.assertTimeBounds(stData.getTimeWidth());
@@ -433,7 +433,24 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void open(Frame toBeOpened)
 	{
-		setFrame(toBeOpened);
+		if (toBeOpened.begTime == painter.getViewTimeBegin() && toBeOpened.endTime == painter.getViewTimeEnd() 
+				&& toBeOpened.begProcess == painter.getBegProcess() && toBeOpened.endProcess == painter.getEndProcess()) {
+			
+		} else {
+			notifyChanges("Frame", toBeOpened.begTime, toBeOpened.begProcess, 
+					toBeOpened.endTime, toBeOpened.endProcess);	
+			return;
+		}
+		
+		if (toBeOpened.depth != painter.getDepth()) {
+			// we have change of depth
+
+			painter.setDepth(toBeOpened.depth);
+		}
+		
+		if (!toBeOpened.position.isEqual(painter.getPosition())) {
+	    	notifyChangePosition(toBeOpened.position);
+		}
 	}
 	
 	/**************************************************************************
@@ -443,42 +460,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public Frame save()
 	{
-		long selectedTime = painter.getPosition().time;
-		int selectedProcess = painter.getPosition().process;
-		
-		return new Frame(attributes.getTimeBegin(), attributes.getTimeEnd(),
-				attributes.getProcessBegin(), attributes.getProcessEnd(), 
-				selectedProcess, selectedTime, selectedProcess);
+		return attributes.getFrame();
 	}
 	
-
 	
-	
-	
-	/**************************************************************************
-	 * Sets everything to the data stored in the Frame 'current.'
-	 **************************************************************************/
-	private void setFrame(Frame current)
-	{
-		if (current.begTime == painter.getViewTimeBegin() && current.endTime == painter.getViewTimeEnd() 
-				&& current.begProcess == painter.getBegProcess() && current.endProcess == painter.getEndProcess()) {
-			
-		} else {
-			notifyChanges("Frame", current.begTime, current.begProcess, 
-					current.endTime, current.endProcess);	
-			return;
-		}
-		
-		if (current.depth != painter.getDepth()) {
-			// we have change of depth
-
-			painter.setDepth(current.depth);
-		}
-		
-		if (!current.position.isEqual(painter.getPosition())) {
-	    	notifyChangePosition(current.position);
-		}
-	}
 	
 	/**************************************************************************
 	 * The action that gets performed when the 'process zoom in' button is pressed - 
@@ -508,7 +493,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 		}
 		
-		notifyChanges("Zoom in V", stData.getAttributes().getTimeBegin(), 
+		notifyChanges("Zoom-in ranks", stData.getAttributes().getTimeBegin(), 
 				p1, stData.getAttributes().getTimeEnd(), p2);
 
 	}
@@ -541,7 +526,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				p1--;
 			}
 		}
-		notifyChanges("Zoom out V", stData.getAttributes().getTimeBegin(), 
+		notifyChanges("Zoom-out ranks", stData.getAttributes().getTimeBegin(), 
 				p1, stData.getAttributes().getTimeEnd(), p2);
 	}
 
@@ -561,7 +546,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long t2 = xMid + (long)(numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)(numTimeUnitsDisp * SCALE);
 		
-		notifyChanges("Zoom in H", t1, stData.getAttributes().getProcessBegin(),
+		notifyChanges("Zoom-in time", t1, stData.getAttributes().getProcessBegin(),
 				t2, stData.getAttributes().getProcessEnd());
 	}
 
@@ -582,7 +567,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		final long td1 = (long)(this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
 		
-		notifyChanges("Zoom out H", t1, stData.getAttributes().getProcessBegin(),
+		notifyChanges("Zoom-out time", t1, stData.getAttributes().getProcessBegin(),
 				t2, stData.getAttributes().getProcessEnd());
 	}
 	
@@ -611,15 +596,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		refresh(false);
     }
 	
-	/**************************************************************************
-	 * Sets the location of the crosshair to (_selectedTime, _selectedProcess).
-	 * Also updates the rest of the program to know that this is the selected
-	 * point (so that the CallStackViewer can update, etc.).
-	 **************************************************************************/
-	public void setCrossHair(long _selectedTime, int _selectedProcess)
-	{
-		redraw();
-	}
 	
 	/**************************************************************************
 	 * Sets up the labels (the ones below the detail canvas).
@@ -718,81 +694,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
     
-/*<<<<<<< .working
-    *//******
-     * If necessary adjust the position of cross hair with the view region
-     * If the cross hair is outside the region, we force to position it within the region
-     * 	in order to avoid exposed bugs and confusion that the depth and the call path are not
-     * 	consistent with the trace view
-     * 
-     * @param t1
-     * @param p1
-     * @param t2
-     * @param p2
-     *//*
-    private void adjustCrossHair(long t1, double p1, long t2, double p2) {
-    	
-    	Position current = this.painter.getPosition();
-    	int process = (current.process);
-    	long time = current.time;
-    	
-    	if (process < p1 || process > p2) {
-    		process = (int) ((long) p1+p2) >> 1;
-		
-			// if the new location is bigger than the max proc, set it to the min proc
-			// this situation only happens when there is only 1 proc to display
-			if (process >= (int)p2)
-				process = (int)p1;
-    	}
-    	if (time < t1 || time > t2) {
-    		time = (t1+t2)>>1;
-    	}
-    	Position newPosition = new Position(time,process);
-    	newPosition = this.getAdjustedProcess(newPosition);
-    	
-    	// tell other views that we have new position 
-    	this.painter.updatePosition(newPosition);
-    }*
-
-    /****
-     * Adjust the position of cross hair depending of the availability of traces
-     * 
-     * @param position
-     * @return adjusted position
-     */
-    /*private Position getAdjustedProcess(Position position) {
-    	
-    	double numDisplayedProcess = painter.getNumberOfDisplayedProcesses();
-    	int estimatedProcess = (int) (position.process - attributes.begProcess);			
-    	double scaleProcess = numDisplayedProcess/(double)this.getNumProcessesDisplayed();
-    	
-    	//---------------------------------------------------------------------------------------
-    	// computing the relative process rank: 
-    	//	the relative rank is adjusted based on the number of displayed process
-    	//	for instance, if the mouse click computes that the position of process rank is 100
-    	//		from range 50 to 500 (so the range is 450), but the number of displayed process
-    	//		is only 200, then we need to adjust the relative position of the process into
-    	//		200/450 * (100-50)
-    	//---------------------------------------------------------------------------------------
-    	int relativeProcess = (int) (scaleProcess * estimatedProcess);
-    	
-    	// generalization of case where there is only one single process to display
-    	if (relativeProcess>=numDisplayedProcess)
-    		relativeProcess = (int) (numDisplayedProcess - 1);
-    	
-    	//position.processInCS = relativeProcess;
-    	if (estimatedProcess != relativeProcess) {
-        	//---------------------------------------------------------------------------------------
-        	// if there is any change between the estimated process by mouse click and the
-    		//	estimated process by the array of displayed process, we need to adjust
-    		//	the absolute process
-        	//---------------------------------------------------------------------------------------
-        	position.process = (int) (relativeProcess/scaleProcess + attributes.begProcess);
-    	}
-    	return position;
-    	
-    }
-*/
   
     private boolean canGoEast() {
     	return (attributes.getTimeBegin() > 0);
@@ -1270,7 +1171,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				Frame frame = ((ZoomOperation)operation).getFrame();
 				Debugger.printDebug(1, "STDC: " + attributes + "\t New: " + frame);
 				painter.setPosition(frame.position);
-				setDetailZoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+				zoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
 			}
 			// change of cursor position ?
 			else if (operation instanceof PositionOperation) {

@@ -77,7 +77,7 @@ public abstract class BasePaintLine
 			boolean still_the_same = true;
 			int indexSucc = index;
 			int end = index;
-			final String functionName = succFunction;
+
 			final Color currColor = succColor;
 			
 			while (still_the_same && (++indexSucc <= last_ptl_index))

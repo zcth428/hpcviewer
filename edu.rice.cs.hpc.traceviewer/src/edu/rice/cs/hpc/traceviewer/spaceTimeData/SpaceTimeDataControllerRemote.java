@@ -85,7 +85,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 		if (changedBounds) {
 			
 			DecompressionThread[] workThreads = new DecompressionThread[numThreadsToLaunch];
-			int ranksExpected = Math.min(attributes.endProcess-attributes.begProcess, attributes.numPixelsV);
+			int ranksExpected = Math.min(attributes.getProcessInterval(), attributes.numPixelsV);
 			
 			DecompressionThread.setTotalRanksExpected(ranksExpected);
 			ptlService.setProcessTimeline(new ProcessTimeline[ranksExpected]);
@@ -93,14 +93,15 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 			for (int i = 0; i < workThreads.length; i++) {
 
 				workThreads[i] = new DecompressionThread(ptlService, scopeMap, ranksExpected, 
-						attributes.begTime, attributes.endTime, new DecompressionThreadListener());
+						attributes.getTimeBegin(), attributes.getTimeEnd(), 
+						new DecompressionThreadListener());
 				workThreads[i].start();
 			}
 			
 
-			dataRetriever.getData(attributes.begProcess,
-					attributes.endProcess, attributes.begTime,
-					attributes.endTime, attributes.numPixelsV,
+			dataRetriever.getData(attributes.getProcessBegin(),
+					attributes.getProcessEnd(), attributes.getTimeBegin(),
+					attributes.getTimeEnd(), attributes.numPixelsV,
 					attributes.numPixelsH, scopeMap);
 		}
 	}

@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
-import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
@@ -126,7 +125,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		if (this.stData == null || imageBuffer == null)
 			return;
 		
-		topLeftPixelX = Math.round(attributes.begTime*getScaleX());
+		topLeftPixelX = Math.round(attributes.getTimeBegin()*getScaleX());
 		
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
@@ -243,48 +242,31 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 
 	private long getNumTimeDisplayed()
 	{
-		return (attributes.endTime - attributes.begTime);
+		return (attributes.getTimeInterval());
 	}
 	
 	private void setTimeZoom(long leftTime, long rightTime)
 	{
-		attributes.begTime= leftTime;
-		attributes.endTime = rightTime;
+		attributes.setTime(leftTime, rightTime);
 		
 		attributes.assertTimeBounds(stData.getTimeWidth());
 		
 		if (getNumTimeDisplayed() < Constants.MIN_TIME_UNITS_DISP)
 		{
-			attributes.begTime += (getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
-			attributes.endTime = attributes.begTime + getNumTimeDisplayed();
+			long begTime = attributes.getTimeBegin() + 
+					(getNumTimeDisplayed() - Constants.MIN_TIME_UNITS_DISP)/2;
+			long endTime = attributes.getTimeBegin() + getNumTimeDisplayed();
 			
+			attributes.setTime(begTime, endTime);
 			attributes.assertTimeBounds(stData.getTimeWidth());
 		}
 		
 		rebuffer();
 		
-		oldBegTime = attributes.begTime;
-		oldEndTime = attributes.endTime;
+		oldBegTime = attributes.getTimeBegin();
+		oldEndTime = attributes.getTimeEnd();
 	}
 
-	/**** time zoom action 
-	 * we don't need a specific zoomAction since the execution is handled by executeOperation()
-	 * **/
-/*	final private ITraceAction zoomAction = new ITraceAction() {
-		@Override
-		public void doAction(Frame frame) 
-		{
-			zoom(frame.begTime, frame.endTime);
-		}
-	};*/
-	
-/*	final private ITraceAction positionAction = new ITraceAction() {
-		@Override
-		public void doAction(Frame frame) 
-		{
-			setPosition(frame.position);
-		}		
-	};*/
 	
 	/***
 	 * time zoom and notify other views
@@ -294,10 +276,11 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		long topLeftTime = (long)(leftSelection / getScaleX());
 		long bottomRightTime = (long)(rightSelection / getScaleX());
 		
-		attributes.begTime = topLeftTime;
-		attributes.endTime = bottomRightTime;
+		attributes.setTime(topLeftTime, bottomRightTime);
 		
-		Frame frame = new Frame(attributes, selectedDepth, (long)selectedTime, currentProcess);
+		Frame frame = new Frame(attributes.getTimeBegin(), attributes.getTimeEnd(),
+				attributes.getProcessBegin(), attributes.getProcessEnd(),
+				selectedDepth, (long)selectedTime, currentProcess);
 		try {
 			TraceOperation.getOperationHistory().execute(
 					new ZoomOperation("Time zoom out", frame, null/*zoomAction*/), 
@@ -317,7 +300,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
         if(mouseDown == null)
     		return;
 
-    	long closeTime = stData.getTimeBegin() + (long)(mouseDown.x / getScaleX());
+    	long closeTime = stData.getAttributes().getTimeBegin() + (long)(mouseDown.x / getScaleX());
     	
     	Position currentPosition = painter.getPosition();
     	Position newPosition = new Position(closeTime, currentPosition.process);
@@ -378,7 +361,8 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		try
 		{
 			paintDepthViewport(bufferGC,  
-					attributes.begTime, attributes.endTime, viewWidth, viewHeight);
+					attributes.getTimeBegin(), attributes.getTimeEnd(),
+					viewWidth, viewHeight);
 		}
 		catch(Exception e)
 		{

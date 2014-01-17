@@ -97,8 +97,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	 **********************************************************************/
 	@Override
 	public synchronized ProcessTimeline getNextTrace(boolean changedBounds) {
-		int tracesToRender = Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
 		
+		int tracesToRender = Math.min(attributes.numPixelsV, attributes.getProcessInterval());
 		
 		if (lineNum.get() < tracesToRender) {
 			int currentLineNum = lineNum.getAndIncrement();
@@ -109,7 +109,8 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 			if (changedBounds) {
 				ProcessTimeline currentTimeline = new ProcessTimeline(currentLineNum, scopeMap,
 						dataTrace, lineToPaint(currentLineNum),
-						attributes.numPixelsH, attributes.endTime - attributes.begTime, minBegTime + attributes.begTime);
+						attributes.numPixelsH, attributes.getTimeInterval(), 
+						minBegTime + attributes.getTimeBegin());
 				
 				ptlService.setProcessTimeline(currentLineNum, currentTimeline);
 				return currentTimeline;
@@ -125,12 +126,12 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 
 	private int lineToPaint(int line) {
 
-		int numTimelinesToPaint = attributes.endProcess - attributes.begProcess;
+		int numTimelinesToPaint = attributes.getProcessInterval();
 		if (numTimelinesToPaint > attributes.numPixelsV)
-			return attributes.begProcess + (line * numTimelinesToPaint)
+			return attributes.getProcessBegin() + (line * numTimelinesToPaint)
 					/ (attributes.numPixelsV);
 		else
-			return attributes.begProcess + line;
+			return attributes.getProcessBegin() + line;
 	}
 	
 	
@@ -142,14 +143,12 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	{
 		dataTrace = baseData;
 		
+		// -------------------------------------------------------------
 		// we have to change the range of displayed processes
-		attributes.begProcess = 0;
-		
+		// -------------------------------------------------------------
 		// hack: for unknown reason, "endProcess" is exclusive.
 		// TODO: we should change to inclusive just like begProcess
-		attributes.endProcess = baseData.getNumberOfRanks();
-		
-		//painter.resetPosition();
+		attributes.setProcess(0, baseData.getNumberOfRanks());
 	}
 
 

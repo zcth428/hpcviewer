@@ -68,7 +68,7 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected int getNumberOfLines() {
-		return Math.min(attributes.numPixelsV, attributes.endProcess - attributes.begProcess);
+		return Math.min(attributes.numPixelsV, attributes.getProcessInterval() );
 	}
 
 	@Override

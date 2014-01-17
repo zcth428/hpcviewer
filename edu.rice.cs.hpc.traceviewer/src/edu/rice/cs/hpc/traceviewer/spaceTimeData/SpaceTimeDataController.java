@@ -101,12 +101,13 @@ public abstract class SpaceTimeDataController {
 	 * endProcess-1  -> numTracesShown-1
 	 */
 	public int computeScaledProcess() {
-		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess, attributes.numPixelsV);
+		int numTracesShown = Math.min(attributes.getProcessInterval(), attributes.numPixelsV);
 		int selectedProc = getCurrentlySelectedProcess();
+		
 		double scaledDTProcess = (((double) numTracesShown -1 )
-					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (selectedProc - attributes.begProcess));
+					/ ((double) attributes.getProcessInterval() - 1) * 
+					(selectedProc - attributes.getProcessBegin()));
 		return (int)scaledDTProcess;
-
 	}
 
 
@@ -143,8 +144,8 @@ public abstract class SpaceTimeDataController {
 			// it.
 			ProcessTimeline toDonate = new ProcessTimeline(currentDepthLineNum,
 					scopeMap, dataTrace, getCurrentlySelectedProcess(), attributes.numPixelsH,
-					attributes.endTime - attributes.begTime, minBegTime
-							+ attributes.begTime);
+					attributes.getTimeInterval(), minBegTime
+							+ attributes.getTimeBegin());
 
 			toDonate.copyDataFrom(depthTrace);
 
@@ -173,32 +174,18 @@ public abstract class SpaceTimeDataController {
 	 * getter/setter trace attributes
 	 * @return
 	 ******************************************************************************/
-	public long getTimeBegin() {
-		return attributes.begTime;
-	}
-	
-	public long getTimeEnd() {
-		return attributes.endTime;
-	}
-	
-	public int getProcessBegin() {
-		return attributes.begProcess;
-	}
-	
-	public int getProcessEnd() {
-		return attributes.endProcess;
-	}
 	
 	public int getPixelHorizontal() {
 		return attributes.numPixelsH;
 	}
 	
-	public ImageTraceAttributes getTraceAttributes() {
-		return attributes;
-	}
 	
 	public void setTraceAttributes(ImageTraceAttributes attributes) {
 		this.attributes = attributes;
+	}
+
+	public ImageTraceAttributes getAttributes() {
+		return attributes;
 	}
 
 	/*************************************************************************
@@ -211,10 +198,6 @@ public abstract class SpaceTimeDataController {
 
 	public String getName() {
 		return dbName;
-	}
-
-	public ImageTraceAttributes getAttributes() {
-		return attributes;
 	}
 
 	public long getMaxEndTime() {
@@ -263,14 +246,17 @@ public abstract class SpaceTimeDataController {
 		// we have to change the range of displayed processes
 		//attributes.begProcess = 0;
 
+		int endProcess = attributes.getProcessEnd();
+		int begProcess = attributes.getProcessBegin();
+		
 		//Snap it back into the acceptable limits.
-		if (attributes.endProcess > dataTrace.getNumberOfRanks())
-			attributes.endProcess  = dataTrace.getNumberOfRanks();
+		if (endProcess > dataTrace.getNumberOfRanks())
+			endProcess  = dataTrace.getNumberOfRanks();
 		
-		if (attributes.begProcess >= attributes.endProcess)
-			attributes.begProcess = 0;
+		if (begProcess >= endProcess)
+			begProcess = 0;
 		
-		painter.fixPosition();
+		attributes.setProcess(begProcess, endProcess);
 	}
 
 	public abstract IFilteredData createFilteredBaseData();

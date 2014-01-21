@@ -8,12 +8,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.InflaterInputStream;
 
-import edu.rice.cs.hpc.traceviewer.db.TraceDataByRank.Record;
+import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
+import edu.rice.cs.hpc.traceviewer.data.db.DataRecord;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
-import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 //Perhaps this would all be more suited to a ThreadPool 
 
@@ -127,7 +128,7 @@ public class DecompressionThread extends Thread {
 
 	private void decompress(DecompressionItemToDo toDecomp) throws IOException
 	{
-		Record[] ranksData = readTimeCPIDArray(toDecomp.packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
+		DataRecord[] ranksData = readTimeCPIDArray(toDecomp.packet, toDecomp.itemCount, toDecomp.startTime, toDecomp.endTime, toDecomp.compressed);
 		TraceDataByRank dataAsTraceDBR = new TraceDataByRank(ranksData);
 
 		int lineNumber = toDecomp.rankNumber;
@@ -147,14 +148,14 @@ public class DecompressionThread extends Thread {
 	 * @return The array of data for this rank
 	 * @throws IOException
 	 */
-	private Record[] readTimeCPIDArray(byte[] packedTraceLine, int length, long t0, long tn, int compressed) throws IOException {
+	private DataRecord[] readTimeCPIDArray(byte[] packedTraceLine, int length, long t0, long tn, int compressed) throws IOException {
 
 		DataInputStream decompressor;
 		if ((compressed & COMPRESSION_TYPE_MASK) == ZLIB_COMPRESSSED)
 			decompressor= new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(packedTraceLine)));
 		else
 			decompressor = new DataInputStream(new ByteArrayInputStream(packedTraceLine));
-		Record[] toReturn = new Record[length];
+		DataRecord[] toReturn = new DataRecord[length];
 		long currentTime = t0;
 		for (int i = 0; i < toReturn.length; i++) {
 			// There are more efficient ways to send the timestamps. Namely,
@@ -170,7 +171,7 @@ public class DecompressionThread extends Thread {
 			int CPID = decompressor.readInt();
 			/*if (CPID <= 0)
 				System.out.println("CPID too small");*/
-			toReturn[i] = new Record(currentTime, CPID, Constants.dataIdxNULL);
+			toReturn[i] = new DataRecord(currentTime, CPID, Constants.dataIdxNULL);
 		}
 		return toReturn;
 	}

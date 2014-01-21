@@ -33,8 +33,8 @@ import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
-import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 
 /**************************************************

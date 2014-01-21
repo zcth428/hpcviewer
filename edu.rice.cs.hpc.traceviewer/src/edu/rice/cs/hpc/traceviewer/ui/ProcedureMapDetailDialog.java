@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 
 /****
  * 

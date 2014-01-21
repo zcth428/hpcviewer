@@ -20,7 +20,7 @@ import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.db.IThreadListener;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController 
 {	

@@ -32,8 +32,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
 import edu.rice.cs.hpc.common.util.ProcedureClassData;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
-import edu.rice.cs.hpc.traceviewer.util.ProcedureClassMap;
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
+import edu.rice.cs.hpc.traceviewer.data.util.ProcedureClassMap;
 
 /*********************************
  * 

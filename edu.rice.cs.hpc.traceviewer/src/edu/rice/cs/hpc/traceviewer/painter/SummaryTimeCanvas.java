@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 
 public class SummaryTimeCanvas extends Canvas implements PaintListener, IOperationHistoryListener
 {

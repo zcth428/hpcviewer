@@ -1,20 +1,24 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
 
+import java.util.ArrayList;
+
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
-import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
+import edu.rice.cs.hpc.traceviewer.data.db.DetailDataPreparation;
+import edu.rice.cs.hpc.traceviewer.data.db.DetailDataVisualization;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 /***********************************************************
  * A thread that reads in the data for one line, 
@@ -99,7 +103,7 @@ public class TimelineThread extends Thread
 		while(nextTrace != null)
 		{
 			//nextTrace.data is not empty if the data is from the server
-			if(changedBounds && nextTrace.data.isEmpty())
+			if(changedBounds && nextTrace.getData().isEmpty())
 			{
 				nextTrace.readInData();
 				addNextTrace(nextTrace);
@@ -154,22 +158,18 @@ public class TimelineThread extends Thread
 		// do the paint
 		// ---------------------------------
 
-		BasePaintLine detailPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
-				attrib.getTimeBegin(), stData.getPainter().getDepth(), height, pixelLength, usingMidpoint)
-		{
-			@Override
-			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount)
-			{
-				DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
-				dstp.paintSample(currSampleMidpoint, succSampleMidpoint, height, color);
-				
-				final boolean isOverDepth = (currDepth < depth);
-				// write texts (depth and number of samples) if needed
-				dstp.paintOverDepthText(currSampleMidpoint, Math.min(succSampleMidpoint, attrib.numPixelsH), 
-						currDepth, color, isOverDepth, sampleCount);
-			}
-		};
-		detailPaint.paint();
+		DetailDataPreparation detailPaint = new DetailDataPreparation(stData.getColorTable(), ptl, 
+				attrib.getTimeBegin(), stData.getPainter().getDepth(), height, pixelLength, usingMidpoint);
+		
+		// collect data from the database
+		detailPaint.collect();
+		
+		// get the list of data
+		ArrayList<DetailDataVisualization> list = (ArrayList<DetailDataVisualization>) detailPaint.getList();
+		
+		for(DetailDataVisualization data : list) {
+			spp.paintSample(data.x_start, data.x_end, height, data.color);
+		}
 	}
 
 	

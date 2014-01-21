@@ -3,7 +3,9 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
+
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 
 /**
  * This contains the painting components from SpaceTimeData

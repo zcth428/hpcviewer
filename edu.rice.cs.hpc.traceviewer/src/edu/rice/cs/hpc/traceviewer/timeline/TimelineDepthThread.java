@@ -1,13 +1,19 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
+import java.util.ArrayList;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
-import edu.rice.cs.hpc.traceviewer.painter.BasePaintLine;
+import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
+import edu.rice.cs.hpc.traceviewer.data.db.DepthDataPreparation;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+
 
 /*************
  * 
@@ -55,7 +61,10 @@ public class TimelineDepthThread extends Thread {
 		this.usingMidpoint = usingMidpoint;
 	}
 
-	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Thread#run()
+	 */
 	public void run() 
 	{
 		ProcessTimeline nextTrace = stData.getNextDepthTrace();
@@ -99,21 +108,19 @@ public class TimelineDepthThread extends Thread {
 
 		double pixelLength = (stData.getAttributes().getTimeInterval())/(double)stData.getPixelHorizontal();
 		
-		BasePaintLine depthPaint = new BasePaintLine(stData.getColorTable(), ptl, spp, 
-				stData.getAttributes().getTimeBegin(), depth, height, pixelLength, usingMidpoint)
-		{
-			//@Override
-			public void finishPaint(int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount)
-			{
-				if (currDepth >= depth)
-				{
-					spp.paintSample(currSampleMidpoint, succSampleMidpoint, height, color);
-				}
-			}
-		};
+		DepthDataPreparation depthPaint = new DepthDataPreparation(stData.getColorTable(), ptl, 
+				stData.getAttributes().getTimeBegin(), depth, height, pixelLength, usingMidpoint);
+		
+		depthPaint.collect();
 		
 		// do the paint
-		depthPaint.paint();
+		ArrayList<BaseDataVisualization> list = (ArrayList<BaseDataVisualization>) depthPaint.getList();
+		
+		for(BaseDataVisualization data : list) {
+			if (data.depth >= depth) {
+				spp.paintSample(data.x_start, data.x_end, height, data.color);
+			}
+		}
 	}
 
 	

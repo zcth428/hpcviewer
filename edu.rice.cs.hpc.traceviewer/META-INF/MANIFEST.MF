@@ -9,6 +9,7 @@ Require-Bundle: edu.rice.cs.hpc.data,
  org.eclipse.core.commands,
  org.eclipse.core.runtime,
  org.eclipse.ui,
+ edu.rice.cs.hpc.traceviewer.data;bundle-version="5.3.3",
  edu.rice.cs.hpc.common
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy

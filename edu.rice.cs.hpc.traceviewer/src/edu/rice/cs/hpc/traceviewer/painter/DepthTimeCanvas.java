@@ -27,8 +27,8 @@ import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
-import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 /**A view for displaying the depthview.*/
 public class DepthTimeCanvas extends SpaceTimeCanvas 

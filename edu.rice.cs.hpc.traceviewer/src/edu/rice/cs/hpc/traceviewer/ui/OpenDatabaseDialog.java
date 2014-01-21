@@ -184,19 +184,12 @@ public class OpenDatabaseDialog extends Dialog {
 		ModifyListener localModify = new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				
-				if (!comboBoxes[FieldDatabasePath].getText().equals("")) { 
-					okButton.setEnabled(true);
-				} else {
-					okButton.setEnabled(false);
-				}
-				
+				checkFields();
 			}
 		};
 		comboBoxes[FieldDatabasePath].addModifyListener(localModify);
 		
-			
-		Button btnBrowse = new Button(localComposite, SWT.PUSH);
+		final Button btnBrowse = new Button(localComposite, SWT.PUSH);
 		btnBrowse.setText("Browse");
 			
 		//browse button listener
@@ -280,11 +273,7 @@ public class OpenDatabaseDialog extends Dialog {
 		ModifyListener remoteModify = new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				if (!(comboBoxes[0].getText().equals("")) && !(comboBoxes[1].getText().equals("")) && !(comboBoxes[2].getText().equals(""))) {
-					okButton.setEnabled(true);
-				} else {
-					okButton.setEnabled(false);
-				}
+				checkFields();
 			}
 		};
 		//add listener to all three fields
@@ -313,6 +302,8 @@ public class OpenDatabaseDialog extends Dialog {
 			int select = objPref.getInt(HISTORY_SELECTION);
 			tabFolder.setSelection(select);
 		}
+		
+		//checkFields();
 		
 		return outerComposite;
 	}
@@ -379,6 +370,27 @@ public class OpenDatabaseDialog extends Dialog {
 		}
 		
 		super.okPressed();
+	}
+	
+	/****
+	 * check combo boxes fields in local and remote tab
+	 * If the field is not empty, we enable OK button
+	 */
+	private void checkFields() 
+	{
+		if (tabFolder.getSelectionIndex() == 0) {
+			if (!comboBoxes[FieldDatabasePath].getText().equals("")) { 
+				okButton.setEnabled(true);
+			} else {
+				okButton.setEnabled(false);
+			}
+		} else {
+			if (!(comboBoxes[0].getText().equals("")) && !(comboBoxes[1].getText().equals("")) && !(comboBoxes[2].getText().equals(""))) {
+				okButton.setEnabled(true);
+			} else {
+				okButton.setEnabled(false);
+			}
+		}
 	}
 	
 	public static void main(String []args) 

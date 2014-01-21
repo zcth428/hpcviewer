@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.eclipse.ui.AbstractSourceProvider;
 
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 public class ProcessTimelineService extends AbstractSourceProvider {
 

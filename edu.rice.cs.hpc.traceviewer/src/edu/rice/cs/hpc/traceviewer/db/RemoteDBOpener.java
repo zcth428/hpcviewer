@@ -19,8 +19,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
-import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 /**
  * Handles the protocol and commands to set up the session with the server.
  * @author Philip Taffet

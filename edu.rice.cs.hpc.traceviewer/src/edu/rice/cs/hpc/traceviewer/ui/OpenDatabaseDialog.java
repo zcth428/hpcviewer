@@ -141,19 +141,7 @@ public class OpenDatabaseDialog extends Dialog {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				int selected = tabFolder.getSelectionIndex();
-				
-				boolean bStatus = false;
-				
-				if (selected == 0) {
-					bStatus = !comboBoxes[FieldPathKey].getText().equals("");
-					
-				} else if (selected == 1) {
-					bStatus = (!(comboBoxes[FieldServerName].getText().equals("")) && 
-							!(comboBoxes[FieldPortKey].getText().equals("")) && 
-							!(comboBoxes[FieldPathKey].getText().equals("")));
-				}
-				okButton.setEnabled( bStatus );
+				checkFields();
 			}
 		});
 
@@ -302,8 +290,6 @@ public class OpenDatabaseDialog extends Dialog {
 			int select = objPref.getInt(HISTORY_SELECTION);
 			tabFolder.setSelection(select);
 		}
-		
-		//checkFields();
 		
 		return outerComposite;
 	}

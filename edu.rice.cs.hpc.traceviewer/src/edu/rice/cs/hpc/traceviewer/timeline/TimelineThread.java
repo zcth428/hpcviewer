@@ -168,7 +168,11 @@ public class TimelineThread extends Thread
 		ArrayList<DetailDataVisualization> list = (ArrayList<DetailDataVisualization>) detailPaint.getList();
 		
 		for(DetailDataVisualization data : list) {
-			spp.paintSample(data.x_start, data.x_end, height, data.color);
+			DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
+			dstp.paintSample(data.x_start, data.x_end, height, data.color);
+			
+			final boolean isOverDepth = (data.depth < stData.getAttributes().getDepth());
+			dstp.paintOverDepthText(data.x_start, data.x_end, data.depth, data.color, isOverDepth, data.sample_counts);
 		}
 	}
 

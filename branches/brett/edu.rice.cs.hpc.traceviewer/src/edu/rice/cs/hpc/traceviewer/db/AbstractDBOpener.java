@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.db;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
 
 /**
  * An interface for the DBOpeners. Specifically, it is implemented by

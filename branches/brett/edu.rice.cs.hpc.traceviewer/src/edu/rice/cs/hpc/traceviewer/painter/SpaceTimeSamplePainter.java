@@ -2,7 +2,7 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 
 /***************************************************************
  * A painter that actually paints the samples onto an image

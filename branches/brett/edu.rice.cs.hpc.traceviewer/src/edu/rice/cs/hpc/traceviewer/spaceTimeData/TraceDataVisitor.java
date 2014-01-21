@@ -16,6 +16,8 @@ import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 
+import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
+
 public class TraceDataVisitor implements IScopeVisitor {
 	protected HashMap<Integer, CallPath> map;
 

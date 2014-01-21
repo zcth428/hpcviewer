@@ -10,8 +10,8 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.RegistryToggleState;
 
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 
 /*******************
  * 

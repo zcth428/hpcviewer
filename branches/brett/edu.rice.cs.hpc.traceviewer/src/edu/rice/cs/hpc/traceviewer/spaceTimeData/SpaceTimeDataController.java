@@ -11,7 +11,10 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
+import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 public abstract class SpaceTimeDataController {
 

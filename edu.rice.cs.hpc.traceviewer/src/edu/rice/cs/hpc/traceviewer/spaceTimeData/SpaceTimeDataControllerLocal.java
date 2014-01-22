@@ -5,8 +5,6 @@ import java.io.IOException;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.services.ISourceProviderService;
-
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
@@ -17,7 +15,6 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
-import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 /**
@@ -42,7 +39,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	IWorkbenchWindow _window, IStatusLineManager _statusMgr, File expFile,
 			File _traceFile) {
 
-
+		super(_window);
 		statusMgr = _statusMgr;
 
 		attributes = new ImageTraceAttributes();
@@ -70,10 +67,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 		trAttribute = exp.getTraceAttribute();
 		minBegTime = trAttribute.dbTimeMin;
 		maxEndTime = trAttribute.dbTimeMax;
-		ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
-				ISourceProviderService.class);
-		ptlService = (ProcessTimelineService) sourceProviderService.
-				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
 
 		dbName = exp.getName();
 		try {

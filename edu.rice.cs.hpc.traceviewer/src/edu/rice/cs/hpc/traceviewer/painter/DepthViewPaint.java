@@ -1,9 +1,13 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 
@@ -16,9 +20,9 @@ public class DepthViewPaint extends BaseViewPaint {
 	private Image[] compositeFinalLines;
 	
 	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeDataController _data,
-			ImageTraceAttributes _attributes, boolean _changeBound) {
+			ImageTraceAttributes _attributes, boolean _changeBound, ExecutorService threadExecutor) {
 		
-		super(_data, _attributes, _changeBound,  window);
+		super(_data, _attributes, _changeBound,  window, threadExecutor);
 		this.masterGC = masterGC;
 	}
 
@@ -26,10 +30,6 @@ public class DepthViewPaint extends BaseViewPaint {
 	protected boolean startPainting(int linesToPaint, boolean changedBounds) {
 		controller.getDepthTrace();
 	
-		//depthTrace.readInData(controller.getHeight());
-
-		//depthTrace.readInData();
-		//depthTrace.shiftTimeBy(controller.getMinBegTime());
 		compositeFinalLines = new Image[linesToPaint];
 
 		return changedBounds;
@@ -60,7 +60,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale) {
+	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale) {
 		return new TimelineDepthThread(controller, canvas, compositeFinalLines, xscale,
 				yscale, attributes.numPixelsH, controller.isEnableMidpoint());
 	}

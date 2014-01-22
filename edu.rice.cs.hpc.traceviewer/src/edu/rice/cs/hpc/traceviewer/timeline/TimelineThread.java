@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -28,7 +29,7 @@ import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
  * are any left (synchronized methods ftw!).
  * @author Michael Franco
  **********************************************************/
-public class TimelineThread extends Thread
+public class TimelineThread implements Callable<Integer>
 {
 	/**The SpaceTimeData that this thread gets its files from and adds it data and images to.*/
 	private SpaceTimeDataController stData;
@@ -95,11 +96,12 @@ public class TimelineThread extends Thread
 	 * image to the stData that created it, and then gets the next
 	 * line that it needs to do all this for if there are any left.
 	 ***************************************************************/
-	public void run()
+	public Integer call()
 	{
 		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
-		
+		int numTracesHandled = 0;
 		boolean usingMidpoint = stData.isEnableMidpoint();
+		
 		while(nextTrace != null)
 		{
 			//nextTrace.data is not empty if the data is from the server
@@ -132,7 +134,9 @@ public class TimelineThread extends Thread
 			monitor.announceProgress();
 			
 			nextTrace = stData.getNextTrace(changedBounds);
+			numTracesHandled++;
 		}
+		return Integer.valueOf(numTracesHandled);
 	}
 	
 	/*************************************************************************

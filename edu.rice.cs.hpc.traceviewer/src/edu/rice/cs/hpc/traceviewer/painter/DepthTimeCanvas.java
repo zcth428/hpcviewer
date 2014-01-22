@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
@@ -27,6 +30,7 @@ import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
+import edu.rice.cs.hpc.traceviewer.util.Utility;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
@@ -63,7 +67,9 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	long rightSelection;
 	
 	private int currentProcess = -1;
-    
+
+	final private ExecutorService threadExecutor;
+
 	
 	public DepthTimeCanvas(Composite composite)
     {
@@ -75,6 +81,8 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		selectedDepth = -1;
 		leftSelection = 0;
 		rightSelection = 0;
+		
+		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
 	}
 	
 	/****
@@ -374,7 +382,18 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		redraw();
 	}
 
-	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.widgets.Widget#dispose()
+	 */
+	public void dispose()
+	{
+		if (imageBuffer != null) {
+			imageBuffer.dispose();
+		}
+		threadExecutor.shutdown();
+		super.dispose();
+	}
 	/*************************************************************************
 	 * Paint the depth view
 	 * 
@@ -396,7 +415,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		
 		//oldAttributes.copy(attributes);
 		
-		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), masterGC, stData, attributes, changedBounds);		
+		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), masterGC, stData, attributes, changedBounds, threadExecutor);		
 		depthPaint.paint(this);
 	}
 	

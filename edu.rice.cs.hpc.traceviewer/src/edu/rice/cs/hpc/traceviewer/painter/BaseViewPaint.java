@@ -1,7 +1,12 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.io.IOException;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -10,6 +15,7 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 
@@ -33,7 +39,8 @@ public abstract class BaseViewPaint {
 	
 	protected SpaceTimeDataController controller;
 	protected PaintManager painter;
-	
+	final private ExecutorService threadExecutor;
+
 	/**
 	 * Constructor to paint a view (trace and depth view)
 	 * @param controller: the object used to launch the mode-specific prep before painting
@@ -46,7 +53,7 @@ public abstract class BaseViewPaint {
 	 */
 
 	public BaseViewPaint(SpaceTimeDataController _data, ImageTraceAttributes _attributes, boolean _changeBound, 
-			IWorkbenchWindow window) 
+			IWorkbenchWindow window, ExecutorService threadExecutor) 
 	{
 		changedBounds = _changeBound;
 		controller = _data;
@@ -56,6 +63,7 @@ public abstract class BaseViewPaint {
 		IViewSite site = (IViewSite) window.getActivePage().getActivePart().getSite();
 		monitor = new TimelineProgressMonitor( site.getActionBars().getStatusLineManager() );
 
+		this.threadExecutor = threadExecutor;
 	}
 	
 	/**********************************************************************************
@@ -104,11 +112,10 @@ public abstract class BaseViewPaint {
 		// Create multiple threads to paint the view
 		// -------------------------------------------------------------------
 
-		Thread[] threads;
 		double xscale = canvas.getScaleX();
 		double yscale = Math.max(canvas.getScaleY(), 1);
 		
-		// decompression can be done with multiple threads without accesing gtk (on linux)
+		// decompression can be done with multiple threads without accessing gtk (on linux)
 		// It looks like there's no major performance effect though
 		int launch_threads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
 		try {
@@ -127,14 +134,16 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		
 		Debugger.printTimestampDebug("Rendering beginning (" + canvas.toString()+")");
-		threads = new Thread[numThreads];
 		
-		for (int threadNum = 0; threadNum < threads.length; threadNum++) {
-			threads[threadNum] = getTimelineThread(canvas, xscale, yscale);
-			threads[threadNum].start();
+		final List<Future<Integer>> threads = new ArrayList<Future<Integer>>();
+		
+		for (int threadNum = 0; threadNum < numThreads; threadNum++) {
+			Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale);
+			Future<Integer> submit = threadExecutor.submit( thread );
+			threads.add(submit);
 		}
-
-		waitForAllThreads(threads);
+		waitForAllThreads( threads );
+		
 		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
 
 		// -------------------------------------------------------------------
@@ -151,28 +160,21 @@ public abstract class BaseViewPaint {
 		return true;
 	}
 
-	private void waitForAllThreads(Thread[] threads) {
-		int numThreads = threads.length;
+	private void waitForAllThreads(List<Future<Integer>> threads) {
+
 		try {
-			// listen all threads (one by one) if they are all finish
-			// somehow, a thread can be alive forever waiting to lock a
-			// resource,
-			// especially when we resize the window. this approach should reduce
-			// deadlock by polling each thread
-			while (numThreads > 0) {
-				for (Thread thread : threads) {
-					if (thread.isAlive()) {
-						monitor.reportProgress();
-					} else {
-						if (!thread.getName().equals("end")) {
-							numThreads--;
-							// mark that this thread has ended
-							thread.setName("end");
-						}
-					}
-					Thread.sleep(30);
+			// listen all threads (one by one) if they all finish
+			for(Future<Integer>thread : threads ) {
+				monitor.reportProgress();
+				try {
+					Integer numTraces = thread.get();
+					System.out.println("Traces: " + numTraces);
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
+
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -213,5 +215,5 @@ public abstract class BaseViewPaint {
 	abstract protected void launchDataGettingThreads(boolean changedBounds, int numThreads) 
 			throws IOException;
 
-	abstract protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale);
+	abstract protected Callable<Integer>  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale);
 }

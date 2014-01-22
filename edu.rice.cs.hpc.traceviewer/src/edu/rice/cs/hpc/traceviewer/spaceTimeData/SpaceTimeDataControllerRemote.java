@@ -6,8 +6,6 @@ import java.io.InputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.services.ISourceProviderService;
-
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
@@ -19,7 +17,6 @@ import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.db.IThreadListener;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
-import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController 
@@ -33,7 +30,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, TraceName[] valuesX, DataOutputStream connectionToServer) {
 
-
+		super(_window);
 		BaseExperiment exp = new ExperimentWithoutMetrics();
 		try {
 			// Without metrics, so param 3 is false
@@ -56,9 +53,6 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 		headerSize = attribute.dbHeaderSize;
 
 		dbName = exp.getName();
-		
-		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
-		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
 		
 		dataRetriever = _dataRet;
 		totalTraceCountInDB = _numTraces;

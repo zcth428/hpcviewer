@@ -1,12 +1,15 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
@@ -26,9 +29,9 @@ public class DetailViewPaint extends BaseViewPaint {
 	
 	public DetailViewPaint(final GC masterGC, final GC origGC, SpaceTimeDataController _data,
 			ImageTraceAttributes _attributes, boolean _changeBound,
-			IWorkbenchWindow window) 
+			IWorkbenchWindow window, ExecutorService threadExecutor) 
 	{
-		super(_data, _attributes, _changeBound, window);
+		super(_data, _attributes, _changeBound, window, threadExecutor);
 		this.masterGC = masterGC;
 		this.origGC   = origGC;
 
@@ -72,7 +75,7 @@ public class DetailViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected Thread getTimelineThread(SpaceTimeCanvas canvas, double xscale,
+	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale,
 			double yscale) {
 
 		return new TimelineThread(this.window, controller, ptlService, changedBounds, canvas, compositeOrigLines,

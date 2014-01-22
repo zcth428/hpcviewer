@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
@@ -36,6 +39,7 @@ import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
+import edu.rice.cs.hpc.traceviewer.util.Utility;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
@@ -114,6 +118,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	
 	final IWorkbenchWindow window;
 
+	final private ExecutorService threadExecutor;
+	
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
 	public SpaceTimeDetailCanvas(IWorkbenchWindow window, Composite _composite)
 	{
@@ -136,6 +142,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER);
 		
 		this.window = window;
+		
+		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
 	}
 
 
@@ -1054,7 +1062,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 
 		DetailViewPaint detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
-					attributes, changedBounds, window); 
+					attributes, changedBounds, window, threadExecutor); 
 		
 		return detailPaint.paint(this);
 	}
@@ -1069,6 +1077,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (imageBuffer != null) {
 			imageBuffer.dispose();
 		}
+		threadExecutor.shutdown();
+		super.dispose();
 	}
 
 	//-----------------------------------------------------------------------------------------

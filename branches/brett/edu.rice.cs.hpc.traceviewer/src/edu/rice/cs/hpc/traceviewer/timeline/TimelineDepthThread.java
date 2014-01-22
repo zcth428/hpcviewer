@@ -1,15 +1,15 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
-import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Canvas;
 
 import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
 import edu.rice.cs.hpc.traceviewer.data.db.DepthDataPreparation;
+import edu.rice.cs.hpc.traceviewer.data.db.VisualizationDataSet;
+import edu.rice.cs.hpc.traceviewer.painter.DepthSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
@@ -80,15 +80,7 @@ public class TimelineDepthThread implements Callable<Integer> {
 			
 			Image line = new Image(canvas.getDisplay(), width, imageHeight);
 			GC gc = new GC(line);
-			SpaceTimeSamplePainter spp = new SpaceTimeSamplePainter(gc, stData.getColorTable(), scaleX, scaleY) {
-
-				//@Override
-				public void paintSample(int startPixel, int endPixel,
-						int height, Color color) {
-
-					this.internalPaint(gc, startPixel, endPixel, height, color);
-				}
-			};
+			SpaceTimeSamplePainter spp = new DepthSpaceTimePainter(gc, stData.getColorTable(), scaleX, scaleY);
 			
 			paintDepthLine(nextTrace, spp, nextTrace.line(), imageHeight);
 			gc.dispose();
@@ -118,11 +110,11 @@ public class TimelineDepthThread implements Callable<Integer> {
 		depthPaint.collect();
 		
 		// do the paint
-		ArrayList<BaseDataVisualization> list = (ArrayList<BaseDataVisualization>) depthPaint.getList();
+		VisualizationDataSet dataset = depthPaint.getList();
 		
-		for(BaseDataVisualization data : list) {
+		for(BaseDataVisualization data : dataset.getList()) {
 			if (data.depth >= depth) {
-				spp.paintSample(data.x_start, data.x_end, height, data.color);
+				spp.paintSample(data.x_start, data.x_end, dataset.getHeight(), data.color);
 			}
 		}
 	}

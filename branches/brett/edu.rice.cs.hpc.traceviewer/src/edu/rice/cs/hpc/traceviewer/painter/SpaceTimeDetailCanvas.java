@@ -143,6 +143,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		this.window = window;
 		
+		// set the number of maximum threads in the pool to the number of hardware threads
 		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
 	}
 
@@ -637,7 +638,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
         final String processes[] = traceData.getListOfRanks();
 
-        final int proc_start = painter.getBegProcess();
+        int proc_start = painter.getBegProcess();
+        if (proc_start < 0 || proc_start >= processes.length)
+        	proc_start = 0;
         
         // -------------------------------------------------------------------------------------------------
         // bug fix: since the end of the process is the ceiling of the selected region,
@@ -661,9 +664,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
         {
     		final long selectedTime = painter.getPosition().time;
     		final int rank = this.painter.getPosition().process;
-    		final String selectedProcessLabel = processes[rank];
-            
-        	crossHairLabel.setText("Cross Hair: (" + (selectedTime/1000)/1000.0 + "s, " + selectedProcessLabel + ")");
+    		
+    		if ( rank >= 0 && rank < processes.length ) {               
+            	crossHairLabel.setText("Cross Hair: (" + (selectedTime/1000)/1000.0 + "s, " + processes[rank] + ")");
+    		} else {
+    			// in case of incorrect filtering where user may have empty ranks or incorrect filters, we don't display the rank
+    			crossHairLabel.setText("Cross Hair: (" + (selectedTime/1000)/1000.0 + "s, ?)");
+    		}
         }
         
         labelGroup.setSize(labelGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -1003,6 +1010,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			}
 			imageBuffer = imageFinal;
 			
+			// in case of filter, we may need to change the cursor position
+			if (refreshData) {
+				final String []ranks = stData.getBaseData().getListOfRanks();
+				final Position p = attributes.getPosition();
+				
+				if (p.process > ranks.length-1) {
+					// need to change position
+					Position new_p = new Position( p.time, ranks.length << 1 );
+					notifyChangePosition(new_p);
+				}
+			}
 			super.redraw();
 
 			// notify to SummaryView that a new image has been created, and it needs to refresh the view

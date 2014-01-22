@@ -7,10 +7,14 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 
+/******************************************************
+ * 
+ * Painting class for depth view
+ *
+ ******************************************************/
 public class DepthViewPaint extends BaseViewPaint {
 
 	private final GC masterGC;

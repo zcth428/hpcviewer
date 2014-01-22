@@ -9,11 +9,15 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
+/******************************************************
+ * 
+ * Painting class for detail view (space-time view)
+ *
+ ******************************************************/
 public class DetailViewPaint extends BaseViewPaint {
 	
 	/**The composite images created by painting all of the samples in a given line to it.*/

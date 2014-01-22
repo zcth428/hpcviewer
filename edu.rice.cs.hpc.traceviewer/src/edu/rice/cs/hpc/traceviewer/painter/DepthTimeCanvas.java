@@ -291,7 +291,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 				selectedDepth, (long)selectedTime, currentProcess);
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Time zoom out", frame, null/*zoomAction*/), 
+					new ZoomOperation("Time zoom out", frame), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
@@ -315,7 +315,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     		
     	try {
 			TraceOperation.getOperationHistory().execute(
-					new PositionOperation(newPosition, null), 
+					new PositionOperation(newPosition), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();

@@ -1,7 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
 
-import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import org.eclipse.swt.graphics.GC;
@@ -11,8 +10,10 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
+import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
 import edu.rice.cs.hpc.traceviewer.data.db.DetailDataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.DetailDataVisualization;
+import edu.rice.cs.hpc.traceviewer.data.db.VisualizationDataSet;
 import edu.rice.cs.hpc.traceviewer.painter.DetailSpaceTimePainter;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeSamplePainter;
@@ -169,14 +170,15 @@ public class TimelineThread implements Callable<Integer>
 		detailPaint.collect();
 		
 		// get the list of data
-		ArrayList<DetailDataVisualization> list = (ArrayList<DetailDataVisualization>) detailPaint.getList();
+		VisualizationDataSet dataset =  detailPaint.getList();
 		
-		for(DetailDataVisualization data : list) {
+		for(BaseDataVisualization data : dataset.getList() ) {
 			DetailSpaceTimePainter dstp = (DetailSpaceTimePainter) spp;
-			dstp.paintSample(data.x_start, data.x_end, height, data.color);
+			dstp.paintSample(data.x_start, data.x_end, dataset.getHeight(), data.color);
 			
 			final boolean isOverDepth = (data.depth < stData.getAttributes().getDepth());
-			dstp.paintOverDepthText(data.x_start, data.x_end, data.depth, data.color, isOverDepth, data.sample_counts);
+			dstp.paintOverDepthText(data.x_start, data.x_end, data.depth, data.color, isOverDepth, 
+					((DetailDataVisualization)data).sample_counts);
 		}
 	}
 

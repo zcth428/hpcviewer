@@ -15,7 +15,6 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 
@@ -26,7 +25,6 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
  * The instance of the children of the class needs to 
  * implement the start and the end method of the painting
  * 
- * @author laksono
  *
  *******************************************************/
 public abstract class BaseViewPaint {
@@ -167,8 +165,9 @@ public abstract class BaseViewPaint {
 			for(Future<Integer>thread : threads ) {
 				monitor.reportProgress();
 				try {
-					Integer numTraces = thread.get();
-					System.out.println("Traces: " + numTraces);
+					thread.get();
+
+					Thread.sleep(30);
 				} catch (ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

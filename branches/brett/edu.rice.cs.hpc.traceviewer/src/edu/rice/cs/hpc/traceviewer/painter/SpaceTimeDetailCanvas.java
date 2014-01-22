@@ -1125,7 +1125,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		try {
 			// notify change of ROI
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation(sLabel, frame, null), 
+					new ZoomOperation(sLabel, frame), 
 					null, null);
 			
 		} catch (ExecutionException e) {
@@ -1143,7 +1143,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new PositionOperation(position, null), 
+					new PositionOperation(position), 
 					null, null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();

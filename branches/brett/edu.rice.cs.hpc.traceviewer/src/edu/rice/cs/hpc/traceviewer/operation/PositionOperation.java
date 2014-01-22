@@ -17,11 +17,9 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
  **********************************/
 public class PositionOperation extends TraceOperation 
 {
-	final private ITraceAction action;
 	
-	public PositionOperation(Position position, ITraceAction action) {
+	public PositionOperation(Position position) {
 		super("Set cursor: " + position, new Frame(position));
-		this.action = action;
 	}
 	
 	public Position getPosition() {
@@ -31,9 +29,6 @@ public class PositionOperation extends TraceOperation
 	@Override
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException {
-		if (action != null) {
-			action.doAction(frame);
-		}
 		return Status.OK_STATUS;
 	}
 

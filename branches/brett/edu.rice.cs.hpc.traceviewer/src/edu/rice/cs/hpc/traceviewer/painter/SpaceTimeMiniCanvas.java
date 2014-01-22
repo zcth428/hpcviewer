@@ -21,7 +21,6 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
-import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -229,16 +228,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		mousePrevious = mouseCurrent;
 	}
 	
-	/**** zoom action 
-	 * we don't need a specific zoomAction since the execution is handled by historyNotification()
-	 * **/
-/*	final private ITraceAction zoomAction = new ITraceAction() {
-		@Override
-		public void doAction(Frame frame) 
-		{
-			setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
-		}
-	};*/
 
 	/**Scales coordinates and sends them to detailCanvas.*/
 	private void setDetailSelection()
@@ -265,7 +254,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Change region", frame, null),
+					new ZoomOperation("Change region", frame),
 					null, null);
 		} catch (ExecutionException e) 
 		{

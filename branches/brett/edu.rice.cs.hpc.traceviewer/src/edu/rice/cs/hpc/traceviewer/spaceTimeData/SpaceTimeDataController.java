@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
@@ -30,7 +31,7 @@ public abstract class SpaceTimeDataController {
 	protected long maxEndTime, minBegTime;
 
 
-	protected ProcessTimelineService ptlService;
+	final protected ProcessTimelineService ptlService;
 
 	
 	/** The map between the nodes and the cpid's. */
@@ -64,11 +65,15 @@ public abstract class SpaceTimeDataController {
 	// to the child classes: please set attributes and dbName in your
 	// constructor.
 
-	public SpaceTimeDataController() {
+	public SpaceTimeDataController(IWorkbenchWindow _window) {
 		attributes = new ImageTraceAttributes();
 
 		lineNum = new AtomicInteger(0);
 		depthLineNum = new AtomicInteger(0);
+
+		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
+		
 	}
 	
 	protected void buildScopeMapAndColorTable(IWorkbenchWindow _window,

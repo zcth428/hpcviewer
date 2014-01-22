@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Color;
@@ -20,7 +21,7 @@ import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
  * Timeline thread for depth view
  *
  */
-public class TimelineDepthThread extends Thread {
+public class TimelineDepthThread implements Callable<Integer> {
 
 	final private SpaceTimeDataController stData;
 
@@ -65,9 +66,10 @@ public class TimelineDepthThread extends Thread {
 	 * (non-Javadoc)
 	 * @see java.lang.Thread#run()
 	 */
-	public void run() 
+	public Integer call() 
 	{
 		ProcessTimeline nextTrace = stData.getNextDepthTrace();
+		Integer numTraces = 0;
 		while (nextTrace != null)
 		{
 			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
@@ -93,7 +95,9 @@ public class TimelineDepthThread extends Thread {
 			
 			addNextImage(line, nextTrace.line());
 			nextTrace = stData.getNextDepthTrace();
+			numTraces++;
 		}
+		return numTraces;
 	}
 	
 	

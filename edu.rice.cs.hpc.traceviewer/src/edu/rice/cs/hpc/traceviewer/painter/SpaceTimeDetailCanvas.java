@@ -245,8 +245,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 					
 				} else {
 					// resize to bigger region: needs to recompute the data
-					viewWidth = r.width;
-					viewHeight = r.height;
+					view.width = r.width;
+					view.height = r.height;
 					getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
 				}				
 			}
@@ -282,8 +282,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				ImageData scaledImage = imgData.scaledTo(r.width, r.height);
 				imageBuffer = new Image(getDisplay(), scaledImage);
 
-				viewWidth = r.width;
-				viewHeight = r.height;
+				view.width = r.width;
+				view.height = r.height;
 				redraw();
 			}
 		});
@@ -356,15 +356,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (this.stData == null)
 			return;
 		
-		topLeftPixelX = Math.round(attributes.getTimeBegin() * getScaleX());
-		topLeftPixelY = Math.round(attributes.getProcessBegin() * getScaleY());
+		view.x = (int) Math.round(attributes.getTimeBegin() * getScaleX());
+		view.y = (int) Math.round(attributes.getProcessBegin() * getScaleY());
 		
 		Rectangle region = imageBuffer.getBounds();
-		if (region.width != viewWidth || region.height != viewHeight)
+		if (region.width != view.width || region.height != view.height)
 			return;
 		
 		//if something has changed the bounds, you need to go get the data again
-		event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
+		event.gc.drawImage(imageBuffer, 0, 0, view.width, view.height, 0, 0, view.width, view.height);
     	
 		//paints the selection currently being made (the little white box that appears
 		//when you click and drag
@@ -372,7 +372,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		{
         	event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
     		event.gc.setLineWidth(2);
-    		event.gc.drawRectangle((int)(selectionTopLeftX-topLeftPixelX), (int)(selectionTopLeftY-topLeftPixelY), (int)(selectionBottomRightX-selectionTopLeftX),
+    		event.gc.drawRectangle((int)(selectionTopLeftX-view.x), (int)(selectionTopLeftY-view.y), (int)(selectionBottomRightX-selectionTopLeftX),
             		(int)(selectionBottomRightY-selectionTopLeftY));
         }
 		
@@ -380,8 +380,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long selectedTime = painter.getPosition().time;
 		int selectedProcess = painter.getPosition().process;
 		
-		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScaleX())-10-topLeftPixelX);
-		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScaleY())-10-topLeftPixelY);
+		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScaleX())-10-view.x);
+		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScaleY())-10-view.y);
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,topPixelCrossHairY+8,20,4);
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);
@@ -417,20 +417,20 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		//if this is the first time painting,
 		//some stuff needs to get initialized
-		topLeftPixelX = 0;
-		topLeftPixelY = 0;
+		view.x = 0;
+		view.y = 0;
 		
-		viewWidth = this.getClientArea().width;
-		viewHeight = this.getClientArea().height;
+		view.width = this.getClientArea().width;
+		view.height = this.getClientArea().height;
 		
-		if (viewWidth <= 0)
-			viewWidth = 1;
-		if (viewHeight <= 0)
-			viewHeight = 1;
+		if (view.width <= 0)
+			view.width = 1;
+		if (view.height <= 0)
+			view.height = 1;
 		
 		// laksono 2012.03.07: this following line causes white paint when changing
 		//					   from home to a zoom (or another area) and vice-versa
-		//imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		//imageBuffer = new Image(getDisplay(), view.width, view.height);
 
 
 		notifyChanges(ZoomOperation.ActionHome, 0, 0, stData.getTimeWidth(), stData.getTotalTraceCount());
@@ -585,7 +585,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public double getScaleX()
 	{
-		return (double)viewWidth / (double)this.getNumTimeUnitDisplayed();
+		return (double)view.width / (double)this.getNumTimeUnitDisplayed();
 	}
 	
 	/**************************************************************************
@@ -593,7 +593,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public double getScaleY()
 	{
-		return viewHeight / this.getNumProcessesDisplayed();
+		return view.height / this.getNumProcessesDisplayed();
 	}
 	
 	/**************************************************************************
@@ -681,11 +681,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
     private void adjustSelection(Point p1, Point p2)
 	{
-    	selectionTopLeftX = topLeftPixelX + Math.max(Math.min(p1.x, p2.x), 0);
-        selectionTopLeftY = topLeftPixelY + Math.max(Math.min(p1.y, p2.y), 0);
+    	selectionTopLeftX = view.x + Math.max(Math.min(p1.x, p2.x), 0);
+        selectionTopLeftY = view.y + Math.max(Math.min(p1.y, p2.y), 0);
         
-        selectionBottomRightX = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
-        selectionBottomRightY = topLeftPixelY + Math.min(Math.max(p1.y, p2.y), viewHeight-1);
+        selectionBottomRightX = view.x + Math.min(Math.max(p1.x, p2.x), view.width-1);
+        selectionBottomRightY = view.y + Math.min(Math.max(p1.y, p2.y), view.height-1);
     }
     
 	/**************************************************************************
@@ -857,13 +857,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     	int selectedProcess;
 
     	//need to do different things if there are more traces to paint than pixels
-    	if(viewHeight > getNumProcessesDisplayed())
+    	if(view.height > getNumProcessesDisplayed())
     	{
     		selectedProcess = (int)(attributes.getProcessBegin()+mouseDown.y/getScaleY());
     	}
     	else
     	{
-    		selectedProcess = (int)(attributes.getProcessBegin()+(mouseDown.y*(getNumProcessesDisplayed()))/viewHeight);
+    		selectedProcess = (int)(attributes.getProcessBegin()+(mouseDown.y*(getNumProcessesDisplayed()))/view.height);
     	}
     	long closeTime = attributes.getTimeBegin() + (long)(mouseDown.x / getScaleX());
     	
@@ -935,7 +935,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 					if(getNumTimeUnitDisplayed() > MIN_PROC_DISP)
 					{
 						mouseDown.x = 0;
-						mouseUp.x = viewWidth;
+						mouseUp.x = view.width;
 						adjustSelection(mouseDown,mouseUp);
 						setDetail();
 					}
@@ -980,30 +980,30 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//interpret as flickering. This way, you finish the puzzle before you put it on the
 		//table).
 
-		if (viewWidth==0 && viewHeight==0) {
-			viewWidth = this.getClientArea().width;
-			viewHeight = this.getClientArea().height;
+		if (view.width==0 && view.height==0) {
+			view.width = this.getClientArea().width;
+			view.height = this.getClientArea().height;
 		}
 		// imageFinal is the final image with all the depth and number of samples
 		
-		final Image imageFinal = new Image(getDisplay(), viewWidth, viewHeight);
+		final Image imageFinal = new Image(getDisplay(), view.width, view.height);
 		GC bufferGC = new GC(imageFinal);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
-		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
+		bufferGC.fillRectangle(0,0,view.width,view.height);
 		
 		// imageOrig is the original image without "attributes" such as depth
 		// this imageOrig will be used by SummaryView to count the number of colors
 		
-		Image imageOrig = new Image(getDisplay(), viewWidth, viewHeight);
+		Image imageOrig = new Image(getDisplay(), view.width, view.height);
 		GC origGC = new GC(imageOrig);
 		origGC.setBackground(Constants.COLOR_WHITE);
-		origGC.fillRectangle(0,0,viewWidth,viewHeight);
+		origGC.fillRectangle(0,0,view.width,view.height);
 
 		// main method to paint to the canvas
 		if ( paintDetailViewport(bufferGC, origGC, 
 				stData.getAttributes().getProcessBegin(), stData.getAttributes().getProcessEnd(), 
 				stData.getAttributes().getTimeBegin(), stData.getAttributes().getTimeEnd(), 
-				viewWidth, viewHeight, refreshData) ) {
+				view.width, view.height, refreshData) ) {
 			
 			if (imageBuffer != null) {
 				imageBuffer.dispose();

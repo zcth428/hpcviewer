@@ -138,8 +138,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			return;
 			
 			
-		viewWidth = getClientArea().width;
-		viewHeight = getClientArea().height;
+		view.width = getClientArea().width;
+		view.height = getClientArea().height;
 		
 		
 		event.gc.setBackground(COMPLETELY_FILTERED_OUT_COLOR);
@@ -173,7 +173,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			event.gc.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 			if(viewingWidth<1) viewingWidth = 1;
 			if(viewingHeight<1) viewingHeight = 1;
-			event.gc.fillRectangle((int)topLeftPixelX, (int)topLeftPixelY, viewingWidth, viewingHeight);
+			event.gc.fillRectangle((int)view.x, (int)view.y, viewingWidth, viewingHeight);
 		}
 		else
 		{
@@ -195,14 +195,14 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		int compensatedFirstProcess = stData.getBaseData().getFirstIncluded() + topLeftProcess;
 		int compensatedLastProcess = stData.getBaseData().getFirstIncluded() + bottomRightProcess;
 		
-		topLeftPixelX = (int)Math.round(topLeftTime * getScaleX());
-		topLeftPixelY = (int)Math.round(compensatedFirstProcess * getScaleY());
+		view.x = (int)Math.round(topLeftTime * getScaleX());
+		view.y = (int)Math.round(compensatedFirstProcess * getScaleY());
 		
 		int bottomRightPixelX = (int)Math.round(bottomRightTime*getScaleX());
 		int bottomRightPixelY = (int)Math.round(compensatedLastProcess*getScaleY());
 		
-		viewingWidth = bottomRightPixelX-(int)topLeftPixelX;
-		viewingHeight = bottomRightPixelY-(int)topLeftPixelY;
+		viewingWidth = bottomRightPixelX-(int)view.x;
+		viewingHeight = bottomRightPixelY-(int)view.y;
 		
 		insideBox = true;
 		redraw();
@@ -214,16 +214,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		int changeX = mouseCurrent.x-mousePrevious.x;
 		int changeY = mouseCurrent.y-mousePrevious.y;
 		
-		topLeftPixelX += changeX;
-		topLeftPixelY += changeY;
-		if (topLeftPixelX < 0)
-			topLeftPixelX = 0;
-		else if (topLeftPixelX+viewingWidth>viewWidth)
-			topLeftPixelX = viewWidth-viewingWidth;
-		if (topLeftPixelY < 0)
-			topLeftPixelY = 0;
-		else if (topLeftPixelY+viewingHeight>viewHeight)
-			topLeftPixelY = viewHeight-viewingHeight;
+		view.x += changeX;
+		view.y += changeY;
+		if (view.x < 0)
+			view.x = 0;
+		else if (view.x+viewingWidth>view.width)
+			view.x = view.width-viewingWidth;
+		if (view.y < 0)
+			view.y = 0;
+		else if (view.y+viewingHeight>view.height)
+			view.y = view.height-viewingHeight;
 		
 		mousePrevious = mouseCurrent;
 	}
@@ -232,8 +232,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Scales coordinates and sends them to detailCanvas.*/
 	private void setDetailSelection()
 	{
-		Point miniTopLeft = new Point((int)topLeftPixelX,(int)topLeftPixelY);
-		Point miniBottomRight = new Point((int)topLeftPixelX+viewingWidth, (int)topLeftPixelY+viewingHeight);
+		Point miniTopLeft = new Point((int)view.x,(int)view.y);
+		Point miniBottomRight = new Point((int)view.x+viewingWidth, (int)view.y+viewingHeight);
 		
 		long detailTopLeftTime = (long)(miniTopLeft.x/getScaleX());
 		int detailTopLeftProcess = (int) (miniTopLeft.y/getScaleY());
@@ -265,19 +265,11 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Updates the selectionBox on the MiniMap to have corners at p1 and p2.*/
 	private void adjustSelection(Point p1, Point p2)
 	{
-    	selectionTopLeft.x = Math.min(p1.x, p2.x);
-        selectionTopLeft.y = Math.min(p1.y, p2.y);
-        if (selectionTopLeft.x < 0)
-        	selectionTopLeft.x = 0;
-        if (selectionTopLeft.y < 0)
-        	selectionTopLeft.y = 0;
+    	selectionTopLeft.x = Math.max(0, Math.min(p1.x, p2.x) );
+        selectionTopLeft.y = Math.max(0, Math.min(p1.y, p2.y) );
         
-        selectionBottomRight.x = Math.max(p1.x, p2.x);
-        selectionBottomRight.y = Math.max(p1.y, p2.y);
-        if (selectionBottomRight.x > viewWidth)
-        	selectionBottomRight.x = viewWidth;
-        if (selectionBottomRight.y > viewHeight)
-        	selectionBottomRight.y = viewHeight;
+        selectionBottomRight.x = Math.min( view.width, Math.max(p1.x, p2.x) );
+        selectionBottomRight.y = Math.min( view.height, Math.max(p1.y, p2.y) );
     }
 	
 	/**********************************************************
@@ -287,11 +279,12 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	private void setSelection(Point p1, Point p2)
 	{
 		adjustSelection(p1, p2);
-		topLeftPixelX = selectionTopLeft.x;
-		topLeftPixelY = selectionTopLeft.y;
-		viewingWidth = selectionBottomRight.x-selectionTopLeft.x;
+		
+		view.x = selectionTopLeft.x;
+		view.y = selectionTopLeft.y;
+		viewingWidth  = selectionBottomRight.x-selectionTopLeft.x;
 		viewingHeight = selectionBottomRight.y-selectionTopLeft.y;
-		insideBox = true;
+
 		setDetailSelection();
 		
 	}
@@ -299,13 +292,13 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Gets the scale in the X-direction (pixels per time unit).*/
 	public double getScaleX()
 	{
-		return (double)viewWidth / (double)stData.getTimeWidth();
+		return (double)view.width / (double)stData.getTimeWidth();
 	}
 
 	/**Gets the scale in the Y-direction (pixels per process).*/
 	public double getScaleY()
 	{
-		return (double)viewHeight / (endProcess - begProcess);
+		return (double)view.height / (endProcess - begProcess);
 	}
 	
 	/* *****************************************************************
@@ -314,12 +307,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	 *      
 	 ******************************************************************/
 
-	public void mouseDoubleClick(MouseEvent e)
-	{
-		//setSelection(new Point(0,0), new Point(viewWidth,viewHeight));
-		//redraw();
-	}
-
 	public void mouseDown(MouseEvent e)
 	{
 		if (mouseState == MouseState.ST_MOUSE_NONE)
@@ -327,11 +314,11 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			mouseState = MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);
 			mousePrevious = new Point(e.x,e.y);
-			if (mouseDown.x>=topLeftPixelX && mouseDown.x<=topLeftPixelX+viewingWidth
-					&& mouseDown.y>=topLeftPixelY && mouseDown.y<=topLeftPixelY+viewingHeight)
-				insideBox = true;
-			else
-				insideBox = false;
+			
+			insideBox = ( mouseDown.x>=view.x && 
+					mouseDown.x<=view.x+viewingWidth && 
+					mouseDown.y>=view.y &&  
+					mouseDown.y<=view.y+viewingHeight );
 		}
 	}
 
@@ -375,6 +362,10 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		}
 	}
 
+
+	@Override
+	public void mouseDoubleClick(MouseEvent e) {	}
+	
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -398,6 +389,4 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			}
 		}
 	}
-	
-
 }

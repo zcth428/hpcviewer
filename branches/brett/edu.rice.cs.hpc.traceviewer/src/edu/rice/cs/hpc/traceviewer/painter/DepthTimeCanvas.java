@@ -413,8 +413,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		attributes.numPixelsDepthV = _numPixelsV;
 		attributes.setTime(_begTime, _endTime);
 		
-		//oldAttributes.copy(attributes);
-		
 		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), masterGC, stData, attributes, changedBounds, threadExecutor);		
 		depthPaint.paint(this);
 	}
@@ -454,7 +452,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 				//If we're zoomed in all the way don't do anything
 				if(getNumTimeDisplayed() > Constants.MIN_TIME_UNITS_DISP)
 				{
-					//pushUndo();
 					adjustSelection(mouseDown,mouseUp);
 					setDetail();
 				}

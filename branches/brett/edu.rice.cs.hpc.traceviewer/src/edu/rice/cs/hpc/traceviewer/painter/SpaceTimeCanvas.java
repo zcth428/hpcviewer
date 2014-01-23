@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
@@ -20,21 +21,13 @@ public abstract class SpaceTimeCanvas extends Canvas
 	/** Same reference as attributes in stData or painter*/
 	protected ImageTraceAttributes attributes;
 	
-    /**The width of the current screen in this canvas.*/
-    int viewWidth;
-    
-    /**The height of the current screen in this canvas.*/
-	int viewHeight;
-	
-	/**The top left pixel's x location.*/
-	long topLeftPixelX;
-	/**The top left pixel's y location.*/
-	long topLeftPixelY;
+	final protected Rectangle view;
     
     /**Creates a SpaceTimeCanvas with the data _stData and Composite _composite.*/
     public SpaceTimeCanvas(Composite _composite)
     {
 		super(_composite, SWT.NO_BACKGROUND);
+		view = new Rectangle(0, 0, 0, 0);
 	}
     
     

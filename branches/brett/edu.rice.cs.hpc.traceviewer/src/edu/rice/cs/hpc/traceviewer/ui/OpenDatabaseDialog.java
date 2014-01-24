@@ -364,6 +364,10 @@ public class OpenDatabaseDialog extends Dialog {
 	 */
 	private void checkFields() 
 	{
+		// Prevent crash on Windows b/c of Eclipse's lazy initialization
+		if (comboBoxes[FieldDatabasePath] == null)
+			return;
+		
 		if (tabFolder.getSelectionIndex() == 0) {
 			if (!comboBoxes[FieldDatabasePath].getText().equals("")) { 
 				okButton.setEnabled(true);

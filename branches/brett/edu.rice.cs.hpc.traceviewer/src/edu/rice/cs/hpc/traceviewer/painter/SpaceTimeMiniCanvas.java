@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
@@ -19,6 +22,7 @@ import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
@@ -53,14 +57,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	
 	/** We store the ones from the beginning so that we can display correctly even with filtering*/
 	private int processRange;
-	
-	private Color COMPLETELY_FILTERED_OUT_COLOR;
-	private Color NOT_FILTERED_OUT_COLOR;
-	/**
-	 * The pattern that we draw when we want to show that some ranks in the
-	 * region aren't shown because of filtering
-	 */
-	private final Pattern PARTIALLY_FILTERED_PATTERN; 
+
 	
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite)
@@ -70,31 +67,10 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
 		
-		// initialize colors
-		COMPLETELY_FILTERED_OUT_COLOR = new Color(this.getDisplay(), 50,50,50);
-		NOT_FILTERED_OUT_COLOR = new Color(this.getDisplay(), 128,128,128);
-		
-		// initialize pattern for filtered ranks
-		PARTIALLY_FILTERED_PATTERN = createStripePattern();
 		
 		selection = new Rectangle(0,0,0,0);
 	}
-	
-	private Pattern createStripePattern() {
-		Image image = new Image(getDisplay(), 15, 15);
-		GC gc = new GC(image);
-		gc.setBackground(NOT_FILTERED_OUT_COLOR);
-		gc.fillRectangle(image.getBounds());
-		gc.setForeground(COMPLETELY_FILTERED_OUT_COLOR);
-		// Oddly enough, drawing from points outside of the image makes the
-		// lines look a lot better when the pattern is tiled.
-		for (int i = 5; i < 15; i+= 5) {
-			gc.drawLine(-5, i+5, i+5, -5);
-			gc.drawLine(i-5, 20, 20, i-5);
-		}
-		gc.dispose();
-		return new Pattern(getDisplay(), image);
-	}
+
 
 	public void updateView(SpaceTimeDataController _stData) {
 		this.setSpaceTimeData(_stData);
@@ -134,43 +110,43 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		view.width = getClientArea().width;
 		view.height = getClientArea().height;
 		
-		event.gc.setBackground(COMPLETELY_FILTERED_OUT_COLOR);
-		event.gc.fillRectangle(this.getClientArea());
-		
-		IBaseData basedata = stData.getBaseData();
-		
-		// This is of the middle region, that is either partially filtered away
-		// or not filtered at all
-		int topPx = (int) (basedata.getFirstIncluded()*getScaleY());
-		//We need the +1 because we want to paint the last included as well
-		int botPx = (int) ((basedata.getLastIncluded()+1)*getScaleY());
-		
-		if (basedata.isDenseBetweenFirstAndLast()){
-			event.gc.setBackground(NOT_FILTERED_OUT_COLOR);
-		} else {
-			try{
-			event.gc.setBackgroundPattern(PARTIALLY_FILTERED_PATTERN);
-			}
-			catch (SWTException e){
-				System.out.println("Advanced graphics not supported");
-				event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_RED));
-			}
+		IBaseData baseData = stData.getBaseData();
+		ArrayList<MiniCanvasRectangle> rectangles = new ArrayList<MiniCanvasRectangle>();
+		if (baseData.getFirstIncluded() != 0) {
+			Rectangle rect = new Rectangle(0, 0, getClientArea().width, (int) (baseData.getFirstIncluded()*getScaleY()));
+			rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
 		}
-		// The width of the region is always the same as the width of the
-		// minimap because you can't filter by time
-		event.gc.fillRectangle(0, topPx, getClientArea().width, botPx-topPx);
+		if (baseData.getLastIncluded() + 1 != baseData.getNumberOfRanks()) {
+			int topY = (int) ((baseData.getLastIncluded()+1)*getScaleY());
+			Rectangle rect = new Rectangle(0, topY , getClientArea().width, getClientArea().height-topY);
+			rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
+		}
+		// This is the region shown in the detail view
+		EnumSet<SampleHiddenReason> mainRegionReasons = EnumSet.noneOf(SampleHiddenReason.class);
+		if (attributes.getProcessInterval() < attributes.numPixelsV)
+			mainRegionReasons.add(SampleHiddenReason.VERTICAL_RESOLUTION);
+		if (!baseData.isDenseBetweenFirstAndLast())
+			mainRegionReasons.add(SampleHiddenReason.FILTERED);
+		if (mainRegionReasons.size() == 0)
+			mainRegionReasons.add(SampleHiddenReason.NONE);
+	
+		// TODO: THESE ARE APPROXIMATIONS. LOOKING UP THE ACTUAL VALUE WOULD BE BETTER.
+		int topPx = (int) ((baseData.getFirstIncluded() + attributes.getProcessBegin()) * getScaleY());
+		int height = (int)(attributes.getProcessInterval() * getScaleY());
+		Rectangle rect = new Rectangle(
+				(int)(attributes.getTimeBegin() * getScaleX()), topPx,
+				(int)(attributes.getTimeInterval() * getScaleX()), height);
+		rectangles.add(new MiniCanvasRectangle(mainRegionReasons, false, rect));
 		
-		if (insideBox)
-		{
-			event.gc.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_WHITE));
-			event.gc.fillRectangle(view.x, view.y, selection.width, selection.height);
+		//TODO: None of the code above this point belongs in the paint method.
+		Control[] oldChildren = this.getChildren(); 
+		for (int i = 0; i < oldChildren.length; i++) {
+			// oldChildren[i].dispose();
 		}
-		else
-		{
-			event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
-			event.gc.drawRectangle(selection.x, selection.y,
-				selection.width, selection.height);
+		for (MiniCanvasRectangle miniCanvasRectangle : rectangles) {
+			miniCanvasRectangle.getControl(this);
 		}
+		
 	}
 	
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/

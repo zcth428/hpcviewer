@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -11,6 +10,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 public class MiniCanvasRectangle {
 	final EnumSet<SampleHiddenReason> reasons;
@@ -47,13 +48,21 @@ public class MiniCanvasRectangle {
 	}*/
 
 	private void createLabel() {
-		img = new Image(Display.getCurrent(), rect.width, rect.height);
-		GC gc = new GC(img);
-		gc.setForeground(getColor());
-		// Because we can't draw with transparency, we need the label to be exactly
-		// the right size, and then we will place it later.
-		gc.drawRectangle(new Rectangle(0, 0, rect.width, rect.height));
-		gc.dispose();
+		// bug fix: when the zoom-in is very huge, the width or the height can be zero
+		// 			since SWT image doesn't allow us to create a zero width/height,
+		//			we just ignore the request the create the label
+		if (rect.width > 0 && rect.height>0) {
+			img = new Image(Display.getCurrent(), rect.width, rect.height);
+			GC gc = new GC(img);
+			gc.setForeground(getColor());
+			// Because we can't draw with transparency, we need the label to be exactly
+			// the right size, and then we will place it later.
+			gc.drawRectangle(new Rectangle(0, 0, rect.width, rect.height));
+			gc.dispose();
+		}
+		else {
+			Debugger.printDebug(1, "Unable to create label with negative area: " + rect);
+		}
 	}
 
 	private Color getColor() {

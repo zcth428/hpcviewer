@@ -10,11 +10,11 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 
-/*************
+/*************************************************
  * 
  * Timeline thread for depth view
  *
- */
+ *************************************************/
 public class TimelineDepthThread implements Callable<Integer> {
 
 	final private SpaceTimeDataController stData;
@@ -52,6 +52,9 @@ public class TimelineDepthThread implements Callable<Integer> {
 	{
 		ProcessTimeline nextTrace = stData.getNextDepthTrace();
 		Integer numTraces = 0;
+		final double pixelLength = (stData.getAttributes().getTimeInterval())/(double)stData.getPixelHorizontal();
+		final long timeBegin = stData.getAttributes().getTimeBegin();
+		
 		while (nextTrace != null)
 		{
 			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
@@ -60,15 +63,13 @@ public class TimelineDepthThread implements Callable<Integer> {
 			else
 				imageHeight++;
 
-			double pixelLength = (stData.getAttributes().getTimeInterval())/(double)stData.getPixelHorizontal();
-
 			final DepthDataPreparation dataCollected = new DepthDataPreparation(stData.getColorTable(), 
-					nextTrace, 
-					stData.getAttributes().getTimeBegin(), nextTrace.line(), imageHeight, pixelLength, usingMidpoint);
+					nextTrace, timeBegin,
+					nextTrace.line(), imageHeight, pixelLength, usingMidpoint);
 			
 			dataCollected.collect();
 			
-			// do the paint
+			// add into the queue
 			final TimelineDataSet dataset = dataCollected.getList();
 			queue.add(dataset);
 

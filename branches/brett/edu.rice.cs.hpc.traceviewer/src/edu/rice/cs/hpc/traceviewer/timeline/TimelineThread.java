@@ -52,7 +52,6 @@ public class TimelineThread implements Callable<Integer>
 	public TimelineThread(IWorkbenchWindow window, SpaceTimeDataController _stData, ProcessTimelineService traceService,
 			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, TimelineProgressMonitor _monitor)
 	{
-		super();
 		stData = _stData;
 		changedBounds = _changedBounds;
 		scaleY = _scaleY;
@@ -74,7 +73,8 @@ public class TimelineThread implements Callable<Integer>
 	{
 		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
 		int numTracesHandled = 0;
-		boolean usingMidpoint = stData.isEnableMidpoint();
+		final boolean usingMidpoint = stData.isEnableMidpoint();		
+		final double pixelLength = (attrib.getTimeInterval())/(double)attrib.numPixelsH;
 		
 		while(nextTrace != null)
 		{
@@ -83,6 +83,7 @@ public class TimelineThread implements Callable<Integer>
 			{
 				nextTrace.readInData();
 				addNextTrace(nextTrace);
+				nextTrace.shiftTimeBy(stData.getMinBegTime());
 			}
 			
 			int h1 = (int) Math.round(scaleY*(nextTrace.line()+1));
@@ -93,30 +94,26 @@ public class TimelineThread implements Callable<Integer>
 				imageHeight--;
 			else
 				imageHeight++;
-
-			ProcessTimeline ptl = traceService.getProcessTimeline(nextTrace.line());
-			if (ptl == null || ptl.size()<2 )
-				continue;
-			
-			if (changedBounds)
-				ptl.shiftTimeBy(stData.getMinBegTime());
-			
-			double pixelLength = (attrib.getTimeInterval())/(double)attrib.numPixelsH;
 			
 			// ---------------------------------
 			// do the data preparation
 			// ---------------------------------
 
-			final DetailDataPreparation dataCollected = new DetailDataPreparation(stData.getColorTable(), ptl, 
+			final DetailDataPreparation dataCollected = new DetailDataPreparation(stData.getColorTable(), nextTrace, 
 					attrib.getTimeBegin(), stData.getPainter().getDepth(), imageHeight, pixelLength, usingMidpoint);
 			
-			// collect data from the database
+			// do collect data from the database
 			dataCollected.collect();
 			
-			// get the list of data
+			// ---------------------------------
+			// get the list of data and put it in the queue to be painted
+			// ---------------------------------
 			final TimelineDataSet dataset =  dataCollected.getList();
 			queue.add(dataset);
 
+			// ---------------------------------
+			// finalize
+			// ---------------------------------
 			monitor.announceProgress();
 			
 			nextTrace = stData.getNextTrace(changedBounds);

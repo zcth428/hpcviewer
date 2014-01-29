@@ -8,23 +8,18 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -56,7 +51,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	private boolean insideBox;
 	
 	/** We store the ones from the beginning so that we can display correctly even with filtering*/
-	private int processRange;
+	private int processBegin;
+	private int processEnd;
 
 	
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
@@ -88,8 +84,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		selection.height = r.height;
 		selection.width = r.width;
 		
-		final int begProcess = _stData.getAttributes().getProcessBegin();
-		processRange = _stData.getAttributes().getProcessEnd() - begProcess;
+		processBegin = _stData.getAttributes().getProcessBegin();
+		processEnd = _stData.getAttributes().getProcessEnd();
 		
 		this.redraw();
 	}
@@ -184,7 +180,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		view.y += changeY;
 		
 		// make sure that the view is not out of range
-		
+
 		view.x = Math.max(view.x, 0);
 		view.y = Math.max(view.y, 0);
 
@@ -195,7 +191,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 
 		if (view.y+selection.height>view.height)
 			view.y = view.height-selection.height;
-		
+
 		mousePrevious = mouseCurrent;
 	}
 	
@@ -207,13 +203,13 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		Point miniBottomRight = new Point( view.x+selection.width, view.y+selection.height);
 		
 		long detailTopLeftTime = (long)(miniTopLeft.x/getScaleX());
-		int detailTopLeftProcess = (int) (miniTopLeft.y/getScaleY());
+		int detailTopLeftProcess = (int) (miniTopLeft.y/getScaleY()) - processBegin;
 		
 		long detailBottomRightTime = (long)(miniBottomRight.x / getScaleX());
-		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
-
-		ImageTraceAttributes attributes = stData.getAttributes();
+		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY()) - processBegin;
 		
+		ImageTraceAttributes attributes = stData.getAttributes();
+				
 		Frame frame = new Frame( attributes.getFrame() );
 		frame.set(detailTopLeftTime, detailBottomRightTime, detailTopLeftProcess, detailBottomRightProcess);
 
@@ -278,7 +274,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Gets the scale in the Y-direction (pixels per process).*/
 	public double getScaleY()
 	{
-		return (double)view.height / processRange;
+		return (double)view.height / (processEnd-processBegin);
 	}
 	
 	/* *****************************************************************
@@ -364,6 +360,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			case OperationHistoryEvent.REDONE:
 				if (traceOperation instanceof ZoomOperation) {
 					Frame frame = traceOperation.getFrame();
+					Debugger.printDebug(1, "STMC: " + attributes + "\t New: " + frame);
 					setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
 				}
 			}

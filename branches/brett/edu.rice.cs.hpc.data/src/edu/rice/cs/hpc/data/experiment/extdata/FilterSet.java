@@ -29,7 +29,10 @@ public class FilterSet {
 	public boolean includes(String name){
 		String[] split = name.split("\\.");
 		int process = Integer.parseInt(split[0]);
-		int thread = Integer.parseInt(split[1]);
+		int thread = 0;
+		if (split.length > 1) {
+			thread = Integer.parseInt(split[1]);
+		}
 		return include(new TraceName(process, thread));
 	}
 	

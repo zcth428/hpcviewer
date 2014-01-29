@@ -14,7 +14,7 @@ public class DepthDataPreparation extends DataPreparation {
 	/*****
 	 * list of data to be painted on the depth view
 	 */
-	final private VisualizationDataSet dataset;
+	final private TimelineDataSet dataset;
 	
 	/****
 	 * Constructor to prepare data
@@ -33,7 +33,7 @@ public class DepthDataPreparation extends DataPreparation {
 		
 		super(_colorTable, _ptl, _begTime, _depth, _height, _pixelLength,
 				_usingMidpoint);
-		dataset = new VisualizationDataSet(_ptl.size(), height);
+		dataset = new TimelineDataSet(_ptl.line(), ptl.size(), height);
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class DepthDataPreparation extends DataPreparation {
 	 * 
 	 * @return
 	 */
-	public VisualizationDataSet getList() {
+	public TimelineDataSet getList() {
 		
 		return dataset;
 	}

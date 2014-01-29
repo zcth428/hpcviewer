@@ -7,7 +7,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.Queue;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -15,8 +20,9 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
-
+import edu.rice.cs.hpc.traceviewer.util.Utility;
 
 
 /******************************************************
@@ -38,6 +44,7 @@ public abstract class BaseViewPaint {
 	protected SpaceTimeDataController controller;
 	protected PaintManager painter;
 	final private ExecutorService threadExecutor;
+	private Queue<TimelineDataSet> queue;
 
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -78,7 +85,7 @@ public abstract class BaseViewPaint {
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
 		int linesToPaint = getNumberOfLines();
-		int numThreads = 1; 
+		int numPaintThreads = 1; 
 
 		// -------------------------------------------------------------------
 		// hack: On Linux, gtk is not threads-safe, and SWT-gtk implementation
@@ -88,7 +95,7 @@ public abstract class BaseViewPaint {
 		//	 	 the canvas
 		// -------------------------------------------------------------------
 		if (!OSValidator.isUnix()) {
-			numThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
+			numPaintThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
 		}
 		// -------------------------------------------------------------------
 		// hack fix: if the number of horizontal pixels is less than 1 we
@@ -100,7 +107,7 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
-		if (!startPainting(linesToPaint, changedBounds))
+		if (!startPainting(linesToPaint, Utility.getNumThreads(linesToPaint), changedBounds))
 			return false;
 
 		monitor.beginProgress(linesToPaint, "Rendering space time view...",
@@ -115,7 +122,7 @@ public abstract class BaseViewPaint {
 		
 		// decompression can be done with multiple threads without accessing gtk (on linux)
 		// It looks like there's no major performance effect though
-		int launch_threads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
+		int launch_threads = Utility.getNumThreads(linesToPaint);
 		try {
 			launchDataGettingThreads(changedBounds, launch_threads);
 			
@@ -127,6 +134,16 @@ public abstract class BaseViewPaint {
 		}
 		
 		// -------------------------------------------------------------------
+		// instantiate queue based on whether we need multi-threading or not
+		// in case of multithreading, we want a thread-safe queue
+		// -------------------------------------------------------------------
+		if (Utility.getNumThreads(linesToPaint) > 1) {
+			queue = new ConcurrentLinkedQueue<TimelineDataSet>();
+		} else {
+			queue = new LinkedList<TimelineDataSet>();
+		}
+
+		// -------------------------------------------------------------------
 		// case where everything works fine, and all the data has been read,
 		//	we paint the canvas using multiple threads
 		// -------------------------------------------------------------------
@@ -135,19 +152,40 @@ public abstract class BaseViewPaint {
 		
 		final List<Future<Integer>> threads = new ArrayList<Future<Integer>>();
 		
-		for (int threadNum = 0; threadNum < numThreads; threadNum++) {
-			Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale);
-			Future<Integer> submit = threadExecutor.submit( thread );
+		for (int threadNum = 0; threadNum < Utility.getNumThreads(linesToPaint); threadNum++) {
+			final Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale);
+			final Future<Integer> submit = threadExecutor.submit( thread );
 			threads.add(submit);
 		}
+		
+		// -------------------------------------------------------------------
+		// wait until all threads for retrieving the data and the painting
+		// terminate....
+		// -------------------------------------------------------------------
 		waitForAllThreads( threads );
 		
+		// -------------------------------------------------------------------
+		// painting to the buffer concurrently
+		// -------------------------------------------------------------------
+		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
+
+		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
+		{
+			final Callable<List<ImagePosition>> thread = getPaintThread(queue, 
+					canvas.getDisplay(), attributes.numPixelsH);
+			if (thread != null) {
+				final Future<List<ImagePosition>> submit = threadExecutor.submit( thread );
+				threadsPaint.add(submit);
+			}
+		}
+
 		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
 
 		// -------------------------------------------------------------------
 		// Finalize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
-		endPainting(linesToPaint, xscale, yscale);
+		endPainting(linesToPaint, xscale, yscale, threadsPaint);
+		
 		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
 		monitor.endProgress();
 		changedBounds = false;
@@ -179,7 +217,9 @@ public abstract class BaseViewPaint {
 		}
 	}
 
-	
+	protected Queue<TimelineDataSet> getQueue() {
+		return queue;
+	}
 
 
 	//------------------------------------------------------------------------------------------------
@@ -194,7 +234,7 @@ public abstract class BaseViewPaint {
 	 * @param changedBounds
 	 * @return false will exit the painting
 	 */
-	abstract protected boolean startPainting(int linesToPaint, boolean changedBounds);
+	abstract protected boolean startPainting(int linesToPaint, int numThreads, boolean changedBounds);
 	
 	/**
 	 * Finalize the paint
@@ -203,7 +243,8 @@ public abstract class BaseViewPaint {
 	 * @param xscale
 	 * @param yscale
 	 */
-	abstract protected void endPainting(int linesToPaint, double xscale, double yscale);
+	abstract protected void endPainting(int linesToPaint, double xscale, double yscale, 
+			List<Future<List<ImagePosition>>> listOfImages);
 	
 	/**
 	 * Retrieve the number of lines to paint 
@@ -215,4 +256,6 @@ public abstract class BaseViewPaint {
 			throws IOException;
 
 	abstract protected Callable<Integer>  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale);
+	
+	abstract protected Callable<List<ImagePosition>> getPaintThread( Queue<TimelineDataSet> queue, Device device, int width);
 }

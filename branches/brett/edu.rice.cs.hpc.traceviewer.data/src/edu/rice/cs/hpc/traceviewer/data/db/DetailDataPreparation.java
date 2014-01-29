@@ -7,7 +7,7 @@ import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 public class DetailDataPreparation extends DataPreparation {
 
-	private VisualizationDataSet dataset;
+	private TimelineDataSet dataset;
 	
 	/*****
 	 * Constructor for preparing data to paint on the space-time canvas
@@ -26,7 +26,7 @@ public class DetailDataPreparation extends DataPreparation {
 	{
 		super(_colorTable, _ptl, _begTime, _depth, _height, _pixelLength,
 				_usingMidpoint);
-		dataset = new VisualizationDataSet(_ptl.size(), height);
+		dataset = new TimelineDataSet( ptl.line(),_ptl.size(), height);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class DetailDataPreparation extends DataPreparation {
 	 * retrieve the list of data to paint
 	 * @return
 	 */
-	public VisualizationDataSet getList() {
+	public TimelineDataSet getList() {
 		
 		return dataset;
 	}

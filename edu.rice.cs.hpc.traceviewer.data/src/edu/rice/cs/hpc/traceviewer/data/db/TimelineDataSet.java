@@ -3,15 +3,17 @@ package edu.rice.cs.hpc.traceviewer.data.db;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VisualizationDataSet {
+public class TimelineDataSet {
 
 	final private List<BaseDataVisualization> list;
 	final private int height;
+	final private int linenum;
 	
-	public VisualizationDataSet( int initSize, int height ) {
+	public TimelineDataSet( int linenum, int initSize, int height ) {
 	 	
 		list = new ArrayList<BaseDataVisualization>(initSize);
 	 	this.height = height; 
+	 	this.linenum = linenum;
 	}
 	
 	public void add( BaseDataVisualization data ) {
@@ -24,5 +26,9 @@ public class VisualizationDataSet {
 	
 	public int getHeight() {
 		return height;
+	}
+	
+	public int getLineNumber() {
+		return linenum;
 	}
 }

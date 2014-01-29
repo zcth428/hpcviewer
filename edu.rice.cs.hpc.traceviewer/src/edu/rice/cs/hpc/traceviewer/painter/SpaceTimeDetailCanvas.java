@@ -305,11 +305,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *************************************************************************/
 	public void zoom(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess)
 	{
-		attributes.assertProcessBounds(stData.getTotalTraceCount());
+		attributes.setTime(_topLeftTime, _bottomRightTime);
 		attributes.assertTimeBounds(stData.getTimeWidth());
 		
-		attributes.setTime(_topLeftTime, _bottomRightTime);
 		attributes.setProcess(_topLeftProcess, _bottomRightProcess);
+		attributes.assertProcessBounds(stData.getTotalTraceCount());
 		
 		final long numTimeDisplayed = this.getNumTimeUnitDisplayed();
 		if (numTimeDisplayed < Constants.MIN_TIME_UNITS_DISP)
@@ -871,7 +871,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     		System.err.println("ERR STDC SCSSample time: " + closeTime +" max time: " + 
     				attributes.getTimeEnd() + "\t new: " + ((attributes.getTimeBegin() + attributes.getTimeEnd()) >> 1));
     		closeTime = (attributes.getTimeBegin() + attributes.getTimeEnd()) >> 1;
-    		
     	}
     	
     	return new Position(closeTime, selectedProcess);
@@ -984,22 +983,34 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			view.width = this.getClientArea().width;
 			view.height = this.getClientArea().height;
 		}
-		// imageFinal is the final image with all the depth and number of samples
+		// -----------------------------------------------------------------------
+		// imageFinal is the final image with info of the depth and number of samples
+		// the size of the final image is the same of the size of the canvas
+		// -----------------------------------------------------------------------
 		
 		final Image imageFinal = new Image(getDisplay(), view.width, view.height);
 		GC bufferGC = new GC(imageFinal);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
 		bufferGC.fillRectangle(0,0,view.width,view.height);
 		
+		// -----------------------------------------------------------------------
 		// imageOrig is the original image without "attributes" such as depth
 		// this imageOrig will be used by SummaryView to count the number of colors
+		// the size of the "original" image should be equivalent to the minimum of 
+		//	the number of ranks or the number of pixels
+		// -----------------------------------------------------------------------
 		
-		Image imageOrig = new Image(getDisplay(), view.width, view.height);
+		int numLines = Math.min(view.height, attributes.getProcessInterval() );
+		Image imageOrig = new Image(getDisplay(), view.width, numLines);
+		
 		GC origGC = new GC(imageOrig);
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,view.width,view.height);
 
+		// -----------------------------------------------------------------------
 		// main method to paint to the canvas
+		// if there's no exception or interruption, we redraw the canvas
+		// -----------------------------------------------------------------------
 		if ( paintDetailViewport(bufferGC, origGC, 
 				stData.getAttributes().getProcessBegin(), stData.getAttributes().getProcessEnd(), 
 				stData.getAttributes().getTimeBegin(), stData.getAttributes().getTimeEnd(), 
@@ -1017,14 +1028,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				
 				if (p.process > ranks.length-1) {
 					// need to change position
-					Position new_p = new Position( p.time, ranks.length << 1 );
+					Position new_p = new Position( p.time, ranks.length >> 1 );
 					notifyChangePosition(new_p);
 				}
 			}
 			super.redraw();
 
-			// notify to SummaryView that a new image has been created, and it needs to refresh the view
-			
+			// -----------------------------------------------------------------------
+			// notify to SummaryView that a new image has been created,
+			//	and it needs to refresh the view
+			// -----------------------------------------------------------------------
+
 			BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageOrig.getImageData());
 			try {
 				TraceOperation.getOperationHistory().execute(brOp, null, null);
@@ -1067,7 +1081,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{	
 		ImageTraceAttributes attributes = stData.getAttributes();
 		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
-		
 		
 		attributes.numPixelsH = _numPixelsH;
 		attributes.numPixelsV = _numPixelsV;
@@ -1120,7 +1133,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		frame.set(_topLeftTime, _bottomRightTime, _topLeftProcess, _bottomRightProcess);
 		
 		String sLabel = (label == null ? "Set region" : label);
-		
+
 		// forces all other views to refresh with the new region
 		try {
 			// notify change of ROI

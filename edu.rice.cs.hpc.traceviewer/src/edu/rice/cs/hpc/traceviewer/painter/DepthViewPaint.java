@@ -1,13 +1,19 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.timeline.DepthPaintThread;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 
 /******************************************************
@@ -18,10 +24,6 @@ import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 public class DepthViewPaint extends BaseViewPaint {
 
 	private final GC masterGC;
-
-
-	/**The composite images created by painting all of the samples in a given line to it.*/
-	private Image[] compositeFinalLines;
 	
 	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeDataController _data,
 			ImageTraceAttributes _attributes, boolean _changeBound, ExecutorService threadExecutor) {
@@ -31,29 +33,34 @@ public class DepthViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected boolean startPainting(int linesToPaint, boolean changedBounds) {
-		controller.getDepthTrace();
-	
-		compositeFinalLines = new Image[linesToPaint];
-
+	protected boolean startPainting(int linesToPaint, int numThreads, boolean changedBounds) {
 		return changedBounds;
 	}
 
 	@Override
-	protected void endPainting(int linesToPaint, double xscale, double yscale) {
+	protected void endPainting(int linesToPaint, double xscale, double yscale, 
+			List<Future<List<ImagePosition>>> listOfImages) {
 
-		if (compositeFinalLines != null) {
-			for (int i = 0; i < linesToPaint; i++)
-			{
-				if (compositeFinalLines[i] != null)
-					masterGC.drawImage(compositeFinalLines[i], 0, 0, compositeFinalLines[i].getBounds().width, 
-						compositeFinalLines[i].getBounds().height, 0, Math.round(i*attributes.numPixelsDepthV/(float)painter.getMaxDepth()), 
-						compositeFinalLines[i].getBounds().width, compositeFinalLines[i].getBounds().height);
-			}
-			// disposing resources
-			for (Image img: compositeFinalLines) {
-				if (img != null)
-					img.dispose();
+		final float numPixels = attributes.numPixelsDepthV/(float)painter.getMaxDepth();
+		
+		for (Future<List<ImagePosition>> listOfLines : listOfImages ) {
+			try {
+				final List<ImagePosition> imageLine = listOfLines.get();
+				
+				for (ImagePosition img : imageLine) {
+					masterGC.drawImage(img.image, 0, 0, img.image.getBounds().width, 
+							img.image.getBounds().height, 0, 
+							Math.round(img.position*numPixels), 
+							img.image.getBounds().width, img.image.getBounds().height);
+					
+					img.image.dispose();
+				}
+			} catch (InterruptedException e) {
+
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+
+				e.printStackTrace();
 			}
 		}
 	}
@@ -65,8 +72,7 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale) {
-		return new TimelineDepthThread(controller, canvas, compositeFinalLines, xscale,
-				yscale, attributes.numPixelsH, controller.isEnableMidpoint());
+		return new TimelineDepthThread( controller, yscale, getQueue(), controller.isEnableMidpoint());
 	}
 
 	@Override
@@ -75,4 +81,10 @@ public class DepthViewPaint extends BaseViewPaint {
 		//We don't want to get data here.
 	}
 
+	@Override
+	protected Callable<List<ImagePosition>> getPaintThread(
+			Queue<TimelineDataSet> queue, Device device, int width) {
+
+		return new DepthPaintThread(queue, device, width);
+	}
 }

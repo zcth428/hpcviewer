@@ -51,19 +51,10 @@ public class Frame implements Serializable
 	public Frame(long timeBeg, long timeEnd, int ProcBeg, int ProcEnd,
 			int depth, long time, int process)
 	{
-		begProcess 	= ProcBeg;
-		endProcess  = ProcEnd;
-		begTime	 	= timeBeg;
-		endTime		= timeEnd;
-		this.depth  = depth;
-
-		if (time < begTime || time > endTime) {
-			time = (begTime + endTime) >> 1;
-		}
-		if (process < begProcess || process >= endProcess) {
-			process = (begProcess + endProcess) >> 1;
-		}
 		position	= new Position(time, process);
+		set(timeBeg, timeEnd, ProcBeg, ProcEnd);
+
+		this.depth  = depth;
 	}
 	
 	/****

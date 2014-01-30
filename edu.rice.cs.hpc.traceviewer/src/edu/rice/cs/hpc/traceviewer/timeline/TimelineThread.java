@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Queue;
 
 import org.eclipse.ui.IWorkbenchWindow;
@@ -44,13 +45,15 @@ public class TimelineThread implements Callable<Integer>
 	final private ImageTraceAttributes attrib;
 	
 	final private Queue<TimelineDataSet> queue;
-
+	final private AtomicInteger counter;
+	
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
 	public TimelineThread(IWorkbenchWindow window, SpaceTimeDataController _stData, ProcessTimelineService traceService,
-			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, TimelineProgressMonitor _monitor)
+			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, AtomicInteger counter, 
+			TimelineProgressMonitor _monitor)
 	{
 		stData = _stData;
 		changedBounds = _changedBounds;
@@ -61,6 +64,7 @@ public class TimelineThread implements Callable<Integer>
 		
 		attrib = stData.getAttributes();
 		this.queue = queue;
+		this.counter = counter;
 	}
 	
 	/***************************************************************
@@ -72,6 +76,8 @@ public class TimelineThread implements Callable<Integer>
 	public Integer call()
 	{
 		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
+		//counter.decrementAndGet();
+		
 		int numTracesHandled = 0;
 		final boolean usingMidpoint = stData.isEnableMidpoint();		
 		final double pixelLength = (attrib.getTimeInterval())/(double)attrib.numPixelsH;
@@ -83,7 +89,6 @@ public class TimelineThread implements Callable<Integer>
 			{
 				nextTrace.readInData();
 				addNextTrace(nextTrace);
-				nextTrace.shiftTimeBy(stData.getMinBegTime());
 			}
 			
 			int h1 = (int) Math.round(scaleY*(nextTrace.line()+1));
@@ -95,29 +100,44 @@ public class TimelineThread implements Callable<Integer>
 			else
 				imageHeight++;
 			
-			// ---------------------------------
-			// do the data preparation
-			// ---------------------------------
+			final ProcessTimeline ptl = traceService.getProcessTimeline(nextTrace.line());
+            if (ptl != null && ptl.size()>=2 ) {
+                if (changedBounds)
+                    ptl.shiftTimeBy(stData.getMinBegTime());
 
-			final DetailDataPreparation dataCollected = new DetailDataPreparation(stData.getColorTable(), nextTrace, 
-					attrib.getTimeBegin(), stData.getPainter().getDepth(), imageHeight, pixelLength, usingMidpoint);
-			
-			// do collect data from the database
-			dataCollected.collect();
-			
-			// ---------------------------------
-			// get the list of data and put it in the queue to be painted
-			// ---------------------------------
-			final TimelineDataSet dataset =  dataCollected.getList();
-			queue.add(dataset);
+    			// ---------------------------------
+    			// do the data preparation
+    			// ---------------------------------
 
-			// ---------------------------------
-			// finalize
-			// ---------------------------------
-			monitor.announceProgress();
+    			final DetailDataPreparation dataCollected = new DetailDataPreparation(stData.getColorTable(), ptl, 
+    					attrib.getTimeBegin(), stData.getPainter().getDepth(), imageHeight, pixelLength, usingMidpoint);
+    			
+    			// do collect data from the database
+    			dataCollected.collect();
+    			
+    			// ---------------------------------
+    			// get the list of data and put it in the queue to be painted
+    			// ---------------------------------
+    			final TimelineDataSet dataset =  dataCollected.getList();
+    			queue.add(dataset);
+
+    			// ---------------------------------
+    			// finalize
+    			// ---------------------------------
+    			monitor.announceProgress();
+            }
 			
 			nextTrace = stData.getNextTrace(changedBounds);
 			numTracesHandled++;
+			
+			//int c = counter.decrementAndGet();
+/*			int c = counter.get();
+			if ( (nextTrace == null && c>=0) || (nextTrace !=null && c<0) ){
+				System.err.println("Warning, counter: " + c);
+			}
+			if (nextTrace !=null && c<0) {
+				System.err.println("Warning, counter: " + c + ", trace: " + nextTrace.line());
+			}*/
 		}
 		return Integer.valueOf(numTracesHandled);
 	}

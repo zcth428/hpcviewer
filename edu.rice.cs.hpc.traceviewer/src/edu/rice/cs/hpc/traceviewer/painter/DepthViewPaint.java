@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
@@ -71,8 +72,9 @@ public class DepthViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale) {
-		return new TimelineDepthThread( controller, yscale, getQueue(), controller.isEnableMidpoint());
+	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
+			Queue<TimelineDataSet> queue, AtomicInteger counter) {
+		return new TimelineDepthThread( controller, yscale, queue, counter, controller.isEnableMidpoint());
 	}
 
 	@Override
@@ -83,8 +85,8 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<List<ImagePosition>> getPaintThread(
-			Queue<TimelineDataSet> queue, Device device, int width) {
+			Queue<TimelineDataSet> queue, AtomicInteger counter, Device device, int width) {
 
-		return new DepthPaintThread(queue, device, width);
+		return new DepthPaintThread(controller, queue, counter, device, width);
 	}
 }

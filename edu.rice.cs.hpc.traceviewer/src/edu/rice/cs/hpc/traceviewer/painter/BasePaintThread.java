@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.graphics.Color;
@@ -12,6 +13,7 @@ import org.eclipse.swt.graphics.Device;
 import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.painter.ImagePosition;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /*****************************************************************
  *
@@ -28,6 +30,9 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 
 	final private Queue<TimelineDataSet> list;
 	final private List<ImagePosition> listOfImages;
+	final private AtomicInteger counter;
+	
+	final private SpaceTimeDataController stData;
 	
 	/****
 	 * constructor of the class, requiring a queue of list of data (per line) to be
@@ -40,14 +45,16 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 	 * @param device : the display device used to create images. Cannot be null
 	 * @param width : the width of the view
 	 */
-	public BasePaintThread( Queue<TimelineDataSet> list, 
+	public BasePaintThread( SpaceTimeDataController stData, Queue<TimelineDataSet> list, AtomicInteger counter, 
 			Device device, int width) {
 		
 		Assert.isNotNull(device);
 		Assert.isNotNull(list);
 		
 		this.list = list;
+		this.counter = counter;
 		this.device = device;
+		this.stData = stData;
 		
 		this.width = width;
 		listOfImages = new ArrayList<ImagePosition>(list.size());
@@ -56,9 +63,13 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 	@Override
 	public List<ImagePosition> call() throws Exception {
 		
-		while( ! list.isEmpty() ) 
+		while( ! list.isEmpty() ||  counter.get()>stData.getNumberOfLines() ) 
 		{
 			TimelineDataSet setDataToPaint = list.poll();
+			if (setDataToPaint == null) {
+				Thread.sleep(40);
+				continue;
+			}
 			final int height = setDataToPaint.getHeight();
 			final int position = setDataToPaint.getLineNumber();
 			

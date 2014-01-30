@@ -178,6 +178,9 @@ public class TraceDataByRank {
 	 * */
 	public int findMidpointBefore(long time, boolean usingMidpoint)
 	{
+		if (listcpid.size()==0)
+			return 0;
+
 		int low = 0;
 		int high = listcpid.size() - 1;
 		

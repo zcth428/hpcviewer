@@ -236,6 +236,10 @@ public abstract class SpaceTimeDataController {
 		lineNum.set(0);
 		depthLineNum.set(0);
 	}
+	
+	public int getNumberOfLines() {
+		return lineNum.get();
+	}
 
 	public abstract void closeDB();
 

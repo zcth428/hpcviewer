@@ -2,8 +2,6 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import edu.rice.cs.hpc.traceviewer.data.db.DepthDataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -26,7 +24,7 @@ public class TimelineDepthThread implements Callable<Integer> {
 	private boolean usingMidpoint;
 	
 	final private Queue<TimelineDataSet> queue;
-	final private AtomicInteger counter;
+
 	/*****
 	 * Thread initialization
 	 *  
@@ -38,14 +36,12 @@ public class TimelineDepthThread implements Callable<Integer> {
 	 */
 	public TimelineDepthThread(SpaceTimeDataController data, 
 			double scaleY, Queue<TimelineDataSet> queue, 
-			AtomicInteger counter,
 			boolean usingMidpoint)
 	{
 		this.stData = data;
 		this.scaleY = scaleY;
 		this.usingMidpoint = usingMidpoint;
 		this.queue = queue;
-		this.counter = counter;
 	}
 
 	/*
@@ -55,13 +51,12 @@ public class TimelineDepthThread implements Callable<Integer> {
 	public Integer call() 
 	{
 		ProcessTimeline nextTrace = stData.getNextDepthTrace();
-		counter.decrementAndGet();
 		
 		Integer numTraces = 0;
 		final double pixelLength = (stData.getAttributes().getTimeInterval())/(double)stData.getPixelHorizontal();
 		final long timeBegin = stData.getAttributes().getTimeBegin();
 		
-		while (nextTrace != null && counter.get()>0)
+		while (nextTrace != null)
 		{
 			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
 			if (scaleY > TimelineThread.MIN_HEIGHT_FOR_SEPARATOR_LINES)
@@ -81,10 +76,6 @@ public class TimelineDepthThread implements Callable<Integer> {
 
 			nextTrace = stData.getNextDepthTrace();
 			numTraces++;
-			int c = counter.decrementAndGet();
-			if (nextTrace == null && c>0) {
-				System.err.println("Error: counter is not 0 : " + c);
-			}
 		}
 		return numTraces;
 	}	

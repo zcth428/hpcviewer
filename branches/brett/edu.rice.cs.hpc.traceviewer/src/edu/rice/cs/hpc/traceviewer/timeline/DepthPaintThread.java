@@ -18,10 +18,11 @@ public class DepthPaintThread extends BasePaintThread {
 	private Image image;
 	private GC gc;
 
-	public DepthPaintThread(SpaceTimeDataController stData, Queue<TimelineDataSet> list, AtomicInteger counter, Device device, 
+	public DepthPaintThread(SpaceTimeDataController stData, Queue<TimelineDataSet> list, int linesToPaint, 
+			AtomicInteger paintDone, Device device, 
 			int width) {
 
-		super(stData, list, counter, device, width);
+		super(stData, list, linesToPaint, paintDone, device, width);
 	}
 
 	@Override
@@ -38,10 +39,15 @@ public class DepthPaintThread extends BasePaintThread {
 	}
 
 	@Override
-	protected ImagePosition paintFinalize(int linenum) {
+	protected ImagePosition finalizePaint(int linenum) {
 
 		gc.dispose();
 		return new ImagePosition(linenum, image);
+	}
+
+	@Override
+	protected int getNumberOfCreatedData() {
+		return stData.getNumberOfDepthLines();
 	}
 
 }

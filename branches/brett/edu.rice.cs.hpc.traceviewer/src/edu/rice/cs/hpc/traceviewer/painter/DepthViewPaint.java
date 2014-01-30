@@ -73,8 +73,8 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
-			Queue<TimelineDataSet> queue, AtomicInteger counter) {
-		return new TimelineDepthThread( controller, yscale, queue, counter, controller.isEnableMidpoint());
+			Queue<TimelineDataSet> queue) {
+		return new TimelineDepthThread( controller, yscale, queue, controller.isEnableMidpoint());
 	}
 
 	@Override
@@ -85,8 +85,8 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<List<ImagePosition>> getPaintThread(
-			Queue<TimelineDataSet> queue, AtomicInteger counter, Device device, int width) {
+			Queue<TimelineDataSet> queue, int linesToPaint, AtomicInteger paintDone, Device device, int width) {
 
-		return new DepthPaintThread(controller, queue, counter, device, width);
+		return new DepthPaintThread(controller, queue, linesToPaint, paintDone, device, width);
 	}
 }

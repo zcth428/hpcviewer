@@ -46,15 +46,16 @@ public class DetailPaintThread
 	 * The class will return a list of images.
 	 * 
 	 * @param list : the queue of TimelineDataSet data
+	 * @param numLines
 	 * @param device : the display device used to create images. Cannot be null
 	 * @param width : the width of the view
 	 * @param maxTextSize : the maximum size of a letter for a given device
 	 * @param debugMode : flag whether we need to show text information
 	 */
-	public DetailPaintThread( SpaceTimeDataController stData, Queue<TimelineDataSet> list, AtomicInteger counter,
-			Device device, int width, Point maxTextSize, boolean debugMode) {
+	public DetailPaintThread( SpaceTimeDataController stData, Queue<TimelineDataSet> list, int numLines,
+			AtomicInteger paintDone, Device device, int width, Point maxTextSize, boolean debugMode) {
 		
-		super(stData, list, counter, device, width);
+		super(stData, list, numLines, paintDone, device, width);
 		
 		this.maxTextSize = maxTextSize;
 		this.debugMode = debugMode;
@@ -123,7 +124,7 @@ public class DetailPaintThread
 	}
 
 	@Override
-	protected ImagePosition paintFinalize(int linenum) {
+	protected ImagePosition finalizePaint(int linenum) {
 
 		gcOriginal.dispose();
 		gcFinal.dispose();
@@ -131,5 +132,11 @@ public class DetailPaintThread
 		final ImagePosition imgPos = new DetailImagePosition(linenum, lineFinal, lineOriginal);
 
 		return imgPos;
+	}
+
+	@Override
+	protected int getNumberOfCreatedData() {
+
+		return stData.getNumberOfLines();
 	}	
 }

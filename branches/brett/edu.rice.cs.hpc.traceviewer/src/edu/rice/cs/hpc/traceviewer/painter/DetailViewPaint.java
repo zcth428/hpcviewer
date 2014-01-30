@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.State;
@@ -118,10 +119,10 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale,
-			double yscale) {
+			double yscale, Queue<TimelineDataSet> queue, AtomicInteger counter) {
 
 		return new TimelineThread(this.window, controller, ptlService, changedBounds,   
-				yscale, getQueue(), monitor);
+				yscale, queue, counter, monitor);
 	}
 
 	@Override
@@ -132,8 +133,8 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<List<ImagePosition>> getPaintThread(
-			Queue<TimelineDataSet> queue, Device device, int width) {
+			Queue<TimelineDataSet> queue, AtomicInteger counter, Device device, int width) {
 
-		return new DetailPaintThread( queue, device, width, maxTextSize, debug);
+		return new DetailPaintThread( controller, queue, counter, device, width, maxTextSize, debug);
 	}	
 }

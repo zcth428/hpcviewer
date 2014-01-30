@@ -1,6 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -15,6 +17,7 @@ import edu.rice.cs.hpc.traceviewer.painter.BasePaintThread;
 import edu.rice.cs.hpc.traceviewer.painter.DetailImagePosition;
 import edu.rice.cs.hpc.traceviewer.painter.DetailViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.ImagePosition;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /*****************************************************************
  * 
@@ -48,10 +51,10 @@ public class DetailPaintThread
 	 * @param maxTextSize : the maximum size of a letter for a given device
 	 * @param debugMode : flag whether we need to show text information
 	 */
-	public DetailPaintThread( Queue<TimelineDataSet> list, 
+	public DetailPaintThread( SpaceTimeDataController stData, Queue<TimelineDataSet> list, AtomicInteger counter,
 			Device device, int width, Point maxTextSize, boolean debugMode) {
 		
-		super(list, device, width);
+		super(stData, list, counter, device, width);
 		
 		this.maxTextSize = maxTextSize;
 		this.debugMode = debugMode;

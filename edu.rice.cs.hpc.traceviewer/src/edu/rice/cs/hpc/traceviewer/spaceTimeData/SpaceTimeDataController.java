@@ -240,6 +240,10 @@ public abstract class SpaceTimeDataController {
 	public int getNumberOfLines() {
 		return lineNum.get();
 	}
+	
+	public int getNumberOfDepthLines() {
+		return depthLineNum.get();
+	}
 
 	public abstract void closeDB();
 

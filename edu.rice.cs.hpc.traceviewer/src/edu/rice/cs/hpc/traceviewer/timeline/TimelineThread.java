@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Queue;
 
 import org.eclipse.ui.IWorkbenchWindow;
@@ -45,14 +44,13 @@ public class TimelineThread implements Callable<Integer>
 	final private ImageTraceAttributes attrib;
 	
 	final private Queue<TimelineDataSet> queue;
-	final private AtomicInteger counter;
 	
 	/***********************************************************************************************************
 	 * Creates a TimelineThread with SpaceTimeData _stData; the rest of the parameters are things for drawing
 	 * @param changedBounds - whether or not the thread needs to go get the data for its ProcessTimelines.
 	 ***********************************************************************************************************/
 	public TimelineThread(IWorkbenchWindow window, SpaceTimeDataController _stData, ProcessTimelineService traceService,
-			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, AtomicInteger counter, 
+			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, 
 			TimelineProgressMonitor _monitor)
 	{
 		stData = _stData;
@@ -64,7 +62,6 @@ public class TimelineThread implements Callable<Integer>
 		
 		attrib = stData.getAttributes();
 		this.queue = queue;
-		this.counter = counter;
 	}
 	
 	/***************************************************************
@@ -76,7 +73,6 @@ public class TimelineThread implements Callable<Integer>
 	public Integer call()
 	{
 		ProcessTimeline nextTrace = stData.getNextTrace(changedBounds);
-		//counter.decrementAndGet();
 		
 		int numTracesHandled = 0;
 		final boolean usingMidpoint = stData.isEnableMidpoint();		
@@ -100,16 +96,15 @@ public class TimelineThread implements Callable<Integer>
 			else
 				imageHeight++;
 			
-			final ProcessTimeline ptl = traceService.getProcessTimeline(nextTrace.line());
-            if (ptl != null && ptl.size()>=2 ) {
+            if (nextTrace.size()>=2 ) {
                 if (changedBounds)
-                    ptl.shiftTimeBy(stData.getMinBegTime());
+                	nextTrace.shiftTimeBy(stData.getMinBegTime());
 
     			// ---------------------------------
     			// do the data preparation
     			// ---------------------------------
 
-    			final DetailDataPreparation dataCollected = new DetailDataPreparation(stData.getColorTable(), ptl, 
+    			final DetailDataPreparation dataCollected = new DetailDataPreparation(stData.getColorTable(), nextTrace, 
     					attrib.getTimeBegin(), stData.getPainter().getDepth(), imageHeight, pixelLength, usingMidpoint);
     			
     			// do collect data from the database
@@ -129,15 +124,6 @@ public class TimelineThread implements Callable<Integer>
 			
 			nextTrace = stData.getNextTrace(changedBounds);
 			numTracesHandled++;
-			
-			//int c = counter.decrementAndGet();
-/*			int c = counter.get();
-			if ( (nextTrace == null && c>=0) || (nextTrace !=null && c<0) ){
-				System.err.println("Warning, counter: " + c);
-			}
-			if (nextTrace !=null && c<0) {
-				System.err.println("Warning, counter: " + c + ", trace: " + nextTrace.line());
-			}*/
 		}
 		return Integer.valueOf(numTracesHandled);
 	}

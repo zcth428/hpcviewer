@@ -142,7 +142,6 @@ public abstract class BaseViewPaint {
 		} else {
 			queue = new LinkedList<TimelineDataSet>();
 		}
-		final AtomicInteger counter = new AtomicInteger(linesToPaint);
 
 		// -------------------------------------------------------------------
 		// case where everything works fine, and all the data has been read,
@@ -150,29 +149,30 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		
 		Debugger.printTimestampDebug("Rendering beginning (" + canvas.toString()+")");
+
+		// reset the line number to paint
+		controller.resetCounters();
 		
 		final List<Future<Integer>> threads = new ArrayList<Future<Integer>>();
 		
 		for (int threadNum = 0; threadNum < Utility.getNumThreads(linesToPaint); threadNum++) {
-			final Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale, queue, counter);
+			final Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale, queue);
 			final Future<Integer> submit = threadExecutor.submit( thread );
 			threads.add(submit);
 		}
 		
 		// -------------------------------------------------------------------
-		// wait until all threads for retrieving the data and the painting
-		// terminate....
-		// -------------------------------------------------------------------
-		//waitForAllThreads( threads );
-		
-		// -------------------------------------------------------------------
 		// painting to the buffer concurrently
 		// -------------------------------------------------------------------
 		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
+		AtomicInteger paintDone = new AtomicInteger(linesToPaint);
 
+		System.out.println("cl: " + getClass().getSimpleName() + " tot:" + linesToPaint + ", c:" + controller.getNumberOfLines() + 
+				" , d: " + controller.getNumberOfDepthLines());
+		
 		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
 		{
-			final Callable<List<ImagePosition>> thread = getPaintThread(queue, counter, 
+			final Callable<List<ImagePosition>> thread = getPaintThread(queue, linesToPaint, paintDone,
 					canvas.getDisplay(), attributes.numPixelsH);
 			if (thread != null) {
 				final Future<List<ImagePosition>> submit = threadExecutor.submit( thread );
@@ -190,9 +190,6 @@ public abstract class BaseViewPaint {
 		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
 		monitor.endProgress();
 		changedBounds = false;
-
-		// reset the line number to paint
-		controller.resetCounters();
 		
 		return true;
 	}
@@ -231,8 +228,8 @@ public abstract class BaseViewPaint {
 			throws IOException;
 
 	abstract protected Callable<Integer>  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
-			Queue<TimelineDataSet> queue, AtomicInteger counter);
+			Queue<TimelineDataSet> queue);
 	
-	abstract protected Callable<List<ImagePosition>> getPaintThread( Queue<TimelineDataSet> queue, AtomicInteger counter, 
-			Device device, int width);
+	abstract protected Callable<List<ImagePosition>> getPaintThread( Queue<TimelineDataSet> queue, int numLines, 
+			AtomicInteger paintDone, Device device, int width);
 }

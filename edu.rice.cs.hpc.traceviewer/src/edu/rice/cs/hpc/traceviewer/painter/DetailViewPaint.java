@@ -119,10 +119,10 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale,
-			double yscale, Queue<TimelineDataSet> queue, AtomicInteger counter) {
+			double yscale, Queue<TimelineDataSet> queue) {
 
 		return new TimelineThread(this.window, controller, ptlService, changedBounds,   
-				yscale, queue, counter, monitor);
+				yscale, queue, monitor);
 	}
 
 	@Override
@@ -133,8 +133,8 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected Callable<List<ImagePosition>> getPaintThread(
-			Queue<TimelineDataSet> queue, AtomicInteger counter, Device device, int width) {
+			Queue<TimelineDataSet> queue, int numLines, AtomicInteger paintDone, Device device, int width) {
 
-		return new DetailPaintThread( controller, queue, counter, device, width, maxTextSize, debug);
+		return new DetailPaintThread( controller, queue, numLines, paintDone, device, width, maxTextSize, debug);
 	}	
 }

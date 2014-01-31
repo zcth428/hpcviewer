@@ -125,6 +125,7 @@ public abstract class DataPreparation
 		return (x1 + x2)/2;
 	}
 
+	public abstract TimelineDataSet getList();
 
 	/***
 	 * Abstract method to finalize the painting given its range, depth and the function name

@@ -167,9 +167,6 @@ public abstract class BaseViewPaint {
 		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
 		AtomicInteger paintDone = new AtomicInteger(linesToPaint);
 
-		System.out.println("cl: " + getClass().getSimpleName() + " tot:" + linesToPaint + ", c:" + controller.getNumberOfLines() + 
-				" , d: " + controller.getNumberOfDepthLines());
-		
 		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
 		{
 			final Callable<List<ImagePosition>> thread = getPaintThread(queue, linesToPaint, paintDone,

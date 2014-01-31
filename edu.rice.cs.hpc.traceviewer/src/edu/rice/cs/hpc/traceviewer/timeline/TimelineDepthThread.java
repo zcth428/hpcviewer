@@ -1,9 +1,11 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.Queue;
-import java.util.concurrent.Callable;
+
+import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.DepthDataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
@@ -14,16 +16,9 @@ import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
  * Timeline thread for depth view
  *
  *************************************************/
-public class TimelineDepthThread implements Callable<Integer> {
-
-	final private SpaceTimeDataController stData;
-
-	/**The scale in the y-direction of pixels to processors (for the drawing of the images).*/
-	private double scaleY;
-	
-	private boolean usingMidpoint;
-	
-	final private Queue<TimelineDataSet> queue;
+public class TimelineDepthThread 
+	extends BaseTimelineThread
+{
 
 	/*****
 	 * Thread initialization
@@ -38,45 +33,32 @@ public class TimelineDepthThread implements Callable<Integer> {
 			double scaleY, Queue<TimelineDataSet> queue, 
 			boolean usingMidpoint)
 	{
-		this.stData = data;
-		this.scaleY = scaleY;
-		this.usingMidpoint = usingMidpoint;
-		this.queue = queue;
+		super(data, scaleY, queue, usingMidpoint);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Thread#run()
-	 */
-	public Integer call() 
-	{
-		ProcessTimeline nextTrace = stData.getNextDepthTrace();
-		
-		Integer numTraces = 0;
-		final double pixelLength = (stData.getAttributes().getTimeInterval())/(double)stData.getPixelHorizontal();
-		final long timeBegin = stData.getAttributes().getTimeBegin();
-		
-		while (nextTrace != null)
-		{
-			int imageHeight = (int)(Math.round(scaleY*(nextTrace.line()+1)) - Math.round(scaleY*nextTrace.line()));
-			if (scaleY > TimelineThread.MIN_HEIGHT_FOR_SEPARATOR_LINES)
-				imageHeight--;
-			else
-				imageHeight++;
 
-			final DepthDataPreparation dataCollected = new DepthDataPreparation(stData.getColorTable(), 
-					nextTrace, timeBegin,
-					nextTrace.line(), imageHeight, pixelLength, usingMidpoint);
-			
-			dataCollected.collect();
-			
-			// add into the queue
-			final TimelineDataSet dataset = dataCollected.getList();
-			queue.add(dataset);
+	@Override
+	protected ProcessTimeline getNextTrace() {
+		return stData.getNextDepthTrace();
+	}
 
-			nextTrace = stData.getNextDepthTrace();
-			numTraces++;
-		}
-		return numTraces;
+	@Override
+	protected boolean init(ProcessTimeline trace) {
+
+		return true;
+	}
+
+	@Override
+	protected void finalize() {
+	}
+
+	@Override
+	protected DataPreparation getData(ColorTable colorTable,
+			ProcessTimeline timeline, long timeBegin, int linenum, int height,
+			double pixelLength, boolean midPoint) {
+
+		return new DepthDataPreparation(stData.getColorTable(), 
+				timeline, timeBegin,
+				linenum, height, pixelLength, midPoint);
 	}	
 }

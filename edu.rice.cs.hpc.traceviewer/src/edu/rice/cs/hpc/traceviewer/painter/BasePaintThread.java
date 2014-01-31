@@ -14,7 +14,6 @@ import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.painter.ImagePosition;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.timeline.DetailPaintThread;
 
 /*****************************************************************
  *
@@ -34,7 +33,7 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 	final private int numberOfTotalLines;
 	
 	final protected SpaceTimeDataController stData;
-	final private AtomicInteger paintDone;
+	//final private AtomicInteger paintDone;
 	
 	/****
 	 * constructor of the class, requiring a queue of list of data (per line) to be
@@ -58,7 +57,7 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 		
 		this.list = list;
 		this.numberOfTotalLines = numberOfTotalLines;
-		this.paintDone = paintDone;
+		//this.paintDone = paintDone;
 		
 		this.device = device;
 		this.stData = stData;
@@ -117,8 +116,9 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 			final ImagePosition imgPos = finalizePaint(position);
 			
 			listOfImages.add(imgPos);
-			paintDone.decrementAndGet();
+			//paintDone.decrementAndGet();
 		}
+
 		return listOfImages;
 	}
 	

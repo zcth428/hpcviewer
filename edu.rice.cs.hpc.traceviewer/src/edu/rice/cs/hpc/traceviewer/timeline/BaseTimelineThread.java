@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
@@ -30,15 +31,17 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 	final private double scaleY;	
 	final protected boolean usingMidpoint;
 	final private Queue<TimelineDataSet> queue;
+	final private AtomicInteger numTimelines;
 
 	public BaseTimelineThread(SpaceTimeDataController stData,
 			double scaleY, Queue<TimelineDataSet> queue, 
-			boolean usingMidpoint)
+			AtomicInteger numTimelines, boolean usingMidpoint)
 	{
 		this.stData = stData;
 		this.scaleY = scaleY;
 		this.usingMidpoint = usingMidpoint;
 		this.queue = queue;
+		this.numTimelines = numTimelines;
 	}
 	
 	@Override
@@ -82,6 +85,8 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 				final TimelineDataSet dataSet = data.getList();
 				queue.add(dataSet);				
 			}
+			numTimelines.decrementAndGet();
+			
 			trace = getNextTrace();
 			numTraces++;
 			

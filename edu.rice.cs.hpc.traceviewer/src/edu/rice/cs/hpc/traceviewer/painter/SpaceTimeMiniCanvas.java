@@ -8,6 +8,7 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
@@ -33,6 +34,7 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
 public class SpaceTimeMiniCanvas extends SpaceTimeCanvas 
 	implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
 {
+	/** current selection region (mouse-based pointer) **/
 	final private Rectangle selection;
 	
 	/** Relates to the condition that the mouse is in.*/
@@ -54,7 +56,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	private int processBegin;
 	private int processEnd;
 
-	
+
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite)
 	{	
@@ -62,7 +64,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		
 		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
-		
 		
 		selection = new Rectangle(0,0,0,0);
 	}
@@ -90,21 +91,45 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		this.redraw();
 	}
 	
-	public void updateView()
-	{
-		ImageTraceAttributes attributes = stData.getAttributes();
-		setBox(attributes.getTimeBegin(), attributes.getProcessBegin(), 
-				attributes.getTimeEnd(), attributes.getProcessEnd());
-	}
 	
 	/**The painting of the miniMap.*/
 	public void paintControl(PaintEvent event)
 	{
+		//---------------------------------------- begin paint
 		if (this.stData == null)
 			return;
-						
-		view.width = getClientArea().width;
-		view.height = getClientArea().height;
+		
+		final Rectangle clientArea = getClientArea();
+		view.width = clientArea.width;
+		view.height = clientArea.height;
+		
+		event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		event.gc.fillRectangle(clientArea);
+		
+		final Frame frame = stData.getAttributes().getFrame();
+		
+		int p1 = (int) Math.round( frame.begProcess * getScaleY() );
+		int p2 = (int) Math.round( frame.endProcess * getScaleY() );
+		
+		int t1 = (int) Math.round( frame.begTime * getScaleX() );
+		int t2 = (int) Math.round( frame.endTime * getScaleX() );
+
+		// original box
+		event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+		event.gc.fillRectangle(t1, p1, t2-t1, p2-p1);
+
+		if (insideBox) {
+			event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			event.gc.fillRectangle(view.x, view.y, t2-t1, p2-p1);
+		} else {
+			event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_YELLOW));
+			event.gc.drawRectangle(selection);
+		}
+		
+		if (view != null)
+			return;
+		
+		//---------------------------------------- end paint
 		
 		IBaseData baseData = stData.getBaseData();
 		ArrayList<MiniCanvasRectangle> rectangles = new ArrayList<MiniCanvasRectangle>();
@@ -112,17 +137,21 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			Rectangle rect = new Rectangle(0, 0, getClientArea().width, (int) (baseData.getFirstIncluded()*getScaleY()));
 			rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
 		}
+		
 		if (baseData.getLastIncluded() + 1 != baseData.getNumberOfRanks()) {
 			int topY = (int) ((baseData.getLastIncluded()+1)*getScaleY());
 			Rectangle rect = new Rectangle(0, topY , getClientArea().width, getClientArea().height-topY);
 			rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
 		}
+		
 		// This is the region shown in the detail view
 		EnumSet<SampleHiddenReason> mainRegionReasons = EnumSet.noneOf(SampleHiddenReason.class);
 		if (attributes.getProcessInterval() < attributes.numPixelsV)
 			mainRegionReasons.add(SampleHiddenReason.VERTICAL_RESOLUTION);
+		
 		if (!baseData.isDenseBetweenFirstAndLast())
 			mainRegionReasons.add(SampleHiddenReason.FILTERED);
+		
 		if (mainRegionReasons.size() == 0)
 			mainRegionReasons.add(SampleHiddenReason.NONE);
 	

@@ -89,7 +89,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	 * @return The next trace.
 	 **********************************************************************/
 	@Override
-	public synchronized ProcessTimeline getNextTrace(boolean changedBounds) {
+	public ProcessTimeline getNextTrace(boolean changedBounds) {
 		
 		int tracesToRender = Math.min(attributes.numPixelsV, attributes.getProcessInterval());
 		

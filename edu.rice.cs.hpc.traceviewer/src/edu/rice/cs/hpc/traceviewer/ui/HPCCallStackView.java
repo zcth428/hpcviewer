@@ -122,7 +122,6 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 						csViewer.updateView();
 					} else if (sourceValue instanceof Boolean) {
 						csViewer.updateView();
-						miniCanvas.updateView();
 					}
 				}
 			}

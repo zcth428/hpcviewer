@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.DepthDataPreparation;
@@ -31,9 +32,9 @@ public class TimelineDepthThread
 	 */
 	public TimelineDepthThread(SpaceTimeDataController data, 
 			double scaleY, Queue<TimelineDataSet> queue, 
-			boolean usingMidpoint)
+			AtomicInteger timelineDone, boolean usingMidpoint)
 	{
-		super(data, scaleY, queue, usingMidpoint);
+		super(data, scaleY, queue, timelineDone, usingMidpoint);
 	}
 
 

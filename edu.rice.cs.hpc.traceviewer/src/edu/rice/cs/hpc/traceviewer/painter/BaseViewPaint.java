@@ -154,9 +154,10 @@ public abstract class BaseViewPaint {
 		controller.resetCounters();
 		
 		final List<Future<Integer>> threads = new ArrayList<Future<Integer>>();
+		final AtomicInteger timelineDone = new AtomicInteger(linesToPaint);
 		
 		for (int threadNum = 0; threadNum < Utility.getNumThreads(linesToPaint); threadNum++) {
-			final Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale, queue);
+			final Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale, queue, timelineDone);
 			final Future<Integer> submit = threadExecutor.submit( thread );
 			threads.add(submit);
 		}
@@ -165,11 +166,10 @@ public abstract class BaseViewPaint {
 		// painting to the buffer concurrently
 		// -------------------------------------------------------------------
 		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
-		AtomicInteger paintDone = new AtomicInteger(linesToPaint);
 
 		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
 		{
-			final Callable<List<ImagePosition>> thread = getPaintThread(queue, linesToPaint, paintDone,
+			final Callable<List<ImagePosition>> thread = getPaintThread(queue, linesToPaint, timelineDone,
 					canvas.getDisplay(), attributes.numPixelsH);
 			if (thread != null) {
 				final Future<List<ImagePosition>> submit = threadExecutor.submit( thread );
@@ -187,9 +187,10 @@ public abstract class BaseViewPaint {
 		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
 		monitor.endProgress();
 		changedBounds = false;
-		
+
 		return true;
 	}
+
 
 	//------------------------------------------------------------------------------------------------
 	// abstract methods 
@@ -225,8 +226,8 @@ public abstract class BaseViewPaint {
 			throws IOException;
 
 	abstract protected Callable<Integer>  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
-			Queue<TimelineDataSet> queue);
+			Queue<TimelineDataSet> queue, AtomicInteger timelineDone);
 	
 	abstract protected Callable<List<ImagePosition>> getPaintThread( Queue<TimelineDataSet> queue, int numLines, 
-			AtomicInteger paintDone, Device device, int width);
+			AtomicInteger timelineDone, Device device, int width);
 }

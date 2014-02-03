@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.ui.IWorkbenchWindow;
 
@@ -31,9 +32,9 @@ public class TimelineThread
 	 ***********************************************************************************************************/
 	public TimelineThread(IWorkbenchWindow window, SpaceTimeDataController _stData, ProcessTimelineService traceService,
 			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, 
-			TimelineProgressMonitor _monitor)
+			AtomicInteger numTimelines, TimelineProgressMonitor _monitor)
 	{
-		super(_stData, _scaleY, queue, _stData.isEnableMidpoint());
+		super(_stData, _scaleY, queue, numTimelines,_stData.isEnableMidpoint());
 		changedBounds = _changedBounds;		
 		monitor = _monitor;
 		this.traceService = traceService;		

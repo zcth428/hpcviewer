@@ -5,16 +5,11 @@ import java.io.IOException;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
-import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
-import edu.rice.cs.hpc.data.experiment.BaseExperiment;
-import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
-import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
-import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
 /**
@@ -25,59 +20,22 @@ import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
  */
 public class SpaceTimeDataControllerLocal extends SpaceTimeDataController 
 {	
-	ImageTraceAttributes oldAtributes;
-
-	private TraceAttribute trAttribute;
-
 	private final File traceFile;
 
-	IStatusLineManager statusMgr;
-	IWorkbenchWindow window;
-
-	public SpaceTimeDataControllerLocal(
-
-	IWorkbenchWindow _window, IStatusLineManager _statusMgr, File expFile,
+	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, 
+			IStatusLineManager _statusMgr, File expFile,
 			File _traceFile) {
 
-		super(_window);
-		statusMgr = _statusMgr;
-
-		attributes = new ImageTraceAttributes();
-		oldAtributes = new ImageTraceAttributes();
+		super(_window, expFile);
+		
+		final TraceAttribute trAttribute = exp.getTraceAttribute();
 		
 		traceFile = _traceFile;
-		
-		window = _window;
-
-		BaseExperiment exp = new ExperimentWithoutMetrics();
-		try {
-			exp.open(expFile, new ProcedureAliasMap());
-		} catch (InvalExperimentException e) {
-			System.out.println("Parse error in Experiment XML at line "
-					+ e.getLineNumber());
-			e.printStackTrace();
-			// return;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		
-		buildScopeMapAndColorTable(_window, exp);
-
-		trAttribute = exp.getTraceAttribute();
-		minBegTime = trAttribute.dbTimeMin;
-		maxEndTime = trAttribute.dbTimeMax;
-
-		dbName = exp.getName();
 		try {
 			dataTrace = new BaseData(traceFile.getAbsolutePath(), trAttribute.dbHeaderSize, 24);
 		} catch (IOException e) {
 			System.err.println("Master buffer could not be created");
 		}
-		totalTraceCountInDB = dataTrace.getNumberOfRanks();
-		
-		super.painter = new PaintManager(attributes, colorTable, maxDepth);
-		
 	}
 
 
@@ -150,7 +108,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	public IFilteredData createFilteredBaseData() {
 		try{
 			return new FilteredBaseData(getTraceFileAbsolutePath(), 
-					trAttribute.dbHeaderSize, TraceAttribute.DEFAULT_RECORD_SIZE);
+					exp.getTraceAttribute().dbHeaderSize, TraceAttribute.DEFAULT_RECORD_SIZE);
 		}
 		catch (Exception e){
 			e.printStackTrace();
@@ -162,9 +120,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 		return traceFile.getAbsolutePath();
 	}
 
-	public TraceAttribute getTraceAttribute() {
-		return trAttribute;
-	}
 	@Override
 	public void closeDB() {
 		dataTrace.dispose();

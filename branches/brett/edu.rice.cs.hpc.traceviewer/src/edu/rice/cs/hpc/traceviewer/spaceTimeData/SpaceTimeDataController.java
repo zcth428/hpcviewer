@@ -1,15 +1,21 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
+import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 
@@ -17,10 +23,24 @@ import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
-public abstract class SpaceTimeDataController {
 
+/*******************************************************************************************
+ * 
+ * Class to store global information concerning the database and the trace.
+ * The class is designed to work for both local and remote database. Any references have to 
+ * 	be addressed to the methods of this class instead of the derived class to enable
+ *  transparency.
+ * 
+ * @author Original authors: Sinchan Banarjee, Michael France, Reed Lundrum and Philip Taffet
+ * 
+ * Modification:
+ * - 2013 Philip: refactoring into three classes : abstract (this class), local and remote
+ * - 2014.2.1 Laksono: refactoring to make it as simple as possible and avoid code redundancy
+ *
+ *******************************************************************************************/
+public abstract class SpaceTimeDataController 
+{
 	PaintManager painter;
-
 	
 	protected ImageTraceAttributes attributes;
 	protected String dbName;
@@ -31,7 +51,7 @@ public abstract class SpaceTimeDataController {
 	protected long maxEndTime, minBegTime;
 
 
-	final protected ProcessTimelineService ptlService;
+	protected ProcessTimelineService ptlService;
 
 	
 	/** The map between the nodes and the cpid's. */
@@ -40,15 +60,8 @@ public abstract class SpaceTimeDataController {
 	// We probably want to get away from this. The for code that needs it should be
 	// in one of the threads. It's here so that both local and remote can use
 	// the same thread class yet get their information differently.
-	final AtomicInteger lineNum, depthLineNum;
-	
-
-	/**
-	 * The number of processes in the database, independent of the current
-	 * display size
-	 */
-	protected int totalTraceCountInDB;
-	
+	AtomicInteger lineNum, depthLineNum;
+		
 	/** The maximum depth of any single CallStackSample in any trace. */
 	protected int maxDepth;
 	
@@ -56,28 +69,67 @@ public abstract class SpaceTimeDataController {
 	private boolean enableMidpoint;
 	
 	protected IBaseData dataTrace = null;
-	// So, I'd like to declare attributes and dbName final and give them their
-	// values in the child class's constructor, but that doesn't work in Java.
-	// Alternatively, I'd be fine with making them final and having the
-	// constructor for this class take them in and set them, but the
-	// superclass's constructor has to be the first line in the method, and
-	// dbName isn't available on the first line. So the responsibility is left
-	// to the child classes: please set attributes and dbName in your
-	// constructor.
+	final protected BaseExperiment exp;
+	
 
-	public SpaceTimeDataController(IWorkbenchWindow _window) {
-		attributes = new ImageTraceAttributes();
-
-		lineNum = new AtomicInteger(0);
-		depthLineNum = new AtomicInteger(0);
-
-		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
-		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
+	/***
+	 * Constructor to create a data based on File. This constructor is more suitable
+	 * for local database
+	 * 
+	 * @param _window : SWT window
+	 * @param expFile : experiment file
+	 */
+	public SpaceTimeDataController(IWorkbenchWindow _window, File expFile) {
 		
+		exp = new ExperimentWithoutMetrics();
+		try {
+			exp.open(expFile, new ProcedureAliasMap());
+		} catch (InvalExperimentException e) {
+			System.out.println("Parse error in Experiment XML at line "
+					+ e.getLineNumber());
+			e.printStackTrace();
+			// return;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		
+		init(_window);
 	}
 	
-	protected void buildScopeMapAndColorTable(IWorkbenchWindow _window,
-			BaseExperiment exp) {
+	/*****
+	 * Constructor to create a data based on input stream, which is convenient for remote database
+	 * 
+	 * @param _window : SWT window
+	 * @param expStream : input stream
+	 * @param Name : the name of the file on the remote server
+	 *****/
+	public SpaceTimeDataController(IWorkbenchWindow _window, InputStream expStream, String Name) {
+		
+		exp = new ExperimentWithoutMetrics();
+
+		try {
+			// Without metrics, so param 3 is false
+			exp.open(expStream, new ProcedureAliasMap(), Name);
+		}
+		catch (InvalExperimentException e) {
+			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
+			e.printStackTrace();
+			// return;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		init(_window);
+	}
+
+	/******
+	 * Initialize the object
+	 * 
+	 * @param _window
+	 ******/
+	protected void init(IWorkbenchWindow _window) {
+		
 		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);
 
@@ -92,9 +144,23 @@ public abstract class SpaceTimeDataController {
 		// time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
 		maxDepth = exp.getRootScope().dfsSetup(visitor, colorTable, 1);
+		
+		attributes = new ImageTraceAttributes();
 
+		lineNum = new AtomicInteger(0);
+		depthLineNum = new AtomicInteger(0);
+
+		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
+
+		TraceAttribute trAttribute = exp.getTraceAttribute();
+		minBegTime = trAttribute.dbTimeMin;
+		maxEndTime = trAttribute.dbTimeMax;
+
+		dbName = exp.getName();
+
+		painter = new PaintManager(attributes, colorTable, maxDepth);
 	}
-
 
 	private int getCurrentlySelectedProcess()
 	{
@@ -123,7 +189,6 @@ public abstract class SpaceTimeDataController {
 		
 		return painter;
 	}
-
 
 
 	public ProcessTimeline getDepthTrace() {
@@ -279,7 +344,4 @@ public abstract class SpaceTimeDataController {
 
 	public abstract void fillTracesWithData(boolean changedBounds, int numThreadsToLaunch)
 			throws IOException;
-
-
-
 }

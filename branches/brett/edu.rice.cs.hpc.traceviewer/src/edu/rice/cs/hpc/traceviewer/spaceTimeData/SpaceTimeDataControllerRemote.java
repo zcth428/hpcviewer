@@ -6,66 +6,44 @@ import java.io.InputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
-import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
-import edu.rice.cs.hpc.data.experiment.BaseExperiment;
-import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
-import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.RemoteFilteredBaseData;
-import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.db.IThreadListener;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 
+
+/**
+ * The remote data version of the Data controller
+ * 
+ * @author Philip Taffet
+ * 
+ */
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController 
 {	
 	final RemoteDataRetriever dataRetriever;
 
-	private final int headerSize;
 	private final TraceName[]  valuesX;
 	private final DataOutputStream server;
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, TraceName[] valuesX, DataOutputStream connectionToServer) {
 
-		super(_window);
-		BaseExperiment exp = new ExperimentWithoutMetrics();
-		try {
-			// Without metrics, so param 3 is false
-			exp.open(expStream, new ProcedureAliasMap(), Name);
-		}
-		catch (InvalExperimentException e) {
-			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
-			e.printStackTrace();
-			// return;
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		buildScopeMapAndColorTable(_window, exp);
-
-		TraceAttribute attribute = exp.getTraceAttribute();
-		minBegTime = attribute.dbTimeMin;
-		maxEndTime = attribute.dbTimeMax;
-		headerSize = attribute.dbHeaderSize;
-
-		dbName = exp.getName();
-		
+		super(_window, expStream, Name);
 		dataRetriever = _dataRet;
-		totalTraceCountInDB = _numTraces;
+
 		this.valuesX = valuesX;
 		server = connectionToServer;
 
-		super.painter = new PaintManager(attributes, colorTable, maxDepth);
 		super.dataTrace = createFilteredBaseData();
 	}
 
 	
 	@Override
 	public IFilteredData createFilteredBaseData() {
+		final int headerSize = exp.getTraceAttribute().dbHeaderSize;
 		return new RemoteFilteredBaseData(valuesX, headerSize, server);
 	}
 
@@ -155,6 +133,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 
 
 	public int getHeaderSize() {
+		final int headerSize = exp.getTraceAttribute().dbHeaderSize;
 		return headerSize;
 	}
 	

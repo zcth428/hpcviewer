@@ -236,8 +236,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		
 		long detailBottomRightTime = (long)(miniBottomRight.x / getScaleX());
 		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY()) - processBegin;
-		
-		ImageTraceAttributes attributes = stData.getAttributes();
 				
 		Frame frame = new Frame( attributes.getFrame() );
 		frame.set(detailTopLeftTime, detailBottomRightTime, detailTopLeftProcess, detailBottomRightProcess);

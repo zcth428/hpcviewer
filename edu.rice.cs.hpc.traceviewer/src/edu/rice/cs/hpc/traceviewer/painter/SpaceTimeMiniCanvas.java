@@ -6,11 +6,16 @@ import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
@@ -46,6 +51,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	
 	/** We store the ones from the beginning so that we can display correctly even with filtering*/
 	private int processBegin, processEnd;
+	
+    final private Color COMPLETELY_FILTERED_OUT_COLOR;
+    final private Color NOT_FILTERED_OUT_COLOR;
+    final private Color COLOR_BLACK;
+    
+    /**
+     * The pattern that we draw when we want to show that some ranks in the
+     * region aren't shown because of filtering
+     */
+    private final Pattern PARTIALLY_FILTERED_PATTERN; 
 
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite)
@@ -55,15 +70,49 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
 		
-		//selection = new Rectangle(0,0,0,0);
+        // initialize colors
+        COMPLETELY_FILTERED_OUT_COLOR = new Color(this.getDisplay(), 50,50,50);
+        NOT_FILTERED_OUT_COLOR = getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY);
+        COLOR_BLACK = getDisplay().getSystemColor(SWT.COLOR_BLACK);
+
+        // initialize pattern for filtered ranks
+        PARTIALLY_FILTERED_PATTERN = createStripePattern();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.widgets.Widget#dispose()
+	 */
+	@Override
+    public void dispose() {
+    	COMPLETELY_FILTERED_OUT_COLOR.dispose();
+    	PARTIALLY_FILTERED_PATTERN.dispose();
+    	
+    	super.dispose();
+    }
+    
+    private Pattern createStripePattern() {
+            Image image = new Image(getDisplay(), 15, 15);
+            GC gc = new GC(image);
+            gc.setBackground(NOT_FILTERED_OUT_COLOR);
+            gc.fillRectangle(image.getBounds());
+            gc.setForeground(COMPLETELY_FILTERED_OUT_COLOR);
+            // Oddly enough, drawing from points outside of the image makes the
+            // lines look a lot better when the pattern is tiled.
+            for (int i = 5; i < 15; i+= 5) {
+                    gc.drawLine(-5, i+5, i+5, -5);
+                    gc.drawLine(i-5, 20, 20, i-5);
+            }
+            gc.dispose();
+            return new Pattern(getDisplay(), image);
+    }
 
 
 	/**********
 	 * update the content of the view due to a new database
 	 * 
 	 * @param _stData : the new databse
-	 */
+	 **********/
 	public void updateView(SpaceTimeDataController _stData) 
 	{
 		setSpaceTimeData(_stData);
@@ -123,7 +172,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		
 		// paint the background with black color
 		
-		event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		event.gc.setBackground(COLOR_BLACK);
 		event.gc.fillRectangle(clientArea);
 		
 		// paint the current view
@@ -131,8 +180,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		final Frame frame = stData.getAttributes().getFrame();		
 		IBaseData baseData = stData.getBaseData();
 
-		int p1 = (int) Math.round( (frame.begProcess+baseData.getFirstIncluded()) * getScaleY() );
-		int p2 = (int) Math.round( (frame.endProcess+baseData.getFirstIncluded()) * getScaleY() );
+		int p1 = (int) Math.round( (baseData.getFirstIncluded()) * getScaleY() );
+		int p2 = (int) Math.round( (baseData.getLastIncluded()) * getScaleY() );
 		
 		int t1 = (int) Math.round( frame.begTime * getScaleX() );
 		int t2 = (int) Math.round( frame.endTime * getScaleX() );
@@ -141,19 +190,86 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		int dt = Math.max(t2-t1, 1);
 
 		// original box
-		event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+		event.gc.setBackground(COMPLETELY_FILTERED_OUT_COLOR);
 		event.gc.fillRectangle(t1, p1, dt, dp);
+
+        if (baseData.isDenseBetweenFirstAndLast()){
+            event.gc.setBackground(NOT_FILTERED_OUT_COLOR);
+        } else {
+            try{
+            event.gc.setBackgroundPattern(PARTIALLY_FILTERED_PATTERN);
+            }
+            catch (SWTException e){
+                    System.out.println("Advanced graphics not supported");
+                    event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_RED));
+            }
+        }
+        // The width of the region is always the same as the width of the
+        // minimap because you can't filter by time
+        event.gc.fillRectangle(0, p1, getClientArea().width, dp);
 
 		if (insideBox) {
 			// when we move the box
 			event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
-			event.gc.fillRectangle(view.x, view.y, dt, dp);
+			event.gc.fillRectangle(view);
 		} else {
 			// when we want to create a new box
 			event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_YELLOW));
 			event.gc.drawRectangle(view);
 		}
 	}
+	
+	
+    /**The painting of the miniMap.
+     * this is the original paintControl with Rectangles and labels
+     * 
+    public void paintControl(PaintEvent event)
+    {
+            if (this.stData == null)
+                    return;
+                                           
+            view.width = getClientArea().width;
+            view.height = getClientArea().height;
+           
+            IBaseData baseData = stData.getBaseData();
+            ArrayList<MiniCanvasRectangle> rectangles = new ArrayList<MiniCanvasRectangle>();
+            if (baseData.getFirstIncluded() != 0) {
+                    Rectangle rect = new Rectangle(0, 0, getClientArea().width, (int) (baseData.getFirstIncluded()*getScaleY()));
+                    rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
+            }
+            if (baseData.getLastIncluded() + 1 != baseData.getNumberOfRanks()) {
+                    int topY = (int) ((baseData.getLastIncluded()+1)*getScaleY());
+                    Rectangle rect = new Rectangle(0, topY , getClientArea().width, getClientArea().height-topY);
+                    rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
+            }
+            // This is the region shown in the detail view
+            EnumSet<SampleHiddenReason> mainRegionReasons = EnumSet.noneOf(SampleHiddenReason.class);
+            if (attributes.getProcessInterval() < attributes.numPixelsV)
+                    mainRegionReasons.add(SampleHiddenReason.VERTICAL_RESOLUTION);
+            if (!baseData.isDenseBetweenFirstAndLast())
+                    mainRegionReasons.add(SampleHiddenReason.FILTERED);
+            if (mainRegionReasons.size() == 0)
+                    mainRegionReasons.add(SampleHiddenReason.NONE);
+   
+            // TODO: THESE ARE APPROXIMATIONS. LOOKING UP THE ACTUAL VALUE WOULD BE BETTER.
+            int topPx = (int) ((baseData.getFirstIncluded() + attributes.getProcessBegin()) * getScaleY());
+            int height = (int)(attributes.getProcessInterval() * getScaleY());
+            Rectangle rect = new Rectangle(
+                            (int)(attributes.getTimeBegin() * getScaleX()), topPx,
+                            (int)(attributes.getTimeInterval() * getScaleX()), height);
+            rectangles.add(new MiniCanvasRectangle(mainRegionReasons, false, rect));
+           
+            //TODO: None of the code above this point belongs in the paint method.
+            Control[] oldChildren = this.getChildren();
+            for (int i = 0; i < oldChildren.length; i++) {
+                    // oldChildren[i].dispose();
+            }
+            for (MiniCanvasRectangle miniCanvasRectangle : rectangles) {
+                    miniCanvasRectangle.getControl(this);
+            }
+           
+    }
+    */
 	
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/
 	public void setBox(long topLeftTime, int topLeftProcess, long bottomRightTime, int bottomRightProcess)

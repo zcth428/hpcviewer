@@ -124,7 +124,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 						// operations when every ones need to refresh their data
 						//	this event can happen when a filter event occurs
 						csViewer.updateView();
-						miniCanvas.redraw();
+						miniCanvas.updateView();
 					}
 				}
 			}

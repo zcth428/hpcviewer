@@ -116,8 +116,8 @@ public abstract class BaseViewPaint {
 		// Create multiple threads to paint the view
 		// -------------------------------------------------------------------
 
-		double xscale = canvas.getScaleX();
-		double yscale = Math.max(canvas.getScaleY(), 1);
+		double xscale = canvas.getScalePixelsPerTime();
+		double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
 		// decompression can be done with multiple threads without accessing gtk (on linux)
 		// It looks like there's no major performance effect though

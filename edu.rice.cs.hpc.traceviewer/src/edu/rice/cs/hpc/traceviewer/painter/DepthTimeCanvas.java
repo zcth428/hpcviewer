@@ -133,7 +133,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		if (this.stData == null || imageBuffer == null)
 			return;
 		
-		topLeftPixelX = Math.round(attributes.getTimeBegin()*getScaleX());
+		topLeftPixelX = Math.round(attributes.getTimeBegin()*getScalePixelsPerTime());
 		
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
@@ -160,7 +160,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
         }
 		
 		//draws cross hairs
-		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScaleX())-2-topLeftPixelX);
+		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-2-topLeftPixelX);
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		
@@ -219,7 +219,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 
 
     @Override
-	public double getScaleX()
+	public double getScalePixelsPerTime()
 	{
 		final int viewWidth = getClientArea().width;
 
@@ -227,7 +227,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	}
 
 	@Override
-	public double getScaleY() {
+	public double getScalePixelsPerRank() {
 		final Rectangle r = this.getClientArea();
 		return Math.max(r.height/(double)painter.getMaxDepth(), 1);
 	}
@@ -281,8 +281,8 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 */
     private void setDetail()
     {
-		long topLeftTime = (long)(leftSelection / getScaleX());
-		long bottomRightTime = (long)(rightSelection / getScaleX());
+		long topLeftTime = (long)(leftSelection / getScalePixelsPerTime());
+		long bottomRightTime = (long)(rightSelection / getScalePixelsPerTime());
 		
 		attributes.setTime(topLeftTime, bottomRightTime);
 		
@@ -308,7 +308,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
         if(mouseDown == null)
     		return;
 
-    	long closeTime = stData.getAttributes().getTimeBegin() + (long)(mouseDown.x / getScaleX());
+    	long closeTime = stData.getAttributes().getTimeBegin() + (long)(mouseDown.x / getScalePixelsPerTime());
     	
     	Position currentPosition = painter.getPosition();
     	Position newPosition = new Position(closeTime, currentPosition.process);

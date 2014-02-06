@@ -356,8 +356,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (this.stData == null)
 			return;
 		
-		view.x = (int) Math.round(attributes.getTimeBegin() * getScaleX());
-		view.y = (int) Math.round(attributes.getProcessBegin() * getScaleY());
+		view.x = (int) Math.round(attributes.getTimeBegin() * getScalePixelsPerTime());
+		view.y = (int) Math.round(attributes.getProcessBegin() * getScalePixelsPerRank());
 		
 		Rectangle region = imageBuffer.getBounds();
 		if (region.width != view.width || region.height != view.height)
@@ -380,8 +380,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long selectedTime = painter.getPosition().time;
 		int selectedProcess = painter.getPosition().process;
 		
-		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScaleX())-10-view.x);
-		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScaleY())-10-view.y);
+		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-10-view.x);
+		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScalePixelsPerRank())-10-view.y);
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,topPixelCrossHairY+8,20,4);
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);
@@ -583,7 +583,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/**************************************************************************
 	 * Gets the scale along the x-axis (pixels per time unit).
 	 **************************************************************************/
-	public double getScaleX()
+	public double getScalePixelsPerTime()
 	{
 		return (double)view.width / (double)this.getNumTimeUnitDisplayed();
 	}
@@ -591,7 +591,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/**************************************************************************
 	 * Gets the scale along the y-axis (pixels per process).
 	 **************************************************************************/
-	public double getScaleY()
+	public double getScalePixelsPerRank()
 	{
 		return view.height / this.getNumProcessesDisplayed();
 	}
@@ -695,16 +695,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	private void setDetail()
     {
-		int topLeftProcess = (int) (selectionTopLeftY / getScaleY());
-		long topLeftTime = (long)(selectionTopLeftX / getScaleX());
+		int topLeftProcess = (int) (selectionTopLeftY / getScalePixelsPerRank());
+		long topLeftTime = (long)(selectionTopLeftX / getScalePixelsPerTime());
 		
 		// ---------------------------------------------------------------------------------------
 		// we should include the partial selection of a time or a process
 		// for instance if the user selects processes where the max process is between
 		// 	10 and 11, we should include process 11 (just like keynote selection)
 		// ---------------------------------------------------------------------------------------
-		int bottomRightProcess = (int) Math.ceil( (selectionBottomRightY / getScaleY()) );
-		long bottomRightTime = (long)Math.ceil( (selectionBottomRightX / getScaleX()) );
+		int bottomRightProcess = (int) Math.ceil( (selectionBottomRightY / getScalePixelsPerRank()) );
+		long bottomRightTime = (long)Math.ceil( (selectionBottomRightX / getScalePixelsPerTime()) );
 		
 		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
@@ -859,13 +859,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     	//need to do different things if there are more traces to paint than pixels
     	if(view.height > getNumProcessesDisplayed())
     	{
-    		selectedProcess = (int)(attributes.getProcessBegin()+mouseDown.y/getScaleY());
+    		selectedProcess = (int)(attributes.getProcessBegin()+mouseDown.y/getScalePixelsPerRank());
     	}
     	else
     	{
     		selectedProcess = (int)(attributes.getProcessBegin()+(mouseDown.y*(getNumProcessesDisplayed()))/view.height);
     	}
-    	long closeTime = attributes.getTimeBegin() + (long)(mouseDown.x / getScaleX());
+    	long closeTime = attributes.getTimeBegin() + (long)(mouseDown.x / getScalePixelsPerTime());
     	
     	if (closeTime > attributes.getTimeEnd()) {
     		System.err.println("ERR STDC SCSSample time: " + closeTime +" max time: " + 

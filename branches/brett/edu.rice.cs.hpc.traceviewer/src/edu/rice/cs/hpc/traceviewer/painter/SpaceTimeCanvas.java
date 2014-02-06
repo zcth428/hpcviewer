@@ -29,15 +29,12 @@ public abstract class SpaceTimeCanvas extends Canvas
 		super(_composite, SWT.NO_BACKGROUND);
 		view = new Rectangle(0, 0, 0, 0);
 	}
-    
-    
+        
     /**Conversion factor from actual time to pixels on the x axis. To be implemented in subclasses.*/
-    public abstract double getScaleX();
+    public abstract double getScalePixelsPerTime();
     
     /**Conversion factor from actual processes to pixels on the y axis.  To be implemented in subclasses.*/
-    public abstract double getScaleY();
-    
-        
+    public abstract double getScalePixelsPerRank();
     
     public void setSpaceTimeData(SpaceTimeDataController dataTraces) {
     	this.stData = dataTraces;

@@ -903,18 +903,33 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *      
 	 * *****************************************************************/
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
+	 */
 	public void mouseDoubleClick(MouseEvent e) { }
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseDown(org.eclipse.swt.events.MouseEvent)
+	 */
 	public void mouseDown(MouseEvent e)
 	{
 		// take into account ONLY when the button-1 is clicked and it's never been clicked before
-		if (e.button == 1 && mouseState == MouseState.ST_MOUSE_NONE)
+		// the click is not right click (or modifier click on Mac)
+		if (e.button == 1 && mouseState == MouseState.ST_MOUSE_NONE 
+				&& (e.stateMask & SWT.MODIFIER_MASK)==0 )
 		{
 			mouseState = MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);
 		}
+		System.out.println("STDC " + e + " \t brn:" + e.button + " \tm: " + e.stateMask);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.MouseEvent)
+	 */
 	public void mouseUp(MouseEvent e)
 	{
 		if (mouseState == MouseState.ST_MOUSE_DOWN)
@@ -951,6 +966,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.events.MouseMoveListener#mouseMove(org.eclipse.swt.events.MouseEvent)
+	 */
 	public void mouseMove(MouseEvent e)
 	{
 		if(mouseState == MouseState.ST_MOUSE_DOWN)
@@ -1190,6 +1209,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				break;
 			}
 		}
+	}
+	
+	/********************************************************
+	 * retrieve the image of the buffer to be stored in a file
+	 * 
+	 * @return
+	 ********************************************************/
+	public ImageData getImageData() {
+		return imageBuffer.getImageData();
 	}
 	
 	/*****

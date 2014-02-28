@@ -173,6 +173,7 @@ public class DecompressionThread extends Thread {
 				System.out.println("CPID too small");*/
 			toReturn[i] = new DataRecord(currentTime, CPID, Constants.dataIdxNULL);
 		}
+		decompressor.close();
 		return toReturn;
 	}
 

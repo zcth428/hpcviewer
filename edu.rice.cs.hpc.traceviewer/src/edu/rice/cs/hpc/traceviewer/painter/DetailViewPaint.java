@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.traceviewer.painter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -23,6 +22,7 @@ import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
 import edu.rice.cs.hpc.traceviewer.timeline.DetailPaintThread;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
@@ -118,7 +118,7 @@ public class DetailViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale,
+	protected BaseTimelineThread getTimelineThread(SpaceTimeCanvas canvas, double xscale,
 			double yscale, Queue<TimelineDataSet> queue, AtomicInteger timelineDone) {
 
 		return new TimelineThread(this.window, controller, ptlService, changedBounds,   
@@ -132,7 +132,7 @@ public class DetailViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected Callable<List<ImagePosition>> getPaintThread(
+	protected BasePaintThread getPaintThread(
 			Queue<TimelineDataSet> queue, int numLines, AtomicInteger timelineDone, Device device, int width) {
 
 		return new DetailPaintThread( controller, queue, numLines, timelineDone, device, width, maxTextSize, debug);

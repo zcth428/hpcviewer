@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -14,6 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
 import edu.rice.cs.hpc.traceviewer.timeline.DepthPaintThread;
 import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 
@@ -72,7 +72,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected Callable<Integer> getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
+	protected BaseTimelineThread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
 			Queue<TimelineDataSet> queue, AtomicInteger timelineDone) {
 		return new TimelineDepthThread( controller, yscale, queue, timelineDone, controller.isEnableMidpoint());
 	}
@@ -84,7 +84,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected Callable<List<ImagePosition>> getPaintThread(
+	protected BasePaintThread getPaintThread(
 			Queue<TimelineDataSet> queue, int linesToPaint, AtomicInteger timelineDone, Device device, int width) {
 
 		return new DepthPaintThread(controller, queue, linesToPaint, timelineDone, device, width);

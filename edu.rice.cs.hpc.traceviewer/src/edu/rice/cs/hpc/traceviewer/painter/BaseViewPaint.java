@@ -20,6 +20,7 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.util.Utility;
@@ -225,9 +226,9 @@ public abstract class BaseViewPaint {
 	abstract protected void launchDataGettingThreads(boolean changedBounds, int numThreads) 
 			throws IOException;
 
-	abstract protected Callable<Integer>  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
+	abstract protected BaseTimelineThread  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
 			Queue<TimelineDataSet> queue, AtomicInteger timelineDone);
 	
-	abstract protected Callable<List<ImagePosition>> getPaintThread( Queue<TimelineDataSet> queue, int numLines, 
+	abstract protected BasePaintThread getPaintThread( Queue<TimelineDataSet> queue, int numLines, 
 			AtomicInteger timelineDone, Device device, int width);
 }

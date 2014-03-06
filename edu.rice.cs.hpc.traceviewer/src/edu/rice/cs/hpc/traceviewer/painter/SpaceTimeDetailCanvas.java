@@ -10,6 +10,8 @@ import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -145,6 +147,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		// set the number of maximum threads in the pool to the number of hardware threads
 		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
+		
+		addDisposeListener( new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				// TODO Auto-generated method stub
+				dispose();
+			}
+		});
 	}
 
 

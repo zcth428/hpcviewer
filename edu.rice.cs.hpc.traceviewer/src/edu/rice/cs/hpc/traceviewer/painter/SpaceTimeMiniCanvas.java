@@ -7,6 +7,8 @@ import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
@@ -78,6 +80,15 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 
         // initialize pattern for filtered ranks
         PARTIALLY_FILTERED_PATTERN = createStripePattern();
+        
+		addDisposeListener( new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				dispose();				
+			}
+		});
+
 	}
 
 	/*

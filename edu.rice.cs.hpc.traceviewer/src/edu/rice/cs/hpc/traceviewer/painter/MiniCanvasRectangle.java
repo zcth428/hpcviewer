@@ -134,7 +134,8 @@ public class MiniCanvasRectangle {
 	}
 
 	public void dispose() {
-		img.dispose();
+		if (img != null)
+			img.dispose();
 	}
 }
 

@@ -9,6 +9,8 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
@@ -83,6 +85,13 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		rightSelection = 0;
 		
 		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
+		addDisposeListener( new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				dispose();				
+			}
+		});
 	}
 	
 	/****

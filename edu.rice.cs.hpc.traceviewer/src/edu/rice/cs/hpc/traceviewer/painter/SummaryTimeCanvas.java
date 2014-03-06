@@ -8,6 +8,8 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
@@ -67,6 +69,14 @@ implements PaintListener, IOperationHistoryListener
 				{
 					getDisplay().syncExec(new ResizeThread( new SummaryBufferPaint()));
 				}
+			}
+		});
+		
+		addDisposeListener( new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				dispose();				
 			}
 		});
 	}
@@ -194,6 +204,17 @@ implements PaintListener, IOperationHistoryListener
 			detailData = _detailData;
 			rebuffer();
 		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.widgets.Widget#dispose()
+	 */
+	@Override
+	public void dispose()
+	{
+		imageBuffer.dispose();
+		super.dispose();
 	}
 	
 	//---------------------------------------------------------------------------------------

@@ -1035,7 +1035,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		GC origGC = new GC(imageOrig);
 		origGC.setBackground(Constants.COLOR_WHITE);
-		origGC.fillRectangle(0,0,view.width,view.height);
+		origGC.fillRectangle(0,0,view.width, numLines);
 
 		// -----------------------------------------------------------------------
 		// main method to paint to the canvas

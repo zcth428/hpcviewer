@@ -56,6 +56,7 @@ public class ColorTable implements IProcedureTable
 		for (ColorImagePair pair: colorMatcher.values()) {
 			pair.dispose();
 		}
+		IMAGE_WHITE.dispose();
 	}
 	
 	/**

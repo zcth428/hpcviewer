@@ -18,11 +18,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.DeviceData;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISourceProvider;
@@ -30,6 +32,7 @@ import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.util.Sleak;
 import edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint;
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
@@ -201,6 +204,19 @@ public class HPCTraceView extends HPCView implements ITraceViewAction
 				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		
 		detailCanvas.setVisible(false);
+		Display display = getSite().getShell().getDisplay();
+		DeviceData data = display.getDeviceData();
+		data.tracking = true;
+		
+		//--------------------------------------
+		// memory checking
+		//--------------------------------------
+		final boolean use_sleak = false;
+		
+		if (use_sleak) {
+			Sleak sleak = new Sleak();
+			sleak.open();
+		}
 	}
 
 

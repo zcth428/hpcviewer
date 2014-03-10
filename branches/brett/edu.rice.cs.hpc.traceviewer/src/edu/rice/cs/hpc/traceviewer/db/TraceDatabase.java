@@ -85,8 +85,7 @@ public class TraceDatabase {
 		AbstractDBOpener openThis = opener;
 		final Shell shell = window.getShell(); 
 		TraceDatabase database = TraceDatabase.getInstance(window);
-		boolean validDatabaseFound = false;
-		SpaceTimeDataController stdc;
+		SpaceTimeDataController stdc = null;
 		
 		 do {
 			
@@ -99,11 +98,13 @@ public class TraceDatabase {
 				if (dlg.open() == Window.CANCEL)
 					return false;
 				openThis = dlg.getDBOpener();
-			} else {
-				validDatabaseFound=true;
 			}
-		} while (!validDatabaseFound); //until user enters a valid database or cancels keep popping up dialogs
+		} while (stdc == null); //until user enters a valid database or cancels keep popping up dialogs
 
+		// remove old resources
+		if (database.dataTraces != null)
+			database.dataTraces.dispose();
+		 
 		database.dataTraces = stdc;
 		
 		// ---------------------------------------------------------------------

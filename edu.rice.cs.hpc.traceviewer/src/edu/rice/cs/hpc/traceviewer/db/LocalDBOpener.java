@@ -36,10 +36,11 @@ public class LocalDBOpener extends AbstractDBOpener {
                     + directory + "\nPlease select a directory that contains traces.";
 			return null;
 		}
+		// Laks 2014.03.10: needs to comment the call to removeInstance
+		// this call causes the data to be deleted but the GC+Color instances still exist
+		// the allocated GC+Color can be disposed later in SpaceTimeDataController class
 		
-
-		
-		TraceDatabase.removeInstance(window);
+		//	TraceDatabase.removeInstance(window);
 
 		// ---------------------------------------------------------------------
 		// Try to open the database and refresh the data

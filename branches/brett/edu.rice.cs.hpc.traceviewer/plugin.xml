@@ -156,7 +156,7 @@
             <command
                   commandId="edu.rice.cs.hpc.traceviewer.showRecords"
                   id="edu.rice.cs.hpc.traceviewer.showRecords"
-                  label="Show trace record count"
+                  label="Show debug info "
                   mnemonic="S"
                   style="toggle"
                   tooltip="Show the number of trace records displayed in the trace view (useful for identifying blocking operations and debugging)">

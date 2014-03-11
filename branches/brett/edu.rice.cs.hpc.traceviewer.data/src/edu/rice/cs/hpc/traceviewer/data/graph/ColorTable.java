@@ -46,7 +46,6 @@ public class ColorTable implements IProcedureTable
 		//	Eclipse's white color
 		final RGB rgb_white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
 		IMAGE_WHITE = new ColorImagePair( new Color(display, rgb_white));
-		new ColorImagePair(display.getSystemColor(SWT.COLOR_GRAY));
 	}
 	
 	/**
@@ -110,6 +109,9 @@ public class ColorTable implements IProcedureTable
 		// initialize the procedure-color map
 		classMap = new ProcedureClassMap(display);
 
+		if (colorMatcher != null)
+			dispose();
+		
 		//This is where the data file is converted to the colorTable using colorMatcher.
 		//creates name-function-color colorMatcher for each function.
 		colorMatcher = new HashMap<String,ColorImagePair>();
@@ -152,10 +154,11 @@ public class ColorTable implements IProcedureTable
 	
 	/***********************************************************************
 	 * create an image based on the color
+	 * the caller is responsible to free the image
 	 * 
 	 * @param display
 	 * @param color
-	 * @return
+	 * @return an image (to be freed)
 	 ***********************************************************************/
 	static public Image createImage(Display display, RGB color) {
 		PaletteData palette = new PaletteData(new RGB[] {color} );

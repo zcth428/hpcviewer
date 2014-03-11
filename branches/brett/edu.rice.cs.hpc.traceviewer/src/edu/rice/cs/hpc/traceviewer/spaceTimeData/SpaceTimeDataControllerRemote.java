@@ -13,6 +13,7 @@ import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
 import edu.rice.cs.hpc.traceviewer.db.IThreadListener;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 
 /**
@@ -82,7 +83,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 	
 	@Override
 	public void dispose() {
-		closeDB();
+		//closeDB();
 		super.dispose();
 
 	}
@@ -90,6 +91,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 	@Override
 	public void closeDB() {
 		try {
+			Debugger.printDebug(1, "Closing the connection");
 			dataRetriever.closeConnection();
 		} catch (IOException e) {
 			System.out.println("Could not close the connection.");

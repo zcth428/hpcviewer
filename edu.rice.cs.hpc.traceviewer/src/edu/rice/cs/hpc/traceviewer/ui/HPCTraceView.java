@@ -208,7 +208,7 @@ public class HPCTraceView extends HPCView implements ITraceViewAction
 		//--------------------------------------
 		// memory checking
 		//--------------------------------------
-		final boolean use_sleak = true;
+		final boolean use_sleak = false;
 		
 		if (use_sleak) {
 			Display display = getSite().getShell().getDisplay();

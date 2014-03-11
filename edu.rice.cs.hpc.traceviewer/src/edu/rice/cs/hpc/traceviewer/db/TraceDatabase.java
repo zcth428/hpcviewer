@@ -63,8 +63,10 @@ public class TraceDatabase {
 		if (listOfDatabases != null) {
 			final TraceDatabase data = listOfDatabases.get(_window);
 			if (data == null) return;
-			if (data.dataTraces != null)
+			if (data.dataTraces != null) {
+				data.dataTraces.closeDB();
 				data.dataTraces.dispose();
+			}
 			listOfDatabases.remove(_window);
 		}
 	}

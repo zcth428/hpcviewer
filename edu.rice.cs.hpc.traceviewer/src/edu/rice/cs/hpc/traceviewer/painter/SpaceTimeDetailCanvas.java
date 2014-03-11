@@ -934,7 +934,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			mouseState = MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);
 		}
-		System.out.println("STDC " + e + " \t brn:" + e.button + " \tm: " + e.stateMask);
 	}
 
 	/*

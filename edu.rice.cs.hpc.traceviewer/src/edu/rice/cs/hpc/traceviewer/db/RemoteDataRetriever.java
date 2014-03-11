@@ -38,7 +38,7 @@ public class RemoteDataRetriever {
 	/****
 	 * time out counter is based on TIME_SLEEP ms unit
 	 */
-	private static final int TIME_OUT = 200;
+	private static final int TIME_OUT = 2000;
 	
 	private static final int TIME_SLEEP = 50;
 	

@@ -204,16 +204,17 @@ public class HPCTraceView extends HPCView implements ITraceViewAction
 				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		
 		detailCanvas.setVisible(false);
-		Display display = getSite().getShell().getDisplay();
-		DeviceData data = display.getDeviceData();
-		data.tracking = true;
 		
 		//--------------------------------------
 		// memory checking
 		//--------------------------------------
-		final boolean use_sleak = false;
+		final boolean use_sleak = true;
 		
 		if (use_sleak) {
+			Display display = getSite().getShell().getDisplay();
+			DeviceData data = display.getDeviceData();
+			data.tracking = true;
+
 			Sleak sleak = new Sleak();
 			sleak.open();
 		}
@@ -265,17 +266,16 @@ public class HPCTraceView extends HPCView implements ITraceViewAction
 					validSaveFileFound = true;
 				else
 				{
+					//open message box confirming whether or not they want to overwrite saved file
+					//if they select yes, validSaveFileFound = true;
+					//if they selct no, validSaveFileFound = false;
+
 					MessageBox msg = new MessageBox(this.getViewSite().getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 					msg.setText("File Exists");
 					msg.setMessage("This file path already exists.\nDo you want to overwrite this save file?");
 					int selectionChoice = msg.open();
-					if (selectionChoice==SWT.YES)
-						validSaveFileFound = true;
-					else
-						validSaveFileFound = false;
-					//open message box confirming whether or not they want to overwrite saved file
-					//if they select yes, validSaveFileFound = true;
-					//if they selct no, validSaveFileFound = false;
+
+					validSaveFileFound = (selectionChoice==SWT.YES);
 				}
 			}
 		}

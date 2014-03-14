@@ -23,7 +23,7 @@ import edu.rice.cs.hpc.traceviewer.data.util.ProcedureClassMap;
  **************************************************************/
 public class ColorTable implements IProcedureTable
 {
-	static final public int COLOR_ICON_SIZE = 12;
+	static final public int COLOR_ICON_SIZE = 8;
 	static private ColorImagePair IMAGE_WHITE;
 	// data members
 	HashMap<String, ColorImagePair> colorMatcher;

@@ -141,6 +141,7 @@ public class CallStackViewer extends TableViewer
 		viewerColumn = new TableViewerColumn(this, SWT.NONE);
 		viewerColumn.setLabelProvider(myLableProvider);
 		viewerColumn.getColumn().setWidth(100);
+		
 		ColumnViewerToolTipSupport.enableFor(csviewer, ToolTip.NO_RECREATE);
 		
 		TraceOperation.getOperationHistory().addOperationHistoryListener(this);

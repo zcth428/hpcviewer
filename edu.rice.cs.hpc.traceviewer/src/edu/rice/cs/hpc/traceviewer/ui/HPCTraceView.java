@@ -18,7 +18,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.DeviceData;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -32,7 +31,7 @@ import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.common.util.Sleak;
+import edu.rice.cs.hpc.common.util.SleakManager;
 import edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint;
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
@@ -208,16 +207,8 @@ public class HPCTraceView extends HPCView implements ITraceViewAction
 		//--------------------------------------
 		// memory checking
 		//--------------------------------------
-		final boolean use_sleak = false;
-		
-		if (use_sleak) {
-			Display display = getSite().getShell().getDisplay();
-			DeviceData data = display.getDeviceData();
-			data.tracking = true;
-
-			Sleak sleak = new Sleak();
-			sleak.open();
-		}
+		final Display display = getSite().getShell().getDisplay();
+		SleakManager.init(display);
 	}
 
 

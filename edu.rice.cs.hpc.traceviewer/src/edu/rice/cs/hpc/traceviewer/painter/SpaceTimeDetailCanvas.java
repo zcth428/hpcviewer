@@ -162,8 +162,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/*****
 	 * set new database and refresh the screen
 	 * @param dataTraces
-	 */
-
+	 *****/
 	public void updateView(SpaceTimeDataController _stData) {
 		this.setSpaceTimeData(_stData);
 
@@ -231,76 +230,98 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//  resize event is invoked "long" enough to the first resize event.
 		// If this is the case, then run rebuffering, otherwise just no-op.
 		// ------------------------------------------------------------------------------------
-		addListener(SWT.Resize, new Listener(){
-			//private long lastTime = 0;
-			
-			// subjectively the difference between the first event and the current one
-			// please modify this constant if you think it is too long or too short 
-			//final static private long TIME_DIFF = 400;
-			
-			// subjectively the difference between the new size and the old size
-			// if the difference is within the range, we scale. Otherwise recompute
-			final static private float SIZE_DIFF = (float) 0.08;
-			
-			static final int MIN_WIDTH = 2;
-			static final int MIN_HEIGHT = 2;
+		addListener(SWT.Resize, new SpaceTimeResizeListener());
+	}
 
-			public void handleEvent(Event event)
-			{	
-				final Rectangle r = getClientArea();
+	/*************************************************************************
+	 * 
+	 * class to listen to the resize of the window (specifically the canvas)
+	 *
+	 *************************************************************************/
+	private class SpaceTimeResizeListener implements Listener 
+	{
+		// subjectively the difference between the first event and the current one
+		// please modify this constant if you think it is too long or too short 
+		//final static private long TIME_DIFF = 400;
+		
+		// subjectively the difference between the new size and the old size
+		// if the difference is within the range, we scale. Otherwise recompute
+		final static private float SIZE_DIFF = (float) 0.08;
+		
+		static final int MIN_WIDTH = 2;
+		static final int MIN_HEIGHT = 2;
+		static final int TIME_SLEEP = 100;
 
-				if (!needToRebuffer(r))
-				{	// no need to rebuffer, just scaling
-					rescaling(r);
-					return;
+		public void handleEvent(Event event)
+		{	
+			final Rectangle r = getClientArea();
+
+			if (!needToRebuffer(r))
+			{	// no need to rebuffer, just scaling
+				rescaling(r);
+				return;
+				
+			} else {
+				// wait a bit longer to make sure a user has released the button
+				try {
+					Thread.sleep(TIME_SLEEP);
 					
-				} else {
 					// resize to bigger region: needs to recompute the data
 					view.width = r.width;
 					view.height = r.height;
-					getDisplay().asyncExec(new ResizeThread(new DetailBufferPaint()));
-				}				
-			}
+					getDisplay().syncExec(new ResizeThread(new DetailBufferPaint()));
+
+				} catch (InterruptedException e) {
+				}
+			}				
+		}
+		
+		private boolean needToRebuffer(Rectangle r ) {
+			final ImageData imgData = imageBuffer.getImageData();
 			
-			private boolean needToRebuffer(Rectangle r ) {
-				final ImageData imgData = imageBuffer.getImageData();
-				
-				// we just scale the image if the current size is smaller than the original one
-				if (r.width<=imgData.width && r.height<=imgData.height)
-					return false; // no need to rebuffer
-				
-				// we scale the image if the difference is relatively "small" between
-				// the original and the current image
-				
-				final float diffx = (float)Math.abs(imgData.width-r.width) / (float)Math.max(r.width, imgData.width);
-				final float diffy = (float)Math.abs(imgData.height-r.height) / (float)Math.max(r.height, imgData.height);
-
-				return (diffx>SIZE_DIFF || diffy>SIZE_DIFF);
-			}
+			// we just scale the image if the current size is smaller than the original one
+			if (r.width<=imgData.width && r.height<=imgData.height)
+				return false; // no need to rebuffer
 			
-			private void rescaling(Rectangle r) {
-				
-				final ImageData imgData = imageBuffer.getImageData();
-				
-				// ------------------------------------------------------------------
-				// quick hack: do not rescaling if we try to minimize the image
-				// An image is "accidently" minimized, if another view is maximized
-				// ------------------------------------------------------------------
-				
-				if (r.width<MIN_WIDTH && r.height < MIN_HEIGHT)
-					return; // just do nothing to preserve the image
+			// we scale the image if the difference is relatively "small" between
+			// the original and the current image
+			
+			final float diffx = (float)Math.abs(imgData.width-r.width) / (float)Math.max(r.width, imgData.width);
+			final float diffy = (float)Math.abs(imgData.height-r.height) / (float)Math.max(r.height, imgData.height);
 
-				ImageData scaledImage = imgData.scaledTo(r.width, r.height);
-				imageBuffer = new Image(getDisplay(), scaledImage);
+			return (diffx>SIZE_DIFF || diffy>SIZE_DIFF);
+		}
+		
+		private void rescaling(Rectangle r) {
+			
+			final ImageData imgData = imageBuffer.getImageData();
+			
+			// ------------------------------------------------------------------
+			// quick hack: do not rescaling if we try to minimize the image
+			// An image is "accidently" minimized, if another view is maximized
+			// ------------------------------------------------------------------
+			
+			if (r.width<MIN_WIDTH && r.height < MIN_HEIGHT)
+				return; // just do nothing to preserve the image
 
-				view.width = r.width;
-				view.height = r.height;
-				redraw();
-			}
-		});
+			ImageData scaledImage = imgData.scaledTo(r.width, r.height);
+			final Image imgTmp = new Image(getDisplay(), scaledImage); 
+			imageBuffer.dispose();
+			imageBuffer = imgTmp;
+
+			view.width = r.width;
+			view.height = r.height;
+			redraw();
+		}
 	}
-
-	private class DetailBufferPaint implements BufferPaint {
+	
+	/*************************************************************************
+	 * 
+	 * 
+	 *
+	 *************************************************************************/
+	private class DetailBufferPaint implements BufferPaint 
+	{
 		public void rebuffering() {
 			// force the paint to refresh the data
 			ImageTraceAttributes attr = attributes;

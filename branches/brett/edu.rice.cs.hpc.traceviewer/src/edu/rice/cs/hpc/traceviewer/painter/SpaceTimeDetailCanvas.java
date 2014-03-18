@@ -248,32 +248,36 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		// if the difference is within the range, we scale. Otherwise recompute
 		final static private float SIZE_DIFF = (float) 0.08;
 		
-		static final int MIN_WIDTH = 2;
-		static final int MIN_HEIGHT = 2;
-		static final int TIME_SLEEP = 100;
-
+		static final private int MIN_WIDTH = 2;
+		static final private int MIN_HEIGHT = 2;
+		static final private int TIME_SLEEP = 400;
+		
+		private long time_wait = 0;
+		
 		public void handleEvent(Event event)
 		{	
 			final Rectangle r = getClientArea();
 
-			if (!needToRebuffer(r))
-			{	// no need to rebuffer, just scaling
-				rescaling(r);
-				return;
+			if (needToRebuffer(r))
+			{	
+				final long time_current = System.currentTimeMillis();
 				
-			} else {
-				// wait a bit longer to make sure a user has released the button
-				try {
-					Thread.sleep(TIME_SLEEP);
-					
-					// resize to bigger region: needs to recompute the data
-					view.width = r.width;
-					view.height = r.height;
-					getDisplay().syncExec(new ResizeThread(new DetailBufferPaint()));
+				if (time_wait > 0) {
+					final long dt = time_current - time_wait;
+					if (dt > TIME_SLEEP) {
+						time_wait = 0;
+						// resize to bigger region: needs to recompute the data
+						view.width = r.width;
+						view.height = r.height;
 
-				} catch (InterruptedException e) {
+						getDisplay().syncExec(new ResizeThread(new DetailBufferPaint()));
+						return;
+					}
 				}
-			}				
+				time_wait = time_current;
+			}	
+			// small modification, no need to rebuffer, just scaling
+			rescaling(r);
 		}
 		
 		private boolean needToRebuffer(Rectangle r ) {

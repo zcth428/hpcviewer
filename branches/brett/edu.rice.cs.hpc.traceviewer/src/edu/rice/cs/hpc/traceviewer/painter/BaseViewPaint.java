@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.Queue;
@@ -85,18 +86,7 @@ public abstract class BaseViewPaint {
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
 		int linesToPaint = getNumberOfLines();
-		int numPaintThreads = 1; 
 
-		// -------------------------------------------------------------------
-		// hack: On Linux, gtk is not threads-safe, and SWT-gtk implementation
-		//		 uses lock everytime it calls gtk functions. This greatly impact
-		//		 the performance, we don't have the solution until now.
-		//	At the moment we don't see any reason to use multi-threading to render
-		//	 	 the canvas
-		// -------------------------------------------------------------------
-		if (!OSValidator.isUnix()) {
-			numPaintThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
-		}
 		// -------------------------------------------------------------------
 		// hack fix: if the number of horizontal pixels is less than 1 we
 		// return immediately, otherwise it throws an exception
@@ -164,26 +154,51 @@ public abstract class BaseViewPaint {
 		}
 		
 		// -------------------------------------------------------------------
-		// painting to the buffer concurrently
+		// draw to the canvas
 		// -------------------------------------------------------------------
+		int numPaintThreads = 1; 
+
+		// -------------------------------------------------------------------
+		// hack: On Linux, gtk is not threads-safe, and SWT-gtk implementation
+		//		 uses lock everytime it calls gtk functions. This greatly impact
+		//		 the performance, we don't have the solution until now.
+		//	At the moment we don't see any reason to use multi-threading to render
+		//	 	 the canvas
+		// -------------------------------------------------------------------
+		if (!OSValidator.isUnix()) {
+			numPaintThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
+		}
+		final boolean singleThread = (numPaintThreads == 1);
+		
 		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
 
+		// -------------------------------------------------------------------
+		// painting to the buffer "concurrently" if numPaintThreads > 1
+		// -------------------------------------------------------------------
 		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
 		{
-			final Callable<List<ImagePosition>> thread = getPaintThread(queue, linesToPaint, timelineDone,
+			final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
 					canvas.getDisplay(), attributes.numPixelsH);
 			if (thread != null) {
-				final Future<List<ImagePosition>> submit = threadExecutor.submit( thread );
-				threadsPaint.add(submit);
+				if (singleThread) 
+				{
+					doSingleThreadPainting(canvas, thread);
+				} else
+				{
+					final Future<List<ImagePosition>> submit = threadExecutor.submit( thread );
+					threadsPaint.add(submit);
+				}
 			}
 		}
 
 		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
 
-		// -------------------------------------------------------------------
-		// Finalize the painting (to be implemented by the instance
-		// -------------------------------------------------------------------
-		endPainting(linesToPaint, xscale, yscale, threadsPaint);
+		if (!singleThread) {
+			// -------------------------------------------------------------------
+			// Finalize the painting (to be implemented by the instance)
+			// -------------------------------------------------------------------
+			endPainting(canvas, threadsPaint);
+		}
 		
 		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
 		monitor.endProgress();
@@ -191,8 +206,59 @@ public abstract class BaseViewPaint {
 
 		return true;
 	}
+	
+	/****
+	 * perform a data painting with only a single thread.
+	 * this method doesn't need collection or painting finalization since only one
+	 * thread is involved.
+	 * 
+	 * @param canvas
+	 * @param paintThread
+	 */
+	private void doSingleThreadPainting(SpaceTimeCanvas canvas, BasePaintThread paintThread)
+	{
+		try {
+			// do the data painting, and directly get the generated images
+			List<ImagePosition> listImages = paintThread.call();
 
+			// set the images into the canvas. 
+			for ( ImagePosition image: listImages )
+			{
+				drawPainting(canvas, image);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
+	/******
+	 * finalize the data collection, and put all images into a canvas
+	 * 
+	 * @param canvas
+	 * @param listOfImageThreads
+	 */
+	private void endPainting(SpaceTimeCanvas canvas, List<Future<List<ImagePosition>>> listOfImageThreads)
+	{
+		for( Future<List<ImagePosition>> listFutures : listOfImageThreads ) 
+		{
+			try {
+				List<ImagePosition> listImages = listFutures.get();
+				for (ImagePosition image : listImages) 
+				{
+					drawPainting(canvas, image);
+				}
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
 	//------------------------------------------------------------------------------------------------
 	// abstract methods 
 	//------------------------------------------------------------------------------------------------
@@ -207,15 +273,13 @@ public abstract class BaseViewPaint {
 	 */
 	abstract protected boolean startPainting(int linesToPaint, int numThreads, boolean changedBounds);
 	
-	/**
-	 * Finalize the paint
+	/***
+	 * start painting an image to the canvas
 	 * 
-	 * @param linesToPaint
-	 * @param xscale
-	 * @param yscale
+	 * @param canvas: canvas to be painted
+	 * @param imagePosition : a pair of image and position
 	 */
-	abstract protected void endPainting(int linesToPaint, double xscale, double yscale, 
-			List<Future<List<ImagePosition>>> listOfImages);
+	abstract protected void drawPainting(SpaceTimeCanvas canvas, ImagePosition imagePosition);
 	
 	/**
 	 * Retrieve the number of lines to paint 
@@ -223,12 +287,37 @@ public abstract class BaseViewPaint {
 	 */
 	abstract protected int getNumberOfLines();
 	
+	/****
+	 * launching threads for remote communication
+	 * 
+	 * @param changedBounds
+	 * @param numThreads
+	 * @throws IOException
+	 */
 	abstract protected void launchDataGettingThreads(boolean changedBounds, int numThreads) 
 			throws IOException;
 
+	/****
+	 * get a thread for collecting timeline data
+	 * @param canvas
+	 * @param xscale
+	 * @param yscale
+	 * @param queue
+	 * @param timelineDone
+	 * @return
+	 */
 	abstract protected BaseTimelineThread  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
 			Queue<TimelineDataSet> queue, AtomicInteger timelineDone);
 	
+	/***
+	 * get a thread for painting a number of lines
+	 * @param queue
+	 * @param numLines
+	 * @param timelineDone
+	 * @param device
+	 * @param width
+	 * @return
+	 */
 	abstract protected BasePaintThread getPaintThread( Queue<TimelineDataSet> queue, int numLines, 
 			AtomicInteger timelineDone, Device device, int width);
 }

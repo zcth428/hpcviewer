@@ -1,10 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.swt.graphics.Device;
@@ -25,6 +22,7 @@ import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 public class DepthViewPaint extends BaseViewPaint {
 
 	private final GC masterGC;
+	private float numPixels;
 	
 	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeDataController _data,
 			ImageTraceAttributes _attributes, boolean _changeBound, ExecutorService threadExecutor) {
@@ -35,36 +33,10 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected boolean startPainting(int linesToPaint, int numThreads, boolean changedBounds) {
+		numPixels = attributes.numPixelsDepthV/(float)painter.getMaxDepth();
 		return changedBounds;
 	}
 
-	@Override
-	protected void endPainting(int linesToPaint, double xscale, double yscale, 
-			List<Future<List<ImagePosition>>> listOfImages) {
-
-		final float numPixels = attributes.numPixelsDepthV/(float)painter.getMaxDepth();
-		
-		for (Future<List<ImagePosition>> listOfLines : listOfImages ) {
-			try {
-				final List<ImagePosition> imageLine = listOfLines.get();
-				
-				for (ImagePosition img : imageLine) {
-					masterGC.drawImage(img.image, 0, 0, img.image.getBounds().width, 
-							img.image.getBounds().height, 0, 
-							Math.round(img.position*numPixels), 
-							img.image.getBounds().width, img.image.getBounds().height);
-					
-					img.image.dispose();
-				}
-			} catch (InterruptedException e) {
-
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-
-				e.printStackTrace();
-			}
-		}
-	}
 
 	@Override
 	protected int getNumberOfLines() {
@@ -88,5 +60,17 @@ public class DepthViewPaint extends BaseViewPaint {
 			Queue<TimelineDataSet> queue, int linesToPaint, AtomicInteger timelineDone, Device device, int width) {
 
 		return new DepthPaintThread(controller, queue, linesToPaint, timelineDone, device, width);
+	}
+
+	@Override
+	protected void drawPainting(SpaceTimeCanvas canvas,
+			ImagePosition img) {
+		
+		masterGC.drawImage(img.image, 0, 0, img.image.getBounds().width, 
+				img.image.getBounds().height, 0, 
+				Math.round(img.position*numPixels), 
+				img.image.getBounds().width, img.image.getBounds().height);
+		
+		img.image.dispose();
 	}
 }

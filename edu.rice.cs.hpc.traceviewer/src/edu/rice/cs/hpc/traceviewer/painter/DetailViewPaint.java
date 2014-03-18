@@ -82,37 +82,6 @@ public class DetailViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected void endPainting(int linesToPaint, double xscale, double yscale, 
-			List<Future<List<ImagePosition>>> listOfImageThreads) {
-		
-		// for all threads in the list
-		for (Future<List<ImagePosition>> listOfImages : listOfImageThreads) {
-			try {
-				final List<ImagePosition> imageLines = listOfImages.get();
-				
-				// for all images within this thread
-				for (ImagePosition imageLine : imageLines) {
-					
-					DetailImagePosition imgDetailLine = (DetailImagePosition)imageLine;
-					int yposition = (int) Math.round(imgDetailLine.position * yscale);
-					// put the image onto the canvas
-					masterGC.drawImage(imgDetailLine.image, 0, yposition);
-					origGC.drawImage(imgDetailLine.imageOriginal, 0, imgDetailLine.position);
-					
-					imgDetailLine.image.dispose();
-					imgDetailLine.imageOriginal.dispose();
-				}
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
-	@Override
 	protected int getNumberOfLines() {
 		return Math.min(attributes.numPixelsV, attributes.getProcessInterval() );
 	}
@@ -136,5 +105,21 @@ public class DetailViewPaint extends BaseViewPaint {
 			Queue<TimelineDataSet> queue, int numLines, AtomicInteger timelineDone, Device device, int width) {
 
 		return new DetailPaintThread( controller, queue, numLines, timelineDone, device, width, maxTextSize, debug);
+	}
+
+	@Override
+	protected void drawPainting(SpaceTimeCanvas canvas,
+			ImagePosition imagePosition) {
+		
+		DetailImagePosition imgDetailLine = (DetailImagePosition)imagePosition;
+		double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
+
+		int yposition = (int) Math.round(imgDetailLine.position * yscale);
+		// put the image onto the canvas
+		masterGC.drawImage(imgDetailLine.image, 0, yposition);
+		origGC.drawImage(imgDetailLine.imageOriginal, 0, imgDetailLine.position);
+		
+		imgDetailLine.image.dispose();
+		imgDetailLine.imageOriginal.dispose();
 	}	
 }

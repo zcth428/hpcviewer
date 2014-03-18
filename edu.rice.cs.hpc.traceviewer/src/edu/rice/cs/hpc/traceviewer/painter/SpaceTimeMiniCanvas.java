@@ -99,8 +99,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
     public void dispose() {
     	COMPLETELY_FILTERED_OUT_COLOR.dispose();
     	PARTIALLY_FILTERED_PATTERN.dispose();
-    	
-    	super.dispose();
     }
     
 	/*****

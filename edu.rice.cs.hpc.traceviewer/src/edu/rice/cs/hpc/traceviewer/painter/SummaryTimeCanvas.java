@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 /******************************************************************
  * 
@@ -110,8 +111,10 @@ implements PaintListener, IOperationHistoryListener
 	}
 
 	
-	/*rebuffers the data in the summary time canvas and then asks receiver to paint it again*/
-	public void rebuffer()
+	/*****
+	 * rebuffers the data in the summary time canvas and then asks receiver to paint it again
+	 *****/
+	private void rebuffer()
 	{
 		if (detailData == null)
 			return;
@@ -188,7 +191,7 @@ implements PaintListener, IOperationHistoryListener
 	
 	/****
 	 * main method to decide whether we want to create a new buffer or just to
-	 * redraw the canvs
+	 * redraw the canvas
 	 * 
 	 * @param _detailData : new data
 	 */
@@ -234,6 +237,7 @@ implements PaintListener, IOperationHistoryListener
 		// we are not interested with other operation
 		if (event.getOperation().hasContext(BufferRefreshOperation.context)) {
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
+				Debugger.printDebug(1, "STC attributes: ");
 				getDisplay().syncExec(new Runnable() {
 					@Override
 					public void run() {

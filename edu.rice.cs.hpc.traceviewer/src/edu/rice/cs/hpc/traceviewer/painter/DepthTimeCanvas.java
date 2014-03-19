@@ -518,7 +518,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 				@Override
 				public void run() {
 					Frame frame = ((ZoomOperation)operation).getFrame();
-					Debugger.printDebug(1, "Current: " + attributes + "\t New: " + frame);
+					Debugger.printDebug(1, "DTC attributes: " + attributes + "\t New: " + frame);
 
 					zoom(frame.begTime, frame.endTime);
 					setPosition(frame.position);

@@ -104,11 +104,8 @@ public abstract class BaseViewPaint {
 				"Trace painting", window.getShell());
 
 		// -------------------------------------------------------------------
-		// Create multiple threads to paint the view
+		// Create multiple threads to collect data
 		// -------------------------------------------------------------------
-
-		double xscale = canvas.getScalePixelsPerTime();
-		double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
 		// decompression can be done with multiple threads without accessing gtk (on linux)
 		// It looks like there's no major performance effect though
@@ -146,6 +143,9 @@ public abstract class BaseViewPaint {
 		
 		final List<Future<Integer>> threads = new ArrayList<Future<Integer>>();
 		final AtomicInteger timelineDone = new AtomicInteger(linesToPaint);
+
+		final double xscale = canvas.getScalePixelsPerTime();
+		final double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
 		for (int threadNum = 0; threadNum < Utility.getNumThreads(linesToPaint); threadNum++) {
 			final Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale, queue, timelineDone);

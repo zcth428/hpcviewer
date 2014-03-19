@@ -7,6 +7,8 @@ import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -88,7 +90,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				dispose();				
 			}
 		});
-
+		addControlListener( new ControlAdapter() {
+			
+			@Override
+			public void controlResized(ControlEvent e) {
+				if (stData != null) {
+					final Frame frame = stData.getAttributes().getFrame();
+					setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+				}
+			}
+		} );
 	}
 
 	/*
@@ -296,7 +307,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
     */
 	
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/
-	public void setBox(long topLeftTime, int topLeftProcess, long bottomRightTime, int bottomRightProcess)
+	private void setBox(long topLeftTime, int topLeftProcess, long bottomRightTime, int bottomRightProcess)
 	{
 		if (this.stData == null)
 			return;

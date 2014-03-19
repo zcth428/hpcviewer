@@ -116,7 +116,6 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 			final ImagePosition imgPos = finalizePaint(position);
 			
 			listOfImages.add(imgPos);
-			//paintDone.decrementAndGet();
 		}
 
 		return listOfImages;

@@ -19,6 +19,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.CoolItem;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -89,9 +90,11 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 		this.objWindow = window;
 		
 		this.clrNORMAL = shell.getBackground();
-		this.clrYELLOW = new Color(shell.getDisplay(),255,255,0);
-		this.clrRED = new Color(shell.getDisplay(), 250,128,114);
-		this.clrGREEN = new Color(shell.getDisplay(), 153,255,153);
+		final Display display = shell.getDisplay();
+		
+		this.clrYELLOW = display.getSystemColor(SWT.COLOR_YELLOW);
+		this.clrRED = display.getSystemColor(SWT.COLOR_RED);
+		this.clrGREEN = display.getSystemColor(SWT.COLOR_GREEN);
 	}
 
 	/**

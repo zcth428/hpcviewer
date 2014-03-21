@@ -68,6 +68,6 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	protected void initializeImageRegistry(ImageRegistry registry) {
 		
-        Icons.init(registry);
+        Icons.getInstance().init(registry);
 	}
 }

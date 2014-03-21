@@ -42,12 +42,12 @@ public class SleakManager {
 				sleak = lists.get(display);
 
 				if (sleak == null) {
-					sleak = new Sleak();
 					
 					DeviceData data = display.getDeviceData();
-					data.tracking = true;
-					
-					lists.put(display, sleak);
+					if (data.tracking) {
+						sleak = new Sleak();
+						lists.put(display, sleak);
+					}
 				}
 			}
 		}

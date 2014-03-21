@@ -1,7 +1,13 @@
 package edu.rice.cs.hpc.viewer.resources;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+
+import edu.rice.cs.hpc.viewer.framework.Activator;
 
 /**
  * Singleton class containing global variables for icons 
@@ -9,113 +15,90 @@ import org.eclipse.jface.resource.ImageDescriptor;
  *
  */
 public class Icons {
-	// ------------------------- icons path
-	public final String ICONPATH="";
 	
-	// -------------------------- image files
-	public Image imgCallFrom;
-	public Image imgCallTo;
-	public Image imgCallFromDisabled;
-	public Image imgCallToDisabled;
-	public Image imgZoomIn;
-	public Image imgZoomOut;
-	public Image imgFlatten;
-	public Image imgUnFlatten;
-	public Image imgAddMetric;
-	public Image imgColumns;
-	public Image imgFlame;
-	public Image imgExtAddMetric;
-	public Image imgFontBigger;
-	public Image imgFontSmaller;
-	public Image imgExportCSV;
-	
-	//-------------------------- image descriptor
-	public ImageDescriptor imdCallFrom;
-	public ImageDescriptor imdCallTo;
-	public ImageDescriptor imdCallFromDisabled;
-	public ImageDescriptor imdCallToDisabled;
-	public ImageDescriptor imdZoomIn;
-	public ImageDescriptor imdZoomOut;
-	public ImageDescriptor imdFlatten;
-	public ImageDescriptor imdUnFlatten;
-	public ImageDescriptor imdAddMetric;
-	public ImageDescriptor imdColumns;
-	public ImageDescriptor imdFlame;
-	public ImageDescriptor imdExtAddMetric;
-	public ImageDescriptor imdFontBigger;
-	public ImageDescriptor imdFontSmaller;
-	public ImageDescriptor imdExportCSV;
+	final static public String Image_CallFrom = "CallFrom.gif";
+	final static public String Image_CallTo = "CallTo.gif";
+	final static public String Image_CallFromDisabled = "CallFromDisabled.gif";
+	final static public String Image_CallToDisabled = "CallToDisabled.gif";
+	final static public String Image_ZoomIn = "ZoomIn.gif";
+	final static public String Image_ZoomOut = "ZoomOut.gif";
+	final static public String Image_Flatten = "Flatten.gif";
+	final static public String Image_Unflatten = "Unflatten.gif";
+	final static public String Image_CheckColumns = "checkColumns.gif";
+	final static public String Image_FlameIcon = "flameIcon.gif";
+	final static public String Image_FnMetric = "FnMetric.gif";
+	final static public String Image_FontBigger = "FontBigger.gif";
+	final static public String Image_FontSmaller = "FontSmaller.gif";
+	final static public String Image_SaveCSV = "savecsv.gif";
+	final static public String Image_Graph = "Graph.png";
 	
 	static private Icons __singleton=null;
+	static private final AtomicBoolean isInitialized = new AtomicBoolean(false);
 	
-	public void createIcons() {
-		imdCallFrom = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallFrom.gif");
-		imdCallTo = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallTo.gif");
-		imdCallFromDisabled = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallFromDisabled.gif");
-		imdCallToDisabled = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"CallToDisabled.gif");
-		imdZoomIn = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"ZoomIn.gif");
-		imdZoomOut = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"ZoomOut.gif");
-		imdFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Flatten.gif");
-		imdUnFlatten = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"Unflatten.gif");
-		this.imdAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"AddMetric.gif");
-		imdColumns =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"checkColumns.gif");
-		this.imdFlame =  ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH+"flameIcon.gif");
-		this.imdExtAddMetric = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FnMetric.gif");
-		this.imdFontBigger = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FontBigger.gif");
-		this.imdFontSmaller = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "FontSmaller.gif");
-		this.imdExportCSV = ImageDescriptor.createFromFile(this.getClass(), this.ICONPATH + "savecsv.gif");
-		
-		imgCallFrom = this.imdCallFrom.createImage();
-		imgCallTo = this.imdCallTo.createImage();
-		this.imgCallFromDisabled = this.imdCallFromDisabled.createImage();
-		this.imgCallToDisabled = this.imdCallToDisabled.createImage();
-		imgZoomIn = this.imdZoomIn.createImage();
-		imgZoomOut = this.imdZoomOut.createImage();
-		imgFlatten = this.imdFlatten.createImage();
-		imgUnFlatten = this.imdUnFlatten.createImage();
-		this.imgAddMetric = this.imdAddMetric.createImage();
-		imgColumns = this.imdColumns.createImage();
-		this.imgFlame = this.imdFlame.createImage();
-		this.imgExtAddMetric = this.imdExtAddMetric.createImage();
-		this.imgFontBigger = this.imdFontBigger.createImage();
-		this.imgFontSmaller = this.imdFontSmaller.createImage();
-		this.imgExportCSV = this.imdExportCSV.createImage();
-	}
-	
-	public void disposeIcon() {
-		try {
-			imgCallFrom.dispose();
-			imgCallTo.dispose();
-			imgCallFromDisabled.dispose();
-			imgCallToDisabled.dispose();
-			imgZoomIn.dispose();
-			imgZoomOut.dispose();
-			imgFlatten.dispose();
-			imgUnFlatten.dispose();
-			imgAddMetric.dispose();
-			this.imgColumns.dispose();
-			this.imgFlame.dispose();
-			this.imgExtAddMetric.dispose();
-			this.imgFontBigger.dispose();
-			this.imgFontSmaller.dispose();
-			this.imgExportCSV.dispose();
-			
-		} catch (java.lang.Exception e) {
-			e.printStackTrace();
-		}
-	}
+	/********
+	 * get the instance of the current icons class
+	 * We just want to make sure only ONE initialization for 
+	 * image creation and registration for each class.
+	 * 
+	 * Although initialization for each object doesn't harm, but
+	 * it's useless and time consuming 
+	 * 
+	 * @return
+	 ********/
 	static public Icons getInstance() {
 		if (Icons.__singleton == null) {
 			Icons.__singleton = new Icons();
-			Icons.__singleton.createIcons();
 		}
 		return Icons.__singleton;
+	}	
+	
+	/*************
+	 * initialize images. The method only needs to be called once for the whole
+	 * window lifespan. Athough calling this multiple times is theoretically
+	 * harmless (never tried).
+	 * 
+	 * @param registry
+	 *************/
+	static public void init(ImageRegistry registry) {
+		
+		if (isInitialized.compareAndSet(false, true)) {
+			registerImage(registry, Image_CallFrom);
+			registerImage(registry, Image_CallTo);
+			registerImage(registry, Image_CallFromDisabled);
+			registerImage(registry, Image_CallToDisabled);
+			
+			registerImage(registry, Image_ZoomIn);
+			registerImage(registry, Image_ZoomOut);
+			registerImage(registry, Image_Flatten);
+			registerImage(registry, Image_Unflatten);
+			
+			registerImage(registry, Image_CheckColumns);
+			registerImage(registry, Image_FlameIcon);
+
+			registerImage(registry, Image_FnMetric);
+			registerImage(registry, Image_FontBigger);
+			registerImage(registry, Image_FontSmaller);
+			registerImage(registry, Image_SaveCSV);
+			registerImage(registry, Image_Graph);
+		}
 	}
 	
-	static public void dispose() {
-		if (Icons.__singleton != null) {
-			Icons.__singleton.disposeIcon();
-		}
+	static public Image getImage(final String desc) {
+		final ImageRegistry registry = getRegistry();
 		
+		return registry.get(desc);
+	}
+	
+	static private ImageRegistry getRegistry() {
+    	// prepare the icon
+		AbstractUIPlugin plugin = Activator.getDefault();
+		ImageRegistry imageRegistry = plugin.getImageRegistry();
+		
+		return imageRegistry;
+	}
+	
+	static private void registerImage(ImageRegistry registry, String key) {
+		final ImageDescriptor desc = ImageDescriptor.createFromFile(Icons.class, key);
+		registry.put(key, desc.createImage());
 	}
 }

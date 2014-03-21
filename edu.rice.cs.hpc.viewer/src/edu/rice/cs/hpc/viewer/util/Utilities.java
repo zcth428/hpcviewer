@@ -187,8 +187,6 @@ public class Utilities {
 			Utilities.fontMetric.dispose();
 			COLOR_TOP.dispose();
 			
-			Icons.dispose();
-			
 		} catch (Exception e) {
 			
 		}
@@ -424,14 +422,14 @@ public class Utilities {
         	LineScope lineScope = (LineScope) (scopeCall).getLineScope();
 			if (((CallSiteScope) scope).getType() == CallSiteScopeType.CALL_TO_PROCEDURE) {
 				if(Utilities.isFileReadable(lineScope))
-					return Icons.getInstance().imgCallTo;
+					return Icons.getImage(Icons.Image_CallTo);
 				else
-					return Icons.getInstance().imgCallToDisabled;
+					return Icons.getImage(Icons.Image_CallToDisabled);
 			} else {
 				if(Utilities.isFileReadable(lineScope))
-					return Icons.getInstance().imgCallFrom;
+					return Icons.getImage(Icons.Image_CallFrom);
 				else
-					return Icons.getInstance().imgCallFromDisabled;
+					return Icons.getImage(Icons.Image_CallFromDisabled);
 			}
 		}
 		return null;

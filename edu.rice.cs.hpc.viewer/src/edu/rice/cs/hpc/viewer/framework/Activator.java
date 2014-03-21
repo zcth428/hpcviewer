@@ -5,6 +5,8 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import edu.rice.cs.hpc.viewer.resources.Icons;
+
 /**
  * The activator class controls the plug-in life cycle
  */
@@ -12,8 +14,6 @@ public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "edu.rice.cs.hpc.viewer";
-
-	final public static String IMG_GRAPH = "hpcviewer.image.graph";
 	
 	// The shared instance
 	private static Activator plugin;
@@ -68,10 +68,6 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	protected void initializeImageRegistry(ImageRegistry registry) {
 		
-		final String imgGraph = "Graph.png";
-		
-        ImageDescriptor desc = ImageDescriptor.createFromFile(edu.rice.cs.hpc.viewer.resources.Icons.getInstance().getClass(),
-        		imgGraph);
-        registry.put(IMG_GRAPH, desc);
+        Icons.init(registry);
 	}
 }

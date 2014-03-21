@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -23,6 +24,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.common.ui.Util;
+import edu.rice.cs.hpc.common.util.SleakManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentView;
 import edu.rice.cs.hpc.viewer.util.Utilities;
@@ -102,6 +104,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		this.shutdownEvent(this.workbench, window.getActivePage());
 
 		// -------------------
+		// memleak is on if needed
+		// -------------------
+		final Display display = window.getShell().getDisplay();
+		SleakManager.init(display);
+
+		// -------------------
 		// see if the argument provides the database to load
 		// -------------------
 		if(sArgs != null && (sArgs.length > 0) &&
@@ -114,14 +122,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 			
 			ExperimentView expViewer = new ExperimentView(pageCurrent);
 		    assert (expViewer != null); 
-
+		    
 		    String sPath = null;
 		    // find the file in the list of arguments
 		    for(int i=0;i<sArgs.length;i++) {
 
 		    	if(sArgs[i].charAt(0) == '-') {
 		    		String sOption = sArgs[i].substring(1);
-		    		if (sArgs[i].charAt(1) == 'n' || (sArgs[i].charAt(2)=='-' && sOption.equalsIgnoreCase("nocallerview")) ){
+		    		if (sArgs[i].charAt(1) == 'n' || 
+		    				(sArgs.length == 14 && sArgs[i].charAt(2)=='-' && sOption.equalsIgnoreCase("nocallerview")) ){
 		    			// user has set the option not to display caller view
 		    			withCallerView = false;
 		    		}

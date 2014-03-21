@@ -13,7 +13,7 @@ import java.io.*;
 
 public class Sleak {
 	Display display;
-	Shell shell;
+	Shell shell = null;
 	List list;
 	Canvas canvas;
 	Button start, stop, check;
@@ -26,6 +26,9 @@ public class Sleak {
 	Error [] errors = new Error [0];
 
 	public void open () {
+		if (shell != null)
+			return;
+		
 		display = Display.getCurrent ();
 		shell = new Shell (display);
 
@@ -79,6 +82,8 @@ public class Sleak {
 		shell.open ();
 	}
 
+	
+	
 	void refreshLabel () {
 		String string = getCount();
 		

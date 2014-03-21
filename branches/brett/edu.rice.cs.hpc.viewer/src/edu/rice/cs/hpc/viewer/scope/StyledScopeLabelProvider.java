@@ -11,7 +11,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.resources.Icons;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
@@ -29,7 +28,6 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
  */
 public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 	
-	final static protected Icons iconCollection = Icons.getInstance();
 	final private Styler STYLE_ACTIVE_LINK;
 	final private ViewerWindow viewerWindow;
 

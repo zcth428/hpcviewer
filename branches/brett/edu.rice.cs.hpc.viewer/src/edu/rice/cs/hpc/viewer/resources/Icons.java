@@ -59,7 +59,7 @@ public class Icons {
 	 * 
 	 * @param registry
 	 *************/
-	static public void init(ImageRegistry registry) {
+	public void init(ImageRegistry registry) {
 		
 		if (isInitialized.compareAndSet(false, true)) {
 			registerImage(registry, Image_CallFrom);
@@ -97,8 +97,8 @@ public class Icons {
 		return imageRegistry;
 	}
 	
-	static private void registerImage(ImageRegistry registry, String key) {
-		final ImageDescriptor desc = ImageDescriptor.createFromFile(Icons.class, key);
+	private void registerImage(ImageRegistry registry, String key) {
+		final ImageDescriptor desc = ImageDescriptor.createFromFile(getClass(), key);
 		registry.put(key, desc.createImage());
 	}
 }

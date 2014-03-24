@@ -17,9 +17,6 @@ public abstract class SpaceTimeCanvas extends Canvas
 	
 	/**The SpaceTimeData corresponding to this canvas.*/
 	protected SpaceTimeDataController stData;
-	protected PaintManager painter;
-	/** Same reference as attributes in stData or painter*/
-	protected ImageTraceAttributes attributes;
 	
 	final protected Rectangle view;
     
@@ -38,7 +35,5 @@ public abstract class SpaceTimeCanvas extends Canvas
     
     public void setSpaceTimeData(SpaceTimeDataController dataTraces) {
     	this.stData = dataTraces;
-    	this.attributes = stData.getAttributes();
-    	this.painter = stData.getPainter();
     }
 }

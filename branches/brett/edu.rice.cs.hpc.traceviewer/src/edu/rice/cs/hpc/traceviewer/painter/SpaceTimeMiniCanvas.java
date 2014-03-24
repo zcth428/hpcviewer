@@ -373,7 +373,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			detailBottomRightProcess = detailTopLeftProcess + 1;
 		}
 		
-		final Frame originalFrame = attributes.getFrame();
+		final Frame originalFrame = stData.getAttributes().getFrame();
 		
 		// copy the frame from the original one so that we can copy the values of depth and position
 		Frame frame = new Frame( originalFrame );
@@ -541,6 +541,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 					adjustSelection(mouseDown, mouseUp);	
 					confirmNewRegion();
 				}else {
+					final ImageTraceAttributes attributes = stData.getAttributes();
 					//Set the selection box back to what it was because we didn't zoom
 					setBox(attributes.getTimeBegin(), attributes.getProcessBegin(), 
 							attributes.getTimeEnd(), attributes.getProcessEnd());
@@ -585,7 +586,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			case OperationHistoryEvent.REDONE:
 				if (traceOperation instanceof ZoomOperation) {
 					Frame frame = traceOperation.getFrame();
-					Debugger.printDebug(1, "STMC: " + attributes + "\t New: " + frame);
+					Debugger.printDebug(1, "STMC: " + stData.getAttributes() + "\t New: " + frame);
 					setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
 				}
 			}

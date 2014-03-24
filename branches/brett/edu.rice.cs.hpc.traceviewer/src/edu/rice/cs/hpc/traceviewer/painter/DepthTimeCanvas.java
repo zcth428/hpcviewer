@@ -142,7 +142,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		if (this.stData == null || imageBuffer == null)
 			return;
 		
-		topLeftPixelX = Math.round(attributes.getTimeBegin()*getScalePixelsPerTime());
+		topLeftPixelX = Math.round(stData.getAttributes().getTimeBegin()*getScalePixelsPerTime());
 		
 		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
@@ -173,7 +173,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		
-		int maxDepth = painter.getMaxDepth();
+		int maxDepth = stData.getPainter().getMaxDepth();
 		event.gc.fillRectangle(topPixelCrossHairX-8,selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth)-1,20,4);
 	}
 	
@@ -238,7 +238,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	@Override
 	public double getScalePixelsPerRank() {
 		final Rectangle r = this.getClientArea();
-		return Math.max(r.height/(double)painter.getMaxDepth(), 1);
+		return Math.max(r.height/(double)stData.getPainter().getMaxDepth(), 1);
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -259,11 +259,12 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 
 	private long getNumTimeDisplayed()
 	{
-		return (attributes.getTimeInterval());
+		return (stData.getAttributes().getTimeInterval());
 	}
 	
 	private void setTimeZoom(long leftTime, long rightTime)
 	{
+		ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.setTime(leftTime, rightTime);
 		
 		attributes.assertTimeBounds(stData.getTimeWidth());
@@ -293,6 +294,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		long topLeftTime = (long)(leftSelection / getScalePixelsPerTime());
 		long bottomRightTime = (long)(rightSelection / getScalePixelsPerTime());
 		
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.setTime(topLeftTime, bottomRightTime);
 		
 		Frame frame = new Frame(attributes.getTimeBegin(), attributes.getTimeEnd(),
@@ -319,7 +321,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 
     	long closeTime = stData.getAttributes().getTimeBegin() + (long)(mouseDown.x / getScalePixelsPerTime());
     	
-    	Position currentPosition = painter.getPosition();
+    	Position currentPosition = stData.getPainter().getPosition();
     	Position newPosition = new Position(closeTime, currentPosition.process);
     		
     	try {
@@ -344,7 +346,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
      * @param t2: the rightmost time
      */
     private void adjustCrossHair(long t1, long t2) {
-    	Position currentPosition = painter.getPosition();
+    	Position currentPosition = stData.getPainter().getPosition();
     	long time = currentPosition.time;
     	
     	if (time<t1 || time>t2)
@@ -373,6 +375,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 		
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.numPixelsDepthV = viewHeight;
 		
 		try
@@ -518,7 +521,7 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 				@Override
 				public void run() {
 					Frame frame = ((ZoomOperation)operation).getFrame();
-					Debugger.printDebug(1, "DTC attributes: " + attributes + "\t New: " + frame);
+					Debugger.printDebug(1, "DTC attributes: " + stData.getAttributes() + "\t New: " + frame);
 
 					zoom(frame.begTime, frame.endTime);
 					setPosition(frame.position);

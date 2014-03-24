@@ -38,6 +38,7 @@ import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.ui.Frame;
@@ -178,6 +179,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
 		// init configuration
 		Position p = new Position(-1, -1);
+		PaintManager painter = stData.getPainter();
 		painter.setPosition(p);
 		painter.setDepth(0);
 		
@@ -240,18 +242,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *************************************************************************/
 	private class SpaceTimeResizeListener implements Listener 
 	{
-		// subjectively the difference between the first event and the current one
-		// please modify this constant if you think it is too long or too short 
-		//final static private long TIME_DIFF = 400;
-		
 		// subjectively the difference between the new size and the old size
 		// if the difference is within the range, we scale. Otherwise recompute
 		final static private float SIZE_DIFF = (float) 0.08;
 		
 		static final private int MIN_WIDTH = 2;
 		static final private int MIN_HEIGHT = 2;
-		static final private int TIME_SLEEP = 400;
-		
+
+		// subjectively the difference between the first event and the current one
+		// please modify this constant if you think it is too long or too short 
+		final static private long TIME_DIFF = 400;
+				
 		private long time_wait = 0;
 		
 		public void handleEvent(Event event)
@@ -264,7 +265,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				
 				if (time_wait > 0) {
 					final long dt = time_current - time_wait;
-					if (dt > TIME_SLEEP) {
+					if (dt > TIME_DIFF) {
 						time_wait = 0;
 						// resize to bigger region: needs to recompute the data
 						view.width = r.width;
@@ -328,7 +329,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		public void rebuffering() {
 			// force the paint to refresh the data
-			ImageTraceAttributes attr = attributes;
+			final ImageTraceAttributes attr = stData.getAttributes();
 			notifyChanges("Resize", attr.getTimeBegin(), attr.getProcessBegin(),
 					attr.getTimeEnd(), attr.getProcessEnd() );
 		}
@@ -341,6 +342,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *************************************************************************/
 	public void zoom(long _topLeftTime, int _topLeftProcess, long _bottomRightTime, int _bottomRightProcess)
 	{
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.setTime(_topLeftTime, _bottomRightTime);
 		attributes.assertTimeBounds(stData.getTimeWidth());
 		
@@ -392,6 +394,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (this.stData == null)
 			return;
 		
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		view.x = (int) Math.round(attributes.getTimeBegin() * getScalePixelsPerTime());
 		view.y = (int) Math.round(attributes.getProcessBegin() * getScalePixelsPerRank());
 		
@@ -413,6 +416,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
         }
 		
 		//draws cross hairs
+		final PaintManager painter = stData.getPainter();
 		long selectedTime = painter.getPosition().time;
 		int selectedProcess = painter.getPosition().process;
 		
@@ -478,6 +482,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void open(Frame toBeOpened)
 	{
+		final PaintManager painter = stData.getPainter();
+
 		if (toBeOpened.begTime == painter.getViewTimeBegin() && toBeOpened.endTime == painter.getViewTimeEnd() 
 				&& toBeOpened.begProcess == painter.getBegProcess() && toBeOpened.endProcess == painter.getEndProcess()) {
 			
@@ -505,7 +511,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public Frame save()
 	{
-		return attributes.getFrame();
+		return stData.getAttributes().getFrame();
 	}
 	
 	
@@ -517,6 +523,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void processZoomIn()
 	{
 		final double SCALE = .4;
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		
 		double yMid = (attributes.getProcessEnd()+attributes.getProcessBegin())/2.0;
 		
@@ -550,6 +557,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void processZoomOut()
 	{
 		final double SCALE = .625;
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		
 		//zoom out works as follows: find mid point of times (yMid).
 		//Add/Subtract 1/2 of the scaled numProcessDisp to yMid to get new endProcess and begProcess
@@ -583,6 +591,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void timeZoomIn()
 	{
 		final double SCALE = .4;
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		
 		long xMid = (attributes.getTimeEnd() + attributes.getTimeBegin()) / 2;
 		
@@ -602,6 +611,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	public void timeZoomOut()
 	{
 		final double SCALE = 0.625;
+		final ImageTraceAttributes attributes = stData.getAttributes();
 		
 		//zoom out works as follows: find mid point of times (xMid).
 		//Add/Subtract 1/2 of the scaled numTimeUnitsDisp to xMid to get new endTime and begTime
@@ -637,7 +647,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void setDepth(int newDepth)
 	{
-		painter.setDepth(newDepth);
+		stData.getPainter().setDepth(newDepth);
 		refresh(false);
     }
 	
@@ -659,6 +669,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	private void adjustLabels()
     {
+		final PaintManager painter = stData.getPainter();
+		
         timeLabel.setText("Time Range: [" + (painter.getViewTimeBegin()/1000)/1000.0 + "s, "
         					+ (painter.getViewTimeEnd()/1000)/1000.0 +  "s]");
         timeLabel.setSize(timeLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -670,7 +682,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
         	System.out.println("Data null, skipping the rest.");
         	return;
         }
-        attributes.assertProcessBounds(traceData.getNumberOfRanks());
+        stData.getAttributes().assertProcessBounds(traceData.getNumberOfRanks());
 
         final String processes[] = traceData.getListOfRanks();
 
@@ -699,7 +711,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
         else
         {
     		final long selectedTime = painter.getPosition().time;
-    		final int rank = this.painter.getPosition().process;
+    		final int rank = painter.getPosition().process;
     		
     		if ( rank >= 0 && rank < processes.length ) {               
             	crossHairLabel.setText("Cross Hair: (" + (selectedTime/1000)/1000.0 + "s, " + processes[rank] + ")");
@@ -747,25 +759,27 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     
   
     private boolean canGoEast() {
-    	return (attributes.getTimeBegin() > 0);
+    	return (stData.getAttributes().getTimeBegin() > 0);
     }
     
     private boolean canGoWest() {
-    	return (attributes.getTimeEnd()< this.stData.getTimeWidth());
+    	return (stData.getAttributes().getTimeEnd()< this.stData.getTimeWidth());
     }
     
     private boolean canGoNorth() {
-    	return (attributes.getProcessBegin()>0);
+    	return (stData.getAttributes().getProcessBegin()>0);
     }
     
     private boolean canGoSouth() {
-    	return (attributes.getProcessEnd()<this.stData.getTotalTraceCount());
+    	return (stData.getAttributes().getProcessEnd()<this.stData.getTotalTraceCount());
     }
     /**********
      * check the status of all buttons
      */
     private void updateButtonStates() 
     {
+    	final ImageTraceAttributes attributes = stData.getAttributes();
+    	
 		this.tZoomInButton.setEnabled( this.getNumTimeUnitDisplayed() > Constants.MIN_TIME_UNITS_DISP );
 		this.tZoomOutButton.setEnabled(attributes.getTimeBegin()>0 || attributes.getTimeEnd()<stData.getTimeWidth() );
 		
@@ -789,6 +803,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 */
     public void goEast()
     {
+    	final PaintManager painter = stData.getPainter();
+    	
     	long topLeftTime = painter.getViewTimeBegin();
 		long bottomRightTime = painter.getViewTimeEnd();
 		
@@ -811,6 +827,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
     public void goWest()
     {
+    	final PaintManager painter = stData.getPainter();
+    	
     	long topLeftTime = painter.getViewTimeBegin();
 		long bottomRightTime = painter.getViewTimeEnd();
 		
@@ -843,6 +861,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      * go north one step
      */
     public void goNorth() {
+    	final PaintManager painter = stData.getPainter();
+    	
     	int proc_begin = painter.getBegProcess();
     	int proc_end = painter.getEndProcess();
     	final int delta = proc_end - proc_begin;
@@ -862,6 +882,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      * go south one step
      */
     public void goSouth() {
+    	final PaintManager painter = stData.getPainter();
+    	
     	int proc_begin = painter.getBegProcess();
     	int proc_end = painter.getEndProcess();
     	final int delta = proc_end - proc_begin;
@@ -884,12 +906,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
 	private void setProcessRange(int pBegin, int pEnd) 
 	{
+    	final PaintManager painter = stData.getPainter();
+    	
 		notifyChanges("Zoom V", painter.getViewTimeBegin(), pBegin, 
 				painter.getViewTimeEnd(), pEnd);
 	}
 
 	private Position updatePosition()
 	{
+    	final ImageTraceAttributes attributes = stData.getAttributes();
+    	
     	int selectedProcess;
 
     	//need to do different things if there are more traces to paint than pixels
@@ -925,12 +951,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	
 	private long getNumTimeUnitDisplayed()
 	{
-		return (attributes.getTimeInterval());
+		return (stData.getAttributes().getTimeInterval());
 	}
 	
 	private double getNumProcessesDisplayed()
 	{
-		return (attributes.getProcessInterval());
+		return (stData.getAttributes().getProcessInterval());
 	}
 	
 	/* *****************************************************************
@@ -1054,7 +1080,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//	the number of ranks or the number of pixels
 		// -----------------------------------------------------------------------
 		
-		int numLines = Math.min(view.height, attributes.getProcessInterval() );
+		int numLines = Math.min(view.height, stData.getAttributes().getProcessInterval() );
 		Image imageOrig = new Image(getDisplay(), view.width, numLines);
 		
 		GC origGC = new GC(imageOrig);
@@ -1078,7 +1104,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			// in case of filter, we may need to change the cursor position
 			if (refreshData) {
 				final String []ranks = stData.getBaseData().getListOfRanks();
-				final Position p = attributes.getPosition();
+				final Position p = stData.getAttributes().getPosition();
 				
 				if (p.process > ranks.length-1) {
 					// need to change position
@@ -1273,14 +1299,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			// zoom in/out or change of ROI ?
 			if (operation instanceof ZoomOperation) {
 				Frame frame = ((ZoomOperation)operation).getFrame();
+				final ImageTraceAttributes attributes = stData.getAttributes();
+				
 				Debugger.printDebug(1, "STDC: " + attributes + "\t New: " + frame);
-				painter.setPosition(frame.position);
+				stData.getPainter().setPosition(frame.position);
 				zoom(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
 			}
 			// change of cursor position ?
 			else if (operation instanceof PositionOperation) {
 				Position p = ((PositionOperation)operation).getPosition();
-				painter.setPosition(p);
+				stData.getPainter().setPosition(p);
 
 				// just change the position, doesn't need to fully refresh
 				redraw();

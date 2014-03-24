@@ -82,10 +82,10 @@ public abstract class BaseViewPaint {
 	 ***********************************************************************************/
 	public boolean paint(SpaceTimeCanvas canvas)
 	{	
-		
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
 		int linesToPaint = getNumberOfLines();
+		Debugger.printDebug(2, "BVP-begin " + linesToPaint + " lines");
 
 		// -------------------------------------------------------------------
 		// hack fix: if the number of horizontal pixels is less than 1 we
@@ -110,6 +110,7 @@ public abstract class BaseViewPaint {
 		// decompression can be done with multiple threads without accessing gtk (on linux)
 		// It looks like there's no major performance effect though
 		int launch_threads = Utility.getNumThreads(linesToPaint);
+		Debugger.printDebug(2, "BVP launch threads " + launch_threads);
 		try {
 			launchDataGettingThreads(changedBounds, launch_threads);
 			
@@ -172,6 +173,8 @@ public abstract class BaseViewPaint {
 		
 		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
 
+		Debugger.printDebug(1, "BVP --- lp: " + linesToPaint + ", tld: " + timelineDone + ", qs: " + queue.size());
+		
 		// -------------------------------------------------------------------
 		// painting to the buffer "concurrently" if numPaintThreads > 1
 		// -------------------------------------------------------------------

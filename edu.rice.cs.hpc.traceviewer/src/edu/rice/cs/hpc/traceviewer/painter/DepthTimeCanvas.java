@@ -11,19 +11,12 @@ import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
@@ -37,17 +30,11 @@ import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 /**A view for displaying the depthview.*/
-public class DepthTimeCanvas extends SpaceTimeCanvas 
-implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
+public class DepthTimeCanvas extends AbstractTimeCanvas 
+implements IOperationHistoryListener, ISpaceTimeCanvas
 {
-	Image imageBuffer;
-	
 	/**The left pixel's x location*/
 	long topLeftPixelX;
-	
-	/**The first/last time being viewed now*/
-    long oldBegTime;
-    long oldEndTime;
 	
 	/**The selected time that is open in the csViewer.*/
 	long selectedTime;
@@ -55,34 +42,18 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	/**The selected depth that is open in the csViewer.*/
 	int selectedDepth;
 	
-	/** Relates to the condition that the mouse is in.*/
-	SpaceTimeCanvas.MouseState mouseState;
-	
-	/** The point at which the mouse was clicked.*/
-	Point mouseDown;
-	
-	/** The point at which the mouse was released.*/
-	Point mouseUp;
-	
-	/** The left/right point that you selected.*/
-	long leftSelection;
-	long rightSelection;
-	
 	private int currentProcess = -1;
-
+	private SpaceTimeDataController stData;
+	
 	final private ExecutorService threadExecutor;
 
 	
 	public DepthTimeCanvas(Composite composite)
     {
-		super(composite);
-
-		mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_INIT;
+		super(composite, SWT.NONE);
 
 		selectedTime = -20;
 		selectedDepth = -1;
-		leftSelection = 0;
-		rightSelection = 0;
 		
 		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
 		addDisposeListener( new DisposeListener() {
@@ -98,39 +69,17 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	 * new data update
 	 * @param _stData
 	 */
-	public void updateView(SpaceTimeDataController _stData)
+	public void updateView(SpaceTimeDataController stData)
 	{
-		selectedDepth = 0;
-		setSpaceTimeData(_stData); 
+		super.init();
+		setVisible(true);
 		
-		if (this.mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_INIT)
-		{
-			this.mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
-			this.addCanvasListener();
+		if (this.stData == null) {
+			// just initialize once
+			TraceOperation.getOperationHistory().addOperationHistoryListener(this);
 		}
-		setTimeZoom(0, stData.getTimeWidth());
-	}
-	
-	/***
-	 * add listeners (need to called only once)
-	 */
-	private void addCanvasListener() {
-		addMouseListener(this);
-		addMouseMoveListener(this);
-		addPaintListener(this);
-		
-		addListener(SWT.Resize, new Listener(){
-			public void handleEvent(Event event)
-			{
-				final int viewWidth = getClientArea().width;
-				final int viewHeight = getClientArea().height;
-
-				if (viewWidth > 0 && viewHeight > 0) {
-					getDisplay().asyncExec(new ResizeThread( new DepthBufferPaint()));
-				}
-			}
-		});
-		TraceOperation.getOperationHistory().addOperationHistoryListener(this);
+		this.stData = stData; 		
+		selectedDepth = 0;
 	}
 	
 	/*
@@ -142,39 +91,25 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		if (this.stData == null || imageBuffer == null)
 			return;
 		
+		super.paintControl(event);
+		
 		topLeftPixelX = Math.round(stData.getAttributes().getTimeBegin()*getScalePixelsPerTime());
 		
-		final int viewWidth = getClientArea().width;
 		final int viewHeight = getClientArea().height;
 
-		try
-		{
-			event.gc.drawImage(imageBuffer, 0, 0, viewWidth, viewHeight, 0, 0, viewWidth, viewHeight);
-		}
-		catch (Exception e)
-		{
-			// An exception "Illegal argument" will be raised if the resize method is not "fast" enough to create the image
-			//		buffer before the painting is called. Thus, it causes inconsistency between the size of the image buffer
-			//		and the size of client area. 
-			//		If this happens, either we wait for the creation of image buffer, or do nothing. 
-			//		I prefer to do nothing because of scalability concerns.
-			return;
-		}
- 		//paints the selection currently being made
-		if (mouseState==SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
-		{
-        	event.gc.setForeground(Constants.COLOR_WHITE);
-    		event.gc.setLineWidth(2);
-    		event.gc.drawRectangle((int)(leftSelection-topLeftPixelX), 0, (int)(rightSelection-leftSelection), viewHeight);
-        }
-		
+		//--------------------
 		//draws cross hairs
+		//--------------------
+		
+		event.gc.setBackground(Constants.COLOR_WHITE);
+		event.gc.setAlpha(240);
+		
 		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-2-topLeftPixelX);
-		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		
 		int maxDepth = stData.getPainter().getMaxDepth();
-		event.gc.fillRectangle(topPixelCrossHairX-8,selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth)-1,20,4);
+		final int width = selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth);
+		event.gc.fillRectangle(topPixelCrossHairX-8,width-1,20,4);
 	}
 	
 	
@@ -203,20 +138,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		redraw();
 	}
 	
-	/****
-	 * update the new range position
-	 * 
-	 * @param p1
-	 * @param p2
-	 */
-	private void adjustSelection(Point p1, Point p2)
-	{
-		final int viewWidth = getClientArea().width;
-
-    	leftSelection = topLeftPixelX + Math.max(Math.min(p1.x, p2.x), 0);
-        rightSelection = topLeftPixelX + Math.min(Math.max(p1.x, p2.x), viewWidth-1);
-    }
-    
     /***
      * force to refresh the content of the canvas. 
      */
@@ -225,9 +146,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
     }
     
     
-
-
-    @Override
 	public double getScalePixelsPerTime()
 	{
 		final int viewWidth = getClientArea().width;
@@ -235,23 +153,11 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		return (double)viewWidth / (double)getNumTimeDisplayed();
 	}
 
-	@Override
 	public double getScalePixelsPerRank() {
 		final Rectangle r = this.getClientArea();
 		return Math.max(r.height/(double)stData.getPainter().getMaxDepth(), 1);
 	}
 
-	//---------------------------------------------------------------------------------------
-	// PRIVATE CLASS
-	//---------------------------------------------------------------------------------------
-
-	private class DepthBufferPaint implements BufferPaint
-	{
-		public void rebuffering()
-		{
-			rebuffer();
-		}
-	}
 
 	//---------------------------------------------------------------------------------------
 	// PRIVATE METHODS
@@ -278,60 +184,9 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 			attributes.setTime(begTime, endTime);
 			attributes.assertTimeBounds(stData.getTimeWidth());
 		}
-		
-		rebuffer();
-		
-		oldBegTime = attributes.getTimeBegin();
-		oldEndTime = attributes.getTimeEnd();
 	}
 
 	
-	/***
-	 * time zoom and notify other views
-	 */
-    private void setDetail()
-    {
-		long topLeftTime = (long)(leftSelection / getScalePixelsPerTime());
-		long bottomRightTime = (long)(rightSelection / getScalePixelsPerTime());
-		
-		final ImageTraceAttributes attributes = stData.getAttributes();
-		attributes.setTime(topLeftTime, bottomRightTime);
-		
-		Frame frame = new Frame(attributes.getTimeBegin(), attributes.getTimeEnd(),
-				attributes.getProcessBegin(), attributes.getProcessEnd(),
-				selectedDepth, (long)selectedTime, currentProcess);
-		try {
-			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Time zoom out", frame), 
-					null, null);
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-    }
-	
-    /****
-     * broadcast a new position to other views
-     * 
-     * @param newPosition
-     */
-    private void notifyPositionChange()
-    {    
-        if(mouseDown == null)
-    		return;
-
-    	long closeTime = stData.getAttributes().getTimeBegin() + (long)(mouseDown.x / getScalePixelsPerTime());
-    	
-    	Position currentPosition = stData.getPainter().getPosition();
-    	Position newPosition = new Position(closeTime, currentPosition.process);
-    		
-    	try {
-			TraceOperation.getOperationHistory().execute(
-					new PositionOperation(newPosition), 
-					null, null);
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-    }
     
     private void zoom(long time1, long time2)
     {
@@ -430,57 +285,6 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 	}
 	
 
-	/******************************************************************
-	 *		
-	 *	MouseListener and MouseMoveListener interface Implementation
-	 *      
-	 ******************************************************************/
-
-	public void mouseDoubleClick(MouseEvent e) { }
-
-	public void mouseDown(MouseEvent e)
-	{
-		if (mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_NONE)
-		{
-			mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN;
-			mouseDown = new Point(e.x,e.y);
-		}
-	}
-
-	public void mouseUp(MouseEvent e)
-	{
-		if (mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
-		{
-			mouseUp = new Point(e.x,e.y);
-			mouseState = SpaceTimeCanvas.MouseState.ST_MOUSE_NONE;
-			
-			//difference in mouse movement < 3 constitutes a "single click"
-			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
-			{
-				notifyPositionChange();
-			}
-			else
-			{
-				//If we're zoomed in all the way don't do anything
-				if(getNumTimeDisplayed() > Constants.MIN_TIME_UNITS_DISP)
-				{
-					adjustSelection(mouseDown,mouseUp);
-					setDetail();
-				}
-			}
-		}
-	}
-	
-	public void mouseMove(MouseEvent e)
-	{
-		if(mouseState == SpaceTimeCanvas.MouseState.ST_MOUSE_DOWN)
-		{
-			Point mouseTemp = new Point(e.x,e.y);
-			adjustSelection(mouseDown,mouseTemp);
-			redraw();
-		}
-	}
-
 
 	@Override
 	/*
@@ -533,6 +337,43 @@ implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryLis
 		} else if (operation instanceof DepthOperation) {
 			int depth = ((DepthOperation)operation).getDepth();
 			setDepth(depth);
+		}
+	}
+
+	@Override
+	void changePosition(Point point) {
+    	long closeTime = stData.getAttributes().getTimeBegin() + (long)(point.x / getScalePixelsPerTime());
+    	
+    	Position currentPosition = stData.getPainter().getPosition();
+    	Position newPosition = new Position(closeTime, currentPosition.process);
+    		
+    	try {
+			TraceOperation.getOperationHistory().execute(
+					new PositionOperation(newPosition), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	void changeRegion(int left, int right) 
+	{
+		final ImageTraceAttributes attributes = stData.getAttributes();
+
+		long topLeftTime 	 = attributes.getTimeBegin() + (long)(left / getScalePixelsPerTime());
+		long bottomRightTime = attributes.getTimeBegin() + (long)(right / getScalePixelsPerTime());
+		
+		Frame frame = new Frame(topLeftTime, bottomRightTime,
+				attributes.getProcessBegin(), attributes.getProcessEnd(),
+				selectedDepth, (long)selectedTime, currentProcess);
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new ZoomOperation("Time zoom out", frame), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
 		}
 	}
 }

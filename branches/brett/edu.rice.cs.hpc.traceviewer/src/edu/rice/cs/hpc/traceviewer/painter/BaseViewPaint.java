@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
@@ -80,7 +81,7 @@ public abstract class BaseViewPaint {
 	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
 	 *  @return boolean true of the pain is successful, false otherwise
 	 ***********************************************************************************/
-	public boolean paint(SpaceTimeCanvas canvas)
+	public boolean paint(ISpaceTimeCanvas canvas)
 	{	
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
@@ -181,7 +182,7 @@ public abstract class BaseViewPaint {
 		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
 		{
 			final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
-					canvas.getDisplay(), attributes.numPixelsH);
+					Display.getCurrent(), attributes.numPixelsH);
 			if (thread != null) {
 				if (singleThread) 
 				{
@@ -218,7 +219,7 @@ public abstract class BaseViewPaint {
 	 * @param canvas
 	 * @param paintThread
 	 */
-	private void doSingleThreadPainting(SpaceTimeCanvas canvas, BasePaintThread paintThread)
+	private void doSingleThreadPainting(ISpaceTimeCanvas canvas, BasePaintThread paintThread)
 	{
 		try {
 			// do the data painting, and directly get the generated images
@@ -240,7 +241,7 @@ public abstract class BaseViewPaint {
 	 * @param canvas
 	 * @param listOfImageThreads
 	 */
-	private void endPainting(SpaceTimeCanvas canvas, List<Future<List<ImagePosition>>> listOfImageThreads)
+	private void endPainting(ISpaceTimeCanvas canvas, List<Future<List<ImagePosition>>> listOfImageThreads)
 	{
 		for( Future<List<ImagePosition>> listFutures : listOfImageThreads ) 
 		{
@@ -282,7 +283,7 @@ public abstract class BaseViewPaint {
 	 * @param canvas: canvas to be painted
 	 * @param imagePosition : a pair of image and position
 	 */
-	abstract protected void drawPainting(SpaceTimeCanvas canvas, ImagePosition imagePosition);
+	abstract protected void drawPainting(ISpaceTimeCanvas canvas, ImagePosition imagePosition);
 	
 	/**
 	 * Retrieve the number of lines to paint 
@@ -309,7 +310,7 @@ public abstract class BaseViewPaint {
 	 * @param timelineDone
 	 * @return
 	 */
-	abstract protected BaseTimelineThread  getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
+	abstract protected BaseTimelineThread  getTimelineThread(ISpaceTimeCanvas canvas, double xscale, double yscale,
 			Queue<TimelineDataSet> queue, AtomicInteger timelineDone);
 	
 	/***

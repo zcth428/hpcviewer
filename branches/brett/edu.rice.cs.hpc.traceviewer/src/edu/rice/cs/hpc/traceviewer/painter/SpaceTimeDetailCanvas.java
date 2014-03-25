@@ -54,7 +54,8 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
  *
  ************************************************************************/
 public class SpaceTimeDetailCanvas extends SpaceTimeCanvas 
-	implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
+	implements MouseListener, MouseMoveListener, PaintListener, 
+	IOperationHistoryListener, ISpaceTimeCanvas
 {
 	
 	/**The buffer image that is copied onto the actual canvas.*/
@@ -409,10 +410,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//when you click and drag
 		if(mouseState==MouseState.ST_MOUSE_DOWN)
 		{
-        	event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        	event.gc.setBackground(Constants.COLOR_WHITE);
+        	event.gc.setAlpha(100);
+    		event.gc.fillRectangle((int)(selectionTopLeftX-view.x), (int)(selectionTopLeftY-view.y), (int)(selectionBottomRightX-selectionTopLeftX),
+            		(int)(selectionBottomRightY-selectionTopLeftY));
+    		
+    		event.gc.setForeground(Constants.COLOR_BLACK);
     		event.gc.setLineWidth(2);
     		event.gc.drawRectangle((int)(selectionTopLeftX-view.x), (int)(selectionTopLeftY-view.y), (int)(selectionBottomRightX-selectionTopLeftX),
             		(int)(selectionBottomRightY-selectionTopLeftY));
+    		
+        	event.gc.setAlpha(255);
         }
 		
 		//draws cross hairs
@@ -422,6 +430,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-10-view.x);
 		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScalePixelsPerRank())-10-view.y);
+		
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,topPixelCrossHairY+8,20,4);
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);

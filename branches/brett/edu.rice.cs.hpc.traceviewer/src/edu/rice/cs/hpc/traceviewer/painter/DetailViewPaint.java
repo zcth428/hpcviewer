@@ -1,11 +1,8 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.commands.Command;
@@ -87,7 +84,7 @@ public class DetailViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected BaseTimelineThread getTimelineThread(SpaceTimeCanvas canvas, double xscale,
+	protected BaseTimelineThread getTimelineThread(ISpaceTimeCanvas canvas, double xscale,
 			double yscale, Queue<TimelineDataSet> queue, AtomicInteger timelineDone) {
 
 		return new TimelineThread(this.window, controller, ptlService, changedBounds,   
@@ -108,7 +105,7 @@ public class DetailViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected void drawPainting(SpaceTimeCanvas canvas,
+	protected void drawPainting(ISpaceTimeCanvas canvas,
 			ImagePosition imagePosition) {
 		
 		DetailImagePosition imgDetailLine = (DetailImagePosition)imagePosition;

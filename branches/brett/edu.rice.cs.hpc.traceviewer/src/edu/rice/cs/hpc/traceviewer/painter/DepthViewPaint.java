@@ -44,7 +44,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected BaseTimelineThread getTimelineThread(SpaceTimeCanvas canvas, double xscale, double yscale,
+	protected BaseTimelineThread getTimelineThread(ISpaceTimeCanvas canvas, double xscale, double yscale,
 			Queue<TimelineDataSet> queue, AtomicInteger timelineDone) {
 		return new TimelineDepthThread( controller, yscale, queue, timelineDone, controller.isEnableMidpoint());
 	}
@@ -63,7 +63,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	}
 
 	@Override
-	protected void drawPainting(SpaceTimeCanvas canvas,
+	protected void drawPainting(ISpaceTimeCanvas canvas,
 			ImagePosition img) {
 		
 		masterGC.drawImage(img.image, 0, 0, img.image.getBounds().width, 

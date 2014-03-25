@@ -8,8 +8,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
@@ -17,39 +15,20 @@ import edu.rice.cs.hpc.traceviewer.painter.SummaryTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
+/*************************************************************************
+ * 
+ * View part of the summary window 
+ *
+ *************************************************************************/
 public class HPCSummaryView extends ViewPart
 {
 
 	public static final String ID = "hpcsummaryview.view";
 	
-	/**The composite that holds everything in the view*/
-	Composite master;
-	
 	/**The canvas that actually displays this view*/
 	SummaryTimeCanvas summaryCanvas;
 	
-	/**all gui is held here*/
-	HPCTraceView traceview;
-	
-	public void createPartControl(Composite _master)
-	{
-		master = _master;
-		
-		try 
-		{
-			traceview = (HPCTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HPCTraceView.ID);
-		}
-		catch (PartInitException e) 
-		{
-			traceview = null;
-			e.printStackTrace();
-			System.exit(0);
-		}
-		setupEverything();
-		setListener();
-	}
-	
-	private void setupEverything()
+	public void createPartControl(Composite master)
 	{
 		/*************************************************************************
 		 * Master Composite
@@ -67,7 +46,7 @@ public class HPCSummaryView extends ViewPart
 		summaryCanvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		summaryCanvas.setVisible(false);
 		
-		//traceview.detailCanvas.setSummaryCanvas(summaryCanvas);
+		setListener();
 	}
 	
 	private void setListener() {
@@ -89,14 +68,16 @@ public class HPCSummaryView extends ViewPart
 
 	public void updateView(SpaceTimeDataController dataTraces)
 	{
-		//stData.addPositionListener(this);
-		summaryCanvas.setVisible(true);
-		//traceview.detailCanvas.rebuffer();
+		summaryCanvas.updateData(dataTraces);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+	 */
 	public void setFocus() 
 	{
-		this.summaryCanvas.setFocus();
+		summaryCanvas.setFocus();
 	}
 
 }

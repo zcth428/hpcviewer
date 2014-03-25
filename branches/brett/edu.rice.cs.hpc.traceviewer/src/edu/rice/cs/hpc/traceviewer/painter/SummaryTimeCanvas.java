@@ -4,26 +4,28 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
+import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
+import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
@@ -32,14 +34,12 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
  * Canvas class for summary view
  *
  ******************************************************************/
-public class SummaryTimeCanvas extends Canvas 
-implements PaintListener, IOperationHistoryListener
+public class SummaryTimeCanvas extends AbstractTimeCanvas 
+implements IOperationHistoryListener
 {
 	/** the original data from detail canvas **/
 	private ImageData detailData;
-	
-	/** buffer image to be painted on the canvas **/
-	private Image imageBuffer;
+	private SpaceTimeDataController dataTraces = null;
 	
 	public SummaryTimeCanvas(Composite composite)
     {
@@ -58,7 +58,6 @@ implements PaintListener, IOperationHistoryListener
 	 */
 	private void addCanvasListener()
 	{
-		addPaintListener(this);
 		
 		addListener(SWT.Resize, new Listener(){
 			public void handleEvent(Event event)
@@ -82,34 +81,6 @@ implements PaintListener, IOperationHistoryListener
 		});
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
-	 */
-	public void paintControl(PaintEvent event)
-	{
-		if (detailData == null || imageBuffer == null)
-			return;
-		
-		try
-		{
-			final Rectangle bounds = imageBuffer.getBounds();
-			final Rectangle area   = getClientArea();
-			
-			event.gc.drawImage(imageBuffer, 0, 0, bounds.width, bounds.height, 
-											0, 0, area.width, area.height);
-		} 
-		catch (Exception e)
-		{
-			// An exception "Illegal argument" will be raised if the resize method is not "fast" enough to create the image
-			//		buffer before the painting is called. Thus, it causes inconsistency between the size of the image buffer
-			//		and the size of client area. 
-			//		If this happens, either we wait for the creation of image buffer, or do nothing. 
-			//		I prefer to do nothing for the scalability reason.
-			return;
-		}
-	}
-
 	
 	/*****
 	 * rebuffers the data in the summary time canvas and then asks receiver to paint it again
@@ -204,9 +175,21 @@ implements PaintListener, IOperationHistoryListener
 		}
 		else
 		{
+			super.init();
+			
 			detailData = _detailData;
 			rebuffer();
 		}
+	}
+	
+	/********
+	 * set the new database
+	 * @param data
+	 ********/
+	public void updateData(SpaceTimeDataController data)
+	{
+		dataTraces = data;
+		setVisible(true);
 	}
 	
 	/*
@@ -220,6 +203,19 @@ implements PaintListener, IOperationHistoryListener
 		super.dispose();
 	}
 	
+	private double getScalePixelsPerTime()
+	{
+		final int viewWidth = getClientArea().width;
+
+		return (double)viewWidth / (double)getNumTimeDisplayed();
+	}
+	
+	private long getNumTimeDisplayed()
+	{
+		return (dataTraces.getAttributes().getTimeInterval());
+	}
+
+	
 	//---------------------------------------------------------------------------------------
 	// PRIVATE CLASS
 	//---------------------------------------------------------------------------------------
@@ -231,6 +227,11 @@ implements PaintListener, IOperationHistoryListener
 			rebuffer();
 		}
 	}
+
+	//---------------------------------------------------------------------------------------
+	// Override methods
+	//---------------------------------------------------------------------------------------
+
 
 	@Override
 	public void historyNotification(final OperationHistoryEvent event) {
@@ -247,5 +248,35 @@ implements PaintListener, IOperationHistoryListener
 				});
 			}
 		}
+	}
+
+	@Override
+	void changePosition(Point point) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	void changeRegion(int left, int right) 
+	{
+		final ImageTraceAttributes attributes = dataTraces.getAttributes();
+		
+		long timeBegin   = attributes.getTimeBegin();
+		long topLeftTime = timeBegin + (long)(left / getScalePixelsPerTime());
+		long bottomRightTime = timeBegin + (long)(right / getScalePixelsPerTime());
+		
+		final Position position = attributes.getPosition();
+		
+		final Frame frame = new Frame(topLeftTime, bottomRightTime,
+				attributes.getProcessBegin(), attributes.getProcessEnd(),
+				attributes.getDepth(), position.time, position.process );
+		try {
+			TraceOperation.getOperationHistory().execute(
+					new ZoomOperation("Time zoom in", frame), 
+					null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+
 	}
 }

@@ -15,8 +15,6 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
@@ -25,9 +23,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
@@ -54,7 +50,7 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
  *
  ************************************************************************/
 public class SpaceTimeDetailCanvas extends SpaceTimeCanvas 
-	implements MouseListener, MouseMoveListener, PaintListener, 
+	implements PaintListener, ITraceCanvas, 
 	IOperationHistoryListener, ISpaceTimeCanvas
 {
 	
@@ -85,7 +81,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private Action goEastButton, goNorthButton, goWestButton, goSouthButton;
 		
 	/** Relates to the condition that the mouse is in.*/
-	private MouseState mouseState;
+	private ITraceCanvas.MouseState mouseState;
 	
 	/** The point at which the mouse was clicked.*/
 	private Point mouseDown;
@@ -130,7 +126,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		super(_composite );
 		oldAttributes = new ImageTraceAttributes();
 
-		mouseState = MouseState.ST_MOUSE_INIT;
+		mouseState = ITraceCanvas.MouseState.ST_MOUSE_INIT;
 
 		selectionTopLeftX = 0;
 		selectionTopLeftY = 0;
@@ -169,9 +165,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		this.setSpaceTimeData(_stData);
 
 		
-		if (mouseState == MouseState.ST_MOUSE_INIT)
+		if (mouseState == ITraceCanvas.MouseState.ST_MOUSE_INIT)
 		{
-			mouseState = MouseState.ST_MOUSE_NONE;
+			mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
 			this.addCanvasListener();
 			OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 		}
@@ -233,110 +229,36 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//  resize event is invoked "long" enough to the first resize event.
 		// If this is the case, then run rebuffering, otherwise just no-op.
 		// ------------------------------------------------------------------------------------
-		addListener(SWT.Resize, new SpaceTimeResizeListener());
+		final ResizeListener listener = new ResizeListener( new DetailBufferPaint() ); 
+		addControlListener(listener);
+		getDisplay().addFilter(SWT.MouseDown, listener);
+		getDisplay().addFilter(SWT.MouseUp, listener);
 	}
 
 	/*************************************************************************
 	 * 
-	 * class to listen to the resize of the window (specifically the canvas)
+	 * Resizing thread by listening to the event if a user has finished
+	 * 	the resizing or not
 	 *
 	 *************************************************************************/
-	private class SpaceTimeResizeListener implements Listener 
+	private class DetailBufferPaint implements BufferPaint
 	{
-		// subjectively the difference between the new size and the old size
-		// if the difference is within the range, we scale. Otherwise recompute
-		final static private float SIZE_DIFF = (float) 0.08;
-		
-		static final private int MIN_WIDTH = 2;
-		static final private int MIN_HEIGHT = 2;
 
-		// subjectively the difference between the first event and the current one
-		// please modify this constant if you think it is too long or too short 
-		final static private long TIME_DIFF = 400;
-				
-		private long time_wait = 0;
-		
-		public void handleEvent(Event event)
-		{	
-			final Rectangle r = getClientArea();
-
-			if (needToRebuffer(r))
-			{	
-				final long time_current = System.currentTimeMillis();
-				
-				if (time_wait > 0) {
-					final long dt = time_current - time_wait;
-					if (dt > TIME_DIFF) {
-						time_wait = 0;
-						// resize to bigger region: needs to recompute the data
-						view.width = r.width;
-						view.height = r.height;
-
-						getDisplay().syncExec(new ResizeThread(new DetailBufferPaint()));
-						return;
-					}
-				}
-				time_wait = time_current;
-			}	
-			// small modification, no need to rebuffer, just scaling
-			rescaling(r);
-		}
-		
-		private boolean needToRebuffer(Rectangle r ) {
-			final ImageData imgData = imageBuffer.getImageData();
-			
-			// we just scale the image if the current size is smaller than the original one
-			if (r.width<=imgData.width && r.height<=imgData.height)
-				return false; // no need to rebuffer
-			
-			// we scale the image if the difference is relatively "small" between
-			// the original and the current image
-			
-			final float diffx = (float)Math.abs(imgData.width-r.width) / (float)Math.max(r.width, imgData.width);
-			final float diffy = (float)Math.abs(imgData.height-r.height) / (float)Math.max(r.height, imgData.height);
-
-			return (diffx>SIZE_DIFF || diffy>SIZE_DIFF);
-		}
-		
-		private void rescaling(Rectangle r) {
-			
-			final ImageData imgData = imageBuffer.getImageData();
-			
-			// ------------------------------------------------------------------
-			// quick hack: do not rescaling if we try to minimize the image
-			// An image is "accidently" minimized, if another view is maximized
-			// ------------------------------------------------------------------
-			
-			if (r.width<MIN_WIDTH && r.height < MIN_HEIGHT)
-				return; // just do nothing to preserve the image
-
-			ImageData scaledImage = imgData.scaledTo(r.width, r.height);
-			final Image imgTmp = new Image(getDisplay(), scaledImage); 
-			imageBuffer.dispose();
-			imageBuffer = imgTmp;
-
-			view.width = r.width;
-			view.height = r.height;
-			redraw();
-		}
-	}
-	
-	/*************************************************************************
-	 * 
-	 * 
-	 *
-	 *************************************************************************/
-	private class DetailBufferPaint implements BufferPaint 
-	{
+		@Override
 		public void rebuffering() {
 			// force the paint to refresh the data
+			final Rectangle r = getClientArea();
+			// resize to bigger region: needs to recompute the data
+			view.width = r.width;
+			view.height = r.height;
+
+			Debugger.printDebug(1, "resizing " + view);
+			
 			final ImageTraceAttributes attr = stData.getAttributes();
 			notifyChanges("Resize", attr.getTimeBegin(), attr.getProcessBegin(),
 					attr.getTimeEnd(), attr.getProcessEnd() );
 		}
 	}
-
-	
 	/*************************************************************************
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.
@@ -395,20 +317,22 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (this.stData == null)
 			return;
 		
+		Rectangle region = imageBuffer.getBounds();
+		
+		//if something has changed the bounds, you need to go get the data again
+		event.gc.drawImage(imageBuffer, 0, 0, region.width, region.height, 
+										0, 0, view.width, view.height);
+    	
+		if (region.width != view.width || region.height != view.height)
+			return;
+
 		final ImageTraceAttributes attributes = stData.getAttributes();
 		view.x = (int) Math.round(attributes.getTimeBegin() * getScalePixelsPerTime());
 		view.y = (int) Math.round(attributes.getProcessBegin() * getScalePixelsPerRank());
 		
-		Rectangle region = imageBuffer.getBounds();
-		if (region.width != view.width || region.height != view.height)
-			return;
-		
-		//if something has changed the bounds, you need to go get the data again
-		event.gc.drawImage(imageBuffer, 0, 0, view.width, view.height, 0, 0, view.width, view.height);
-    	
 		//paints the selection currently being made (the little white box that appears
 		//when you click and drag
-		if(mouseState==MouseState.ST_MOUSE_DOWN)
+		if(mouseState == ITraceCanvas.MouseState.ST_MOUSE_DOWN)
 		{
         	event.gc.setBackground(Constants.COLOR_WHITE);
         	event.gc.setAlpha(100);
@@ -477,11 +401,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (view.height <= 0)
 			view.height = 1;
 		
-		// laksono 2012.03.07: this following line causes white paint when changing
-		//					   from home to a zoom (or another area) and vice-versa
-		//imageBuffer = new Image(getDisplay(), view.width, view.height);
-
-
 		notifyChanges(ZoomOperation.ActionHome, 0, 0, stData.getTimeWidth(), stData.getTotalTraceCount());
 	}
 	
@@ -504,7 +423,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		if (toBeOpened.depth != painter.getDepth()) {
 			// we have change of depth
-
 			painter.setDepth(toBeOpened.depth);
 		}
 		
@@ -638,6 +556,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/**************************************************************************
 	 * Gets the scale along the x-axis (pixels per time unit).
 	 **************************************************************************/
+	@Override
 	public double getScalePixelsPerTime()
 	{
 		return (double)view.width / (double)this.getNumTimeUnitDisplayed();
@@ -646,6 +565,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/**************************************************************************
 	 * Gets the scale along the y-axis (pixels per process).
 	 **************************************************************************/
+	@Override
 	public double getScalePixelsPerRank()
 	{
 		return view.height / this.getNumProcessesDisplayed();
@@ -988,10 +908,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		// take into account ONLY when the button-1 is clicked and it's never been clicked before
 		// the click is not right click (or modifier click on Mac)
-		if (e.button == 1 && mouseState == MouseState.ST_MOUSE_NONE 
+		if (e.button == 1 && mouseState == ITraceCanvas.MouseState.ST_MOUSE_NONE 
 				&& (e.stateMask & SWT.MODIFIER_MASK)==0 )
 		{
-			mouseState = MouseState.ST_MOUSE_DOWN;
+			mouseState = ITraceCanvas.MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);
 		}
 	}
@@ -1002,10 +922,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 */
 	public void mouseUp(MouseEvent e)
 	{
-		if (mouseState == MouseState.ST_MOUSE_DOWN)
+		if (mouseState == ITraceCanvas.MouseState.ST_MOUSE_DOWN)
 		{
 			mouseUp = new Point(e.x,e.y);
-			mouseState = MouseState.ST_MOUSE_NONE;
+			mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
 			//difference in mouse movement < 3 constitutes a "single click"
 			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
 			{
@@ -1042,7 +962,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 */
 	public void mouseMove(MouseEvent e)
 	{
-		if(mouseState == MouseState.ST_MOUSE_DOWN)
+		if(mouseState == ITraceCanvas.MouseState.ST_MOUSE_DOWN)
 		{
 			Point mouseTemp = new Point(e.x,e.y);
 			adjustSelection(mouseDown,mouseTemp);

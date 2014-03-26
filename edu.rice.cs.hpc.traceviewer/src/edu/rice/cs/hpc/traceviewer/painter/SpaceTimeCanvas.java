@@ -11,9 +11,6 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
  *****************************************************************/
 public abstract class SpaceTimeCanvas extends Canvas
 {
-	enum MouseState { ST_MOUSE_INIT, ST_MOUSE_NONE, ST_MOUSE_DOWN };
-
-	
 	/**The SpaceTimeData corresponding to this canvas.*/
 	protected SpaceTimeDataController stData;
 	

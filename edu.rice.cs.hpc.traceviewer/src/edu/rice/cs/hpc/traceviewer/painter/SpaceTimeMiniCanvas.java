@@ -12,8 +12,6 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -36,7 +34,7 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
  ****************************************************************************/
 
 public class SpaceTimeMiniCanvas extends SpaceTimeCanvas 
-	implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
+	implements ITraceCanvas, PaintListener, IOperationHistoryListener
 {
 	/** Relates to the condition that the mouse is in.*/
 	private MouseState mouseState;

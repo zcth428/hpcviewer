@@ -9,6 +9,8 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
@@ -18,6 +20,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -40,6 +43,7 @@ implements IOperationHistoryListener
 	/** the original data from detail canvas **/
 	private ImageData detailData;
 	private SpaceTimeDataController dataTraces = null;
+	private ResizeListener listener;
 	
 	public SummaryTimeCanvas(Composite composite)
     {
@@ -58,19 +62,7 @@ implements IOperationHistoryListener
 	 */
 	private void addCanvasListener()
 	{
-		
-		addListener(SWT.Resize, new Listener(){
-			public void handleEvent(Event event)
-			{
-				final int viewWidth = getClientArea().width;
-				final int viewHeight = getClientArea().height;
-				
-				if (viewWidth > 0 && viewHeight > 0)
-				{
-					getDisplay().syncExec(new ResizeThread( new SummaryBufferPaint()));
-				}
-			}
-		});
+		listener = new ResizeListener();
 		
 		addDisposeListener( new DisposeListener() {
 			
@@ -200,6 +192,8 @@ implements IOperationHistoryListener
 	public void dispose()
 	{
 		imageBuffer.dispose();
+		removeControlListener(listener);
+		
 		super.dispose();
 	}
 	
@@ -220,12 +214,35 @@ implements IOperationHistoryListener
 	// PRIVATE CLASS
 	//---------------------------------------------------------------------------------------
 
-	private class SummaryBufferPaint implements BufferPaint
-	{
-		public void rebuffering()
-		{
-			rebuffer();
-		}
+	
+	private class ResizeListener implements ControlListener, Runnable, Listener {
+
+	    private long lastEvent = 0;
+
+	    private boolean mouse = true;
+
+	    public void controlMoved(ControlEvent e) {
+	    }
+
+	    public void controlResized(ControlEvent e) {
+	        lastEvent = System.currentTimeMillis();
+	        Display.getDefault().timerExec(500, this);
+	    }
+
+	    public void run() {
+	        if ((lastEvent + 500) < System.currentTimeMillis() && mouse) 
+	        {
+	        	System.out.println("STC " + lastEvent + " : rebuffer" );
+	        	rebuffer();
+	        } else {
+	        	System.out.println("STC " + lastEvent + " : wait" );
+	            Display.getDefault().timerExec(500, this);
+	        }
+	    }
+	    public void handleEvent(Event event) {
+	        mouse = event.type == SWT.MouseUp;
+	    }
+
 	}
 
 	//---------------------------------------------------------------------------------------

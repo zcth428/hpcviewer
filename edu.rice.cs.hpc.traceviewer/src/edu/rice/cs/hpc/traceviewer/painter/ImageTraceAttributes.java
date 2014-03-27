@@ -97,7 +97,12 @@ public class ImageTraceAttributes {
 	
 	public long getTimeInterval()
 	{
-		return (frame.endTime - frame.begTime);
+		long dt = frame.endTime - frame.begTime;
+		// make sure we have positive time interval, even if users selects 0 time
+		if (dt>0)
+			return (frame.endTime - frame.begTime);
+		else
+			return 1;
 	}
 	
 	public boolean sameTrace(ImageTraceAttributes other)

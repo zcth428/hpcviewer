@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.Serializable;
 
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 
 
@@ -118,6 +119,9 @@ public class Frame implements Serializable
 			// if the current time is beyond the range, make it in the middle
 			position.time = (begTime + endTime ) >> 1;
 		}
+		if (position.time < 0 || position.process < 0 || begTime < 0 || endTime < 0)
+			Debugger.printDebug(1, "Error: negative attribute(s) " + position + 
+					", t0=" + begTime + " , t1=" + endTime);
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -51,15 +53,31 @@ implements ITraceCanvas, PaintListener
 	{
 		if (mouseState == ITraceCanvas.MouseState.ST_MOUSE_INIT) 
 		{
-			mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
 			addMouseListener(this);
 			addMouseMoveListener(this);
 			addPaintListener(this);
+			addFocusListener(new FocusAdapter() {
+				/*
+				 * (non-Javadoc)
+				 * @see org.eclipse.swt.events.FocusAdapter#focusLost(org.eclipse.swt.events.FocusEvent)
+				 */
+				public void focusLost(FocusEvent e) {
+					AbstractTimeCanvas.this.initMouseSelection();
+				}
+			});
 		}
-		leftSelection = 0;
-		rightSelection = 0;
+		initMouseSelection();
 	}
 	
+	/*****
+	 * initialize variables 
+	 */
+	private void initMouseSelection()
+	{
+		leftSelection = 0;
+		rightSelection = 0;
+		mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
+	}
 	
 	@Override
 	public void mouseMove(MouseEvent e) 

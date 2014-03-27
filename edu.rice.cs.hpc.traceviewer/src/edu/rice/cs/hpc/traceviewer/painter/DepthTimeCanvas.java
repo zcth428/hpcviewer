@@ -192,6 +192,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
     {
     	setTimeZoom(time1, time2);
     	adjustCrossHair(time1, time2);
+    	rebuffer();
     }
     
     /******************
@@ -232,6 +233,8 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		
 		final ImageTraceAttributes attributes = stData.getAttributes();
 		attributes.numPixelsDepthV = viewHeight;
+		
+		Debugger.printDebug(1, "DTC rebuffering " + attributes);
 		
 		try
 		{

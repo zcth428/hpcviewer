@@ -12,6 +12,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -127,12 +129,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		oldAttributes = new ImageTraceAttributes();
 
 		mouseState = ITraceCanvas.MouseState.ST_MOUSE_INIT;
-
-		selectionTopLeftX = 0;
-		selectionTopLeftY = 0;
-		selectionBottomRightX = 0;
-		selectionBottomRightY = 0;
-				
+		initMouseSelection();
+		
 		if (this.stData != null) {
 			this.addCanvasListener();
 		}
@@ -157,6 +155,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	}
 
 
+	private void initMouseSelection()
+	{
+		selectionTopLeftX = 0;
+		selectionTopLeftY = 0;
+		selectionBottomRightX = 0;
+		selectionBottomRightY = 0;
+
+		mouseUp = null;
+		mouseDown = null;
+	}
+	
 	/*****
 	 * set new database and refresh the screen
 	 * @param dataTraces
@@ -195,8 +204,22 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		addMouseMoveListener(this);
 		addPaintListener(this);
 		
+		// need to initialize mouse selection variables when we lost the focus
+		//	otherwise, Eclipse will keep the variables and draw useless selected rectangles
+		
+		addFocusListener(new FocusAdapter() {
+			@Override
+			/*
+			 * (non-Javadoc)
+			 * @see org.eclipse.swt.events.FocusAdapter#focusLost(org.eclipse.swt.events.FocusEvent)
+			 */
+			public void focusLost(FocusEvent e) {
+				SpaceTimeDetailCanvas.this.initMouseSelection();
+				mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
+			}
+		});
+		
 		addKeyListener( new KeyListener(){
-
 			public void keyPressed(KeyEvent e) {}
 
 			public void keyReleased(KeyEvent e) {
@@ -219,8 +242,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 						goWest();
 					break;				
 				}
-			}
-			
+			}			
 		});
 				
 		// ------------------------------------------------------------------------------------
@@ -246,14 +268,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
 		@Override
 		public void rebuffering() {
-			// force the paint to refresh the data
-			final Rectangle r = getClientArea();
-			// resize to bigger region: needs to recompute the data
-			view.width = r.width;
-			view.height = r.height;
-
-			Debugger.printDebug(1, "resizing " + view);
-			
+			// force the paint to refresh the data			
 			final ImageTraceAttributes attr = stData.getAttributes();
 			notifyChanges("Resize", attr.getTimeBegin(), attr.getProcessBegin(),
 					attr.getTimeEnd(), attr.getProcessEnd() );
@@ -317,18 +332,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		if (this.stData == null)
 			return;
 		
-		Rectangle region = imageBuffer.getBounds();
+		final Rectangle region = imageBuffer.getBounds();
+		final Rectangle area   = getClientArea();
 		
 		//if something has changed the bounds, you need to go get the data again
 		event.gc.drawImage(imageBuffer, 0, 0, region.width, region.height, 
-										0, 0, view.width, view.height);
+										0, 0, area.width, area.height);
     	
-		if (region.width != view.width || region.height != view.height)
+		if (region.width != area.width || region.height != area.height)
 			return;
 
 		final ImageTraceAttributes attributes = stData.getAttributes();
-		view.x = (int) Math.round(attributes.getTimeBegin() * getScalePixelsPerTime());
-		view.y = (int) Math.round(attributes.getProcessBegin() * getScalePixelsPerRank());
 		
 		//paints the selection currently being made (the little white box that appears
 		//when you click and drag
@@ -336,24 +350,25 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		{
         	event.gc.setBackground(Constants.COLOR_WHITE);
         	event.gc.setAlpha(100);
-    		event.gc.fillRectangle((int)(selectionTopLeftX-view.x), (int)(selectionTopLeftY-view.y), (int)(selectionBottomRightX-selectionTopLeftX),
+    		event.gc.fillRectangle(mouseDown.x, mouseDown.y, (int)(selectionBottomRightX-selectionTopLeftX),
             		(int)(selectionBottomRightY-selectionTopLeftY));
     		
     		event.gc.setForeground(Constants.COLOR_BLACK);
     		event.gc.setLineWidth(2);
-    		event.gc.drawRectangle((int)(selectionTopLeftX-view.x), (int)(selectionTopLeftY-view.y), (int)(selectionBottomRightX-selectionTopLeftX),
+    		event.gc.drawRectangle(mouseDown.x, mouseDown.y, (int)(selectionBottomRightX-selectionTopLeftX),
             		(int)(selectionBottomRightY-selectionTopLeftY));
     		
         	event.gc.setAlpha(255);
+        	Debugger.printDebug(1, "STDC mouse-down ");
         }
 		
 		//draws cross hairs
 		final PaintManager painter = stData.getPainter();
-		long selectedTime = painter.getPosition().time;
-		int selectedProcess = painter.getPosition().process;
+		long selectedTime = painter.getPosition().time - attributes.getTimeBegin();
+		int selectedProcess = painter.getPosition().process - attributes.getProcessBegin();
 		
-		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-10-view.x);
-		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScalePixelsPerRank())-10-view.y);
+		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-10);
+		int topPixelCrossHairY = (int)(Math.round((selectedProcess+.5)*getScalePixelsPerRank())-10);
 		
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,topPixelCrossHairY+8,20,4);
@@ -390,17 +405,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		//if this is the first time painting,
 		//some stuff needs to get initialized
-		view.x = 0;
-		view.y = 0;
-		
-		view.width = this.getClientArea().width;
-		view.height = this.getClientArea().height;
-		
-		if (view.width <= 0)
-			view.width = 1;
-		if (view.height <= 0)
-			view.height = 1;
-		
 		notifyChanges(ZoomOperation.ActionHome, 0, 0, stData.getTimeWidth(), stData.getTotalTraceCount());
 	}
 	
@@ -559,7 +563,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	@Override
 	public double getScalePixelsPerTime()
 	{
-		return (double)view.width / (double)this.getNumTimeUnitDisplayed();
+		return (double)getClientArea().width / (double)this.getNumTimeUnitDisplayed();
 	}
 	
 	/**************************************************************************
@@ -568,7 +572,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	@Override
 	public double getScalePixelsPerRank()
 	{
-		return view.height / this.getNumProcessesDisplayed();
+		return getClientArea().height / this.getNumProcessesDisplayed();
 	}
 	
 	/**************************************************************************
@@ -658,11 +662,18 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
     private void adjustSelection(Point p1, Point p2)
 	{
-    	selectionTopLeftX = view.x + Math.max(Math.min(p1.x, p2.x), 0);
-        selectionTopLeftY = view.y + Math.max(Math.min(p1.y, p2.y), 0);
+    	selectionTopLeftX = Math.max(Math.min(p1.x, p2.x), 0);
+        selectionTopLeftY = Math.max(Math.min(p1.y, p2.y), 0);
         
-        selectionBottomRightX = view.x + Math.min(Math.max(p1.x, p2.x), view.width-1);
-        selectionBottomRightY = view.y + Math.min(Math.max(p1.y, p2.y), view.height-1);
+        final Rectangle view = getClientArea();
+        
+        selectionBottomRightX = Math.min(Math.max(p1.x, p2.x), view.width-1);
+        selectionBottomRightY = Math.min(Math.max(p1.y, p2.y), view.height-1);
+        
+        if (selectionTopLeftX < 0 || selectionBottomRightX < 0 || view.x < 0) {
+        	Debugger.printDebug(1, "STDC Error: negative time " + view + 
+        			" [" + selectionTopLeftX + ", " + selectionBottomRightX + "]");
+        }
     }
     
 	/**************************************************************************
@@ -672,16 +683,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	private void setDetail()
     {
-		int topLeftProcess = (int) (selectionTopLeftY / getScalePixelsPerRank());
-		long topLeftTime = (long)(selectionTopLeftX / getScalePixelsPerTime());
+		ImageTraceAttributes attributes = stData.getAttributes();
+		int topLeftProcess = attributes.getProcessBegin() + (int) (selectionTopLeftY / getScalePixelsPerRank());
+		long topLeftTime   = attributes.getTimeBegin() + (long)(selectionTopLeftX / getScalePixelsPerTime());
 		
 		// ---------------------------------------------------------------------------------------
 		// we should include the partial selection of a time or a process
 		// for instance if the user selects processes where the max process is between
 		// 	10 and 11, we should include process 11 (just like keynote selection)
 		// ---------------------------------------------------------------------------------------
-		int bottomRightProcess = (int) Math.ceil( (selectionBottomRightY / getScalePixelsPerRank()) );
-		long bottomRightTime = (long)Math.ceil( (selectionBottomRightX / getScalePixelsPerTime()) );
+		int bottomRightProcess = attributes.getProcessBegin() + (int) Math.ceil( (selectionBottomRightY / getScalePixelsPerRank()) );
+		long bottomRightTime   = attributes.getTimeBegin() + (long)Math.ceil( (selectionBottomRightX / getScalePixelsPerTime()) );
 		
 		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }
@@ -844,7 +856,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private Position updatePosition()
 	{
     	final ImageTraceAttributes attributes = stData.getAttributes();
-    	
+    	final Rectangle view = getClientArea();
     	int selectedProcess;
 
     	//need to do different things if there are more traces to paint than pixels
@@ -939,7 +951,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 					if(getNumTimeUnitDisplayed() > MIN_PROC_DISP)
 					{
 						mouseDown.x = 0;
-						mouseUp.x = view.width;
+						mouseUp.x = getClientArea().width;
 						adjustSelection(mouseDown,mouseUp);
 						setDetail();
 					}
@@ -988,15 +1000,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		//interpret as flickering. This way, you finish the puzzle before you put it on the
 		//table).
 
-		if (view.width==0 && view.height==0) {
-			view.width = this.getClientArea().width;
-			view.height = this.getClientArea().height;
-		}
 		// -----------------------------------------------------------------------
 		// imageFinal is the final image with info of the depth and number of samples
 		// the size of the final image is the same of the size of the canvas
 		// -----------------------------------------------------------------------
-		
+
+		final Rectangle view = getClientArea();
+				
 		final Image imageFinal = new Image(getDisplay(), view.width, view.height);
 		GC bufferGC = new GC(imageFinal);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
@@ -1021,8 +1031,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		// if there's no exception or interruption, we redraw the canvas
 		// -----------------------------------------------------------------------
 		if ( paintDetailViewport(bufferGC, origGC, 
-				stData.getAttributes().getProcessBegin(), stData.getAttributes().getProcessEnd(), 
-				stData.getAttributes().getTimeBegin(), stData.getAttributes().getTimeEnd(), 
 				view.width, view.height, refreshData) ) {
 			
 			if (imageBuffer != null) {
@@ -1074,18 +1082,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 * 
 	 *	@param masterGC   		 The GC that will contain the combination of all the 1-line GCs.
 	 * 	@param origGC			 The original GC without texts
-	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
-	 *	@param begProcess        The first process that will be painted.
-	 *	@param endProcess 		 The last process that will be painted.
-	 *	@param begTime           The first time unit that will be displayed.
-	 *	@param endTime 			 The last time unit that will be displayed.
-	 *  @param numPixelsH		 The number of horizontal pixels to be painted.
-	 *  @param numPixelsV		 The number of vertical pixels to be painted.
+	 *  @param _numPixelsH		 The number of horizontal pixels to be painted.
+	 *  @param _numPixelsV		 The number of vertical pixels to be painted.
+	 *  @param refreshData
 	 *  
 	 *  @return boolean true of the pain is successful, false otherwise
 	 *************************************************************************/
 	public boolean paintDetailViewport(final GC masterGC, final GC origGC, 
-			int _begProcess, int _endProcess, long _begTime, long _endTime, int _numPixelsH, int _numPixelsV,
+			int _numPixelsH, int _numPixelsV,
 			boolean refreshData)
 	{	
 		ImageTraceAttributes attributes = stData.getAttributes();

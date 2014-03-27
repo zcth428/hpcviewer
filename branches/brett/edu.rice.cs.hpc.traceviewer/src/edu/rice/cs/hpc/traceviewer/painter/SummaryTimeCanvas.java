@@ -9,8 +9,6 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
@@ -20,10 +18,6 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
@@ -43,7 +37,6 @@ implements IOperationHistoryListener
 	/** the original data from detail canvas **/
 	private ImageData detailData;
 	private SpaceTimeDataController dataTraces = null;
-	private ResizeListener listener;
 	
 	public SummaryTimeCanvas(Composite composite)
     {
@@ -62,8 +55,6 @@ implements IOperationHistoryListener
 	 */
 	private void addCanvasListener()
 	{
-		listener = new ResizeListener();
-		
 		addDisposeListener( new DisposeListener() {
 			
 			@Override
@@ -192,11 +183,14 @@ implements IOperationHistoryListener
 	public void dispose()
 	{
 		imageBuffer.dispose();
-		removeControlListener(listener);
 		
 		super.dispose();
 	}
 	
+	/*****
+	 * get the number of pixel per time unit
+	 * @return
+	 */
 	private double getScalePixelsPerTime()
 	{
 		final int viewWidth = getClientArea().width;
@@ -204,47 +198,16 @@ implements IOperationHistoryListener
 		return (double)viewWidth / (double)getNumTimeDisplayed();
 	}
 	
+	/******
+	 * get the time interval displayed on the canvas
+	 * @return
+	 */
 	private long getNumTimeDisplayed()
 	{
 		return (dataTraces.getAttributes().getTimeInterval());
 	}
 
 	
-	//---------------------------------------------------------------------------------------
-	// PRIVATE CLASS
-	//---------------------------------------------------------------------------------------
-
-	
-	private class ResizeListener implements ControlListener, Runnable, Listener {
-
-	    private long lastEvent = 0;
-
-	    private boolean mouse = true;
-
-	    public void controlMoved(ControlEvent e) {
-	    }
-
-	    public void controlResized(ControlEvent e) {
-	        lastEvent = System.currentTimeMillis();
-	        Display.getDefault().timerExec(500, this);
-	    }
-
-	    public void run() {
-	        if ((lastEvent + 500) < System.currentTimeMillis() && mouse) 
-	        {
-	        	System.out.println("STC " + lastEvent + " : rebuffer" );
-	        	rebuffer();
-	        } else {
-	        	System.out.println("STC " + lastEvent + " : wait" );
-	            Display.getDefault().timerExec(500, this);
-	        }
-	    }
-	    public void handleEvent(Event event) {
-	        mouse = event.type == SWT.MouseUp;
-	    }
-
-	}
-
 	//---------------------------------------------------------------------------------------
 	// Override methods
 	//---------------------------------------------------------------------------------------

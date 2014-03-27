@@ -54,6 +54,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/** We store the ones from the beginning so that we can display correctly even with filtering*/
 	private int processBegin, processEnd;
 	
+	private Rectangle view;
+	
     final private Color COMPLETELY_FILTERED_OUT_COLOR;
     final private Color NOT_FILTERED_OUT_COLOR;
     final private Color COLOR_BLACK, COLOR_GRAY;
@@ -71,6 +73,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		
 		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
+		view =  new Rectangle(0, 0, 0, 0);
 		
         // initialize colors
         COMPLETELY_FILTERED_OUT_COLOR = new Color(this.getDisplay(), 50,50,50);

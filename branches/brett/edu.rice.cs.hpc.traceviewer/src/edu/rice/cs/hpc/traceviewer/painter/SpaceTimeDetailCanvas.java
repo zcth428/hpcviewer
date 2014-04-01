@@ -91,14 +91,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	/** The point at which the mouse was released.*/
 	private Point mouseUp;
 	
-	/** The top-left point that you selected.*/
-	private long selectionTopLeftX;
-	private long selectionTopLeftY;
-	
-	/** The bottom-right point that you selected.*/
-	private long selectionBottomRightX;
-	private long selectionBottomRightY;
-	
+	/** The top-left and bottom-right point that you selected.*/
+	final private Point selectionTopLeft, selectionBottomRight;
+		
 	/**The Group containing the labels. labelGroup.redraw() is called from the Detail Canvas.*/
 	private Composite labelGroup;
    
@@ -128,6 +123,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		super(_composite );
 		oldAttributes = new ImageTraceAttributes();
 
+		selectionTopLeft = new Point(0,0);
+		selectionBottomRight = new Point(0,0);
+		
 		mouseState = ITraceCanvas.MouseState.ST_MOUSE_INIT;
 		initMouseSelection();
 		
@@ -157,11 +155,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
 	private void initMouseSelection()
 	{
-		selectionTopLeftX = 0;
-		selectionTopLeftY = 0;
-		selectionBottomRightX = 0;
-		selectionBottomRightY = 0;
-
+		initSelectionRectangle();
+		
 		mouseUp = null;
 		mouseDown = null;
 	}
@@ -316,10 +311,10 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 *******************************************************************************/
 	private void initSelectionRectangle() 
 	{
-		selectionTopLeftX = 0;
-		selectionTopLeftY = 0;
-		selectionBottomRightX = 0;
-		selectionBottomRightY = 0;
+		selectionTopLeft.x = 0;
+		selectionTopLeft.y = 0;
+		selectionBottomRight.x = 0;
+		selectionBottomRight.y = 0;
 	}
 	
 	/*******************************************************************************
@@ -350,13 +345,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		{
         	event.gc.setBackground(Constants.COLOR_WHITE);
         	event.gc.setAlpha(100);
-    		event.gc.fillRectangle(mouseDown.x, mouseDown.y, (int)(selectionBottomRightX-selectionTopLeftX),
-            		(int)(selectionBottomRightY-selectionTopLeftY));
+    		event.gc.fillRectangle(selectionTopLeft.x, mouseDown.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
+            		(int)(selectionBottomRight.y-selectionTopLeft.y));
     		
     		event.gc.setForeground(Constants.COLOR_BLACK);
     		event.gc.setLineWidth(2);
-    		event.gc.drawRectangle(mouseDown.x, mouseDown.y, (int)(selectionBottomRightX-selectionTopLeftX),
-            		(int)(selectionBottomRightY-selectionTopLeftY));
+    		event.gc.drawRectangle(mouseDown.x, mouseDown.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
+            		(int)(selectionBottomRight.y-selectionTopLeft.y));
     		
         	event.gc.setAlpha(255);
         	Debugger.printDebug(1, "STDC mouse-down ");
@@ -662,17 +657,17 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
     private void adjustSelection(Point p1, Point p2)
 	{
-    	selectionTopLeftX = Math.max(Math.min(p1.x, p2.x), 0);
-        selectionTopLeftY = Math.max(Math.min(p1.y, p2.y), 0);
+    	selectionTopLeft.x = Math.max(Math.min(p1.x, p2.x), 0);
+        selectionTopLeft.y = Math.max(Math.min(p1.y, p2.y), 0);
         
         final Rectangle view = getClientArea();
         
-        selectionBottomRightX = Math.min(Math.max(p1.x, p2.x), view.width-1);
-        selectionBottomRightY = Math.min(Math.max(p1.y, p2.y), view.height-1);
+        selectionBottomRight.x = Math.min(Math.max(p1.x, p2.x), view.width-1);
+        selectionBottomRight.y = Math.min(Math.max(p1.y, p2.y), view.height-1);
         
-        if (selectionTopLeftX < 0 || selectionBottomRightX < 0 || view.x < 0) {
+        if (selectionTopLeft.x < 0 || selectionBottomRight.x < 0 || view.x < 0) {
         	Debugger.printDebug(1, "STDC Error: negative time " + view + 
-        			" [" + selectionTopLeftX + ", " + selectionBottomRightX + "]");
+        			" [" + selectionTopLeft.x + ", " + selectionBottomRight.x + "]");
         }
     }
     
@@ -684,16 +679,16 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private void setDetail()
     {
 		ImageTraceAttributes attributes = stData.getAttributes();
-		int topLeftProcess = attributes.getProcessBegin() + (int) (selectionTopLeftY / getScalePixelsPerRank());
-		long topLeftTime   = attributes.getTimeBegin() + (long)(selectionTopLeftX / getScalePixelsPerTime());
+		int topLeftProcess = attributes.getProcessBegin() + (int) (selectionTopLeft.y / getScalePixelsPerRank());
+		long topLeftTime   = attributes.getTimeBegin() + (long)(selectionTopLeft.x / getScalePixelsPerTime());
 		
 		// ---------------------------------------------------------------------------------------
 		// we should include the partial selection of a time or a process
 		// for instance if the user selects processes where the max process is between
 		// 	10 and 11, we should include process 11 (just like keynote selection)
 		// ---------------------------------------------------------------------------------------
-		int bottomRightProcess = attributes.getProcessBegin() + (int) Math.ceil( (selectionBottomRightY / getScalePixelsPerRank()) );
-		long bottomRightTime   = attributes.getTimeBegin() + (long)Math.ceil( (selectionBottomRightX / getScalePixelsPerTime()) );
+		int bottomRightProcess = attributes.getProcessBegin() + (int) Math.ceil( (selectionBottomRight.y / getScalePixelsPerRank()) );
+		long bottomRightTime   = attributes.getTimeBegin() + (long)Math.ceil( (selectionBottomRight.x / getScalePixelsPerTime()) );
 		
 		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
     }

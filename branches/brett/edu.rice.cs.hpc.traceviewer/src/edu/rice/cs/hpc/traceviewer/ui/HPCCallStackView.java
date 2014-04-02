@@ -1,4 +1,4 @@
-	package edu.rice.cs.hpc.traceviewer.ui;
+package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.util.Map;
 
@@ -134,7 +134,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	public void updateView(SpaceTimeDataController _stData) 
 	{
-		depthEditor.setMaximum(_stData.getPainter().getMaxDepth());
+		depthEditor.setMaximum(_stData.getMaxDepth());
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 

@@ -10,7 +10,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /// A view for displaying application data objects
@@ -21,7 +20,6 @@ public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData
 	Composite master;
 
 	SpaceTimeDataController stData;
-	PaintManager painter;
 	
 	DataViewer dataViewer;
 		
@@ -62,7 +60,6 @@ public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData
 	public void updateView(SpaceTimeDataController _stData) 
 	{
 		this.stData = _stData;	
-		this.painter = stData.getPainter();
 		this.dataViewer.updateView(_stData);
 		
 //		stData.addDataListener(this);
@@ -96,6 +93,6 @@ public class HPCDataView extends ViewPart implements ISizeProvider//, ITraceData
 	 * @see edu.rice.cs.hpc.traceviewer.events.ITracePosition#setPosition(edu.rice.cs.hpc.traceviewer.painter.Position)
 	 */
 	public void setPosition(Position position) {
-		this.dataViewer.setSample(position, painter.getMaxDepth(), painter.getData());
+		this.dataViewer.setSample(position, stData.getMaxDepth(), stData.getDataIndex());
 	}
 }

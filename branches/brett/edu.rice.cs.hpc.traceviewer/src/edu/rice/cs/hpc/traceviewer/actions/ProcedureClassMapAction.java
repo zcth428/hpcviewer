@@ -52,7 +52,7 @@ public class ProcedureClassMapAction extends AbstractHandler {
 		
 		DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
 		// reset the color table
-		ColorTable colorTable = dataService.getData().getPainter().getColorTable(); 
+		ColorTable colorTable = dataService.getData().getColorTable(); 
 		colorTable.dispose();
 		colorTable.setColorTable();
 		

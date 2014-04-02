@@ -33,14 +33,14 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected boolean startPainting(int linesToPaint, int numThreads, boolean changedBounds) {
-		numPixels = attributes.numPixelsDepthV/(float)painter.getMaxDepth();
+		numPixels = attributes.numPixelsDepthV/(float)controller.getMaxDepth();
 		return changedBounds;
 	}
 
 
 	@Override
 	protected int getNumberOfLines() {
-		return Math.min(attributes.numPixelsDepthV, painter.getMaxDepth());
+		return Math.min(attributes.numPixelsDepthV, controller.getMaxDepth());
 	}
 
 	@Override

@@ -40,8 +40,6 @@ import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
  *******************************************************************************************/
 public abstract class SpaceTimeDataController 
 {
-	PaintManager painter;
-	
 	protected ImageTraceAttributes attributes;
 	protected String dbName;
 	/**
@@ -71,6 +69,9 @@ public abstract class SpaceTimeDataController
 	protected IBaseData dataTrace = null;
 	final protected BaseExperiment exp;
 	
+	// nathan's data index variable
+	// TODO: we need to remove this and delegate to the inherited class instead !
+	private int currentDataIdx;
 
 	/***
 	 * Constructor to create a data based on File. This constructor is more suitable
@@ -123,6 +124,17 @@ public abstract class SpaceTimeDataController
 		init(_window);
 	}
 
+	public void setDataIndex(int dataIndex) 
+	{
+		currentDataIdx = dataIndex;
+	}
+	
+	
+	public int getDataIndex()
+	{
+		return currentDataIdx;
+	}
+	
 	/******
 	 * Initialize the object
 	 * 
@@ -158,13 +170,18 @@ public abstract class SpaceTimeDataController
 		maxEndTime = trAttribute.dbTimeMax;
 
 		dbName = exp.getName();
-
-		painter = new PaintManager(attributes, colorTable, maxDepth);
+		colorTable.setColorTable();
 	}
 
+	public int getMaxDepth() 
+	{
+		return maxDepth;
+	}
+	
+	
 	private int getCurrentlySelectedProcess()
 	{
-		return painter.getPosition().process;
+		return attributes.getPosition().process;
 	}
 	
 	/**
@@ -184,11 +201,6 @@ public abstract class SpaceTimeDataController
 		return (int)scaledDTProcess;
 	}
 
-
-	public PaintManager getPainter() {
-		
-		return painter;
-	}
 
 
 	public ProcessTimeline getDepthTrace() {

@@ -74,7 +74,7 @@ public class TimelineThread
 			double pixelLength, boolean midPoint) {
 
 		return new DetailDataPreparation(colorTable, timeline, 
-				timeBegin, stData.getPainter().getDepth(), height, pixelLength, midPoint);
+				timeBegin, stData.getAttributes().getDepth(), height, pixelLength, midPoint);
 	}
 
 }

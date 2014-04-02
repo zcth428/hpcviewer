@@ -4,7 +4,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.operations.AbstractOperation;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
@@ -107,7 +106,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-2-topLeftPixelX);
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		
-		int maxDepth = stData.getPainter().getMaxDepth();
+		int maxDepth = stData.getMaxDepth();
 		final int width = selectedDepth*viewHeight/maxDepth+viewHeight/(2*maxDepth);
 		event.gc.fillRectangle(topPixelCrossHairX-8,width-1,20,4);
 	}
@@ -155,7 +154,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 
 	public double getScalePixelsPerRank() {
 		final Rectangle r = this.getClientArea();
-		return Math.max(r.height/(double)stData.getPainter().getMaxDepth(), 1);
+		return Math.max(r.height/(double)stData.getMaxDepth(), 1);
 	}
 
 
@@ -202,14 +201,13 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
      * @param t2: the rightmost time
      */
     private void adjustCrossHair(long t1, long t2) {
-    	Position currentPosition = stData.getPainter().getPosition();
+    	Position currentPosition = stData.getAttributes().getPosition();
     	long time = currentPosition.time;
     	
     	if (time<t1 || time>t2)
     		time = (t1+t2)>>1;
 		
-    	Position position = new Position(time, currentPosition.process);
-    	setPosition(position);
+		selectedTime = time;
     }
     
 	private void rebuffer()
@@ -288,6 +286,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 	}
 	
 
+	private Frame frame;
 
 	@Override
 	/*
@@ -298,6 +297,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		final IUndoableOperation operation = event.getOperation();
 		
 		if (operation.hasContext(TraceOperation.traceContext)) {
+			// event from other view (or this view) 
 			final TraceOperation traceOperation =  (TraceOperation) operation;
 			
 			switch(event.getEventType()) 
@@ -305,10 +305,24 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 			case OperationHistoryEvent.DONE:
 			case OperationHistoryEvent.UNDONE:
 			case OperationHistoryEvent.REDONE:
-				executeOperation(traceOperation);
+				if (operation instanceof PositionOperation) {
+					Position position = traceOperation.getFrame().position;
+					setPosition(position);
+				} else if (traceOperation instanceof DepthOperation) {
+					int depth = ((DepthOperation)traceOperation).getDepth();
+					setDepth(depth);
+				} else {
+					frame = traceOperation.getFrame();
+					Debugger.printDebug(1, "DTC attributes: " + stData.getAttributes() + "\t New: " + frame);
+					currentProcess = frame.position.process;
+					selectedDepth  = frame.depth;
+					zoom(frame.begTime, frame.endTime);
+				}
 				break;
 			}
 		} else if (operation.hasContext(RefreshOperation.context)) {
+			// this event occurs if there's a change of colors definition, so everyone needs
+			// to refresh the content
 			if (event.getEventType() == OperationHistoryEvent.DONE)
 			{
 				rebuffer();
@@ -316,38 +330,11 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		}
 	}
 
-	/****
-	 * execute an operation
-	 * 
-	 * @param operation
-	 */
-	private void executeOperation(final AbstractOperation operation)
-	{
-		if (operation instanceof ZoomOperation) {
-			getDisplay().syncExec(new Runnable() {
-				@Override
-				public void run() {
-					Frame frame = ((ZoomOperation)operation).getFrame();
-					Debugger.printDebug(1, "DTC attributes: " + stData.getAttributes() + "\t New: " + frame);
-
-					zoom(frame.begTime, frame.endTime);
-					setPosition(frame.position);
-				}
-			});
-		} else if (operation instanceof PositionOperation) {
-			Position p = ((PositionOperation)operation).getPosition();
-			setPosition(p);
-		} else if (operation instanceof DepthOperation) {
-			int depth = ((DepthOperation)operation).getDepth();
-			setDepth(depth);
-		}
-	}
-
 	@Override
 	void changePosition(Point point) {
     	long closeTime = stData.getAttributes().getTimeBegin() + (long)(point.x / getScalePixelsPerTime());
     	
-    	Position currentPosition = stData.getPainter().getPosition();
+    	Position currentPosition = stData.getAttributes().getPosition();
     	Position newPosition = new Position(closeTime, currentPosition.process);
     		
     	try {

@@ -80,6 +80,14 @@ public class Frame implements Serializable
 		this.position = position;
 	}
 	
+	/*****
+	 * set new value of the frame
+	 * 
+	 * @param begTime : begin time
+	 * @param endTime : end time
+	 * @param begProcess : begin process
+	 * @param endProcess : end process
+	 *****/
 	public void set(long begTime, long endTime, int begProcess, int endProcess)
 	{
 		this.begProcess = begProcess;

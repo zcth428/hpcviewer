@@ -94,7 +94,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			public void controlResized(ControlEvent e) {
 				if (stData != null) {
 					final Frame frame = stData.getAttributes().getFrame();
-					setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+					setBox(frame);
 				}
 			}
 		} );
@@ -302,16 +302,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
     */
 	
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/
-	private void setBox(long topLeftTime, int topLeftProcess, long bottomRightTime, int bottomRightProcess)
+	private void setBox(Frame frame)
 	{
 		if (this.stData == null)
 			return;
 		
-		view.x = (int)Math.round(topLeftTime * getScalePixelsPerTime());
-		view.y = (int)Math.round(topLeftProcess * getScalePixelsPerRank());
+		view.x = (int)Math.round(frame.begTime * getScalePixelsPerTime());
+		view.y = (int)Math.round(frame.begProcess * getScalePixelsPerRank());
 		
-		int bottomRightPixelX = (int)Math.round(bottomRightTime*getScalePixelsPerTime());
-		int bottomRightPixelY = (int)Math.round(bottomRightProcess*getScalePixelsPerRank());
+		int bottomRightPixelX = (int)Math.round(frame.endTime * getScalePixelsPerTime());
+		int bottomRightPixelY = (int)Math.round(frame.endProcess * getScalePixelsPerRank());
 		
 		view.width  = Math.max(1, bottomRightPixelX-view.x);
 		view.height = Math.max(1, bottomRightPixelY-view.y);
@@ -537,8 +537,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				}else {
 					final ImageTraceAttributes attributes = stData.getAttributes();
 					//Set the selection box back to what it was because we didn't zoom
-					setBox(attributes.getTimeBegin(), attributes.getProcessBegin(), 
-							attributes.getTimeEnd(), attributes.getProcessEnd());
+					setBox(attributes.getFrame());
 				}
 			}
 		}
@@ -580,7 +579,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				if (traceOperation instanceof ZoomOperation) {
 					Frame frame = traceOperation.getFrame();
 					Debugger.printDebug(1, "STMC: " + stData.getAttributes() + "\t New: " + frame);
-					setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+					setBox(frame);
 				}
 			}
 		}

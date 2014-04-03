@@ -263,8 +263,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		public void rebuffering() {
 			// force the paint to refresh the data			
 			final ImageTraceAttributes attr = stData.getAttributes();
-			notifyChanges("Resize", attr.getTimeBegin(), attr.getProcessBegin(),
-					attr.getTimeEnd(), attr.getProcessEnd() );
+			notifyChanges("Resize", attr.getFrame() );
 		}
 	}
 	/*************************************************************************
@@ -396,7 +395,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	{
 		//if this is the first time painting,
 		//some stuff needs to get initialized
-		notifyChanges(ZoomOperation.ActionHome, 0, 0, stData.getTimeWidth(), stData.getTotalTraceCount());
+		Frame frame = new Frame(stData.getAttributes().getFrame());
+		frame.begProcess = 0;
+		frame.endProcess = stData.getTotalTraceCount();
+		frame.begTime = 0;
+		frame.endTime = stData.getTimeWidth();
+		
+		notifyChanges(ZoomOperation.ActionHome, frame);
 	}
 	
 	/**************************************************************************
@@ -405,27 +410,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 **************************************************************************/
 	public void open(Frame toBeOpened)
 	{
-		final ImageTraceAttributes attributes = stData.getAttributes();
-		
-		if (toBeOpened.begTime == attributes.getTimeBegin() 
-				&& toBeOpened.endTime == attributes.getTimeEnd()
-				&& toBeOpened.begProcess == attributes.getProcessBegin() 
-				&& toBeOpened.endProcess == attributes.getProcessEnd()) {
-			
-		} else {
-			notifyChanges("Frame", toBeOpened.begTime, toBeOpened.begProcess, 
-					toBeOpened.endTime, toBeOpened.endProcess);	
-			return;
-		}
-		
-		if (toBeOpened.depth != attributes.getDepth()) {
-			// we have change of depth
-			attributes.setDepth(toBeOpened.depth);
-		}
-		
-		if (!toBeOpened.position.isEqual(attributes.getPosition())) {
-	    	notifyChangePosition(toBeOpened.position);
-		}
+		notifyChanges("Frame", toBeOpened);	
 	}
 	
 	/**************************************************************************
@@ -468,10 +453,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				p1++;
 			}
 		}
-		
-		notifyChanges("Zoom-in ranks", stData.getAttributes().getTimeBegin(), 
-				p1, stData.getAttributes().getTimeEnd(), p2);
+		final Frame frame = new Frame(stData.getAttributes().getFrame());
+		frame.begProcess = p1;
+		frame.endProcess = p2;
 
+		notifyChanges("Zoom-in ranks", frame);
 	}
 
 	/**************************************************************************
@@ -503,8 +489,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				p1--;
 			}
 		}
-		notifyChanges("Zoom-out ranks", stData.getAttributes().getTimeBegin(), 
-				p1, stData.getAttributes().getTimeEnd(), p2);
+		final Frame frame = new Frame(stData.getAttributes().getFrame());
+		frame.begProcess = p1;
+		frame.endProcess = p2;
+
+		notifyChanges("Zoom-out ranks", frame);
 	}
 
 	
@@ -523,9 +512,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		long t2 = xMid + (long)(numTimeUnitsDisp * SCALE);
 		long t1 = xMid - (long)(numTimeUnitsDisp * SCALE);
+
+		final Frame frame = new Frame(stData.getAttributes().getFrame());
+		frame.begTime = t1;
+		frame.endTime = t2;
 		
-		notifyChanges("Zoom-in time", t1, stData.getAttributes().getProcessBegin(),
-				t2, stData.getAttributes().getProcessEnd());
+		notifyChanges("Zoom-in time", frame);
 	}
 
 	/**************************************************************************
@@ -545,9 +537,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		long t2 = Math.min( stData.getTimeWidth(), xMid + td2);
 		final long td1 = (long)(this.getNumTimeUnitDisplayed() * SCALE);
 		long t1 = Math.max(0, xMid - td1);
+
+		final Frame frame = new Frame(stData.getAttributes().getFrame());
+		frame.begTime = t1;
+		frame.endTime = t2;
 		
-		notifyChanges("Zoom-out time", t1, stData.getAttributes().getProcessBegin(),
-				t2, stData.getAttributes().getProcessEnd());
+		notifyChanges("Zoom-out time", frame);
 	}
 	
 	/**************************************************************************
@@ -689,7 +684,14 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		int bottomRightProcess = attributes.getProcessBegin() + (int) Math.ceil( (selectionBottomRight.y / getScalePixelsPerRank()) );
 		long bottomRightTime   = attributes.getTimeBegin() + (long)Math.ceil( (selectionBottomRight.x / getScalePixelsPerTime()) );
 
-		notifyChanges("Zoom", topLeftTime, topLeftProcess, bottomRightTime, bottomRightProcess);
+
+		final Frame frame = new Frame(stData.getAttributes().getFrame());
+		frame.begTime = topLeftTime;
+		frame.endTime = bottomRightTime;
+		frame.begProcess = topLeftProcess;
+		frame.endProcess = bottomRightProcess;
+		
+		notifyChanges("Zoom", frame);
     }
     
   
@@ -788,8 +790,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
      */
     public void setTimeRange(long topLeftTime, long bottomRightTime)
     {
-    	notifyChanges("Zoom H", topLeftTime, stData.getAttributes().getProcessBegin(), 
-    			bottomRightTime, stData.getAttributes().getProcessEnd());
+    	final Frame frame = new Frame(stData.getAttributes().getFrame());
+    	frame.begTime = topLeftTime;
+    	frame.endTime = bottomRightTime;
+    	
+    	notifyChanges("Zoom H", frame);
     }
 
     /*******
@@ -842,9 +847,11 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private void setProcessRange(int pBegin, int pEnd) 
 	{
     	final ImageTraceAttributes attributes = stData.getAttributes();
+    	final Frame frame = new Frame(attributes.getFrame());
+    	frame.begProcess = pBegin;
+    	frame.endProcess = pEnd;
     	
-		notifyChanges("Zoom V", attributes.getTimeBegin(), pBegin, 
-				attributes.getTimeEnd(), pEnd);
+		notifyChanges("Zoom V", frame);
 	}
 
 	private Position updatePosition()
@@ -1132,13 +1139,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 * @param _bottomRightTime
 	 * @param _bottomRightProcess
 	 ***********************************************************************************/
-	private void notifyChanges(String label, long _topLeftTime, int _topLeftProcess, 
-			long _bottomRightTime, int _bottomRightProcess) 
+	private void notifyChanges(String label, Frame frame) 
 	{
-		final ImageTraceAttributes attributes = stData.getAttributes();
-		final Frame frame = new Frame(attributes.getFrame());
-		frame.set(_topLeftTime, _bottomRightTime, _topLeftProcess, _bottomRightProcess);
-		
 		String sLabel = (label == null ? "Set region" : label);
 		Debugger.printDebug(1, "STDC " + sLabel + " : " + frame);
 		// forces all other views to refresh with the new region

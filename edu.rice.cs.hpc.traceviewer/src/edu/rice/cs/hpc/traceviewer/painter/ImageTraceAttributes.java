@@ -1,19 +1,25 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import edu.rice.cs.hpc.traceviewer.ui.Frame;
 
 /***********
  * Struct class to store attributes of a trace view
  * 
- * @author laksono
  *
  */
 public class ImageTraceAttributes {
 	
-	public long begTime, endTime;
-	public int begProcess, endProcess;
+	private Frame frame;
+	
 	public int numPixelsH, numPixelsV;
 	public int numPixelsDepthV;
 
+	public ImageTraceAttributes()
+	{
+		frame = new Frame();
+	}
+	
+	
 	/*************************************************************************
 	 * Asserts the process bounds to make sure they're within the actual
 	 * bounds of the database, are integers, and adjusts the process zoom 
@@ -21,13 +27,10 @@ public class ImageTraceAttributes {
 	 *************************************************************************/
 	public void assertProcessBounds(int maxProcesses)
 	{
-		begProcess = (int)begProcess;
-		endProcess = (int) Math.ceil(endProcess);
-		
-		if (begProcess < 0)
-			begProcess = 0;
-		if (endProcess > maxProcesses)
-			endProcess = maxProcesses;
+		if (frame.begProcess < 0)
+			frame.begProcess = 0;
+		if (frame.endProcess > maxProcesses)
+			frame.endProcess = maxProcesses;
 	}
 	
 	/**************************************************************************
@@ -36,31 +39,97 @@ public class ImageTraceAttributes {
 	 *************************************************************************/
 	public void assertTimeBounds(long maxTime)
 	{
-		if (begTime < 0)
-			begTime = 0;
-		if (endTime > maxTime)
-			endTime = maxTime;
+		if (frame.begTime < 0)
+			frame.begTime = 0;
+		if (frame.endTime > maxTime)
+			frame.endTime = maxTime;
 	}
 	
+	
+	public void setFrame(Frame frame)
+	{
+		this.frame = frame;
+	}
+	
+	public Frame getFrame()
+	{
+		return frame;
+	}
 	
 	public void setProcess(int p1, int p2)
 	{
-		begProcess = p1;
-		endProcess = p2;
+		frame.begProcess = p1;
+		frame.endProcess = p2;
+		
+		frame.fixPosition();
+	}
+	
+	public int getProcessBegin()
+	{
+		return frame.begProcess;
+	}
+	
+	public int getProcessEnd()
+	{
+		return frame.endProcess;
 	}
 
+	public int getProcessInterval()
+	{
+		return (frame.endProcess - frame.begProcess);
+	}
 	
 	public void setTime(long t1, long t2)
 	{
-		begTime = t1;
-		endTime = t2;
+		frame.begTime = t1;
+		frame.endTime = t2;
+	}
+	
+	public long getTimeBegin()
+	{
+		return frame.begTime;
+	}
+	
+	public long getTimeEnd()
+	{
+		return frame.endTime;
+	}
+	
+	public long getTimeInterval()
+	{
+		long dt = frame.endTime - frame.begTime;
+		// make sure we have positive time interval, even if users selects 0 time
+		if (dt>0)
+			return (frame.endTime - frame.begTime);
+		else
+			return 1;
 	}
 	
 	public boolean sameTrace(ImageTraceAttributes other)
 	{
-		return ( begTime==other.begTime && endTime==other.endTime &&
-				 begProcess==other.begProcess && endProcess==other.endProcess &&
+		return ( frame.begTime==other.frame.begTime && frame.endTime==other.frame.endTime &&
+				frame.begProcess==other.frame.begProcess && frame.endProcess==other.frame.endProcess &&
 				 numPixelsH==other.numPixelsH && numPixelsV==other.numPixelsV);
+	}
+	
+	public void setDepth(int depth)
+	{
+		frame.depth = depth;
+	}
+	
+	public int getDepth()
+	{
+		return frame.depth;
+	}
+	
+	public void setPosition(Position p)
+	{
+		frame.position = p;
+	}
+	
+	public Position getPosition()
+	{
+		return frame.position;
 	}
 	
 	/***
@@ -71,7 +140,7 @@ public class ImageTraceAttributes {
 	 */
 	public boolean sameDepth(ImageTraceAttributes other)
 	{
-		return ( begTime==other.begTime && endTime==other.endTime &&
+		return ( frame.begTime==other.frame.begTime && frame.endTime==other.frame.endTime &&
 				 numPixelsH==other.numPixelsH && numPixelsDepthV==other.numPixelsDepthV);
 	}
 	
@@ -81,10 +150,10 @@ public class ImageTraceAttributes {
 	 */
 	public void copy(ImageTraceAttributes other)
 	{
-		begTime = other.begTime;
-		endTime = other.endTime;
-		begProcess = other.begProcess;
-		endProcess = other.endProcess;
+		frame.begTime = other.frame.begTime;
+		frame.endTime = other.frame.endTime;
+		frame.begProcess = other.frame.begProcess;
+		frame.endProcess = other.frame.endProcess;
 		numPixelsH = other.numPixelsH;
 		numPixelsV = other.numPixelsV;
 		numPixelsDepthV = other.numPixelsDepthV;
@@ -92,8 +161,8 @@ public class ImageTraceAttributes {
 	
 	public String toString()
 	{
-		return ("T [ " + begTime + ","  + endTime+ " ]" +
-				"P [ " + begProcess + "," + endProcess + " ]" + 
+		return ("T [ " + frame.begTime + ","  + frame.endTime+ " ]" +
+				"P [ " + frame.begProcess + "," + frame.endProcess + " ]" + 
 				" PH: " + numPixelsH + " , PV: " + numPixelsV );
 	}
 }

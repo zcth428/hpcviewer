@@ -37,7 +37,6 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric.AnnotationType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-
 // math expression
 import com.graphbuilder.math.*;
 import com.graphbuilder.math.func.*;

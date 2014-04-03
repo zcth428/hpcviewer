@@ -21,11 +21,10 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
-import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 /**************************************************
  * A viewer for DataViewer.
@@ -33,7 +32,6 @@ import edu.rice.cs.hpc.traceviewer.util.Debugger;
 public class DataViewer extends TableViewer
 {
 	private SpaceTimeDataController stData;
-	private PaintManager painter;
 	
 	private final TableViewerColumn viewerColumn;
 	
@@ -73,8 +71,8 @@ public class DataViewer extends TableViewer
 			public void handleEvent(Event event)
 			{
 				int dataIdx = dataTbl.getSelectionIndex();
-				if (dataIdx != Constants.dataIdxNULL && dataIdx != painter.getData()) {
-					//stData.updateData(dataIdx, dataviewer);
+				if (dataIdx != Constants.dataIdxNULL && dataIdx != stData.getDataIndex()) {
+					stData.setDataIndex(dataIdx);
 				}
 			}
 		});
@@ -131,8 +129,7 @@ public class DataViewer extends TableViewer
 	public void updateView(SpaceTimeDataController _stData) 
 	{
 		this.stData = _stData;
-		this.painter = stData.getPainter();
-		this.setSample(painter.getPosition(), painter.getMaxDepth(), painter.getData());
+		//this.setSample(painter.getPosition(), painter.getMaxDepth(), painter.getData());
 		this.getTable().setVisible(true);
 	}
 	
@@ -146,7 +143,10 @@ public class DataViewer extends TableViewer
 		if (position.time == -20)
 			return;
 		
-		int proc = painter.getProcessRelativePosition(ptlService.getNumProcessTimeline());
+		// laks: nathan, can you fix this ?
+		// the original code: 
+		// int proc = painter.getProcessRelativePosition(ptlService.getNumProcessTimeline());
+		int proc = 0; 
 		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
 
 		if (ptl != null) {

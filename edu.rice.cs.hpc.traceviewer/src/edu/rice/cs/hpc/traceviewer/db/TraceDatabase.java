@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -19,6 +20,7 @@ import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView;
 import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
+import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 
 /*************
@@ -61,8 +63,10 @@ public class TraceDatabase {
 		if (listOfDatabases != null) {
 			final TraceDatabase data = listOfDatabases.get(_window);
 			if (data == null) return;
-			if (data.dataTraces != null)
+			if (data.dataTraces != null) {
+				data.dataTraces.closeDB();
 				data.dataTraces.dispose();
+			}
 			listOfDatabases.remove(_window);
 		}
 	}
@@ -76,20 +80,34 @@ public class TraceDatabase {
 	 * @return
 	 */
 	static public boolean openDatabase(IWorkbenchWindow window,
-			final String[] args, final IStatusLineManager statusMgr,
+			final String[] args, IStatusLineManager statusMgr,
 			AbstractDBOpener opener) {
-
-		final Shell shell = window.getShell();
-
+		
+		
+		AbstractDBOpener openThis = opener;
+		final Shell shell = window.getShell(); 
 		TraceDatabase database = TraceDatabase.getInstance(window);
+		SpaceTimeDataController stdc = null;
+		
+		 do {
+			
+			stdc = openThis.openDBAndCreateSTDC(window, args,
+					statusMgr);
+			
+			if (stdc == null) { //if STDC is null, directory, port, or server was incorrect
+				//open new dialog for user to choose new directory, port, or server
+				OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, openThis.getErrorMessage());
+				if (dlg.open() == Window.CANCEL)
+					return false;
+				openThis = dlg.getDBOpener();
+			}
+		} while (stdc == null); //until user enters a valid database or cancels keep popping up dialogs
 
-		SpaceTimeDataController STDC = opener.openDBAndCreateSTDC(window, args,
-				statusMgr);
-
-		if (STDC == null)
-			return false;
-
-		database.dataTraces = STDC;
+		// remove old resources
+		if (database.dataTraces != null)
+			database.dataTraces.dispose();
+		 
+		database.dataTraces = stdc;
 		
 		// ---------------------------------------------------------------------
 		// initialize whether using midpoint or not

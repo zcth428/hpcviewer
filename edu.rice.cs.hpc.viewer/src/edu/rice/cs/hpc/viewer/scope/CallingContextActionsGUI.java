@@ -1,7 +1,6 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -15,12 +14,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.graph.GraphMenu;
 import edu.rice.cs.hpc.viewer.metric.ThreadLevelDataManager;
+import edu.rice.cs.hpc.viewer.resources.Icons;
 
 /*****************************************************
  * 
@@ -70,9 +67,7 @@ public class CallingContextActionsGUI extends ScopeViewActionsGUI {
 		final MenuManager mgr = new MenuManager("graph");
 
     	// prepare the icon
-		AbstractUIPlugin plugin = Activator.getDefault();
-		ImageRegistry imageRegistry = plugin.getImageRegistry();
-		Image imgGraph = imageRegistry.get(Activator.IMG_GRAPH);
+		Image imgGraph = Icons.getImage(Icons.Image_Graph);
 		
 		// add an item into the toolbar
 		tiGraph = new ToolItem(toolbar, SWT.DROP_DOWN);

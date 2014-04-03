@@ -1,7 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.actions;
 
-import java.io.IOException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -11,15 +9,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
-import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
-import edu.rice.cs.hpc.data.experiment.extdata.Filter;
-import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.traceviewer.filter.FilterDialog;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
 
 /*****
  * 
@@ -40,40 +33,27 @@ public class FilterRanks extends AbstractHandler {
 		DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
         SpaceTimeDataController absData = dataService.getData();
         
-        
-        if (absData instanceof SpaceTimeDataControllerRemote){
-        	System.out.println("Data filtering not yet supported for remote databases.");
-        	return null;
+		/*
+		 * This isn't the prettiest, but when we are local, we don't want to set
+		 * it to filtered unless we have to (ie. unless the user actually
+		 * applies a filter). If the data is already filtered, we don't care and
+		 * we just return the filtered data we have been using (which makes the
+		 * call to set it redundant). If it's not, we wait to replace the
+		 * current filter with the new filter until we know we have to.
+		 */
+        IFilteredData filteredBaseData = absData.getFilteredBaseData();
+        if (filteredBaseData == null){
+        	filteredBaseData = absData.createFilteredBaseData();
         }
         
-		final SpaceTimeDataControllerLocal data  = (SpaceTimeDataControllerLocal) absData;
-		IBaseData baseData = data.getBaseData();
+        FilterDialog dlgFilter = new FilterDialog(shell, filteredBaseData);
 		
-		Filter filter;
-		if (baseData instanceof FilteredBaseData) {
-			filter = ((FilteredBaseData)baseData).getFilter();
-		} else {
-			filter = new Filter();
-		}
-	
-		try {
-			
-			FilteredBaseData filteredBaseData = new FilteredBaseData(data.getTraceFileAbsolutePath(), 
-					data.getTraceAttribute().dbHeaderSize, 24);
-			
-			filteredBaseData.setFilter( filter );
-			
-			FilterDialog dlgFilter = new FilterDialog(shell, filteredBaseData);
-			if (dlgFilter.open() == Dialog.OK) {
-				
-				data.setBaseData(filteredBaseData);
-				dataService.broadcastUpdate(new Boolean(true));
-			}
+		if (dlgFilter.open() == Dialog.OK){
 
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+			absData.setBaseData(filteredBaseData);
+
+			dataService.broadcastUpdate(true);
+		}
 		
 		return null;
 	}

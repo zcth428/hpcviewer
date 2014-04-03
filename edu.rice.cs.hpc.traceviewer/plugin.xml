@@ -121,11 +121,6 @@
                id="org.eclipse.ui.commands.toggleState">
          </state>
       </command>
-      <command
-            defaultHandler="edu.rice.cs.hpc.traceviewer.actions.OpenRemoteDatabse"
-            id="edu.rice.cs.hpc.traceviewer.openRemoteDatabase"
-            name="Open Remote Database">
-      </command>
    </extension>
    <extension
          id="edu.rice.cs.hpc.traceviewer.menus"
@@ -146,12 +141,6 @@
                   tooltip="Open a new database (the existing database will be replaced).">
             </command>
             <command
-                  commandId="edu.rice.cs.hpc.traceviewer.openRemoteDatabase"
-                  label="Open Remote Database"
-                  style="push"
-                  tooltip="Open a database from a remote source.">
-            </command>
-            <command
                   commandId="org.eclipse.ui.file.exit"
                   label="Exit"
                   mnemonic="x"
@@ -167,7 +156,7 @@
             <command
                   commandId="edu.rice.cs.hpc.traceviewer.showRecords"
                   id="edu.rice.cs.hpc.traceviewer.showRecords"
-                  label="Show trace record count"
+                  label="Show debug info "
                   mnemonic="S"
                   style="toggle"
                   tooltip="Show the number of trace records displayed in the trace view (useful for identifying blocking operations and debugging)">

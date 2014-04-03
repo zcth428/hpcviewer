@@ -25,7 +25,7 @@ public abstract class TraceOperation extends AbstractOperation {
 	}
 	
 	public TraceOperation(String label, Frame frame) {
-		super(label);
+		super(label + " " + frame);
 		addContext(traceContext);
 		this.frame = frame;
 	}

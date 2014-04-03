@@ -19,6 +19,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.CoolItem;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -72,7 +73,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	protected RootScope 		myRootScope;		// the root scope of this view
 
     // ----------------------------------- CONSTANTS
-	protected Color clrGREEN, clrYELLOW, clrRED, clrNORMAL;
+	final protected Color clrGREEN, clrYELLOW, clrRED, clrNORMAL;
     
     /**
      * Constructor initializing the data
@@ -89,9 +90,11 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 		this.objWindow = window;
 		
 		this.clrNORMAL = shell.getBackground();
-		this.clrYELLOW = new Color(shell.getDisplay(),255,255,0);
-		this.clrRED = new Color(shell.getDisplay(), 250,128,114);
-		this.clrGREEN = new Color(shell.getDisplay(), 153,255,153);
+		final Display display = shell.getDisplay();
+		
+		this.clrYELLOW = display.getSystemColor(SWT.COLOR_YELLOW);
+		this.clrRED = display.getSystemColor(SWT.COLOR_RED);
+		this.clrGREEN = display.getSystemColor(SWT.COLOR_GREEN);
 	}
 
 	/**
@@ -442,12 +445,11 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     protected Composite addTooBarAction(CoolBar coolbar) {
     	// prepare the toolbar
     	ToolBar toolbar = new ToolBar(coolbar, SWT.FLAT);
-    	Icons iconsCollection = Icons.getInstance();
     	    	
     	// zoom in
     	tiZoomin = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomin.setToolTipText("Zoom-in the selected node");
-    	tiZoomin.setImage(iconsCollection.imgZoomIn);
+    	tiZoomin.setImage(Icons.getImage(Icons.Image_ZoomIn));
     	tiZoomin.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
       	  	objViewActions.zoomIn();
@@ -457,7 +459,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	// zoom out
     	tiZoomout = new ToolItem(toolbar, SWT.PUSH);
     	tiZoomout.setToolTipText("Zoom-out the selected node");
-    	tiZoomout.setImage(iconsCollection.imgZoomOut);
+    	tiZoomout.setImage(Icons.getImage(Icons.Image_ZoomOut));
     	tiZoomout.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
     		  objViewActions.zoomOut();
@@ -468,7 +470,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	// hot call path
     	this.tiHotCallPath= new ToolItem(toolbar, SWT.PUSH);
     	tiHotCallPath.setToolTipText("Expand the hot path below the selected node");
-    	tiHotCallPath.setImage(iconsCollection.imgFlame);
+    	tiHotCallPath.setImage(Icons.getImage(Icons.Image_FlameIcon));
     	tiHotCallPath.addSelectionListener(new SelectionAdapter() {
     	  public void widgetSelected(SelectionEvent e) {
     		  objViewActions.showHotCallPath();
@@ -476,7 +478,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	});
     	
     	this.tiAddExtMetric = new ToolItem(toolbar, SWT.PUSH);
-    	tiAddExtMetric.setImage(iconsCollection.imgExtAddMetric);
+    	tiAddExtMetric.setImage(Icons.getImage(Icons.Image_FnMetric));
     	tiAddExtMetric.setToolTipText("Add a new derived metric");
     	tiAddExtMetric.addSelectionListener(new SelectionAdapter(){
     		public void widgetSelected(SelectionEvent e) {
@@ -487,7 +489,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	new ToolItem(toolbar, SWT.SEPARATOR);
     	
     	this.tiColumns = new ToolItem(toolbar, SWT.PUSH);
-    	tiColumns.setImage(iconsCollection.imgColumns);
+    	tiColumns.setImage(Icons.getImage(Icons.Image_CheckColumns));
     	tiColumns.setToolTipText("Hide/show columns");
     	tiColumns.addSelectionListener(new SelectionAdapter() {
         	  public void widgetSelected(SelectionEvent e) {
@@ -498,7 +500,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	
     	// ------------------------------- export CSV ------
     	ToolItem tiCSV = new ToolItem(toolbar, SWT.PUSH);
-    	tiCSV.setImage( iconsCollection.imgExportCSV );
+    	tiCSV.setImage( Icons.getImage(Icons.Image_SaveCSV) );
     	tiCSV.setToolTipText( "Export the current view into a comma separated value file" );
     	tiCSV.addSelectionListener( new SelectionAdapter() {
     		public void widgetSelected(SelectionEvent e) {
@@ -509,7 +511,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
     	// ------------ Text fonts
     	// bigger font
     	ToolItem tiFontBigger = new ToolItem (toolbar, SWT.PUSH);
-    	tiFontBigger.setImage(iconsCollection.imgFontBigger);
+    	tiFontBigger.setImage(Icons.getImage(Icons.Image_FontBigger));
     	tiFontBigger.setToolTipText("Increase font size");
     	tiFontBigger.addSelectionListener( new SelectionAdapter() {
       	  public void widgetSelected(SelectionEvent e) {
@@ -519,7 +521,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 
     	// smaller font
     	ToolItem tiFontSmaller = new ToolItem (toolbar, SWT.PUSH);
-    	tiFontSmaller.setImage(iconsCollection.imgFontSmaller);
+    	tiFontSmaller.setImage(Icons.getImage(Icons.Image_FontSmaller));
     	tiFontSmaller.setToolTipText("Decrease font size");
     	tiFontSmaller.addSelectionListener( new SelectionAdapter() {
       	  public void widgetSelected(SelectionEvent e) {

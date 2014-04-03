@@ -11,8 +11,9 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.CallPath;
-import edu.rice.cs.hpc.traceviewer.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
+import edu.rice.cs.hpc.traceviewer.data.util.Constants;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 /**
  * Handles communication with the remote server, including asking for data and
@@ -25,9 +26,26 @@ import edu.rice.cs.hpc.traceviewer.util.Constants;
  * 
  */
 public class RemoteDataRetriever {
+	
+	// -------------------------------------
+	// Constants
+	// -------------------------------------
+	
 	//For more information on message structure, see protocol documentation at the end of this file. 
 	private static final int DATA = 0x44415441;
 	private static final int HERE = 0x48455245;
+	
+	/****
+	 * time out counter is based on TIME_SLEEP ms unit
+	 */
+	private static final int TIME_OUT = 2000;
+	
+	private static final int TIME_SLEEP = 50;
+	
+	// -------------------------------------
+	// Variables
+	// -------------------------------------
+
 	private final Socket socket;
 	DataInputStream receiver;
 	BufferedInputStream rcvBacking;
@@ -39,6 +57,16 @@ public class RemoteDataRetriever {
 	
 	private final IStatusLineManager statusMgr;
 
+	/******
+	 * Constructor for communicating with remote data server
+	 * 
+	 * @param _serverConnection : connection socket
+	 * @param _statusMgr : line manager
+	 * @param _shell : window shell
+	 * @param _compressionType : type of compression, see {@link DecompressionThread.COMPRESSION_TYPE_MASK}
+	 * 
+	 * @throws IOException
+	 */
 	public RemoteDataRetriever(Socket _serverConnection, IStatusLineManager _statusMgr, Shell _shell, int _compressionType) throws IOException {
 		socket = _serverConnection;
 		
@@ -54,7 +82,8 @@ public class RemoteDataRetriever {
 		shell = _shell;
 		
 	}
-	//TODO: Inclusive or exclusive?
+
+	//TODO: I think these are all inclusive, but check.
 	/**
 	 * Issues a command to the remote server for the data requested, and waits for a response.
 	 * @param P0 The lower bound of the ranks to get
@@ -79,55 +108,82 @@ public class RemoteDataRetriever {
 		
 		statusMgr.setMessage("Requesting data");
 		shell.update();
+		Debugger.printTimestampDebug("Requesting data");
 		requestData(P0, Pn, t0, tn, vertRes, horizRes);
-		System.out.println("Data request finished");
+		Debugger.printTimestampDebug("Data request finished");
 		
-		int ResponseCommand = waitAndReadInt(receiver);
+		int responseCommand = waitAndReadInt(receiver);
 		statusMgr.setMessage("Receiving data");
 		shell.update();
 		
-		if (ResponseCommand != HERE)//"HERE" in ASCII
+		if (responseCommand != HERE)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
-		System.out.println("Data receive begin");
-		
-		
-		int RanksReceived = 0;
-		int RanksExpected = Math.min(Pn-P0, vertRes);
-		
-		
-		TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
-		monitor.beginProgress(RanksExpected, "Receiving data...", "data", shell);
 	
-		DataInputStream DataReader;
+		Debugger.printTimestampDebug("Data receive begin");
 		
-		DataReader = receiver;
 		
-		while (RanksReceived < RanksExpected)
-		{
+		final int ranksExpected = Math.min(Pn-P0, vertRes);
+		
+		
+		final TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
+		monitor.beginProgress(ranksExpected, "Receiving data...", "data", shell);
 
-			int rankNumber = DataReader.readInt();
-			int Length = DataReader.readInt();//Number of CPID's
-			
-			
-			long startTimeForThisTimeline = DataReader.readLong();
-			long endTimeForThisTimeline = DataReader.readLong();
-			int compressedSize = DataReader.readInt();
-			byte[] compressedTraceLine = new byte[compressedSize];
-			
-			int numRead = 0;
-			while (numRead < compressedSize)
-			{
-				numRead += DataReader.read(compressedTraceLine, numRead, compressedSize- numRead);
-				
+		Thread unpacker = new Thread(){
+		@Override
+			public void run() {
+				DataInputStream dataReader;
+				int ranksReceived = 0;
+				dataReader = receiver;
+				boolean first = true;
+				try {
+					while (ranksReceived < ranksExpected) {
+
+						int rankNumber = dataReader.readInt();
+						if (first){
+							Debugger.printTimestampDebug("First real data byte received.");
+							first = false;
+						}
+						int length = dataReader.readInt();// Number of CPID's
+
+						long startTimeForThisTimeline = dataReader.readLong();
+						long endTimeForThisTimeline = dataReader.readLong();
+						int compressedSize = dataReader.readInt();
+						
+						// when there's network issue, the value of compressedSize can be negative
+						// this has happened when the server process was suspended and the user keeps
+						//	asking data from the client to the server
+						if (compressedSize >0) {
+							byte[] compressedTraceLine = new byte[compressedSize];
+
+							int numRead = 0;
+							while (numRead < compressedSize) {
+								numRead += dataReader.read(compressedTraceLine,
+										numRead, compressedSize - numRead);
+
+							}
+
+							DecompressionThread.addWorkItemToDo(
+								new DecompressionThread.DecompressionItemToDo(
+											compressedTraceLine, length,
+											startTimeForThisTimeline,
+											endTimeForThisTimeline, rankNumber,
+											compressionType));
+
+							ranksReceived++;
+							monitor.announceProgress();
+						}
+					}
+				} catch (IOException e) {
+					//Should we provide some UI notification to the user?
+					e.printStackTrace();
+				}
+				//Updating the progress doesn't work anyways and will throw
+				//an exception because this is a different thread
+				//monitor.endProgress();
+				Debugger.printTimestampDebug("Data receive end");
 			}
-					
-			DecompressionThread.workToDo.add(new DecompressionThread.DecompressionItemToDo(compressedTraceLine, Length, startTimeForThisTimeline, endTimeForThisTimeline, rankNumber, compressionType));
-			
-			RanksReceived++;
-			monitor.announceProgress();
-		}
-		monitor.endProgress();
-		System.out.println("Data receive end");
+		};
+		unpacker.start();
 		
 	}
 
@@ -149,14 +205,18 @@ public class RemoteDataRetriever {
 	static int waitAndReadInt(DataInputStream receiver)
 			throws IOException {
 		int nextCommand;
+		int timeout = 0;
 		// Sometime the buffer is filled with 0s for some reason. This flushes
 		// them out. This is awful, but otherwise we just get 0s
 
 		while (receiver.available() <= 4
 				|| ((nextCommand = receiver.readInt()) == 0)) {
 
+			if (timeout++ > TIME_OUT) {
+				throw new IOException("Timeout: no response from the server.");
+			}
 			try {
-				Thread.sleep(50);
+				Thread.sleep(TIME_SLEEP);
 			} catch (InterruptedException e) {
 
 				e.printStackTrace();
@@ -168,12 +228,17 @@ public class RemoteDataRetriever {
 										// buffer has anything there will be a
 										// message
 		{
+			timeout = 0;
+			if (timeout++ > TIME_OUT) {
+				throw new IOException("Timeout while waiting for command: no response from the server.");
+			}
+
 			receiver.read(new byte[receiver.available()]);// Flush the rest of
 															// the buffer
 			while (receiver.available() <= 0) {
 
 				try {
-					Thread.sleep(50);
+					Thread.sleep(TIME_SLEEP);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -188,9 +253,17 @@ public class RemoteDataRetriever {
 		sender.close();
 		receiver.close();
 		socket.close();
-		
 	}
-}
+	
+	
+	static public int getTimeSleep() {
+		return TIME_SLEEP;
+	}
+	
+	static public int getTimeOut() {
+		return TIME_OUT;
+	}
+} 
 /**
  ******* PROTOCOL DOCUMENTATION *******
  * 
@@ -200,8 +273,9 @@ public class RemoteDataRetriever {
  * Notes: This should be the first message sent. It tells the remote server to open the database file. It also gives the server a little additional information to help it process the database.
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x4F50454E (OPEN in ASCII)
- * 0x04		Path length		short-2				The length (in bytes) of the string that follows.
- * 0x06 	Database path	string-m			UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. If the path contains strange characters that don't fit in 8 bits, it is not considered a valid path.
+ * 0x04		Protocol Versionint-4				Currently unused and set to 0x00010001 (Major version = 1, minor version = 1). Behavior is currently undefined if server and client disagree on the version, but the server might want to fall back if possible
+ * 0x08		Path length		short-2				The length (in bytes) of the string that follows.
+ * 0x0A 	Database path	string-m			UTF-8 encoded path to the database. Should end in the folder that contains the actual trace file. If the path contains strange characters that don't fit in 8 bits, it is not considered a valid path.
  * 
  * The server can then reply with DBOK or NODB
  * 
@@ -211,7 +285,7 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x44424F4B (DBOK in ASCII)
  * 0x04		XML Port		int-4				The port to which the client should connect to receive the XML file
  * 0x08		Trace count		int-4				The number of traces contained in the database/trace file
- * 0x0C		Compression		int-4				The compression type and algorithm used. Right now the only values are 0 = uncompressed and 1 = zlib compressed, but this could be extended
+ * 0x0C		Compression		int-4				The compression type and algorithm used. Right now the only values are 0 = uncompressed and 1 = zlib compressed, but this could be extended. The higher-order word (mask 0xFFFF0000) is currently reserved.
  * 0x10+6n	Process ID		int-4				The process number for rank n. This is used only to label the location of the cursor. n goes from 0 to (Traces count-1)
  * 0x14+6n	Thread ID		short-2				The thread number for rank n. If this has a value of -1, then neither it nor the period between the process and thread numbers should be displayed
  * 
@@ -221,7 +295,15 @@ public class RemoteDataRetriever {
  * 0x00		Message ID		int-4				Must be set to 0x4E4F4442 (NODB in ASCII)
  * 0x04		Error Code		int-4				Currently unused, but the server could specify a code to make diagnosing the error easier. Set to 0 for right now.
  * 
- * The XML file should be sent as soon as the client connects to the appropriate port. It is GZIP compressed.
+ * 
+ * Message EXML Server -> Client
+ * Notes: The XML file should be sent as soon as the client connects to the port specified in DBOK. If the specified port is the same as the main data port,
+ * this message must be sent on the main data port, without opening or closing the existing connection. In that case, this message should be treated like any other message.
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x45584D4C (EXML in ASCII)
+ * 0x04		Size			int-4				The number of bytes that follow that make up the compressed xml bytes. This is the compressed size, not the uncompressed size.
+ * 0x08		Compressed XML	bytes-s				The GZIP-compressed Experiment.xml file
+ * 
  * 
  * Message INFO Client -> Server
  * Notes: This contains information derived from the XML data that the server needs in order to understand the later data requests
@@ -238,13 +320,14 @@ public class RemoteDataRetriever {
  * 0x04		First Process	int-4				The lower bound on the processes to be retrieved
  * 0x08		Last Process	int-4				The upper bound on the processes to be retrieved
  * 0x0C		Time Start		long-8				The lower bound on the time of the traces to be retrieved. This is the absolute time, not the time since Global Min Time.
- * 0x12		Time End		long-8				The upper bound on the time of the traces to be retrieved. Again, the absolute time.
- * 0x1A		Vertical Res	int-4				The vertical resolution of the detail view. The server uses this to determine which processes should be returned from the range [First Process, Last Process]
- * 0x1E		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
+ * 0x14		Time End		long-8				The upper bound on the time of the traces to be retrieved. Again, the absolute time.
+ * 0x1C		Vertical Res	int-4				The vertical resolution of the detail view. The server uses this to determine which processes should be returned from the range [First Process, Last Process]
+ * 0x20		Horizontal Res	int-4				The horizontal resolution of the detail view. The server will return approximately this many CPIDs for each trace
  * 
  * Message HERE Server -> Client
  * Notes: This is a response to the DATA request. After this message, the client may send another DATA request or a DONE shutdown command. After each rank is received, k should be incremented by (28+c). The client should expect the message to contain min(Last Process-First Process, Vertical Resolution) tracelines.
  * The raw trace data is a pair of 4-byte ints. The first int is the difference between the timestamp for this Record and the previous Record. For the first Record in the message, it should be zero, as that record will have Begin Time as its timestamp. The second int in the pair is the CPID.
+ * In the notation below, increment k by (0x1C + c) every line. 
  * Offset	Name			Type-Length (bytes)	Value
  * 0x00		Message ID		int-4				Must be set to 0x48455245 (HERE in ASCII)
  * 0x04+k	Line Number		int-4				The rank number whose data follows. Should be unique in the message
@@ -252,8 +335,23 @@ public class RemoteDataRetriever {
  * 0x0C+k	Begin Time		long-8				The start time of this rank, calculated by taking the timestamp of the first TimeCPID in the line
  * 0x14+k	End Time		long-8				The end time of this rank, calculated by taking the timestamp of the last TimeCPID in the line
  * 0x1C+k	Compressed Size	int-4				The size of the data, c, that follows. If compression is disabled, this should be equal to 4*(Entry Count)
- * 0x20+k+c	Trace Data		ints or bytes		The raw trace data. If compression is disabled, this is an array of 2x(4 bytes), one after the other. If compression is enabled, this is a compressed array of 2x(4 bytes). See the message notes for more information.
+ * 0x20+k	Trace Data		ints or bytes		The raw trace data. If compression is disabled, this is an array of 2x(4 bytes), one after the other. If compression is enabled, this is a compressed array of 2x(4 bytes). See the message notes for more information.
  * 
+ * Message FLTR Client -> Server
+ * Notes: For example, if the user wants to exclude processes 10, 14, 18, 22 ... 46, set Process Minimum to 10, Process Maximum to 46, Process Stride to 4, Exclude Matches to 1
+ * After this message, the client should send a DATA message, but it is not required.
+ * In the notation below, increment k by 0x18 every filter
+ * Offset	Name			Type-Length (bytes)	Value
+ * 0x00		Message ID		int-4				Must be set to 0x464C5452 (FLTR in ASCII)
+ * 0x04		Padding			byte-1				Set to 0 or any other value. Must be ignored.
+ * 0x05		Exclude Matches	byte-1				Set to 0 to include only the traces that match the patterns. Set to 1 to include all traces except the ones that match the patterns
+ * 0x06		Filters count	short-2				The number of filters that will follow
+ * 0x08+k	Process Minimum	int-4				The lower inclusive bound of processes that match this filter
+ * 0x0C+k	Process Maximum	int-4				The upper inclusive bound of processes that match this filter
+ * 0x10+k	Process Stride	int-4				The interval in between the processes that match this filter. Do not set to zero.
+ * 0x14+k	Thread Minimum	int-4				The lower inclusive bound of the threads that match this filter
+ * 0x18+k	Thread Maximum	int-4				The upper inclusive bound of the threads that match this filter
+ * 0x1C+k	Thread Stride	int-4				The interval in between the threads that match this filter. Don't set to zero.		
  * 
  * Message DONE Client -> Server
  * Notes: After receiving this message, the server should close. The client cannot send any messages after this without opening a new connection

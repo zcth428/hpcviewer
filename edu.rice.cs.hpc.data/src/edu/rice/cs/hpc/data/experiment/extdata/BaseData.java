@@ -31,19 +31,13 @@ public class BaseData extends AbstractBaseData {
 	}
 	
 
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getMinLoc(int)
-	 */
+	@Override
 	public long getMinLoc(int rank) {
 		final long offsets[] = baseDataFile.getOffsets();
 		return offsets[rank] + headerSize;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getMaxLoc(int)
-	 */
+	@Override
 	public long getMaxLoc(int rank, int recordSize) {
 		final long offsets[] = baseDataFile.getOffsets();
 		long maxloc = ( (rank+1<baseDataFile.getNumberOfFiles())? 
@@ -51,5 +45,21 @@ public class BaseData extends AbstractBaseData {
 				- recordSize;
 		return maxloc;
 	}
+
+	@Override
+	public int getFirstIncluded() {
+		return 0;
+	}
+
+	@Override
+	public int getLastIncluded() {
+		return baseDataFile.getNumberOfFiles()-1;
+	}
+
+	@Override
+	public boolean isDenseBetweenFirstAndLast() {
+		return true;//No filtering
+	}
+	
 
 }

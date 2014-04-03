@@ -10,9 +10,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.services.DataService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.ColorTable;
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 import edu.rice.cs.hpc.traceviewer.ui.ProcedureClassDialog;
-import edu.rice.cs.hpc.traceviewer.util.ProcedureClassMap;
+import edu.rice.cs.hpc.traceviewer.data.util.ProcedureClassMap;
 
 
 /****
@@ -52,7 +52,7 @@ public class ProcedureClassMapAction extends AbstractHandler {
 		
 		DataService dataService = (DataService) sourceProviderService.getSourceProvider(DataService.DATA_PROVIDER);
 		// reset the color table
-		ColorTable colorTable = dataService.getData().getPainter().getColorTable(); 
+		ColorTable colorTable = dataService.getData().getColorTable(); 
 		colorTable.dispose();
 		colorTable.setColorTable();
 		

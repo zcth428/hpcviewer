@@ -4,7 +4,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
-import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 

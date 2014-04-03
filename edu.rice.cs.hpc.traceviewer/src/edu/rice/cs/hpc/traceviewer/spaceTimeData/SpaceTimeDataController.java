@@ -1,22 +1,46 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
+import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
 
+import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
+import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+
+
+/*******************************************************************************************
+ * 
+ * Class to store global information concerning the database and the trace.
+ * The class is designed to work for both local and remote database. Any references have to 
+ * 	be addressed to the methods of this class instead of the derived class to enable
+ *  transparency.
+ * 
+ * @author Original authors: Sinchan Banarjee, Michael France, Reed Lundrum and Philip Taffet
+ * 
+ * Modification:
+ * - 2013 Philip: refactoring into three classes : abstract (this class), local and remote
+ * - 2014.2.1 Laksono: refactoring to make it as simple as possible and avoid code redundancy
+ *
+ *******************************************************************************************/
 public abstract class SpaceTimeDataController 
 {
-	protected PaintManager painter;
-	
-	//TODO: Some places access this directly while others use the getter.
-	protected ImageTraceAttributes attributes;// Should this be final?
+	protected ImageTraceAttributes attributes;
 	protected String dbName;
 	/**
 	 * The minimum beginning and maximum ending time stamp across all traces (in
@@ -34,15 +58,8 @@ public abstract class SpaceTimeDataController
 	// We probably want to get away from this. The for code that needs it should be
 	// in one of the threads. It's here so that both local and remote can use
 	// the same thread class yet get their information differently.
-	final protected AtomicInteger lineNum;
-	
-
-	/**
-	 * The number of processes in the database, independent of the current
-	 * display size
-	 */
-	protected int totalTraceCountInDB;
-	
+	AtomicInteger lineNum, depthLineNum;
+		
 	/** The maximum depth of any single CallStackSample in any trace. */
 	protected int maxDepth;
 	
@@ -50,23 +67,81 @@ public abstract class SpaceTimeDataController
 	private boolean enableMidpoint;
 	
 	protected IBaseData dataTrace = null;
-	// So, I'd like to declare attributes and dbName final and give them their
-	// values in the child class's constructor, but that doesn't work in Java.
-	// Alternatively, I'd be fine with making them final and having the
-	// constructor for this class take them in and set them, but the
-	// superclass's constructor has to be the first line in the method, and
-	// dbName isn't available on the first line. So the responsibility is left
-	// to the child classes: please set attributes and dbName in your
-	// constructor.
+	final protected BaseExperiment exp;
+	
+	// nathan's data index variable
+	// TODO: we need to remove this and delegate to the inherited class instead !
+	private int currentDataIdx;
 
-	public SpaceTimeDataController() {
-		attributes = new ImageTraceAttributes();
-
-		lineNum = new AtomicInteger(0);
+	/***
+	 * Constructor to create a data based on File. This constructor is more suitable
+	 * for local database
+	 * 
+	 * @param _window : SWT window
+	 * @param expFile : experiment file
+	 */
+	public SpaceTimeDataController(IWorkbenchWindow _window, File expFile) {
+		
+		exp = new ExperimentWithoutMetrics();
+		try {
+			exp.open(expFile, new ProcedureAliasMap());
+		} catch (InvalExperimentException e) {
+			System.out.println("Parse error in Experiment XML at line "
+					+ e.getLineNumber());
+			e.printStackTrace();
+			// return;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		
+		init(_window);
 	}
 	
-	protected void buildScopeMapAndColorTable(IWorkbenchWindow _window,
-			BaseExperiment exp) {
+	/*****
+	 * Constructor to create a data based on input stream, which is convenient for remote database
+	 * 
+	 * @param _window : SWT window
+	 * @param expStream : input stream
+	 * @param Name : the name of the file on the remote server
+	 *****/
+	public SpaceTimeDataController(IWorkbenchWindow _window, InputStream expStream, String Name) {
+		
+		exp = new ExperimentWithoutMetrics();
+
+		try {
+			// Without metrics, so param 3 is false
+			exp.open(expStream, new ProcedureAliasMap(), Name);
+		}
+		catch (InvalExperimentException e) {
+			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
+			e.printStackTrace();
+			// return;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		init(_window);
+	}
+
+	public void setDataIndex(int dataIndex) 
+	{
+		currentDataIdx = dataIndex;
+	}
+	
+	
+	public int getDataIndex()
+	{
+		return currentDataIdx;
+	}
+	
+	/******
+	 * Initialize the object
+	 * 
+	 * @param _window
+	 ******/
+	protected void init(IWorkbenchWindow _window) {
+		
 		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);
 
@@ -80,35 +155,52 @@ public abstract class SpaceTimeDataController
 		// Initializes the CSS that represents time values outside of the
 		// time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
+		// get the list of procedures
 		maxDepth = exp.getRootScope().dfsSetup(visitor, colorTable, 1);
+		// initialize colors
+		colorTable.setColorTable();
+		
+		attributes = new ImageTraceAttributes();
 
+		lineNum = new AtomicInteger(0);
+		depthLineNum = new AtomicInteger(0);
+
+		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
+		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
+
+		TraceAttribute trAttribute = exp.getTraceAttribute();
+		minBegTime = trAttribute.dbTimeMin;
+		maxEndTime = trAttribute.dbTimeMax;
+
+		dbName = exp.getName();
 	}
 
-
+	public int getMaxDepth() 
+	{
+		return maxDepth;
+	}
+	
+	
 	private int getCurrentlySelectedProcess()
 	{
-		return painter.getPosition().process;
+		return attributes.getPosition().process;
 	}
 	
 	/**
-	 * dtProcess scaled to be the index in traces[] that corresponds to this
-	 * process. dtProcess has length equal to the number of files in data trace
-	 * while scaledDTProcess typically has length equal to the number of vertical pixels in
-	 * SpaceTimeDetailView.
+	 * {@link getCurrentlySelectedProcess()} returns something on [begProcess,
+	 * endProcess-1]. We need to map that to something on [0, numTracesShown -
+	 * 1]. We use a simple linear mapping:
+	 * begProcess    -> 0,
+	 * endProcess-1  -> numTracesShown-1
 	 */
 	public int computeScaledProcess() {
-		int numTracesShown = Math.min(attributes.endProcess - attributes.begProcess, attributes.numPixelsV);
+		int numTracesShown = Math.min(attributes.getProcessInterval(), attributes.numPixelsV);
 		int selectedProc = getCurrentlySelectedProcess();
-		double scaledDTProcess = (((double) numTracesShown -1 )
-					/ ((double) attributes.endProcess - attributes.begProcess - 1) * (selectedProc - attributes.begProcess));
-		return (int)scaledDTProcess;
-
-	}
-
-
-	public PaintManager getPainter() {
 		
-		return painter;
+		double scaledDTProcess = (((double) numTracesShown -1 )
+					/ ((double) attributes.getProcessInterval() - 1) * 
+					(selectedProc - attributes.getProcessBegin()));
+		return (int)scaledDTProcess;
 	}
 
 
@@ -128,8 +220,10 @@ public abstract class SpaceTimeDataController
 	public synchronized ProcessTimeline getNextDepthTrace() {
 		
 		ProcessTimeline depthTrace = getDepthTrace();
+		if (depthTrace == null)
+			return null;
 		
-		int currentDepthLineNum = lineNum.getAndIncrement();
+		int currentDepthLineNum = depthLineNum.getAndIncrement();
 		if (currentDepthLineNum < Math.min(attributes.numPixelsDepthV, maxDepth)) {
 			
 			// I can't get the data from the ProcessTimeline directly, so create
@@ -137,8 +231,8 @@ public abstract class SpaceTimeDataController
 			// it.
 			ProcessTimeline toDonate = new ProcessTimeline(currentDepthLineNum,
 					scopeMap, dataTrace, getCurrentlySelectedProcess(), attributes.numPixelsH,
-					attributes.endTime - attributes.begTime, minBegTime
-							+ attributes.begTime);
+					attributes.getTimeInterval(), minBegTime
+							+ attributes.getTimeBegin());
 
 			toDonate.copyDataFrom(depthTrace);
 
@@ -147,17 +241,17 @@ public abstract class SpaceTimeDataController
 			return null;
 	}
 	
-	public abstract IBaseData getBaseData();
-	public abstract String[] getTraceNames();
+	public IBaseData getBaseData(){
+		return dataTrace;
+	}
 
 	/******************************************************************************
 	 * Returns number of processes (ProcessTimelines) held in this
 	 * SpaceTimeData.
 	 ******************************************************************************/
 	public int getTotalTraceCount() {
-		return totalTraceCountInDB;
+		return dataTrace.getNumberOfRanks();
 	}
-	
 	
 	public HashMap<Integer, CallPath> getScopeMap() {
 		return scopeMap;
@@ -167,32 +261,18 @@ public abstract class SpaceTimeDataController
 	 * getter/setter trace attributes
 	 * @return
 	 ******************************************************************************/
-	public long getTimeBegin() {
-		return attributes.begTime;
-	}
-	
-	public long getTimeEnd() {
-		return attributes.endTime;
-	}
-	
-	public int getProcessBegin() {
-		return attributes.begProcess;
-	}
-	
-	public int getProcessEnd() {
-		return attributes.endProcess;
-	}
 	
 	public int getPixelHorizontal() {
 		return attributes.numPixelsH;
 	}
 	
-	public ImageTraceAttributes getTraceAttributes() {
-		return attributes;
-	}
 	
 	public void setTraceAttributes(ImageTraceAttributes attributes) {
 		this.attributes = attributes;
+	}
+
+	public ImageTraceAttributes getAttributes() {
+		return attributes;
 	}
 
 	/*************************************************************************
@@ -205,10 +285,6 @@ public abstract class SpaceTimeDataController
 
 	public String getName() {
 		return dbName;
-	}
-
-	public ImageTraceAttributes getAttributes() {
-		return attributes;
 	}
 
 	public long getMaxEndTime() {
@@ -237,9 +313,49 @@ public abstract class SpaceTimeDataController
 
 	public void resetCounters() {
 		lineNum.set(0);
+		depthLineNum.set(0);
+	}
+	
+	public int getNumberOfLines() {
+		return lineNum.get();
+	}
+	
+	public int getNumberOfDepthLines() {
+		return depthLineNum.get();
 	}
 
 	public abstract void closeDB();
 
+	//see the note where this is called in FilterRanks
+	public IFilteredData getFilteredBaseData() {
+		if (dataTrace instanceof IFilteredData)
+			return (IFilteredData) dataTrace;
+		return null;
+	}
+	/**
+	 * changing the trace data, caller needs to make sure to refresh the views
+	 * @param filteredBaseData
+	 */
+	public void setBaseData(IFilteredData filteredBaseData) {
+		dataTrace = filteredBaseData;
+		// we have to change the range of displayed processes
+		//attributes.begProcess = 0;
 
+		int endProcess = attributes.getProcessEnd();
+		int begProcess = attributes.getProcessBegin();
+		
+		//Snap it back into the acceptable limits.
+		if (endProcess > dataTrace.getNumberOfRanks())
+			endProcess  = dataTrace.getNumberOfRanks();
+		
+		if (begProcess >= endProcess)
+			begProcess = 0;
+		
+		attributes.setProcess(begProcess, endProcess);
+	}
+
+	public abstract IFilteredData createFilteredBaseData();
+
+	public abstract void fillTracesWithData(boolean changedBounds, int numThreadsToLaunch)
+			throws IOException;
 }

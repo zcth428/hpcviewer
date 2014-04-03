@@ -7,6 +7,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -28,13 +29,13 @@ import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.PaintManager;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
-import edu.rice.cs.hpc.traceviewer.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 
 /**************************************************
@@ -54,7 +55,7 @@ public class CallStackViewer extends TableViewer
     /**Creates a CallStackViewer with Composite parent, SpaceTimeDataController _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, final HPCCallStackView csview)
 	{
-		super(parent, SWT.SINGLE | SWT.NO_SCROLL);
+		super(parent, SWT.SINGLE );
 		
 		final IWorkbenchWindow window = (IWorkbenchWindow)csview.getSite().
 				getWorkbenchWindow();
@@ -95,12 +96,10 @@ public class CallStackViewer extends TableViewer
 			public void handleEvent(Event event)
 			{
 				int depth = stack.getSelectionIndex(); 
-				PaintManager painter = dataService.getData().getPainter();
-				if(depth !=-1 && depth != painter.getMaxDepth()) {
-					// ask the depth editor to update the depth and launch the updateDepth event
-					csview.depthEditor.setSelection(depth);
-					notifyChange(depth);
-				}
+
+				// ask the depth editor to update the depth and launch the updateDepth event
+				csview.depthEditor.setSelection(depth);
+				notifyChange(depth);
 			}
 		});
 		
@@ -141,20 +140,19 @@ public class CallStackViewer extends TableViewer
 		viewerColumn = new TableViewerColumn(this, SWT.NONE);
 		viewerColumn.setLabelProvider(myLableProvider);
 		viewerColumn.getColumn().setWidth(100);
+		
 		ColumnViewerToolTipSupport.enableFor(csviewer, ToolTip.NO_RECREATE);
 		
 		TraceOperation.getOperationHistory().addOperationHistoryListener(this);
 	}
 	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#refresh()
+	/***
+	 * refresh the call stack in case there's a new data
 	 */
 	public void updateView()
 	{
-		PaintManager painter = dataService.getData().getPainter();
-		this.setSample(painter.getPosition(), painter.getDepth());
+		final SpaceTimeDataController data = dataService.getData();
+		this.setSample(data.getAttributes().getPosition(), data.getAttributes().getDepth());
 		this.getTable().setVisible(true);
 	}
 	
@@ -172,15 +170,25 @@ public class CallStackViewer extends TableViewer
 		// however, if the selected process is less than the start of displayed process, 
 		// 	then we keep the selected process
 		//-------------------------------------------------------------------------------------------
-		int proc;
+
 		SpaceTimeDataController stData = dataService.getData();
-		if (stData != null)
-			proc = stData.getPainter().getProcessRelativePosition(ptlService.getNumProcessTimeline());
-		else 
-		{
+		
+		if (stData == null) {
 			return;
 		}
-		ProcessTimeline ptl = ptlService.getProcessTimeline(proc);
+		// general case
+		final ImageTraceAttributes attributes = stData.getAttributes();
+    	int estimatedProcess = (attributes.getPosition().process - attributes.getProcessBegin());
+    	int numDisplayedProcess = ptlService.getNumProcessTimeline();
+    	
+    	// case for num displayed processes is less than the number of processes
+    	estimatedProcess = (int) ((float)estimatedProcess* 
+    			((float)numDisplayedProcess/(attributes.getProcessInterval())));
+    	
+    	// case for single process
+    	estimatedProcess = Math.min(estimatedProcess, numDisplayedProcess-1);
+
+		ProcessTimeline ptl = ptlService.getProcessTimeline(estimatedProcess);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time, stData.isEnableMidpoint());
 			final Vector<String> sampleVector;
@@ -246,9 +254,12 @@ public class CallStackViewer extends TableViewer
 	private void notifyChange(int depth)
 	{
 		try {
-			TraceOperation.getOperationHistory().execute(
-					new DepthOperation("Set depth to "+depth, depth),
-					null, null);
+			DepthOperation op = new DepthOperation("Set depth to "+depth, depth);
+			IStatus status = TraceOperation.getOperationHistory().execute(
+					op, null, null);
+			if (status.isOK()) {
+				op.dispose();
+			}
 		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -270,12 +281,16 @@ public class CallStackViewer extends TableViewer
 				{
 					Position p = ((PositionOperation)operation).getPosition();
 					int depth = getTable().getSelectionIndex();
+					Debugger.printDebug(1, "CT-p: " + p + "\t d: " + depth);
+
 					setSample(p,depth);
 				}
 				else if (operation instanceof ZoomOperation) 
 				{
 					Position p = ((ZoomOperation)operation).getFrame().position;
 					int depth = getTable().getSelectionIndex();
+					Debugger.printDebug(1, "CT-z: " + p + "\t d: " + depth);
+
 					setSample(p,depth);
 				}
 			}

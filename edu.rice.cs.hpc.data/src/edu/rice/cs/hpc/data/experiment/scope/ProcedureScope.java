@@ -119,8 +119,8 @@ public boolean equals(Object obj) {
 public String getName()
 {
 	if (isalien) {
-		// return "[I] " + procedureName;
-		return "inlined from " + this.getSourceCitation();
+		String name = procedureName.isEmpty() ? "" : "[I] " + procedureName + " ";
+		return name + "inlined at " + this.getSourceCitation();
 	} else return this.procedureName;
 }
 

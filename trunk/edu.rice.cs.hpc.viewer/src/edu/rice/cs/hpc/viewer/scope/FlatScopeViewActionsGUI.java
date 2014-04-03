@@ -78,13 +78,12 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
 	protected Composite addTooBarAction(CoolBar parent)  {
     	// prepare the toolbar
     	ToolBar toolbar = new ToolBar(parent, SWT.FLAT);
-    	Icons iconsCollection = Icons.getInstance();
 
     	// ------------- prepare the items
     	// flatten
     	tiFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiFlatten.setToolTipText("Flatten nodes one level");
-    	tiFlatten.setImage(iconsCollection.imgFlatten);
+    	tiFlatten.setImage(Icons.getImage(Icons.Image_Flatten));
     	tiFlatten.addSelectionListener(new SelectionAdapter() {
       	  	public void widgetSelected(SelectionEvent e) {
       	  		objFlatAction.flatten();
@@ -94,7 +93,7 @@ public class FlatScopeViewActionsGUI extends ScopeViewActionsGUI {
     	// unflatten
     	tiUnFlatten = new ToolItem(toolbar, SWT.PUSH);
     	tiUnFlatten.setToolTipText("Unflatten nodes one level");
-    	tiUnFlatten.setImage(iconsCollection.imgUnFlatten);
+    	tiUnFlatten.setImage(Icons.getImage(Icons.Image_Unflatten));
     	tiUnFlatten.addSelectionListener(new SelectionAdapter(){
       	  	public void widgetSelected(SelectionEvent e) {
       	  		objFlatAction.unflatten();

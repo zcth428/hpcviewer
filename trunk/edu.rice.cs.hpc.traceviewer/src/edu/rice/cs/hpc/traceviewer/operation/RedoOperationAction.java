@@ -46,6 +46,23 @@ public class RedoOperationAction extends OperationHistoryAction {
 	
 	@Override
 	protected void execute() {
+
+		IUndoableOperation[] undos = TraceOperation.getUndoHistory();
+		
+		if (undos.length == 0) {
+			// hack: when there's no undo, we need to remove the current
+			// history into the undo stack. To do this properly, we
+			// should perform an extra redo before the real redo
+
+			doRedo();
+		}
+		doRedo();
+	}
+
+	/****
+	 * helper method to perform the default redo
+	 */
+	private void doRedo() {
 		try {
 			IStatus status = TraceOperation.getOperationHistory().
 					redo(TraceOperation.undoableContext, null, null);
@@ -56,7 +73,7 @@ public class RedoOperationAction extends OperationHistoryAction {
 			e.printStackTrace();
 		}
 	}
-
+	
 	@Override
 	protected void execute(IUndoableOperation operation) {
 		try {
@@ -68,8 +85,11 @@ public class RedoOperationAction extends OperationHistoryAction {
 
 
 	@Override
-	protected void setStatus() {
+	protected IUndoableOperation[] setStatus() {
 		final IUndoableOperation []ops = getHistory(); 
+		//debug("redo", ops);
+		//System.out.println();
 		setEnabled(ops.length>0);
+		return ops;
 	}
 }

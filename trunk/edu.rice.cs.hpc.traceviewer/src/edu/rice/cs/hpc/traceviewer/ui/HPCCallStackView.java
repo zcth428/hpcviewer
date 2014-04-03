@@ -1,4 +1,4 @@
-	package edu.rice.cs.hpc.traceviewer.ui;
+package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.util.Map;
 
@@ -121,6 +121,8 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 					if (sourceValue instanceof SpaceTimeDataController) {
 						csViewer.updateView();
 					} else if (sourceValue instanceof Boolean) {
+						// operations when every ones need to refresh their data
+						//	this event can happen when a filter event occurs
 						csViewer.updateView();
 						miniCanvas.updateView();
 					}
@@ -132,7 +134,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	
 	public void updateView(SpaceTimeDataController _stData) 
 	{
-		depthEditor.setMaximum(_stData.getPainter().getMaxDepth());
+		depthEditor.setMaximum(_stData.getMaxDepth());
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 
@@ -168,15 +170,5 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 	public int getSizeFlags(boolean width) 
 	{
 		return width ? SWT.MAX : 0;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.traceviewer.events.ITraceDepth#setDepth(int)
-	 */
-	public void setDepth(int new_depth) {
-		System.out.println("Setting depth to " + new_depth);
-		this.depthEditor.setSelection(new_depth);
-		this.csViewer.setDepth(new_depth);
 	}
 }

@@ -1,7 +1,9 @@
 package edu.rice.cs.hpc.traceviewer.framework;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.window.Window;
 //import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -9,8 +11,10 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import edu.rice.cs.hpc.common.ui.Util;
+import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
+import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
@@ -49,7 +53,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowOpen()
-	 */
+	 */ 
 	public void postWindowOpen() {
 		
 		//---------------------------------------------------------------------
@@ -59,7 +63,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		final IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		final IStatusLineManager status = configurer.getActionBarConfigurer().getStatusLineManager();
 		
-		TraceDatabase.openDatabase(configurer.getWindow(), args, status, new LocalDBOpener());
+		//process command line argument - currently only works for local but can be easily modified to work with remote
+		if (args != null && args.length > 0) {
+			for (String arg : args) {
+				if (arg != null && arg.charAt(0) != '-') {
+					// this must be the name of the database to open
+					TraceDatabase.openDatabase(configurer.getWindow(), args, status, new LocalDBOpener(arg));
+				}
+			}
+		} else { //if no command line argument open dialog box
+			AbstractDBOpener opener;
+			OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), status); 
+			if (dlg.open() == Window.OK) {
+				opener=dlg.getDBOpener();
+				TraceDatabase.openDatabase(configurer.getWindow(), args, status, opener);
+			}
+		}
+	
 	}
 
 	/*

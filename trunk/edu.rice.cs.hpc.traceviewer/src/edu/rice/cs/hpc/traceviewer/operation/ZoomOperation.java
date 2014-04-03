@@ -17,11 +17,8 @@ public class ZoomOperation extends TraceOperation {
 	
 	static final public String ActionHome = "Home";
 	
-	ITraceAction action;
-	
-	public ZoomOperation(String label, Frame frame, ITraceAction action) {
+	public ZoomOperation(String label, Frame frame) {
 		super(label, frame);
-		this.action = action;
 		addContext(undoableContext);
 	}
 
@@ -29,8 +26,6 @@ public class ZoomOperation extends TraceOperation {
 	public IStatus execute(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException 
 			{
-		if (action != null)
-			action.doAction(frame);
 		return Status.OK_STATUS;
 	}
 
@@ -43,8 +38,6 @@ public class ZoomOperation extends TraceOperation {
 	@Override
 	public IStatus undo(IProgressMonitor monitor, IAdaptable info)
 			throws ExecutionException {
-		if (action != null)
-			action.doAction(frame);
 		return Status.OK_STATUS;
 	}
 

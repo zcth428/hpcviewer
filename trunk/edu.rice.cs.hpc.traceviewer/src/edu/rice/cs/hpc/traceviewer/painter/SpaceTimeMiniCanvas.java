@@ -6,16 +6,23 @@ import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
-
-import edu.rice.cs.hpc.traceviewer.operation.ITraceAction;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -27,20 +34,8 @@ import edu.rice.cs.hpc.traceviewer.ui.Frame;
  ****************************************************************************/
 
 public class SpaceTimeMiniCanvas extends SpaceTimeCanvas 
-	implements MouseListener, MouseMoveListener, PaintListener, IOperationHistoryListener
+	implements ITraceCanvas, PaintListener, IOperationHistoryListener
 {
-	/** The top-left point of the current selection box.*/
-	private Point selectionTopLeft;
-	
-	/** The bottom-right point of the current selection box.*/
-	private Point selectionBottomRight;
-	
-	/**The width in pixels of the detail view representation on the miniMap.*/
-	private int viewingWidth;
-	
-	/**The height in pixels of the detail view representation on the miniMap.*/
-	private int viewingHeight;
-	
 	/** Relates to the condition that the mouse is in.*/
 	private MouseState mouseState;
 	
@@ -55,6 +50,18 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	
 	/**Determines whether the first mouse click was inside the box or not.*/
 	private boolean insideBox;
+	
+	private Rectangle view;
+	
+    final private Color COMPLETELY_FILTERED_OUT_COLOR;
+    final private Color NOT_FILTERED_OUT_COLOR;
+    final private Color COLOR_BLACK, COLOR_GRAY;
+    
+    /**
+     * The pattern that we draw when we want to show that some ranks in the
+     * region aren't shown because of filtering
+     */
+    private final Pattern PARTIALLY_FILTERED_PATTERN; 
 
 	/**Creates a SpaceTimeMiniCanvas with the given parameters.*/
 	public SpaceTimeMiniCanvas(Composite _composite)
@@ -63,12 +70,76 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		
 		mouseState = MouseState.ST_MOUSE_INIT;
 		insideBox = true;
-		selectionTopLeft = new Point(0,0);
-		selectionBottomRight = new Point(0,0);
+		view =  new Rectangle(0, 0, 0, 0);
+		
+        // initialize colors
+        COMPLETELY_FILTERED_OUT_COLOR = new Color(this.getDisplay(), 50,50,50);
+        NOT_FILTERED_OUT_COLOR = getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY);
+        COLOR_BLACK = getDisplay().getSystemColor(SWT.COLOR_BLACK);
+        COLOR_GRAY  = getDisplay().getSystemColor(SWT.COLOR_GRAY);
+
+        // initialize pattern for filtered ranks
+        PARTIALLY_FILTERED_PATTERN = createStripePattern();
+        
+		addDisposeListener( new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				dispose();				
+			}
+		});
+		addControlListener( new ControlAdapter() {
+			
+			@Override
+			public void controlResized(ControlEvent e) {
+				if (stData != null) {
+					final Frame frame = stData.getAttributes().getFrame();
+					setBox(frame);
+				}
+			}
+		} );
 	}
-	
-	public void updateView(SpaceTimeDataController _stData) {
-		this.setSpaceTimeData(_stData);
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.swt.widgets.Widget#dispose()
+	 */
+	@Override
+    public void dispose() {
+    	COMPLETELY_FILTERED_OUT_COLOR.dispose();
+    	PARTIALLY_FILTERED_PATTERN.dispose();
+    }
+    
+	/*****
+	 * Create a pattern image for representing a non-dense filter region
+	 * 
+	 * @return pattern
+	 */
+    private Pattern createStripePattern() {
+            Image image = new Image(getDisplay(), 15, 15);
+            GC gc = new GC(image);
+            gc.setBackground(NOT_FILTERED_OUT_COLOR);
+            gc.fillRectangle(image.getBounds());
+            gc.setForeground(COMPLETELY_FILTERED_OUT_COLOR);
+            // Oddly enough, drawing from points outside of the image makes the
+            // lines look a lot better when the pattern is tiled.
+            for (int i = 5; i < 15; i+= 5) {
+                    gc.drawLine(-5, i+5, i+5, -5);
+                    gc.drawLine(i-5, 20, 20, i-5);
+            }
+            gc.dispose();
+            return new Pattern(getDisplay(), image);
+    }
+
+
+	/**********
+	 * update the content of the view due to a new database
+	 * 
+	 * @param _stData : the new database
+	 **********/
+	public void updateView(SpaceTimeDataController _stData) 
+	{
+		setSpaceTimeData(_stData);
 
 		if (this.mouseState == MouseState.ST_MOUSE_INIT) {
 			this.mouseState = MouseState.ST_MOUSE_NONE;
@@ -80,15 +151,38 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 		}
 		Rectangle r = this.getClientArea();
-		this.viewingHeight = r.height;
-		this.viewingWidth = r.width;
+		view.x = 0;
+		view.y = 0;
+		view.height = r.height;
+		view.width  = r.width;
 		
-		this.redraw();
+		redraw();
 	}
 	
-	public void updateView()
+	/******
+	 * update the view when a filtering event occurs
+	 * in this case, we need to reset the content of view with the attribute
+	 */
+	public void updateView() 
 	{
-		setBox(stData.getTimeBegin(), stData.getProcessBegin(), stData.getTimeEnd(), stData.getProcessEnd());
+		final Frame frame = stData.getAttributes().getFrame();		
+		IBaseData baseData = stData.getBaseData();
+
+		int p1 = (int) Math.round( (frame.begProcess+baseData.getFirstIncluded()) * getScalePixelsPerRank() );
+		int p2 = (int) Math.round( (frame.endProcess+baseData.getFirstIncluded()) * getScalePixelsPerRank() );
+		
+		int t1 = (int) Math.round( frame.begTime * getScalePixelsPerTime() );
+		int t2 = (int) Math.round( frame.endTime * getScalePixelsPerTime() );
+		
+		int dp = Math.max(p2-p1, 1);
+		int dt = Math.max(t2-t1, 1);
+
+		view.x = t1;
+		view.y = p1;
+		view.width  = dt; 
+		view.height = dp;
+		
+		redraw();
 	}
 	
 	/**The painting of the miniMap.*/
@@ -96,44 +190,133 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	{
 		if (this.stData == null)
 			return;
-			
-			
-		viewWidth = getClientArea().width;
-		viewHeight = getClientArea().height;
 		
-		event.gc.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
-		event.gc.fillRectangle(this.getClientArea());
+		final Rectangle clientArea = getClientArea();
 		
-		if (insideBox)
-		{
-			event.gc.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_WHITE));
-			if(viewingWidth<1) viewingWidth = 1;
-			if(viewingHeight<1) viewingHeight = 1;
-			event.gc.fillRectangle((int)topLeftPixelX, (int)topLeftPixelY, viewingWidth, viewingHeight);
+		// paint the background with black color
+		
+		event.gc.setBackground(COLOR_BLACK);
+		event.gc.fillRectangle(clientArea);
+		
+		// paint the current view
+		
+		final Frame frame = stData.getAttributes().getFrame();		
+		IBaseData baseData = stData.getBaseData();
+
+		int p1 = (int) Math.round( (baseData.getFirstIncluded()) * getScalePixelsPerRank() );
+		int p2 = (int) Math.round( (baseData.getLastIncluded()+1) * getScalePixelsPerRank() );
+		
+		int t1 = (int) Math.round( frame.begTime * getScalePixelsPerTime() );
+		int t2 = (int) Math.round( frame.endTime * getScalePixelsPerTime() );
+		
+		int dp = Math.max(p2-p1, 1);
+		int dt = Math.max(t2-t1, 1);
+
+        if (baseData.isDenseBetweenFirstAndLast()){
+            event.gc.setBackground(NOT_FILTERED_OUT_COLOR);
+        } else {
+            try{
+            event.gc.setBackgroundPattern(PARTIALLY_FILTERED_PATTERN);
+            }
+            catch (SWTException e){
+                    System.out.println("Advanced graphics not supported");
+                    event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_RED));
+            }
+        }
+        // The width of the region is always the same as the width of the
+        // minimap because you can't filter by time
+        event.gc.fillRectangle(0, p1, getClientArea().width, dp);
+
+		// only for the dense region. For non-dense region, it's too tricky
+		if (baseData.isDenseBetweenFirstAndLast()) {
+			// original current position 
+	        p1 = (int) Math.round( (baseData.getFirstIncluded() +  frame.begProcess )* getScalePixelsPerRank());
+	        p2 = (int) Math.round( (baseData.getFirstIncluded() +  frame.endProcess )* getScalePixelsPerRank());
+	        dp = Math.max(1, p2 - p1);
+	        
+			event.gc.setBackground(COLOR_GRAY);		
+			event.gc.fillRectangle(t1, p1, dt, dp);
 		}
-		else
-		{
-			event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
-			event.gc.drawRectangle(selectionTopLeft.x, selectionTopLeft.y,
-				selectionBottomRight.x-selectionTopLeft.x, selectionBottomRight.y-selectionTopLeft.y);
+
+		if (insideBox) {
+			// when we move the box
+			event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			event.gc.fillRectangle(view);
+		} else {
+			// when we want to create a new box
+			event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_YELLOW));
+			event.gc.drawRectangle(view);
 		}
 	}
 	
+	
+    /**The painting of the miniMap.
+     * this is the original paintControl with Rectangles and labels
+     * 
+    public void paintControl(PaintEvent event)
+    {
+            if (this.stData == null)
+                    return;
+                                           
+            view.width = getClientArea().width;
+            view.height = getClientArea().height;
+           
+            IBaseData baseData = stData.getBaseData();
+            ArrayList<MiniCanvasRectangle> rectangles = new ArrayList<MiniCanvasRectangle>();
+            if (baseData.getFirstIncluded() != 0) {
+                    Rectangle rect = new Rectangle(0, 0, getClientArea().width, (int) (baseData.getFirstIncluded()*getScaleY()));
+                    rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
+            }
+            if (baseData.getLastIncluded() + 1 != baseData.getNumberOfRanks()) {
+                    int topY = (int) ((baseData.getLastIncluded()+1)*getScaleY());
+                    Rectangle rect = new Rectangle(0, topY , getClientArea().width, getClientArea().height-topY);
+                    rectangles.add(new MiniCanvasRectangle(SampleHiddenReason.FILTERED, true, rect));
+            }
+            // This is the region shown in the detail view
+            EnumSet<SampleHiddenReason> mainRegionReasons = EnumSet.noneOf(SampleHiddenReason.class);
+            if (attributes.getProcessInterval() < attributes.numPixelsV)
+                    mainRegionReasons.add(SampleHiddenReason.VERTICAL_RESOLUTION);
+            if (!baseData.isDenseBetweenFirstAndLast())
+                    mainRegionReasons.add(SampleHiddenReason.FILTERED);
+            if (mainRegionReasons.size() == 0)
+                    mainRegionReasons.add(SampleHiddenReason.NONE);
+   
+            // TODO: THESE ARE APPROXIMATIONS. LOOKING UP THE ACTUAL VALUE WOULD BE BETTER.
+            int topPx = (int) ((baseData.getFirstIncluded() + attributes.getProcessBegin()) * getScaleY());
+            int height = (int)(attributes.getProcessInterval() * getScaleY());
+            Rectangle rect = new Rectangle(
+                            (int)(attributes.getTimeBegin() * getScaleX()), topPx,
+                            (int)(attributes.getTimeInterval() * getScaleX()), height);
+            rectangles.add(new MiniCanvasRectangle(mainRegionReasons, false, rect));
+           
+            //TODO: None of the code above this point belongs in the paint method.
+            Control[] oldChildren = this.getChildren();
+            for (int i = 0; i < oldChildren.length; i++) {
+                    // oldChildren[i].dispose();
+            }
+            for (MiniCanvasRectangle miniCanvasRectangle : rectangles) {
+                    miniCanvasRectangle.getControl(this);
+            }
+           
+    }
+    */
+	
 	/**Sets the white box in miniCanvas to correlate to spaceTimeDetailCanvas proportionally.*/
-	public void setBox(long topLeftTime, double topLeftProcess, long bottomRightTime, double bottomRightProcess)
+	private void setBox(Frame frame)
 	{
 		if (this.stData == null)
 			return;
 		
-		topLeftPixelX = (int)Math.round(topLeftTime * getScaleX());
-		topLeftPixelY = (int)Math.round(topLeftProcess * getScaleY());
+		view.x = (int)Math.round(frame.begTime * getScalePixelsPerTime());
+		view.y = (int)Math.round(frame.begProcess * getScalePixelsPerRank());
 		
-		int bottomRightPixelX = (int)Math.round(bottomRightTime*getScaleX());
-		int bottomRightPixelY = (int)Math.round(bottomRightProcess*getScaleY());
+		int bottomRightPixelX = (int)Math.round(frame.endTime * getScalePixelsPerTime());
+		int bottomRightPixelY = (int)Math.round(frame.endProcess * getScalePixelsPerRank());
 		
-		viewingWidth = bottomRightPixelX-(int)topLeftPixelX;
-		viewingHeight = bottomRightPixelY-(int)topLeftPixelY;
+		view.width  = Math.max(1, bottomRightPixelX-view.x);
+		view.height = Math.max(1, bottomRightPixelY-view.y);
 		
+		Debugger.printDebug(1, "STMC set view: " + view);
 		insideBox = true;
 		redraw();
 	}
@@ -141,57 +324,78 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Moves white box to correspond to where mouse has moved to.*/
 	private void moveBox(Point mouseCurrent)
 	{
+		// compute the different cursor movement 
 		int changeX = mouseCurrent.x-mousePrevious.x;
 		int changeY = mouseCurrent.y-mousePrevious.y;
 		
-		topLeftPixelX += changeX;
-		topLeftPixelY += changeY;
-		if (topLeftPixelX < 0)
-			topLeftPixelX = 0;
-		else if (topLeftPixelX+viewingWidth>viewWidth)
-			topLeftPixelX = viewWidth-viewingWidth;
-		if (topLeftPixelY < 0)
-			topLeftPixelY = 0;
-		else if (topLeftPixelY+viewingHeight>viewHeight)
-			topLeftPixelY = viewHeight-viewingHeight;
+		// update the values of the view based on the different cursor movement
+		view.x += changeX;
+		view.y += changeY;
 		
+		// make sure that the view is not out of range
+
+		view.x = Math.max(view.x, 0);
+		view.y = Math.max(view.y, getLowestY());
+
+    	// ---------------------------------------------------------
+    	// make sure that the selected box is within the range
+    	// ---------------------------------------------------------
+		checkRegion(view);
+
 		mousePrevious = mouseCurrent;
 	}
 	
-	/**** zoom action **/
-	final private ITraceAction zoomAction = new ITraceAction() {
-		@Override
-		public void doAction(Frame frame) 
-		{
-			setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
-		}
-	};
 
 	/**Scales coordinates and sends them to detailCanvas.*/
-	private void setDetailSelection()
+	private void confirmNewRegion()
 	{
-		Point miniTopLeft = new Point((int)topLeftPixelX,(int)topLeftPixelY);
-		Point miniBottomRight = new Point((int)topLeftPixelX+viewingWidth, (int)topLeftPixelY+viewingHeight);
+		Point miniTopLeft = new Point( view.x, view.y);
+		Point miniBottomRight = new Point( view.x+view.width, view.y+view.height);
 		
-		long detailTopLeftTime = (long)(miniTopLeft.x/getScaleX());
-		int detailTopLeftProcess = (int) (miniTopLeft.y/getScaleY());
+		final IBaseData data = stData.getBaseData();
 		
-		long detailBottomRightTime = (long)(miniBottomRight.x / getScaleX());
-		int detailBottomRightProcess = (int) (miniBottomRight.y/getScaleY());
-
-		ImageTraceAttributes attributes = stData.getAttributes();
-		attributes.begProcess = detailTopLeftProcess;
-		attributes.endProcess = detailBottomRightProcess;
-		attributes.begTime    = detailTopLeftTime;
-		attributes.endTime	 = detailBottomRightTime;
+		long detailTopLeftTime = (long)(miniTopLeft.x/getScalePixelsPerTime());
+		int detailTopLeftProcess = (int) Math.round( miniTopLeft.y/getScalePixelsPerRank() - data.getFirstIncluded());
 		
-		stData.setTraceAttributes(attributes);
+		long detailBottomRightTime = (long)(miniBottomRight.x / getScalePixelsPerTime());
+		int detailBottomRightProcess = (int) Math.round( miniBottomRight.y/getScalePixelsPerRank()) - data.getFirstIncluded();
 		
-		Frame frame = new Frame(attributes, painter.getMaxDepth(), 
-				painter.getPosition().time, painter.getPosition().process);
+		// hack: make sure p2 > than p1 since the detail canvas assumes exclusive p2 :-(
+		if (detailBottomRightProcess-detailTopLeftProcess <= 0) {
+			detailBottomRightProcess = detailTopLeftProcess + 1;
+		}
+		
+		final Frame originalFrame = stData.getAttributes().getFrame();
+		
+		// copy the frame from the original one so that we can copy the values of depth and position
+		Frame frame = new Frame( originalFrame );
+		frame.set(detailTopLeftTime, detailBottomRightTime, detailTopLeftProcess, detailBottomRightProcess);
+		
+		int totTraces = stData.getTotalTraceCount();
+		
+		assert frame.begProcess >= 0 && frame.begProcess < totTraces : 
+			"incorrect beg rank: " + frame.begProcess + " should be in the range [0," + 
+			totTraces + "]";
+		
+		assert frame.endProcess <= totTraces && frame.endProcess > 0 :
+			"incorrect end rank: " + frame.endProcess + " should be in the range [ 0," 
+			 + totTraces + "]";
+		
+		// do not submit new frame is the region area is the same as the old one
+		if (!frame.equals(originalFrame))
+			notifyRegionChangeOperation(frame);
+	}
+	
+	/****
+	 * notify to other views that we have changed the region to view
+	 * 
+	 * @param frame
+	 */
+	private void notifyRegionChangeOperation( Frame frame )
+	{
 		try {
 			TraceOperation.getOperationHistory().execute(
-					new ZoomOperation("Change region", frame, zoomAction),
+					new ZoomOperation("Change region", frame),
 					null, null);
 		} catch (ExecutionException e) 
 		{
@@ -199,63 +403,102 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		}
 	}
 	
+	/****
+	 * retrieve the highest Y pixels based on the number of visible ranks
+	 * 
+	 * @return
+	 */
+	private int getHighestY() {
+		
+		final IBaseData baseData = stData.getBaseData();
+		int highestRank = baseData.getLastIncluded()+1;
+		return (int) Math.round(highestRank * getScalePixelsPerRank());
+	}
+	
+	/****
+	 * retrieve the minimum Y pixel based on the number of visible ranks
+	 * In case of filters, the lowest rank can be other than zero
+	 * 
+	 * @return
+	 */
+	private int getLowestY() {
+		final IBaseData baseData = stData.getBaseData();
+		final int lowestRank = baseData.getFirstIncluded();
+		return (int) Math.round(lowestRank * getScalePixelsPerRank());
+	}
+	
 	/**Updates the selectionBox on the MiniMap to have corners at p1 and p2.*/
 	private void adjustSelection(Point p1, Point p2)
 	{
-    	selectionTopLeft.x = Math.min(p1.x, p2.x);
-        selectionTopLeft.y = Math.min(p1.y, p2.y);
-        if (selectionTopLeft.x < 0)
-        	selectionTopLeft.x = 0;
-        if (selectionTopLeft.y < 0)
-        	selectionTopLeft.y = 0;
-        
-        selectionBottomRight.x = Math.max(p1.x, p2.x);
-        selectionBottomRight.y = Math.max(p1.y, p2.y);
-        if (selectionBottomRight.x > viewWidth)
-        	selectionBottomRight.x = viewWidth;
-        if (selectionBottomRight.y > viewHeight)
-        	selectionBottomRight.y = viewHeight;
+    	// ---------------------------------------------------------
+		// get the region of the selection
+    	// ---------------------------------------------------------
+		view.x = Math.max(0, Math.min(p1.x, p2.x) );
+		view.y = Math.max(getLowestY(), Math.min(p1.y, p2.y) );
+    	
+		view.width = Math.abs( p1.x - p2.x );
+		view.height = Math.abs( p1.y - p2.y );
+    	
+    	// ---------------------------------------------------------
+    	// make sure that the selected box is within the range
+    	// ---------------------------------------------------------
+		checkRegion(view);
     }
 	
-	/**********************************************************
-	 * What happens when you let go of the selection box - 
-	 * sets the bounds according to those of the selection box.
-	 *********************************************************/
-	private void setSelection(Point p1, Point p2)
+	/****
+	 * check if the new region is within the allowed area
+	 * We just assume the start x and y are already good, and now
+	 * 	we check the end x and y which is very tricky
+	 * @param region
+	 */
+	private void checkRegion(Rectangle region) 
 	{
-		adjustSelection(p1, p2);
-		topLeftPixelX = selectionTopLeft.x;
-		topLeftPixelY = selectionTopLeft.y;
-		viewingWidth = selectionBottomRight.x-selectionTopLeft.x;
-		viewingHeight = selectionBottomRight.y-selectionTopLeft.y;
-		insideBox = true;
-		setDetailSelection();
+		final Rectangle area = getClientArea();
 		
+		// check if the width is within the range
+    	if ( region.x + region.width > area.width )
+    		region.x = area.width - region.width;
+    	
+    	// check if the height is within the view
+    	int y_end = region.y + region.height; 
+    	if ( y_end > area.height )
+    		region.y = area.height - region.height;
+    	
+    	int highestY = getHighestY();
+		int lowestY = getLowestY();
+		
+		// make sure the end y is less than the max y
+		if (y_end > highestY) {
+    		region.y = Math.max(highestY - region.height, lowestY);
+    		
+    		final int maxHeight = highestY - lowestY;
+    		region.height = Math.min(region.height, maxHeight);
+    	}
+		
+		// make sure the start y is less than the max y
+		region.y = Math.min(region.y, highestY - 1);
 	}
 	
 	/**Gets the scale in the X-direction (pixels per time unit).*/
-	public double getScaleX()
+	public double getScalePixelsPerTime()
 	{
-		return (double)viewWidth / (double)stData.getTimeWidth();
+		return (double)getClientArea().width / (double)stData.getTimeWidth();
 	}
 
 	/**Gets the scale in the Y-direction (pixels per process).*/
-	public double getScaleY()
+	public double getScalePixelsPerRank()
 	{
-		return (double)viewHeight / (double)stData.getTotalTraceCount();
+		final IBaseData data = stData.getBaseData();
+		final Rectangle area = getClientArea();
+		return (double)area.height / (data.getNumberOfRanks());
 	}
+
 	
 	/* *****************************************************************
 	 *		
 	 *		MouseListener and MouseMoveListener interface Implementation
 	 *      
 	 ******************************************************************/
-
-	public void mouseDoubleClick(MouseEvent e)
-	{
-		//setSelection(new Point(0,0), new Point(viewWidth,viewHeight));
-		//redraw();
-	}
 
 	public void mouseDown(MouseEvent e)
 	{
@@ -264,11 +507,11 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			mouseState = MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);
 			mousePrevious = new Point(e.x,e.y);
-			if (mouseDown.x>=topLeftPixelX && mouseDown.x<=topLeftPixelX+viewingWidth
-					&& mouseDown.y>=topLeftPixelY && mouseDown.y<=topLeftPixelY+viewingHeight)
-				insideBox = true;
-			else
-				insideBox = false;
+			
+			insideBox = ( mouseDown.x>=view.x && 
+					mouseDown.x<=view.x+view.width && 
+					mouseDown.y>=view.y &&  
+					mouseDown.y<=view.y+view.height );
 		}
 	}
 
@@ -281,20 +524,22 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			if (insideBox)
 			{
 				moveBox(mouseUp);
-				setDetailSelection();
+				confirmNewRegion();
 			}
 			else
 			{
-				if(Math.abs(mouseUp.x-mouseDown.x)>3 || Math.abs(mouseUp.y-mouseDown.y)>3)
-					setSelection(mouseDown, mouseUp);
-				
-//!!-------------------------------------------------------------------------------------------------			
-//!!== WARNING: I don't understand the meaning of this statement. This code doesn't change anything
-//!!-------------------------------------------------------------------------------------------------			
-//				else
-//					setBox(detailCanvas.begTime, detailCanvas.begProcess, detailCanvas.endTime, detailCanvas.endProcess);
+				// If the user draws a very small region to zoom in on, we are
+				// going to assume it was a mistake and not draw anything.
+				if(Math.abs(mouseUp.x-mouseDown.x)>3 || Math.abs(mouseUp.y-mouseDown.y)>3) 
+				{
+					adjustSelection(mouseDown, mouseUp);	
+					confirmNewRegion();
+				}else {
+					final ImageTraceAttributes attributes = stData.getAttributes();
+					//Set the selection box back to what it was because we didn't zoom
+					setBox(attributes.getFrame());
+				}
 			}
-			redraw();
 		}
 	}
 	
@@ -302,7 +547,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	{
 		if(mouseState == MouseState.ST_MOUSE_DOWN)
 		{
-			mouseState = MouseState.ST_MOUSE_DOWN;
 			Point mouseCurrent = new Point(e.x,e.y);
 			if (insideBox)
 				moveBox(mouseCurrent);
@@ -313,6 +557,9 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		}
 	}
 
+	@Override
+	public void mouseDoubleClick(MouseEvent e) {	}
+	
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -331,11 +578,10 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			case OperationHistoryEvent.REDONE:
 				if (traceOperation instanceof ZoomOperation) {
 					Frame frame = traceOperation.getFrame();
-					setBox(frame.begTime, frame.begProcess, frame.endTime, frame.endProcess);
+					Debugger.printDebug(1, "STMC: " + stData.getAttributes() + "\t New: " + frame);
+					setBox(frame);
 				}
 			}
 		}
 	}
-	
-
 }

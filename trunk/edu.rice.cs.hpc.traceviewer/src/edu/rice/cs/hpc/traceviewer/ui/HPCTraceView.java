@@ -18,17 +18,20 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.util.SleakManager;
 import edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint;
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
@@ -39,7 +42,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /**A view for displaying the traceviewer.*/
 //all the GUI setup for the detail view is here
-public class HPCTraceView extends ViewPart implements ITraceViewAction
+public class HPCTraceView extends HPCView implements ITraceViewAction
 {
 	
 	/**The ID needed to create this view (used in plugin.xml).*/
@@ -65,12 +68,14 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 		master.setLayout(new GridLayout());
 		master.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		this.createToolbar(master);
+		createToolbar(master);
 
         GridLayoutFactory.fillDefaults().numColumns(1).generateLayout(detailCanvas);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(detailCanvas);
 		
 		addTraceViewListener();
+		
+		super.createPartControl(master);		
 	}
 
 	
@@ -198,6 +203,12 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 				traceCoolBar.goEast, traceCoolBar.goNorth, traceCoolBar.goSouth, traceCoolBar.goWest});
 		
 		detailCanvas.setVisible(false);
+		
+		//--------------------------------------
+		// memory checking
+		//--------------------------------------
+		final Display display = getSite().getShell().getDisplay();
+		SleakManager.init(display);
 	}
 
 
@@ -246,17 +257,16 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 					validSaveFileFound = true;
 				else
 				{
+					//open message box confirming whether or not they want to overwrite saved file
+					//if they select yes, validSaveFileFound = true;
+					//if they selct no, validSaveFileFound = false;
+
 					MessageBox msg = new MessageBox(this.getViewSite().getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 					msg.setText("File Exists");
 					msg.setMessage("This file path already exists.\nDo you want to overwrite this save file?");
 					int selectionChoice = msg.open();
-					if (selectionChoice==SWT.YES)
-						validSaveFileFound = true;
-					else
-						validSaveFileFound = false;
-					//open message box confirming whether or not they want to overwrite saved file
-					//if they select yes, validSaveFileFound = true;
-					//if they selct no, validSaveFileFound = false;
+
+					validSaveFileFound = (selectionChoice==SWT.YES);
 				}
 			}
 		}
@@ -342,6 +352,18 @@ public class HPCTraceView extends ViewPart implements ITraceViewAction
 
 	public void goWest() {
 		detailCanvas.goWest();
+	}
+
+
+	@Override
+	protected ImageData getImageData() {
+		return detailCanvas.getImageData();
+	}
+
+
+	@Override
+	protected Control getMainControl() {
+		return detailCanvas;
 	}
 	
 }

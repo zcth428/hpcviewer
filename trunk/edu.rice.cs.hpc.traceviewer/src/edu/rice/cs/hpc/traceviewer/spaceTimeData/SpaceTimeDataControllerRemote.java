@@ -1,113 +1,89 @@
 package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.services.ISourceProviderService;
-
-import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
-import edu.rice.cs.hpc.data.experiment.BaseExperiment;
-import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
-import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
-import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
+import edu.rice.cs.hpc.data.experiment.extdata.RemoteFilteredBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
+import edu.rice.cs.hpc.traceviewer.db.IThreadListener;
 import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
-import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
-import edu.rice.cs.hpc.traceviewer.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
+
+/**
+ * The remote data version of the Data controller
+ * 
+ * @author Philip Taffet
+ * 
+ */
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController 
 {	
 	final RemoteDataRetriever dataRetriever;
 
-	public final int HEADER_SIZE;
-	
-	private final String[] valuesX;
-	
+	private final TraceName[]  valuesX;
+	private final DataOutputStream server;
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
-			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, String[] _valuesX) {
+			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, TraceName[] valuesX, DataOutputStream connectionToServer) {
 
-
-		BaseExperiment exp = new ExperimentWithoutMetrics();
-		try {
-			// Without metrics, so param 3 is false
-			exp.open(expStream, new ProcedureAliasMap(), Name);
-		}
-		catch (InvalExperimentException e) {
-			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
-			e.printStackTrace();
-			// return;
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		buildScopeMapAndColorTable(_window, exp);
-
-		TraceAttribute attribute = exp.getTraceAttribute();
-		minBegTime = attribute.dbTimeMin;
-		maxEndTime = attribute.dbTimeMax;
-		HEADER_SIZE = attribute.dbHeaderSize;
-
-		dbName = exp.getName();
-		
-		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
-		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
-		
+		super(_window, expStream, Name);
 		dataRetriever = _dataRet;
-		totalTraceCountInDB = _numTraces;
-		valuesX = _valuesX;
 
-		super.painter = new PaintManager(attributes, colorTable, maxDepth);
+		this.valuesX = valuesX;
+		server = connectionToServer;
 
+		super.dataTrace = createFilteredBaseData();
 	}
 
+	
 	@Override
-	public String[] getTraceNames() {
-		return valuesX;
+	public IFilteredData createFilteredBaseData() {
+		final int headerSize = exp.getTraceAttribute().dbHeaderSize;
+		return new RemoteFilteredBaseData(valuesX, headerSize, server);
 	}
+
 	/**
 	 * This performs the network request and does a small amount of processing on the reply. Namely, it does 
 	 * not decompress the traces. Instead, it returns threads that will do that work when executed.
 	 */
-	public Thread[] fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) {
+	@Override
+	public void fillTracesWithData (boolean changedBounds, int numThreadsToLaunch) 
+		throws IOException {
 		if (changedBounds) {
 			
 			DecompressionThread[] workThreads = new DecompressionThread[numThreadsToLaunch];
-			int RanksExpected = Math.min(attributes.endProcess-attributes.begProcess, attributes.numPixelsV);
+			int ranksExpected = Math.min(attributes.getProcessInterval(), attributes.numPixelsV);
 			
-			ptlService.setProcessTimeline(new ProcessTimeline[RanksExpected]);
+			DecompressionThread.setTotalRanksExpected(ranksExpected);
+			ptlService.setProcessTimeline(new ProcessTimeline[ranksExpected]);
 
 			for (int i = 0; i < workThreads.length; i++) {
 
-				workThreads[i] = new DecompressionThread(ptlService, scopeMap, RanksExpected, attributes.begTime, attributes.endTime);
+				workThreads[i] = new DecompressionThread(ptlService, scopeMap, ranksExpected, 
+						attributes.getTimeBegin(), attributes.getTimeEnd(), 
+						new DecompressionThreadListener());
+				workThreads[i].start();
 			}
 			
 
-			try {
-				// This will fill the workToDo queue with decompression and
-				// rendering. After the threads join, traces will be full
-				dataRetriever.getData(attributes.begProcess,
-						attributes.endProcess, attributes.begTime,
-						attributes.endTime, attributes.numPixelsV,
-						attributes.numPixelsH, scopeMap);
-			} catch (IOException e) {
-				// UI Notify user...
-				e.printStackTrace();
-			}
-			return workThreads;
+			dataRetriever.getData(attributes.getProcessBegin(),
+					attributes.getProcessEnd(), attributes.getTimeBegin(),
+					attributes.getTimeEnd(), attributes.numPixelsV,
+					attributes.numPixelsH, scopeMap);
 		}
-		return new Thread[0];
 	}
 
 	
 	
 	@Override
 	public void dispose() {
-		closeDB();
+		//closeDB();
 		super.dispose();
 
 	}
@@ -115,27 +91,62 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 	@Override
 	public void closeDB() {
 		try {
+			Debugger.printDebug(1, "Closing the connection");
 			dataRetriever.closeConnection();
 		} catch (IOException e) {
 			System.out.println("Could not close the connection.");
 		}
 	}
 
-
-	/** 
-	 * There is no {@link IBaseData} for the remote version. The closest we have is {@link RemoteDataRetriever}, but it
-	 * doesn't make sense for <code>RemoteDataRetriever</code> to <code>implement IBaseData</code>
-	 */
 	@Override
-	public IBaseData getBaseData() {
-		return null;
+	public ProcessTimeline getNextTrace(boolean changedBounds) {
+		Integer nextIndex;
+
+		if (changedBounds) {
+			int i = 0;
+			
+			// TODO: Should this be implemented with real locking?
+			while ((nextIndex = DecompressionThread.getNextTimelineToRender()) == null) {
+				//Make sure a different thread didn't get the last one while 
+				//this thread was waiting:
+				if (lineNum.get() >= ptlService.getNumProcessTimeline())
+					return null;
+				
+				// check for the timeout
+				if (i++ > RemoteDataRetriever.getTimeOut()) {
+					return null;
+				}
+				try {
+					Thread.sleep(RemoteDataRetriever.getTimeSleep());
+
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			lineNum.getAndIncrement();
+		}
+		else{
+			nextIndex = lineNum.getAndIncrement();
+			if (nextIndex >= ptlService.getNumProcessTimeline())
+				return null;
+		}
+		return ptlService.getProcessTimeline(nextIndex.intValue());
 	}
 
 
-	@Override
-	public ProcessTimeline getNextTrace(boolean changedBounds) {
-		int index = lineNum.getAndIncrement();
-		if (index >= ptlService.getNumProcessTimeline()) return null;
-		return ptlService.getProcessTimeline(index);
+	public int getHeaderSize() {
+		final int headerSize = exp.getTraceAttribute().dbHeaderSize;
+		return headerSize;
+	}
+	
+	private class DecompressionThreadListener implements IThreadListener
+	{
+
+		@Override
+		public void notify(String msg) {
+			
+			System.err.println("Error in Decompression: " + msg);
+		}
+		
 	}
 }

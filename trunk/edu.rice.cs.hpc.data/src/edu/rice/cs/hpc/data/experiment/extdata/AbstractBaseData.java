@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.data.experiment.extdata;
 import java.io.IOException;
 
 public abstract class AbstractBaseData implements IBaseData {
+	protected static final int SIZE_OF_END_OF_FILE_MARKER = 4;
 	protected BaseDataFile baseDataFile;
 	final int headerSize;
 
@@ -18,7 +19,23 @@ public abstract class AbstractBaseData implements IBaseData {
 	public long[] getOffsets() {
 		return baseDataFile.getOffsets();
 	}
+
+	/***
+	 * retrieve the start location of a rank in a database
+	 * @param rank
+	 * @return
+	 */
+	public abstract long getMinLoc(int rank);
 	
+	/****
+	 * retrieve the end of file location of a rank
+	 * @param rank
+	 * @return
+	 */
+	public abstract long getMaxLoc(int rank, int recordSize);
+	
+
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getString(long)

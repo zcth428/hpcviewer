@@ -2,7 +2,7 @@ package edu.rice.cs.hpc.traceviewer.ui;
 
 import java.io.Serializable;
 
-import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
+import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 
 
@@ -28,22 +28,12 @@ public class Frame implements Serializable
 	/**The depth of the frame saved*/
 	public int depth;
 	
-	/****
-	 * initialize frame with ROI and the cursor position (time, process and depth)
-	 * if the position is not within the range, it will automatically adjust it
-	 * into the middle of ROI
-	 * 
-	 * @param attributes
-	 * @param _depth
-	 * @param _selectedTime
-	 * @param _selectedProcess
-	 */
-	public Frame(ImageTraceAttributes attributes,
-			int _depth, long _selectedTime, int _selectedProcess)
+	public Frame()
 	{
-		this(attributes.begTime, attributes.endTime,
-				attributes.begProcess, attributes.endProcess, 
-				_depth, _selectedTime, _selectedProcess);
+		begTime = endTime = 0L;
+		begProcess = endProcess = 0;
+		position = new Position(0,0);
+		depth = 0;
 	}
 	
 	/****
@@ -62,19 +52,10 @@ public class Frame implements Serializable
 	public Frame(long timeBeg, long timeEnd, int ProcBeg, int ProcEnd,
 			int depth, long time, int process)
 	{
-		begProcess 	= ProcBeg;
-		endProcess  = ProcEnd;
-		begTime	 	= timeBeg;
-		endTime		= timeEnd;
-		this.depth  = depth;
-
-		if (time < begTime || time > endTime) {
-			time = (begTime + endTime) >> 1;
-		}
-		if (process < begProcess || process > endProcess) {
-			process = (begProcess + endProcess) >> 1;
-		}
 		position	= new Position(time, process);
+		set(timeBeg, timeEnd, ProcBeg, ProcEnd);
+
+		this.depth  = depth;
 	}
 	
 	/****
@@ -94,28 +75,27 @@ public class Frame implements Serializable
 		this.position	= new Position(frame.position.time, frame.position.process);
 	}
 	
-	
 	public Frame(Position position)
 	{
 		this.position = position;
 	}
 	
-	public void set(int depth)
-	{
-		this.depth = depth;
-	}
-	
-	public void set(Position p)
-	{
-		this.position = p;
-	}
-	
+	/*****
+	 * set new value of the frame
+	 * 
+	 * @param begTime : begin time
+	 * @param endTime : end time
+	 * @param begProcess : begin process
+	 * @param endProcess : end process
+	 *****/
 	public void set(long begTime, long endTime, int begProcess, int endProcess)
 	{
 		this.begProcess = begProcess;
 		this.endProcess = endProcess;
 		this.begTime	= begTime;
 		this.endTime	= endTime;
+		
+		fixPosition();
 	}
 	
 	public boolean equals(Frame other)
@@ -136,10 +116,26 @@ public class Frame implements Serializable
 				&& depth == other.depth);
 	}
 	
+	/** Sets the selected process to the middle if it is outside the bounds.*/
+	public void fixPosition(){
+		if (position.process >= endProcess
+				|| position.process < begProcess ) {
+			// if the current process is beyond the range, make it in the middle
+			position.process = (begProcess + endProcess) >> 1;
+		}
+		if (position.time <= begTime || position.time >= endTime) {
+			// if the current time is beyond the range, make it in the middle
+			position.time = (begTime + endTime ) >> 1;
+		}
+		if (position.time < 0 || position.process < 0 || begTime < 0 || endTime < 0)
+			Debugger.printDebug(1, "Error: negative attribute(s) " + position + 
+					", t0=" + begTime + " , t1=" + endTime);
+	}
+
 	@Override
 	public String toString() {
-		long t1 = begTime/1000000;
-		long t2 = endTime/1000000;
-		return "["+t1+"s : "+t2+"s , " + begProcess+" : "+endProcess+"]";
+		String time = "[ " + (begTime/1000)/1000.0 + "s, " + (endTime/1000)/1000.0+"s ]";
+		String proc = " and [ " + begProcess + ", " + endProcess + " ]";
+		return time + proc;
 	}
 }

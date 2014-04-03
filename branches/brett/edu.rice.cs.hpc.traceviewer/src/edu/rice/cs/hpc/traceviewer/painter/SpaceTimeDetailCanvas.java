@@ -343,12 +343,12 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		{
         	event.gc.setBackground(Constants.COLOR_WHITE);
         	event.gc.setAlpha(100);
-    		event.gc.fillRectangle(selectionTopLeft.x, mouseDown.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
+    		event.gc.fillRectangle(selectionTopLeft.x, selectionTopLeft.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
             		(int)(selectionBottomRight.y-selectionTopLeft.y));
     		
     		event.gc.setForeground(Constants.COLOR_BLACK);
     		event.gc.setLineWidth(2);
-    		event.gc.drawRectangle(mouseDown.x, mouseDown.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
+    		event.gc.drawRectangle(selectionTopLeft.x, selectionTopLeft.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
             		(int)(selectionBottomRight.y-selectionTopLeft.y));
     		
         	event.gc.setAlpha(255);

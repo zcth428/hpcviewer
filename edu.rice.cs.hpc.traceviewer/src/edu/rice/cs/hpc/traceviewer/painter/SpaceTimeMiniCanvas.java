@@ -51,9 +51,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Determines whether the first mouse click was inside the box or not.*/
 	private boolean insideBox;
 	
-	/** We store the ones from the beginning so that we can display correctly even with filtering*/
-	private int processBegin, processEnd;
-	
 	private Rectangle view;
 	
     final private Color COMPLETELY_FILTERED_OUT_COLOR;
@@ -159,9 +156,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		view.height = r.height;
 		view.width  = r.width;
 		
-		processBegin = _stData.getAttributes().getProcessBegin();
-        processEnd = _stData.getAttributes().getProcessEnd();
-
 		redraw();
 	}
 	
@@ -238,7 +232,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			// original current position 
 	        p1 = (int) Math.round( (baseData.getFirstIncluded() +  frame.begProcess )* getScalePixelsPerRank());
 	        p2 = (int) Math.round( (baseData.getFirstIncluded() +  frame.endProcess )* getScalePixelsPerRank());
-	        dp = p2 - p1;
+	        dp = Math.max(1, p2 - p1);
 	        
 			event.gc.setBackground(COLOR_GRAY);		
 			event.gc.fillRectangle(t1, p1, dt, dp);
@@ -313,19 +307,16 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		if (this.stData == null)
 			return;
 		
-		//Compensating for filtering
-		int compensatedFirstProcess = stData.getBaseData().getFirstIncluded() + topLeftProcess;
-		int compensatedLastProcess = stData.getBaseData().getFirstIncluded() + bottomRightProcess;
-		
 		view.x = (int)Math.round(topLeftTime * getScalePixelsPerTime());
-		view.y = (int)Math.round(compensatedFirstProcess * getScalePixelsPerRank());
+		view.y = (int)Math.round(topLeftProcess * getScalePixelsPerRank());
 		
 		int bottomRightPixelX = (int)Math.round(bottomRightTime*getScalePixelsPerTime());
-		int bottomRightPixelY = (int)Math.round(compensatedLastProcess*getScalePixelsPerRank());
+		int bottomRightPixelY = (int)Math.round(bottomRightProcess*getScalePixelsPerRank());
 		
-		view.width  = bottomRightPixelX-view.x;
-		view.height = bottomRightPixelY-view.y;
+		view.width  = Math.max(1, bottomRightPixelX-view.x);
+		view.height = Math.max(1, bottomRightPixelY-view.y);
 		
+		Debugger.printDebug(1, "STMC set view: " + view);
 		insideBox = true;
 		redraw();
 	}
@@ -497,7 +488,9 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Gets the scale in the Y-direction (pixels per process).*/
 	public double getScalePixelsPerRank()
 	{
-		return (double)getClientArea().height / (processEnd - processBegin);
+		final IBaseData data = stData.getBaseData();
+		final Rectangle area = getClientArea();
+		return (double)area.height / (data.getNumberOfRanks());
 	}
 
 	
@@ -564,7 +557,6 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 			redraw();
 		}
 	}
-
 
 	@Override
 	public void mouseDoubleClick(MouseEvent e) {	}

@@ -155,7 +155,10 @@ public abstract class SpaceTimeDataController
 		// Initializes the CSS that represents time values outside of the
 		// time-line.
 		colorTable.addProcedure(CallPath.NULL_FUNCTION);
+		// get the list of procedures
 		maxDepth = exp.getRootScope().dfsSetup(visitor, colorTable, 1);
+		// initialize colors
+		colorTable.setColorTable();
 		
 		attributes = new ImageTraceAttributes();
 
@@ -170,7 +173,6 @@ public abstract class SpaceTimeDataController
 		maxEndTime = trAttribute.dbTimeMax;
 
 		dbName = exp.getName();
-		colorTable.setColorTable();
 	}
 
 	public int getMaxDepth() 

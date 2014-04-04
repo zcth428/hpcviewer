@@ -8,6 +8,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
+import org.eclipse.jface.window.DefaultToolTip;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -18,6 +20,8 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
@@ -37,6 +41,10 @@ implements IOperationHistoryListener
 	/** the original data from detail canvas **/
 	private ImageData detailData;
 	private SpaceTimeDataController dataTraces = null;
+	private TreeMap<Integer, Integer> mapStatistics;
+	private int totPixels;
+	
+	private ToolTip tooltip;
 	
 	public SummaryTimeCanvas(Composite composite)
     {
@@ -46,8 +54,31 @@ implements IOperationHistoryListener
 		this.getVerticalBar().setVisible(false);
 		this.getHorizontalBar().setVisible(false);
 		
-		this.addCanvasListener();
+		addCanvasListener();
 		OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
+		
+		tooltip = new DefaultToolTip(this) {
+			protected String getText(Event event) {
+				if (detailData == null || mapStatistics == null) 
+					return null;
+
+				int pixel = imageBuffer.getImageData().getPixel(event.x, event.y);
+
+				Integer stat = mapStatistics.get(pixel);
+				
+				if (stat != null) {
+					float percent = (float)100.0 * ((float)stat / (float) totPixels);
+					final String percent_str = String.format("%.2f %%", percent);
+					return percent_str;
+				}
+				return "?";
+			}
+			
+			public Point getLocation(Point tipSize, Event event) {
+				return SummaryTimeCanvas.this.toDisplay(event.x + 3, event.y - 10);
+			}
+		};
+		tooltip.deactivate();
 	}
 	
 	/***
@@ -59,7 +90,7 @@ implements IOperationHistoryListener
 			
 			@Override
 			public void widgetDisposed(DisposeEvent e) {
-				dispose();				
+				disposeResources();
 			}
 		});
 	}
@@ -94,6 +125,8 @@ implements IOperationHistoryListener
 		float xScale = ((float)viewWidth / (float)detailData.width);
 		int xOffset = 0;
 
+		mapStatistics = new TreeMap<Integer, Integer>();
+		
 		//---------------------------------------------------------------------------
 		// needs to be optimized:
 		// for every pixel along the width, check the pixel, group them based on color,
@@ -135,11 +168,19 @@ implements IOperationHistoryListener
 				
 				yOffset -= height;
 				c.dispose();
+				
+				// accumulate the statistics of this pixel
+				Integer val = mapStatistics.get(pixel);
+				Integer acc = (val==null?  numCounts : val + numCounts);
+				mapStatistics.put(pixel, acc);
 			}
 			xOffset = Math.round(xOffset + xScale);
 		}
+		totPixels = detailData.width * detailData.height;
+
 		buffer.dispose();
-		
+		tooltip.activate();
+
 		redraw();
 	}
 	
@@ -174,17 +215,14 @@ implements IOperationHistoryListener
 		dataTraces = data;
 		setVisible(true);
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.swt.widgets.Widget#dispose()
-	 */
-	@Override
-	public void dispose()
+
+	/********
+	 * release allocated resources
+	 ********/
+	private void disposeResources()
 	{
-		imageBuffer.dispose();
-		
-		super.dispose();
+		if (imageBuffer != null)
+			imageBuffer.dispose();
 	}
 	
 	/*****

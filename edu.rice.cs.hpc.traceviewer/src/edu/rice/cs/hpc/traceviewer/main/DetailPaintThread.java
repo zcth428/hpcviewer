@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.timeline;
+package edu.rice.cs.hpc.traceviewer.main;
 
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,12 +10,9 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Point;
 
 import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
-import edu.rice.cs.hpc.traceviewer.data.db.DetailDataVisualization;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.painter.BasePaintThread;
-import edu.rice.cs.hpc.traceviewer.painter.DetailImagePosition;
-import edu.rice.cs.hpc.traceviewer.painter.DetailViewPaint;
 import edu.rice.cs.hpc.traceviewer.painter.ImagePosition;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 

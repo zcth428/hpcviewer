@@ -1,6 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
-import edu.rice.cs.hpc.traceviewer.ui.Frame;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 
 /***********
  * Struct class to store attributes of a trace view

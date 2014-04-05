@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.misc;
 
 import java.util.EnumSet;
 import org.eclipse.swt.SWT;

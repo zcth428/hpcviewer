@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.summary;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -20,13 +20,17 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.painter.AbstractTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
@@ -37,47 +41,29 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
  ******************************************************************/
 public class SummaryTimeCanvas extends AbstractTimeCanvas 
 implements IOperationHistoryListener
-{
-	/** the original data from detail canvas **/
-	private ImageData detailData;
+{	
 	private SpaceTimeDataController dataTraces = null;
 	private TreeMap<Integer, Integer> mapStatistics;
 	private int totPixels;
 	
 	private ToolTip tooltip;
 	
+	/**********************************
+	 * Construct a summary canvas without background nor scrollbar
+	 * 
+	 * @param composite
+	 **********************************/
 	public SummaryTimeCanvas(Composite composite)
     {
-		super(composite, SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);
-		
-		detailData = null;
-		this.getVerticalBar().setVisible(false);
-		this.getHorizontalBar().setVisible(false);
+		super(composite, SWT.NO_BACKGROUND);
 		
 		addCanvasListener();
 		OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 		
-		tooltip = new DefaultToolTip(this) {
-			protected String getText(Event event) {
-				if (detailData == null || mapStatistics == null) 
-					return null;
-
-				int pixel = imageBuffer.getImageData().getPixel(event.x, event.y);
-
-				Integer stat = mapStatistics.get(pixel);
-				
-				if (stat != null) {
-					float percent = (float)100.0 * ((float)stat / (float) totPixels);
-					final String percent_str = String.format("%.2f %%", percent);
-					return percent_str;
-				}
-				return "?";
-			}
-			
-			public Point getLocation(Point tipSize, Event event) {
-				return SummaryTimeCanvas.this.toDisplay(event.x + 3, event.y - 10);
-			}
-		};
+		// ------------------------------------------------------------------------------------------
+		// setup tooltip information about the percentage of the color appointed by the mouse
+		// ------------------------------------------------------------------------------------------
+		tooltip = new SummaryTooltip(this) ;
 		tooltip.deactivate();
 	}
 	
@@ -99,7 +85,7 @@ implements IOperationHistoryListener
 	/*****
 	 * rebuffers the data in the summary time canvas and then asks receiver to paint it again
 	 *****/
-	private void rebuffer()
+	private void rebuffer(ImageData detailData)
 	{
 		if (detailData == null)
 			return;
@@ -179,6 +165,7 @@ implements IOperationHistoryListener
 		totPixels = detailData.width * detailData.height;
 
 		buffer.dispose();
+		
 		tooltip.activate();
 
 		redraw();
@@ -190,20 +177,10 @@ implements IOperationHistoryListener
 	 * 
 	 * @param _detailData : new data
 	 */
-	private void refresh(ImageData _detailData)
+	private void refresh(ImageData detailData)
 	{
-		//if we are already printing out the correct thing, then just redraw - else, perform necessary calculations
-		if (_detailData.equals(detailData))
-		{
-			redraw();
-		}
-		else
-		{
-			super.init();
-			
-			detailData = _detailData;
-			rebuffer();
-		}
+		super.init();		
+		rebuffer(detailData);
 	}
 	
 	/********
@@ -245,6 +222,67 @@ implements IOperationHistoryListener
 		return (dataTraces.getAttributes().getTimeInterval());
 	}
 
+
+	/******************************************************************
+	 * 
+	 * Customized tooltip for summary canvas
+	 *
+	 ******************************************************************/
+	private class SummaryTooltip extends DefaultToolTip
+	{
+		public SummaryTooltip(Control control) {
+			super(control);
+		}
+
+		@Override
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.jface.window.DefaultToolTip#getText(org.eclipse.swt.widgets.Event)
+		 */
+		protected String getText(Event event) {
+			if (mapStatistics != null ) 
+			{
+				// ------------------------------------------------
+				// copy the area pointed by the mouse to an image
+				// ------------------------------------------------
+				final Image image = new Image(event.display, 1, 1);
+				GC gc = new GC(SummaryTimeCanvas.this);
+				gc.copyArea(image, event.x, event.y);
+				final ImageData data = image.getImageData();
+				gc.dispose();
+				
+				// ------------------------------------------------
+				// get the pixel of the image 
+				// ------------------------------------------------
+				int pixel = data.getPixel(0, 0); 
+				image.dispose();
+
+				// ------------------------------------------------
+				// get the number of counts of this pixel
+				// ------------------------------------------------
+				Integer stat = mapStatistics.get(pixel);
+				
+				if (stat != null) {
+					// ------------------------------------------------
+					// compute the percentage
+					// ------------------------------------------------
+					float percent = (float)100.0 * ((float)stat / (float) totPixels);
+					final String percent_str = String.format("%.2f %%", percent);
+					return percent_str;
+				}
+			}
+			return null;
+		}
+		
+		@Override
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.jface.window.ToolTip#getLocation(org.eclipse.swt.graphics.Point, org.eclipse.swt.widgets.Event)
+		 */
+		public Point getLocation(Point tipSize, Event event) {
+			return SummaryTimeCanvas.this.toDisplay(event.x + 5, event.y - 15);
+		}
+	}
 	
 	//---------------------------------------------------------------------------------------
 	// Override methods
@@ -269,13 +307,13 @@ implements IOperationHistoryListener
 	}
 
 	@Override
-	void changePosition(Point point) {
+	protected void changePosition(Point point) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	void changeRegion(int left, int right) 
+	protected void changeRegion(int left, int right) 
 	{
 		final ImageTraceAttributes attributes = dataTraces.getAttributes();
 		

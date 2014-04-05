@@ -6,7 +6,7 @@ import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.ui.PlatformUI;
 
-import edu.rice.cs.hpc.traceviewer.ui.Frame;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 
 /********************************************
  * 

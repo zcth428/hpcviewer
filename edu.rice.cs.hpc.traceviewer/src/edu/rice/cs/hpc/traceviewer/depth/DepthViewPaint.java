@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.depth;
 
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
@@ -9,10 +9,13 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
+import edu.rice.cs.hpc.traceviewer.painter.BasePaintThread;
+import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
+import edu.rice.cs.hpc.traceviewer.painter.ISpaceTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ImagePosition;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
-import edu.rice.cs.hpc.traceviewer.timeline.DepthPaintThread;
-import edu.rice.cs.hpc.traceviewer.timeline.TimelineDepthThread;
 
 /******************************************************
  * 

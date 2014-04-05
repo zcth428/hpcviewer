@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.main;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,10 +35,17 @@ import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.painter.BufferPaint;
+import edu.rice.cs.hpc.traceviewer.painter.ISpaceTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ITraceCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.painter.ResizeListener;
+import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
-import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Utility;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
@@ -53,11 +60,7 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 public class SpaceTimeDetailCanvas extends SpaceTimeCanvas 
 	implements PaintListener, ITraceCanvas, 
 	IOperationHistoryListener, ISpaceTimeCanvas
-{
-	
-	/**The buffer image that is copied onto the actual canvas.*/
-	private Image imageBuffer;
-	
+{	
 	/**Triggers zoom back to beginning view screen.*/
 	private Action homeButton;
 	
@@ -321,17 +324,9 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 ******************************************************************************/
 	public void paintControl(PaintEvent event)
 	{
+		super.paintControl(event);
+		
 		if (this.stData == null)
-			return;
-		
-		final Rectangle region = imageBuffer.getBounds();
-		final Rectangle area   = getClientArea();
-		
-		//if something has changed the bounds, you need to go get the data again
-		event.gc.drawImage(imageBuffer, 0, 0, region.width, region.height, 
-										0, 0, area.width, area.height);
-    	
-		if (region.width != area.width || region.height != area.height)
 			return;
 
 		final ImageTraceAttributes attributes = stData.getAttributes();
@@ -363,6 +358,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,topPixelCrossHairY+8,20,4);
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);
+		
 		System.gc();
 		adjustLabels();
 	}

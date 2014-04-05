@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.ui;
+package edu.rice.cs.hpc.traceviewer.main;
 
 public interface ITraceViewAction {
 

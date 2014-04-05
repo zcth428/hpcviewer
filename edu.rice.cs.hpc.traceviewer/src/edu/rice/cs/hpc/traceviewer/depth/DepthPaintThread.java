@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.timeline;
+package edu.rice.cs.hpc.traceviewer.depth;
 
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;

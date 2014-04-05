@@ -1,13 +1,13 @@
-package edu.rice.cs.hpc.traceviewer.timeline;
+package edu.rice.cs.hpc.traceviewer.depth;
 
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
-import edu.rice.cs.hpc.traceviewer.data.db.DepthDataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
 
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 

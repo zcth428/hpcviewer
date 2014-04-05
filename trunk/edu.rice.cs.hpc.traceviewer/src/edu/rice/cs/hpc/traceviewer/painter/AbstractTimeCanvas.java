@@ -5,10 +5,8 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
@@ -21,7 +19,7 @@ import edu.rice.cs.hpc.traceviewer.data.util.Constants;
  *
  **********************************************************************************/
 public abstract class AbstractTimeCanvas
-extends Canvas
+extends BufferedCanvas
 implements ITraceCanvas, PaintListener
 {
 	/** Relates to the condition that the mouse is in.*/
@@ -33,8 +31,6 @@ implements ITraceCanvas, PaintListener
 	/** The left/right point that you selected.*/
 	private int leftSelection;
 	private int rightSelection;
-
-	protected 	Image imageBuffer;
 	
 	
 	/****************
@@ -44,7 +40,7 @@ implements ITraceCanvas, PaintListener
 	 * @param style
 	 ****************/
 	public AbstractTimeCanvas(Composite composite, int style) {
-		super(composite, style);
+		super(composite);
 		mouseState = ITraceCanvas.MouseState.ST_MOUSE_INIT;
 	}
 	
@@ -130,31 +126,14 @@ implements ITraceCanvas, PaintListener
 	@Override
 	public void paintControl(PaintEvent event) 
 	{
-		if (imageBuffer == null)
-			return;
-		
-		final Rectangle bounds = imageBuffer.getBounds();
-		final Rectangle area   = getClientArea();
-
-		try 
-		{
-			event.gc.drawImage(imageBuffer, 0, 0, bounds.width, bounds.height, 
-											0, 0, area.width, area.height);
-		}
-		catch (Exception e)
-		{
-			// An exception "Illegal argument" will be raised if the resize method is not "fast" enough to create the image
-			//		buffer before the painting is called. Thus, it causes inconsistency between the size of the image buffer
-			//		and the size of client area. 
-			//		If this happens, either we wait for the creation of image buffer, or do nothing. 
-			//		I prefer to do nothing because of scalability concerns.
-			return;
-		}
+		super.paintControl(event);
 		
  		//paints the selection currently being made
 		
 		if (mouseState==ITraceCanvas.MouseState.ST_MOUSE_DOWN)
 		{
+			final Rectangle area   = getClientArea();
+
         	event.gc.setBackground(Constants.COLOR_WHITE);
     		event.gc.setAlpha(100);
     		event.gc.fillRectangle( leftSelection, 0, (rightSelection-leftSelection), area.height);
@@ -178,7 +157,7 @@ implements ITraceCanvas, PaintListener
 	 * 
 	 * @param point
 	 *************************/
-	abstract void changePosition(Point point);
+	protected abstract void changePosition(Point point);
 	
 	
 	/***************************
@@ -187,5 +166,5 @@ implements ITraceCanvas, PaintListener
 	 * @param left
 	 * @param right
 	 ***************************/
-	abstract void changeRegion(int left, int right);
+	protected abstract void changeRegion(int left, int right);
 }

@@ -13,13 +13,13 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.actions.OptionMidpoint;
+import edu.rice.cs.hpc.traceviewer.depth.HPCDepthView;
+import edu.rice.cs.hpc.traceviewer.main.HPCTraceView;
+import edu.rice.cs.hpc.traceviewer.misc.HPCCallStackView;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView;
-import edu.rice.cs.hpc.traceviewer.ui.HPCDepthView;
-import edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView;
-import edu.rice.cs.hpc.traceviewer.ui.HPCTraceView;
+import edu.rice.cs.hpc.traceviewer.summary.HPCSummaryView;
 import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 

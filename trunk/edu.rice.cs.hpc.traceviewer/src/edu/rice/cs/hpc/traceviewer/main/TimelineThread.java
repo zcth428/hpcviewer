@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.timeline;
+package edu.rice.cs.hpc.traceviewer.main;
 
 
 import java.util.Queue;
@@ -8,11 +8,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
-import edu.rice.cs.hpc.traceviewer.data.db.DetailDataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
 
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 

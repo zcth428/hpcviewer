@@ -9,6 +9,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.rice.cs.hpc.traceviewer.main.HPCTraceView;
 import edu.rice.cs.hpc.traceviewer.painter.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 

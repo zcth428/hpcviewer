@@ -1,10 +1,11 @@
-package edu.rice.cs.hpc.traceviewer.ui;
+package edu.rice.cs.hpc.traceviewer.main;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 
+import edu.rice.cs.hpc.traceviewer.icon.IconManager;
 import edu.rice.cs.hpc.traceviewer.operation.RedoOperationAction;
 import edu.rice.cs.hpc.traceviewer.operation.UndoOperationAction;
 
@@ -23,14 +24,15 @@ public class TraceCoolBar {
 	final Action goSouth;
 	
 	
-	public TraceCoolBar(final IToolBarManager toolbar, final ITraceViewAction action, int style) {
+	public TraceCoolBar(final IToolBarManager toolbar, final ITraceViewAction action, int style) 
+	{
+		IconManager iconManager = new IconManager();
 		
 		/***************************************************
 		 * Buttons
 		 **************************************************/
-
 		
-		final ImageDescriptor homeSamp = ImageDescriptor.createFromFile(this.getClass(), "home-screen.png");
+		final ImageDescriptor homeSamp = iconManager.getObjectDescriptor(IconManager.HOME); 
 		home = new Action(null, homeSamp) {
 			public void run() {
 				action.home();
@@ -40,7 +42,7 @@ public class TraceCoolBar {
 		
 		toolbar.add(new Separator());
 		
-		final ImageDescriptor zoomInTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-time.png");
+		final ImageDescriptor zoomInTim = iconManager.getObjectDescriptor(IconManager.ZOOM_IN_H);
 		tZoomIn = new Action(null, zoomInTim) {
 			public void run() {
 				action.timeZoomIn();
@@ -48,7 +50,7 @@ public class TraceCoolBar {
 		};
 		this.createAction(toolbar, tZoomIn, "Zoom in along the time axis");
 		
-		final ImageDescriptor zoomOutTim = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-time.png");
+		final ImageDescriptor zoomOutTim = iconManager.getObjectDescriptor(IconManager.ZOOM_OUT_H);
 		tZoomOut = new Action(null, zoomOutTim) {
 			public void run() {
 				action.timeZoomOut();
@@ -56,7 +58,7 @@ public class TraceCoolBar {
 		};
 		this.createAction(toolbar, tZoomOut, "Zoom out along the time axis");
 		
-		ImageDescriptor zoomInProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-in-process.png");
+		ImageDescriptor zoomInProc = iconManager.getObjectDescriptor(IconManager.ZOOM_IN_V);
 		pZoomIn = new Action(null, zoomInProc) {
 			public void run() {
 				action.processZoomIn();
@@ -64,7 +66,7 @@ public class TraceCoolBar {
 		};
 		this.createAction(toolbar, pZoomIn, "Zoom in along the process axis");
 		
-		ImageDescriptor zoomOutProc = ImageDescriptor.createFromFile(this.getClass(), "zoom-out-process.png");
+		ImageDescriptor zoomOutProc = iconManager.getObjectDescriptor(IconManager.ZOOM_OUT_V);
 		pZoomOut = new Action(null, zoomOutProc) {
 			public void run() {
 				action.processZoomOut();
@@ -76,7 +78,7 @@ public class TraceCoolBar {
 		toolbar.add(new Separator());
 
 		
-		final ImageDescriptor eastDesc = ImageDescriptor.createFromFile(getClass(), "go-east.png");
+		final ImageDescriptor eastDesc = iconManager.getObjectDescriptor(IconManager.GO_EAST);
 		goEast = new Action(null, eastDesc) {
 			public void run() {
 				action.goEast();
@@ -84,7 +86,7 @@ public class TraceCoolBar {
 		};
 		this.createAction(toolbar, goEast, "Scroll left one step along the time axis");
 
-		final ImageDescriptor westDesc = ImageDescriptor.createFromFile(getClass(), "go-west.png");
+		final ImageDescriptor westDesc = iconManager.getObjectDescriptor(IconManager.GO_WEST);
 		goWest = new Action(null, westDesc) {
 			public void run() {
 				action.goWest();
@@ -93,7 +95,7 @@ public class TraceCoolBar {
 		this.createAction(toolbar, goWest, "Scroll right one step along the time axis");
 		
 
-		final ImageDescriptor northDesc = ImageDescriptor.createFromFile(getClass(), "go-north.png");
+		final ImageDescriptor northDesc = iconManager.getObjectDescriptor(IconManager.GO_NORTH);
 		goNorth = new Action(null, northDesc) {
 			public void run() {
 				action.goNorth();
@@ -102,7 +104,7 @@ public class TraceCoolBar {
 		this.createAction(toolbar, goNorth, "Scroll up one step along the process axis");
 
 		
-		final ImageDescriptor southDesc = ImageDescriptor.createFromFile(getClass(), "go-south.png");
+		final ImageDescriptor southDesc = iconManager.getObjectDescriptor(IconManager.GO_SOUTH);
 		goSouth = new Action(null, southDesc) {
 			public void run() {
 				action.goSouth();
@@ -112,17 +114,17 @@ public class TraceCoolBar {
 		
 		toolbar.add(new Separator());
 		
-		ImageDescriptor undoSamp = ImageDescriptor.createFromFile(this.getClass(), "undo.png");
+		ImageDescriptor undoSamp = iconManager.getObjectDescriptor(IconManager.UNDO);
 		UndoOperationAction undo = new UndoOperationAction(undoSamp);
 		this.createAction(toolbar, undo, "Undo the last action");
 				
-		ImageDescriptor redoSamp = ImageDescriptor.createFromFile(this.getClass(), "redo.png");
+		ImageDescriptor redoSamp = iconManager.getObjectDescriptor(IconManager.REDO);
 		RedoOperationAction redo = new RedoOperationAction(redoSamp);
 		this.createAction(toolbar, redo, "Redo the last undo");
 				
 		toolbar.add(new Separator());
 		
-		ImageDescriptor saveSamp = ImageDescriptor.createFromFile(this.getClass(), "save.png");
+		ImageDescriptor saveSamp = iconManager.getObjectDescriptor(IconManager.SAVE);
 		save = new Action(null, saveSamp) {
 			public void run() {
 				action.save();
@@ -130,7 +132,7 @@ public class TraceCoolBar {
 		};
 		this.createAction(toolbar, save, "Save the current view configuration to a file");
 				
-		ImageDescriptor openSamp = ImageDescriptor.createFromFile(this.getClass(), "open.png");
+		ImageDescriptor openSamp = iconManager.getObjectDescriptor(IconManager.OPEN);
 		open = new Action(null, openSamp) {
 			public void run() {
 				action.open();

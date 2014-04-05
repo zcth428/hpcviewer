@@ -1,6 +1,8 @@
-package edu.rice.cs.hpc.traceviewer.data.db;
+package edu.rice.cs.hpc.traceviewer.main;
 
 import org.eclipse.swt.graphics.Color;
+
+import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
 
 public class DetailDataVisualization
 	extends BaseDataVisualization {

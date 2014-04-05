@@ -11,8 +11,6 @@ public class Position  implements Serializable {
 	public long time;
 	public int process;
 	
-	public int sample;
-	
 	public Position(long _time, int _process ) {
 		this.time = _time;
 		this.process = _process;

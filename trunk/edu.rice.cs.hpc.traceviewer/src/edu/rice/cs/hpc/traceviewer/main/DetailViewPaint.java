@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.main;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -17,11 +17,14 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.actions.OptionRecordsDisplay;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
+import edu.rice.cs.hpc.traceviewer.painter.BasePaintThread;
+import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
+import edu.rice.cs.hpc.traceviewer.painter.ISpaceTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ImagePosition;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
-import edu.rice.cs.hpc.traceviewer.timeline.DetailPaintThread;
-import edu.rice.cs.hpc.traceviewer.timeline.TimelineThread;
 
 /******************************************************
  * 

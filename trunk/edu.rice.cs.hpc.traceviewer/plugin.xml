@@ -24,25 +24,25 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            class="edu.rice.cs.hpc.traceviewer.ui.HPCTraceView"
+            class="edu.rice.cs.hpc.traceviewer.main.HPCTraceView"
             icon="icons/trace-detail.png"
             id="hpctraceview.view"
             name="Trace View">
       </view>
       <view
-            class="edu.rice.cs.hpc.traceviewer.ui.HPCDepthView"
+            class="edu.rice.cs.hpc.traceviewer.depth.HPCDepthView"
             icon="icons/trace-depth.png"
             id="hpcdepthview.view"
             name="Depth View">
 	  </view>
 	  <view
-         	class="edu.rice.cs.hpc.traceviewer.ui.HPCCallStackView"
+         	class="edu.rice.cs.hpc.traceviewer.misc.HPCCallStackView"
         	icon="icons/trace-callpath.png"
          	id="hpccallstackview.view"
          	name="Call Path">
 	  </view>
 	  <view
-         	class="edu.rice.cs.hpc.traceviewer.ui.HPCSummaryView"
+         	class="edu.rice.cs.hpc.traceviewer.summary.HPCSummaryView"
         	icon="icons/trace-summary.png"
          	id="hpcsummaryview.view"
          	name="Summary View">

@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.misc;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
@@ -25,8 +25,12 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.painter.ITraceCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
+import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ITraceCanvas.MouseState;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.ui.Frame;
 /*****************************************************************************
  * 
  * The Canvas onto which the MiniMap is painted.

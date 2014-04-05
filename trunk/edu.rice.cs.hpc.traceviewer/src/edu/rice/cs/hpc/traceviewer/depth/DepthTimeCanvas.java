@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.depth;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,8 +22,13 @@ import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.painter.AbstractTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.BaseViewPaint;
+import edu.rice.cs.hpc.traceviewer.painter.ISpaceTimeCanvas;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
+import edu.rice.cs.hpc.traceviewer.painter.Position;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.ui.Frame;
 import edu.rice.cs.hpc.traceviewer.util.Utility;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
@@ -331,7 +336,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 	}
 
 	@Override
-	void changePosition(Point point) {
+	protected void changePosition(Point point) {
     	long closeTime = stData.getAttributes().getTimeBegin() + (long)(point.x / getScalePixelsPerTime());
     	
     	Position currentPosition = stData.getAttributes().getPosition();
@@ -348,7 +353,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 	}
 
 	@Override
-	void changeRegion(int left, int right) 
+	protected void changeRegion(int left, int right) 
 	{
 		final ImageTraceAttributes attributes = stData.getAttributes();
 

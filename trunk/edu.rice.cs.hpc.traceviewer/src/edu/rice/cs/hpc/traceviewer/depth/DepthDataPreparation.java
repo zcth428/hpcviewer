@@ -1,7 +1,10 @@
-package edu.rice.cs.hpc.traceviewer.data.db;
+package edu.rice.cs.hpc.traceviewer.depth;
 
 import org.eclipse.swt.graphics.Color;
 
+import edu.rice.cs.hpc.traceviewer.data.db.BaseDataVisualization;
+import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
+import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 /*********************************************

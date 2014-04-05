@@ -2,19 +2,17 @@ package edu.rice.cs.hpc.viewer.resources;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 
-import edu.rice.cs.hpc.viewer.framework.Activator;
+import edu.rice.cs.hpc.common.ui.BaseIconManager;
 
 /**
  * Singleton class containing global variables for icons 
  * @author laksono
  *
  */
-public class Icons {
+public class Icons  extends BaseIconManager
+{
 	
 	final static public String Image_CallFrom = "CallFrom.gif";
 	final static public String Image_CallTo = "CallTo.gif";
@@ -62,43 +60,24 @@ public class Icons {
 	public void init(ImageRegistry registry) {
 		
 		if (isInitialized.compareAndSet(false, true)) {
-			registerImage(registry, Image_CallFrom);
-			registerImage(registry, Image_CallTo);
-			registerImage(registry, Image_CallFromDisabled);
-			registerImage(registry, Image_CallToDisabled);
+			registerImage(registry, getClass(), Image_CallFrom);
+			registerImage(registry, getClass(), Image_CallTo);
+			registerImage(registry, getClass(), Image_CallFromDisabled);
+			registerImage(registry, getClass(), Image_CallToDisabled);
 			
-			registerImage(registry, Image_ZoomIn);
-			registerImage(registry, Image_ZoomOut);
-			registerImage(registry, Image_Flatten);
-			registerImage(registry, Image_Unflatten);
+			registerImage(registry, getClass(), Image_ZoomIn);
+			registerImage(registry, getClass(), Image_ZoomOut);
+			registerImage(registry, getClass(), Image_Flatten);
+			registerImage(registry, getClass(), Image_Unflatten);
 			
-			registerImage(registry, Image_CheckColumns);
-			registerImage(registry, Image_FlameIcon);
+			registerImage(registry, getClass(), Image_CheckColumns);
+			registerImage(registry, getClass(), Image_FlameIcon);
 
-			registerImage(registry, Image_FnMetric);
-			registerImage(registry, Image_FontBigger);
-			registerImage(registry, Image_FontSmaller);
-			registerImage(registry, Image_SaveCSV);
-			registerImage(registry, Image_Graph);
+			registerImage(registry, getClass(), Image_FnMetric);
+			registerImage(registry, getClass(), Image_FontBigger);
+			registerImage(registry, getClass(), Image_FontSmaller);
+			registerImage(registry, getClass(), Image_SaveCSV);
+			registerImage(registry, getClass(), Image_Graph);
 		}
-	}
-	
-	static public Image getImage(final String desc) {
-		final ImageRegistry registry = getRegistry();
-		
-		return registry.get(desc);
-	}
-	
-	static private ImageRegistry getRegistry() {
-    	// prepare the icon
-		AbstractUIPlugin plugin = Activator.getDefault();
-		ImageRegistry imageRegistry = plugin.getImageRegistry();
-		
-		return imageRegistry;
-	}
-	
-	private void registerImage(ImageRegistry registry, String key) {
-		final ImageDescriptor desc = ImageDescriptor.createFromFile(getClass(), key);
-		registry.put(key, desc.createImage());
 	}
 }

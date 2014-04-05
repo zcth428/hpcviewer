@@ -4,6 +4,11 @@ import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
+import edu.rice.cs.hpc.traceviewer.depth.HPCDepthView;
+import edu.rice.cs.hpc.traceviewer.main.HPCTraceView;
+import edu.rice.cs.hpc.traceviewer.misc.HPCCallStackView;
+import edu.rice.cs.hpc.traceviewer.summary.HPCSummaryView;
+
 public class Perspective implements IPerspectiveFactory
 {
 	private final static float SPACE_TIME_VIEW_WIDTH_FRACTION = 0.85f;

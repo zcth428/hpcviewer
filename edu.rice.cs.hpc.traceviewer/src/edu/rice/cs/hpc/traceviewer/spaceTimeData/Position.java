@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.painter;
+package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 
 import java.io.Serializable;
 

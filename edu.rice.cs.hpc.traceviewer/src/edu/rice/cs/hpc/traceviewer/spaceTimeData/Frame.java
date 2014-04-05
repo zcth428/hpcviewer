@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.traceviewer.spaceTimeData;
 import java.io.Serializable;
 
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
-import edu.rice.cs.hpc.traceviewer.painter.Position;
 
 
 /***********************************************************************************

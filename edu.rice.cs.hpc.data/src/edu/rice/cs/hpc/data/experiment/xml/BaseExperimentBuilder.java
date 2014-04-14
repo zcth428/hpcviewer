@@ -46,6 +46,7 @@ public class BaseExperimentBuilder extends Builder {
 	protected final static String VALUE_ATTRIBUTE 		= "v";
 	protected final static String ID_ATTRIBUTE 		= "i";
 	
+	private final static String PROCEDURE_UNKNOWN = "unknown procedure";
 
 	/** The default name for the experiment, in case none is found by the parser. */
 	protected String defaultName;
@@ -489,7 +490,7 @@ public class BaseExperimentBuilder extends Builder {
 			SourceFile srcFile = null; // file location of this procedure
 			
 			LoadModuleScope objLoadModule = null;
-			String sProcName = "unknown procedure";
+			String sProcName = PROCEDURE_UNKNOWN;
 
 			for(int i=0; i<attributes.length; i++) {
 				if (attributes[i].equals("s")) { 
@@ -1152,7 +1153,7 @@ public class BaseExperimentBuilder extends Builder {
 
 	
 	private String getProcedureName(String sProcIndex) {
-		String sProcName = "unknown procedure";
+		String sProcName = PROCEDURE_UNKNOWN;
 		boolean hashtableExist = (this.hashProcedureTable.size()>0);
 		if(hashtableExist) {
 			try {

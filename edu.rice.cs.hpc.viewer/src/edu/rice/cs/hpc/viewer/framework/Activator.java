@@ -67,7 +67,6 @@ public class Activator extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#initializeImageRegistry(org.eclipse.jface.resource.ImageRegistry)
 	 */
 	protected void initializeImageRegistry(ImageRegistry registry) {
-		
         Icons.getInstance().init(registry);
 	}
 }

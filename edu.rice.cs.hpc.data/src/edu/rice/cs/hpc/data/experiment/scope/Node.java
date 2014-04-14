@@ -40,7 +40,10 @@ public class Node extends TreeNode {
 	 * @return
 	 */
 	public TreeNode getChildAt(int index) {
-		return super.getChildren()[index];
+		TreeNode []children = super.getChildren();
+		if (children != null)
+			return children[index];
+		return null;
 	}
 
 	/**

@@ -868,7 +868,8 @@ public void dfsVisitScopeTree(IScopeVisitor sv) {
 	int nKids = getSubscopeCount();
 	for (int i=0; i< nKids; i++) {
 		Scope childScope = getSubscope(i);
-		childScope.dfsVisitScopeTree(sv);
+		if (childScope != null)
+			childScope.dfsVisitScopeTree(sv);
 	}
 	accept(sv, ScopeVisitType.PostVisit);
 }

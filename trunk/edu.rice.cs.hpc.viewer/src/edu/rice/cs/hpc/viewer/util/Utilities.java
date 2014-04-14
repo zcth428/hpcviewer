@@ -32,6 +32,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.LineScope;
+import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.util.OSValidator;
 
@@ -430,6 +431,19 @@ public class Utilities {
 					return Icons.getImage(Icons.Image_CallFrom);
 				else
 					return Icons.getImage(Icons.Image_CallFromDisabled);
+			}
+		}
+		return null;
+	}
+	
+	static public Image getInlineNavButton(ProcedureScope proc)
+	{
+		if (proc.isAlien()) {
+			boolean readable = Utilities.isFileReadable(proc);
+			if (readable) {
+				return Icons.getImage(Icons.Image_InlineTo);
+			} else {
+				return Icons.getImage(Icons.Image_InlineToDisabled);
 			}
 		}
 		return null;

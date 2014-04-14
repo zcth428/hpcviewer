@@ -92,25 +92,12 @@ implements ITraceViewAction
 	}
 	
 	
-	/*************************************************************************
-	 *	Updates/sets the depth that is displayed in the context view and 
-	 *	detail view.
-	 ************************************************************************/
-	public void setDepth(int depth)
-	{
-		detailCanvas.setDepth(depth);
-	}
-
 	/**Required in order to extend ViewPart.*/
 	public void setFocus()
 	{
 		this.detailCanvas.setFocus();
 	}
 	
-	public SpaceTimeDataController getData()
-	{
-		return stData;
-	}
 
 
 	/*************************************************************************

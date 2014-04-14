@@ -252,23 +252,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		getDisplay().addFilter(SWT.MouseDown, listener);
 		getDisplay().addFilter(SWT.MouseUp, listener);
 	}
-
-	/*************************************************************************
-	 * 
-	 * Resizing thread by listening to the event if a user has finished
-	 * 	the resizing or not
-	 *
-	 *************************************************************************/
-	private class DetailBufferPaint implements BufferPaint
-	{
-
-		@Override
-		public void rebuffering() {
-			// force the paint to refresh the data			
-			final ImageTraceAttributes attr = stData.getAttributes();
-			notifyChanges("Resize", attr.getFrame() );
-		}
-	}
+	
+	
 	/*************************************************************************
 	 * Sets the bounds of the data displayed on the detail canvas to be those 
 	 * specified by the zoom operation and adjusts everything accordingly.
@@ -1041,7 +1026,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				final Position p = stData.getAttributes().getPosition();
 				
 				if (p.process > ranks.length-1) {
-					// need to change position
+					// out of range: need to change the cursor position
 					Position new_p = new Position( p.time, ranks.length >> 1 );
 					notifyChangePosition(new_p);
 				}
@@ -1052,13 +1037,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			// notify to SummaryView that a new image has been created,
 			//	and it needs to refresh the view
 			// -----------------------------------------------------------------------
-
-			BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageOrig.getImageData());
-			try {
-				TraceOperation.getOperationHistory().execute(brOp, null, null);
-			} catch (ExecutionException e) {
-				e.printStackTrace();
-			}
+			notifyChangeBuffer(imageOrig.getImageData());
 			
 			updateButtonStates();
 		} else {
@@ -1167,6 +1146,27 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 			e.printStackTrace();
 		}
 	}
+	
+	/***********************************************************************************
+	 * Notify other views (especially summary view) that we have changed the buffer.
+	 * The other views need to refresh the display if needed.
+	 * 
+	 * @param imageData
+	 ***********************************************************************************/
+	private void notifyChangeBuffer(ImageData imageData)
+	{
+		// -----------------------------------------------------------------------
+		// notify to SummaryView that a new image has been created,
+		//	and it needs to refresh the view
+		// -----------------------------------------------------------------------
+
+		BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageData);
+		try {
+			TraceOperation.getOperationHistory().execute(brOp, null, null);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+	}
 
 	//-----------------------------------------------------------------------------------------
 	// Part for handling operation triggered from other views
@@ -1197,15 +1197,29 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		}
 	}
 	
-	/********************************************************
-	 * retrieve the image of the buffer to be stored in a file
-	 * 
-	 * @return
-	 ********************************************************/
-	public ImageData getImageData() {
-		return imageBuffer.getImageData();
-	}
 	
+	//-----------------------------------------------------------------------------------------
+	// PRIVATE CLASSES
+	//-----------------------------------------------------------------------------------------
+	
+
+	/*************************************************************************
+	 * 
+	 * Resizing thread by listening to the event if a user has finished
+	 * 	the resizing or not
+	 *
+	 *************************************************************************/
+	private class DetailBufferPaint implements BufferPaint
+	{
+
+		@Override
+		public void rebuffering() {
+			// force the paint to refresh the data			
+			final ImageTraceAttributes attr = stData.getAttributes();
+			notifyChanges("Resize", attr.getFrame() );
+		}
+	}
+
 	/*****
 	 * 
 	 * Thread-centric operation to perform undoable operations asynchronously

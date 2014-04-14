@@ -20,8 +20,8 @@ public abstract class BaseIconManager
 	 * @param desc
 	 * @return Image if the key matches, null otherwise
 	 */
-	static public Image getImage(final String desc) {
-		final ImageRegistry registry = getRegistry();
+	static public Image getImage(AbstractUIPlugin plugin, final String desc) {
+		final ImageRegistry registry = getRegistry(plugin);
 		
 		return registry.get(desc);
 	}
@@ -32,15 +32,14 @@ public abstract class BaseIconManager
 	 * @param desc : the key descriptor
 	 * @return ImageRegistry if the key matches, null otherwise
 	 */
-	static public ImageDescriptor getDescriptor(final String desc) {
-		final ImageRegistry registry = getRegistry();
+	static public ImageDescriptor getDescriptor(AbstractUIPlugin plugin, final String desc) {
+		final ImageRegistry registry = getRegistry(plugin);
 		
 		return registry.getDescriptor(desc);
 	}
 
-	static protected ImageRegistry getRegistry() {
+	static protected ImageRegistry getRegistry(AbstractUIPlugin plugin) {
     	// prepare the icon
-		AbstractUIPlugin plugin = Activator.getDefault();
 		ImageRegistry imageRegistry = plugin.getImageRegistry();
 		
 		return imageRegistry;

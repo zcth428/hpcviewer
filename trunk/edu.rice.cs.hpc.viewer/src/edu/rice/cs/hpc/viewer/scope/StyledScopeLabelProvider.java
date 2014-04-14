@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
+import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
@@ -80,6 +81,16 @@ public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 				cell.setImage(image);
 			}
 			if(Utilities.isFileReadable(node)) {
+				if (node instanceof ProcedureScope) {
+					ProcedureScope proc = (ProcedureScope) node;
+					if (proc.isAlien()) {						
+						final Image image = Utilities.getInlineNavButton(proc);
+						cell.setImage(image);
+						if (Utilities.isFileReadable(proc)) {
+							styledString.append(String.valueOf(1+proc.getFirstLineNumber()) + ": ", StyledString.COUNTER_STYLER);
+						}
+					}
+				}
 				styledString.append( text, STYLE_ACTIVE_LINK );
 			} else {
 				styledString.append( text );

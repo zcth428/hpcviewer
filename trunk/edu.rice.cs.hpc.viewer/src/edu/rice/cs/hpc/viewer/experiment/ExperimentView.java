@@ -73,9 +73,12 @@ public class ExperimentView {
 	/**
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
 	 * @param sFilename
-	 * @param bCallerView: flag to indicate if the caller view can be displayed
+	 * @param bCallerView : flag to indicate if the caller view can be displayed
+	 * 
+	 * @return true if the experiment is loaded successfully
 	 */
 	public boolean loadExperimentAndProcess(String sFilename, boolean bCallerView) {
+		
 		Experiment experiment = this.loadExperiment(sFilename);
 
 		if(experiment != null) {

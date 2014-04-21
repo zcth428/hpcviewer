@@ -56,6 +56,7 @@ public class ViewerWindow {
 	public IWorkbenchWindow getWinObj() {
 		return winObj;
 	}
+	
 	public void setWinObj(IWorkbenchWindow window) {
 		winObj = window;
 		ICommandService commandService = (ICommandService) winObj.getService(ICommandService.class);
@@ -77,7 +78,7 @@ public class ViewerWindow {
 			if (db == null) {
 				continue;
 			}
-			String path = db.getExperiment().getDefaultDirectory().getAbsolutePath(); //.getXMLExperimentFile().getPath();
+			String path = db.getExperiment().getDefaultDirectory().getAbsolutePath(); 
 			if (dbPath.equals(path)) {
 				return db;
 			}
@@ -187,18 +188,30 @@ public class ViewerWindow {
 		
 		int i=0;
 		for (Database db : dbObj) {
-			if (dbObj == null) {
-				continue;
+			if (dbObj != null) {
+				Experiment experiment = db.getExperiment();
+				dbArray[i++] = getDatabasePath(experiment.getXMLExperimentFile());
 			}
-			Experiment experiment = db.getExperiment();
-			String xmlFileName = experiment.getXMLExperimentFile().getPath();
-			int dbDir = xmlFileName.lastIndexOf(File.separator);
-			dbArray[i++] = xmlFileName.substring(0,dbDir);
 		}
 
 		return dbArray;
 	}
 	
+	
+	public String getDatabasePath(File file) {
+		
+		String xmlFileName = file.getPath();
+		return getDatabasePath(xmlFileName);
+	}
+	
+	
+	public String getDatabasePath(String filename) {
+
+		int dbDir = filename.lastIndexOf(File.separator);
+		String dbPath = filename.substring(0,dbDir);
+		
+		return dbPath;
+	}
 	
 	/***
 	 * update the service provided by DatabaseState to ensure that the menus's state are refreshed

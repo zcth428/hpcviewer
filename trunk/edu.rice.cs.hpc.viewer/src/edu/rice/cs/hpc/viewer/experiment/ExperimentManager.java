@@ -17,6 +17,9 @@ import edu.rice.cs.hpc.data.util.Util.FileXMLFilter;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.util.PreferenceConstants;
+import edu.rice.cs.hpc.viewer.window.Database;
+import edu.rice.cs.hpc.viewer.window.ViewerWindow;
+import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 /**
  * This class manages to select, load and open a database directory
@@ -130,10 +133,27 @@ public class ExperimentManager {
 				// Since rel 5.x, the name of database is experiment.xml
 				// there is no need to maintain compatibility with hpctoolkit prior 5.x 
 				// 	where the name of database is config.xml
-				if(objFile.getName().startsWith(Constants.DATABASE_FILENAME)) 
+				if(objFile.getName().startsWith(Constants.DATABASE_FILENAME))  
+				{
+					// ------------------------------------------------------------------
 					// we will continue to verify the content of the list of XML files
 					// until we fine the good one.
-					bContinue = (this.setExperiment(sFile, flag) == false);
+					// ------------------------------------------------------------------
+					
+					// check if the database has been opened in this window
+					ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
+					Database db = vw.getDb(vw.getDatabasePath(sFile));
+					
+					if (db == null) {						
+						// check if we can open the database successfully
+						bContinue = (this.setExperiment(sFile, flag) == false);
+					} else {
+						MessageDialog.openError(window.getShell(), "Database is already opened", 
+								"The database is already opened in this window.\n" +
+								"There is no need to open the same database twice in the same window.");
+						bContinue = false;
+					}
+				}
 			}
 	   		if(bContinue) {
 	   		} else

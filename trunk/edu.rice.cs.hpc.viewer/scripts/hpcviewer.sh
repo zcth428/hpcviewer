@@ -63,6 +63,15 @@ if test $? -ne 0 ; then
 fi
 
 #------------------------------------------------------------
+# Prepare the environment.
+#------------------------------------------------------------
+
+# UBUNTU's unity menu is broken and only displays hpcviewer's
+# file menu. Address this by disabling UBUNTU's unity menus.
+# This setting is harmless on non-UBUNTU platforms.
+export UBUNTU_MENUPROXY=0
+
+#------------------------------------------------------------
 # Launch the viewer.
 #------------------------------------------------------------
 

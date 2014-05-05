@@ -28,9 +28,9 @@ import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.painter.ITraceCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
-import edu.rice.cs.hpc.traceviewer.painter.ITraceCanvas.MouseState;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+
 /*****************************************************************************
  * 
  * The Canvas onto which the MiniMap is painted.

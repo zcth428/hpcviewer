@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.painter;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.MouseEvent;
@@ -9,6 +10,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 
+import edu.rice.cs.hpc.data.util.OSValidator;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 
 
@@ -29,9 +31,11 @@ implements ITraceCanvas, PaintListener
 	private Point mouseDown;
 	
 	/** The left/right point that you selected.*/
-	private int leftSelection;
-	private int rightSelection;
+	private Rectangle selection;
 	
+	protected enum RegionType {Vertical, Rectangle};
+	
+	final private RegionType regionType;
 	
 	/****************
 	 * Constructs a new instance of this class given its parent and a style value describing its behavior and appearance.
@@ -40,10 +44,14 @@ implements ITraceCanvas, PaintListener
 	 * @param style
 	 ****************/
 	public AbstractTimeCanvas(Composite composite, int style) {
-		super(composite);
-		mouseState = ITraceCanvas.MouseState.ST_MOUSE_INIT;
+		this(composite, style, RegionType.Vertical);
 	}
 	
+	public AbstractTimeCanvas(Composite composite, int style, RegionType regionType) {
+		super(composite);
+		mouseState = ITraceCanvas.MouseState.ST_MOUSE_INIT;
+		this.regionType = regionType;
+	}
 	
 	public void init() 
 	{
@@ -52,6 +60,9 @@ implements ITraceCanvas, PaintListener
 			addMouseListener(this);
 			addMouseMoveListener(this);
 			addPaintListener(this);
+			
+			// need to initialize mouse selection variables when we lost the focus
+			//	otherwise, Eclipse will keep the variables and draw useless selected rectangles
 			addFocusListener(new FocusAdapter() {
 				/*
 				 * (non-Javadoc)
@@ -70,8 +81,7 @@ implements ITraceCanvas, PaintListener
 	 */
 	private void initMouseSelection()
 	{
-		leftSelection = 0;
-		rightSelection = 0;
+		selection = new Rectangle(0, 0, 0, 0);
 		mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
 	}
 	
@@ -83,7 +93,6 @@ implements ITraceCanvas, PaintListener
 			Point pos = new Point(e.x, e.y);
 			adjustPosition(mouseDown, pos);
 			
-			//notifyRegionChange(mouseDown, pos);
 			redraw();
 		}
 	}
@@ -94,7 +103,10 @@ implements ITraceCanvas, PaintListener
 	@Override
 	public void mouseDown(MouseEvent e) 
 	{
-		if (mouseState == ITraceCanvas.MouseState.ST_MOUSE_NONE)
+		// take into account ONLY when the button-1 is clicked and it's never been clicked before
+		// the click is not right click (or modifier click on Mac)
+		if (e.button == 1 && mouseState == ITraceCanvas.MouseState.ST_MOUSE_NONE 
+				&& (e.stateMask & SWT.MODIFIER_MASK)==0 )
 		{
 			mouseState = ITraceCanvas.MouseState.ST_MOUSE_DOWN;
 			mouseDown = new Point(e.x,e.y);
@@ -117,7 +129,7 @@ implements ITraceCanvas, PaintListener
 			else
 			{
 				adjustPosition(mouseDown, mouseUp);
-				changeRegion(leftSelection, rightSelection);
+				changeRegion(selection);
 			}
 			redraw();
 		}
@@ -129,27 +141,42 @@ implements ITraceCanvas, PaintListener
 		super.paintControl(event);
 		
  		//paints the selection currently being made
-		
 		if (mouseState==ITraceCanvas.MouseState.ST_MOUSE_DOWN)
 		{
-			final Rectangle area   = getClientArea();
-
-        	event.gc.setBackground(Constants.COLOR_WHITE);
-    		event.gc.setAlpha(100);
-    		event.gc.fillRectangle( leftSelection, 0, (rightSelection-leftSelection), area.height);
-    		
+			// some Unix machines have no advanced graphic function
+			// to render the alpha transformation.
+			if (!OSValidator.isUnix()) 
+			{
+	        	event.gc.setBackground(Constants.COLOR_WHITE);
+	    		event.gc.setAlpha(100);
+	    		event.gc.fillRectangle( selection );
+	    		event.gc.setAlpha(240);
+	
+			}    		
     		event.gc.setLineWidth(2);
-    		event.gc.setAlpha(240);
     		event.gc.setForeground(Constants.COLOR_BLACK);
-    		event.gc.drawRectangle(leftSelection, 0, rightSelection-leftSelection, area.height);
-        }
+    		event.gc.drawRectangle(selection);
+		}
 	}
 	
 	
 	private void adjustPosition(Point p1, Point p2) 
 	{
-		leftSelection = Math.min(p1.x, p2.x);
-		rightSelection = Math.max(p1.x, p2.x);
+		selection.x = Math.min(p1.x, p2.x);
+		selection.width = Math.max(p1.x, p2.x) - selection.x;
+		final Rectangle area   = getClientArea();
+
+		switch(regionType) {
+		case Rectangle:
+			selection.y = Math.min(p1.y, p2.y);
+			selection.height = Math.max(p1.y, p2.y) - selection.y;
+			break;
+		case Vertical:
+			default:
+			selection.y = 0;
+			selection.height = area.height;
+			break;
+		}
 	}
 	
 	/*************************
@@ -166,5 +193,5 @@ implements ITraceCanvas, PaintListener
 	 * @param left
 	 * @param right
 	 ***************************/
-	protected abstract void changeRegion(int left, int right);
+	protected abstract void changeRegion(Rectangle region);
 }

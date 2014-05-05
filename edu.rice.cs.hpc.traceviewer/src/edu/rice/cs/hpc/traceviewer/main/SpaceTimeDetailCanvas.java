@@ -12,13 +12,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -35,12 +31,11 @@ import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
+import edu.rice.cs.hpc.traceviewer.painter.AbstractTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.BufferPaint;
 import edu.rice.cs.hpc.traceviewer.painter.ISpaceTimeCanvas;
-import edu.rice.cs.hpc.traceviewer.painter.ITraceCanvas;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.painter.ResizeListener;
-import edu.rice.cs.hpc.traceviewer.painter.SpaceTimeCanvas;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.Position;
@@ -57,10 +52,12 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
  *	zooming responsibilities of the detail view.
  *
  ************************************************************************/
-public class SpaceTimeDetailCanvas extends SpaceTimeCanvas 
-	implements PaintListener, ITraceCanvas, 
-	IOperationHistoryListener, ISpaceTimeCanvas
+public class SpaceTimeDetailCanvas extends AbstractTimeCanvas 
+	implements IOperationHistoryListener, ISpaceTimeCanvas
 {	
+	/**The SpaceTimeData corresponding to this canvas.*/
+	protected SpaceTimeDataController stData;
+
 	/**Triggers zoom back to beginning view screen.*/
 	private Action homeButton;
 	
@@ -84,15 +81,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 
 	private Action goEastButton, goNorthButton, goWestButton, goSouthButton;
 		
-	/** Relates to the condition that the mouse is in.*/
-	private ITraceCanvas.MouseState mouseState;
-	
-	/** The point at which the mouse was clicked.*/
-	private Point mouseDown;
-	
-	/** The point at which the mouse was released.*/
-	private Point mouseUp;
-	
 	/** The top-left and bottom-right point that you selected.*/
 	final private Point selectionTopLeft, selectionBottomRight;
 		
@@ -122,18 +110,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     /**Creates a SpaceTimeDetailCanvas with the given parameters*/
 	public SpaceTimeDetailCanvas(IWorkbenchWindow window, Composite _composite)
 	{
-		super(_composite );
+		super(_composite, SWT.NO_BACKGROUND, RegionType.Rectangle );
 		oldAttributes = new ImageTraceAttributes();
 
 		selectionTopLeft = new Point(0,0);
 		selectionBottomRight = new Point(0,0);
+		stData = null;
 		
-		mouseState = ITraceCanvas.MouseState.ST_MOUSE_INIT;
 		initMouseSelection();
 		
-		if (this.stData != null) {
-			this.addCanvasListener();
-		}
 		ISourceProviderService service = (ISourceProviderService)window.
 				getService(ISourceProviderService.class);
 		ptlService = (ProcessTimelineService) service.
@@ -158,9 +143,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	private void initMouseSelection()
 	{
 		initSelectionRectangle();
-		
-		mouseUp = null;
-		mouseDown = null;
 	}
 	
 	/*****
@@ -168,17 +150,19 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 * @param dataTraces
 	 *****/
 	public void updateView(SpaceTimeDataController _stData) {
-		this.setSpaceTimeData(_stData);
 
-		
-		if (mouseState == ITraceCanvas.MouseState.ST_MOUSE_INIT)
+		super.init();
+
+		if (this.stData == null) 
 		{
-			mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
-			this.addCanvasListener();
+			addCanvasListener();
 			OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 		}
+
 		// reinitialize the selection rectangle
 		initSelectionRectangle();
+
+		this.stData = _stData;
 
 		// init configuration
 		Position p = new Position(-1, -1);
@@ -196,24 +180,8 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 * caution: this method can only be called at most once ! 
 	 */
 	private void addCanvasListener() {
-		addMouseListener(this);
-		addMouseMoveListener(this);
+
 		addPaintListener(this);
-		
-		// need to initialize mouse selection variables when we lost the focus
-		//	otherwise, Eclipse will keep the variables and draw useless selected rectangles
-		
-		addFocusListener(new FocusAdapter() {
-			@Override
-			/*
-			 * (non-Javadoc)
-			 * @see org.eclipse.swt.events.FocusAdapter#focusLost(org.eclipse.swt.events.FocusEvent)
-			 */
-			public void focusLost(FocusEvent e) {
-				SpaceTimeDetailCanvas.this.initMouseSelection();
-				mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
-			}
-		});
 		
 		addKeyListener( new KeyListener(){
 			public void keyPressed(KeyEvent e) {}
@@ -308,30 +276,13 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	 * OR when redraw() is called).
 	 ******************************************************************************/
 	public void paintControl(PaintEvent event)
-	{
-		super.paintControl(event);
-		
+	{		
 		if (this.stData == null)
 			return;
 
+		super.paintControl(event);
+
 		final ImageTraceAttributes attributes = stData.getAttributes();
-		
-		//paints the selection currently being made (the little white box that appears
-		//when you click and drag
-		if(mouseState == ITraceCanvas.MouseState.ST_MOUSE_DOWN)
-		{
-        	event.gc.setBackground(Constants.COLOR_WHITE);
-        	event.gc.setAlpha(100);
-    		event.gc.fillRectangle(selectionTopLeft.x, selectionTopLeft.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
-            		(int)(selectionBottomRight.y-selectionTopLeft.y));
-    		
-    		event.gc.setForeground(Constants.COLOR_BLACK);
-    		event.gc.setLineWidth(2);
-    		event.gc.drawRectangle(selectionTopLeft.x, selectionTopLeft.y, (int)(selectionBottomRight.x-selectionTopLeft.x),
-            		(int)(selectionBottomRight.y-selectionTopLeft.y));
-    		
-        	event.gc.setAlpha(255);
-        }
 		
 		//draws cross hairs
 		long selectedTime = attributes.getPosition().time - attributes.getTimeBegin();
@@ -343,9 +294,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		event.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		event.gc.fillRectangle(topPixelCrossHairX,topPixelCrossHairY+8,20,4);
 		event.gc.fillRectangle(topPixelCrossHairX+8,topPixelCrossHairY,4,20);
-		
-		System.gc();
-		adjustLabels();
 	}
 
 	/**************************************************************************
@@ -630,15 +578,15 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
     /**************************************************************************
 	 * Updates what the position of the selected box is.
 	 **************************************************************************/
-    private void adjustSelection(Point p1, Point p2)
+    private void adjustSelection(Rectangle selection)
 	{
-    	selectionTopLeft.x = Math.max(Math.min(p1.x, p2.x), 0);
-        selectionTopLeft.y = Math.max(Math.min(p1.y, p2.y), 0);
+    	selectionTopLeft.x = Math.max(selection.x, 0);
+        selectionTopLeft.y = Math.max(selection.y, 0);
         
         final Rectangle view = getClientArea();
         
-        selectionBottomRight.x = Math.min(Math.max(p1.x, p2.x), view.width-1);
-        selectionBottomRight.y = Math.min(Math.max(p1.y, p2.y), view.height-1);
+        selectionBottomRight.x = Math.min(selection.width+selection.x, view.width-1);
+        selectionBottomRight.y = Math.min(selection.height+selection.y, view.height-1);
         
         if (selectionTopLeft.x < 0 || selectionBottomRight.x < 0 || view.x < 0) {
         	Debugger.printDebug(1, "STDC Error: negative time " + view + 
@@ -711,7 +659,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		
 		homeButton.setEnabled( attributes.getTimeBegin()>0 || attributes.getTimeEnd()<stData.getTimeWidth()
 				|| attributes.getProcessBegin()>0 || attributes.getProcessEnd()<stData.getTotalTraceCount() );
-
     }
     
 	final static private double SCALE_MOVE = 0.20;
@@ -835,7 +782,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		notifyChanges("Zoom V", frame);
 	}
 
-	private Position updatePosition()
+	private Position updatePosition(Point mouseDown)
 	{
     	final ImageTraceAttributes attributes = stData.getAttributes();
     	final Rectangle view = getClientArea();
@@ -862,16 +809,6 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 	}
 	
 	
-	private void setCSSample()
-    {
-    	if(mouseDown == null)
-    		return;
-    	
-    	Position position = updatePosition();
-    	notifyChangePosition(position);
-    }
-
-	
 	private long getNumTimeUnitDisplayed()
 	{
 		return (stData.getAttributes().getTimeInterval());
@@ -882,88 +819,7 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 		return (stData.getAttributes().getProcessInterval());
 	}
 	
-	/* *****************************************************************
-	 *		
-	 *		MouseListener and MouseMoveListener interface Implementation
-	 *      
-	 * *****************************************************************/
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
-	 */
-	public void mouseDoubleClick(MouseEvent e) { }
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.swt.events.MouseListener#mouseDown(org.eclipse.swt.events.MouseEvent)
-	 */
-	public void mouseDown(MouseEvent e)
-	{
-		// take into account ONLY when the button-1 is clicked and it's never been clicked before
-		// the click is not right click (or modifier click on Mac)
-		if (e.button == 1 && mouseState == ITraceCanvas.MouseState.ST_MOUSE_NONE 
-				&& (e.stateMask & SWT.MODIFIER_MASK)==0 )
-		{
-			mouseState = ITraceCanvas.MouseState.ST_MOUSE_DOWN;
-			mouseDown = new Point(e.x,e.y);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.MouseEvent)
-	 */
-	public void mouseUp(MouseEvent e)
-	{
-		if (mouseState == ITraceCanvas.MouseState.ST_MOUSE_DOWN)
-		{
-			mouseUp = new Point(e.x,e.y);
-			mouseState = ITraceCanvas.MouseState.ST_MOUSE_NONE;
-			//difference in mouse movement < 3 constitutes a "single click"
-			if(Math.abs(mouseUp.x-mouseDown.x)<3 && Math.abs(mouseUp.y-mouseDown.y)<3)
-			{
-				setCSSample();
-			}
-			else
-			{
-				//If we're zoomed in all the way don't do anything
-				if(getNumTimeUnitDisplayed() == Constants.MIN_TIME_UNITS_DISP)
-				{
-					if(getNumTimeUnitDisplayed() > MIN_PROC_DISP)
-					{
-						mouseDown.x = 0;
-						mouseUp.x = getClientArea().width;
-						adjustSelection(mouseDown,mouseUp);
-						setDetail();
-					}
-				}
-				else
-				{
-					adjustSelection(mouseDown,mouseUp);
-					setDetail();
-				}
-				redraw();
-			}
-			//don't draw the selection if you're not selecting anything
-			//adjustSelection(new Point(-1,-1),new Point(-1,-1));
-		}
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.swt.events.MouseMoveListener#mouseMove(org.eclipse.swt.events.MouseEvent)
-	 */
-	public void mouseMove(MouseEvent e)
-	{
-		if(mouseState == ITraceCanvas.MouseState.ST_MOUSE_DOWN)
-		{
-			Point mouseTemp = new Point(e.x,e.y);
-			adjustSelection(mouseDown,mouseTemp);
-			redraw();
-		}
-	}
-	
 	
 	/*********************************************************************************
 	 * Refresh the content of the canvas with new input data or boundary or parameters
@@ -1257,8 +1113,34 @@ public class SpaceTimeDetailCanvas extends SpaceTimeCanvas
 				int depth = ((DepthOperation)operation).getDepth();
 				setDepth(depth);
 			}
+			adjustLabels();
 		}
+	}
+
+	@Override
+	protected void changePosition(Point point) 
+	{
+    	Position position = updatePosition(point);
+    	notifyChangePosition(position);
+	}
 
 
+	@Override
+	protected void changeRegion(Rectangle region) 
+	{
+		//If we're zoomed in all the way don't do anything
+		if(getNumTimeUnitDisplayed() == Constants.MIN_TIME_UNITS_DISP)
+		{
+			if(getNumTimeUnitDisplayed() > MIN_PROC_DISP)
+			{
+				adjustSelection(region);
+				setDetail();
+			}
+		}
+		else
+		{
+			adjustSelection(region);
+			setDetail();
+		}
 	}
 }

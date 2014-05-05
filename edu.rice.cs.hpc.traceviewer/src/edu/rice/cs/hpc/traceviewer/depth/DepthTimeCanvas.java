@@ -353,12 +353,12 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 	}
 
 	@Override
-	protected void changeRegion(int left, int right) 
+	protected void changeRegion(Rectangle region) 
 	{
 		final ImageTraceAttributes attributes = stData.getAttributes();
 
-		long topLeftTime 	 = attributes.getTimeBegin() + (long)(left / getScalePixelsPerTime());
-		long bottomRightTime = attributes.getTimeBegin() + (long)(right / getScalePixelsPerTime());
+		long topLeftTime 	 = attributes.getTimeBegin() + (long)(region.x / getScalePixelsPerTime());
+		long bottomRightTime = attributes.getTimeBegin() + (long)((region.width+region.x) / getScalePixelsPerTime());
 		
 		Frame frame = new Frame(topLeftTime, bottomRightTime,
 				attributes.getProcessBegin(), attributes.getProcessEnd(),

@@ -468,6 +468,7 @@ public class BaseExperimentBuilder extends Builder {
 
 	}
 
+
 	/*************************************************************************
 	 *	Begins processing a PF (procedure frame) element.
 	 *       <!ATTLIST Pr
@@ -559,6 +560,27 @@ public class BaseExperimentBuilder extends Builder {
 				} else if(attributes[i].equals("v")) {
 				}
 			}
+			
+			if (isalien) {
+				flat_id = Integer.MAX_VALUE ^ flat_id;
+
+				if (sProcName.isEmpty()) {
+					// this is a line scope
+					Scope scope;
+					if (firstLn == lastLn)
+						scope = new LineScope(this.experiment, srcFile, firstLn-1, cct_id, flat_id);
+					else
+						scope = new StatementRangeScope(this.experiment, srcFile, 
+								firstLn-1, lastLn-1, cct_id, flat_id);
+					scope.setCpid(0);
+					this.beginScope_internal(scope, false);
+					srcFile.setIsText(istext);
+					this.srcFileStack.add(srcFile);
+					return;
+				} else {
+					// this is a procedure scope uses the handling below
+				}
+			}
 
 			// FLAT PROFILE: we retrieve the source file from the previous tag
 			if(srcFile == null) {
@@ -568,9 +590,6 @@ public class BaseExperimentBuilder extends Builder {
 			srcFile.setIsText(istext);
 			this.srcFileStack.add(srcFile);
 
-			if (isalien) {
-				flat_id = Integer.MAX_VALUE ^ flat_id;
-			}
 			ProcedureScope procScope  = new ProcedureScope(this.experiment, objLoadModule, srcFile, 
 					firstLn-1, lastLn-1, 
 					sProcName, isalien, cct_id, flat_id, userData);

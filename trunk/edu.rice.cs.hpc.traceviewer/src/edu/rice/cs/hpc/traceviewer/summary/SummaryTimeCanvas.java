@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -313,11 +314,14 @@ implements IOperationHistoryListener
 	}
 
 	@Override
-	protected void changeRegion(int left, int right) 
+	protected void changeRegion(Rectangle region) 
 	{
 		final ImageTraceAttributes attributes = dataTraces.getAttributes();
 		
 		long timeBegin   = attributes.getTimeBegin();
+		int left = region.x;
+		int right = region.width + region.x;
+		
 		long topLeftTime = timeBegin + (long)(left / getScalePixelsPerTime());
 		long bottomRightTime = timeBegin + (long)(right / getScalePixelsPerTime());
 		

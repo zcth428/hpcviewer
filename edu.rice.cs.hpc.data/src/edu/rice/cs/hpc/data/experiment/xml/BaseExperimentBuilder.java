@@ -554,9 +554,8 @@ public class BaseExperimentBuilder extends Builder {
 					
 				} else if(attributes[i].equals("a")) { 
 					// alien
-					if (values[i].equals("1")) {
-						isalien = true;
-					}
+					isalien = values[i].equals("1");
+					
 				} else if(attributes[i].equals("v")) {
 				}
 			}
@@ -573,7 +572,8 @@ public class BaseExperimentBuilder extends Builder {
 						scope = new StatementRangeScope(this.experiment, srcFile, 
 								firstLn-1, lastLn-1, cct_id, flat_id);
 					scope.setCpid(0);
-					this.beginScope_internal(scope, false);
+					scopeStack.push(scope);
+
 					srcFile.setIsText(istext);
 					this.srcFileStack.add(srcFile);
 					return;
@@ -815,6 +815,7 @@ public class BaseExperimentBuilder extends Builder {
 	{
 		begin_S_internal( attributes,  values, false);
 	}
+	
 	private void begin_S_internal(String[] attributes, String[] values, boolean isCallSite)
 	{
 		int cct_id = 0, flat_id = 0;
@@ -854,7 +855,7 @@ public class BaseExperimentBuilder extends Builder {
 
 		scope.setCpid(cpid);
 		if (isCallSite) {
-			this.beginScope_internal(scope, false);
+			scopeStack.push(scope);
 		} else {
 			this.beginScope(scope);
 		}
@@ -1035,31 +1036,25 @@ public class BaseExperimentBuilder extends Builder {
 	}
 
 
+//  ------------------------------------------------------------------- //
 //	SCOPE TREE BUILDING													//
-
+//  ------------------------------------------------------------------- //
+	
 	/*************************************************************************
 	 *	Adds a newly parsed scope to the scope tree.
 	 ************************************************************************/
 	private void beginScope(Scope scope)
 	{
-		beginScope_internal(scope, true);
+		// add to the tree
+		Scope top = getCurrentScope();
+		top.addSubscope(scope);
+		scope.setParentScope(top);
+		
+		// push the new scope to the stack
+		scopeStack.push(scope);
 	}
 
-	/****************************************************************
-	 * 
-	 * @param scope
-	 * @param addToTree
-	 *****************************************************************/
-	protected void beginScope_internal(Scope scope, boolean addToTree)
-	{
-		Scope top = this.getCurrentScope();
-		if (addToTree) {
-			top.addSubscope(scope);
-			scope.setParentScope(top);
-		}
-		this.scopeStack.push(scope);
-	}
-
+	
 	/*************************************************************************
 	 *	Ends a newly parsed scope.
 	 ************************************************************************/

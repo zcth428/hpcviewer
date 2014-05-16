@@ -23,13 +23,16 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilte
  */
 public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScopeVisitor {
 
+	//----------------------------------------------------
+	// Constants
+	//----------------------------------------------------
+	/** hack: list of procedures to be hidden from the view 
+	 *  at the moment, we only have one. **/
+	static private final String HiddenProcedures = "Partial Call Paths";
 
 	//----------------------------------------------------
 	// private data
 	//----------------------------------------------------
-	private Hashtable<Integer, Scope> calleeht = new Hashtable<Integer, Scope>();
-	
-	private Scope callersViewRootScope;
 	private final CombineCallerScopeMetric combinedMetrics;
 	
 	private final ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
@@ -37,6 +40,9 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 	
 	final private ListCombinedScopes listCombinedScopes;
 
+	private Hashtable<Integer, Scope> calleeht = new Hashtable<Integer, Scope>();
+	
+	private Scope callersViewRootScope;
 	
 	/****--------------------------------------------------------------------------------****
 	 * 
@@ -95,7 +101,7 @@ public class CallersViewScopeVisitor extends CallerScopeBuilder implements IScop
 		//--------------------------------------------------------------------------------
 		// if there are no exclusive costs to attribute from this context, we are done here
 		//--------------------------------------------------------------------------------
-		if (!scope.hasNonzeroMetrics() ) {
+		if (!scope.hasNonzeroMetrics() || scope.getName().equals(HiddenProcedures)) {
 			return; 
 		}
 		

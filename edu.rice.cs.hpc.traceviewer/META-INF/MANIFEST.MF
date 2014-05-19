@@ -6,16 +6,21 @@ Bundle-Version: 5.3.2.qualifier
 Bundle-Activator: edu.rice.cs.hpc.traceviewer.framework.Activator
 Bundle-Vendor: Rice University
 Require-Bundle: edu.rice.cs.hpc.data,
- org.eclipse.core.commands,
- org.eclipse.core.runtime,
- org.eclipse.ui,
  edu.rice.cs.hpc.traceviewer.data,
- edu.rice.cs.hpc.common
+ edu.rice.cs.hpc.common,
+ org.eclipse.ui.workbench
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.jface.action,
+Import-Package: org.eclipse.core.commands,
+ org.eclipse.core.commands.operations,
+ org.eclipse.core.runtime,
+ org.eclipse.equinox.app;version="1.1.0",
+ org.eclipse.jface.action,
+ org.eclipse.jface.dialogs,
+ org.eclipse.jface.layout,
  org.eclipse.jface.resource,
  org.eclipse.jface.viewers,
+ org.eclipse.jface.window,
  org.eclipse.swt,
  org.eclipse.swt.events,
  org.eclipse.swt.graphics,
@@ -24,6 +29,10 @@ Import-Package: org.eclipse.jface.action,
  org.eclipse.ui,
  org.eclipse.ui.actions,
  org.eclipse.ui.application,
+ org.eclipse.ui.commands,
+ org.eclipse.ui.handlers,
  org.eclipse.ui.part,
- org.eclipse.ui.plugin
+ org.eclipse.ui.plugin,
+ org.eclipse.ui.services,
+ org.osgi.framework
 Bundle-ClassPath: hpctraceviewer.jar

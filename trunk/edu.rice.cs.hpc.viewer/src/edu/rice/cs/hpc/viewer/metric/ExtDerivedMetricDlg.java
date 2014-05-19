@@ -366,6 +366,9 @@ public class ExtDerivedMetricDlg extends TitleAreaDialog {
 					
 					if (strFormat.equals( FORMAT_PERCENT )) {
 						btnPercentFormat.setSelection(true);
+						
+						// only one option is allowed. If one is enabled, the other is disabled
+						btnDefaultFormat.setSelection(false);
 					}
 				}
 			}

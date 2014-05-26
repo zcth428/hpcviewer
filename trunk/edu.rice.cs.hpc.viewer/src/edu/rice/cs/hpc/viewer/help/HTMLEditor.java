@@ -19,12 +19,11 @@ import org.eclipse.swt.browser.*;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.SWT;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Bundle;
-
-import com.onpositive.richtexteditor.viewer.RichTextViewer;
 
 import edu.rice.cs.hpc.viewer.framework.Activator;
 
@@ -36,8 +35,6 @@ import edu.rice.cs.hpc.viewer.framework.Activator;
 public class HTMLEditor extends EditorPart {
 	public static String ID = "edu.rice.cs.hpc.viewer.util.HTMLEditor";
 
-	
-	private RichTextViewer richTextViewer;
 	
 	/**
 	 * SWT Browser 
@@ -146,12 +143,10 @@ public class HTMLEditor extends EditorPart {
 
 		} catch (SWTError e) {
 			// if the platform doesn't support pluggable browser,
-			//   then we launch an internal SWT browser
-			richTextViewer = new SimpleViewerHTML(parent, SWT.BORDER);
-			this.richTextViewer.setData(HTMLEditor.ID, this);
-			this.richTextViewer.setEditable(false);
-			this.richTextViewer.getLayerManager().openHTMLFile(sFilePath);
-
+			//   then we show error message
+			MessageDialog.openError(getSite().getShell(), "Unable to display HTML page", 
+					"HPCViewer is unable to open HTML page to display the help file\n"
+					+ "Please refer to the manual in HPCToolkit website (http://hpctoolkit.org)");
 		}
 		// display the original source of the HTML file (debugging purpose)
 		this.setContentDescription(sURI);

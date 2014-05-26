@@ -14,7 +14,7 @@ HPCToolkit is principally funded by the Department of Energy&apos;s Office of
 Science as part of the SciDAC Center for Scalable Application Development
 Software and the Performance Engineering Research Institute.
 
-Release 5.3.2 $LastChangedRevision$  (C) Copyright 2012, Rice University.
+Release 5.3.2 $LastChangedRevision$  (C) Copyright 2014, Rice University.
       </text>
    </aboutInfo>
 
@@ -44,6 +44,7 @@ Release 5.3.2 $LastChangedRevision$  (C) Copyright 2012, Rice University.
             winLargeHigh="/edu.rice.cs.hpc.viewer/icons/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
@@ -132,7 +133,6 @@ if advised of the possibility of such damage.
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.text"/>
       <plugin id="org.eclipse.osgi"/>
-      <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.carbon.macosx" fragment="true"/>
       <plugin id="org.eclipse.swt.cocoa.macosx" fragment="true"/>

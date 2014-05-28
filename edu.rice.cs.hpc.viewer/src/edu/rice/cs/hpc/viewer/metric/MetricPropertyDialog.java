@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.util;
+package edu.rice.cs.hpc.viewer.metric;
 
 import java.util.ArrayList;
 import org.eclipse.jface.dialogs.Dialog;
@@ -40,7 +40,7 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.Metric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
-import edu.rice.cs.hpc.viewer.metric.ExtDerivedMetricDlg;
+import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
@@ -54,7 +54,7 @@ public class MetricPropertyDialog extends TitleAreaDialog
 {
 	private TableViewer viewer;
 	private Button btnEdit;
-	private boolean singleExperiment = true;
+
 	final private IWorkbenchWindow window;
 	
 	protected ArrayList<PropertiesModel> arrElements;
@@ -115,13 +115,31 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	protected Control createButtonBar(Composite parent) {
 		
 		Control ctrl = super.createButtonBar(parent);
-		
+
 		final Button btnOk = getButton(IDialogConstants.OK_ID);
 		btnOk.setText("Quit");
 		
 		final Button btnCancel = getButton(IDialogConstants.CANCEL_ID);
 		btnCancel.setVisible(false);
 		
+		// -----------------
+		// edit button: use the default "details" button ID
+		// -----------------
+		
+		btnEdit = createButton((Composite) ctrl, IDialogConstants.DETAILS_ID, "Edit", true);
+		btnEdit.setEnabled(false);		
+		btnEdit.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {				
+				doAction();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {}
+			
+		});
+
 		return ctrl;
 	}
 
@@ -136,7 +154,34 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	 */
 	private void initTableViewer(Composite composite) {
 		
-		updateContent(composite) ;
+		boolean singleExperiment = true;
+		
+		if (window != null) {
+			// variable window is null only when the class is in unit test mode
+			// in app mode, the value of window will never be null
+			
+			final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
+			
+			if (vw == null)
+				return;
+			
+			final int numDB = vw.getOpenDatabases();
+			singleExperiment = (numDB == 1);
+			
+			if (singleExperiment)  {
+				// -------------------------------------
+				// case of having only 1 database
+				// -------------------------------------
+
+				setElements( vw.getExperiments()[0] );
+			} else {
+				// -------------------------------------
+				// case of having more than 1 databases
+				// -------------------------------------
+
+				updateContent(composite, vw) ;
+			}
+		}
 		
 		Composite metricArea = new Composite(composite, SWT.BORDER);
 
@@ -154,18 +199,12 @@ public class MetricPropertyDialog extends TitleAreaDialog
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				
-				PropertiesModel obj = getSelectElement();
-				
-				if (obj != null) {
-					BaseMetric metric = obj.metric;
-					btnEdit.setData(metric);
-					btnEdit.setEnabled(true);
-				} else {
-					// Eclipse bug (or feature?): case of no metric is selected
-					// On Mac, a SelectionChangedEvent is triggered when we refresh the input
-					// 	in this case, no item has been selected since the content of the table is new
-					btnEdit.setEnabled(false);
-				}
+				boolean isEnabled = (getSelectElement() != null);
+
+				// Eclipse bug (or feature?): case of no metric is selected
+				// On Mac, a SelectionChangedEvent is triggered when we refresh the input
+				// 	in this case, no item has been selected since the content of the table is new
+				btnEdit.setEnabled(isEnabled);
 			}
 		});
 		
@@ -217,29 +256,6 @@ public class MetricPropertyDialog extends TitleAreaDialog
 
 		//table.pack();
 		
-		// -----------------
-		// edit button
-		// -----------------
-		
-		btnEdit = new Button(metricArea, SWT.PUSH | SWT.FLAT);
-		btnEdit.setText("Edit");
-		btnEdit.setEnabled(false);
-		btnEdit.addSelectionListener(new SelectionListener() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				if ( !(btnEdit.getData() instanceof BaseMetric) ) {
-					return;
-				}
-				doAction();
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {}
-			
-		});
-		
 		GridDataFactory.swtDefaults().align(SWT.CENTER, SWT.CENTER).
 			grab(true, true).applyTo(metricArea);
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(metricArea);
@@ -251,27 +267,7 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	 * 
 	 * @param component : parent composite
 	 */
-	private void updateContent(Composite component) {
-		
-		if (window == null)
-			return;
-		
-		final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-		
-		if (vw == null)
-			return;
-		
-		final int numDB = vw.getOpenDatabases();
-		singleExperiment = (numDB == 1);
-		
-		// -------------------------------------
-		// case of having only 1 database
-		// -------------------------------------
-
-		if (singleExperiment)  {
-			setElements( vw.getExperiments()[0] );
-			return;
-		}
+	private void updateContent(Composite component, ViewerWindow vw) {
 		
 		// -------------------------------------
 		// case of having more than 1 databases: create a list of databases to select
@@ -351,7 +347,8 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	 * show the dialog window
 	 */
 	private void doAction() {
-		BaseMetric metric = (BaseMetric) btnEdit.getData();
+		PropertiesModel obj = getSelectElement();
+		BaseMetric metric = obj.metric;
 		
 		if (metric == null)
 			return;

@@ -9,7 +9,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.rice.cs.hpc.viewer.util.MetricPropertyDialog;
+import edu.rice.cs.hpc.viewer.metric.MetricPropertyDialog;
 
 
 /*******************************************************************

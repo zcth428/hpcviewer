@@ -55,9 +55,8 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	private TableViewer viewer;
 	private Button btnEdit;
 
+	private Experiment experiment;
 	final private IWorkbenchWindow window;
-	
-	protected ArrayList<PropertiesModel> arrElements;
 
 	/***
 	 * Default constructor: 
@@ -154,35 +153,6 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	 */
 	private void initTableViewer(Composite composite) {
 		
-		boolean singleExperiment = true;
-		
-		if (window != null) {
-			// variable window is null only when the class is in unit test mode
-			// in app mode, the value of window will never be null
-			
-			final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-			
-			if (vw == null)
-				return;
-			
-			final int numDB = vw.getOpenDatabases();
-			singleExperiment = (numDB == 1);
-			
-			if (singleExperiment)  {
-				// -------------------------------------
-				// case of having only 1 database
-				// -------------------------------------
-
-				setElements( vw.getExperiments()[0] );
-			} else {
-				// -------------------------------------
-				// case of having more than 1 databases
-				// -------------------------------------
-
-				updateContent(composite, vw) ;
-			}
-		}
-		
 		Composite metricArea = new Composite(composite, SWT.BORDER);
 
 		// -----------------
@@ -249,9 +219,36 @@ public class MetricPropertyDialog extends TitleAreaDialog
 			}
 		});
 		
-		if (singleExperiment) {
-			viewer.setInput(arrElements);
+		if (window != null) {
+			// variable window is null only when the class is in unit test mode
+			// in app mode, the value of window will never be null
+			
+			final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
+			
+			if (vw == null)
+				return;
+			
+			final int numDB = vw.getOpenDatabases();
+			boolean singleExperiment = (numDB == 1);
+			
+			if (singleExperiment)  {
+				// -------------------------------------
+				// case of having only 1 database
+				// -------------------------------------
+
+				setElements( vw.getExperiments()[0] );
+			} else {
+				// -------------------------------------
+				// case of having more than 1 databases
+				// -------------------------------------
+
+				updateContent(composite, vw) ;
+			}
+		} else {
+			// hack: need to refresh the table 
+			setElements(experiment);
 		}
+		
 		GridDataFactory.defaultsFor(table).hint(600, 300).grab(true, true).applyTo(table);
 
 		//table.pack();
@@ -296,28 +293,24 @@ public class MetricPropertyDialog extends TitleAreaDialog
 
 				final Experiment exp = experiments[ list.getSelectionIndex() ];
 				setElements( exp );
-				viewer.setInput(arrElements);
-				viewer.refresh();
 			}
 			
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {}
 		} );
 	}
+
 	
-	
-	
-	/***
-	 * set the value for arrElements (used by table) based on the specified experiment
+	/***********
+	 * create an array for the input of the table
 	 * 
-	 * @param exp
+	 * @param exp : experiment database 
 	 */
-	private void setElements(Experiment exp) {
-		
+	private ArrayList<PropertiesModel> createInput(Experiment exp) {
 		int nbColumns = exp.getMetricCount();
 		BaseMetric []metrics = exp.getMetrics();
 		
-		this.arrElements = new ArrayList<PropertiesModel>(nbColumns);
+		final ArrayList<PropertiesModel> arrElements = new ArrayList<PropertiesModel>(nbColumns);
 		
 		for(int i=0;i<nbColumns;i++) {
 			if (metrics[i] != null) {
@@ -328,6 +321,22 @@ public class MetricPropertyDialog extends TitleAreaDialog
 				arrElements.add( model );
 			}
 		}
+		return arrElements;
+	}
+	
+	/***
+	 * set the value for arrElements (used by table) based on the specified experiment
+	 * 
+	 * @param exp
+	 */
+	private void setElements(Experiment exp) {
+		final ArrayList<PropertiesModel> arrElements = createInput(exp);
+		viewer.setInput(arrElements);
+		viewer.refresh();
+	}
+	
+	private void setExperiment(Experiment exp) {
+		this.experiment = exp;
 	}
 	
 	/***
@@ -356,7 +365,8 @@ public class MetricPropertyDialog extends TitleAreaDialog
 		if (metric instanceof DerivedMetric) {
 
 			Experiment experiment = Utilities.getActiveExperiment( Util.getActiveWindow() );
-			ExtDerivedMetricDlg dialog = new ExtDerivedMetricDlg( getShell(), experiment, experiment.getRootScope().getSubscope(0) );
+			ExtDerivedMetricDlg dialog = new ExtDerivedMetricDlg( getShell(), experiment, 
+					experiment.getRootScope().getSubscope(0) );
 			
 			DerivedMetric dm = (DerivedMetric) metric;
 			dialog.setMetric(dm);
@@ -450,8 +460,8 @@ public class MetricPropertyDialog extends TitleAreaDialog
 			list.add( new Metric(id, id, "M" + id, true, null, null, null, i, MetricType.INCLUSIVE, i) );
 		}
 		exp.setMetrics(list);
-		dialog.setElements(exp);
-
+		dialog.setExperiment(exp);
+		
 		dialog.open();
 	}
 

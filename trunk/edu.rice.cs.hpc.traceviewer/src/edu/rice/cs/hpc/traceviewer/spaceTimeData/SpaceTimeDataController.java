@@ -41,7 +41,6 @@ import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 public abstract class SpaceTimeDataController 
 {
 	protected ImageTraceAttributes attributes;
-	protected String dbName;
 	/**
 	 * The minimum beginning and maximum ending time stamp across all traces (in
 	 * microseconds)).
@@ -171,8 +170,6 @@ public abstract class SpaceTimeDataController
 		TraceAttribute trAttribute = exp.getTraceAttribute();
 		minBegTime = trAttribute.dbTimeMin;
 		maxEndTime = trAttribute.dbTimeMax;
-
-		dbName = exp.getName();
 	}
 
 	public int getMaxDepth() 
@@ -283,8 +280,16 @@ public abstract class SpaceTimeDataController
 		return maxEndTime - minBegTime;
 	}
 
+	/*************************************************************************
+	 * Retrieve the name of the database. The name can be either the path of
+	 * the directory, or the name of the profiled application, or both.
+	 * <p>
+	 * Ideally the name should be unique to distinguish with other databases. 
+	 * 
+	 * @return String: the name of the database
+	 *************************************************************************/
 	public String getName() {
-		return dbName;
+		return exp.getDefaultDirectory().getPath();
 	}
 
 	public long getMaxEndTime() {

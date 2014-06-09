@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.Queue;
@@ -170,9 +171,11 @@ public abstract class BaseViewPaint {
 		if (!OSValidator.isUnix()) {
 			numPaintThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
 		}
-		final boolean singleThread = (numPaintThreads == 1);
 		
 		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
+		
+		final ExecutorCompletionService<List<ImagePosition>> ecs = new 
+				ExecutorCompletionService<List<ImagePosition>>(threadExecutor);
 
 		Debugger.printDebug(1, "BVP --- lp: " + linesToPaint + ", tld: " + timelineDone + ", qs: " + queue.size());
 		
@@ -184,83 +187,66 @@ public abstract class BaseViewPaint {
 			final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
 					Display.getCurrent(), attributes.numPixelsH);
 			if (thread != null) {
-				if (singleThread) 
-				{
-					doSingleThreadPainting(canvas, thread);
-				} else
-				{
-					final Future<List<ImagePosition>> submit = threadExecutor.submit( thread );
-					threadsPaint.add(submit);
-				}
+				final Future<List<ImagePosition>> submit = ecs.submit( thread );
+				threadsPaint.add(submit);
 			}
 		}
 
 		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
 
-		if (!singleThread) {
-			// -------------------------------------------------------------------
-			// Finalize the painting (to be implemented by the instance)
-			// -------------------------------------------------------------------
-			endPainting(canvas, threadsPaint);
-		}
+		// -------------------------------------------------------------------
+		// Finalize the painting (to be implemented by the instance)
+		// -------------------------------------------------------------------
+		//endPainting(canvas, threadsPaint);
+		boolean result = endPainting(canvas, ecs, numPaintThreads);
 		
 		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
 		monitor.endProgress();
 		changedBounds = false;
 
-		return true;
+		return result;
 	}
 	
-	/****
-	 * perform a data painting with only a single thread.
-	 * this method doesn't need collection or painting finalization since only one
-	 * thread is involved.
-	 * 
-	 * @param canvas
-	 * @param paintThread
-	 */
-	private void doSingleThreadPainting(ISpaceTimeCanvas canvas, BasePaintThread paintThread)
-	{
-		try {
-			// do the data painting, and directly get the generated images
-			List<ImagePosition> listImages = paintThread.call();
-
-			// set the images into the canvas. 
-			for ( ImagePosition image: listImages )
-			{
-				drawPainting(canvas, image);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+	
 	/******
-	 * finalize the data collection, and put all images into a canvas
+	 * Finalize the painting by drawing boxes on the canvas
 	 * 
 	 * @param canvas
-	 * @param listOfImageThreads
+	 * @param ecs
+	 * @param numThreads
+	 *
+	 * @return true if the drawing is completed, false otherwise
 	 */
-	private void endPainting(ISpaceTimeCanvas canvas, List<Future<List<ImagePosition>>> listOfImageThreads)
+	private boolean endPainting(ISpaceTimeCanvas canvas, 
+			ExecutorCompletionService<List<ImagePosition>> ecs, int numThreads)
 	{
-		for( Future<List<ImagePosition>> listFutures : listOfImageThreads ) 
+		// check the termination of all threads
+		for(int i=0; i<numThreads; i++)
 		{
 			try {
-				List<ImagePosition> listImages = listFutures.get();
-				for (ImagePosition image : listImages) 
+				// retrieve the first terminate thread, and paint it to the canvas
+				List<ImagePosition> list = ecs.take().get();
+				for(ImagePosition imgPos: list)
 				{
-					drawPainting(canvas, image);
+					// we should do nothing if the thread gives up (no data return)
+					if (imgPos != null)
+						drawPainting(canvas, imgPos);
 				}
 				
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
+				return false;
+				
 			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
+				return false;
 			}
 		}
+		return true;
 	}
+	
 	
 	
 	//------------------------------------------------------------------------------------------------
@@ -292,7 +278,8 @@ public abstract class BaseViewPaint {
 	abstract protected int getNumberOfLines();
 	
 	/****
-	 * launching threads for remote communication
+	 * launching threads for remote communication. 
+	 * For local data, the method does nothing
 	 * 
 	 * @param changedBounds
 	 * @param numThreads

@@ -117,10 +117,14 @@ public boolean equals(Object obj) {
  ************************************************************************/
 	
 public String getName()
-{
+{	
 	if (isalien) {
-		String name = procedureName.isEmpty() ? "" : "[I] " + procedureName + " ";
-		return name + "inlined at " + this.getSourceCitation();
+		String TheProcedureWhoShouldNotBeNamed = "-";
+		if (procedureName.equals(TheProcedureWhoShouldNotBeNamed)) {
+			return "inlined at " + this.getSourceCitation();
+		} 
+		String name = procedureName.isEmpty() ? "" : "[I] " + procedureName;
+		return name;
 	} else return this.procedureName;
 }
 

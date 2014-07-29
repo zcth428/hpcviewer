@@ -128,6 +128,18 @@ public class BaseExperimentBuilder extends Builder {
 	protected boolean isCallingContextTree() {
 		return this.csviewer;
 	}
+	
+	private SourceFile getSourceFile(String fileIdString)
+	{
+		SourceFile sourceFile = null;
+		try {
+			Integer objFileKey = Integer.parseInt(fileIdString);
+			 sourceFile=hashSourceFileTable.get(objFileKey.intValue());
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		return sourceFile;
+	}	
 
 
 	/*************************************************************************
@@ -758,6 +770,7 @@ public class BaseExperimentBuilder extends Builder {
 		int cct_id = 0, flat_id = 0;
 		int firstLn = 0;
 		int lastLn = 0;
+		SourceFile sourceFile = null;
 		
 		for(int i=0; i<attributes.length; i++) {
 			if(attributes[i].equals("s")) {
@@ -769,25 +782,29 @@ public class BaseExperimentBuilder extends Builder {
 				String sLine = values[i];
 				StatementRange objRange = new StatementRange( sLine );
 				firstLn = objRange.getFirstLine();
-				lastLn = objRange.getLastLine();	
-				
+				lastLn = objRange.getLastLine();
+			} else if (attributes[i].equals("f")) {
+				String fileIdString = values[i];
+				getSourceFile(fileIdString);
 			} else if(attributes[i].equals(ID_ATTRIBUTE)) {
 				cct_id = Integer.valueOf(values[i]);
 			} 
 		}
-
-		SourceFile sourceFile = this.srcFileStack.peek();
-		if (this.csviewer) {
-			// Use the source file of the Procedure Frame
-			// NOTE: the current scope (i.e. the parent of this
-			// nascent loop scope) should be either a procedure frame
-			// or a loop that recursively obtained its file from the
-			// procedure frame.
-			Scope frameScope = this.getCurrentScope();
-			//while ( !(frameScope instanceof ProcedureScope) ) {
-			//  frameScope = frameScope.getParentScope();
-			//}
-			sourceFile = frameScope.getSourceFile();
+		
+		if (sourceFile == null) {	
+			sourceFile = this.srcFileStack.peek();
+			if (this.csviewer) {
+				// Use the source file of the Procedure Frame
+				// NOTE: the current scope (i.e. the parent of this
+				// nascent loop scope) should be either a procedure frame
+				// or a loop that recursively obtained its file from the
+				// procedure frame.
+				Scope frameScope = this.getCurrentScope();
+				//while ( !(frameScope instanceof ProcedureScope) ) {
+				//  frameScope = frameScope.getParentScope();
+				//}
+				sourceFile = frameScope.getSourceFile();
+			}
 		}
 		Scope loopScope = new LoopScope(this.experiment, sourceFile, firstLn-1, lastLn-1, cct_id, flat_id);
 

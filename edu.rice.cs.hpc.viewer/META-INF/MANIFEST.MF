@@ -32,8 +32,8 @@ Import-Package: edu.rice.cs.hpc.common.ui,
  org.osgi.framework;version="1.6.0",
  org.osgi.service.prefs;version="1.1.1"
 Bundle-ClassPath: hpcviewer.jar,
- external-jars/org.swtchart_0.8.0.v20120301.jar,
- external-jars/org.swtchart.ext_0.8.0.v20120301.jar
+ external-jars/org.swtchart_0.9.0.v20140219.jar,
+ external-jars/org.swtchart.ext_0.9.0.v20140219.jar
 Export-Package: edu.rice.cs.hpc.viewer.editor,
  edu.rice.cs.hpc.viewer.experiment,
  edu.rice.cs.hpc.viewer.framework,

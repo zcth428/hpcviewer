@@ -62,6 +62,11 @@ if test $? -ne 0 ; then
     die "$java_version is too old, use Java 1.5 or later"
 fi
 
+java_vendor=`java -version | sed -n 2p  | awk '{print $1}'`
+if test "$java_vendor" = "gij"; then
+    die "Java GNU GIJ is not supported. Please use JVM from Oracle/SUN or IBM"
+fi
+
 #------------------------------------------------------------
 # Prepare the environment.
 #------------------------------------------------------------

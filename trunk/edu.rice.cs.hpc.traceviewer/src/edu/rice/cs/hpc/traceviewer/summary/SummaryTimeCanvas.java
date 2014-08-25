@@ -268,8 +268,10 @@ implements IOperationHistoryListener
 					// compute the percentage
 					// ------------------------------------------------
 					float percent = (float)100.0 * ((float)stat / (float) totPixels);
-					final String percent_str = String.format("%.2f %%", percent);
-					return percent_str;
+					if (percent > 0) {
+						final String percent_str = String.format("%.2f %%", percent);
+						return percent_str;
+					}
 				}
 			}
 			return null;

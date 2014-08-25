@@ -89,7 +89,7 @@ public class ProcessTimeline {
 	}
 
 	/** Gets the cpid that corresponds to the index sample in timeLine. */
-	public int getCpid(int sample) {
+	private int getCpid(int sample) {
 		return data.getCpid(sample);
 	}
 
@@ -105,9 +105,9 @@ public class ProcessTimeline {
 		} else {
 			int cpid = getCpid(sample);
 			CallPath cp = scopeMap.get(cpid);
-			if (cp != null)
-				cp.updateCurrentDepth(depth);
-			else {
+			if (cp != null) {
+				//cp.updateCurrentDepth(depth);
+			} else {
 				System.err.println("ERROR: No sample found for cpid " + cpid
 						+ " in trace sample: " + sample);
 				System.err

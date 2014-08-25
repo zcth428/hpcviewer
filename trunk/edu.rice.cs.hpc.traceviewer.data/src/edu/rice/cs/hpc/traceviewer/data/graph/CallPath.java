@@ -15,12 +15,6 @@ public class CallPath
 	/**the depth of leafScope (where current cpid is)*/
 	private int maxDepth;
 	
-	/**the Scope at the current depth along the path between root Scope and leafScope*/
-	private Scope currentDepthScope;
-	
-	/**the current depth being viewed*/
-	private int currentDepth;
-	
 	/**the list of all functions as strings in the call path*/
 	private Vector<String> functionNames;
 	
@@ -34,8 +28,6 @@ public class CallPath
 	{
 		leafScope = _leafScope;
 		maxDepth = _maxDepth;
-		currentDepthScope = _currentDepthScope;
-		currentDepth = _currentDepth;
 		functionNames = new Vector<String>();
 		dataNames = new Vector<String>();
 	}
@@ -50,17 +42,12 @@ public class CallPath
 	{
 		if (depth < 0)
 			return null;
-		if (depth == currentDepth && currentDepthScope != null)
-			return currentDepthScope;
 		
 		int cDepth = maxDepth;
 		Scope cDepthScope = leafScope;
-		if (depth < currentDepth && currentDepthScope != null)
-		{
-			cDepth = currentDepth;
-			cDepthScope = currentDepthScope;
-		}
-		while(!(cDepthScope.getParentScope() instanceof RootScope) && (cDepth > depth || !(cDepthScope instanceof CallSiteScope || cDepthScope instanceof ProcedureScope)))
+
+		while(!(cDepthScope.getParentScope() instanceof RootScope) && 
+				(cDepth > depth || !(cDepthScope instanceof CallSiteScope || cDepthScope instanceof ProcedureScope)))
 		{
 			cDepthScope = cDepthScope.getParentScope();
 			if((cDepthScope instanceof CallSiteScope) || (cDepthScope instanceof ProcedureScope))
@@ -82,27 +69,11 @@ public class CallPath
 		leafScope = _leafScope;
 	}
 	
-	public Scope getCurrentDepthScope()
-	{
-		return currentDepthScope;
-	}
-	
-	public void setCurrentDepthScope()
-	{
-		currentDepthScope = getScopeAt(currentDepth);
-	}
-
-	public int getCurrentDepth()
-	{
-		return currentDepth;
-	}
-	
-	public void updateCurrentDepth(int newDepth)
-	{
-		currentDepthScope = getScopeAt(newDepth);
-		currentDepth = newDepth > maxDepth-1 ? maxDepth-1 : newDepth;
-	}
-	
+	/*************************************
+	 * retrieve the list of function names of this call path
+	 * 
+	 * @return vector of procedure names
+	 ************************************/
 	public Vector<String> getFunctionNames()
 	{
 		if (functionNames.isEmpty())
@@ -125,5 +96,15 @@ public class CallPath
 	public Vector<String> getDataNames()
 	{
 		return dataNames;
+	}
+	
+	/*******************************
+	 * Retrieve the maximum depth of this call path
+	 * 
+	 * @return the max depth
+	 *******************************/
+	public int getMaxDepth()
+	{
+		return maxDepth;
 	}
 }

@@ -34,7 +34,9 @@ public class DepthPaintThread extends BasePaintThread {
 
 	@Override
 	protected void paint(int position, BaseDataVisualization data, int height) {
-		if (position <= data.depth)
+		// display only if the current thread line number is within the depth
+		// note that the line number starts from zero while depth starts from 1 (I think)
+		if (position < data.depth)
 			paint(gc, data.x_start, data.x_end, height, data.color);
 	}
 

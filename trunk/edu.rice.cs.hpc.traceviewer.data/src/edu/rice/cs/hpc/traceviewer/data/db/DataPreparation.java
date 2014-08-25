@@ -58,15 +58,14 @@ public abstract class DataPreparation
 		if (cp==null)
 			return;
 		
-		int succDepth = cp.getCurrentDepth();
-		String succFunction = cp.getCurrentDepthScope().getName();
+		String succFunction = cp.getScopeAt(depth).getName(); 
 		Color succColor = colorTable.getColor(succFunction);
 		int last_ptl_index = ptl.size() - 1;
 		
 
 		for (int index = 0; index < ptl.size(); index++)
 		{
-			int currDepth = succDepth;
+			final int currDepth = cp.getMaxDepth(); 
 			int currSampleMidpoint = succSampleMidpoint;
 			
 			//-----------------------------------------------------------------------
@@ -83,11 +82,14 @@ public abstract class DataPreparation
 				cp = ptl.getCallPath(indexSucc, depth);
 				if(cp != null)
 				{
-					succDepth = cp.getCurrentDepth();
-					succFunction = cp.getCurrentDepthScope().getName();
+					succFunction = cp.getScopeAt(depth).getName(); 
 					succColor = colorTable.getColor(succFunction);
 					
-					still_the_same = (succDepth == currDepth) && (succColor.equals(currColor));
+					// the color will be the same if and only if the two regions have the save function name
+					// regardless they are from different max depth and different call path.
+					// This can be misleading, but at the moment it is a good approximation
+					
+					still_the_same = (succColor.equals(currColor));
 					if (still_the_same)
 						end = indexSucc;
 				}

@@ -25,7 +25,6 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
  * 
  * REMARK: THIS CODE IS NOT COMPATIBLE WITH OLD DATABASE !!!
  *  
- * @author laksonoadhianto
  *
  *************************************************************************************************/
 
@@ -165,7 +164,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		FlatScopeInfo flat_info_s = this.htFlatScope.get( id );
 		
 		if (flat_info_s == null) {
-			boolean need_to_create_file_scope = true;
+
 			//-----------------------------------------------------------------------------
 			// Initialize the flat scope
 			//-----------------------------------------------------------------------------
@@ -179,19 +178,8 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			ProcedureScope proc_cct_s;
 			if (cct_s instanceof CallSiteScope) {
 				proc_cct_s = ((CallSiteScope)cct_s).getProcedureScope();
-			} else if (cct_s instanceof ProcedureScope) {
-				ProcedureScope cct_proc_s = (ProcedureScope) cct_s;
-				Scope cct_enc_s = cct_s;
-				//---------------------------------------------------------------------------
-				// Old database: if CCT scope is a procedure, and it is an alien, then
-				// 	we need to find the enclosing procedure of its parent
-				//---------------------------------------------------------------------------
-				if (cct_proc_s.isAlien()) {
-					//need_to_create_file_scope = false;
-				}
-				proc_cct_s = this.findEnclosingProcedure(cct_enc_s);
 			} else {
-				proc_cct_s = this.findEnclosingProcedure(cct_s);
+				proc_cct_s = findEnclosingProcedure(cct_s);
 			}
 
 			if (proc_cct_s == null) {
@@ -203,23 +191,21 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			//-----------------------------------------------------------------------------
 			flat_info_s.flat_s = cct_s.duplicate();
 			
-			if (need_to_create_file_scope) {
-				//-----------------------------------------------------------------------------
-				// Initialize the load module scope
-				//-----------------------------------------------------------------------------
-				flat_info_s.flat_lm = this.createFlatModuleScope(proc_cct_s);
+			//-----------------------------------------------------------------------------
+			// Initialize the load module scope
+			//-----------------------------------------------------------------------------
+			flat_info_s.flat_lm = this.createFlatModuleScope(proc_cct_s);
 
-				//-----------------------------------------------------------------------------
-				// Initialize the flat file scope
-				//-----------------------------------------------------------------------------
-				flat_info_s.flat_file = this.createFlatFileScope(proc_cct_s, flat_info_s.flat_lm);
-				
-				//-----------------------------------------------------------------------------
-				// Attach the scope to the file if it is a procedure
-				//-----------------------------------------------------------------------------
-				if (flat_info_s.flat_s instanceof ProcedureScope) {
-					this.addToTree(flat_info_s.flat_file, flat_info_s.flat_s);
-				}
+			//-----------------------------------------------------------------------------
+			// Initialize the flat file scope
+			//-----------------------------------------------------------------------------
+			flat_info_s.flat_file = this.createFlatFileScope(proc_cct_s, flat_info_s.flat_lm);
+			
+			//-----------------------------------------------------------------------------
+			// Attach the scope to the file if it is a procedure
+			//-----------------------------------------------------------------------------
+			if (flat_info_s.flat_s instanceof ProcedureScope) {
+				this.addToTree(flat_info_s.flat_file, flat_info_s.flat_s);
 			}
 
 			//-----------------------------------------------------------------------------
@@ -257,6 +243,15 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		return lm_flat_s;
 	}
 	
+	/*****************************************************************
+	 * generate a unique file ID which depends on the load module:
+	 * unique file ID = load_module_ID + file_ID 
+	 * 
+	 * @param file
+	 * @param lm
+	 * 
+	 * @return
+	 *****************************************************************/
 	private String getUniqueFileID(SourceFile file, LoadModuleScope lm)
 	{
 		return lm.getFlatIndex() + "/" + file.getFileID();

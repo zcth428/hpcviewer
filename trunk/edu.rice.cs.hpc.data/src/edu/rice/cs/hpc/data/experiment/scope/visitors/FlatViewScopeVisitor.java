@@ -31,7 +31,7 @@ import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 
 public class FlatViewScopeVisitor implements IScopeVisitor {
 	private Hashtable<Integer, LoadModuleScope> htFlatLoadModuleScope;
-	private Hashtable<Integer, FileScope> htFlatFileScope;
+	private Hashtable<String, FileScope> htFlatFileScope;
 	private HashMap<String, FlatScopeInfo> htFlatScope;
 	private HashMap<String, Scope[]> htFlatCostAdded;
 	
@@ -52,7 +52,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		this.experiment = exp;
 		
 		this.htFlatLoadModuleScope = new Hashtable<Integer, LoadModuleScope>();
-		this.htFlatFileScope = new Hashtable<Integer, FileScope>();
+		this.htFlatFileScope = new Hashtable<String, FileScope>();
 		this.htFlatScope     = new HashMap<String, FlatScopeInfo>();
 		this.htFlatCostAdded = new HashMap<String, Scope[]>();
 		
@@ -257,7 +257,11 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 		return lm_flat_s;
 	}
 	
-
+	private String getUniqueFileID(SourceFile file, LoadModuleScope lm)
+	{
+		return lm.getFlatIndex() + "/" + file.getFileID();
+	}
+	
 	/*****************************************************************
 	 * Create the flat view of a file scope
 	 * @param cct_s
@@ -265,15 +269,15 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @return
 	 *****************************************************************/
 	private FileScope createFlatFileScope(Scope cct_s, LoadModuleScope flat_lm) {
-		SourceFile src_file = cct_s.getSourceFile();
-		int fileID   = src_file.getFileID();
-		FileScope flat_file = this.htFlatFileScope.get(fileID);
+		SourceFile src_file = cct_s.getSourceFile();	
+		String unique_file_id = getUniqueFileID(src_file, flat_lm);
+		FileScope flat_file = this.htFlatFileScope.get( unique_file_id );
 		
 		//-----------------------------------------------------------------------------
 		// ATTENTION: it is possible that a file can be included into more than one load module
 		//-----------------------------------------------------------------------------
 		if ( (flat_file == null) ){
-			flat_file = this.createFileScope(src_file, flat_lm);
+			flat_file = createFileScope(src_file, flat_lm, unique_file_id);
 			
 		} else {
 			
@@ -284,7 +288,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 				// check if the load module the existing file is the same with the scope's load module
 				if (flat_parent_lm.hashCode() != flat_lm.hashCode() ) {
 					// the same file in different load module scope !!!
-					flat_file = this.createFileScope(src_file, flat_lm);
+					flat_file = createFileScope(src_file, flat_lm, unique_file_id);
 				}
 			}
 
@@ -299,7 +303,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 	 * @param lm_s
 	 * @return
 	 *****************************************************************/
-	private FileScope createFileScope(SourceFile src_file, LoadModuleScope lm_s) {
+	private FileScope createFileScope(SourceFile src_file, LoadModuleScope lm_s, String unique_file_id) {
 		int fileID = src_file.getFileID();
 		FileScope file_s =  new FileScope( this.experiment, src_file, fileID );
 		//------------------------------------------------------------------------------
@@ -309,7 +313,7 @@ public class FlatViewScopeVisitor implements IScopeVisitor {
 			this.addToTree(root_ft, file_s);
 		else
 			this.addToTree(lm_s, file_s);
-		this.htFlatFileScope.put(fileID, file_s);
+		this.htFlatFileScope.put( unique_file_id, file_s);
 
 		return file_s;
 	}

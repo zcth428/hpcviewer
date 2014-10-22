@@ -428,10 +428,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	}
 
 
-	public File getXMLExperimentFile() {
-		return this.fileExperiment;
-	}
-
 	public void setXMLExperimentFile(File file) {
 		this.fileExperiment = file;
 	}

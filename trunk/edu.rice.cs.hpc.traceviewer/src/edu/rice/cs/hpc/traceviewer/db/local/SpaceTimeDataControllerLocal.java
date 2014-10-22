@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.spaceTimeData;
+package edu.rice.cs.hpc.traceviewer.db.local;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 /**
  * The local disk version of the Data controller
@@ -135,6 +136,12 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	public void fillTracesWithData(boolean changedBounds, int numThreadsToLaunch) {
 		//No need to do anything. The data for local is gotten from the file
 		//on demand on a per-timeline basis.
+	}
+
+
+	@Override
+	public String getName() {
+		return exp.getDefaultDirectory().getPath();
 	}
 
 }

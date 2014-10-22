@@ -25,9 +25,9 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.rice.cs.hpc.common.util.UserInputHistory;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
-import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
-import edu.rice.cs.hpc.traceviewer.db.RemoteDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
+import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
 import edu.rice.cs.hpc.traceviewer.framework.Activator;
 
 /*******************************************************

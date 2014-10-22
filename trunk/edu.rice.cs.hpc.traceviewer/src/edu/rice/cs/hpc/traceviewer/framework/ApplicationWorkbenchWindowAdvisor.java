@@ -12,8 +12,8 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
-import edu.rice.cs.hpc.traceviewer.db.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
+import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {

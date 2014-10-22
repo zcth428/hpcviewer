@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.db;
+package edu.rice.cs.hpc.traceviewer.db.local;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,8 +9,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
+import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.FileData;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerLocal;
 import edu.rice.cs.hpc.traceviewer.util.TraceProgressReport;
 
 public class LocalDBOpener extends AbstractDBOpener {
@@ -24,7 +25,7 @@ public class LocalDBOpener extends AbstractDBOpener {
 	
 	
 	@Override
-	SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
+	public SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, final IStatusLineManager statusMgr) {
 		
 		final Shell shell = window.getShell();

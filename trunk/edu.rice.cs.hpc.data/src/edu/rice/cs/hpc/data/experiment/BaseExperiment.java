@@ -98,12 +98,22 @@ public abstract class BaseExperiment implements IExperiment {
 				userData);		
 	}
 	
+	
+	/******
+	 * This method is used for opening XML from a remote machine
+	 *  
+	 * @param expStream : remote input stream
+	 * @param userData : customized user data
+	 * @param name : the remote directory
+	 * @throws Exception 
+	 *****/
 	public void open(InputStream expStream, IUserData<String, String> userData,
 		String name) throws Exception {
 	
 		new ExperimentFileXML().parse(expStream, name, this, false, userData);
-	
-}
+		// store the path of the remote directory
+		fileExperiment = new File(name);
+	}
 
 
 	public void setVersion (String v) 
@@ -161,6 +171,11 @@ public File getDefaultDirectory()
 {
 	return this.fileExperiment.getAbsoluteFile().getParentFile();
 }
+
+public File getXMLExperimentFile() {
+	return this.fileExperiment;
+}
+
 
 
 public void dispose()

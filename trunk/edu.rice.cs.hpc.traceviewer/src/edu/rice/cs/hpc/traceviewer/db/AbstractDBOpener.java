@@ -4,6 +4,8 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
+import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
 
 /**
  * An interface for the DBOpeners. Specifically, it is implemented by
@@ -16,7 +18,7 @@ import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
  */
 public abstract class AbstractDBOpener {
 
-	final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
+	protected final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
 	protected String errorMessage="";
 	
 	public String getErrorMessage(){
@@ -36,7 +38,7 @@ public abstract class AbstractDBOpener {
 	 * @param statusMgr
 	 * @return
 	 */
-	abstract SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window, String[] args,
+	public abstract SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window, String[] args,
 			IStatusLineManager statusMgr);
 
 	// Our current policy on closing: Except for back-to-back connections to the

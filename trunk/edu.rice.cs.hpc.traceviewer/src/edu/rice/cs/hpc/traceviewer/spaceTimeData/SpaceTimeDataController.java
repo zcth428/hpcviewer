@@ -57,7 +57,8 @@ public abstract class SpaceTimeDataController
 	// We probably want to get away from this. The for code that needs it should be
 	// in one of the threads. It's here so that both local and remote can use
 	// the same thread class yet get their information differently.
-	AtomicInteger lineNum, depthLineNum;
+	protected AtomicInteger lineNum;
+	AtomicInteger depthLineNum;
 		
 	/** The maximum depth of any single CallStackSample in any trace. */
 	protected int maxDepth;
@@ -288,9 +289,7 @@ public abstract class SpaceTimeDataController
 	 * 
 	 * @return String: the name of the database
 	 *************************************************************************/
-	public String getName() {
-		return exp.getDefaultDirectory().getPath();
-	}
+	abstract public String getName() ;
 
 	public long getMaxEndTime() {
 		return maxEndTime;

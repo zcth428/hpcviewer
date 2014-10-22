@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.db;
+package edu.rice.cs.hpc.traceviewer.db.remote;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

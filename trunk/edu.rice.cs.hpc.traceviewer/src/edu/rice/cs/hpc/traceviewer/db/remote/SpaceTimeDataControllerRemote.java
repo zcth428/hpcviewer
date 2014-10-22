@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.spaceTimeData;
+package edu.rice.cs.hpc.traceviewer.db.remote;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,11 +9,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.RemoteFilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
-import edu.rice.cs.hpc.traceviewer.db.DecompressionThread;
-import edu.rice.cs.hpc.traceviewer.db.IThreadListener;
-import edu.rice.cs.hpc.traceviewer.db.RemoteDataRetriever;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 
 /**
@@ -148,5 +146,10 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 			System.err.println("Error in Decompression: " + msg);
 		}
 		
+	}
+
+	@Override
+	public String getName() {
+		return exp.getXMLExperimentFile().getAbsolutePath();
 	}
 }

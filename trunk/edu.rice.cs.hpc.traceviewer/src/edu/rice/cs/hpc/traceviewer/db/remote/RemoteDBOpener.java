@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.db;
+package edu.rice.cs.hpc.traceviewer.db.remote;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -18,15 +18,17 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataControllerRemote;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 /**
  * Handles the protocol and commands to set up the session with the server.
  * @author Philip Taffet
  *
  */
-public class RemoteDBOpener extends AbstractDBOpener {
+public class RemoteDBOpener extends AbstractDBOpener 
+{
 	private static final int PROTOCOL_VERSION = 0x00010001;
 	//For more information on message structure, see protocol documentation at the end of RemoteDataReceiver 
 	DataOutputStream sender;
@@ -40,6 +42,7 @@ public class RemoteDBOpener extends AbstractDBOpener {
 	}
 
 	static Socket serverConnection = null;
+	
 	@Override
 	public SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {

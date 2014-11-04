@@ -76,7 +76,7 @@ public class ProcedureClassMap extends AliasMap<String,ProcedureClassData> {
 		Iterator<Entry<String, ProcedureClassData>> iterator = data.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, ProcedureClassData> entry = iterator.next();
-			String glob = entry.getKey().replace("*", ".*");
+			String glob = entry.getKey().replace("*", ".*").replace("?", ".?");
 			if (key.equals(glob) || key.matches(glob)) {
 				return entry.getValue();
 			}

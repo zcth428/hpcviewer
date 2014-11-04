@@ -101,8 +101,14 @@ public abstract class DataPreparation
 				// start and middle samples: the rightmost point is the midpoint between
 				// 	the two samples
 				// -------------------------------------------------------------------
+				// laksono 2014.11.04: previously midpoint(ptl.getTime(end),ptl.getTime(end+1)) : ptl.getTime(end);
 				
-				double succ = usingMidpoint ? midpoint(ptl.getTime(end),ptl.getTime(end+1)) : ptl.getTime(end);
+				// assuming a range of three samples p0, p1 and p2 where p0 is the beginning, p1 is the last sample
+				//		that has the same color as p0, and p2 is the sample that has different color as p0 (and p1)
+				//		in time line: p0 < p1 < p2
+				// a non-midpoint policy then should have a range of p0 to p2 with p0 color.
+				
+				double succ = usingMidpoint ? midpoint(ptl.getTime(end),ptl.getTime(end+1)) : ptl.getTime(end+1);
 				succSampleMidpoint = (int) Math.max(0, ((succ-begTime)/pixelLength));
 			}
 			else

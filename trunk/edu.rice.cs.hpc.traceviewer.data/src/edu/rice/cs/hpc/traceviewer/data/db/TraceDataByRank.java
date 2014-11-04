@@ -212,7 +212,9 @@ public class TraceDataByRank {
 				return low;
 		} else 
 		{
-			return low+1;
+			// without using midpoint, we adopt the leftmost sample approach.
+			// this means whoever on the left side, it will be the painted
+			return low;
 		}
 	}
 

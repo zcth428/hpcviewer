@@ -83,7 +83,6 @@ public class TraceDatabase {
 			final String[] args, IStatusLineManager statusMgr,
 			AbstractDBOpener opener) {
 		
-		
 		AbstractDBOpener openThis = opener;
 		final Shell shell = window.getShell(); 
 		TraceDatabase database = TraceDatabase.getInstance(window);
@@ -100,6 +99,7 @@ public class TraceDatabase {
 				if (dlg.open() == Window.CANCEL)
 					return false;
 				openThis = dlg.getDBOpener();
+				stdc = openThis.openDBAndCreateSTDC(window, args, statusMgr);				
 			}
 		} while (stdc == null); //until user enters a valid database or cancels keep popping up dialogs
 

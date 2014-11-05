@@ -27,6 +27,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
+import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
@@ -293,6 +294,10 @@ public class CallStackViewer extends TableViewer
 
 					setSample(p,depth);
 				}
+			}
+		} else if (operation.hasContext(RefreshOperation.context)) {
+			if (event.getEventType() == OperationHistoryEvent.DONE) {
+				updateView();
 			}
 		}
 	}

@@ -169,7 +169,7 @@ public ExperimentConfiguration getConfiguration()
 	
 public File getDefaultDirectory()
 {
-	return this.fileExperiment.getAbsoluteFile().getParentFile();
+	return this.fileExperiment.getParentFile();
 }
 
 public File getXMLExperimentFile() {

@@ -78,7 +78,7 @@ public abstract class SpaceTimeDataController
 	 * for local database
 	 * 
 	 * @param _window : SWT window
-	 * @param expFile : experiment file
+	 * @param expFile : experiment file (XML format)
 	 */
 	public SpaceTimeDataController(IWorkbenchWindow _window, File expFile) {
 		

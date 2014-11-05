@@ -33,8 +33,10 @@ import edu.rice.cs.hpc.traceviewer.framework.Activator;
 /*******************************************************
  * 
  * Generic dialog window to open database both locally and remotely
- *
- */
+ * 
+ * @author Brett Gutstein, Philip Taffet (original)
+ * @author Laksono (maintainer)
+ *******************************************************/
 public class OpenDatabaseDialog extends Dialog {
 
 	// ----------------------------------------------------------------
@@ -54,7 +56,7 @@ public class OpenDatabaseDialog extends Dialog {
 
 	//Index 0 = Server's name/address; Index 1 = Port; Index 2 = Path to database folder on server
 	final static int FieldServerName = 0, FieldPortKey = 1, FieldPathKey = 2;
-	final static int FieldDatabasePath = 3;
+	public final static int FieldDatabasePath = 3;
 
 	// ----------------------------------------------------------------
 	// variables
@@ -197,6 +199,9 @@ public class OpenDatabaseDialog extends Dialog {
 						// user click cancel
 						return;
 				comboBoxes[FieldDatabasePath].setText(args[FieldDatabasePath]);
+				
+				// automatically close the dialog box
+				OpenDatabaseDialog.this.okPressed();
 			}
 			
 			@Override
@@ -301,6 +306,15 @@ public class OpenDatabaseDialog extends Dialog {
 	}
 	
 	
+	/*******
+	 * Automatically fill the combo with the user's previous entries (based on history) 
+	 * 
+	 * @param combo
+	 * @param history
+	 * @param defaultValue
+	 * @param limit
+	 * @param tooltipText
+	 */
 	private void setComboWithHistory(Combo combo, UserInputHistory history, String defaultValue,
 			int limit, String tooltipText)
 	{
@@ -320,6 +334,10 @@ public class OpenDatabaseDialog extends Dialog {
 	
 	
 	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+	 */
 	protected void okPressed() {
 		
 		useLocalDatabase = tabFolder.getSelectionIndex() == 0;

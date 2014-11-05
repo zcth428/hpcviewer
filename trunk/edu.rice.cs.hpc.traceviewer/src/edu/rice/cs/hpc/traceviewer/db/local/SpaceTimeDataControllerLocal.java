@@ -4,14 +4,19 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
+import edu.rice.cs.hpc.data.util.Constants;
+import edu.rice.cs.hpc.data.util.MergeDataFiles;
+import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.util.TraceProgressReport;
 
 /**
  * The local disk version of the Data controller
@@ -21,25 +26,95 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
  */
 public class SpaceTimeDataControllerLocal extends SpaceTimeDataController 
 {	
-	private final File traceFile;
+	protected final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
+	private String traceFilePath;
 
-	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, 
-			IStatusLineManager _statusMgr, File expFile,
-			File _traceFile) {
+	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, String databaseDirectory) {
 
-		super(_window, expFile);
-		
-		final TraceAttribute trAttribute = exp.getTraceAttribute();
-		
-		traceFile = _traceFile;
-		try {
-			dataTrace = new BaseData(traceFile.getAbsolutePath(), trAttribute.dbHeaderSize, 24);
-		} catch (IOException e) {
-			System.err.println("Master buffer could not be created");
-		}
+		super(_window, new File(databaseDirectory + File.separator + Constants.DATABASE_FILENAME));
 	}
 
 
+	/*********************
+	 * Start reading and initializing trace file
+	 * 
+	 * @param _window : current window instant
+	 * @param _statusMgr : the window's status manager
+	 * 
+	 * @return true if the trace file exists, false otherwise
+	 *********************/
+	public boolean setupTrace(IWorkbenchWindow _window, IStatusLineManager _statusMgr)
+	{
+		final TraceAttribute trAttribute = exp.getTraceAttribute();
+
+		if (trAttribute.dbGlob.charAt(0) == '*')
+		{	// original format
+			traceFilePath = getTraceFile(exp.getDefaultDirectory().getAbsolutePath(), _statusMgr);
+			
+		} else 
+		{
+			// new format
+			traceFilePath = exp.getDefaultDirectory() + File.separator + trAttribute.dbGlob;
+		}
+		if (traceFilePath != null)
+		{
+			try {
+				dataTrace = new BaseData(traceFilePath, trAttribute.dbHeaderSize, 24);
+				return true;
+				
+			} catch (IOException e) {
+				MessageDialog.openError(_window.getShell(), "I/O Error", e.getMessage());
+				System.err.println("Master buffer could not be created");
+			}
+		}
+		return false;
+	}
+	
+	/*********************
+	 * get the absolute path of the trace file (experiment.mt).
+	 * If the file doesn't exist, it is possible it is not merged yet 
+	 *  (in this case we'll merge them automatically)
+	 * 
+	 * @param directory
+	 * @param statusMgr
+	 * @return
+	 *********************/
+	private String getTraceFile(String directory,	final IStatusLineManager statusMgr)
+	{
+		try {
+			statusMgr.setMessage("Merging traces ...");
+
+			final TraceProgressReport traceReport = new TraceProgressReport(
+					statusMgr);
+			final String outputFile = directory
+					+ File.separatorChar + "experiment.mt";
+			
+			File dirFile = new File(directory);
+			final MergeDataFiles.MergeDataAttribute att = MergeDataFiles
+					.merge(dirFile, "*.hpctrace", outputFile,
+							traceReport);
+			
+			if (att != MergeDataFiles.MergeDataAttribute.FAIL_NO_DATA) {
+				File fileTrace = new File(outputFile);
+				if (fileTrace.length() > MIN_TRACE_SIZE) {
+					return fileTrace.getAbsolutePath();
+				}
+				
+				System.err.println("Warning! Trace file "
+						+ fileTrace.getName()
+						+ " is too small: "
+						+ fileTrace.length() + "bytes .");
+			}
+			System.err
+					.println("Error: trace file(s) does not exist or fail to open "
+							+ outputFile);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	/***********************************************************************
 	 * Gets the next available trace to be filled/painted
 	 * 
@@ -118,7 +193,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	}
 	
 	public String getTraceFileAbsolutePath(){
-		return traceFile.getAbsolutePath();
+		return traceFilePath;
 	}
 
 	@Override

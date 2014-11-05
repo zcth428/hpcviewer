@@ -444,15 +444,15 @@ public class ProcedureClassDialog extends TitleAreaDialog {
 		 */
 		public Image getImage(Object element) {
 			String key = ProcedureClassDialog.this.getProcedureName(element);
-			if (key == UnknownData) {
-				// procedure doesn't exist in the current data, let's find it in the data map
-				return null;
-			} else {
+			if (key != UnknownData) {
 				// procedure exist
 				final ProcedureClassData val = ProcedureClassDialog.this.data.get(key);
-				Image image = cacheImages.get(key, val.getRGB());
-				return image;
+				if (val != null) {
+					Image image = cacheImages.get(key, val.getRGB());
+					return image;
+				}
 			}
+			return null;
 		}
 		
 		/*

@@ -16,6 +16,7 @@ package edu.rice.cs.hpc.data.experiment.xml;
 
 
 import edu.rice.cs.hpc.data.experiment.*;
+import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.Grep;
 import edu.rice.cs.hpc.data.util.IUserData;
 
@@ -127,12 +128,20 @@ public void parse(File file, BaseExperiment experiment, boolean need_metrics, IU
 		//	it uses old technique of reader line by line. we should come
 		//	up with a better xml parser.
 		// note: this is a quick hack to fix slow xml reader in ibm bg something
+		String directory, xmlFilePath;
+		if (file.isFile()) {
+			directory = file.getParent(); // it's experiment.xml file
+			xmlFilePath = file.getAbsolutePath();
+		} else {
+			directory = file.getAbsolutePath(); // it's a database directory
+			xmlFilePath = directory + File.separatorChar + Constants.DATABASE_FILENAME;
+		}
 		
-		String callpathLoc = file.getParent() + "/callpath.xml";
+		String callpathLoc = directory + File.separatorChar + "callpath.xml";
 		File callpathFile = new File(callpathLoc);
 		if (!callpathFile.exists())
 		{
-			Grep.grep(file.getAbsolutePath(), callpathLoc, "<M ", false);
+			Grep.grep(xmlFilePath, callpathLoc, "<M ", false);
 			callpathFile = new File(callpathLoc);
 		}
 		stream = new FileInputStream(callpathFile);

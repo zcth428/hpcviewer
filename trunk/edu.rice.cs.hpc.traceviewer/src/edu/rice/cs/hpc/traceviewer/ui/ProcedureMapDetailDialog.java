@@ -165,13 +165,27 @@ public class ProcedureMapDetailDialog extends Dialog {
 	protected void okPressed() {
 		proc = txtProc.getText();
 		if (proc == null || proc.isEmpty()) {
+			// we do not allow empty pattern
+			
 			MessageDialog.openError(getShell(), "Error", "Procedure pattern cannot be empty");
 			Display display = getShell().getDisplay();
 			txtProc.setBackground(display.getSystemColor(SWT.COLOR_RED));
 			return;
+		} else {
+			// check the validity of the pattern
+			
+			try {
+				"Function".matches(proc.replace("*", ".*").replace("?", ".?"));
+				
+				// the pattern looks valid, ready to close the dialog
+				
+				description = txtClass.getText();
+				super.okPressed();
+				
+			} catch (java.util.regex.PatternSyntaxException e) {
+				MessageDialog.openError(getShell(), "Error", "Pattern is not valid:\n" + e.getMessage());
+			}
 		}
-		description = txtClass.getText();
-		super.okPressed();
 	}
 	
 	/***

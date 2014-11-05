@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.traceviewer.db;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
 
@@ -18,7 +17,6 @@ import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
  */
 public abstract class AbstractDBOpener {
 
-	protected final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
 	protected String errorMessage="";
 	
 	public String getErrorMessage(){

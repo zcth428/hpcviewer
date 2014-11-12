@@ -12,6 +12,11 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
+/*****************************************************************
+ * 
+ * wrapper class for JSCH library
+ *
+ *****************************************************************/
 public class SSHManager 
 {
 	private static final Logger LOGGER = 
@@ -79,8 +84,6 @@ public class SSHManager
 			sesConnection = jschSSHChannel.getSession(strUserName, 
 					strConnectionIP, intConnectionPort);
 			sesConnection.setPassword(strPassword);
-			// UNCOMMENT THIS FOR TESTING PURPOSES, BUT DO NOT USE IN PRODUCTION
-			// sesConnection.setConfig("StrictHostKeyChecking", "no");
 			sesConnection.connect(intTimeOut);
 		}
 		catch(JSchException jschX)
@@ -164,9 +167,9 @@ public class SSHManager
 	      * HOST: IP ADDRESS OF THE SSH SERVER
 	     **/
 	     String command = "ls";
-	     String userName = "la5";
-	     String password = "Munsif77";
-	     String connectionIP = "eddie.cs.rice.edu";
+	     String userName = "";
+	     String password = "";
+	     String connectionIP = "";
 	     SSHManager instance = new SSHManager(userName, password, connectionIP, "");
 	     String errorMessage = instance.connect();
 

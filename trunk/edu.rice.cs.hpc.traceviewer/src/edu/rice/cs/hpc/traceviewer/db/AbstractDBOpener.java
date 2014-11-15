@@ -43,4 +43,11 @@ public abstract class AbstractDBOpener {
 	// same server, we should close the server when we are making a new
 	// connection, local or remote.
 
+	
+	/*****
+	 * closing the database.
+	 * The caller is responsible to call this method to terminate the connection (in case of remote database)
+	 * or closing local file (local database)
+	 */
+	public abstract void end();
 }

@@ -73,6 +73,13 @@ public class LocalDBOpener extends AbstractDBOpener {
 			return stdc;
 		}
 		return null;
+	}
+
+
+	@Override
+	public void end() {
+		// TODO Auto-generated method stub
+		
 	}	
 }
 

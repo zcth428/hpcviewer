@@ -15,4 +15,11 @@ public class RemoteConnectionInfo
   
   // info needed for SSH tunneling
   public String sshTunnelUsername, sshTunnelHostname, sshTunnelPassword;
+  
+  
+  public String toString() 
+  {
+	  return "Hostname: " + sshTunnelHostname + ", "
+			  + "Hostname user: " + sshTunnelUsername ;
+  }
 }

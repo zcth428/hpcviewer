@@ -67,6 +67,10 @@ public class RemoteDBOpener extends AbstractDBOpener
 	public SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) {
 
+		// --------------------------------------------------------------
+		// step 1 : create a SSH tunnel for the main port if necessary
+		// --------------------------------------------------------------
+		
 		int port = Integer.parseInt(connectionInfo.serverPort);
 		boolean use_tunnel = (connectionInfo.sshTunnelHostname != null);
 		String host = connectionInfo.serverName;
@@ -75,11 +79,16 @@ public class RemoteDBOpener extends AbstractDBOpener
 			// we need to setup the SSH tunnel
 			if (! tunneling(window, port))
 			{
+				errorMessage = "Unable to create SSH tunnel to " + connectionInfo;
 				return null;
 			}
 			host = LOCALHOST;
 		}
 		
+		// --------------------------------------------------------------
+		// step 2 : initial contact to the server.
+		//			if there's no reply or I/O error, we quit
+		// --------------------------------------------------------------
 		
 	    boolean connectionSuccess = connectToServer(window, host, port);
 		if (!connectionSuccess)
@@ -111,7 +120,19 @@ public class RemoteDBOpener extends AbstractDBOpener
 				return null;
 			}
 			
+			// --------------------------------------------------------------
+			// step 3 : create a SSH tunnel for XML port if necessary
+			// --------------------------------------------------------------
+			
 			Debugger.printDebug(2, "About to connect to socket "+ xmlMessagePortNumber + " at "+ System.nanoTime());
+			
+			if (use_tunnel &&  (port != xmlMessagePortNumber)) {
+				if (!tunneling(window, xmlMessagePortNumber)) {
+					errorMessage = "Unable to create SSH tunnel to " + connectionInfo;
+					return null;
+				}
+			}
+			
 			statusMgr.setMessage("Receiving XML stream");
 			
 			InputStream xmlStream = getXmlStream(host, port, xmlMessagePortNumber);
@@ -121,8 +142,13 @@ public class RemoteDBOpener extends AbstractDBOpener
 				return null;
 			}
 
+			// --------------------------------------------------------------
+			// step 4 : prepare communication channel
+			// --------------------------------------------------------------
+			
 			RemoteDataRetriever dataRetriever = new RemoteDataRetriever(serverConnection,
 					statusMgr, window.getShell(), compressionType);
+			
 			SpaceTimeDataControllerRemote stData = new SpaceTimeDataControllerRemote(dataRetriever, window, statusMgr,
 					xmlStream, connectionInfo.serverDatabasePath + " on " + host, traceCount, valuesX, sender);
 
@@ -130,7 +156,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 			
 			return stData;
 		} catch (IOException e) {
-			errorMessage = "Error communicating with server:\nIO Exception. Please try again.";
+			errorMessage = "Error communicating with server. \nIO Exception:" + e.getMessage() + "\nPlease try again.";
 			//The protocol is not robust. All exceptions are fatal.
 			return null;
 		}
@@ -192,7 +218,8 @@ public class RemoteDBOpener extends AbstractDBOpener
 	 */
 	private boolean tunneling(final IWorkbenchWindow window, int port)
 	{
-		tunnel = new LocalTunneling(new RemoteUserInfo(window.getShell()));
+		tunnel = new LocalTunneling(new RemoteUserInfo(window.getShell(), connectionInfo.sshTunnelUsername,
+									connectionInfo.sshTunnelHostname));
 		
 		try {
 			tunnel.connect(connectionInfo.sshTunnelUsername, connectionInfo.sshTunnelHostname, 
@@ -329,15 +356,19 @@ public class RemoteDBOpener extends AbstractDBOpener
 	{
 		private String password;
 		final private Shell shell;
+		final private String user, hostname;
 		
-		private RemoteUserInfo(Shell shell)
+		private RemoteUserInfo(Shell shell, String user, String hostname)
 		{
 			this.shell = shell;
+			this.user  = user;
+			this.hostname = hostname;
 		}
 		
 		@Override
 		public boolean promptPassword(String message) {
-			PasswordDialog dialog = new PasswordDialog(shell, "Input password", "Your password", null, null);
+			PasswordDialog dialog = new PasswordDialog(shell, "Input password for " + hostname,
+					"password for user " + user, null, null);
 			
 			boolean ret =  dialog.open() == Dialog.OK;
 			

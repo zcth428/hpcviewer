@@ -7,10 +7,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.zip.GZIPInputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
@@ -64,8 +64,16 @@ public class RemoteDBOpener extends AbstractDBOpener
 	// --------------------------------------------------------------------------------------
 	
 	@Override
-	public SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
-			String[] args, IStatusLineManager statusMgr) {
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener#openDBAndCreateSTDC(org.eclipse.ui.IWorkbenchWindow, 
+	 * java.lang.String[], org.eclipse.jface.action.IStatusLineManager)
+	 */
+	public SpaceTimeDataController openDBAndCreateSTDC(
+			IWorkbenchWindow window,
+			String[] args, IStatusLineManager statusMgr) 
+			throws UnknownHostException, IOException 
+	{
 
 		// --------------------------------------------------------------
 		// step 1 : create a SSH tunnel for the main port if necessary
@@ -77,11 +85,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 		
 		if  (use_tunnel) {
 			// we need to setup the SSH tunnel
-			if (! tunneling(window, port))
-			{
-				errorMessage = "Unable to create SSH tunnel to " + connectionInfo;
-				return null;
-			}
+			createSSHTunnel(window, port);
 			host = LOCALHOST;
 		}
 		
@@ -90,80 +94,76 @@ public class RemoteDBOpener extends AbstractDBOpener
 		//			if there's no reply or I/O error, we quit
 		// --------------------------------------------------------------
 		
-	    boolean connectionSuccess = connectToServer(window, host, port);
-		if (!connectionSuccess)
-			return null;
+	    connectToServer(window, host, port);
+
+		sendOpenDB(connectionInfo.serverDatabasePath);
+
+ 		// Check for DBOK
+		String errorMessage;
 		
-		try {
-			sendOpenDB(connectionInfo.serverDatabasePath);
-
-			// Check for DBOK
-			int traceCount;
-			int messageTag = RemoteDataRetriever.waitAndReadInt(receiver);
-			int xmlMessagePortNumber;
-			int compressionType;
-			TraceName[] valuesX;
-			if (messageTag == Constants.DB_OK)// DBOK
-			{
-				xmlMessagePortNumber  = receiver.readInt();
-				traceCount = receiver.readInt();
-				compressionType = receiver.readInt();
-				valuesX = formatTraceNames(traceCount);
-				
-			} else 
-			{
-				//If the message is not a DBOK, it must be a NODB 
-				//Right now, the error code isn't used, but it is there for the future
-				int errorCode = receiver.readInt();
-				errorMessage="The server could not find traces in the directory:\n"
-                    + connectionInfo.serverDatabasePath + "\nPlease select a directory that contains traces. \nError code: " + errorCode+".";
-				return null;
-			}
+		int traceCount;
+		int messageTag = RemoteDataRetriever.waitAndReadInt(receiver);
+		int xmlMessagePortNumber;
+		int compressionType;
+		TraceName[] valuesX;
+		if (messageTag == Constants.DB_OK)// DBOK
+		{
+			xmlMessagePortNumber  = receiver.readInt();
+			traceCount = receiver.readInt();
+			compressionType = receiver.readInt();
+			valuesX = formatTraceNames(traceCount);
 			
-			// --------------------------------------------------------------
-			// step 3 : create a SSH tunnel for XML port if necessary
-			// --------------------------------------------------------------
-			
-			Debugger.printDebug(2, "About to connect to socket "+ xmlMessagePortNumber + " at "+ System.nanoTime());
-			
-			if (use_tunnel &&  (port != xmlMessagePortNumber)) {
-				if (!tunneling(window, xmlMessagePortNumber)) {
-					errorMessage = "Unable to create SSH tunnel to " + connectionInfo;
-					return null;
-				}
-			}
-			
-			statusMgr.setMessage("Receiving XML stream");
-			
-			InputStream xmlStream = getXmlStream(host, port, xmlMessagePortNumber);
-			
-			if (xmlStream == null) {//null if getting it failed
-				errorMessage="Error communicating with server:\nCould not receive XML stream. \nPlease try again.";
-				return null;
-			}
-
-			// --------------------------------------------------------------
-			// step 4 : prepare communication channel
-			// --------------------------------------------------------------
-			
-			RemoteDataRetriever dataRetriever = new RemoteDataRetriever(serverConnection,
-					statusMgr, window.getShell(), compressionType);
-			
-			SpaceTimeDataControllerRemote stData = new SpaceTimeDataControllerRemote(dataRetriever, window, statusMgr,
-					xmlStream, connectionInfo.serverDatabasePath + " on " + host, traceCount, valuesX, sender);
-
-			sendInfoPacket(sender, stData);
-			
-			return stData;
-		} catch (IOException e) {
-			errorMessage = "Error communicating with server. \nIO Exception:" + e.getMessage() + "\nPlease try again.";
-			//The protocol is not robust. All exceptions are fatal.
-			return null;
+		} else 
+		{
+			//If the message is not a DBOK, it must be a NODB 
+			//Right now, the error code isn't used, but it is there for the future
+			int errorCode = receiver.readInt();
+			errorMessage="The server could not find traces in the directory:\n"
+                + connectionInfo.serverDatabasePath + "\nPlease select a directory that contains traces. \nError code: " + errorCode+".";
+			throw new IOException(errorMessage);
 		}
-	
+		
+		// --------------------------------------------------------------
+		// step 3 : create a SSH tunnel for XML port if necessary
+		// --------------------------------------------------------------
+		
+		Debugger.printDebug(2, "About to connect to socket "+ xmlMessagePortNumber + " at "+ System.nanoTime());
+		
+		if (use_tunnel &&  (port != xmlMessagePortNumber)) {
+			// only create SSH tunnel if the XML socket has different port number
+			createSSHTunnel(window, xmlMessagePortNumber);			
+		}
+		
+		statusMgr.setMessage("Receiving XML stream");
+		
+		InputStream xmlStream = getXmlStream(host, port, xmlMessagePortNumber);
+		
+		if (xmlStream == null) {//null if getting it failed
+			errorMessage="Error communicating with server:\nCould not receive XML stream. \nPlease try again.";
+			throw new IOException(errorMessage);
+		}
+
+		// --------------------------------------------------------------
+		// step 4 : prepare communication channel
+		// --------------------------------------------------------------
+		
+		RemoteDataRetriever dataRetriever = new RemoteDataRetriever(serverConnection,
+				statusMgr, window.getShell(), compressionType);
+		
+		SpaceTimeDataControllerRemote stData = new SpaceTimeDataControllerRemote(dataRetriever, window, statusMgr,
+				xmlStream, connectionInfo.serverDatabasePath + " on " + host, traceCount, valuesX, sender);
+
+		sendInfoPacket(sender, stData);
+		
+		return stData;	
 	}
+	
 
 	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener#end()
+	 */
 	public void end() {
 		try {
 			// closing I/O and network connection
@@ -190,6 +190,26 @@ public class RemoteDBOpener extends AbstractDBOpener
 	// private methods
 	// --------------------------------------------------------------------------------------
 	
+	/*****
+	 * a wrapper for tunneling() function to throw an IOException
+	 * 
+	 * @param window
+	 * @param port
+	 * @throws IOException
+	 */
+	private void createSSHTunnel(IWorkbenchWindow window, int port) 
+			throws IOException
+	{
+		// we need to setup the SSH tunnel
+		try {
+			tunneling(window, port);
+		} catch (JSchException e) {
+			throw new IOException(e.getMessage()+": Unable to create SSH tunnel to " + connectionInfo + 
+					"\nPort: " + port);
+		}
+	}
+	
+	
 	/******
 	 * 
 	 * @param traceCount
@@ -215,26 +235,29 @@ public class RemoteDBOpener extends AbstractDBOpener
 	 * 
 	 * @return true if the connection is successful
 	 * 			flase otherwise
+	 * @throws JSchException 
 	 */
-	private boolean tunneling(final IWorkbenchWindow window, int port)
+	private void tunneling(final IWorkbenchWindow window, int port) 
+			throws JSchException
 	{
 		tunnel = new LocalTunneling(new RemoteUserInfo(window.getShell(), connectionInfo.sshTunnelUsername,
 									connectionInfo.sshTunnelHostname));
 		
-		try {
-			tunnel.connect(connectionInfo.sshTunnelUsername, connectionInfo.sshTunnelHostname, 
-					connectionInfo.serverName, port);
-			return true;
-			
-		} catch (JSchException e) {
-			e.printStackTrace();
-			errorMessage = e.getMessage();
-			
-			MessageDialog.openError(window.getShell(), "Error: cannot create SSH tunnel", e.getMessage());
-		}
-		return false;
+		tunnel.connect(connectionInfo.sshTunnelUsername, connectionInfo.sshTunnelHostname, 
+				connectionInfo.serverName, port);
 	}
 	
+	/***************
+	 * Get XML data from the server
+	 * 
+	 * @param serverURL
+	 * @param port
+	 * @param xmlMessagePortNumber
+	 * 
+	 * @return XML data in zipped format
+	 * 
+	 * @throws IOException
+	 */
 	private GZIPInputStream getXmlStream(String serverURL, int port, int xmlMessagePortNumber)
 			throws IOException {
 
@@ -274,40 +297,46 @@ public class RemoteDBOpener extends AbstractDBOpener
 		return xmlStream;
 	}
 
-	private boolean connectToServer(IWorkbenchWindow window, String serverURL, int port) {
-		try {
-			if (serverConnection != null && !serverConnection.isClosed()) {
-				if (!serverConnection.getRemoteSocketAddress().equals(
-						new InetSocketAddress(serverURL, port))) {
-					//Connecting to a different server
-					TraceDatabase.removeInstance(window);
+	
+	/*****************
+	 * Try to connect to a remote server
+	 * 
+	 * @param window
+	 * @param serverURL
+	 * @param port
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 */
+	private void connectToServer(IWorkbenchWindow window, String serverURL, int port) 
+			throws UnknownHostException, IOException 
+	{
+		if (serverConnection != null && !serverConnection.isClosed()) {
+			if (!serverConnection.getRemoteSocketAddress().equals(
+					new InetSocketAddress(serverURL, port))) 
+			{
+				//Connecting to a different server
+				TraceDatabase.removeInstance(window);
 
-					serverConnection = new Socket(serverURL, port);
-				}
-				//Connecting to same server, don't do anything.
-			}
-			else {// First connection 
 				serverConnection = new Socket(serverURL, port);
 			}
-			sender = new DataOutputStream(new BufferedOutputStream(
-					serverConnection.getOutputStream()));
-			receiver = new DataInputStream(new BufferedInputStream(
-					serverConnection.getInputStream()));
+			//Connecting to same server, don't do anything.
 		}
-		catch (ConnectException e1) {
-			// This is a legitimate catch that we need to expect. The rest
-			// should be very rare (ex. the internet goes down in the middle of
-			// a transmission)
-			errorMessage = "Error connecting to remote server:\nCould not connect. \nMake sure the server is running.";
-			return false;
+		else {// First connection 
+			serverConnection = new Socket(serverURL, port);
 		}
-		catch (IOException e) {
-			errorMessage = "Error connecting to remote server:\nIO exception. Please try again.";
-			return false;
-		}
-		return true;
+		sender = new DataOutputStream(new BufferedOutputStream(
+				serverConnection.getOutputStream()));
+		receiver = new DataInputStream(new BufferedInputStream(
+				serverConnection.getInputStream()));
 	}
 
+	/*******
+	 * sending info message to the server
+	 * 
+	 * @param _sender
+	 * @param stData
+	 * @throws IOException
+	 *******/
 	private void sendInfoPacket(DataOutputStream _sender,
 			SpaceTimeDataControllerRemote stData) throws IOException {
 
@@ -329,7 +358,16 @@ public class RemoteDBOpener extends AbstractDBOpener
 
 	}
 
-	private void sendOpenDB(String serverPathToDB) throws IOException {
+	
+	/*******
+	 * sending a message to the server to open a database
+	 * 
+	 * @param serverPathToDB
+	 * @throws IOException
+	 *******/
+	private void sendOpenDB(String serverPathToDB) 
+			throws IOException 
+			{
 		sender.writeInt(Constants.OPEN);
 		sender.writeInt(PROTOCOL_VERSION);
 		int len = serverPathToDB.length();

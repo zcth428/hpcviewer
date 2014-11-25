@@ -333,12 +333,6 @@ public class OpenDatabaseDialog extends Dialog
 			
 		});
 		
-/*		final Label lblPassword = new Label(grpTunnel, SWT.LEFT);
-		lblPassword.setText("Password:");
-		txtPassword = new Text(grpTunnel, SWT.LEFT);
-		txtPassword.setEchoChar('*');	
-		GridDataFactory.fillDefaults().grab(true, false).applyTo(txtPassword);*/
-		
 		// -------------------------------------------
 		// add listener to all three fields
 		// -------------------------------------------
@@ -354,6 +348,8 @@ public class OpenDatabaseDialog extends Dialog
 		if (!(errorMessage.equals(""))) {
 			final Label lblError = new Label(outerComposite, SWT.CENTER | SWT.WRAP);
 			lblError.setText(errorMessage);
+			lblError.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
+			
 			GridDataFactory.fillDefaults().grab(true, true).hint(SWT.DEFAULT, SWT.DEFAULT).align(SWT.FILL, SWT.CENTER).applyTo(lblError);
 			getShell().layout(true,true);
 		}

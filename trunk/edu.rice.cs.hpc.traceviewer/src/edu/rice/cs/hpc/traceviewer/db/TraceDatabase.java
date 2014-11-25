@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import org.eclipse.core.commands.Command;
@@ -88,18 +89,16 @@ public class TraceDatabase {
 		TraceDatabase database = TraceDatabase.getInstance(window);
 		SpaceTimeDataController stdc = null;
 		
-		 do {
-			
-			stdc = openThis.openDBAndCreateSTDC(window, args,
-					statusMgr);
-			
-			if (stdc == null) { //if STDC is null, directory, port, or server was incorrect
-				//open new dialog for user to choose new directory, port, or server
-				OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, openThis.getErrorMessage());
+		 do {			
+			try {
+				stdc = openThis.openDBAndCreateSTDC(window, args,
+						statusMgr);
+			} catch (IOException e) 
+			{
+				OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, e.getMessage());
 				if (dlg.open() == Window.CANCEL)
 					return false;
 				openThis = dlg.getDBOpener();
-				stdc = openThis.openDBAndCreateSTDC(window, args, statusMgr);				
 			}
 		} while (stdc == null); //until user enters a valid database or cancels keep popping up dialogs
 

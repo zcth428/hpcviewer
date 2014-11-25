@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
+import java.io.IOException;
+
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -17,11 +19,7 @@ import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
  */
 public abstract class AbstractDBOpener {
 
-	protected String errorMessage="";
 	
-	public String getErrorMessage(){
-		return errorMessage;
-	}
 
 	/**
 	 * This prepares the database for retrieving data and creates a
@@ -35,9 +33,10 @@ public abstract class AbstractDBOpener {
 	 *            The command line arguments used to start the application
 	 * @param statusMgr
 	 * @return
+	 * @throws IOException 
 	 */
 	public abstract SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window, String[] args,
-			IStatusLineManager statusMgr);
+			IStatusLineManager statusMgr) throws IOException;
 
 	// Our current policy on closing: Except for back-to-back connections to the
 	// same server, we should close the server when we are making a new

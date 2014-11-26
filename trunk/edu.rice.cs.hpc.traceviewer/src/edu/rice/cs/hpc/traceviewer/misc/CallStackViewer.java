@@ -25,11 +25,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.DepthOperation;
 import edu.rice.cs.hpc.traceviewer.operation.PositionOperation;
-import edu.rice.cs.hpc.traceviewer.operation.RefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
-import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
@@ -272,30 +271,8 @@ public class CallStackViewer extends TableViewer
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 
-		if (operation.hasContext(TraceOperation.traceContext)) {
-			int type = event.getEventType();
-			if (type == OperationHistoryEvent.DONE ||
-					type == OperationHistoryEvent.UNDONE ||
-					type == OperationHistoryEvent.REDONE) 
-			{
-				if (operation instanceof PositionOperation) 
-				{
-					Position p = ((PositionOperation)operation).getPosition();
-					int depth = getTable().getSelectionIndex();
-					Debugger.printDebug(1, "CT-p: " + p + "\t d: " + depth);
-
-					setSample(p,depth);
-				}
-				else if (operation instanceof ZoomOperation) 
-				{
-					Position p = ((ZoomOperation)operation).getFrame().position;
-					int depth = getTable().getSelectionIndex();
-					Debugger.printDebug(1, "CT-z: " + p + "\t d: " + depth);
-
-					setSample(p,depth);
-				}
-			}
-		} else if (operation.hasContext(RefreshOperation.context)) {
+		if (operation.hasContext(BufferRefreshOperation.context) ||
+				operation.hasContext(PositionOperation.context)) {
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
 				updateView();
 			}

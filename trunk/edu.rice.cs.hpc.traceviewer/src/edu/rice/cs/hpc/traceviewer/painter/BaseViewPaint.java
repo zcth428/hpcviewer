@@ -119,6 +119,9 @@ public abstract class BaseViewPaint {
 			MessageDialog.openError(window.getShell(), "Error while reading data", 
 					e.getMessage());
 			e.printStackTrace();
+			
+			// shutdown the monitor to end the progress bar
+			monitor.endProgress();
 			return false;
 		}
 		

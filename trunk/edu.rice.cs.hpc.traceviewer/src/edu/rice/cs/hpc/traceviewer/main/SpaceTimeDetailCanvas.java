@@ -890,7 +890,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 			super.redraw();
 
 			// -----------------------------------------------------------------------
-			// notify to SummaryView that a new image has been created,
+			// notify to all other views that a new image has been created,
 			//	and it needs to refresh the view
 			// -----------------------------------------------------------------------
 			notifyChangeBuffer(imageOrig.getImageData());
@@ -920,7 +920,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 *  
 	 *  @return boolean true of the pain is successful, false otherwise
 	 *************************************************************************/
-	public boolean paintDetailViewport(final GC masterGC, final GC origGC, 
+	private boolean paintDetailViewport(final GC masterGC, final GC origGC, 
 			int _numPixelsH, int _numPixelsV,
 			boolean refreshData)
 	{	
@@ -1034,7 +1034,8 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		final IUndoableOperation operation = event.getOperation();
 
 		// handling the operations
-		if (operation.hasContext(TraceOperation.traceContext)) 
+		if (operation.hasContext(TraceOperation.traceContext) ||
+				operation.hasContext(PositionOperation.context)) 
 		{
 			int type = event.getEventType();
 			// warning: hack solution
@@ -1047,7 +1048,13 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 			case OperationHistoryEvent.ABOUT_TO_REDO:
 			case OperationHistoryEvent.ABOUT_TO_UNDO:
 				historyOperation.setOperation(operation);
-				getDisplay().syncExec(historyOperation);
+				
+				// we don't want to run the operation in a separate thread or in the UI thread
+				// since this operation can incur an exception such as time out or connection error.
+				// instead, we should run within the current process (it isn't ideal, but it works
+				//	just fine at the moment)
+				
+				historyOperation.run();
 				break;
 			}
 		}

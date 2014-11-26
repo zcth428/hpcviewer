@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
 import edu.rice.cs.hpc.traceviewer.operation.TraceOperation;
 import edu.rice.cs.hpc.traceviewer.operation.ZoomOperation;
 import edu.rice.cs.hpc.traceviewer.painter.ITraceCanvas;
@@ -572,20 +573,9 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	public void historyNotification(final OperationHistoryEvent event) {
 		final IUndoableOperation operation = event.getOperation();
 
-		if (operation.hasContext(TraceOperation.traceContext)) {
-			final TraceOperation traceOperation =  (TraceOperation) operation;
-			
-			switch(event.getEventType()) 
-			{
-			case OperationHistoryEvent.DONE:
-			case OperationHistoryEvent.UNDONE:
-			case OperationHistoryEvent.REDONE:
-				if (traceOperation instanceof ZoomOperation) {
-					Frame frame = traceOperation.getFrame();
-					Debugger.printDebug(1, "STMC: " + stData.getAttributes() + "\t New: " + frame);
-					setBox(frame);
-				}
-			}
+		if (operation.hasContext(BufferRefreshOperation.context)) {
+			final Frame frame = stData.getAttributes().getFrame();
+			setBox(frame);
 		}
 	}
 }

@@ -42,6 +42,13 @@ public class InvalExperimentException extends java.lang.Exception
 		this.errorLineNumber = errorLineNumber;
 	}
 
+	
+	public InvalExperimentException(String sMsg)
+	{
+		super(sMsg);
+	}
+	
+	
 	public int getLineNumber()
 	{
 		return this.errorLineNumber;

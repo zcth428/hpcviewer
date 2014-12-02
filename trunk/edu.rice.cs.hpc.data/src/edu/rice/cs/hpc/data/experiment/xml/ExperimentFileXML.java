@@ -91,6 +91,7 @@ public void parse(InputStream stream, String name,
 		// parsing is done successfully
 	} else
 		throw new InvalExperimentException(
+				"Parse error in Experiment XML at line " + 
 				builder.getParseErrorLineNumber());
 }
 

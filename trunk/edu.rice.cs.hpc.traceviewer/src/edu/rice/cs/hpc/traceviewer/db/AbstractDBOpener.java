@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
+
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
@@ -34,9 +36,11 @@ public abstract class AbstractDBOpener {
 	 * @param statusMgr
 	 * @return
 	 * @throws IOException 
+	 * @throws Exception 
+	 * @throws InvalExperimentException 
 	 */
 	public abstract SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window, String[] args,
-			IStatusLineManager statusMgr) throws IOException;
+			IStatusLineManager statusMgr) throws IOException, InvalExperimentException, Exception;
 
 	// Our current policy on closing: Except for back-to-back connections to the
 	// same server, we should close the server when we are making a new

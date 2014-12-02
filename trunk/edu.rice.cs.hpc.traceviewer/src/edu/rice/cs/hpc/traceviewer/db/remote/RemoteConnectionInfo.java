@@ -17,6 +17,22 @@ public class RemoteConnectionInfo
   public String sshTunnelUsername, sshTunnelHostname, sshTunnelPassword;
   
   
+  /************
+   * check if ssh tunnel is enabled.
+   * Currently we define an SSH tunnel is enabled if the hostname is defined.
+   * This is not a perfect definition, but we can avoid redundant variables.
+   * 
+   * @return true if ssh tunnel should be enabled
+   */
+  public boolean isTunnelEnabled()
+  {
+	  return sshTunnelHostname != null;
+  }
+  
+  /*
+   * (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   public String toString() 
   {
 	  return "Hostname: " + sshTunnelHostname + ", "

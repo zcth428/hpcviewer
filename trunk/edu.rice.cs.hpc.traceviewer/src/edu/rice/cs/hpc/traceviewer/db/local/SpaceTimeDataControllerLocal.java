@@ -6,6 +6,8 @@ import java.io.IOException;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
+
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.BaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
@@ -29,8 +31,9 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	protected final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
 	private String traceFilePath;
 
-	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, String databaseDirectory) {
-
+	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, String databaseDirectory) 
+			throws InvalExperimentException, Exception 
+	{
 		super(_window, new File(databaseDirectory + File.separator + Constants.DATABASE_FILENAME));
 	}
 

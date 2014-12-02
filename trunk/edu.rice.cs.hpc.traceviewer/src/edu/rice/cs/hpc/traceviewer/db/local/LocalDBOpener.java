@@ -4,6 +4,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
@@ -36,7 +37,7 @@ public class LocalDBOpener extends AbstractDBOpener {
 	 * (org.eclipse.ui.IWorkbenchWindow, java.lang.String[], org.eclipse.jface.action.IStatusLineManager)
 	 */
 	public SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
-			String[] args, final IStatusLineManager statusMgr) {
+			String[] args, final IStatusLineManager statusMgr) throws InvalExperimentException, Exception {
 		
 		final Shell shell = window.getShell();
 		

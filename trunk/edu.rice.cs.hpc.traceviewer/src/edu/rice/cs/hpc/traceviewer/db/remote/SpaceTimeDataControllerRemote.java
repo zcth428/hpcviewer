@@ -6,6 +6,8 @@ import java.io.InputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
+
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.RemoteFilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
@@ -14,12 +16,12 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 
-/**
+/**************************************************
  * The remote data version of the Data controller
  * 
  * @author Philip Taffet
  * 
- */
+ *************************************************/
 public class SpaceTimeDataControllerRemote extends SpaceTimeDataController 
 {	
 	final RemoteDataRetriever dataRetriever;
@@ -28,8 +30,9 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 	private final DataOutputStream server;
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
-			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, TraceName[] valuesX, DataOutputStream connectionToServer) {
-
+			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, TraceName[] valuesX, DataOutputStream connectionToServer) 
+					throws InvalExperimentException, Exception 
+	{
 		super(_window, expStream, Name);
 		dataRetriever = _dataRet;
 

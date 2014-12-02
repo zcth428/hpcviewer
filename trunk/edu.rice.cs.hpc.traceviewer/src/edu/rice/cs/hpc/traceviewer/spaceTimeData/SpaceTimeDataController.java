@@ -80,19 +80,11 @@ public abstract class SpaceTimeDataController
 	 * @param _window : SWT window
 	 * @param expFile : experiment file (XML format)
 	 */
-	public SpaceTimeDataController(IWorkbenchWindow _window, File expFile) {
-		
+	public SpaceTimeDataController(IWorkbenchWindow _window, File expFile) 
+			throws InvalExperimentException, Exception 
+	{			
 		exp = new ExperimentWithoutMetrics();
-		try {
-			exp.open(expFile, new ProcedureAliasMap());
-		} catch (InvalExperimentException e) {
-			System.out.println("Parse error in Experiment XML at line "
-					+ e.getLineNumber());
-			e.printStackTrace();
-			// return;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
+		exp.open(expFile, new ProcedureAliasMap());
 		
 		init(_window);
 	}
@@ -103,23 +95,15 @@ public abstract class SpaceTimeDataController
 	 * @param _window : SWT window
 	 * @param expStream : input stream
 	 * @param Name : the name of the file on the remote server
+	 * @throws InvalExperimentException 
 	 *****/
-	public SpaceTimeDataController(IWorkbenchWindow _window, InputStream expStream, String Name) {
-		
+	public SpaceTimeDataController(IWorkbenchWindow _window, InputStream expStream, String Name) 
+			throws InvalExperimentException, Exception 
+	{	
 		exp = new ExperimentWithoutMetrics();
 
-		try {
-			// Without metrics, so param 3 is false
-			exp.open(expStream, new ProcedureAliasMap(), Name);
-		}
-		catch (InvalExperimentException e) {
-			System.out.println("Parse error in Experiment XML at line " + e.getLineNumber());
-			e.printStackTrace();
-			// return;
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		// Without metrics, so param 3 is false
+		exp.open(expStream, new ProcedureAliasMap(), Name);
 		
 		init(_window);
 	}
@@ -139,9 +123,11 @@ public abstract class SpaceTimeDataController
 	 * Initialize the object
 	 * 
 	 * @param _window
+	 * @throws Exception 
 	 ******/
-	protected void init(IWorkbenchWindow _window) {
-		
+	private void init(IWorkbenchWindow _window) 
+			throws InvalExperimentException 
+	{	
 		scopeMap = new HashMap<Integer, CallPath>();
 		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);
 
@@ -169,6 +155,10 @@ public abstract class SpaceTimeDataController
 		ptlService = (ProcessTimelineService) sourceProviderService.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER); 
 
 		TraceAttribute trAttribute = exp.getTraceAttribute();
+		
+		if (trAttribute == null) {
+			throw new InvalExperimentException("Database does not contain traces: " + exp.getDefaultDirectory());
+		}
 		minBegTime = trAttribute.dbTimeMin;
 		maxEndTime = trAttribute.dbTimeMax;
 	}

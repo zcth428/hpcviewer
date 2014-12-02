@@ -1,6 +1,5 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 import org.eclipse.core.commands.Command;
@@ -24,14 +23,15 @@ import edu.rice.cs.hpc.traceviewer.summary.HPCSummaryView;
 import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 
-/*************
+/*************************************************************************************
  * 
  * Class to manage trace database: opening and detecting the *.hpctrace files
  * 
- */
-public class TraceDatabase {
-
+ *************************************************************************************/
+public class TraceDatabase 
+{
 	static private HashMap<IWorkbenchWindow, TraceDatabase> listOfDatabases = null;
+
 	private SpaceTimeDataController dataTraces = null;
 
 	/***
@@ -93,7 +93,7 @@ public class TraceDatabase {
 			try {
 				stdc = openThis.openDBAndCreateSTDC(window, args,
 						statusMgr);
-			} catch (IOException e) 
+			} catch (Exception e) 
 			{
 				OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), statusMgr, e.getMessage());
 				if (dlg.open() == Window.CANCEL)

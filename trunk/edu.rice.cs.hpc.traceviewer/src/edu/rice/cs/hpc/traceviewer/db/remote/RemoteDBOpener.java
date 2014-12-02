@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.UserInfo;
 
+import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.remote.LocalTunneling;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -32,22 +33,39 @@ import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 /**
  * Handles the protocol and commands to set up the session with the server.
+ * 
+ * For more information on message structure, see protocol documentation at the end of RemoteDataReceiver
+ * 
  * @author Philip Taffet
  *
  */
 public class RemoteDBOpener extends AbstractDBOpener 
 {
+	// -----------------
+	// constants
+	// -----------------
+	
 	private static final int PROTOCOL_VERSION = 0x00010001;
 	private static final String LOCALHOST = "localhost";
+
+	// -----------------
+	// static variables
+	// -----------------
+	// TODO: static variables are discouraged in Eclipse since
+	// 		 it isn't suitable for multiple instance of applications
+	// -----------------
+
+	static private Socket serverConnection = null;
+
+	// -----------------
+	// object variables
+	// -----------------
 	
-	//For more information on message structure, see protocol documentation at the end of RemoteDataReceiver 
-	
+	private final RemoteConnectionInfo connectionInfo;
+
 	private DataOutputStream sender;
 	private DataInputStream receiver;
 
-	private final RemoteConnectionInfo connectionInfo;
-
-	private Socket serverConnection = null;
 	private LocalTunneling tunnel;
 
 	/**************
@@ -72,7 +90,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 	public SpaceTimeDataController openDBAndCreateSTDC(
 			IWorkbenchWindow window,
 			String[] args, IStatusLineManager statusMgr) 
-			throws UnknownHostException, IOException 
+			throws InvalExperimentException, Exception 
 	{
 
 		// --------------------------------------------------------------
@@ -80,7 +98,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 		// --------------------------------------------------------------
 		
 		int port = Integer.parseInt(connectionInfo.serverPort);
-		boolean use_tunnel = (connectionInfo.sshTunnelHostname != null);
+		boolean use_tunnel = connectionInfo.isTunnelEnabled();
 		String host = connectionInfo.serverName;
 		
 		if  (use_tunnel) {
@@ -119,7 +137,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 			//Right now, the error code isn't used, but it is there for the future
 			int errorCode = receiver.readInt();
 			errorMessage="The server could not find traces in the directory:\n"
-                + connectionInfo.serverDatabasePath + "\nPlease select a directory that contains traces. \nError code: " + errorCode+".";
+                + connectionInfo.serverDatabasePath + "\nPlease select a directory that contains traces.\nError code: " + errorCode ;
 			throw new IOException(errorMessage);
 		}
 		
@@ -310,20 +328,29 @@ public class RemoteDBOpener extends AbstractDBOpener
 	private void connectToServer(IWorkbenchWindow window, String serverURL, int port) 
 			throws UnknownHostException, IOException 
 	{
-		if (serverConnection != null && !serverConnection.isClosed()) {
-			if (!serverConnection.getRemoteSocketAddress().equals(
-					new InetSocketAddress(serverURL, port))) 
+		if (serverConnection != null && !serverConnection.isClosed()) 
+		{
+			InetSocketAddress addr = new InetSocketAddress(serverURL, port);
+			SocketAddress sockAddr = serverConnection.getRemoteSocketAddress();
+			
+			if (sockAddr.equals(addr)) 
 			{
+				//Connecting to same server, don't do anything.
+				initDataIOStream();
+				return;
+			} else {
 				//Connecting to a different server
 				TraceDatabase.removeInstance(window);
-
-				serverConnection = new Socket(serverURL, port);
 			}
-			//Connecting to same server, don't do anything.
 		}
-		else {// First connection 
-			serverConnection = new Socket(serverURL, port);
-		}
+		serverConnection = new Socket(serverURL, port);
+		initDataIOStream();
+	}
+	
+	
+	private void initDataIOStream() 
+			throws IOException
+	{
 		sender = new DataOutputStream(new BufferedOutputStream(
 				serverConnection.getOutputStream()));
 		receiver = new DataInputStream(new BufferedInputStream(

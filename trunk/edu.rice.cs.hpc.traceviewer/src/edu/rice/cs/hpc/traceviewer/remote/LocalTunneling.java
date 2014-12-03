@@ -19,6 +19,8 @@ public class LocalTunneling
 	private Session session;
 	private int port;
 	
+	private String session_id = null;
+	
 	public LocalTunneling(UserInfo userInfo)
 	{
 		jsch 		  = new JSch();
@@ -42,6 +44,14 @@ public class LocalTunneling
 			String remote_host, int port)
 			throws JSchException
 	{
+		String id = getSessionID(login_user, login_host, remote_host, port);
+
+		if (session_id != null) {
+			// check whether this connection is the same as the previous one
+			if (id.equals(session_id)) {
+				return this.port;
+			}
+		}
 		session = jsch.getSession(login_user, login_host, 22);
 		session.setUserInfo(userInfo);
 		session.connect();
@@ -49,14 +59,37 @@ public class LocalTunneling
 		int assigned_port = session.setPortForwardingL(port, remote_host, port);
 		this.port = assigned_port;
 
+		session_id = id;
 		return this.port;
 	}
 	
 	
+	private String getSessionID(String login_user, String login_host, 
+			String remote_host, int port)
+	{
+		return login_user + "@" + login_host + ":" + remote_host + ":" + port;
+	}
+	
+	/*******
+	 * disconnect tunneling
+	 * 
+	 * @throws JSchException
+	 */
 	public void disconnect() throws JSchException
 	{
 		session.delPortForwardingL(port);
 		session.disconnect();
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return session_id;
 	}
 	
 	/*******

@@ -51,6 +51,7 @@ public class OpenDatabaseDialog extends Dialog
 	private static final String SERVER_PATH_KEY = "server_path";
 
 	private static final String SERVER_LOGIN = "server_login";
+	private static final String SERVER_TUNNEL = "server_tunnel";
 
 	private static final String DATABASE_PATH = "database_path";
 
@@ -60,8 +61,6 @@ public class OpenDatabaseDialog extends Dialog
 	private static final int NUM_COMBO_FIELDS = 5;
 	
 	private final Combo[] comboBoxes = new Combo[NUM_COMBO_FIELDS];
-	
-	//private Text txtPassword;
 
 	//Index 0 = Server's name/address; Index 1 = Port; Index 2 = Path to database folder on server
 	final static int FieldServerName = 0, FieldPortKey = 1, FieldPathKey = 2, FieldServerLogin = 4;
@@ -73,8 +72,6 @@ public class OpenDatabaseDialog extends Dialog
 
 	//This is the most convenient and flexible way to pass around the data.
 	private String[]  args = new String[NUM_COMBO_FIELDS];
-
-	//private String password;
 	
 	private final IStatusLineManager status;
 	private Button okButton;
@@ -83,7 +80,7 @@ public class OpenDatabaseDialog extends Dialog
 
 	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath,
 	objHistoryDb;
-	private UserInputHistory objHistoryLoginHost;
+	private UserInputHistory objHistoryLoginHost, objHistoryTunnel;
 
 	private TabFolder tabFolder ;
 
@@ -113,8 +110,15 @@ public class OpenDatabaseDialog extends Dialog
 	public OpenDatabaseDialog(Shell parentShell, final IStatusLineManager inStatus, String _errorMessage){
 		super(parentShell);
 		status=inStatus;
-		errorMessage = _errorMessage;
+		setErrorMessage(_errorMessage);
 	}
+	
+	public void setErrorMessage(String errorMessage)
+	{
+		this.errorMessage = errorMessage;
+	}
+	
+	
 
 	/**
 	 * This method is used to pass data from the OpenDatabaseDialog box to 
@@ -137,7 +141,6 @@ public class OpenDatabaseDialog extends Dialog
 			info.serverPort			= args[FieldPortKey];
 			info.sshTunnelHostname	= getLoginHost();
 			info.sshTunnelUsername	= getLoginUser();
-			//info.sshTunnelPassword  = password;
 
 			return (isLocalDatabase() ? new LocalDBOpener(args[FieldDatabasePath]) : new RemoteDBOpener(info));
 		}
@@ -172,7 +175,8 @@ public class OpenDatabaseDialog extends Dialog
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				checkFields();
+				if (okButton != null)
+					checkFields();
 			}
 		});
 
@@ -306,8 +310,18 @@ public class OpenDatabaseDialog extends Dialog
 		GridDataFactory.fillDefaults().grab(true, true).span(2, 1).applyTo(grpTunnel);
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(grpTunnel);
 
+		objHistoryTunnel  = new UserInputHistory(SERVER_TUNNEL, 1);
+		
 		checkboxTunneling = new Button(grpTunnel, SWT.CHECK);
 		checkboxTunneling.setText("Use SSH tunnel (similar to ssh -L port:server_address:port login@hostname)");
+		boolean check = false;
+
+		String []tunnels = objHistoryTunnel.getHistory();
+		if (tunnels != null && tunnels.length > 0) {
+			check = tunnels[0].equals(Boolean.TRUE.toString());
+		}
+		checkboxTunneling.setSelection(check);
+		
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(checkboxTunneling);
 		
 		final Label lblHost = new Label(grpTunnel, SWT.LEFT);
@@ -317,8 +331,9 @@ public class OpenDatabaseDialog extends Dialog
 		final Combo login = new Combo(grpTunnel, SWT.SINGLE);
 		setComboWithHistory(login, objHistoryLoginHost, "login@hostname", 400, 
 				"Enter the login and the host for tunneling in format login@hostname");
+		
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(login);
-		login.setEnabled(false); 
+		login.setEnabled(check); 
 		comboBoxes[FieldServerLogin] = login;
 
 		checkboxTunneling.addSelectionListener( new SelectionListener() {
@@ -345,14 +360,15 @@ public class OpenDatabaseDialog extends Dialog
 		tabRemoteItem.setControl(remoteComposite);
 
 		//add error message if one exists
-		if (!(errorMessage.equals(""))) {
-			final Label lblError = new Label(outerComposite, SWT.CENTER | SWT.WRAP);
+		final Label lblError = new Label(outerComposite, SWT.CENTER | SWT.WRAP);
+		lblError.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
+
+		if (errorMessage != null)
+		{
 			lblError.setText(errorMessage);
-			lblError.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
-			
-			GridDataFactory.fillDefaults().grab(true, true).hint(SWT.DEFAULT, SWT.DEFAULT).align(SWT.FILL, SWT.CENTER).applyTo(lblError);
-			getShell().layout(true,true);
 		}
+		GridDataFactory.fillDefaults().grab(true, true).hint(SWT.DEFAULT, SWT.DEFAULT).align(SWT.FILL, SWT.CENTER).applyTo(lblError);
+		getShell().layout(true,true);
 
 		outerComposite.pack();
 
@@ -479,7 +495,6 @@ public class OpenDatabaseDialog extends Dialog
 			} else {
 				args[FieldServerLogin] = null;
 			}
-			//password 			   = txtPassword.getText();
 
 			// ------------------------------------
 			// save the history to the user preferences
@@ -487,6 +502,7 @@ public class OpenDatabaseDialog extends Dialog
 			objHistoryName.addLine(args[FieldServerName]);
 			objHistoryPort.addLine(args[FieldPortKey]);
 			objHistoryPath.addLine(args[FieldPathKey]);
+			objHistoryTunnel.addLine(String.valueOf( checkboxTunneling.getSelection()) );
 		}
 
 		Activator activator = Activator.getDefault();

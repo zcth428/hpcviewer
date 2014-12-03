@@ -14,19 +14,13 @@ import java.net.UnknownHostException;
 import java.util.zip.GZIPInputStream;
 
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.UserInfo;
-
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.remote.LocalTunneling;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
-import edu.rice.cs.hpc.traceviewer.ui.PasswordDialog;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
@@ -52,10 +46,12 @@ public class RemoteDBOpener extends AbstractDBOpener
 	// static variables
 	// -----------------
 	// TODO: static variables are discouraged in Eclipse since
-	// 		 it isn't suitable for multiple instance of applications
+	// 		 it isn't suitable for multiple instances of applications
 	// -----------------
 
 	static private Socket serverConnection = null;
+	static private LocalTunneling tunnelMain, tunnelXML;
+	static private RemoteUserInfo remoteUserInfo;
 
 	// -----------------
 	// object variables
@@ -66,7 +62,6 @@ public class RemoteDBOpener extends AbstractDBOpener
 	private DataOutputStream sender;
 	private DataInputStream receiver;
 
-	private LocalTunneling tunnel;
 
 	/**************
 	 * constructor
@@ -103,7 +98,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 		
 		if  (use_tunnel) {
 			// we need to setup the SSH tunnel
-			createSSHTunnel(window, port);
+			tunnelMain = createSSHTunnel(window, tunnelMain, port);
 			host = LOCALHOST;
 		}
 		
@@ -149,7 +144,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 		
 		if (use_tunnel &&  (port != xmlMessagePortNumber)) {
 			// only create SSH tunnel if the XML socket has different port number
-			createSSHTunnel(window, xmlMessagePortNumber);			
+			tunnelXML = createSSHTunnel(window, tunnelXML, xmlMessagePortNumber);			
 		}
 		
 		statusMgr.setMessage("Receiving XML stream");
@@ -189,9 +184,9 @@ public class RemoteDBOpener extends AbstractDBOpener
 			receiver.close();
 			
 			serverConnection.close();
-			if (tunnel != null) {
+			if (tunnelMain != null) {
 				try {
-					tunnel.disconnect();
+					tunnelMain.disconnect();
 				} catch (JSchException e) {
 					System.err.println("Warning: Cannot close the SSH tunnel !");
 					e.printStackTrace();
@@ -211,22 +206,34 @@ public class RemoteDBOpener extends AbstractDBOpener
 	/*****
 	 * a wrapper for tunneling() function to throw an IOException
 	 * 
-	 * @param window
-	 * @param port
-	 * @throws IOException
+	 * @param window : the reference of the current workbench window
+	 * @param tunnel : the local tunnel, if the tunnel is null, we'll create a new one. Otherwise,
+	 * 					just use this argument. The caller needs to assign with the return tunnel
+	 * @param port   : the local and the remote port
+	 *  
+	 * @throws JSchException 
 	 */
-	private void createSSHTunnel(IWorkbenchWindow window, int port) 
-			throws IOException
+	private LocalTunneling createSSHTunnel(IWorkbenchWindow window, LocalTunneling tunnel, int port) 
+			throws JSchException
 	{
-		// we need to setup the SSH tunnel
-		try {
-			tunneling(window, port);
-		} catch (JSchException e) {
-			throw new IOException(e.getMessage()+": Unable to create SSH tunnel to " + connectionInfo + 
-					"\nPort: " + port);
+		if (tunnel == null)
+		{
+			if (remoteUserInfo == null)
+			{
+				remoteUserInfo = new RemoteUserInfo(window.getShell());
+			}
+			remoteUserInfo.setInfo(	connectionInfo.sshTunnelUsername, 
+									connectionInfo.sshTunnelHostname, port);
+			tunnel = new LocalTunneling(remoteUserInfo);
 		}
+		
+		tunnel.connect(connectionInfo.sshTunnelUsername, connectionInfo.sshTunnelHostname, 
+				connectionInfo.serverName, port);
+		
+		return tunnel;
 	}
 	
+
 	
 	/******
 	 * 
@@ -244,26 +251,6 @@ public class RemoteDBOpener extends AbstractDBOpener
 		return names;
 	}
 
-
-	/**************
-	 * open SSH local tunnel
-	 * 
-	 * @param window
-	 * @param port
-	 * 
-	 * @return true if the connection is successful
-	 * 			flase otherwise
-	 * @throws JSchException 
-	 */
-	private void tunneling(final IWorkbenchWindow window, int port) 
-			throws JSchException
-	{
-		tunnel = new LocalTunneling(new RemoteUserInfo(window.getShell(), connectionInfo.sshTunnelUsername,
-									connectionInfo.sshTunnelHostname));
-		
-		tunnel.connect(connectionInfo.sshTunnelUsername, connectionInfo.sshTunnelHostname, 
-				connectionInfo.serverName, port);
-	}
 	
 	/***************
 	 * Get XML data from the server
@@ -409,66 +396,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 		sender.flush();
 
 		Debugger.printDebug(0,"Open database message sent");
-	}
-	
-	
-	/*********************************
-	 * 
-	 * private class to prompt user information (if needed)
-	 *
-	 *********************************/
-	static private class RemoteUserInfo implements UserInfo
-	{
-		private String password;
-		final private Shell shell;
-		final private String user, hostname;
-		
-		private RemoteUserInfo(Shell shell, String user, String hostname)
-		{
-			this.shell = shell;
-			this.user  = user;
-			this.hostname = hostname;
-		}
-		
-		@Override
-		public boolean promptPassword(String message) {
-			PasswordDialog dialog = new PasswordDialog(shell, "Input password for " + hostname,
-					"password for user " + user, null, null);
-			
-			boolean ret =  dialog.open() == Dialog.OK;
-			
-			if (ret)
-				password = dialog.getValue();
-			
-			return ret;
-		}
-
-		@Override
-		public String getPassword() {
-			return password;
-		}
-
-		@Override
-		public boolean promptPassphrase(String message) {
-			return false;
-		}
-
-		@Override
-		public String getPassphrase() {
-			return null;
-		}
-
-		@Override
-		public boolean promptYesNo(String message) {
-			boolean ret = MessageDialog.openQuestion(shell, "Connection", message);
-			return ret;
-		}
-
-		@Override
-		public void showMessage(String message) {
-			MessageDialog.openInformation(shell, "Information", message);
-		}			
-	}
+	}	
 }
 
 

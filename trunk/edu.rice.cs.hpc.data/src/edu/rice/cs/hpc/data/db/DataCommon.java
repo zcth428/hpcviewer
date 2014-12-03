@@ -15,9 +15,13 @@ abstract public class DataCommon
 	protected long num_cctid;
 	protected long num_metric;
 	
+	protected String filename;
+	
 	public void open(final String file) 
 			throws IOException
 	{
+		filename = file;
+		
 		final FileInputStream fis = new FileInputStream(file);
 		final DataInputStream input = new DataInputStream( fis );
 		
@@ -87,7 +91,7 @@ abstract public class DataCommon
 			// -------------------------------------------------------------
 			if ( readNext(input) ) 
 			{
-				
+				// the implementer can perform other operations
 			}
 		}
 		

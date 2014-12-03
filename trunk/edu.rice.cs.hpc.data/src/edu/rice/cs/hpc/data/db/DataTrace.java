@@ -70,6 +70,7 @@ public class DataTrace extends DataCommon
 		out.println("size time: " + size_time);
 		out.println("size cctid: " + size_cctid);
 	}
+
 	/***************************
 	 * unit test 
 	 * 

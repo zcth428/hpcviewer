@@ -34,10 +34,10 @@ public class LocalDBOpener extends AbstractDBOpener {
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener#openDBAndCreateSTDC
-	 * (org.eclipse.ui.IWorkbenchWindow, java.lang.String[], org.eclipse.jface.action.IStatusLineManager)
+	 * (org.eclipse.ui.IWorkbenchWindow, org.eclipse.jface.action.IStatusLineManager)
 	 */
 	public SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window,
-			String[] args, final IStatusLineManager statusMgr) throws InvalExperimentException, Exception {
+			final IStatusLineManager statusMgr) throws InvalExperimentException, Exception {
 		
 		final Shell shell = window.getShell();
 		

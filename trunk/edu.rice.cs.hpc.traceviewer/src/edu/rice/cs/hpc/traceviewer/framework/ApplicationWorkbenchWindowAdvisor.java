@@ -1,9 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.framework;
 
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.jface.window.Window;
-//import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -11,10 +8,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import edu.rice.cs.hpc.common.ui.Util;
-import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
-import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
-import edu.rice.cs.hpc.traceviewer.ui.OpenDatabaseDialog;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
@@ -68,7 +62,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			for (String arg : args) {
 				if (arg != null && arg.charAt(0) != '-') {
 					// this must be the name of the database to open
-					TraceDatabase.openDatabase(configurer.getWindow(), args, status, new LocalDBOpener(arg));
+					TraceDatabase.openDatabase(configurer.getWindow(), arg, status);
 					return;
 				} 
 			}
@@ -76,12 +70,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// Eclipse indigo MAC export will add -showlocation flag in front of the executable
 		// It is also possible the next version of Eclipse will add other flags
 		// Hence, we need calling open dialog box here to make sure it displays on all Eclipse versions
-		AbstractDBOpener opener;
-		OpenDatabaseDialog dlg = new OpenDatabaseDialog(new Shell(), status); 
-		if (dlg.open() == Window.OK) {
-			opener=dlg.getDBOpener();
-			TraceDatabase.openDatabase(configurer.getWindow(), args, status, opener);
-		}	
+		TraceDatabase.openDatabase(configurer.getWindow(), status);
 	}
 
 	/*

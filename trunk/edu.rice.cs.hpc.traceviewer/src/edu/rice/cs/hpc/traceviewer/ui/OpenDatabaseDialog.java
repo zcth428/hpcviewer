@@ -27,9 +27,9 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.rice.cs.hpc.common.util.UserInputHistory;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.DatabaseAccessInfo;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
-import edu.rice.cs.hpc.traceviewer.db.remote.RemoteConnectionInfo;
 import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
 import edu.rice.cs.hpc.traceviewer.framework.Activator;
 
@@ -71,7 +71,7 @@ public class OpenDatabaseDialog extends Dialog
 	// ----------------------------------------------------------------
 
 	//This is the most convenient and flexible way to pass around the data.
-	private String[]  args = new String[NUM_COMBO_FIELDS];
+	private String[]  args  = null;
 	
 	private final IStatusLineManager status;
 	private Button okButton;
@@ -134,9 +134,9 @@ public class OpenDatabaseDialog extends Dialog
 		if (isLocalDatabase()) {
 			return new LocalDBOpener(args[FieldDatabasePath]);
 		} else {
-			final RemoteConnectionInfo info = new RemoteConnectionInfo();
+			final DatabaseAccessInfo info = new DatabaseAccessInfo();
 
-			info.serverDatabasePath = args[FieldPathKey];
+			info.databasePath = args[FieldPathKey];
 			info.serverName 		= args[FieldServerName];
 			info.serverPort			= args[FieldPortKey];
 			info.sshTunnelHostname	= getLoginHost();
@@ -144,6 +144,38 @@ public class OpenDatabaseDialog extends Dialog
 
 			return (isLocalDatabase() ? new LocalDBOpener(args[FieldDatabasePath]) : new RemoteDBOpener(info));
 		}
+	}
+	
+
+	/******
+	 * Return the information to access the database (if the user clicks Ok).
+	 * This information will be needed by {@link TraceDatabasee} to start loading the database
+	 * whether it's local or remote
+	 * 
+	 * @return {@link DatabaseAccessInfo} the information to access the database if okay button is clicked,
+	 * 			null otherwise
+	 */
+	public DatabaseAccessInfo getDatabaseAccessInfo()
+	{
+		// no info if the user click cancel button
+		if (args == null)
+			return null;
+		
+		DatabaseAccessInfo info = new DatabaseAccessInfo();
+		
+		if (isLocalDatabase())
+		{
+			info.databasePath = args[FieldDatabasePath];
+		} else 
+		{
+			info.databasePath 		= args[FieldPathKey];
+			info.serverName 		= args[FieldServerName];
+			info.serverPort			= args[FieldPortKey];
+			info.sshTunnelHostname	= getLoginHost();
+			info.sshTunnelUsername	= getLoginUser();
+		}
+		
+		return info;
 	}
 
 	//overridden to get ID of the ok button
@@ -226,12 +258,12 @@ public class OpenDatabaseDialog extends Dialog
 				dialog.setMessage("Please select a directory containing execution traces.");
 				dialog.setText("Select Data Directory");
 
-				args[FieldDatabasePath] = dialog.open();
+				final String database = dialog.open();
 
-				if (args[FieldDatabasePath] == null)
+				if (database == null)
 					// user click cancel
 					return;
-				comboBoxes[FieldDatabasePath].setText(args[FieldDatabasePath]);
+				comboBoxes[FieldDatabasePath].setText(database);
 
 				// automatically close the dialog box
 				OpenDatabaseDialog.this.okPressed();
@@ -456,6 +488,7 @@ public class OpenDatabaseDialog extends Dialog
 	 */
 	protected void okPressed() {
 
+		args = new String[NUM_COMBO_FIELDS];
 		useLocalDatabase = tabFolder.getSelectionIndex() == 0;
 
 		if (useLocalDatabase)

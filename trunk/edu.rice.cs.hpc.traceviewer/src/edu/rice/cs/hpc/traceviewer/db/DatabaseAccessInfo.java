@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.db.remote;
+package edu.rice.cs.hpc.traceviewer.db;
 
 /************************************************
  * 
@@ -8,13 +8,13 @@ package edu.rice.cs.hpc.traceviewer.db.remote;
  * We need to reorganize the classes to make it more modular
  *
  ************************************************/
-public class RemoteConnectionInfo 
+public class DatabaseAccessInfo 
 {
   // general info
-  public String serverName, serverDatabasePath, serverPort;
+  public String serverName = null, databasePath = null, serverPort = null;
   
   // info needed for SSH tunneling
-  public String sshTunnelUsername, sshTunnelHostname, sshTunnelPassword;
+  public String sshTunnelUsername = null, sshTunnelHostname = null, sshTunnelPassword = null;
   
   
   /************
@@ -37,5 +37,19 @@ public class RemoteConnectionInfo
   {
 	  return "Hostname: " + sshTunnelHostname + ", "
 			  + "Hostname user: " + sshTunnelUsername ;
+  }
+  
+  public boolean isLocal() 
+  {
+	  if (serverName == null) {
+		  if (databasePath != null)
+			  return true;
+		  
+		  // both local database and remote information cannot be null
+		  // if this is the case, it should be error in code design ! 
+		  
+		  throw new RuntimeException("Path to the local database is null");
+	  }
+	  return false;
   }
 }

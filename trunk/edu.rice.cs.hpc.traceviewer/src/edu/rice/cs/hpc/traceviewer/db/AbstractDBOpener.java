@@ -39,8 +39,8 @@ public abstract class AbstractDBOpener {
 	 * @throws Exception 
 	 * @throws InvalExperimentException 
 	 */
-	public abstract SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window, String[] args,
-			IStatusLineManager statusMgr) throws IOException, InvalExperimentException, Exception;
+	public abstract SpaceTimeDataController openDBAndCreateSTDC(IWorkbenchWindow window, IStatusLineManager statusMgr)
+			throws IOException, InvalExperimentException, Exception;
 
 	// Our current policy on closing: Except for back-to-back connections to the
 	// same server, we should close the server when we are making a new

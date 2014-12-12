@@ -10,7 +10,6 @@ import java.util.HashMap;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
 
-import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
@@ -51,12 +50,8 @@ public class RemoteDataRetriever {
 	BufferedInputStream rcvBacking;
 	DataOutputStream sender;
 	
-	private final Shell shell;
-	
 	final int compressionType;
 	
-	private final IStatusLineManager statusMgr;
-
 	/******
 	 * Constructor for communicating with remote data server
 	 * 
@@ -76,10 +71,6 @@ public class RemoteDataRetriever {
 		receiver = new DataInputStream(rcvBacking);
 		
 		sender = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		
-		
-		statusMgr = _statusMgr;
-		shell = _shell;
 		
 	}
 
@@ -106,15 +97,15 @@ public class RemoteDataRetriever {
 				//			Put into appropriate place in array
 		//When all are done, return the array
 		
-		statusMgr.setMessage("Requesting data");
-		shell.update();
+		//statusMgr.setMessage("Requesting data");
+		//shell.update();
 		Debugger.printTimestampDebug("Requesting data");
 		requestData(P0, Pn, t0, tn, vertRes, horizRes);
 		Debugger.printTimestampDebug("Data request finished");
 		
 		int responseCommand = waitAndReadInt(receiver);
-		statusMgr.setMessage("Receiving data");
-		shell.update();
+		//statusMgr.setMessage("Receiving data");
+		//shell.update();
 		
 		if (responseCommand != HERE)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
@@ -125,8 +116,8 @@ public class RemoteDataRetriever {
 		final int ranksExpected = Math.min(Pn-P0, vertRes);
 		
 		
-		final TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
-		monitor.beginProgress(ranksExpected, "Receiving data...", "data", shell);
+		//final TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
+		//monitor.beginProgress(ranksExpected, "Receiving data...", "data", shell);
 
 		Thread unpacker = new Thread(){
 		@Override
@@ -170,7 +161,7 @@ public class RemoteDataRetriever {
 											compressionType));
 
 							ranksReceived++;
-							monitor.announceProgress();
+							//monitor.announceProgress();
 						}
 					}
 				} catch (IOException e) {

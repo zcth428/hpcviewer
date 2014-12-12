@@ -123,37 +123,41 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	 * 
 	 * @param changedBounds
 	 *            Whether or not the thread should get the data.
-	 * @return The next trace.
+	 *            
+	 * @return The next trace. Null if there's no trace to available
 	 **********************************************************************/
 	@Override
-	public ProcessTimeline getNextTrace(boolean changedBounds) {
+	public ProcessTimeline getNextTrace(boolean changedBounds) 
+	{
+		// get the next line (in sequence) to paint
+		// if the line number is less than the number of lines to paint, it means
+		// we have finished the drawing
 		
 		int tracesToRender = Math.min(attributes.numPixelsV, attributes.getProcessInterval());
-		
-		if (lineNum.get() < tracesToRender) {
-			int currentLineNum = lineNum.getAndIncrement();
-			
+		int nextLineNum = lineNum.getAndIncrement();
+		if (nextLineNum < tracesToRender) 
+		{	
 			if (ptlService.getNumProcessTimeline() == 0)
 				ptlService.setProcessTimeline(new ProcessTimeline[tracesToRender]);
 			
 			if (changedBounds) {
-				ProcessTimeline currentTimeline = new ProcessTimeline(currentLineNum, scopeMap,
-						dataTrace, lineToPaint(currentLineNum),
+				ProcessTimeline currentTimeline = new ProcessTimeline(nextLineNum, scopeMap,
+						dataTrace, lineToPaint(nextLineNum),
 						attributes.numPixelsH, attributes.getTimeInterval(), 
 						minBegTime + attributes.getTimeBegin());
 				
-				ptlService.setProcessTimeline(currentLineNum, currentTimeline);
+				ptlService.setProcessTimeline(nextLineNum, currentTimeline);
 				return currentTimeline;
 			}
 
-			return ptlService.getProcessTimeline(currentLineNum);
+			return ptlService.getProcessTimeline(nextLineNum);
 		}
+		// notify that we have finished
 		return null;
 	}
 
 	
 	/** Returns the index of the file to which the line-th line corresponds. */
-
 	private int lineToPaint(int line) {
 
 		int numTimelinesToPaint = attributes.getProcessInterval();

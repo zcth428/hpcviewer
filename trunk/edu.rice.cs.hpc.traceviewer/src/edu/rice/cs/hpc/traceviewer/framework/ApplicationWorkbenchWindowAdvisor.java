@@ -37,7 +37,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		configurer.setShowCoolBar(false);
 		configurer.setShowStatusLine(true);
-		
+		configurer.setShowProgressIndicator(true);
+		 
 		final IWorkbenchWindow window = configurer.getWindow();
 		if (!Util.checkJavaVendor(window.getShell()))
 			window.close();

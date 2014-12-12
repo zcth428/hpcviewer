@@ -19,6 +19,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
@@ -51,6 +52,8 @@ public class CallStackViewer extends TableViewer
 	private final ProcessTimelineService ptlService;
 	
 	private final DataService dataService;
+
+	private final InputModifier inputModifier;
 	
     /**Creates a CallStackViewer with Composite parent, SpaceTimeDataController _stData, and HPCTraceView _view.*/
 	public CallStackViewer(Composite parent, final HPCCallStackView csview)
@@ -64,6 +67,8 @@ public class CallStackViewer extends TableViewer
 		dataService = (DataService) service.getSourceProvider(DataService.DATA_PROVIDER);
 				
 		ptlService = (ProcessTimelineService) service.getSourceProvider(ProcessTimelineService.PROCESS_TIMELINE_PROVIDER);
+		
+		inputModifier = new InputModifier( csview.getSite().getShell().getDisplay() );
 		
         final Table stack = this.getTable();
         
@@ -90,7 +95,7 @@ public class CallStackViewer extends TableViewer
         	
         });
         
-        stack.setVisible(false);
+        //stack.setVisible(false);
         final CallStackViewer csviewer = this;
 		stack.addListener(SWT.Selection, new Listener(){
 			public void handleEvent(Event event)
@@ -153,7 +158,6 @@ public class CallStackViewer extends TableViewer
 	{
 		final SpaceTimeDataController data = dataService.getData();
 		this.setSample(data.getAttributes().getPosition(), data.getAttributes().getDepth());
-		this.getTable().setVisible(true);
 	}
 	
 	/**********************************************************************
@@ -207,11 +211,9 @@ public class CallStackViewer extends TableViewer
 				for(int l = 0; l<numOverDepth; l++)
 					sampleVector.add(EMPTY_FUNCTION);
 			}
-			this.setInput(new ArrayList<String>(sampleVector));
-		
-			selectDepth(depth);
+			inputModifier.setList(new ArrayList<String>(sampleVector));
+			inputModifier.selectDepth(depth);
 			
-			viewerColumn.getColumn().pack();
 		}
 		else
 		{
@@ -234,21 +236,54 @@ public class CallStackViewer extends TableViewer
 				this.add(EMPTY_FUNCTION);
 			}
 		}
-		selectDepth(_depth);
+		inputModifier.selectDepth(_depth);
 		
 		notifyChange(_depth);
 	}
 	
 	
-	/*****
-	 * Select a specified depth in the call path
-	 * @param _depth
-	 */
-	private void selectDepth(final int _depth)
+	private class InputModifier
 	{
-		this.getTable().select(_depth);
-		this.getTable().redraw();
+		private ArrayList<String> list;
+		private int depth = 0;
+		
+		final private Display display;
+		final private Runnable setList = new Runnable() {
+
+			@Override
+			public void run()
+			{
+				CallStackViewer.this.setInput(list);
+				viewerColumn.getColumn().pack();
+			}
+		};
+		
+		private final Runnable selectDepth = new Runnable() {
+			@Override
+			public void run()
+			{
+				CallStackViewer.this.getTable().select(depth);
+				CallStackViewer.this.getTable().redraw();
+			}			
+		};
+		
+		public InputModifier(Display display) {
+			this.display = display;
+		}
+		
+		public void setList(ArrayList<String> list) {
+			this.list = list;
+			if (display != null) {
+				display.syncExec(setList);
+			}
+		}
+		
+		public void selectDepth(int depth) {
+			this.depth = depth;
+			display.asyncExec(selectDepth);
+		}
 	}
+	
 	
 	
 	private void notifyChange(int depth)

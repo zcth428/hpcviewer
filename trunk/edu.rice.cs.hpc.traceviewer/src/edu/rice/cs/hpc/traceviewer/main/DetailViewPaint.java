@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.State;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -31,28 +32,25 @@ import edu.rice.cs.hpc.traceviewer.timeline.BaseTimelineThread;
  * Painting class for detail view (space-time view)
  *
  ******************************************************/
-public class DetailViewPaint extends BaseViewPaint {
-		
+public class DetailViewPaint extends BaseViewPaint 
+{		
 	/** maximum number of records to display **/
 	static public final int MAX_RECORDS_DISPLAY = 99;
 	/** text when we reach the maximum of records to display **/
 	static public final String TOO_MANY_RECORDS = ">" + String.valueOf(MAX_RECORDS_DISPLAY) ;
 	
-	final private Point maxTextSize;
+	private Point maxTextSize;
 
-	private final GC masterGC;
-	private final GC origGC;
+	private GC masterGC;
+	private GC origGC;
 	
 	final private ProcessTimelineService ptlService;
 	final private boolean debug;
 	
-	public DetailViewPaint(final GC masterGC, final GC origGC, SpaceTimeDataController _data,
-			ImageTraceAttributes _attributes, boolean _changeBound,
-			IWorkbenchWindow window, ExecutorService threadExecutor) 
+	public DetailViewPaint(	IWorkbenchWindow window, ExecutorService threadExecutor,
+			ISpaceTimeCanvas canvas) 
 	{
-		super(_data, _attributes, _changeBound, window, threadExecutor);
-		this.masterGC = masterGC;
-		this.origGC   = origGC;
+		super("Main trace view", window, threadExecutor, canvas);
 
 		ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(
 				ISourceProviderService.class);
@@ -70,9 +68,17 @@ public class DetailViewPaint extends BaseViewPaint {
 		} else {
 			debug = false;
 		}
+	}
+	
+	public void setData(SpaceTimeDataController controller, GC masterGC, GC origGC, boolean changeBounds)
+	{
+		this.masterGC = masterGC;
+		this.origGC   = origGC;
 		// initialize the size of maximum text
 		//	the longest text should be: ">99(>99)"
 		maxTextSize = masterGC.textExtent(TOO_MANY_RECORDS + "(" + TOO_MANY_RECORDS + ")");
+
+		super.setData(controller, changeBounds);
 	}
 
 	@Override
@@ -83,12 +89,13 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected int getNumberOfLines() {
+		final ImageTraceAttributes attributes = controller.getAttributes();
 		return Math.min(attributes.numPixelsV, attributes.getProcessInterval() );
 	}
 
 	@Override
 	protected BaseTimelineThread getTimelineThread(ISpaceTimeCanvas canvas, double xscale,
-			double yscale, Queue<TimelineDataSet> queue, AtomicInteger timelineDone) {
+			double yscale, Queue<TimelineDataSet> queue, AtomicInteger timelineDone, IProgressMonitor monitor) {
 
 		return new TimelineThread(this.window, controller, ptlService, changedBounds,   
 				yscale, queue, timelineDone, monitor);

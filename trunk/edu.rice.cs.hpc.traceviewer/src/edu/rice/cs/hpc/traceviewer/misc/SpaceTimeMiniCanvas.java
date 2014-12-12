@@ -21,6 +21,8 @@ import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.operation.BufferRefreshOperation;
@@ -56,7 +58,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Determines whether the first mouse click was inside the box or not.*/
 	private boolean insideBox;
 	
-	private Rectangle view;
+	private Rectangle view, clientArea;
+	private RedrawUI  redrawUI;
 	
     final private Color COMPLETELY_FILTERED_OUT_COLOR;
     final private Color NOT_FILTERED_OUT_COLOR;
@@ -103,6 +106,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 				}
 			}
 		} );
+		
+		redrawUI = new RedrawUI(getDisplay());
 	}
 
 	/*
@@ -161,7 +166,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		view.height = r.height;
 		view.width  = r.width;
 		
-		redraw();
+		redrawUI.refresh();
 	}
 	
 	/******
@@ -187,7 +192,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		view.width  = dt; 
 		view.height = dp;
 		
-		redraw();
+		redrawUI.refresh();
 	}
 	
 	/**The painting of the miniMap.*/
@@ -196,7 +201,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		if (this.stData == null)
 			return;
 		
-		final Rectangle clientArea = getClientArea();
+		clientArea = getClientArea();
 		
 		// paint the background with black color
 		
@@ -230,7 +235,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
         }
         // The width of the region is always the same as the width of the
         // minimap because you can't filter by time
-        event.gc.fillRectangle(0, p1, getClientArea().width, dp);
+        event.gc.fillRectangle(0, p1, clientArea.width, dp);
 
 		// only for the dense region. For non-dense region, it's too tricky
 		if (baseData.isDenseBetweenFirstAndLast()) {
@@ -323,7 +328,8 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 		
 		Debugger.printDebug(1, "STMC set view: " + view);
 		insideBox = true;
-		redraw();
+
+		redrawUI.refresh();
 	}
 	
 	/**Moves white box to correspond to where mouse has moved to.*/
@@ -458,7 +464,7 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	 */
 	private void checkRegion(Rectangle region) 
 	{
-		final Rectangle area = getClientArea();
+		final Rectangle area = clientArea;
 		
 		// check if the width is within the range
     	if ( region.x + region.width > area.width )
@@ -487,17 +493,44 @@ public class SpaceTimeMiniCanvas extends SpaceTimeCanvas
 	/**Gets the scale in the X-direction (pixels per time unit).*/
 	public double getScalePixelsPerTime()
 	{
-		return (double)getClientArea().width / (double)stData.getTimeWidth();
+		return (double)clientArea.width / (double)stData.getTimeWidth();
 	}
 
 	/**Gets the scale in the Y-direction (pixels per process).*/
 	public double getScalePixelsPerRank()
 	{
 		final IBaseData data = stData.getBaseData();
-		final Rectangle area = getClientArea();
-		return (double)area.height / (data.getNumberOfRanks());
+		return (double)clientArea.height / (data.getNumberOfRanks());
 	}
 
+	
+	/*******************
+	 * 
+	 * Refresh the canvas using UI thread
+	 *
+	 *******************/
+	private class RedrawUI
+	{
+		final private Display display;
+		final private Runnable action;
+		
+		private RedrawUI(Display display)
+		{
+			this.display = display;
+			action       = new Runnable() {
+				
+				@Override
+				public void run(){
+					SpaceTimeMiniCanvas.this.redraw();
+				}
+			};
+		}
+		
+		public void refresh()
+		{
+			display.asyncExec(action);
+		}
+	}
 	
 	/* *****************************************************************
 	 *		

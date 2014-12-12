@@ -4,9 +4,9 @@ package edu.rice.cs.hpc.traceviewer.main;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
@@ -22,7 +22,7 @@ public class TimelineThread
 	/**Stores whether or not the bounds have been changed*/
 	private boolean changedBounds;
 	
-	final private TimelineProgressMonitor monitor;
+	final private IProgressMonitor monitor;
 	
 	final private ProcessTimelineService traceService;
 	
@@ -32,11 +32,11 @@ public class TimelineThread
 	 ***********************************************************************************************************/
 	public TimelineThread(IWorkbenchWindow window, SpaceTimeDataController _stData, ProcessTimelineService traceService,
 			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, 
-			AtomicInteger numTimelines, TimelineProgressMonitor _monitor)
+			AtomicInteger numTimelines, IProgressMonitor monitor)
 	{
 		super(_stData, _scaleY, queue, numTimelines,_stData.isEnableMidpoint());
 		changedBounds = _changedBounds;		
-		monitor = _monitor;
+		this.monitor = monitor;
 		this.traceService = traceService;		
 	}
 	
@@ -65,7 +65,7 @@ public class TimelineThread
 
 	@Override
 	protected void finalize() {
-		monitor.announceProgress();		
+		monitor.worked(1);		
 	}
 
 	@Override

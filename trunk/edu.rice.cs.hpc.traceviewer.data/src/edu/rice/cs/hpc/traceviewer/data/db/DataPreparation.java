@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.data.db;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.graphics.Color;
 
 import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
@@ -80,19 +81,18 @@ public abstract class DataPreparation
 			while (still_the_same && (++indexSucc <= last_ptl_index))
 			{
 				cp = ptl.getCallPath(indexSucc, depth);
-				if(cp != null)
-				{
-					succFunction = cp.getScopeAt(depth).getName(); 
-					succColor = colorTable.getColor(succFunction);
-					
-					// the color will be the same if and only if the two regions have the save function name
-					// regardless they are from different max depth and different call path.
-					// This can be misleading, but at the moment it is a good approximation
-					
-					still_the_same = (succColor.equals(currColor));
-					if (still_the_same)
-						end = indexSucc;
-				}
+				Assert.isNotNull(cp);
+
+				succFunction = cp.getScopeAt(depth).getName(); 
+				succColor = colorTable.getColor(succFunction);
+				
+				// the color will be the same if and only if the two regions have the save function name
+				// regardless they are from different max depth and different call path.
+				// This can be misleading, but at the moment it is a good approximation
+				
+				still_the_same = (succColor.equals(currColor));
+				if (still_the_same)
+					end = indexSucc;
 			}
 			
 			if (end < last_ptl_index)

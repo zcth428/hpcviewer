@@ -8,6 +8,10 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -104,6 +108,8 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	final private ProcessTimelineService ptlService;
 	
 	final IWorkbenchWindow window;
+	
+	final DetailViewPaint detailViewPaint;
 
 	final private ExecutorService threadExecutor;
 	
@@ -128,6 +134,8 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		
 		// set the number of maximum threads in the pool to the number of hardware threads
 		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
+		
+		detailViewPaint = new DetailViewPaint(window, threadExecutor, this);
 		
 		addDisposeListener( new DisposeListener() {
 			
@@ -330,7 +338,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		frame.begTime = 0;
 		frame.endTime = stData.getTimeWidth();
 		
-		notifyChanges(ZoomOperation.ActionHome, frame);
+		notifyZoomOperation(ZoomOperation.ActionHome, frame);
 	}
 	
 	/**************************************************************************
@@ -339,7 +347,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 **************************************************************************/
 	public void open(Frame toBeOpened)
 	{
-		notifyChanges("Frame", toBeOpened);	
+		notifyZoomOperation("Frame", toBeOpened);	
 	}
 	
 	/**************************************************************************
@@ -386,7 +394,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		frame.begProcess = p1;
 		frame.endProcess = p2;
 
-		notifyChanges("Zoom-in ranks", frame);
+		notifyZoomOperation("Zoom-in ranks", frame);
 	}
 
 	/**************************************************************************
@@ -422,7 +430,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		frame.begProcess = p1;
 		frame.endProcess = p2;
 
-		notifyChanges("Zoom-out ranks", frame);
+		notifyZoomOperation("Zoom-out ranks", frame);
 	}
 
 	
@@ -446,7 +454,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		frame.begTime = t1;
 		frame.endTime = t2;
 		
-		notifyChanges("Zoom-in time", frame);
+		notifyZoomOperation("Zoom-in time", frame);
 	}
 
 	/**************************************************************************
@@ -471,7 +479,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		frame.begTime = t1;
 		frame.endTime = t2;
 		
-		notifyChanges("Zoom-out time", frame);
+		notifyZoomOperation("Zoom-out time", frame);
 	}
 	
 	/**************************************************************************
@@ -620,7 +628,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		frame.begProcess = topLeftProcess;
 		frame.endProcess = bottomRightProcess;
 		
-		notifyChanges("Zoom", frame);
+		notifyZoomOperation("Zoom", frame);
     }
     
   
@@ -722,7 +730,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
     	frame.begTime = topLeftTime;
     	frame.endTime = bottomRightTime;
     	
-    	notifyChanges("Zoom H", frame);
+    	notifyZoomOperation("Zoom H", frame);
     }
 
     /*******
@@ -779,7 +787,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
     	frame.begProcess = pBegin;
     	frame.endProcess = pEnd;
     	
-		notifyChanges("Zoom V", frame);
+		notifyZoomOperation("Zoom V", frame);
 	}
 
 	private Position updatePosition(Point mouseDown)
@@ -826,8 +834,8 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 *  
 	 *  @param refreshData boolean whether we need to refresh and read again the data or not
 	 *********************************************************************************/
-	public void refresh(boolean refreshData) {
-		//Debugger.printTrace("STDC rebuffer");
+	synchronized public void refresh(boolean refreshData) {
+
 		//Okay, so here's how this works. In order to draw to an Image (the Eclipse kind)
 		//you need to draw to its GC. So, we have this bufferImage that we draw to, so
 		//we get its GC (bufferGC), and then pass that GC to paintViewport, which draws
@@ -846,9 +854,9 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		final Rectangle view = getClientArea();
 				
 		final Image imageFinal = new Image(getDisplay(), view.width, view.height);
-		GC bufferGC = new GC(imageFinal);
-		bufferGC.setBackground(Constants.COLOR_WHITE);
-		bufferGC.fillRectangle(0,0,view.width,view.height);
+		GC gcFinal = new GC(imageFinal);
+		gcFinal.setBackground(Constants.COLOR_WHITE);
+		gcFinal.fillRectangle(0,0,view.width,view.height);
 		
 		// -----------------------------------------------------------------------
 		// imageOrig is the original image without "attributes" such as depth
@@ -860,75 +868,20 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		int numLines = Math.min(view.height, stData.getAttributes().getProcessInterval() );
 		Image imageOrig = new Image(getDisplay(), view.width, numLines);
 		
-		GC origGC = new GC(imageOrig);
-		origGC.setBackground(Constants.COLOR_WHITE);
-		origGC.fillRectangle(0,0,view.width, numLines);
+		GC gcOrig = new GC(imageOrig);
+		gcOrig.setBackground(Constants.COLOR_WHITE);
+		gcOrig.fillRectangle(0,0,view.width, numLines);
 
 		// -----------------------------------------------------------------------
 		// main method to paint to the canvas
 		// if there's no exception or interruption, we redraw the canvas
 		// -----------------------------------------------------------------------
-		if ( paintDetailViewport(bufferGC, origGC, 
-				view.width, view.height, refreshData) ) {
-			
-			if (imageBuffer != null) {
-				imageBuffer.dispose();
-			}
-			imageBuffer = imageFinal;
-			
-			// in case of filter, we may need to change the cursor position
-			if (refreshData) {
-				final String []ranks = stData.getBaseData().getListOfRanks();
-				final Position p = stData.getAttributes().getPosition();
-				
-				if (p.process > ranks.length-1) {
-					// out of range: need to change the cursor position
-					Position new_p = new Position( p.time, ranks.length >> 1 );
-					notifyChangePosition(new_p);
-				}
-			}
-			super.redraw();
-
-			// -----------------------------------------------------------------------
-			// notify to all other views that a new image has been created,
-			//	and it needs to refresh the view
-			// -----------------------------------------------------------------------
-			notifyChangeBuffer(imageOrig.getImageData());
-			
-			updateButtonStates();
-		} else {
-			// we don't need this "new image" since the paint fails
-			imageFinal.dispose();
-		}
-		// free resources 
-		bufferGC.dispose();
-		origGC.dispose();
-		imageOrig.dispose();
-	}
-	
-
-	/*************************************************************************
-	 *	Paints the specified time units and processes at the specified depth
-	 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
-	 *	the sample's max depth before becoming overDepth on samples that have gone over depth.
-	 * 
-	 *	@param masterGC   		 The GC that will contain the combination of all the 1-line GCs.
-	 * 	@param origGC			 The original GC without texts
-	 *  @param _numPixelsH		 The number of horizontal pixels to be painted.
-	 *  @param _numPixelsV		 The number of vertical pixels to be painted.
-	 *  @param refreshData
-	 *  
-	 *  @return boolean true of the pain is successful, false otherwise
-	 *************************************************************************/
-	private boolean paintDetailViewport(final GC masterGC, final GC origGC, 
-			int _numPixelsH, int _numPixelsV,
-			boolean refreshData)
-	{	
+		
 		ImageTraceAttributes attributes = stData.getAttributes();
 		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
 		
-		attributes.numPixelsH = _numPixelsH;
-		attributes.numPixelsV = _numPixelsV;
+		attributes.numPixelsH = view.width;
+		attributes.numPixelsV = view.height;
 		
 		oldAttributes.copy(attributes);
 		if (changedBounds) {
@@ -937,13 +890,106 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 			ptlService.setProcessTimeline(traces);
 		}
 
-		DetailViewPaint detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
-					attributes, changedBounds, window, threadExecutor); 
+		// -------------------------------------------------------------------------------------------------
+		// schedule the paint job to load data, paint the canvas and notifies other views of this updates
+		// if the user cancels, it terminates and returns to the old state 
+		// -------------------------------------------------------------------------------------------------
 		
-		return detailPaint.paint(this);
+		detailViewPaint.setData(stData, gcFinal, gcOrig, changedBounds);
+		
+		if (detailViewPaint.getState() == Job.NONE)
+		{
+			detailViewPaint.setUser(true);
+			detailViewPaint.setSystem(false);
+		}
+		
+		// waiting for the completion of the painting
+		// instead of blocking wait, we should listen and do the finalization when the job has done.
+		
+		detailViewPaint.addJobChangeListener(new DetailPaintFinalize(refreshData, imageFinal, imageOrig, 
+										 gcFinal, gcOrig));
+		detailViewPaint.schedule();
 	}
 	
 
+	
+	/*********
+	 * Notifier class when the job has done
+	 * 
+	 * if the paint is successful, it will update the data, and notify to other views
+	 * Otherwise, just dispose resources
+	 */
+	private class DetailPaintFinalize extends JobChangeAdapter
+	{
+		final private boolean refreshData;
+		final private Image   imageFinal;
+		final private Image   imageOrig;
+		final private GC	  gcFinal, gcOrig;
+		
+		private DetailPaintFinalize(boolean refreshData, Image imageFinal,  Image imageOrig,
+									GC gcFinal, GC gcOrig)
+		{
+			this.refreshData = refreshData;
+			this.imageFinal  = imageFinal;
+			this.imageOrig   = imageOrig;
+			this.gcFinal     = gcFinal;
+			this.gcOrig   	 = gcOrig;
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.core.runtime.jobs.JobChangeAdapter#done(org.eclipse.core.runtime.jobs.IJobChangeEvent)
+		 */
+		public void done(IJobChangeEvent event) 
+		{
+			event.getJob().removeJobChangeListener(this);
+			
+			if (event.getResult() == Status.OK_STATUS)
+			{
+				if (imageBuffer != null) {
+					imageBuffer.dispose();
+				}
+				imageBuffer = imageFinal;
+				
+				// in case of filter, we may need to change the cursor position
+				if (refreshData) {
+					final String []ranks = stData.getBaseData().getListOfRanks();
+					final Position p = stData.getAttributes().getPosition();
+					
+					if (p.process > ranks.length-1) {
+						// out of range: need to change the cursor position
+						Position new_p = new Position( p.time, ranks.length >> 1 );
+						notifyChangePositionOperation(new_p);
+					}
+				}
+				SpaceTimeDetailCanvas.this.getDisplay().syncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						SpaceTimeDetailCanvas.this.redraw();
+					}
+				});
+
+				// -----------------------------------------------------------------------
+				// notify to all other views that a new image has been created,
+				//	and it needs to refresh the view
+				// -----------------------------------------------------------------------
+				final ImageData imageData = imageOrig.getImageData();
+				notifyBufferRefreshOperation(imageData);
+				
+				updateButtonStates();				
+			} else {
+				// we don't need this "new image" since the paint fails
+				imageFinal.dispose();
+			}
+			
+			// free resources 
+			gcFinal.dispose();
+			gcOrig.dispose();
+			imageOrig.dispose();
+		}
+	}
+	
 	
 	/*
 	 * (non-Javadoc)
@@ -970,7 +1016,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 * @param _bottomRightTime
 	 * @param _bottomRightProcess
 	 ***********************************************************************************/
-	private void notifyChanges(String label, Frame frame) 
+	private void notifyZoomOperation(String label, Frame frame) 
 	{
 		String sLabel = (label == null ? "Set region" : label);
 		Debugger.printDebug(1, "STDC " + sLabel + " : " + frame);
@@ -992,15 +1038,19 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 * 
 	 * @param position
 	 ***********************************************************************************/
-	private void notifyChangePosition(Position position) 
+	private void notifyChangePositionOperation(final Position position) 
 	{
-		try {
-			TraceOperation.getOperationHistory().execute(
-					new PositionOperation(position), 
-					null, null);
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
+		getDisplay().syncExec( new Runnable() {
+			public void run() {
+				try {
+					TraceOperation.getOperationHistory().execute(
+							new PositionOperation(position), 
+							null, null);
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 	
 	/***********************************************************************************
@@ -1009,19 +1059,24 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 * 
 	 * @param imageData
 	 ***********************************************************************************/
-	private void notifyChangeBuffer(ImageData imageData)
+	private void notifyBufferRefreshOperation(final ImageData imageData)
 	{
 		// -----------------------------------------------------------------------
 		// notify to SummaryView that a new image has been created,
 		//	and it needs to refresh the view
 		// -----------------------------------------------------------------------
 
-		BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageData);
-		try {
-			TraceOperation.getOperationHistory().execute(brOp, null, null);
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
+		getDisplay().syncExec( new Runnable() {
+			public void run() {
+				BufferRefreshOperation brOp = new BufferRefreshOperation("refresh", imageData);
+				try {
+					TraceOperation.getOperationHistory().execute(brOp, null, null);
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
 	}
 
 	//-----------------------------------------------------------------------------------------
@@ -1079,7 +1134,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		public void rebuffering() {
 			// force the paint to refresh the data			
 			final ImageTraceAttributes attr = stData.getAttributes();
-			notifyChanges("Resize", attr.getFrame() );
+			notifyZoomOperation("Resize", attr.getFrame() );
 		}
 	}
 
@@ -1128,7 +1183,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	protected void changePosition(Point point) 
 	{
     	Position position = updatePosition(point);
-    	notifyChangePosition(position);
+    	notifyChangePositionOperation(position);
 	}
 
 

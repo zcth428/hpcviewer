@@ -197,6 +197,8 @@ public class TraceDatabase
 		// reset the operation history
 		TraceOperation.clear();
 
+		boolean result = false;
+		
 		try {
 			// ---------------------------------------------------------------------
 			// Update the title of the application
@@ -229,12 +231,13 @@ public class TraceDatabase
 			HPCCallStackView cview = (HPCCallStackView) page.showView(HPCCallStackView.ID);
 			cview.updateView(database.dataTraces);
 
-			return true;
+			result = true;
 
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
 
-		return false;
+		statusMgr.setMessage("");
+		return result;
 	}
 }

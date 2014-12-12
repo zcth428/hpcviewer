@@ -137,7 +137,7 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 
-		this.csViewer.updateView();
+		//this.csViewer.updateView();
 		this.miniCanvas.updateView(_stData);
 		
 		miniCanvas.setVisible(true);

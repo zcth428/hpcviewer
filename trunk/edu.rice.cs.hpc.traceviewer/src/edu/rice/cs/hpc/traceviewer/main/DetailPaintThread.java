@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.main;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -50,9 +51,9 @@ public class DetailPaintThread
 	 * @param debugMode : flag whether we need to show text information
 	 */
 	public DetailPaintThread( SpaceTimeDataController stData, Queue<TimelineDataSet> list, int numLines,
-			AtomicInteger paintDone, Device device, int width, Point maxTextSize, boolean debugMode) {
+			AtomicInteger paintDone, Device device, int width, Point maxTextSize, boolean debugMode, IProgressMonitor monitor) {
 		
-		super(stData, list, numLines, paintDone, device, width);
+		super(stData, list, numLines, paintDone, monitor, device, width);
 		
 		this.maxTextSize = maxTextSize;
 		this.debugMode = debugMode;

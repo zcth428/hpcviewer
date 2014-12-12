@@ -34,7 +34,7 @@ public class TimelineThread
 			boolean _changedBounds, double _scaleY, Queue<TimelineDataSet> queue, 
 			AtomicInteger numTimelines, IProgressMonitor monitor)
 	{
-		super(_stData, _scaleY, queue, numTimelines,_stData.isEnableMidpoint());
+		super(_stData, _scaleY, queue, monitor, numTimelines,_stData.isEnableMidpoint());
 		changedBounds = _changedBounds;		
 		this.monitor = monitor;
 		this.traceService = traceService;		

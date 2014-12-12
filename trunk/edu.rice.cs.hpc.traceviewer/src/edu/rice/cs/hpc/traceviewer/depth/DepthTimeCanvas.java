@@ -8,6 +8,7 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -54,7 +55,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 	 */
 	private Rectangle clientArea;
 	
-	final private DepthViewPaint depthPaint;
+	private DepthViewPaint depthPaint;
 
 	/********************
 	 * constructor to create this canvas
@@ -223,7 +224,11 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		// schedule, compute the data and repaint the canvas
 		// -------------------------------------------------
 		
-		depthPaint.cancel();
+		if (depthPaint.getState() != Job.NONE)
+		{
+			depthPaint.cancel();
+			depthPaint = new DepthViewPaint(Util.getActiveWindow(), threadExecutor, this);
+		}
 		
 		depthPaint.setData(bufferGC, stData, true);
 		

@@ -109,9 +109,10 @@ public class DetailViewPaint extends BaseViewPaint
 
 	@Override
 	protected BasePaintThread getPaintThread(
-			Queue<TimelineDataSet> queue, int numLines, AtomicInteger timelineDone, Device device, int width) {
+			Queue<TimelineDataSet> queue, int numLines, AtomicInteger timelineDone, 
+			Device device, int width, IProgressMonitor monitor) {
 
-		return new DetailPaintThread( controller, queue, numLines, timelineDone, device, width, maxTextSize, debug);
+		return new DetailPaintThread( controller, queue, numLines, timelineDone, device, width, maxTextSize, debug, monitor);
 	}
 
 	@Override

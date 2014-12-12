@@ -33,7 +33,7 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.Frame;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
-import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
+
 
 /******************************************************************
  * 
@@ -297,7 +297,7 @@ implements IOperationHistoryListener
 		// we are not interested with other operation
 		if (event.getOperation().hasContext(BufferRefreshOperation.context)) {
 			if (event.getEventType() == OperationHistoryEvent.DONE) {
-				Debugger.printDebug(1, "STC attributes: ");
+
 				getDisplay().syncExec(new Runnable() {
 					@Override
 					public void run() {

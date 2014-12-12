@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Device;
@@ -35,6 +37,8 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 	final protected SpaceTimeDataController stData;
 	final private AtomicInteger timelineDone;
 	
+	final private IProgressMonitor monitor;
+	
 	/****
 	 * constructor of the class, requiring a queue of list of data (per line) to be
 	 * visualized on a set of images. The queue can be thread-safe (in case of multithreaded)
@@ -49,21 +53,22 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 	 * @param width : the width of the view
 	 */
 	public BasePaintThread( SpaceTimeDataController stData, Queue<TimelineDataSet> list, 
-			int numberOfTotalLines, AtomicInteger paintDone,
+			int numberOfTotalLines, AtomicInteger paintDone, IProgressMonitor monitor,
 			Device device, int width) {
 		
 		Assert.isNotNull(device);
 		Assert.isNotNull(list);
 		
-		this.list = list;
+		this.list 				= list;
 		this.numberOfTotalLines = numberOfTotalLines;
-		this.timelineDone = paintDone;
+		this.timelineDone 		= paintDone;
 		
-		this.device = device;
-		this.stData = stData;
+		this.monitor			= monitor;
+		this.device 			= device;
+		this.stData 			= stData;
 		
-		this.width = width;
-		listOfImages = new ArrayList<ImagePosition>(list.size());
+		this.width 				= width;
+		listOfImages 			= new ArrayList<ImagePosition>(list.size());
 	}
 	
 	@Override
@@ -79,6 +84,10 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 				|| 											  // or	the paint threads haven't finished the job
 				timelineDone.get()>0 ) 					  	  //
 		{
+			// do not continue if a user cancels the operation
+			if (monitor.isCanceled()) {
+				throw new CancellationException();
+			}
 			// ------------------------------------------------------------------
 			// get the task to do from the list and compute the height and the position
 			// if the list is empty, it means the data collection threads haven't finished 

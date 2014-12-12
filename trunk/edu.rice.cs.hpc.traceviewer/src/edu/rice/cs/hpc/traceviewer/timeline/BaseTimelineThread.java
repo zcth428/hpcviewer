@@ -2,7 +2,10 @@ package edu.rice.cs.hpc.traceviewer.timeline;
 
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
@@ -32,16 +35,18 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 	final protected boolean usingMidpoint;
 	final private Queue<TimelineDataSet> queue;
 	final private AtomicInteger numTimelines;
-
+	final private IProgressMonitor monitor;
+	
 	public BaseTimelineThread(SpaceTimeDataController stData,
-			double scaleY, Queue<TimelineDataSet> queue, 
+			double scaleY, Queue<TimelineDataSet> queue, IProgressMonitor monitor,
 			AtomicInteger numTimelines, boolean usingMidpoint)
 	{
-		this.stData = stData;
-		this.scaleY = scaleY;
-		this.usingMidpoint = usingMidpoint;
-		this.queue = queue;
-		this.numTimelines = numTimelines;
+		this.stData 		= stData;
+		this.scaleY 		= scaleY;
+		this.usingMidpoint 	= usingMidpoint;
+		this.queue 			= queue;
+		this.numTimelines 	= numTimelines;
+		this.monitor  		= monitor;
 	}
 	
 	@Override
@@ -58,6 +63,10 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 
 		while (trace != null)
 		{
+			// do not continue if a user cancels the operation
+			if (monitor.isCanceled())
+				throw new CancellationException();
+
 			// ---------------------------------
 			// begin collecting the data if needed
 			// ---------------------------------
@@ -71,7 +80,7 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 					imageHeight--;
 				else
 					imageHeight++;
-
+				
     			// ---------------------------------
     			// do the data preparation
     			// ---------------------------------

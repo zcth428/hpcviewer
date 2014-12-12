@@ -109,7 +109,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	
 	final IWorkbenchWindow window;
 	
-	final DetailViewPaint detailViewPaint;
+	DetailViewPaint detailViewPaint;
 
 	final private ExecutorService threadExecutor;
 	
@@ -283,6 +283,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 * (basically when anything at all is changed anywhere on the application 
 	 * OR when redraw() is called).
 	 ******************************************************************************/
+	@Override
 	public void paintControl(PaintEvent event)
 	{		
 		if (this.stData == null)
@@ -894,7 +895,11 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		// schedule the paint job to load data, paint the canvas and notifies other views of this updates
 		// if the user cancels, it terminates and returns to the old state 
 		// -------------------------------------------------------------------------------------------------
-		
+		if (detailViewPaint.getState() != Job.NONE) 
+		{
+			detailViewPaint.cancel();
+			detailViewPaint = new DetailViewPaint(window, threadExecutor, this);
+		}
 		detailViewPaint.setData(stData, gcFinal, gcOrig, changedBounds);
 		
 		if (detailViewPaint.getState() == Job.NONE)
@@ -995,6 +1000,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 * (non-Javadoc)
 	 * @see org.eclipse.swt.widgets.Widget#dispose()
 	 */
+	@Override
 	public void dispose () { 
 		if (imageBuffer != null) {
 			imageBuffer.dispose();

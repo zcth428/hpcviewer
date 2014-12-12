@@ -80,10 +80,15 @@ extends Job
 	@Override
 	protected IStatus run(IProgressMonitor monitor) 
 	{
-		boolean result = paint(canvas, monitor);
-		IStatus status = Status.OK_STATUS;
-		if (!result) {
-			status = Status.CANCEL_STATUS;
+		IStatus status = Status.CANCEL_STATUS;
+		try {
+			boolean result = paint(canvas, monitor);
+			if (result) {
+				status = Status.OK_STATUS;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		monitor.done();
 
@@ -98,8 +103,10 @@ extends Job
 	 *
 	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
 	 *  @return boolean true of the pain is successful, false otherwise
+	 * @throws Exception 
 	 ***********************************************************************************/
 	private boolean paint(ISpaceTimeCanvas canvas, IProgressMonitor monitor)
+			throws Exception
 	{	
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
@@ -202,7 +209,7 @@ extends Job
 		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
 		{
 			final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
-					device, attributes.numPixelsH);
+					device, attributes.numPixelsH, monitor);
 			if (thread != null) {
 				if (singleThread) 
 				{
@@ -238,20 +245,22 @@ extends Job
 	 * 
 	 * @param canvas
 	 * @param paintThread
+	 * @throws Exception 
 	 */
 	private void doSingleThreadPainting(ISpaceTimeCanvas canvas, BasePaintThread paintThread)
+			throws Exception
 	{
-		try {
-			// do the data painting, and directly get the generated images
-			List<ImagePosition> listImages = paintThread.call();
+		// do the data painting, and directly get the generated images
+		List<ImagePosition> listImages = paintThread.call();
 
+		// the listImages is null, it means the user cancels the operation
+		if (listImages != null) 
+		{
 			// set the images into the canvas. 
 			for ( ImagePosition image: listImages )
 			{
 				drawPainting(canvas, image);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -260,24 +269,21 @@ extends Job
 	 * 
 	 * @param canvas
 	 * @param listOfImageThreads
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	private void endPainting(ISpaceTimeCanvas canvas, List<Future<List<ImagePosition>>> listOfImageThreads)
+	private void endPainting(ISpaceTimeCanvas canvas, List<Future<List<ImagePosition>>> listOfImageThreads) 
+			throws InterruptedException, ExecutionException
 	{
 		for( Future<List<ImagePosition>> listFutures : listOfImageThreads ) 
 		{
-			try {
-				List<ImagePosition> listImages = listFutures.get();
+			List<ImagePosition> listImages = listFutures.get();
+			if (listImages != null)
+			{
 				for (ImagePosition image : listImages) 
 				{
 					drawPainting(canvas, image);
 				}
-				
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 	}
@@ -343,5 +349,5 @@ extends Job
 	 * @return
 	 */
 	abstract protected BasePaintThread getPaintThread( Queue<TimelineDataSet> queue, int numLines, 
-			AtomicInteger timelineDone, Device device, int width);
+			AtomicInteger timelineDone, Device device, int width, IProgressMonitor monitor);
 }

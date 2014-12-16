@@ -102,12 +102,24 @@ public class FilterDialog extends TitleAreaDialog {
 		btnAdd.setToolTipText("Add a new filtering pattern");
 		btnAdd.addSelectionListener( new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
-				DualInputDialog dlg = new DualInputDialog(getShell(), "Add a pattern", 
-						"Please type a pattern in the format minimum:maximum:stride.\n" + 
-						"Any omitted or invalid sections will match as many processes \nor threads as possible.\n\n" +
-						"For instance, 3:7:2 in the process box with the thread box empty \nwill match all threads of processes 3, 5, and 7.\n"+
-						"1 in the thread box with the process box empty will match \nthread 1 of all processes.\n"+
-						"1::2 in the process box and 2:4:2 in the thread box will match \n1.2, 1.4, 3.2, 3.4, 5.2 ...", "Process", "Thread", PROCESS_FILTER_KEY, THREAD_FILTER_KEY);
+				String thread_title = null, process_title = "Rank";
+				String message;
+				
+				if (filterData.isHybridRank()) {
+					thread_title  = "Thread";
+					process_title = "Process";
+					message  	  = "Please type a pattern in the format minimum:maximum:stride.\n" + 
+							"Any omitted or invalid sections will match as many processes \nor threads as possible.\n\n" +
+							"For instance, 3:7:2 in the process box with the thread box empty \nwill match all threads of processes 3, 5, and 7.\n"+
+							"1 in the thread box with the process box empty will match \nthread 1 of all processes.\n"+
+							"1::2 in the process box and 2:4:2 in the thread box will match \n1.2, 1.4, 3.2, 3.4, 5.2 ...";
+ 				} else {
+ 					message = "Please type a pattern in the format minimum:maximum:stride.\n" + 
+ 							"Any omitted or invalid sections will match as many ranks as possible.\n\n" +
+ 							"For instance, 3:7:2  will match all ranks 3, 5, and 7.\n";
+ 				}
+				DualInputDialog dlg = new DualInputDialog(getShell(), "Add a pattern", message, 
+						process_title, thread_title, PROCESS_FILTER_KEY, THREAD_FILTER_KEY);
 				if (dlg.open() == Dialog.OK) {
 					list.add(dlg.getValue());
 					checkButtons();
@@ -211,7 +223,8 @@ public class FilterDialog extends TitleAreaDialog {
 			super.okPressed();
 		else {
 			// it is not allowed to filter everything
-			MessageDialog.openError(getShell(), "Error", "The result of filter is empty ranks.\nIt isn't allowed to filter all the ranks.");
+			MessageDialog.openError(getShell(), "Error", 
+					"The result of filter is empty ranks.\nIt isn't allowed to filter all the ranks.");
 		}
 	}
 	
@@ -268,12 +281,13 @@ class DualInputDialog extends Dialog{
 		firstEntry = new Combo(fieldArea, SWT.SINGLE | SWT.BORDER);
 		firstEntry.setItems(firstHistory.getHistory());
 		
-		Label secondLabel = new Label(fieldArea, SWT.NONE);
-		secondLabel.setText(prompt2);
-		secondEntry = new Combo(fieldArea, SWT.SINGLE | SWT.BORDER);
-		secondEntry.setItems(secondHistory.getHistory());
-		
-		
+		if (prompt2 != null)
+		{
+			Label secondLabel = new Label(fieldArea, SWT.NONE);
+			secondLabel.setText(prompt2);
+			secondEntry = new Combo(fieldArea, SWT.SINGLE | SWT.BORDER);
+			secondEntry.setItems(secondHistory.getHistory());			
+		}
 
 		GridLayoutFactory.fillDefaults().numColumns(2).extendedMargins(2, 4, 3, 5).generateLayout(fieldArea);
 		GridLayoutFactory.fillDefaults().numColumns(1).extendedMargins(10, 10, 10, 10).generateLayout(composite);
@@ -282,9 +296,12 @@ class DualInputDialog extends Dialog{
 	
 	@Override
 	protected void okPressed() {
-		value =  firstEntry.getText() + Filter.PROCESS_THREAD_SEPARATOR + secondEntry.getText();
+		value =  firstEntry.getText() + Filter.PROCESS_THREAD_SEPARATOR;
+		if (secondEntry != null) {
+			value += secondEntry.getText();
+			secondHistory.addLine(secondEntry.getText());
+		}
 		firstHistory.addLine(firstEntry.getText());
-		secondHistory.addLine(secondEntry.getText());
 		super.okPressed();
 	}
 	public String getValue() {
@@ -293,7 +310,8 @@ class DualInputDialog extends Dialog{
 	
 	static public void main(String []argv) {
 		Shell shell = new Shell();
-		DualInputDialog dlg = new DualInputDialog(shell, "test input", "just a message asd srjt jlkbdfkrejldf ajlwi more asdkhuiq eger \n\n more text alks jlrk adsgf\nja reiotp", "Process", "Threads", "hist_1", "hist_2");
+		DualInputDialog dlg = new DualInputDialog(shell, "test input", 
+				"just a message asd srjt jlkbdfkrejldf ajlwi more asdkhuiq eger \n\n more text alks jlrk adsgf\nja reiotp", "Process", "Threads", "hist_1", "hist_2");
 		dlg.open();
 	}
 }

@@ -100,6 +100,12 @@ public abstract class AbstractBaseData implements IBaseData {
 		return headerSize;
 	}
 
+
+	@Override
+	public boolean isHybridRank() {
+		return baseDataFile.isHybrid();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#dispose()

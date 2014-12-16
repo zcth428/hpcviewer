@@ -148,4 +148,9 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 		return indexes[indexes.length-1]-indexes[0] == indexes.length-1;
 	}
 
+	@Override
+	public boolean isHybridRank() {
+		return baseDataFile.isHybrid();
+	}
+
 }

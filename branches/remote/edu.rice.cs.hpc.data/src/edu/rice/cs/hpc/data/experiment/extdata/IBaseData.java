@@ -29,7 +29,10 @@ public interface IBaseData {
 	/** Is every rank included between the first and the last as provided above?*/
 	public boolean isDenseBetweenFirstAndLast();
 	
-	
+	/** Return true if the application is a hybrid app (such as MPI+OpenMP). 
+	 *  False otherwise
+	 *  @return boolean **/
+	public boolean isHybridRank();
 	/****
 	 * Disposing native resources
 	 */

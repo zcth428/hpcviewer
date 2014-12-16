@@ -113,4 +113,8 @@ public class RemoteFilteredBaseData implements IFilteredData {
 	public boolean isDenseBetweenFirstAndLast() {
 		return indexes[indexes.length-1] == indexes.length-1;
 	}
+	@Override
+	public boolean isHybridRank() {
+		return allNames[0].toString().contains(".");
+	}
 }

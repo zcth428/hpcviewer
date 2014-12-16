@@ -32,9 +32,9 @@ public abstract class BaseExperiment implements IExperiment {
 	private TraceAttribute attribute;
 
 	/** The file from which to resolve relative source file paths. */
-	protected File fileExperiment;
+	//protected File fileExperiment;
 
-	
+	protected ExperimentFileXML fileXML;
 	
 	/***
 	 * the root scope of the experiment
@@ -87,15 +87,17 @@ public abstract class BaseExperiment implements IExperiment {
 	 * @param userData
 	 * @throws Exception
 	 */
-	public void open(File fileExperiment, IUserData<String, String> userData)
+	public void open(File fileExperiment, IUserData<String, String> userData, boolean need_metric)
 			throws	Exception
 	{
 		// protect ourselves against filename being `foo' with no parent
 		// information whatsoever.
-		this.fileExperiment = fileExperiment;
+		//this.fileExperiment = fileExperiment;
 		
-		new ExperimentFileXML().parse(fileExperiment, this, false,
-				userData);		
+		if (fileXML == null) {
+			fileXML = new ExperimentFileXML();
+		}
+		fileXML.parse(fileExperiment, this, need_metric, userData);		
 	}
 	
 	
@@ -110,9 +112,10 @@ public abstract class BaseExperiment implements IExperiment {
 	public void open(InputStream expStream, IUserData<String, String> userData,
 		String name) throws Exception {
 	
-		new ExperimentFileXML().parse(expStream, name, this, false, userData);
-		// store the path of the remote directory
-		fileExperiment = new File(name);
+		if (fileXML == null) {
+			fileXML = new ExperimentFileXML();
+		}
+		fileXML.parse(expStream, name, this, false, userData);
 	}
 
 
@@ -169,11 +172,11 @@ public ExperimentConfiguration getConfiguration()
 	
 public File getDefaultDirectory()
 {
-	return this.fileExperiment.getParentFile();
+	return getXMLExperimentFile().getParentFile();
 }
 
 public File getXMLExperimentFile() {
-	return this.fileExperiment;
+	return this.fileXML.getFile();
 }
 
 

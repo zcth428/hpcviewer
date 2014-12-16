@@ -1,12 +1,22 @@
 package edu.rice.cs.hpc.data.experiment;
 
+import java.io.File;
+
+import edu.rice.cs.hpc.data.util.IUserData;
+
 /*************************************
  * 
  * Experiment class without metrics
  *
  *************************************/
-public class ExperimentWithoutMetrics extends BaseExperiment {
+public class ExperimentWithoutMetrics extends BaseExperiment 
+{
 
+	public void open(File fileExperiment, IUserData<String, String> userData)
+			throws	Exception
+	{
+		super.open(fileExperiment, userData, false);
+	}
 
 
 	/*
@@ -17,8 +27,8 @@ public class ExperimentWithoutMetrics extends BaseExperiment {
 
 		ExperimentWithoutMetrics copy = new ExperimentWithoutMetrics();
 
-		copy.configuration = configuration;
-		copy.fileExperiment = fileExperiment;
+		copy.configuration 	= configuration;
+		copy.fileXML 		= fileXML;
 		
 		return copy;
 	}

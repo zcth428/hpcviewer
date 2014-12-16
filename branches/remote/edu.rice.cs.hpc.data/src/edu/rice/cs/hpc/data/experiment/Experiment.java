@@ -20,10 +20,7 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
-import edu.rice.cs.hpc.data.util.IUserData;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,23 +45,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	//	PERSISTENCE															//
 	//////////////////////////////////////////////////////////////////////////
 
-
-	/*************************************************************************
-	 * Opens the experiment 
-	 * 
-	 * @param 		experimentFile : file to be parsed
-	 * @exception 	IOException if experiment file can't be read.
-	 * @exception 	InvalExperimentException if file contents are
-	 * 			 	not a valid experiment.
-	 *************************************************************************/
-	
-	public void open(File experimentFile, IUserData<String, String> userData)
-			throws Exception
-	{
-		this.fileExperiment = experimentFile;
-		new ExperimentFileXML().parse(fileExperiment, this, true,
-				userData);		
-	}
 
 	
 	/*************************************************************************
@@ -420,16 +400,20 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 
 	public Experiment duplicate() {
 
-		Experiment copy = new Experiment();
-		copy.configuration = configuration;
-		copy.fileExperiment = fileExperiment;
+		Experiment copy 	= new Experiment();
+		copy.configuration 	= configuration;
+		copy.fileXML 		= fileXML;
 		
 		return copy;
 	}
 
 
 	public void setXMLExperimentFile(File file) {
-		this.fileExperiment = file;
+		if (fileXML == null)
+		{
+			fileXML = new ExperimentFileXML();
+		}
+		fileXML.setFile(file);
 	}
 
 	public void setMetricRaw(MetricRaw []metrics) {

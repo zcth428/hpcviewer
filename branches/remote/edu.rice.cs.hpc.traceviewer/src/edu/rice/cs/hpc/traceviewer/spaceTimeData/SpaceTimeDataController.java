@@ -10,7 +10,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
-import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
@@ -67,7 +66,7 @@ public abstract class SpaceTimeDataController
 	private boolean enableMidpoint;
 	
 	protected IBaseData dataTrace = null;
-	final protected BaseExperiment exp;
+	final protected ExperimentWithoutMetrics exp;
 	
 	// nathan's data index variable
 	// TODO: we need to remove this and delegate to the inherited class instead !

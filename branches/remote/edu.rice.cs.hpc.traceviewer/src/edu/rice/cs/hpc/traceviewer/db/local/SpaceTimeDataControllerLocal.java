@@ -34,7 +34,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, String databaseDirectory) 
 			throws InvalExperimentException, Exception 
 	{
-		super(_window, new File(databaseDirectory + File.separator + Constants.DATABASE_FILENAME));
+		super(_window, new File(databaseDirectory));
 	}
 
 

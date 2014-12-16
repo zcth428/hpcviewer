@@ -22,6 +22,7 @@ import edu.rice.cs.hpc.data.util.IUserData;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -41,10 +42,19 @@ import java.io.InputStream;
 public class ExperimentFileXML extends ExperimentFile
 {
 
+	private File file;
 
-
-
-
+	public File getFile() 
+	{
+		return file;
+	}
+	
+	public void setFile(File file)
+	{
+		this.file = file;
+	}
+	
+	
 //////////////////////////////////////////////////////////////////////////
 //	XML PARSING															//
 //////////////////////////////////////////////////////////////////////////
@@ -88,6 +98,8 @@ public void parse(InputStream stream, String name,
 	parser.parse();
 
 	if (builder.getParseOK() == Builder.PARSER_OK) {
+		// set the file the same as the name of the database
+		setFile(new File(name));
 		// parsing is done successfully
 	} else
 		throw new InvalExperimentException(
@@ -109,16 +121,32 @@ public void parse(File file, BaseExperiment experiment, boolean need_metrics, IU
 		throws	Exception
 		{
 	// get an appropriate input stream
-	String name;
 	InputStream stream;
+	String name = file.toString();
 
-	name = file.toString();
+	// check if the argument "file" is really a file (old version) or a directory (new version)
+	String directory, xmlFilePath;
+	if (file.isDirectory()) {
+		directory = file.getAbsolutePath(); // it's a database directory
+		xmlFilePath = directory + File.separatorChar + Constants.DATABASE_FILENAME;
+	} else {
+		directory = file.getParent(); // it's experiment.xml file
+		xmlFilePath = file.getAbsolutePath();
+	}
 
+	File XMLfile = new File(xmlFilePath);
+	
+	if (!XMLfile.canRead()) {
+		throw new IOException("File does not exist or not readable: " + XMLfile.getAbsolutePath());
+	}
+	
+	setFile(XMLfile);
+	
 	// parse the stream
 	final Builder builder;
 	if (need_metrics)
 	{
-		stream = new FileInputStream(file);
+		stream = new FileInputStream(XMLfile);
 		builder = new ExperimentBuilder2(experiment, name, userData);
 	}
 	else
@@ -129,14 +157,6 @@ public void parse(File file, BaseExperiment experiment, boolean need_metrics, IU
 		//	it uses old technique of reader line by line. we should come
 		//	up with a better xml parser.
 		// note: this is a quick hack to fix slow xml reader in ibm bg something
-		String directory, xmlFilePath;
-		if (file.isFile()) {
-			directory = file.getParent(); // it's experiment.xml file
-			xmlFilePath = file.getAbsolutePath();
-		} else {
-			directory = file.getAbsolutePath(); // it's a database directory
-			xmlFilePath = directory + File.separatorChar + Constants.DATABASE_FILENAME;
-		}
 		
 		String callpathLoc = directory + File.separatorChar + "callpath.xml";
 		File callpathFile = new File(callpathLoc);

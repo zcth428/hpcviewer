@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.util.IUserData;
 
 
 /***
@@ -18,6 +19,11 @@ public abstract class BaseExperimentWithMetrics extends BaseExperiment {
 	protected List<BaseMetric> metrics;
 
 
+	public void open(File fileExperiment, IUserData<String, String> userData)
+			throws	Exception
+	{
+		super.open(fileExperiment, userData, true);
+	}
 
 	public void setMetrics(List<BaseMetric> metricList) {
 

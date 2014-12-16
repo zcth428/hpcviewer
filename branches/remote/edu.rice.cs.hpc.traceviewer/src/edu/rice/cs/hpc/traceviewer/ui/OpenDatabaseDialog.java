@@ -493,8 +493,9 @@ public class OpenDatabaseDialog extends Dialog
 
 		if (useLocalDatabase)
 		{
-			args[FieldDatabasePath] = comboBoxes[FieldDatabasePath].getText() ;
-			objHistoryDb.addLine(args[FieldDatabasePath]);
+			final String filename 	= comboBoxes[FieldDatabasePath].getText();
+			args[FieldDatabasePath] = filename;
+			objHistoryDb.addLine(filename);
 		} else
 		{
 			// ------------------------------------

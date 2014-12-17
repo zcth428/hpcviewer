@@ -190,20 +190,16 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 				switch (e.keyCode) {
 				
 				case SWT.ARROW_DOWN:
-					if (canGoSouth())
-						goSouth();
+					goSouth();
 					break;
 				case SWT.ARROW_UP:
-					if (canGoNorth())
-						goNorth();
+					goNorth();
 					break;
 				case SWT.ARROW_LEFT:
-					if (canGoEast())
-						goEast();
+					goEast();
 					break;
 				case SWT.ARROW_RIGHT:
-					if (canGoWest())
-						goWest();
+					goWest();
 					break;				
 				}
 			}			
@@ -668,6 +664,9 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 */
     public void goEast()
     {
+    	if (!canGoEast())
+    		return;
+    	
     	final ImageTraceAttributes attributes = stData.getAttributes();
     	
     	long topLeftTime = attributes.getTimeBegin();
@@ -692,6 +691,9 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
      */
     public void goWest()
     {
+    	if (!canGoWest())
+    		return;
+    	
     	final ImageTraceAttributes attributes = stData.getAttributes();
     	
     	long topLeftTime = attributes.getTimeBegin();
@@ -729,6 +731,9 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
      * go north one step
      */
     public void goNorth() {
+    	if (!canGoNorth())
+    		return;
+    	
     	final ImageTraceAttributes attributes = stData.getAttributes();
     	
     	int proc_begin = attributes.getProcessBegin();
@@ -750,6 +755,9 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
      * go south one step
      */
     public void goSouth() {
+    	if (!canGoSouth())
+    		return;
+    	
     	final ImageTraceAttributes attributes = stData.getAttributes();
     	
     	int proc_begin = attributes.getProcessBegin();

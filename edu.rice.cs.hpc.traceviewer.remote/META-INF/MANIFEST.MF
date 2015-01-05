@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: edu.rice.cs.hpc.traceviewer.remote (remote version)
+Bundle-SymbolicName: edu.rice.cs.hpc.traceviewer.remote
+Bundle-Version: 5.3.2.qualifier
+Bundle-Vendor: Rice University
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.junit,
+ edu.rice.cs.hpc.traceviewer.data

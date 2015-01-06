@@ -68,7 +68,7 @@
          </property>
          <property
                name="aboutText"
-               value="hpctracecviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpctraceviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute. &#x0A;&#x0A;Release 5.3.2 $LastChangedRevision$  (C) Copyright 2014,  Rice University.">
+               value="hpctracecviewer is a user interface for analyzing a database of   &#x0A;performance metrics in conjunction with an application&apos;s source code.&#x0A;&#x0A;hpctraceviewer is part of Rice University&apos;s HPCToolkit project.  Development of &#x0A;HPCToolkit is principally funded by the Department of Energy&apos;s Office of &#x0A;Science as part of the SciDAC Center for Scalable Application Development&#x0A;Software and the Performance Engineering Research Institute. &#x0A;&#x0A;Release 5.3.2 $LastChangedRevision$  (C) Copyright 2015,  Rice University.">
          </property>
          <property
                name="startupProgressRect"

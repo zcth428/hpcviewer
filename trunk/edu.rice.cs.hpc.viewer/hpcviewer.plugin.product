@@ -14,7 +14,7 @@ HPCToolkit is principally funded by the Department of Energy&apos;s Office of
 Science as part of the SciDAC Center for Scalable Application Development
 Software and the Performance Engineering Research Institute.
 
-Release 5.3.2 $LastChangedRevision$ (C) Copyright 2014, Rice University.
+Release 5.3.2 $LastChangedRevision$ (C) Copyright 2015, Rice University.
       </text>
    </aboutInfo>
 
@@ -52,7 +52,7 @@ Release 5.3.2 $LastChangedRevision$ (C) Copyright 2014, Rice University.
    <license>
         <url>http://hpctoolkit.org</url>
         <text>
-   Copyright ((c)) 2002-2012, Rice University 
+   Copyright ((c)) 2002-2015, Rice University 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

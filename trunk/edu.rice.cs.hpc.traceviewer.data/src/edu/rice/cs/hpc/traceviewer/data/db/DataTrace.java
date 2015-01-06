@@ -1,8 +1,10 @@
-package edu.rice.cs.hpc.data.db;
+package edu.rice.cs.hpc.traceviewer.data.db;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+
+import edu.rice.cs.hpc.data.db.DataCommon;
 
 /*******************************************************************************
  * 
@@ -55,6 +57,11 @@ public class DataTrace extends DataCommon
 		return true;
 	}
 
+	public void read(int rank, long index)
+	{
+		
+	}
+	
 	@Override
 	public void printInfo( PrintStream out)
 	{

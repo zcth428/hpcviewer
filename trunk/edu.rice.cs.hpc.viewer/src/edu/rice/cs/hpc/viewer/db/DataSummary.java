@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.data.db;
+package edu.rice.cs.hpc.viewer.db;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -8,6 +8,8 @@ import java.nio.LongBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+
+import edu.rice.cs.hpc.data.db.DataCommon;
 
 /*********************************************
  * 

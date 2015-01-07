@@ -120,7 +120,6 @@ public abstract class GraphEditor extends GraphEditorBase {
 			// -----------------------------------------------------------------
 			scatterSeries.setXSeries(x_values);
 			scatterSeries.setYSeries(y_values);
-
 			
 			String axis_x = this.getXAxisTitle( threadData.getThreadLevelDataFile(metric.getID()) );
 			chart.getAxisSet().getXAxis(0).getTitle().setText( axis_x );

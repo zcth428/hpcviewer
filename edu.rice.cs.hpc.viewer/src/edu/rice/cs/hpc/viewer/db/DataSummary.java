@@ -1,9 +1,9 @@
 package edu.rice.cs.hpc.viewer.db;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -22,7 +22,7 @@ public class DataSummary extends DataCommon
 	// constants
 	// --------------------------------------------------------------------
 	
-	private final static String SUMMARY_NAME = "hpctoolkit summary file";
+	//private final static String SUMMARY_NAME = "hpctoolkit summary metrics";
 	
 	// --------------------------------------------------------------------
 	// object variable
@@ -123,27 +123,35 @@ public class DataSummary extends DataCommon
 	// --------------------------------------------------------------------
 	
 	@Override
-	protected boolean isTypeFormatCorrect(int type) {
+	protected boolean isTypeFormatCorrect(long type) {
 		return type==1;
 	}
 
 	@Override
 	protected boolean isFileHeaderCorrect(String header) {
-		return header.startsWith(SUMMARY_NAME);
+		// suggestion from Mark: ignore the header file name
+		return true; //header.startsWith(SUMMARY_NAME);
 	}
 
 	@Override
-	protected boolean readNext(DataInputStream input) 
+	protected boolean readNext(FileChannel input) 
 			throws IOException
 	{
-		offset_start = input.readLong();
-		offset_size  = input.readLong();
-		metric_start = input.readLong();
-		metric_size  = input.readLong();
-		
-		size_offset  = input.readInt();
-		size_metid   = input.readInt();
-		size_metval  = input.readInt();
+		ByteBuffer buffer = ByteBuffer.allocate(256);
+		int numBytes      = input.read(buffer);
+		if (numBytes > 0) 
+		{
+			buffer.flip();
+			
+			offset_start = buffer.getLong();
+			offset_size  = buffer.getLong();
+			metric_start = buffer.getLong();
+			metric_size  = buffer.getLong();
+			
+			size_offset  = buffer.getInt();
+			size_metid   = buffer.getInt();
+			size_metval  = buffer.getInt();
+		}
 		
 		return false;
 	}
@@ -156,9 +164,10 @@ public class DataSummary extends DataCommon
 	 ***************************/
 	public static void main(String []argv)
 	{
-		DataSummary summary_data = new DataSummary();
+		final String filename = "/Users/laksonoadhianto/work/data/new-prof/hpctoolkit-trace-database-32465/summary.db";
+		final DataSummary summary_data = new DataSummary();
 		try {
-			summary_data.open("/Users/laksonoadhianto/work/data/new-prof/database-mpi-newdb/summary.db");			
+			summary_data.open(filename);			
 			summary_data.printInfo(System.out);
 			
 		} catch (IOException e) {
@@ -166,5 +175,4 @@ public class DataSummary extends DataCommon
 			e.printStackTrace();
 		}
 	}
-
 }

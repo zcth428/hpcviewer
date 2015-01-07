@@ -40,7 +40,10 @@ public class Token2 {
     	T_LM, T_F, T_A, T_P,
     	
     	// token for old XML file
-    	T_CSPROFILE, T_HPCVIEWER;
+    	T_CSPROFILE, T_HPCVIEWER,
+    	
+    	// token for XML v. 3.0
+    	T_SUMMARY_DB_FILE, T_TRACE_DB_FILE, T_PLOT_DB_FILE
     }
     
     private static Map<String, TokenXML> tokenMap;
@@ -50,51 +53,56 @@ public class Token2 {
 
         // additional information tags
         tokenMap.put("Info", TokenXML.T_INFO);
-        tokenMap.put("NV", TokenXML.T_NAME_VALUE);
+        tokenMap.put("NV",   TokenXML.T_NAME_VALUE);
         
         // metrics
-        tokenMap.put("Metric", TokenXML.T_METRIC);
-        tokenMap.put("MetricTable", TokenXML.T_METRIC_TABLE);
+        tokenMap.put("Metric", 	 	  TokenXML.T_METRIC);
+        tokenMap.put("MetricTable",   TokenXML.T_METRIC_TABLE);
         tokenMap.put("MetricFormula", TokenXML.T_METRIC_FORMULA);
-        tokenMap.put("M", TokenXML.T_M);
+        tokenMap.put("M", 			  TokenXML.T_M);
         tokenMap.put("MetricDBTable", TokenXML.T_METRIC_RAW_TABLE);
-        tokenMap.put("MetricDB", TokenXML.T_METRIC_RAW);
+        tokenMap.put("MetricDB", 	  TokenXML.T_METRIC_RAW);
         
         // trace database
         tokenMap.put("TraceDBTable", TokenXML.T_TRACE_DB_TABLE);
-        tokenMap.put("TraceDB", TokenXML.T_TRACE_DB);
+        tokenMap.put("TraceDB", 	 TokenXML.T_TRACE_DB);
 
         // head of xml
         tokenMap.put("HPCToolkitExperiment", TokenXML.T_HPCTOOLKIT_EXPERIMENT);
-        tokenMap.put("Header", TokenXML.T_HEADER);
-        tokenMap.put("SecCallPathProfile", TokenXML.T_SEC_CALLPATH_PROFILE);
-        tokenMap.put("SecHeader", TokenXML.T_SEC_HEADER);
+        tokenMap.put("Header", 				 TokenXML.T_HEADER);
+        tokenMap.put("SecCallPathProfile", 	 TokenXML.T_SEC_CALLPATH_PROFILE);
+        tokenMap.put("SecHeader", 			 TokenXML.T_SEC_HEADER);
         
         tokenMap.put("LoadModuleTable", TokenXML.T_LOAD_MODULE_TABLE);
-        tokenMap.put("LoadModule", TokenXML.T_LOAD_MODULE);
-        tokenMap.put("FileTable", TokenXML.T_FILE_TABLE);
-        tokenMap.put("File", TokenXML.T_FILE);
-        tokenMap.put("ProcedureTable", TokenXML.T_PROCEDURE_TABLE);
-        tokenMap.put("Procedure", TokenXML.T_PROCEDURE);
+        tokenMap.put("LoadModule", 		TokenXML.T_LOAD_MODULE);
+        tokenMap.put("FileTable", 		TokenXML.T_FILE_TABLE);
+        tokenMap.put("File", 			TokenXML.T_FILE);
+        tokenMap.put("ProcedureTable", 	TokenXML.T_PROCEDURE_TABLE);
+        tokenMap.put("Procedure", 		TokenXML.T_PROCEDURE);
         
         tokenMap.put("SecCallPathProfileData", TokenXML.T_SEC_CALLPATH_PROFILE_DATA);
-        tokenMap.put("CallPathProfileData", TokenXML.T_CALLPATH_PROFILE_DATA);	// @deprecated
+        tokenMap.put("CallPathProfileData",    TokenXML.T_CALLPATH_PROFILE_DATA);	// @deprecated
         tokenMap.put("Pr", TokenXML.T_PR);
         tokenMap.put("PF", TokenXML.T_PF);
-        tokenMap.put("L", TokenXML.T_L);
-        tokenMap.put("C", TokenXML.T_C);
-        tokenMap.put("S", TokenXML.T_S);
+        tokenMap.put("L",  TokenXML.T_L);
+        tokenMap.put("C",  TokenXML.T_C);
+        tokenMap.put("S",  TokenXML.T_S);
         
-        tokenMap.put("SecFlatProfile", TokenXML.T_SEC_FLAT_PROFILE);
+        tokenMap.put("SecFlatProfile", 	   TokenXML.T_SEC_FLAT_PROFILE);
         tokenMap.put("SecFlatProfileData", TokenXML.T_SEC_FLAT_PROFILE_DATA);
         tokenMap.put("LM", TokenXML.T_LM);
-        tokenMap.put("F", TokenXML.T_F);
-        tokenMap.put("P", TokenXML.T_P);
-        tokenMap.put("A", TokenXML.T_A);
+        tokenMap.put("F",  TokenXML.T_F);
+        tokenMap.put("P",  TokenXML.T_P);
+        tokenMap.put("A",  TokenXML.T_A);
         
         // token for old XML
         tokenMap.put("CSPROFILE", TokenXML.T_CSPROFILE);
         tokenMap.put("HPCVIEWER", TokenXML.T_HPCVIEWER);
+        
+        // token for XML v 3.0
+        tokenMap.put("SummaryDBFile", TokenXML.T_SUMMARY_DB_FILE);
+        tokenMap.put("TraceDBFile",   TokenXML.T_TRACE_DB_FILE);
+        tokenMap.put("PlotDBFile",    TokenXML.T_PLOT_DB_FILE);
     }
 
     public static TokenXML map(String element) {

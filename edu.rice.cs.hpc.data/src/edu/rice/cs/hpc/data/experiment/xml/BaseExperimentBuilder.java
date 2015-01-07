@@ -40,11 +40,11 @@ import edu.rice.cs.hpc.data.util.IUserData;
 public class BaseExperimentBuilder extends Builder {
 
 	
-	protected final static String LINE_ATTRIBUTE			= "l";
-	protected final static String NAME_ATTRIBUTE 			= "n";
-	protected final static String FILENAME_ATTRIBUTE 		= "f";
+	protected final static String LINE_ATTRIBUTE		= "l";
+	protected final static String NAME_ATTRIBUTE 		= "n";
+	protected final static String FILENAME_ATTRIBUTE 	= "f";
 	protected final static String VALUE_ATTRIBUTE 		= "v";
-	protected final static String ID_ATTRIBUTE 		= "i";
+	protected final static String ID_ATTRIBUTE 			= "i";
 	
 	private final static String PROCEDURE_UNKNOWN = "unknown procedure";
 
@@ -221,8 +221,19 @@ public class BaseExperimentBuilder extends Builder {
 			
 		case T_TRACE_DB:
 			this.do_TraceDB(attributes, values); break;
+
+		// ---------------------
+		// XML v. 3.0
+		// ---------------------
+		case T_SUMMARY_DB_FILE:
 			
+			
+		case T_TRACE_DB_FILE:
+		case T_PLOT_DB_FILE:
+			break;
+			// ---------------------
 			// old token from old XML
+			// ---------------------
 		case T_CSPROFILE:
 		case T_HPCVIEWER:
 			throw new java.lang.RuntimeException(new OldXMLFormatException());
@@ -350,7 +361,7 @@ public class BaseExperimentBuilder extends Builder {
 
 	private void do_Header(String[] attributes, String[] values)
 	{
-		this.configuration.setName(values[0]);
+		this.configuration.setName(ExperimentConfiguration.NAME_EXPERIMENT, values[0]);
 	}
 
 	private void do_Info() {
@@ -371,7 +382,7 @@ public class BaseExperimentBuilder extends Builder {
 		if(values.length == 2) {
 			sTitle = values[1];
 		}
-		this.configuration.setName(sTitle);
+		this.configuration.setName(ExperimentConfiguration.NAME_EXPERIMENT, sTitle);
 	}
 
 	/************************************************************************
@@ -554,11 +565,11 @@ public class BaseExperimentBuilder extends Builder {
 					// obsolete format: p is the name of the procedure
 					sProcName = values[i];
 					
-				} else if(attributes[i].equals("n")) {
+				} else if(attributes[i].equals(NAME_ATTRIBUTE)) {
 					// new database format: n is the flat ID of the procedure
 					sProcName = this.getProcedureName(values[i]);
 					
-				} else if(attributes[i].equals("l")) {
+				} else if(attributes[i].equals(LINE_ATTRIBUTE)) {
 					// line number (or range)
 					StatementRange objRange = new StatementRange(values[i]);
 					firstLn = objRange.getFirstLine();
@@ -568,7 +579,7 @@ public class BaseExperimentBuilder extends Builder {
 					// alien
 					isalien = values[i].equals("1");
 					
-				} else if(attributes[i].equals("v")) {
+				} else if(attributes[i].equals(VALUE_ATTRIBUTE)) {
 				}
 			}
 			
@@ -778,12 +789,12 @@ public class BaseExperimentBuilder extends Builder {
 				if (cct_id == 0)
 					cct_id = flat_id;
 				
-			} else if(attributes[i].equals("l")) {
+			} else if(attributes[i].equals(LINE_ATTRIBUTE)) {
 				String sLine = values[i];
 				StatementRange objRange = new StatementRange( sLine );
 				firstLn = objRange.getFirstLine();
 				lastLn = objRange.getLastLine();
-			} else if (attributes[i].equals("f")) {
+			} else if (attributes[i].equals(FILENAME_ATTRIBUTE)) {
 				String fileIdString = values[i];
 				getSourceFile(fileIdString);
 			} else if(attributes[i].equals(ID_ATTRIBUTE)) {
@@ -1162,8 +1173,9 @@ public class BaseExperimentBuilder extends Builder {
 		this.experiment.setRootScope(this.rootScope);
 		
 		// supply defaults for missing info
-		if( this.configuration.getName() == null )
-			this.configuration.setName(this.defaultName);
+		if( this.configuration.getName(ExperimentConfiguration.NAME_EXPERIMENT) == null )
+			this.configuration.setName(ExperimentConfiguration.NAME_EXPERIMENT, this.defaultName);
+		
 		if( this.configuration.getSearchPathCount() == 0 )
 		{
 			List<File> paths = new ArrayList<File>();

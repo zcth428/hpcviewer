@@ -15,7 +15,7 @@ public class GraphEditorPlot extends GraphEditor {
 
     public static final String ID = "edu.rice.cs.hpc.viewer.graph.GraphEditorPlot";
     
-	//@Override
+	@Override
 	protected double[] getValuesX(ThreadLevelDataManager objDataManager, 
 			Scope scope, MetricRaw metric) 
 	throws NumberFormatException {
@@ -24,7 +24,7 @@ public class GraphEditorPlot extends GraphEditor {
 		return x_values;
 	}
 
-	//@Override
+	@Override
 	protected double[] getValuesY(ThreadLevelDataManager objDataManager, 
 			Scope scope, MetricRaw metric) throws IOException {
 
@@ -35,7 +35,7 @@ public class GraphEditorPlot extends GraphEditor {
 	}
 
 
-	//@Override
+	@Override
 	protected String getXAxisTitle(ThreadLevelDataFile data) {
 		String axis_x;
 		IAxisSet axisSet = this.getChart().getAxisSet();

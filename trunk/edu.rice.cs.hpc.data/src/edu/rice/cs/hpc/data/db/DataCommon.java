@@ -1,16 +1,17 @@
 package edu.rice.cs.hpc.data.db;
 
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 abstract public class DataCommon 
 {
 	private final static int MESSAGE_SIZE = 32;
 	private final static int MAGIC = 0x06870630;
 	
-	protected int format;
+	protected long format;
 	protected long num_threads;
 	protected long num_cctid;
 	protected long num_metric;
@@ -22,63 +23,67 @@ abstract public class DataCommon
 	{
 		filename = file;
 		
-		final FileInputStream fis = new FileInputStream(file);
-		final DataInputStream input = new DataInputStream( fis );
+		final FileInputStream fis = new FileInputStream(filename);
+		final FileChannel channel  = fis.getChannel();
 		
-		byte buffer[] = new byte[MESSAGE_SIZE];
-		if (input.read(buffer, 0, MESSAGE_SIZE) > 0)
+		ByteBuffer buffer = ByteBuffer.allocate(256);
+		int numBytes      = channel.read(buffer);
+		if (numBytes > 0) 
 		{
 			// -------------------------------------------------------------
-			// check the message header
+			// get the message header file
 			// -------------------------------------------------------------
-			final String message = new String(buffer);
-			boolean is_correct_format = isFileHeaderCorrect(message);			
-			
-			if (!is_correct_format)
+			final byte []bytes = new byte[MESSAGE_SIZE]; 
+			buffer.flip();
+			buffer.get(bytes, 0, MESSAGE_SIZE);
+
+			// -------------------------------------------------------------
+			// get the magic number
+			// -------------------------------------------------------------
+			long magic_number = buffer.getLong();
+			if (magic_number != MAGIC)
 			{
-				throw_exception(input, file + " has incorrect file header: " + message );
+				throw_exception(fis, "Magic number is incorrect: " + magic_number);
 			}
 			
 			// -------------------------------------------------------------
-			// check the magic number
+			// check the version
 			// -------------------------------------------------------------
-			final int magic_number = input.readInt();
-			if (magic_number != MAGIC) 
+			final long version = buffer.getLong();
+			if (version < 3)
 			{
-				throw_exception(input, "Magic number is incorrect: " + magic_number);
+				throw_exception(fis, "Incorrect file version: " + version);
 			}
-			
+
 			// -------------------------------------------------------------
 			// check the type
 			// -------------------------------------------------------------
-			final int type = input.readInt();
-			is_correct_format = isTypeFormatCorrect(type);
-			
-			if (!is_correct_format)
+			final long type = buffer.getLong();			
+			if (!isTypeFormatCorrect(type))
 			{
-				throw_exception(input, file + " has inconsistent type " + type);
+				throw_exception(fis, file + " has inconsistent type " + type);
 			}
 			
 			// -------------------------------------------------------------
 			// check the format
 			// -------------------------------------------------------------
 			// to be ignored at the moment
-			format = input.readInt();
-			
-			// -------------------------------------------------------------
-			// read number of threads
-			// -------------------------------------------------------------
-			num_threads = input.readLong();
+			format = buffer.getLong();
 			
 			// -------------------------------------------------------------
 			// read number of cct
 			// -------------------------------------------------------------
-			num_cctid = input.readLong();
+			num_cctid = buffer.getLong();
 			
 			// -------------------------------------------------------------
 			// read number of metrics
 			// -------------------------------------------------------------
-			num_metric = input.readLong();
+			num_metric = buffer.getLong();
+			
+			// -------------------------------------------------------------
+			// read number of threads
+			// -------------------------------------------------------------
+			num_threads = buffer.getLong();
 			
 			if (num_threads <= 0 || num_cctid <= 0 || num_metric <=0) 
 			{
@@ -89,13 +94,15 @@ abstract public class DataCommon
 			// -------------------------------------------------------------
 			// Read the next header (if any)
 			// -------------------------------------------------------------
-			if ( readNext(input) ) 
+			if ( readNext(channel) ) 
 			{
 				// the implementer can perform other operations
 			}
+
 		}
-		
-		input.close();
+
+		channel.close();
+		fis.close();
 	}
 	
 	public void printInfo( PrintStream out)
@@ -114,14 +121,14 @@ abstract public class DataCommon
 	 * 
 	 * @throws IOException
 	 */
-	private void throw_exception(DataInputStream input, String message)
+	private void throw_exception(FileInputStream input, String message)
 			throws IOException
 	{
 		input.close();
 		throw new IOException(message);
 	}
 	
-	protected abstract boolean isTypeFormatCorrect(int type);
+	protected abstract boolean isTypeFormatCorrect(long type);
 	protected abstract boolean isFileHeaderCorrect(String header);
-	protected abstract boolean readNext(DataInputStream input) throws IOException;
+	protected abstract boolean readNext(FileChannel input) throws IOException;
 }

@@ -1,8 +1,9 @@
 package edu.rice.cs.hpc.traceviewer.data.db;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import edu.rice.cs.hpc.data.db.DataCommon;
 
@@ -15,22 +16,21 @@ import edu.rice.cs.hpc.data.db.DataCommon;
  *******************************************************************************/
 public class DataTrace extends DataCommon 
 {
-	private final static String TRACE_NAME = "hpctoolkit trace file";
+	private final static String TRACE_NAME = "hpctoolkit trace metrics";
 
-	long min_time;
-	long max_time;
-	long index_start;
-	long index_length;
-	int size_offset;
-	int size_length;
-	int size_time;
-	int size_cctid;
+	long index_start, index_length;
+	long trace_start, trace_length;
+	long min_time,	  max_time;
+
+	int  size_offset, size_length;
+	int  size_gtid,	  size_time;
+	int  size_cctid;
 	
 	public DataTrace() {
 	}
 
 	@Override
-	protected boolean isTypeFormatCorrect(int type) {
+	protected boolean isTypeFormatCorrect(long type) {
 		return type == 2;
 	}
 
@@ -40,19 +40,30 @@ public class DataTrace extends DataCommon
 	}
 
 	@Override
-	protected boolean readNext(DataInputStream input)
+	protected boolean readNext(FileChannel input)
 			throws IOException
 	{
-		min_time = input.readLong();
-		max_time = input.readLong();
-		
-		index_start = input.readLong();
-		index_length = input.readLong();
-		
-		size_offset = input.readInt();
-		size_length = input.readInt();
-		size_time   = input.readInt();
-		size_cctid  = input.readInt();
+		ByteBuffer buffer = ByteBuffer.allocate(256);
+		int numBytes      = input.read(buffer);
+		if (numBytes > 0) 
+		{
+			buffer.flip();
+			
+			index_start  = buffer.getLong();
+			index_length = buffer.getLong();
+			
+			trace_start  = buffer.getLong();
+			trace_length = buffer.getLong();
+			
+			min_time = buffer.getLong();
+			max_time = buffer.getLong();
+			
+			size_offset = buffer.getInt();
+			size_length = buffer.getInt();
+			size_gtid   = buffer.getInt();
+			size_time   = buffer.getInt();
+			size_cctid  = buffer.getInt();
+		}
 		
 		return true;
 	}
@@ -72,10 +83,12 @@ public class DataTrace extends DataCommon
 		out.println("index start: " + index_start);
 		out.println("index length: " + index_length);
 		
+		out.println(" trace start: " + trace_start + "\n trace length: " + trace_length);
+		
 		out.println("size offset: " + size_offset);
 		out.println("size length: " + size_length);
 		out.println("size time: " + size_time);
-		out.println("size cctid: " + size_cctid);
+		out.println("size cctid: " + size_cctid + "\n size gtid: " + size_gtid);
 	}
 
 	/***************************
@@ -87,7 +100,7 @@ public class DataTrace extends DataCommon
 	{
 		DataTrace trace_data = new DataTrace();
 		try {
-			trace_data.open("/Users/laksonoadhianto/work/data/new-prof/database-mpi-newdb/trace.db");			
+			trace_data.open("/Users/laksonoadhianto/work/data/new-prof/hpctoolkit-trace-database-32465/trace.db");			
 			trace_data.printInfo(System.out);
 			
 		} catch (IOException e) {

@@ -13,8 +13,8 @@ import edu.rice.cs.hpc.data.experiment.extdata.FilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
-import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
+
 import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
@@ -130,8 +130,12 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 		
 		int tracesToRender = Math.min(attributes.numPixelsV, attributes.getProcessInterval());
 		
-		if (lineNum.get() < tracesToRender) {
-			int currentLineNum = lineNum.getAndIncrement();
+		// retrieve the current processing line, and atomically increment so that 
+		// other threads will not increment at the same time
+		// if the current line reaches the number of traces to render, we are done
+		
+		int currentLineNum = lineNum.getAndIncrement();
+		if (currentLineNum < tracesToRender) {
 			
 			if (ptlService.getNumProcessTimeline() == 0)
 				ptlService.setProcessTimeline(new ProcessTimeline[tracesToRender]);

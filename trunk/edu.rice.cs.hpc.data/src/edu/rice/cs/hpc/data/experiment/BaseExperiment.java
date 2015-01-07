@@ -31,9 +31,6 @@ public abstract class BaseExperiment implements IExperiment {
 
 	private TraceAttribute attribute;
 
-	/** The file from which to resolve relative source file paths. */
-	//protected File fileExperiment;
-
 	protected ExperimentFileXML fileXML;
 	
 	/***
@@ -141,7 +138,7 @@ public abstract class BaseExperiment implements IExperiment {
 	
 public String getName()
 {
-	return this.configuration.getName();
+	return configuration.getName(ExperimentConfiguration.NAME_EXPERIMENT);
 }
 
 

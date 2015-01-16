@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Remote
+Bundle-SymbolicName: edu.rice.cs.hpc.remote
+Bundle-Version: 5.3.2.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: edu.rice.cs.hpc.data
+Export-Package: com.jcraft.jsch,
+ edu.rice.cs.hpc.remote.data,
+ edu.rice.cs.hpc.remote.tunnel
+Import-Package: org.eclipse.jface,
+ org.eclipse.jface.dialogs,
+ org.eclipse.jface.window,
+ org.eclipse.swt,
+ org.eclipse.swt.widgets

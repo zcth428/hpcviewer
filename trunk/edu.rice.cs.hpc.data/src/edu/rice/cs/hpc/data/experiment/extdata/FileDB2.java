@@ -7,9 +7,8 @@ import java.nio.channels.FileChannel;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 
-public class BaseDataFile {
-
-
+public class FileDB2 implements IFileDB 
+{
 	//-----------------------------------------------------------
 	// Global variables
 	//-----------------------------------------------------------
@@ -24,7 +23,7 @@ public class BaseDataFile {
 	
 	private RandomAccessFile file; 
 
-	public BaseDataFile(String filename, int headerSize, int recordSz)  throws IOException 
+	public void open(String filename, int headerSize, int recordSz)  throws IOException 
 	{
 		
 		if (filename != null) {
@@ -33,7 +32,7 @@ public class BaseDataFile {
 			// test file version
 			//---------------------------------------------
 			
-			this.setData(filename, headerSize, recordSz);
+			this.setData(filename, 24, recordSz);
 		}
 	}
 	
@@ -42,12 +41,12 @@ public class BaseDataFile {
 	 * 
 	 * @return
 	 */
-	public String []getValuesX() {
+	public String []getRankLabels() {
 		return valuesX;
 	}
 	
 
-	public int getNumberOfFiles() 
+	public int getNumberOfRanks() 
 	{
 		return this.numFiles;
 	}
@@ -118,6 +117,11 @@ public class BaseDataFile {
 		}
 		//f.close();
 		//file.close();
+	}
+
+	public int 		getParallelismLevel()
+	{
+		return (isHybrid()? 2 : 1);
 	}
 
 	/**

@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * A data file can either thread level data metric, or trace data
  * @see IBaseData
  * @see AbstractBaseData
- * @see BaseDataFile
+ * @see FileDB2
  *******************************************************************/
 public class FilteredBaseData extends AbstractBaseData implements IFilteredData {
 
@@ -39,7 +39,7 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 		if (baseDataFile == null)
 			throw new RuntimeException("Fatal error: cannot find data.");
 		
-		String data[] = baseDataFile.getValuesX();
+		String data[] = baseDataFile.getRankLabels();
 
 		filteredRanks = null;
 
@@ -87,7 +87,7 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 	public String[] getListOfRanks() {
 		if (filteredRanks == null) {
 			filteredRanks = new String[indexes.length];
-			final String ranks[] = baseDataFile.getValuesX();
+			final String ranks[] = baseDataFile.getRankLabels();
 			
 			for(int i=0; i<indexes.length; i++) {
 				filteredRanks[i] = ranks[indexes[i]];
@@ -122,7 +122,7 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 	public long getMaxLoc(int rank, int recordSize) {
 		int filteredRank = indexes[rank];
 		final long offsets[] = baseDataFile.getOffsets();
-		long maxloc = ( (filteredRank+1<baseDataFile.getNumberOfFiles())? 
+		long maxloc = ( (filteredRank+1<baseDataFile.getNumberOfRanks())? 
 				offsets[filteredRank+1] : baseDataFile.getMasterBuffer().size()-SIZE_OF_END_OF_FILE_MARKER )
 				- recordSize;
 		return maxloc;
@@ -146,11 +146,6 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 	@Override
 	public boolean isDenseBetweenFirstAndLast() {
 		return indexes[indexes.length-1]-indexes[0] == indexes.length-1;
-	}
-
-	@Override
-	public boolean isHybridRank() {
-		return baseDataFile.isHybrid();
 	}
 
 }

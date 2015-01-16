@@ -19,7 +19,7 @@ public class BaseData extends AbstractBaseData {
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getListOfRanks()
 	 */
 	public String[] getListOfRanks() {
-		return baseDataFile.getValuesX();
+		return baseDataFile.getRankLabels();
 	}
 
 	/*
@@ -27,7 +27,7 @@ public class BaseData extends AbstractBaseData {
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getNumberOfRanks()
 	 */
 	public int getNumberOfRanks() {
-		return baseDataFile.getNumberOfFiles();
+		return baseDataFile.getNumberOfRanks();
 	}
 	
 
@@ -40,7 +40,7 @@ public class BaseData extends AbstractBaseData {
 	@Override
 	public long getMaxLoc(int rank, int recordSize) {
 		final long offsets[] = baseDataFile.getOffsets();
-		long maxloc = ( (rank+1<baseDataFile.getNumberOfFiles())? 
+		long maxloc = ( (rank+1<baseDataFile.getNumberOfRanks())? 
 				offsets[rank+1] : baseDataFile.getMasterBuffer().size()-1 )
 				- recordSize;
 		return maxloc;
@@ -53,7 +53,7 @@ public class BaseData extends AbstractBaseData {
 
 	@Override
 	public int getLastIncluded() {
-		return baseDataFile.getNumberOfFiles()-1;
+		return baseDataFile.getNumberOfRanks()-1;
 	}
 
 	@Override

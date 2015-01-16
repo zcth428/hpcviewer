@@ -4,11 +4,12 @@ import java.io.IOException;
 
 public abstract class AbstractBaseData implements IBaseData {
 	protected static final int SIZE_OF_END_OF_FILE_MARKER = 4;
-	protected BaseDataFile baseDataFile;
+	protected IFileDB baseDataFile;
 	final int headerSize;
 
 	public AbstractBaseData(String filename, int headerSize, int recordSz) throws IOException {
-		baseDataFile = new BaseDataFile(filename, headerSize, recordSz);
+		baseDataFile = new FileDB2();
+		baseDataFile.open(filename, headerSize, recordSz);
 		this.headerSize = headerSize;
 	}
 	
@@ -103,7 +104,7 @@ public abstract class AbstractBaseData implements IBaseData {
 
 	@Override
 	public boolean isHybridRank() {
-		return baseDataFile.isHybrid();
+		return baseDataFile.getParallelismLevel() > 1;
 	}
 
 	/*

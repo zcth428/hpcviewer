@@ -85,7 +85,7 @@ public class ThreadLevelDataManager {
 	 * @return
 	 */
 	public String[] getProcessIDs(int metric_raw_id) {
-		return data_file[metric_raw_id].getValuesX();
+		return data_file[metric_raw_id].getRankLabels();
 	}
 	
 	
@@ -98,7 +98,7 @@ public class ThreadLevelDataManager {
 	 */
 	public double[] getProcessIDsDouble(int metric_raw_id) throws NumberFormatException {
 		
-		String x[] = data_file[metric_raw_id].getValuesX();
+		String x[] = data_file[metric_raw_id].getRankLabels();
 		double xd[] = new double[x.length];
 		for (int i=0; i<x.length; i++) {
 			xd[i] = Double.valueOf(x[i]);
@@ -162,7 +162,8 @@ public class ThreadLevelDataManager {
 				throw new IOException("Data file does not exist in " + directory.getAbsolutePath());
 			
 			// keep it for later uses
-			data_file[metric_raw_id] = new ThreadLevelDataFile(file);
+			data_file[metric_raw_id] = new ThreadLevelDataFile();
+			data_file[metric_raw_id].open(file);
 		}
 			
 	}

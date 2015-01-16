@@ -8,7 +8,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 
 import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
-import edu.rice.cs.hpc.data.experiment.extdata.BaseDataFile;
+import edu.rice.cs.hpc.data.experiment.extdata.FileDB2;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 
@@ -19,16 +19,16 @@ import edu.rice.cs.hpc.data.util.LargeByteBuffer;
  * @author laksonoadhianto
  *
  */
-public class ThreadLevelDataFile extends BaseDataFile {
+public class ThreadLevelDataFile extends FileDB2 {
 
 	// header bytes to skip
 	static private final int HEADER_LONG	=	32;
 	static int recordSz = Constants.SIZEOF_LONG + Constants.SIZEOF_LONG;
 
-	public ThreadLevelDataFile(String filename) throws IOException {
-		super(filename, HEADER_LONG, recordSz);
-	}		
-		
+	public void open(String filename) throws IOException
+	{
+		super.open(filename, HEADER_LONG, recordSz);
+	}
 	/**
 	 * return all metric values of a specified node and metric index
 	 * 
@@ -39,13 +39,13 @@ public class ThreadLevelDataFile extends BaseDataFile {
 	 */
 	public double[] getMetrics(long nodeIndex, int metricIndex, int numMetrics, IStatusLineManager statusMgr) {
 	
-		final double []metrics = new double[this.getNumberOfFiles()];
+		final double []metrics = new double[getNumberOfRanks()];
 		TimelineProgressMonitor monitor = null;
 		if (statusMgr != null) {
 			monitor = new TimelineProgressMonitor(statusMgr);
 		}
 
-		final int numWork = this.getNumberOfFiles();
+		final int numWork = getNumberOfRanks();
 		int num_threads = Math.min(numWork, Runtime.getRuntime().availableProcessors());
 		final int numWorkPerThreads = (int) Math.ceil((float)numWork / (float)num_threads);
 		ArrayList<DataReadThread> listThreads = new ArrayList<DataReadThread>(num_threads);

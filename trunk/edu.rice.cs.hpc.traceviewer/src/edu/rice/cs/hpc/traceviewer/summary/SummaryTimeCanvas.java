@@ -138,6 +138,7 @@ implements IOperationHistoryListener
 			Set<Integer> set = sortedColorMap.keySet();
 			int yOffset = viewHeight;
 			
+			int h = 0;
 			//---------------------------------------------------------------------------
 			// draw the line of a specific color with a specific length from bottom to the top
 			// note: the coordinates 0,0 starts from the top-left corner !
@@ -151,8 +152,15 @@ implements IOperationHistoryListener
 				final int height = Math.round(numCounts * yScale);
 				
 				buffer.setBackground(c);
-				buffer.fillRectangle(xOffset, yOffset-height, (int) Math.max(1, xScale), height);
 				
+				// if this is the last color, we should draw from the current position to the end
+				// this may not be the best solution, but the round-up in height variable may give
+				// empty spaces if the number of colors are not a height's divisor.
+				
+				if (it.hasNext())
+					buffer.fillRectangle(xOffset, yOffset-height, (int) Math.max(1, xScale), height);
+				else
+					buffer.fillRectangle(xOffset, 0, (int) Math.max(1, xScale), viewHeight-h);
 				yOffset -= height;
 				c.dispose();
 				
@@ -160,6 +168,8 @@ implements IOperationHistoryListener
 				Integer val = mapStatistics.get(pixel);
 				Integer acc = (val==null?  numCounts : val + numCounts);
 				mapStatistics.put(pixel, acc);
+				
+				h += height;
 			}
 			xOffset = Math.round(xOffset + xScale);
 		}

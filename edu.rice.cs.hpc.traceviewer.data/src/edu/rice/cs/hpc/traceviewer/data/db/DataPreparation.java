@@ -61,7 +61,6 @@ public abstract class DataPreparation
 		String succFunction = cp.getScopeAt(depth).getName(); 
 		Color succColor = colorTable.getColor(succFunction);
 		int last_ptl_index = ptl.size() - 1;
-		
 
 		for (int index = 0; index < ptl.size(); index++)
 		{
@@ -89,7 +88,11 @@ public abstract class DataPreparation
 					// regardless they are from different max depth and different call path.
 					// This can be misleading, but at the moment it is a good approximation
 					
-					still_the_same = (succColor.equals(currColor));
+					// laksono 2012.01.23 fix: need to add a max depth condition to ensure that the adjacent
+					//						   has the same depth. In depth view, we don't want to mix with
+					//							different depths
+					
+					still_the_same = (succColor.equals(currColor)) && currDepth == cp.getMaxDepth();
 					if (still_the_same)
 						end = indexSucc;
 				}

@@ -64,6 +64,11 @@ public abstract class DataPreparation
 
 		for (int index = 0; index < ptl.size(); index++)
 		{
+			// in case of bad cpid, we just quit painting the view
+			if (cp==null)
+				return;		// throwing an exception is more preferable, but it will make
+							// more complexity to handle inside a running thread
+
 			final int currDepth = cp.getMaxDepth(); 
 			int currSampleMidpoint = succSampleMidpoint;
 			

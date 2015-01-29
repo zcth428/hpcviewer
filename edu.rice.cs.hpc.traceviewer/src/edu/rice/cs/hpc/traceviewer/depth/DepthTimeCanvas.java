@@ -40,6 +40,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 
 	private SpaceTimeDataController stData;
 	private int currentProcess = Integer.MIN_VALUE;
+	private boolean needToRedraw = false;
 
 	/********************
 	 * constructor to create this canvas
@@ -82,14 +83,19 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 	 */
 	public void paintControl(PaintEvent event)
 	{
-		if (this.stData == null || imageBuffer == null)
+		if (this.stData == null)
 			return;
 		
+		if (needToRedraw) {
+			refreshWithCondition();
+			
+			// set the flag that we don't need to redraw again
+			needToRedraw = false;
+		}
 		super.paintControl(event);
 		
 		final long topLeftPixelX = Math.round(stData.getAttributes().getTimeBegin()*getScalePixelsPerTime());
-		
-		final int viewHeight = getClientArea().height;
+		final int viewHeight 	 = getClientArea().height;
 
 		//--------------------
 		//draws cross hairs
@@ -114,8 +120,39 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
     /***
      * force to refresh the content of the canvas. 
      */
-    public void refresh() {
+    public void refresh() 
+    {
 		rebuffer();
+    }
+    
+    public void activate(boolean isActivated)
+    {
+    	this.needToRedraw = isActivated;
+    }
+    
+    /****
+     *  refresh only if the size of the buffer doesn't match with the size of the canvas
+     */
+    public void refreshWithCondition() 
+    {
+		if (imageBuffer == null)
+			return;
+		
+		// ------------------------------------------------------------------------
+		// we need to avoid repainting if the size of the image buffer is not the same
+		// as the image of the canvas. This case happens when the view is resize while
+		// it's in hidden state, and then it turns visible. 
+		// this will cause misalignment in the view
+		// ------------------------------------------------------------------------
+		
+		final Rectangle r1 = imageBuffer.getBounds();
+		final Rectangle r2 = getClientArea();
+		
+		if (!(r1.height == r2.height && r1.width == r2.width))
+		{
+			// the size if not the same, we need to recompute and repaint again
+			rebuffer();
+		}
     }
     
     
@@ -131,7 +168,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		return Math.max(r.height/(double)stData.getMaxDepth(), 1);
 	}
 
-
+	
 	//---------------------------------------------------------------------------------------
 	// PRIVATE METHODS
 	//---------------------------------------------------------------------------------------
@@ -149,7 +186,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
      */
 	private void rebuffer()
 	{
-		if (stData == null)
+		if (stData == null || !isVisible())
 			return;
 
 		final ImageTraceAttributes attributes = stData.getAttributes();
@@ -159,8 +196,10 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		// we change the position within the same process
 		currentProcess = frame.position.process;
 
-		final int viewWidth = getClientArea().width;
-		final int viewHeight = getClientArea().height;
+		final Rectangle rb = getBounds();
+		
+		final int viewWidth  = rb.width;
+		final int viewHeight = rb.height;
 
 		if (viewWidth>0 && viewHeight>0) {
 			if (imageBuffer != null) {

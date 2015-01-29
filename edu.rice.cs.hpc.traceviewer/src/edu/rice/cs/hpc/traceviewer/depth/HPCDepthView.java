@@ -6,8 +6,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
@@ -68,6 +70,47 @@ public class HPCDepthView extends ViewPart
 					depthCanvas.refresh();
 				}
 			}
+		});
+		
+		final String id = getViewSite().getId();
+		getViewSite().getPart();
+		
+		getViewSite().getPage().addPartListener(new IPartListener2() {
+			
+			@Override
+			public void partVisible(IWorkbenchPartReference partRef) { 
+				if ( id.equals(partRef.getId())) {
+					// inform the canvas, the view is activated
+					depthCanvas.activate(true);
+				}		
+			}
+			
+			@Override
+			public void partOpened(IWorkbenchPartReference partRef) { }
+			
+			@Override
+			public void partInputChanged(IWorkbenchPartReference partRef) { }
+			
+			@Override
+			public void partHidden(IWorkbenchPartReference partRef) {
+				if ( id.equals(partRef.getId())) {
+					// inform the canvas, the view is hidden
+					depthCanvas.activate(false);
+				}
+			}
+			
+			@Override
+			public void partDeactivated(IWorkbenchPartReference partRef) { }
+			
+			@Override
+			public void partClosed(IWorkbenchPartReference partRef) { }
+			
+			@Override
+			public void partBroughtToTop(IWorkbenchPartReference partRef) { }
+			
+			@Override
+			public void partActivated(IWorkbenchPartReference partRef) { }
+			
 		});
 	}
 

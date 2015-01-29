@@ -6,17 +6,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
-import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.ui.AbstractTimeView;
 
-public class HPCDepthView extends ViewPart
+/*****************************************************
+ * 
+ * Depth view
+ *
+ *****************************************************/
+public class HPCDepthView extends AbstractTimeView
 {
 	public static final String ID = "hpcdepthview.view";
 	
@@ -35,6 +38,7 @@ public class HPCDepthView extends ViewPart
 		
 		setupEverything();
 		setListener();
+		super.addListener();
 	}
 	
 	private void setupEverything()
@@ -70,48 +74,7 @@ public class HPCDepthView extends ViewPart
 					depthCanvas.refresh();
 				}
 			}
-		});
-		
-		final String id = getViewSite().getId();
-		getViewSite().getPart();
-		
-		getViewSite().getPage().addPartListener(new IPartListener2() {
-			
-			@Override
-			public void partVisible(IWorkbenchPartReference partRef) { 
-				if ( id.equals(partRef.getId())) {
-					// inform the canvas, the view is activated
-					depthCanvas.activate(true);
-				}		
-			}
-			
-			@Override
-			public void partOpened(IWorkbenchPartReference partRef) { }
-			
-			@Override
-			public void partInputChanged(IWorkbenchPartReference partRef) { }
-			
-			@Override
-			public void partHidden(IWorkbenchPartReference partRef) {
-				if ( id.equals(partRef.getId())) {
-					// inform the canvas, the view is hidden
-					depthCanvas.activate(false);
-				}
-			}
-			
-			@Override
-			public void partDeactivated(IWorkbenchPartReference partRef) { }
-			
-			@Override
-			public void partClosed(IWorkbenchPartReference partRef) { }
-			
-			@Override
-			public void partBroughtToTop(IWorkbenchPartReference partRef) { }
-			
-			@Override
-			public void partActivated(IWorkbenchPartReference partRef) { }
-			
-		});
+		});		
 	}
 
 	public void updateView(SpaceTimeDataController _stData)
@@ -123,5 +86,15 @@ public class HPCDepthView extends ViewPart
 	public void setFocus()
 	{
 		this.depthCanvas.setFocus();
+	}
+
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.traceviewer.ui.IActiveNotification#active(boolean)
+	 */
+	public void active(boolean isActive) 
+	{
+		depthCanvas.activate(isActive);
 	}
 }

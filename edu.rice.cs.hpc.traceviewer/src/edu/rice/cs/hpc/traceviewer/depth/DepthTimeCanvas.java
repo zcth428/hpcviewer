@@ -135,8 +135,12 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
      */
     public void refreshWithCondition() 
     {
-		if (imageBuffer == null)
+		if (imageBuffer == null) {
+			if (stData != null) {
+				rebuffer();
+			}
 			return;
+		}
 		
 		// ------------------------------------------------------------------------
 		// we need to avoid repainting if the size of the image buffer is not the same
@@ -255,7 +259,9 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 			if (operation.hasContext(BufferRefreshOperation.context)) {
 				// this event includes if there's a change of colors definition, so everyone needs
 				// to refresh the content
+				super.init();
 				rebuffer();
+				
 			} else if (operation.hasContext(PositionOperation.context)) {
 				PositionOperation opPos = (PositionOperation) operation;
 				Position position = opPos.getPosition();

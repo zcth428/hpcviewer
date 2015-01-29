@@ -52,7 +52,7 @@ public abstract class BufferedCanvas extends Canvas
 			final Rectangle rect = imageBuffer.getBounds();
 			
 			try {
-				// strecth or shring the image automatically
+				// Stretch or shrink the image automatically
 				e.gc.drawImage(imageBuffer, 0, 0, rect.width, rect.height, 
 						0, 0, area.width, area.height);
 			}
@@ -68,6 +68,17 @@ public abstract class BufferedCanvas extends Canvas
 		}
 	}
 	
+	/******
+	 * initialization when a new data arrives
+	 */
+	protected void initBuffer() 
+	{
+		if (imageBuffer != null && !imageBuffer.isDisposed())  
+		{
+			imageBuffer.dispose();
+		}
+		imageBuffer = null;
+	}
 	
 	protected void setBuffer(Image buffer)
 	{

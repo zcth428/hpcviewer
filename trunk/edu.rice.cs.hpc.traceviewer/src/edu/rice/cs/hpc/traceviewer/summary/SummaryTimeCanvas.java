@@ -13,6 +13,7 @@ import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -46,7 +47,8 @@ implements IOperationHistoryListener
 	private SpaceTimeDataController dataTraces = null;
 	private TreeMap<Integer, Integer> mapStatistics;
 	private int totPixels;
-	
+	private ImageData detailData;
+	private boolean needToRedraw = false;
 	private ToolTip tooltip;
 	
 	/**********************************
@@ -68,6 +70,54 @@ implements IOperationHistoryListener
 		tooltip.deactivate();
 	}
 	
+	@Override
+	public void paintControl(PaintEvent event)
+	{
+		super.paintControl(event);
+		if (needToRedraw) {
+			refreshWithCondition();
+			needToRedraw = false;
+		}
+	}
+	
+	/****
+	 * called to be notify when the canvas is visible and needs to be activated
+	 * 
+	 * @param isActivated
+	 */
+	public void activate(boolean isActivated)
+	{
+		needToRedraw = isActivated;
+	}
+
+	private void refreshWithCondition()
+	{
+		if (imageBuffer == null){
+			// ------------------------------------------------------------------------
+			// ------------------------------------------------------------------------
+			if (detailData != null) {
+				rebuffer(detailData);
+				return;
+			}
+		}
+		
+		// ------------------------------------------------------------------------
+		// we need to avoid repainting if the size of the image buffer is not the same
+		// as the image of the canvas. This case happens when the view is resize while
+		// it's in hidden state, and then it turns visible. 
+		// this will cause misalignment in the view
+		// ------------------------------------------------------------------------
+		final Rectangle r1 = imageBuffer.getBounds();
+		final Rectangle r2 = getClientArea();
+		
+		if (!(r1.height == r2.height && r1.width == r2.width))
+		{
+			rebuffer(detailData);
+			return;
+		}
+	}
+	
+	
 	/***
 	 * add listeners to this canvas
 	 */
@@ -88,7 +138,10 @@ implements IOperationHistoryListener
 	 *****/
 	private void rebuffer(ImageData detailData)
 	{
-		if (detailData == null)
+		// store the original image data for further usage such as when the painting is needed.
+		this.detailData = detailData;
+		
+		if (detailData == null || !isVisible())
 			return;
 
 		// ------------------------------------------------------------------------------------------
@@ -97,8 +150,8 @@ implements IOperationHistoryListener
 		if (imageBuffer != null) {
 			imageBuffer.dispose();
 		}
-		final int viewWidth = getClientArea().width;
-		final int viewHeight = getClientArea().height;
+		final int viewWidth = getBounds().width;
+		final int viewHeight = getBounds().height;
 
 		if (viewWidth == 0 || viewHeight == 0)
 			return;

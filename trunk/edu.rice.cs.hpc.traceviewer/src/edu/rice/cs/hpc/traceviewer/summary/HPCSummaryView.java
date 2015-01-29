@@ -8,18 +8,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
-import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.ui.AbstractTimeView;
 
 /*************************************************************************
  * 
  * View part of the summary window 
  *
  *************************************************************************/
-public class HPCSummaryView extends ViewPart
+public class HPCSummaryView extends AbstractTimeView
 {
 
 	public static final String ID = "hpcsummaryview.view";
@@ -46,6 +46,7 @@ public class HPCSummaryView extends ViewPart
 		summaryCanvas.setVisible(false);
 		
 		setListener();
+		super.addListener();
 	}
 	
 	private void setListener() {
@@ -77,6 +78,12 @@ public class HPCSummaryView extends ViewPart
 	public void setFocus() 
 	{
 		summaryCanvas.setFocus();
+	}
+
+	@Override
+	public void active(boolean isActive) 
+	{
+		summaryCanvas.activate(isActive);
 	}
 
 }

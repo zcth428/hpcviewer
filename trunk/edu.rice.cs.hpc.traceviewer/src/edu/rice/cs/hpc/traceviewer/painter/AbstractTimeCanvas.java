@@ -74,6 +74,7 @@ implements ITraceCanvas, PaintListener
 			});
 		}
 		initMouseSelection();
+		super.initBuffer();
 	}
 	
 	/*****

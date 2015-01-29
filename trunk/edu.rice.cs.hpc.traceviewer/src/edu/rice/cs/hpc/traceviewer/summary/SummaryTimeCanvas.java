@@ -254,6 +254,7 @@ implements IOperationHistoryListener
 	public void updateData(SpaceTimeDataController data)
 	{
 		dataTraces = data;
+		needToRedraw = true; // new data
 		setVisible(true);
 	}
 

@@ -29,11 +29,11 @@ hpctraceviewer is the presentation tool to visualize trace data generated
 by hpcrun if the flag "-t" is specified. For static linked program, the
 variable environment HPCRUN_TRACE has to be set. 
 
-The viewers contain four plug-in projects:
+The viewers contain six plug-in projects:
 
  edu.rice.cs.hpc.common (common plugin for hpcviewer and hpctraceviewer)
  edu.rice.cs.hpc.data (hpcdata)
- edu.rice.cs.hpc.remote (hpcremote)
+ edu.rice.cs.hpc.remote (hpcremote, used currently by hpctraceviewer)
  edu.rice.cs.hpc.viewer (hpcviewer)
  edu.rice.cs.hpc.traceviewer (hpctraceviewer)
  edu.rice.cs.hpc.traceviewer.data (hpctraceviewer's data management)
@@ -80,7 +80,7 @@ Check out the source code
 	https://hpcviewer.googlecode.com/svn/trunk 
 
     * When the window "Check out as" appears, check the option "Find projects in the children of the selected resource"
-    * Make sure all three projects are selected: 
+    * Make sure all six projects are selected: 
 
     edu.rice.cs.hpc.common
     edu.rice.cs.hpc.data 
@@ -89,7 +89,7 @@ Check out the source code
     edu.rice.cs.hpc.traceviewer 
     edu.rice.cs.hpc.traceviewer.data 
 
-Now, change the perspective into Java perspective to see the source code and launch the application.
+Now, change the perspective into Plug-in or Java perspective to see the source code and launch the application.
 
 Testing hpcviewer
 ================
@@ -97,7 +97,7 @@ Testing hpcviewer
 Under edu.rice.cs.hpc.viewer project, launching the application from Eclipse can be done either via
 
     * product configurations (recommeded):
-          o First, select hpcviewer.plugin.product file
+          o Under edu.rice.cs.hpc.viewer project, open hpcviewer.plugin.product file
           o Then, click "Launch an Eclipse application" 
 
     * plugin.xml (not recommended, but works in some Eclipse versions)
@@ -106,8 +106,9 @@ Under edu.rice.cs.hpc.viewer project, launching the application from Eclipse can
 Exporting hpcviewer
 ================
 
-    * Under edu.rice.cs.hpc.viewer project, open the product configuration: hpcviewer.product
+    * Under edu.rice.cs.hpc.viewer project, open the product configuration: hpcviewer.plugin.product
     * Fill the Root directory and Destination directory fields, then click Finish 
+    * Note: make sure that "Generate metadata repository" is unchecked
     * To export to another platform, you need Eclipse delta pack. A How-to of delta pack installation
 	can be seen at http://www.vogella.de/articles/EclipsePDEBuild/ar01s02.html
 
@@ -116,7 +117,7 @@ Installing hpcviewer
 
 Once hpcviewer has been exported successfully, we need to prepare a distribution package of hpcviewer:
    * In the command line, go to script directory
-   * Run makedist shell script. The script will generate hpcviewer.tar.gz package file ready to install
+   * Run make-dist shell script. The script will generate hpcviewer.tar.gz package file ready to install
    * Copy hpcviewer.tar.gz file into the machine to be installed
 	scp hpcviewer.tar.gz your_account@machine:
    * uncompress the tar file 

@@ -11,8 +11,6 @@ import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -60,7 +58,6 @@ implements IOperationHistoryListener
     {
 		super(composite, SWT.NO_BACKGROUND);
 		
-		addCanvasListener();
 		OperationHistoryFactory.getOperationHistory().addOperationHistoryListener(this);
 		
 		// ------------------------------------------------------------------------------------------
@@ -118,19 +115,6 @@ implements IOperationHistoryListener
 	}
 	
 	
-	/***
-	 * add listeners to this canvas
-	 */
-	private void addCanvasListener()
-	{
-		addDisposeListener( new DisposeListener() {
-			
-			@Override
-			public void widgetDisposed(DisposeEvent e) {
-				disposeResources();
-			}
-		});
-	}
 	
 	
 	/*****
@@ -258,14 +242,6 @@ implements IOperationHistoryListener
 		setVisible(true);
 	}
 
-	/********
-	 * release allocated resources
-	 ********/
-	private void disposeResources()
-	{
-		if (imageBuffer != null)
-			imageBuffer.dispose();
-	}
 	
 	/*****
 	 * get the number of pixel per time unit

@@ -958,9 +958,6 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	 * @see org.eclipse.swt.widgets.Widget#dispose()
 	 */
 	public void dispose () { 
-		if (imageBuffer != null) {
-			imageBuffer.dispose();
-		}
 		threadExecutor.shutdown();
 		super.dispose();
 	}

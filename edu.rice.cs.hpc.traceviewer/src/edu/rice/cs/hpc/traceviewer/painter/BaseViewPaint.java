@@ -115,7 +115,7 @@ public abstract class BaseViewPaint {
 		try {
 			launchDataGettingThreads(changedBounds, launch_threads);
 			
-		} catch (IOException e) {
+		} catch (Exception e) {
 			MessageDialog.openError(window.getShell(), "Error while reading data", 
 					e.getMessage());
 			e.printStackTrace();
@@ -177,7 +177,7 @@ public abstract class BaseViewPaint {
 		
 		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
 
-		Debugger.printDebug(1, "BVP --- lp: " + linesToPaint + ", tld: " + timelineDone + ", qs: " + queue.size());
+		Debugger.printDebug(1, canvas.toString() + " BVP --- lp: " + linesToPaint + ", tld: " + timelineDone + ", qs: " + queue.size());
 		
 		// -------------------------------------------------------------------
 		// painting to the buffer "concurrently" if numPaintThreads > 1

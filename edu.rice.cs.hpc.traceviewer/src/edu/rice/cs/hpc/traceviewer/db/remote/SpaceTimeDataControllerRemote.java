@@ -145,8 +145,8 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 
 		@Override
 		public void notify(String msg) {
-			
-			System.err.println("Error in Decompression: " + msg);
+			throw new RuntimeException(msg);
+			//System.err.println("Error in Decompression: " + msg);
 		}
 		
 	}

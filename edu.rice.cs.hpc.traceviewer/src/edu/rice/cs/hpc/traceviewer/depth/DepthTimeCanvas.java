@@ -133,7 +133,7 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
     /****
      *  refresh only if the size of the buffer doesn't match with the size of the canvas
      */
-    public void refreshWithCondition() 
+    private void refreshWithCondition() 
     {
 		if (imageBuffer == null) {
 			if (stData != null) {
@@ -235,9 +235,6 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 	 */
 	public void dispose()
 	{
-		if (imageBuffer != null) {
-			imageBuffer.dispose();
-		}
 		threadExecutor.shutdown();
 		super.dispose();
 	}

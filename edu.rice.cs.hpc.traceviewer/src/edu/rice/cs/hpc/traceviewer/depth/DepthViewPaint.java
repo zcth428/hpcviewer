@@ -36,8 +36,21 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected boolean startPainting(int linesToPaint, int numThreads, boolean changedBounds) {
-		numPixels = attributes.numPixelsDepthV/(float)controller.getMaxDepth();
-		return changedBounds;
+		int process = attributes.getPosition().process;
+		
+		// we need to check if the data is ready.
+		// data is ready iff 
+		//  - a process has been selected for the depth view (within the range)
+		//  - and the main view has finished generated the timelines
+		
+		if (process >= attributes.getProcessBegin() && process <= attributes.getProcessEnd()) {
+			
+			if ( controller.getDepthTrace() != null) {
+				numPixels = attributes.numPixelsDepthV/(float)controller.getMaxDepth();
+				return changedBounds;
+			}
+		}
+		return false;
 	}
 
 

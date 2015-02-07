@@ -10,6 +10,7 @@ import java.util.zip.InflaterInputStream;
 
 import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.data.db.DataRecord;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
@@ -36,8 +37,7 @@ public class DecompressionThread extends Thread {
 	final ProcessTimelineService timelineServ;
 	final HashMap<Integer, CallPath> scopeMap;
 	final int ranksExpected;
-	final long t0;
-	final long tn;
+	final ImageTraceAttributes attributes;
 	
 	private final IThreadListener listener;
 	
@@ -48,15 +48,25 @@ public class DecompressionThread extends Thread {
 
 	static AtomicInteger ranksRemainingToDecompress;
 
-
+	/********
+	 * Constructor for decompression thread. 
+	 * Despite its name, this class is not for decompressing data from the server,
+	 * but mainly for accepting trace data. If the data is compressed, it will then
+	 * automatically decompress.
+	 *  
+	 * @param ptlService
+	 * @param _scopeMap
+	 * @param _ranksExpected
+	 * @param attributes
+	 * @param listener
+	 */
 	public DecompressionThread(ProcessTimelineService ptlService,
 			HashMap<Integer, CallPath> _scopeMap, int _ranksExpected,
-			long _t0, long _tn, IThreadListener listener) {
-		timelineServ = ptlService;
-		scopeMap = _scopeMap;
-		ranksExpected = _ranksExpected;
-		t0 = _t0;
-		tn = _tn;
+			ImageTraceAttributes attributes, IThreadListener listener) {
+		timelineServ 	= ptlService;
+		scopeMap 		= _scopeMap;
+		ranksExpected 	= _ranksExpected;
+		this.attributes = attributes;
 		
 		this.listener = listener;
 	}
@@ -133,7 +143,13 @@ public class DecompressionThread extends Thread {
 
 		int lineNumber = toDecomp.rankNumber;
 
-		ProcessTimeline ptl = new ProcessTimeline(dataAsTraceDBR, scopeMap, lineNumber, ranksExpected, tn-t0, t0);
+		// laks attempts to fix, 2015.02.06: I think the process time line class expect 
+		// the number of horizontal pixels in the 4th parameter instead of number of processors
+		// TODO: need to check
+		
+		ProcessTimeline ptl = new ProcessTimeline(dataAsTraceDBR, scopeMap, lineNumber, 
+				attributes.numPixelsH, attributes.getTimeInterval(), attributes.getTimeBegin());
+		
 		timelineServ.setProcessTimeline(lineNumber, ptl);
 		timelinesAvailableForRendering.add(lineNumber);
 	}

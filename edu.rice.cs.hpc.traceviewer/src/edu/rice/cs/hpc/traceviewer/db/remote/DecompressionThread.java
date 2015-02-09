@@ -31,12 +31,12 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
 public class DecompressionThread extends Thread {
 
-	private static ConcurrentLinkedQueue<DecompressionItemToDo> workToDo = new ConcurrentLinkedQueue<DecompressionItemToDo>();
+	final private ConcurrentLinkedQueue<DecompressionItemToDo> workToDo;
 	private static ConcurrentLinkedQueue<Integer> timelinesAvailableForRendering = new ConcurrentLinkedQueue<Integer>();
 	// Variables for decompression
 	final ProcessTimelineService timelineServ;
 	final HashMap<Integer, CallPath> scopeMap;
-	final int ranksExpected;
+
 	final ImageTraceAttributes attributes;
 	
 	private final IThreadListener listener;
@@ -56,28 +56,27 @@ public class DecompressionThread extends Thread {
 	 *  
 	 * @param ptlService
 	 * @param _scopeMap
-	 * @param _ranksExpected
 	 * @param attributes
+	 * @param queue work to do
 	 * @param listener
 	 */
 	public DecompressionThread(ProcessTimelineService ptlService,
-			HashMap<Integer, CallPath> _scopeMap, int _ranksExpected,
-			ImageTraceAttributes attributes, IThreadListener listener) {
+			HashMap<Integer, CallPath> _scopeMap,
+			ImageTraceAttributes attributes,
+			ConcurrentLinkedQueue<DecompressionItemToDo> workToDo, 
+			IThreadListener listener) {
 		timelineServ 	= ptlService;
 		scopeMap 		= _scopeMap;
-		ranksExpected 	= _ranksExpected;
+
 		this.attributes = attributes;
-		
-		this.listener = listener;
+		this.workToDo   = workToDo;
+		this.listener 	= listener;
 	}
 	
 	public static void setTotalRanksExpected(int ranks){
 		ranksRemainingToDecompress = new AtomicInteger(ranks);
 	}
 	
-	public static void addWorkItemToDo(DecompressionItemToDo add) {
-		workToDo.add(add);
-	}
 	
 	/**
 	 * @return The index of a {@link ProcessTimeline} that has been uncompressed

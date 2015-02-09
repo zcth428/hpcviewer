@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
 
@@ -14,6 +16,8 @@ import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.db.remote.DecompressionThread.DecompressionItemToDo;
+import edu.rice.cs.hpc.traceviewer.painter.ImageTraceAttributes;
 
 /**
  * Handles communication with the remote server, including asking for data and
@@ -95,7 +99,9 @@ public class RemoteDataRetriever {
 	 * @return
 	 * @throws IOException 
 	 */
-	public void getData(int P0, int Pn, long t0, long tn, int vertRes, int horizRes, HashMap<Integer, CallPath> _scopeMap) throws IOException
+	public void getData( ImageTraceAttributes attributes, 
+			HashMap<Integer, CallPath> _scopeMap, 
+			final ConcurrentLinkedQueue<DecompressionItemToDo> workToDo) throws IOException
 	{
 		//Make the call
 		//Check to make sure the server is sending back data
@@ -105,6 +111,13 @@ public class RemoteDataRetriever {
 				//			Make into ProcessTimeline
 				//			Put into appropriate place in array
 		//When all are done, return the array
+		// int P0, int Pn, long t0, long tn, int vertRes, int horizRes,
+		int P0 = attributes.getProcessBegin();
+		int Pn = attributes.getProcessEnd();
+		long t0 = attributes.getTimeBegin();
+		long tn = attributes.getTimeEnd();
+		int vertRes = attributes.numPixelsV;
+		int horizRes = attributes.numPixelsH;
 		
 		statusMgr.setMessage("Requesting data");
 		shell.update();
@@ -135,6 +148,7 @@ public class RemoteDataRetriever {
 				int ranksReceived = 0;
 				dataReader = receiver;
 				boolean first = true;
+				
 				try {
 					while (ranksReceived < ranksExpected) {
 
@@ -162,7 +176,7 @@ public class RemoteDataRetriever {
 
 							}
 
-							DecompressionThread.addWorkItemToDo(
+							workToDo.add(
 								new DecompressionThread.DecompressionItemToDo(
 											compressedTraceLine, length,
 											startTimeForThisTimeline,

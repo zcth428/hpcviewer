@@ -3,6 +3,7 @@ package edu.rice.cs.hpc.traceviewer.db.remote;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -13,6 +14,7 @@ import edu.rice.cs.hpc.remote.data.RemoteFilteredBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceName;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
+import edu.rice.cs.hpc.traceviewer.db.remote.DecompressionThread.DecompressionItemToDo;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
 
@@ -63,19 +65,21 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 			
 			DecompressionThread.setTotalRanksExpected(ranksExpected);
 			ptlService.setProcessTimeline(new ProcessTimeline[ranksExpected]);
+			
+			// The variable workToDo needs to be accessible across different objects:
+			// RemoteDataRetriever: producer
+			// DecompressionThread: consumer
+			final ConcurrentLinkedQueue<DecompressionItemToDo> workToDo = new ConcurrentLinkedQueue<DecompressionItemToDo>();
 
 			for (int i = 0; i < workThreads.length; i++) {
 
-				workThreads[i] = new DecompressionThread(ptlService, scopeMap, ranksExpected, 
-						attributes, new DecompressionThreadListener());
+				workThreads[i] = new DecompressionThread(ptlService, scopeMap,
+						attributes, workToDo, new DecompressionThreadListener());
 				workThreads[i].start();
 			}
 			
 
-			dataRetriever.getData(attributes.getProcessBegin(),
-					attributes.getProcessEnd(), attributes.getTimeBegin(),
-					attributes.getTimeEnd(), attributes.numPixelsV,
-					attributes.numPixelsH, scopeMap);
+			dataRetriever.getData(attributes, scopeMap, workToDo);
 		}
 	}
 

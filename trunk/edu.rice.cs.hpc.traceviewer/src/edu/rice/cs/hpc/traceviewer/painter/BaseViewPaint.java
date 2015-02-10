@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.traceviewer.painter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -153,7 +152,7 @@ public abstract class BaseViewPaint {
 		final double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
 		for (int threadNum = 0; threadNum < Utility.getNumThreads(linesToPaint); threadNum++) {
-			final Callable<Integer> thread = getTimelineThread(canvas, xscale, yscale, queue, timelineDone);
+			final BaseTimelineThread thread = getTimelineThread(canvas, xscale, yscale, queue, timelineDone);
 			final Future<Integer> submit = threadExecutor.submit( thread );
 			threads.add(submit);
 		}
@@ -189,6 +188,8 @@ public abstract class BaseViewPaint {
 			if (thread != null) {
 				if (singleThread) 
 				{
+					ArrayList<Integer> result = new ArrayList<Integer>();
+					waitDataPreparationThreads(threads, result);
 					doSingleThreadPainting(canvas, thread);
 				} else
 				{
@@ -204,6 +205,8 @@ public abstract class BaseViewPaint {
 			// -------------------------------------------------------------------
 			// Finalize the painting (to be implemented by the instance)
 			// -------------------------------------------------------------------
+			ArrayList<Integer> result = new ArrayList<Integer>();
+			waitDataPreparationThreads(threads, result);
 			endPainting(canvas, threadsPaint);
 		}
 		
@@ -235,6 +238,19 @@ public abstract class BaseViewPaint {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private void waitDataPreparationThreads(List<Future<Integer>> threads, ArrayList<Integer> result)
+	{
+		for (Future<Integer> thread : threads)
+		{
+			try {
+				Integer i = thread.get();
+				result.add(i);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

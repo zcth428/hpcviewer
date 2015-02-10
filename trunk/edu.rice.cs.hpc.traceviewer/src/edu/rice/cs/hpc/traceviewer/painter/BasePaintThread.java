@@ -76,8 +76,8 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>> {
 		while( ! list.isEmpty() 				 		      // while there are tasks to do 
 				||								 		      // or  
 				numberOfTotalLines>getNumberOfCreatedData()   // the data collection threads have not finished 
-				|| 											  // or	the paint threads haven't finished the job
-				timelineDone.get()>0 ) 					  	  //
+				|| 											  // or	
+				timelineDone.get()>0 ) 					  	  // the data preparation threads haven't finished the job
 		{
 			// ------------------------------------------------------------------
 			// get the task to do from the list and compute the height and the position

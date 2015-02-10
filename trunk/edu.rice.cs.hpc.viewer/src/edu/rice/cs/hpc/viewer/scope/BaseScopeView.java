@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import edu.rice.cs.hpc.data.experiment.Experiment;
@@ -69,13 +70,31 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	 */
 	protected void initTableColumns(boolean keepColumnStatus) {
 		
+        if (treeViewer != null) {
+        	Tree tree = treeViewer.getTree();
+        	if (tree != null && !tree.isDisposed())
+        	{
+        		initTableColumns(tree, keepColumnStatus);
+        	}
+        }
+	}
+
+	/******
+	 * The same version as {@link BaseScopeView.initTableColumns} but without
+	 * 	worrying if the tree has been disposed or not.
+	 * 
+	 * @param tree
+	 * @param keepColumnStatus
+	 */
+	private void initTableColumns(Tree tree, boolean keepColumnStatus) 
+	{
         final Experiment myExperiment = database.getExperiment();        
         int nbMetrics = myExperiment.getMetricCount();
         boolean status[] = new boolean[nbMetrics];
 
-        int iColCount = this.treeViewer.getTree().getColumnCount();
+        int iColCount = tree.getColumnCount();
         if(iColCount>1) {
-        	TreeColumn []columns = treeViewer.getTree().getColumns();
+        	TreeColumn []columns = tree.getColumns();
         	
         	// this is Eclipse Indigo bug: when a column is disposed, the next column will have
         	//	zero as its width. Somehow they didn't preserve the width of the columns.
@@ -120,8 +139,8 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         // update the root scope of the actions !
         this.objViewActions.updateContent(myExperiment, (RootScope)this.myRootScope);
     	this.objViewActions.objActionsGUI.setColumnsStatus(status);
+
 	}
-	
     /**
      * Tell children to update the content with the new database
      * @param new_database

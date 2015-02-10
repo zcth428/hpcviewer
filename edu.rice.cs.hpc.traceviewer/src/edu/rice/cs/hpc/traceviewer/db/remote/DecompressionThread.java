@@ -32,7 +32,7 @@ import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 public class DecompressionThread extends Thread {
 
 	final private ConcurrentLinkedQueue<DecompressionItemToDo> workToDo;
-	private static ConcurrentLinkedQueue<Integer> timelinesAvailableForRendering = new ConcurrentLinkedQueue<Integer>();
+	final private ConcurrentLinkedQueue<Integer> timelinesAvailableForRendering;
 	// Variables for decompression
 	final ProcessTimelineService timelineServ;
 	final HashMap<Integer, CallPath> scopeMap;
@@ -46,7 +46,7 @@ public class DecompressionThread extends Thread {
 	
 	static boolean first = true;
 
-	static AtomicInteger ranksRemainingToDecompress;
+	final private AtomicInteger ranksRemainingToDecompress;
 
 	/********
 	 * Constructor for decompression thread. 
@@ -60,22 +60,24 @@ public class DecompressionThread extends Thread {
 	 * @param queue work to do
 	 * @param listener
 	 */
-	public DecompressionThread(ProcessTimelineService ptlService,
+	public DecompressionThread(
+			ProcessTimelineService ptlService,
 			HashMap<Integer, CallPath> _scopeMap,
 			ImageTraceAttributes attributes,
 			ConcurrentLinkedQueue<DecompressionItemToDo> workToDo, 
+			ConcurrentLinkedQueue<Integer> timelinesAvailableForRendering,
+			AtomicInteger ranksRemainingToDecompress,
 			IThreadListener listener) {
 		timelineServ 	= ptlService;
 		scopeMap 		= _scopeMap;
 
 		this.attributes = attributes;
 		this.workToDo   = workToDo;
+		this.timelinesAvailableForRendering = timelinesAvailableForRendering;
+		this.ranksRemainingToDecompress     = ranksRemainingToDecompress;
 		this.listener 	= listener;
 	}
 	
-	public static void setTotalRanksExpected(int ranks){
-		ranksRemainingToDecompress = new AtomicInteger(ranks);
-	}
 	
 	
 	/**
@@ -86,9 +88,9 @@ public class DecompressionThread extends Thread {
 	 * been processed. Unless this method returns null, it will not return a
 	 * value that it has returned before.
 	 */
-	public static Integer getNextTimelineToRender() {
+/*	public static Integer getNextTimelineToRender() {
 		return timelinesAvailableForRendering.poll();
-	}
+	}*/
 	
 	@Override
 	public void run() {

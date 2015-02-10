@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -30,6 +31,8 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 
 	private final TraceName[]  valuesX;
 	private final DataOutputStream server;
+	
+	private ConcurrentLinkedQueue<Integer> timelineToRender;
 
 	public SpaceTimeDataControllerRemote(RemoteDataRetriever _dataRet, IWorkbenchWindow _window,
 			IStatusLineManager _statusMgr, InputStream expStream, String Name, int _numTraces, TraceName[] valuesX, DataOutputStream connectionToServer) 
@@ -61,20 +64,22 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 		if (changedBounds) {
 			
 			DecompressionThread[] workThreads = new DecompressionThread[numThreadsToLaunch];
-			int ranksExpected = Math.min(attributes.getProcessInterval(), attributes.numPixelsV);
+			final int ranksExpected = Math.min(attributes.getProcessInterval(), attributes.numPixelsV);
 			
-			DecompressionThread.setTotalRanksExpected(ranksExpected);
+			final AtomicInteger ranksRemainingToDecompress = new AtomicInteger(ranksExpected);
 			ptlService.setProcessTimeline(new ProcessTimeline[ranksExpected]);
 			
 			// The variable workToDo needs to be accessible across different objects:
 			// RemoteDataRetriever: producer
 			// DecompressionThread: consumer
 			final ConcurrentLinkedQueue<DecompressionItemToDo> workToDo = new ConcurrentLinkedQueue<DecompressionItemToDo>();
+			timelineToRender  = new ConcurrentLinkedQueue<Integer>();
 
 			for (int i = 0; i < workThreads.length; i++) {
 
 				workThreads[i] = new DecompressionThread(ptlService, scopeMap,
-						attributes, workToDo, new DecompressionThreadListener());
+						attributes, workToDo, timelineToRender, ranksRemainingToDecompress,
+						new DecompressionThreadListener());
 				workThreads[i].start();
 			}
 			
@@ -110,7 +115,7 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 			int i = 0;
 			
 			// TODO: Should this be implemented with real locking?
-			while ((nextIndex = DecompressionThread.getNextTimelineToRender()) == null) {
+			while ((nextIndex = timelineToRender.poll()) == null) {
 				//Make sure a different thread didn't get the last one while 
 				//this thread was waiting:
 				if (lineNum.get() >= ptlService.getNumProcessTimeline())
@@ -118,13 +123,15 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 				
 				// check for the timeout
 				if (i++ > RemoteDataRetriever.getTimeOut()) {
-					return null;
+					throw new RuntimeException("Timeout in while waiting for data from decompression thread");
+					//return null;
 				}
 				try {
 					Thread.sleep(RemoteDataRetriever.getTimeSleep());
 
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+					throw new RuntimeException("Thread is interrupted");
 				}
 			}
 			lineNum.getAndIncrement();

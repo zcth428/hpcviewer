@@ -3,6 +3,8 @@ package edu.rice.cs.hpc.traceviewer.depth;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import edu.rice.cs.hpc.traceviewer.data.db.DataPreparation;
 import edu.rice.cs.hpc.traceviewer.data.db.TimelineDataSet;
 import edu.rice.cs.hpc.traceviewer.data.graph.ColorTable;
@@ -32,9 +34,9 @@ public class TimelineDepthThread
 	 */
 	public TimelineDepthThread(SpaceTimeDataController data, 
 			double scaleY, Queue<TimelineDataSet> queue, 
-			AtomicInteger timelineDone, boolean usingMidpoint)
+			AtomicInteger timelineDone, boolean usingMidpoint, IProgressMonitor monitor)
 	{
-		super(data, scaleY, queue, timelineDone, usingMidpoint);
+		super(data, scaleY, queue, timelineDone, usingMidpoint, monitor);
 	}
 
 

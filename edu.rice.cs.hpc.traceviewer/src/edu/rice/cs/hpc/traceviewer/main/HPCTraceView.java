@@ -154,12 +154,12 @@ implements ITraceViewAction
 					// changing painting policy means changing the content
 					// we should force all views to refresh
 					detailCanvas.refresh(true);
-					RefreshOperation r_op = new RefreshOperation("painting policy change");
+/*					RefreshOperation r_op = new RefreshOperation("painting policy change");
 					try {
 						TraceOperation.getOperationHistory().execute(r_op, null, null);
 					} catch (ExecutionException e) {
 						e.printStackTrace();
-					}					
+					}*/
 				}
 			}
 		});

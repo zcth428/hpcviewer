@@ -8,6 +8,9 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -854,7 +857,7 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		final Rectangle view = getClientArea();
 				
 		final Image imageFinal = new Image(getDisplay(), view.width, view.height);
-		GC bufferGC = new GC(imageFinal);
+		final GC bufferGC = new GC(imageFinal);
 		bufferGC.setBackground(Constants.COLOR_WHITE);
 		bufferGC.fillRectangle(0,0,view.width,view.height);
 		
@@ -866,9 +869,9 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		// -----------------------------------------------------------------------
 		
 		int numLines = Math.min(view.height, stData.getAttributes().getProcessInterval() );
-		Image imageOrig = new Image(getDisplay(), view.width, numLines);
+		final Image imageOrig = new Image(getDisplay(), view.width, numLines);
 		
-		GC origGC = new GC(imageOrig);
+		final GC origGC = new GC(imageOrig);
 		origGC.setBackground(Constants.COLOR_WHITE);
 		origGC.fillRectangle(0,0,view.width, numLines);
 
@@ -876,67 +879,12 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 		// main method to paint to the canvas
 		// if there's no exception or interruption, we redraw the canvas
 		// -----------------------------------------------------------------------
-		if ( paintDetailViewport(bufferGC, origGC, 
-				view.width, view.height, refreshData) ) {
-			
-			if (imageBuffer != null) {
-				imageBuffer.dispose();
-			}
-			imageBuffer = imageFinal;
-			
-			// in case of filter, we may need to change the cursor position
-			if (refreshData) {
-				final String []ranks = stData.getBaseData().getListOfRanks();
-				final Position p = stData.getAttributes().getPosition();
-				
-				if (p.process > ranks.length-1) {
-					// out of range: need to change the cursor position
-					Position new_p = new Position( p.time, ranks.length >> 1 );
-					notifyChangePosition(new_p);
-				}
-			}
-			super.redraw();
 
-			// -----------------------------------------------------------------------
-			// notify to all other views that a new image has been created,
-			//	and it needs to refresh the view
-			// -----------------------------------------------------------------------
-			notifyChangeBuffer(imageOrig.getImageData());
-			
-			updateButtonStates();
-		} else {
-			// we don't need this "new image" since the paint fails
-			imageFinal.dispose();
-		}
-		// free resources 
-		bufferGC.dispose();
-		origGC.dispose();
-		imageOrig.dispose();
-	}
-	
-
-	/*************************************************************************
-	 *	Paints the specified time units and processes at the specified depth
-	 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
-	 *	the sample's max depth before becoming overDepth on samples that have gone over depth.
-	 * 
-	 *	@param masterGC   		 The GC that will contain the combination of all the 1-line GCs.
-	 * 	@param origGC			 The original GC without texts
-	 *  @param _numPixelsH		 The number of horizontal pixels to be painted.
-	 *  @param _numPixelsV		 The number of vertical pixels to be painted.
-	 *  @param refreshData
-	 *  
-	 *  @return boolean true of the pain is successful, false otherwise
-	 *************************************************************************/
-	private boolean paintDetailViewport(final GC masterGC, final GC origGC, 
-			int _numPixelsH, int _numPixelsV,
-			boolean refreshData)
-	{	
 		ImageTraceAttributes attributes = stData.getAttributes();
-		boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
+		final boolean changedBounds = (refreshData? refreshData : !attributes.sameTrace(oldAttributes) );
 		
-		attributes.numPixelsH = _numPixelsH;
-		attributes.numPixelsV = _numPixelsV;
+		attributes.numPixelsH = view.width;
+		attributes.numPixelsV = view.height;
 		
 		oldAttributes.copy(attributes);
 		if (changedBounds) {
@@ -945,13 +893,81 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 			ptlService.setProcessTimeline(traces);
 		}
 
-		DetailViewPaint detailPaint = new DetailViewPaint(masterGC, origGC, stData, 
-					attributes, changedBounds, window, threadExecutor); 
-		
-		return detailPaint.paint(this);
+		/*************************************************************************
+		 *	Paints the specified time units and processes at the specified depth
+		 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
+		 *	the sample's max depth before becoming overDepth on samples that have gone over depth.
+		 *************************************************************************/
+		DetailViewPaint detailPaint = new DetailViewPaint(bufferGC, origGC, stData, 
+					attributes, changedBounds, window, this, threadExecutor); 
+
+		detailPaint.setUser(true);
+		detailPaint.addJobChangeListener(new IJobChangeListener() {
+			
+			@Override
+			public void sleeping(IJobChangeEvent event) {}
+			
+			@Override
+			public void scheduled(IJobChangeEvent event) {}
+			
+			@Override
+			public void running(IJobChangeEvent event) {}
+			
+			@Override
+			public void done(IJobChangeEvent event) {
+				if (event.getResult() == Status.OK_STATUS)
+				{
+					donePainting(imageOrig, imageFinal, changedBounds);
+				} else
+				{
+					// we don't need this "new image" since the paint fails
+					imageFinal.dispose();	
+				}
+				// free resources 
+				bufferGC.dispose();
+				origGC.dispose();
+				imageOrig.dispose();
+			}
+			
+			@Override
+			public void awake(IJobChangeEvent event) {}
+			
+			@Override
+			public void aboutToRun(IJobChangeEvent event) {}
+		});
+		detailPaint.schedule();
 	}
 	
 
+	private void donePainting(Image imageOrig, Image imageFinal, boolean refreshData)
+	{		
+		if (imageBuffer != null) {
+			imageBuffer.dispose();
+		}
+		imageBuffer = imageFinal;
+		
+		// in case of filter, we may need to change the cursor position
+		if (refreshData) {
+			final String []ranks = stData.getBaseData().getListOfRanks();
+			final Position p = stData.getAttributes().getPosition();
+			
+			if (p.process > ranks.length-1) {
+				// out of range: need to change the cursor position
+				Position new_p = new Position( p.time, ranks.length >> 1 );
+				notifyChangePosition(new_p);
+			}
+		}
+		super.redraw();
+
+		// -----------------------------------------------------------------------
+		// notify to all other views that a new image has been created,
+		//	and it needs to refresh the view
+		// -----------------------------------------------------------------------
+		notifyChangeBuffer(imageOrig.getImageData());
+		
+		updateButtonStates();
+	}
+	
 	
 	/*
 	 * (non-Javadoc)

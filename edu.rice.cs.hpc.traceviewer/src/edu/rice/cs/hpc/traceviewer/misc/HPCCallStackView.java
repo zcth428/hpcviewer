@@ -118,12 +118,16 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 				//	gather event from other source. we then require to put a guard to avoid this.
 				if (sourceName.equals(DataService.DATA_UPDATE)) {
 					if (sourceValue instanceof SpaceTimeDataController) {
+						// new color mapping
 						csViewer.updateView();
 					} else if (sourceValue instanceof Boolean) {
 						// operations when every ones need to refresh their data
 						//	this event can happen when a filter event occurs
-						csViewer.updateView();
 						miniCanvas.updateView();
+						
+						// for the callstack viewer, we'll rely on BufferRefreshOperation to refresh
+						// the content to ensure that the data from the main view is ready to be fetched
+						// csViewer.updateView(); // not needed
 					}
 				}
 			}
@@ -137,7 +141,13 @@ public class HPCCallStackView extends ViewPart implements ISizeProvider
 		depthEditor.setSelection(0);
 		depthEditor.setVisible(true);
 
-		this.csViewer.updateView();
+		//this.csViewer.updateView();
+		
+		// instead of updating the content of the view, we just make the table
+		// visible, and let other event to trigger the update content.
+		// at this point, a data may not be ready to be processed
+		csViewer.getTable().setVisible(true);
+		
 		this.miniCanvas.updateView(_stData);
 		
 		miniCanvas.setVisible(true);

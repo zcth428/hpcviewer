@@ -11,12 +11,16 @@ import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchWindow;
-import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
+import org.eclipse.ui.progress.UIJob;
+
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.util.OSValidator;
 
@@ -35,17 +39,18 @@ import edu.rice.cs.hpc.traceviewer.util.Utility;
  * 
  *
  *******************************************************/
-public abstract class BaseViewPaint {
+public abstract class BaseViewPaint extends UIJob
+{
 
 	protected ImageTraceAttributes attributes;
 	protected boolean changedBounds;
-	protected TimelineProgressMonitor monitor;
 	
 	protected final IWorkbenchWindow window;
 	
 	protected SpaceTimeDataController controller;
 
 	final private ExecutorService threadExecutor;
+	final private ISpaceTimeCanvas canvas;
 
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -58,20 +63,34 @@ public abstract class BaseViewPaint {
 	 * @param _monitor: progress monitor
 	 */
 
-	public BaseViewPaint(SpaceTimeDataController _data, ImageTraceAttributes _attributes, boolean _changeBound, 
-			IWorkbenchWindow window, ExecutorService threadExecutor) 
+	public BaseViewPaint(String title, SpaceTimeDataController _data, ImageTraceAttributes _attributes, boolean _changeBound, 
+			IWorkbenchWindow window, ISpaceTimeCanvas canvas, ExecutorService threadExecutor) 
 	{
+		super(title);
+		
 		changedBounds = _changeBound;
 		controller = _data;
 		attributes = _data.getAttributes();
 
-		this.window = (window == null ? Util.getActiveWindow() : window);
-		IViewSite site = (IViewSite) window.getActivePage().getActivePart().getSite();
-		monitor = new TimelineProgressMonitor( site.getActionBars().getStatusLineManager() );
-
+		this.window 		= (window == null ? Util.getActiveWindow() : window);
+		this.canvas 		= canvas;
 		this.threadExecutor = threadExecutor;
 	}
 	
+
+	@Override
+	public IStatus runInUIThread(IProgressMonitor monitor) {
+		IStatus status = Status.OK_STATUS;
+		
+		BusyIndicator.showWhile(getDisplay(), getThread());
+		if (!paint(canvas, monitor))
+		{
+			status = Status.CANCEL_STATUS;
+		}
+		
+		return status;
+	}	
+
 	/**********************************************************************************
 	 *	Paints the specified time units and processes at the specified depth
 	 *	on the SpaceTimeCanvas using the SpaceTimeSamplePainter given. Also paints
@@ -80,7 +99,7 @@ public abstract class BaseViewPaint {
 	 *	@param canvas   		 The SpaceTimeDetailCanvas that will be painted on.
 	 *  @return boolean true of the pain is successful, false otherwise
 	 ***********************************************************************************/
-	public boolean paint(ISpaceTimeCanvas canvas)
+	public boolean paint(ISpaceTimeCanvas canvas, IProgressMonitor monitor)
 	{	
 		// depending upon how zoomed out you are, the iteration you will be
 		// making will be either the number of pixels or the processors
@@ -100,8 +119,7 @@ public abstract class BaseViewPaint {
 		if (!startPainting(linesToPaint, Utility.getNumThreads(linesToPaint), changedBounds))
 			return false;
 
-		monitor.beginProgress(linesToPaint, "Rendering space time view...",
-				"Trace painting", window.getShell());
+		monitor.beginTask(getName(), linesToPaint);
 
 		// -------------------------------------------------------------------
 		// Create multiple threads to collect data
@@ -120,7 +138,7 @@ public abstract class BaseViewPaint {
 			e.printStackTrace();
 			
 			// shutdown the monitor to end the progress bar
-			monitor.endProgress();
+			monitor.done();
 			return false;
 		}
 		
@@ -152,7 +170,8 @@ public abstract class BaseViewPaint {
 		final double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
 		for (int threadNum = 0; threadNum < Utility.getNumThreads(linesToPaint); threadNum++) {
-			final BaseTimelineThread thread = getTimelineThread(canvas, xscale, yscale, queue, timelineDone);
+			final BaseTimelineThread thread = getTimelineThread(canvas, xscale, yscale, queue, 
+					timelineDone, monitor);
 			final Future<Integer> submit = threadExecutor.submit( thread );
 			threads.add(submit);
 		}
@@ -160,58 +179,54 @@ public abstract class BaseViewPaint {
 		// -------------------------------------------------------------------
 		// draw to the canvas
 		// -------------------------------------------------------------------
-		int numPaintThreads = 1; 
 
 		// -------------------------------------------------------------------
 		// hack: On Linux, gtk is not threads-safe, and SWT-gtk implementation
 		//		 uses lock everytime it calls gtk functions. This greatly impact
-		//		 the performance, we don't have the solution until now.
+		//		 performance degradation, and we don't have the solution until now.
 		//	At the moment we don't see any reason to use multi-threading to render
 		//	 	 the canvas
 		// -------------------------------------------------------------------
-		if (!OSValidator.isUnix()) {
-			numPaintThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
-		}
-		final boolean singleThread = (numPaintThreads == 1);
-		
-		final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
 
 		Debugger.printDebug(1, canvas.toString() + " BVP --- lp: " + linesToPaint + ", tld: " + timelineDone + ", qs: " + queue.size());
-		
-		// -------------------------------------------------------------------
-		// painting to the buffer "concurrently" if numPaintThreads > 1
-		// -------------------------------------------------------------------
-		for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
+		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
+
+		if (OSValidator.isUnix()) 
 		{
+			// -------------------------------------------------------------------
+			// sequential painting for Unix/Linux platform
+			// -------------------------------------------------------------------
 			final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
 					Display.getCurrent(), attributes.numPixelsH);
-			if (thread != null) {
-				if (singleThread) 
-				{
-					ArrayList<Integer> result = new ArrayList<Integer>();
-					waitDataPreparationThreads(threads, result);
-					doSingleThreadPainting(canvas, thread);
-				} else
-				{
+			ArrayList<Integer> result = new ArrayList<Integer>();
+			waitDataPreparationThreads(threads, result);
+			doSingleThreadPainting(canvas, thread);
+		} else
+		{
+			int numPaintThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
+			// -------------------------------------------------------------------
+			// painting to the buffer "concurrently" if numPaintThreads > 1
+			// -------------------------------------------------------------------
+			final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
+
+			for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
+			{
+				final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
+						Display.getCurrent(), attributes.numPixelsH);
+				if (thread != null) {
 					final Future<List<ImagePosition>> submit = threadExecutor.submit( thread );
 					threadsPaint.add(submit);
 				}
 			}
-		}
-
-		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
-
-		if (!singleThread) {
 			// -------------------------------------------------------------------
 			// Finalize the painting (to be implemented by the instance)
 			// -------------------------------------------------------------------
 			ArrayList<Integer> result = new ArrayList<Integer>();
 			waitDataPreparationThreads(threads, result);
 			endPainting(canvas, threadsPaint);
-		}
-		
+		}		
 		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
-		monitor.endProgress();
+		monitor.done();
 		changedBounds = false;
 
 		return true;
@@ -330,7 +345,7 @@ public abstract class BaseViewPaint {
 	 * @return
 	 */
 	abstract protected BaseTimelineThread  getTimelineThread(ISpaceTimeCanvas canvas, double xscale, double yscale,
-			Queue<TimelineDataSet> queue, AtomicInteger timelineDone);
+			Queue<TimelineDataSet> queue, AtomicInteger timelineDone, IProgressMonitor monitor);
 	
 	/***
 	 * get a thread for painting a number of lines

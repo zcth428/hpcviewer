@@ -9,10 +9,11 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Shell;
-
-import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
 import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
@@ -55,11 +56,7 @@ public class RemoteDataRetriever {
 	BufferedInputStream rcvBacking;
 	DataOutputStream sender;
 	
-	private final Shell shell;
-	
 	final int compressionType;
-	
-	private final IStatusLineManager statusMgr;
 
 	/******
 	 * Constructor for communicating with remote data server
@@ -71,20 +68,15 @@ public class RemoteDataRetriever {
 	 * 
 	 * @throws IOException
 	 */
-	public RemoteDataRetriever(Socket _serverConnection, IStatusLineManager _statusMgr, Shell _shell, int _compressionType) throws IOException {
+	public RemoteDataRetriever(Socket _serverConnection, Shell _shell, int _compressionType) throws IOException {
 		socket = _serverConnection;
 		
 		compressionType = _compressionType;
 		
-		rcvBacking = new BufferedInputStream(socket.getInputStream());
-		receiver = new DataInputStream(rcvBacking);
+		rcvBacking 		= new BufferedInputStream(socket.getInputStream());
+		receiver 		= new DataInputStream(rcvBacking);
 		
-		sender = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		
-		
-		statusMgr = _statusMgr;
-		shell = _shell;
-		
+		sender 			= new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 	}
 
 	//TODO: I think these are all inclusive, but check.
@@ -119,31 +111,22 @@ public class RemoteDataRetriever {
 		int vertRes = attributes.numPixelsV;
 		int horizRes = attributes.numPixelsH;
 		
-		statusMgr.setMessage("Requesting data");
-		shell.update();
 		Debugger.printTimestampDebug("Requesting data");
 		requestData(P0, Pn, t0, tn, vertRes, horizRes);
 		Debugger.printTimestampDebug("Data request finished");
 		
-		int responseCommand = waitAndReadInt(receiver);
-		statusMgr.setMessage("Receiving data");
-		shell.update();
-		
+		int responseCommand = waitAndReadInt(receiver);		
 		if (responseCommand != HERE)//"HERE" in ASCII
 			throw new IOException("The server did not send back data");
 	
 		Debugger.printTimestampDebug("Data receive begin");
 		
-		
 		final int ranksExpected = Math.min(Pn-P0, vertRes);
-		
-		
-		final TimelineProgressMonitor monitor = new TimelineProgressMonitor(statusMgr);
-		monitor.beginProgress(ranksExpected, "Receiving data...", "data", shell);
 
-		Thread unpacker = new Thread(){
-		@Override
-			public void run() {
+		Job unpacker = new Job("Receiving data") {
+
+			@Override
+			public IStatus run(IProgressMonitor monitor) {
 				DataInputStream dataReader;
 				int ranksReceived = 0;
 				dataReader = receiver;
@@ -184,20 +167,23 @@ public class RemoteDataRetriever {
 											compressionType));
 
 							ranksReceived++;
-							monitor.announceProgress();
+							monitor.worked(1);
 						}
 					}
 				} catch (IOException e) {
 					//Should we provide some UI notification to the user?
 					e.printStackTrace();
 				}
+				monitor.done();
 				//Updating the progress doesn't work anyways and will throw
 				//an exception because this is a different thread
 				//monitor.endProgress();
 				Debugger.printTimestampDebug("Data receive end");
+				return Status.OK_STATUS;
 			}
 		};
-		unpacker.start();
+		unpacker.setUser(true);
+		unpacker.schedule();
 		
 	}
 

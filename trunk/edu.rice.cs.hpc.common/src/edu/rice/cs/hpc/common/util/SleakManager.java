@@ -8,7 +8,15 @@ import org.eclipse.swt.widgets.Display;
 /******************************************************
  * 
  * Managing sleak objects across different windows 
- *
+ * 
+ * To use SleakManager, make sure the tracing configuration
+ * is set correctly for the following attributes:
+ * 
+ *     org.eclipse.ui/debug=true 
+ *     org.eclipse.ui/trace/graphics=true
+ *     
+ * and environment variable HPCTOOLKIT_MEMLEAK=1
+ * 
  ******************************************************/
 public class SleakManager {
 

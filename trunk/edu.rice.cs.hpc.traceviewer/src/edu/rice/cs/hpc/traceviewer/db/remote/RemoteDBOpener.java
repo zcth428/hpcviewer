@@ -186,7 +186,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 		// --------------------------------------------------------------
 		
 		RemoteDataRetriever dataRetriever = new RemoteDataRetriever(serverConnection,
-				statusMgr, window.getShell(), compressionType);
+				 window.getShell(), compressionType);
 		
 		SpaceTimeDataControllerRemote stData = new SpaceTimeDataControllerRemote(dataRetriever, window, statusMgr,
 				xmlStream, connectionInfo.databasePath + " on " + host, traceCount, valuesX, sender);

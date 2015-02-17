@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.State;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -48,9 +49,9 @@ public class DetailViewPaint extends BaseViewPaint {
 	
 	public DetailViewPaint(final GC masterGC, final GC origGC, SpaceTimeDataController _data,
 			ImageTraceAttributes _attributes, boolean _changeBound,
-			IWorkbenchWindow window, ExecutorService threadExecutor) 
+			IWorkbenchWindow window, ISpaceTimeCanvas canvas, ExecutorService threadExecutor) 
 	{
-		super(_data, _attributes, _changeBound, window, threadExecutor);
+		super("Main trace view", _data, _attributes, _changeBound, window, canvas, threadExecutor);
 		this.masterGC = masterGC;
 		this.origGC   = origGC;
 
@@ -88,7 +89,8 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected BaseTimelineThread getTimelineThread(ISpaceTimeCanvas canvas, double xscale,
-			double yscale, Queue<TimelineDataSet> queue, AtomicInteger timelineDone) {
+			double yscale, Queue<TimelineDataSet> queue, AtomicInteger timelineDone
+			, IProgressMonitor monitor) {
 
 		return new TimelineThread(this.window, controller, ptlService, changedBounds,   
 				yscale, queue, timelineDone, monitor);
@@ -121,5 +123,5 @@ public class DetailViewPaint extends BaseViewPaint {
 		
 		imgDetailLine.image.dispose();
 		imgDetailLine.imageOriginal.dispose();
-	}	
+	}
 }

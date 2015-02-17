@@ -4,6 +4,7 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -28,9 +29,10 @@ public class DepthViewPaint extends BaseViewPaint {
 	private float numPixels;
 	
 	public DepthViewPaint(IWorkbenchWindow window, final GC masterGC, SpaceTimeDataController _data,
-			ImageTraceAttributes _attributes, boolean _changeBound, ExecutorService threadExecutor) {
+			ImageTraceAttributes _attributes, boolean _changeBound, ISpaceTimeCanvas canvas, 
+			ExecutorService threadExecutor) {
 		
-		super(_data, _attributes, _changeBound,  window, threadExecutor);
+		super("Depth view", _data, _attributes, _changeBound,  window, canvas, threadExecutor);
 		this.masterGC = masterGC;
 	}
 
@@ -61,8 +63,9 @@ public class DepthViewPaint extends BaseViewPaint {
 
 	@Override
 	protected BaseTimelineThread getTimelineThread(ISpaceTimeCanvas canvas, double xscale, double yscale,
-			Queue<TimelineDataSet> queue, AtomicInteger timelineDone) {
-		return new TimelineDepthThread( controller, yscale, queue, timelineDone, controller.isEnableMidpoint());
+			Queue<TimelineDataSet> queue, AtomicInteger timelineDone, IProgressMonitor monitor) {
+		return new TimelineDepthThread( controller, yscale, queue, timelineDone, 
+				controller.isEnableMidpoint(), monitor);
 	}
 
 	@Override
@@ -81,12 +84,14 @@ public class DepthViewPaint extends BaseViewPaint {
 	@Override
 	protected void drawPainting(ISpaceTimeCanvas canvas,
 			ImagePosition img) {
-		
-		masterGC.drawImage(img.image, 0, 0, img.image.getBounds().width, 
-				img.image.getBounds().height, 0, 
-				Math.round(img.position*numPixels), 
-				img.image.getBounds().width, img.image.getBounds().height);
-		
-		img.image.dispose();
+		if (masterGC != null && !masterGC.isDisposed())
+		{
+			masterGC.drawImage(img.image, 0, 0, img.image.getBounds().width, 
+					img.image.getBounds().height, 0, 
+					Math.round(img.position*numPixels), 
+					img.image.getBounds().width, img.image.getBounds().height);
+			
+			img.image.dispose();
+		}
 	}
 }

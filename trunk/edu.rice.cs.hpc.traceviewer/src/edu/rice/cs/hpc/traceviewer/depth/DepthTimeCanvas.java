@@ -7,6 +7,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -211,8 +213,11 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 			}
 			//paints the current screen
 			imageBuffer = new Image(getDisplay(), viewWidth, viewHeight);
+		} else {
+			// empty canvas to view
+			return;
 		}
-		GC bufferGC = new GC(imageBuffer);
+		final GC bufferGC = new GC(imageBuffer);
 		bufferGC.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		bufferGC.fillRectangle(0,0,viewWidth,viewHeight);
 		
@@ -221,12 +226,11 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		Debugger.printDebug(1, "DTC rebuffering " + attributes);
 		
 		BaseViewPaint depthPaint = new DepthViewPaint(Util.getActiveWindow(), bufferGC, 
-				stData, attributes, true, threadExecutor);		
-		depthPaint.paint(this);
+				stData, attributes, true, this, threadExecutor);
 		
-		bufferGC.dispose();
-		
-		redraw();
+		depthPaint.setUser(true);
+		depthPaint.addJobChangeListener(new DepthJobListener(bufferGC));
+		depthPaint.schedule();
 	}
 
 	/*
@@ -238,8 +242,6 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		threadExecutor.shutdown();
 		super.dispose();
 	}
-	
-		
 
 
 	@Override
@@ -312,5 +314,37 @@ implements IOperationHistoryListener, ISpaceTimeCanvas
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private class DepthJobListener implements IJobChangeListener
+	{
+		final private GC bufferGC;
+		
+		public DepthJobListener(GC bufferGC)
+		{
+			this.bufferGC = bufferGC;
+		}
+		
+		@Override
+		public void sleeping(IJobChangeEvent event) {}
+		
+		@Override
+		public void scheduled(IJobChangeEvent event) {}
+		
+		@Override
+		public void running(IJobChangeEvent event) {}
+		
+		@Override
+		public void done(IJobChangeEvent event) {
+			bufferGC.dispose();				
+			redraw();
+		}
+		
+		@Override
+		public void awake(IJobChangeEvent event) {}
+		
+		@Override
+		public void aboutToRun(IJobChangeEvent event) {}
+
 	}
 }

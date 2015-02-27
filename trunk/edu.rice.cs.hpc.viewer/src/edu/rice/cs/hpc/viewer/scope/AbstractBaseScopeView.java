@@ -46,6 +46,7 @@ import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.actions.ShowMetricProperties;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
+import edu.rice.cs.hpc.viewer.util.TreeItemManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
 
@@ -375,7 +376,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 		        }
 		      }
 		}); 
-		
+
 		// ---------------------------------------------------------------
 		// register listener to capture debugging mode
 		// ---------------------------------------------------------------
@@ -469,6 +470,28 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         initTableColumns(keepColumnStatus);
     }
     
+    /// ---------------------------------------------
+    /// filter feature
+    /// ---------------------------------------------
+    
+    /****
+     * enable/disable filter
+     * 
+     * @param isEnabled
+     */
+    public void enableFilter(boolean isEnabled)
+    {
+    	// save the context of the first row (they are not part of input data)
+    	TreeItemManager manager = new TreeItemManager();
+    	manager.saveContext(treeViewer);
+    	
+		ScopeTreeContentProvider provider = (ScopeTreeContentProvider) treeViewer.getContentProvider();
+		provider.setEnableFilter(isEnabled);
+		treeViewer.refresh();
+    	
+    	// restore the context
+    	manager.restoreContext(treeViewer);
+    }
     
     
     //======================================================

@@ -15,7 +15,6 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
 
 	private ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
-	private RootScope root;
 	private PercentScopeVisitor percentVisitor;
 	private FinalizeMetricVisitorWithBackup finalizeVisitor;
 	
@@ -72,7 +71,7 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     	exclusiveOnly = new ExclusiveOnlyMetricPropagationFilter(experiment);
     	inclusiveOnly = new InclusiveOnlyMetricPropagationFilter(experiment);
     	
-    	root = experiment.getCallerTreeRoot();
+    	RootScope root = experiment.getCallerTreeRoot();
     	percentVisitor = new PercentScopeVisitor(experiment.getMetricCount(), root);
     	finalizeVisitor = new FinalizeMetricVisitorWithBackup(experiment.getMetrics());
     }

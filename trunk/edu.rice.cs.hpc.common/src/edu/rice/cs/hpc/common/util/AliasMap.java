@@ -56,6 +56,7 @@ public abstract class AliasMap<K,V> implements IUserData<K, V> {
 	 * @return the value if the key exists
 	 */
 	public V remove(K key) {
+		checkData();
 		V oldClass = data.remove(key);
 		
 		return oldClass;

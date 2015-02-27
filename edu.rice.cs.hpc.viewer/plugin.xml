@@ -52,6 +52,13 @@
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
       </view>
+      <view
+            class="edu.rice.cs.hpc.viewer.filter.FilterView"
+            icon="icons/filter_24x24.png"
+            id="edu.rice.cs.hpc.viewer.filter.FilterView"
+            name="Filter View"
+            restorable="true">
+      </view>
    </extension>
    <extension
          id="product"
@@ -300,6 +307,36 @@
             </command>
          </menu>
          <menu
+               id="edu.rice.cs.hpc.viewer.menu.filter"
+               label="Filter"
+               mnemonic="F"
+               tooltip="Action for filtering nodes">
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.filter.ShowFilterView"
+                  label="Show filter view"
+                  mnemonic="f"
+                  style="push"
+                  tooltip="Show table of filters">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.filter.FilterApply"
+                  label="Enable filter"
+                  mnemonic="e"
+                  style="toggle"
+                  tooltip="Enable/disable filter">
+            </command>
+            <separator
+                  name="edu.rice.cs.hpc.viewer.filter.separator">
+            </separator>
+            <command
+                  commandId="edu.rice.cs.hpc.viewer.filter.FilterAdd"
+                  label="Add a filter"
+                  mnemonic="A"
+                  style="push"
+                  tooltip="Add a filter pattern">
+            </command>
+         </menu>
+         <menu
          	   id="edu.rice.cs.hpc.viewer.menu.window"
                label="Window"
                mnemonic="W"
@@ -332,6 +369,52 @@
                   tooltip="Display the manual">
             </command>
          </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:edu.rice.cs.hpc.viewer.filter.FilterView">
+         <command
+               commandId="edu.rice.cs.hpc.viewer.filter.FilterAdd"
+               icon="icons/add_att.gif"
+               label="Add"
+               mnemonic="A"
+               style="push"
+               tooltip="Add a new filter pattern">
+         </command>
+         <command
+               commandId="edu.rice.cs.hpc.viewer.filter.FilterDelete"
+               icon="icons/delete_edit.gif"
+               label="Delete"
+               mnemonic="D"
+               style="push"
+               tooltip="Delete the selected filter pattern">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="edu.rice.cs.hpc.viewer.filter.selection">
+                  <equals
+                        value="SELECTED">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="edu.rice.cs.hpc.viewer.filter.FilterApply"
+               icon="icons/filter_16x16.png"
+               label="Apply filter"
+               mnemonic="F"
+               style="toggle"
+               tooltip="Enable filter and apply it to the current opened database">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="edu.rice.cs.hpc.viewer.provider.data.active">
+                  <equals
+                        value="ENABLED">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -412,6 +495,37 @@
             id="edu.rice.cs.hpc.viewer.actions.ShowMetricProperties"
             name="Show metric properties">
       </command>
+      <command
+            defaultHandler="edu.rice.cs.hpc.viewer.filter.ShowFilterView"
+            id="edu.rice.cs.hpc.viewer.filter.ShowFilterView"
+            name="Show filter view">
+      </command>
+      <category
+            id="edu.rice.cs.hpc.viewer.filter"
+            name="Filter">
+      </category>
+      <command
+            categoryId="edu.rice.cs.hpc.viewer.filter"
+            defaultHandler="edu.rice.cs.hpc.viewer.filter.FilterAdd"
+            id="edu.rice.cs.hpc.viewer.filter.FilterAdd"
+            name="Add">
+      </command>
+      <command
+            categoryId="edu.rice.cs.hpc.viewer.filter"
+            defaultHandler="edu.rice.cs.hpc.viewer.filter.FilterDelete"
+            id="edu.rice.cs.hpc.viewer.filter.FilterDelete"
+            name="Delete">
+      </command>
+      <command
+            categoryId="edu.rice.cs.hpc.viewer.filter"
+            defaultHandler="edu.rice.cs.hpc.viewer.filter.FilterApply"
+            id="edu.rice.cs.hpc.viewer.filter.FilterApply"
+            name="Apply filter">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.services">
@@ -424,6 +538,17 @@
          <variable
                name="edu.rice.cs.hpc.viewer.provider.data.merge"
                priorityLevel="activeWorkbenchWindow">
+         </variable>
+      </sourceProvider>
+      <sourceProvider
+            provider="edu.rice.cs.hpc.viewer.filter.FilterStateProvider">
+         <variable
+               name="edu.rice.cs.hpc.viewer.filter.selection"
+               priorityLevel="workbench">
+         </variable>
+         <variable
+               name="edu.rice.cs.hpc.viewer.filter.refresh"
+               priorityLevel="workbench">
          </variable>
       </sourceProvider>
    </extension>

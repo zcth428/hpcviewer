@@ -1,11 +1,20 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.viewers.*;
 
 import edu.rice.cs.hpc.data.experiment.scope.*;
+import edu.rice.cs.hpc.viewer.filter.FilterMap;
 
 public class ScopeTreeContentProvider implements ITreeContentProvider {
     protected TreeViewer viewer;
+    protected boolean enableFilter = false;
+
+    public void setEnableFilter(boolean isFilterEnabled)
+    {
+    	this.enableFilter = isFilterEnabled;
+    }
     
     /**
      * get the number of elements (called by jface)
@@ -23,9 +32,34 @@ public class ScopeTreeContentProvider implements ITreeContentProvider {
         	Scope parent = ((Scope) parentElement);
         	Object arrChildren[] = parent.getChildren();
         	// if the database has empty data, the children is null
-        	if (arrChildren != null)
-        		if (arrChildren.length>0)
+        	if (arrChildren != null && arrChildren.length>0)
+    			if (!enableFilter) {
         			return arrChildren;
+    			} else {
+    				// check the element if it has to be excluded, we need to skip the element
+    				// and return its descendants 
+    				ArrayList<Object> list = new ArrayList<>();
+    				FilterMap filter = FilterMap.getInstance();
+    				
+    				for (Object child : arrChildren)
+    				{
+    					Scope node = (Scope) child;
+    					if (filter.select(node.getName()))
+    					{
+    						// the child is included, we're fine
+    						list.add(node);
+    					} else {
+    						// the child is excluded, find its descendants
+							// recursively check whether its children can be included
+							Object []descendants = getChildren(node);
+							for(Object descendant : descendants)
+							{
+								list.add(descendant);
+							}
+    					}
+    				}
+    				return list.toArray();
+    			}
     	}
     	return null;
     }

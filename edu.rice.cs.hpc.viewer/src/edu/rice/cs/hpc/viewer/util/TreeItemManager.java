@@ -33,7 +33,8 @@ public class TreeItemManager {
 	 */
 	public void saveContext(TreeViewer tree) {
 		ElementDescriptor objDesc = this.getTopItem(tree.getTree());
-		this.stackElement.push(objDesc);
+		if (objDesc != null)
+			this.stackElement.push(objDesc);
 	}
 	
 	/**
@@ -53,6 +54,9 @@ public class TreeItemManager {
 	 * @return
 	 */
 	private ElementDescriptor getTopItem(Tree tree) {
+		if (tree.getItemCount() == 0)
+			return null;
+		
 		TreeItem itemTop = tree.getItem(0);
 		Image imgItem = itemTop.getImage(0);
 		String []sText= null;

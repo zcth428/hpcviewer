@@ -30,5 +30,4 @@ public class ProcedureAliasMap extends AliasMap<String,String> {
 	public void initDefault() {
 		data.put("hpcrun_special_IDLE", "... IDLE ...");
 	}
-
 }

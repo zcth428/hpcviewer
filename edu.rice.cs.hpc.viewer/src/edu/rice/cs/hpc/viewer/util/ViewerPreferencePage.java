@@ -1,14 +1,16 @@
 package edu.rice.cs.hpc.viewer.util;
 
+import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.preference.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
+import edu.rice.cs.hpc.viewer.filter.FilterApply;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.graph.GraphEditor;
 import edu.rice.cs.hpc.viewer.scope.ScopeActions;
@@ -31,12 +33,6 @@ public class ViewerPreferencePage
 	extends FieldEditorPreferencePage
 	implements IWorkbenchPreferencePage, IPropertyChangeListener  {
 
-	private DirectoryFieldEditor objDirectory;
-	private StringFieldEditor objThreshold;
-	private FontFieldEditor objFontMetric;
-	private FontFieldEditor objFontGeneric;
-	private StringFieldEditor objGraphDotDiameter;
-	
 	private IWorkbenchWindow objWindow;
 	/**
 	 * 
@@ -64,14 +60,14 @@ public class ViewerPreferencePage
 		//----------------------------------------------------------------------
 		// option the location of the default directory
 		//----------------------------------------------------------------------
-		objDirectory = new DirectoryFieldEditor(PreferenceConstants.P_PATH, 
+		DirectoryFieldEditor objDirectory = new DirectoryFieldEditor(PreferenceConstants.P_PATH, 
 				"&Default database directory:", getFieldEditorParent()); 
 		addField(objDirectory); 
 		
 		//----------------------------------------------------------------------
 		// option the threshold of hot call path
 		//----------------------------------------------------------------------
-		objThreshold = new StringFieldEditor(PreferenceConstants.P_THRESHOLD,
+		StringFieldEditor objThreshold = new StringFieldEditor(PreferenceConstants.P_THRESHOLD,
 				"&Threshold for hot call path\n(fraction from parent metric value, between 0.0 and 1.0)", 
 				this.getFieldEditorParent());
 		objThreshold.setValidateStrategy(StringFieldEditor.VALIDATE_ON_FOCUS_LOST);
@@ -82,20 +78,20 @@ public class ViewerPreferencePage
 		//----------------------------------------------------------------------
 		// options for fonts 
 		//----------------------------------------------------------------------
-		this.objFontMetric = new FontFieldEditor(PreferenceConstants.P_FONT_METRIC,
+		FontFieldEditor objFontMetric = new FontFieldEditor(PreferenceConstants.P_FONT_METRIC,
 				"Font for metric columns", getFieldEditorParent());
-		addField(this.objFontMetric);
-		this.objFontGeneric = new FontFieldEditor(PreferenceConstants.P_FONT_GENERIC,
+		addField(objFontMetric);
+		FontFieldEditor objFontGeneric = new FontFieldEditor(PreferenceConstants.P_FONT_GENERIC,
 				"Font for view/editor", getFieldEditorParent());
 		
-		addField(this.objFontGeneric);
+		addField(objFontGeneric);
 		
 		//----------------------------------------------------------------------
 		// option for the size of the dot in the graph
 		//----------------------------------------------------------------------
-		objGraphDotDiameter = new StringFieldEditor(PreferenceConstants.P_GRAPH_DOT_DIAMETER, "Graph dot diameter",
+		StringFieldEditor objGraphDotDiameter = new StringFieldEditor(PreferenceConstants.P_GRAPH_DOT_DIAMETER, "Graph dot diameter",
 				this.getFieldEditorParent());
-		addField(this.objGraphDotDiameter);
+		addField(objGraphDotDiameter);
 
 	}
 
@@ -116,9 +112,18 @@ public class ViewerPreferencePage
 	/* (non-Javadoc)
 	 */
 	public boolean performOk() {
-		super.performOk();
 		
 		ScopedPreferenceStore objPref = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+
+		// ---------------------------------------------
+		// store the new value
+		// ---------------------------------------------
+		super.performOk();
+
+		// ---------------------------------------------
+		// notify the changes if necessary
+		// ---------------------------------------------
+
 		// get the threshold
 		double fThreshold = objPref.getDouble(PreferenceConstants.P_THRESHOLD);
 		ScopeActions.fTHRESHOLD = fThreshold;
@@ -131,6 +136,7 @@ public class ViewerPreferencePage
 		
 		int size = objPref.getInt(PreferenceConstants.P_GRAPH_DOT_DIAMETER);
 		GraphEditor.setSymbolSize(size);
+		
 		return true;
 	}
 }

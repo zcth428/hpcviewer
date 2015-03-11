@@ -31,20 +31,28 @@ public class TreeItemManager {
 	 * save the context of the tree view (such as the top row header)
 	 * @param tree
 	 */
-	public void saveContext(TreeViewer tree) {
-		ElementDescriptor objDesc = this.getTopItem(tree.getTree());
-		if (objDesc != null)
-			this.stackElement.push(objDesc);
+	public void saveContext(TreeViewer treeViewer) {
+		final Tree tree = treeViewer.getTree();
+		if (!tree.isDisposed())
+		{
+			ElementDescriptor objDesc = this.getTopItem(tree);
+			if (objDesc != null)
+				this.stackElement.push(objDesc);
+		}
 	}
 	
 	/**
 	 * Restore the saved context into the tree view
 	 * @param tree
 	 */
-	public void restoreContext(TreeViewer tree) {
+	public void restoreContext(TreeViewer treeViewer) {
 		if (this.stackElement.size()>0) {
 			ElementDescriptor objDesc = this.stackElement.pop();
-			Utilities.insertTopRow(tree, objDesc.imgElement, objDesc.sTextElement);
+			Tree tree = treeViewer.getTree();
+			if (!tree.isDisposed())
+			{
+				Utilities.insertTopRow(treeViewer, objDesc.imgElement, objDesc.sTextElement);
+			}
 		}
 	}
 	

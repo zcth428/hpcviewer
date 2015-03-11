@@ -1,9 +1,12 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import java.io.FileNotFoundException;
+import java.util.Map;
 //User interface
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.services.ISourceProviderService;
+import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 //SWT
@@ -39,6 +42,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.window.ToolTip;
 
 //HPC
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.util.OSValidator;
@@ -46,6 +50,7 @@ import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.actions.ShowMetricProperties;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
+import edu.rice.cs.hpc.viewer.filter.FilterStateProvider;
 import edu.rice.cs.hpc.viewer.util.TreeItemManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
@@ -72,17 +77,47 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 	private Clipboard cb = null;
 	private GC gc = null;
 	
+	private FilterStateProvider serviceProvider;
+	private ISourceProviderListener listener;
+
 	/**
 	 * bar composite for placing toolbar and tool items
 	 */
 	protected CoolBar objCoolbar;
 	
+    //======================================================
+    // ................ HELPER ............................
+    //======================================================
+	public AbstractBaseScopeView()
+	{
+		final ISourceProviderService service   = (ISourceProviderService)Util.getActiveWindow().
+				getService(ISourceProviderService.class);
+		serviceProvider  = (FilterStateProvider) service.getSourceProvider(FilterStateProvider.FILTER_REFRESH_PROVIDER);
+		listener 		 = new ISourceProviderListener() {
+			
+			@Override
+			public void sourceChanged(int sourcePriority, String sourceName,
+					Object sourceValue) {
+				if (sourceName.equals(FilterStateProvider.FILTER_REFRESH_PROVIDER))
+				{
+					if (sourceValue instanceof Boolean)
+					{
+						Boolean state = (Boolean) sourceValue;
+						enableFilter(state);
+					}
+				}
+			}
+			
+			@Override
+			public void sourceChanged(int sourcePriority, Map sourceValuesByName) {}
+		};
+		serviceProvider.addSourceProviderListener(listener);
+
+	}
 	
     //======================================================
     // ................ HELPER ............................
     //======================================================
-    
-	abstract protected CellLabelProvider getLabelProvider(); 
     
     /**
      * Display the source code of the node in the editor area
@@ -298,7 +333,7 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 		// Laks 2009.06.22: add multi-selection for enabling copying into clipboard 
     	treeViewer = new ScopeTreeViewer(aParent,SWT.BORDER|SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.MULTI);
     	// set the attributes
-    	ScopeTreeContentProvider treeContentProvider = getScopeContentProvider(); 
+    	AbstractContentProvider treeContentProvider = getScopeContentProvider(); 
     	treeViewer.setContentProvider(treeContentProvider);
         treeViewer.getTree().setHeaderVisible(true);
         treeViewer.getTree().setLinesVisible(true);
@@ -470,29 +505,6 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
         initTableColumns(keepColumnStatus);
     }
     
-    /// ---------------------------------------------
-    /// filter feature
-    /// ---------------------------------------------
-    
-    /****
-     * enable/disable filter
-     * 
-     * @param isEnabled
-     */
-    public void enableFilter(boolean isEnabled)
-    {
-    	// save the context of the first row (they are not part of input data)
-    	TreeItemManager manager = new TreeItemManager();
-    	manager.saveContext(treeViewer);
-    	
-		ScopeTreeContentProvider provider = (ScopeTreeContentProvider) treeViewer.getContentProvider();
-		provider.setEnableFilter(isEnabled);
-		treeViewer.refresh();
-    	
-    	// restore the context
-    	manager.restoreContext(treeViewer);
-    }
-    
     
     //======================================================
     // ................ MISC ............................
@@ -570,7 +582,10 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 
     abstract protected void createAdditionalContextMenu(IMenuManager mgr, Scope scope);
     
-    abstract protected ScopeTreeContentProvider getScopeContentProvider();
+    abstract protected AbstractContentProvider getScopeContentProvider();
+
+    abstract protected void enableFilter(boolean isEnabled);
+	abstract protected CellLabelProvider getLabelProvider(); 
 
     //======================================================
     // ................ CLASSES...........................

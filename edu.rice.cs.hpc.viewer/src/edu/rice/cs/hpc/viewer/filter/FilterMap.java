@@ -4,13 +4,22 @@ import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.common.util.AliasMap;
+import edu.rice.cs.hpc.data.experiment.scope.filters.IFilterData;
 
-public class FilterMap extends AliasMap<String, Boolean> {
+public class FilterMap extends AliasMap<String, Boolean> 
+implements IFilterData
+{
 
 	static private final String FILE_NAME = "filter.map";
 	static private final FilterMap filterMap = new FilterMap();
+	
+	private FilterStateProvider filterStateProvider = null;
 	
 	public static FilterMap getInstance()
 	{
@@ -49,8 +58,17 @@ public class FilterMap extends AliasMap<String, Boolean> {
 		save();
 	}
 
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.filter.IFilterData#select(java.lang.String)
+	 */
 	public boolean select(String element)
 	{
+		if (!isFilterEnabled())
+		{
+			return true;
+		}
 		Object []entries = getEntrySet();
 		
 		// --------------------------------------------------------------------------------
@@ -92,5 +110,23 @@ public class FilterMap extends AliasMap<String, Boolean> {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.filter.IFilterData#isFilterEnabled()
+	 */
+	public boolean isFilterEnabled() 
+	{
+		if (filterStateProvider == null)
+		{
+			IWorkbenchWindow window = Util.getActiveWindow();
+			Assert.isNotNull(window);
+			ISourceProviderService service = (ISourceProviderService) window.getService(ISourceProviderService.class);
+			filterStateProvider   = (FilterStateProvider) service.getSourceProvider(FilterStateProvider.FILTER_REFRESH_PROVIDER);
+		}
+		
+		return filterStateProvider.isEnabled();
 	}
 }

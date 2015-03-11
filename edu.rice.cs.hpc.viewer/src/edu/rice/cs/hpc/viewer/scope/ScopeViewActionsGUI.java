@@ -243,7 +243,7 @@ public class ScopeViewActionsGUI implements IScopeActionsGUI {
 	 * Restore the message bar into the original state
 	 */
 	public void restoreMessage() {
-		if(this.lblMessage != null) {
+		if(this.lblMessage != null && !lblMessage.isDisposed()) {
 			this.lblMessage.setBackground(this.clrNORMAL);
 			this.lblMessage.setText("");
 		}

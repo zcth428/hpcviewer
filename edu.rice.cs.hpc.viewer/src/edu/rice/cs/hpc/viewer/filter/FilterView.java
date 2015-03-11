@@ -64,6 +64,10 @@ public class FilterView extends ViewPart implements IFilterView
 					{
 						FilterMap map = (FilterMap) sourceValue;
 						tableViewer.setInput(map.getEntrySet());
+					} else {
+						// enable of disable filter
+						FilterMap map = FilterMap.getInstance();
+						tableViewer.setInput(map.getEntrySet());
 					}
 					tableViewer.refresh();
 				}

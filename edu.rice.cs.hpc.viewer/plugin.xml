@@ -547,7 +547,11 @@
                priorityLevel="workbench">
          </variable>
          <variable
-               name="edu.rice.cs.hpc.viewer.filter.refresh"
+               name="edu.rice.cs.hpc.viewer.filter.update"
+               priorityLevel="workbench">
+         </variable>
+         <variable
+               name="edu.rice.cs.hpc.viewer.filter.enable"
                priorityLevel="workbench">
          </variable>
       </sourceProvider>

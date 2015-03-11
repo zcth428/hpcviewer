@@ -10,17 +10,32 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagat
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitorWithBackup;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
+import edu.rice.cs.hpc.viewer.filter.AbstractFilterScope;
 
-public class CallerViewContentProvider extends ScopeTreeContentProvider {
-
+/************************************************************************
+ * 
+ * Content provider class specifically for caller view
+ * This class will update the children of a scope dynamically, unlike
+ * other views
+ *
+ ************************************************************************/
+public class CallerViewContentProvider extends AbstractContentProvider 
+{
 	private ExclusiveOnlyMetricPropagationFilter exclusiveOnly;
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	private PercentScopeVisitor percentVisitor;
 	private FinalizeMetricVisitorWithBackup finalizeVisitor;
+    final private AbstractFilterScope filter;
+	
+	public CallerViewContentProvider()
+	{
+		filter = new FilterScope();
+	}
 	
     /**
      * get the number of elements (called by jface)
      */
+	@Override
     public Object[] getElements(Object inputElement) {
             return getChildren(inputElement);
     }
@@ -29,15 +44,26 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
      * find the list of children
      */
     public Object[] getChildren(Object parentElement) {
+    	Object []results = null;
+    	
     	if(parentElement instanceof IMergedScope) {
     		// normal mode
     		IMergedScope parent = ((IMergedScope) parentElement);
-        	Object arrChildren[] = parent.getAllChildren(finalizeVisitor, percentVisitor, inclusiveOnly, exclusiveOnly);
-        	return arrChildren;
+    		results = parent.getAllChildren(finalizeVisitor, percentVisitor, inclusiveOnly, exclusiveOnly);
+        	if (enableFilter) {
+            	return filter.filter(results);
+        	}
+        	
     	} else if (parentElement instanceof Scope) {
-    		return ((Scope)parentElement).getChildren();
+    		Scope scope = (Scope) parentElement;
+			if (enableFilter) {
+				Object []children = scope.getChildren();
+				results = filter.filter(children);
+			} else {
+	    		results = ((Scope)parentElement).getChildren();
+			}
     	}
-    	return null;
+    	return results;
     }
 
     /*
@@ -75,4 +101,26 @@ public class CallerViewContentProvider extends ScopeTreeContentProvider {
     	percentVisitor = new PercentScopeVisitor(experiment.getMetricCount(), root);
     	finalizeVisitor = new FinalizeMetricVisitorWithBackup(experiment.getMetrics());
     }
+    
+    private class FilterScope extends AbstractFilterScope
+    {
+
+		@Override
+		protected Object[] getChildren(Scope scope) {
+			return CallerViewContentProvider.this.getChildren(scope);
+		}
+
+		@Override
+		protected boolean hasToSkip(Scope scope) {
+			if (scope instanceof ProcedureScope) {
+				return true;
+			}
+			return false;
+		}
+    }
+
+	@Override
+	protected AbstractFilterScope getFilter() {
+		return filter;
+	}    
 }

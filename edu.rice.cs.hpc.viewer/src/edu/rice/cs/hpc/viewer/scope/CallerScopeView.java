@@ -41,8 +41,8 @@ public class CallerScopeView extends BaseScopeView {
 	//@Override
 	protected void mouseDownEvent(Event event) {}
 
-	//@Override
-	protected ScopeTreeContentProvider getScopeContentProvider() {
+	@Override
+	protected AbstractContentProvider getScopeContentProvider() {
 		return new CallerViewContentProvider();
 	}
 
@@ -55,5 +55,4 @@ public class CallerScopeView extends BaseScopeView {
 		CallerViewContentProvider objContent = (CallerViewContentProvider) this.treeViewer.getContentProvider();
 		objContent.setDatabase(newDatabase);
 	}
-
 }

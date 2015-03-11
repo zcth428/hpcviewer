@@ -6,10 +6,10 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.viewer.filter.FilterMap;
 
 /**
  * 
- * @author laksonoadhianto
  *
  */
 abstract public class BaseScopeView  extends AbstractBaseScopeView {
@@ -17,13 +17,43 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     //======================================================
     // ................ ATTRIBUTES..........................
     //======================================================
-	
 
     //======================================================
     // ................ METHODS  ..........................
     //======================================================
+	public BaseScopeView()
+	{
+		super();
+	}
 	
-	
+	@Override
+    public void dispose() 
+    {
+    	//serviceProvider.removeSourceProviderListener(listener);
+    	super.dispose();
+    }
+    /// ---------------------------------------------
+    /// filter feature
+    /// ---------------------------------------------
+    
+    /****
+     * enable/disable filter
+     * 
+     * @param isEnabled
+     */
+	protected void enableFilter(boolean isEnabled)
+    {
+    	if (treeViewer.getTree().isDisposed())
+    		return;
+    	
+    	AbstractContentProvider provider = (AbstractContentProvider) treeViewer.getContentProvider();
+		provider.setEnableFilter(isEnabled);
+		
+		// update the content of the view
+		updateDisplay();
+    }
+    
+
 	
     //======================================================
     // ................ UPDATE ............................
@@ -36,7 +66,13 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	public void updateDisplay() {
         if (database == null)
         	return;
-                
+        
+        // ------------------------------------------------------------
+        // Tell children to update the content with the new database
+        // ------------------------------------------------------------
+        final Experiment myExperiment = database.getExperiment();        
+        this.updateDatabase(myExperiment);
+
         // Update root scope
         if (myRootScope.getChildCount() > 0) {
             treeViewer.setInput(myRootScope);
@@ -56,12 +92,6 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         	// empty experiment data (it should be a warning instead of an error. The error should be on the profile side).
         	this.objViewActions.showErrorMessage("Warning: empty database.");
         }
-        
-        // ------------------------------------------------------------
-        // Tell children to update the content with the new database
-        // ------------------------------------------------------------
-        final Experiment myExperiment = database.getExperiment();        
-        this.updateDatabase(myExperiment);
    	}
 
 	/*
@@ -74,6 +104,10 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
         	Tree tree = treeViewer.getTree();
         	if (tree != null && !tree.isDisposed())
         	{
+        		AbstractContentProvider provider = (AbstractContentProvider) treeViewer.getContentProvider();
+        		FilterMap filter = FilterMap.getInstance();
+        		provider.setEnableFilter(filter.isFilterEnabled());
+        		
         		initTableColumns(tree, keepColumnStatus);
         	}
         }

@@ -2,12 +2,16 @@ package edu.rice.cs.hpc.viewer.filter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.State;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.ISources;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 
 /**************************************************************
  * 
@@ -18,11 +22,15 @@ import org.eclipse.ui.ISources;
 public class FilterStateProvider extends AbstractSourceProvider 
 {
 	final static public String FILTER_STATE_PROVIDER = "edu.rice.cs.hpc.viewer.filter.selection";
-	final static public String FILTER_REFRESH_PROVIDER = "edu.rice.cs.hpc.viewer.filter.refresh";
+	final static public String FILTER_REFRESH_PROVIDER = "edu.rice.cs.hpc.viewer.filter.update";
+	final static public String FILTER_ENABLE_PROVIDER = "edu.rice.cs.hpc.viewer.filter.enable";
+	
+	final static public String TOGGLE_COMMAND = "org.eclipse.ui.commands.toggleState";
 	final static public String SELECTED_STATE = "SELECTED";
 	
 	private boolean isSelected = false;
 	private Object []elements;
+	private Boolean enable = null;
 	
 	public FilterStateProvider() {
 		// TODO Auto-generated constructor stub
@@ -66,9 +74,40 @@ public class FilterStateProvider extends AbstractSourceProvider
 		return elements;
 	}
 	
+	public boolean isEnabled()
+	{
+		if (enable == null) 
+		{
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			Assert.isNotNull(window);
+			
+			ICommandService service = (ICommandService) window.getService(ICommandService.class);
+			Command command = service.getCommand(FilterApply.ID);
+			State   state   = command.getState(TOGGLE_COMMAND);
+			enable = (Boolean) state.getValue();
+
+		}
+		return enable.booleanValue();
+	}
+	/*****
+	 * Notify the views that we may turn on/off the filter
+	 * 
+	 * @param enableFilter
+	 */
+	public void refresh(Boolean enableFilter)
+	{
+		this.enable = enableFilter;
+		fireSourceChanged(ISources.WORKBENCH, FILTER_REFRESH_PROVIDER, enableFilter);
+	}
+	
+	/*****
+	 * refresh the table as the filter pattern may change
+	 * Usually called by FilterAdd and FilterDelete 
+	 */
 	public void refresh()
 	{
-		fireSourceChanged(ISources.WORKBENCH, FILTER_REFRESH_PROVIDER, FilterMap.getInstance());
+		FilterMap filter = FilterMap.getInstance();
+		refresh(filter.isFilterEnabled());
 	}
 	
 	private String getSelectedValue()

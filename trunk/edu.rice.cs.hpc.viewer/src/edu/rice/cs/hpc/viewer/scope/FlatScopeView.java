@@ -44,13 +44,12 @@ public class FlatScopeView extends BaseScopeView {
 		
 	}
 
-	//@Override
-	protected ScopeTreeContentProvider getScopeContentProvider() {
-		return new ScopeTreeContentProvider();
+	@Override
+	protected AbstractContentProvider getScopeContentProvider() {
+		return new FlatViewContentProvider();
 	}
 
 	//@Override
 	protected void updateDatabase(Experiment newDatabase) {}
-
 
 }

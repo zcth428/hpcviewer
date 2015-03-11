@@ -32,7 +32,7 @@ public class FilterAdd extends AbstractHandler
 			
 			// notify changes
 			final FilterStateProvider provider = (FilterStateProvider) sourceProviderService.getSourceProvider(
-					FilterStateProvider.FILTER_STATE_PROVIDER);
+					FilterStateProvider.FILTER_REFRESH_PROVIDER);
 
 			provider.refresh();
 		}

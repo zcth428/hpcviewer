@@ -53,6 +53,7 @@ public class CallerScopeView extends BaseScopeView {
 		// it is important to notify the content provider that we have new database
 		// ---------------------------------------------------------------------------
 		CallerViewContentProvider objContent = (CallerViewContentProvider) this.treeViewer.getContentProvider();
-		objContent.setDatabase(newDatabase);
+		if (objContent != null)
+			objContent.setDatabase(newDatabase);
 	}
 }

@@ -63,8 +63,10 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.viewer.scope.AbstractBaseScopeView#updateDisplay()
 	 */
-	public void updateDisplay() {
-        if (database == null)
+	public void updateDisplay() 
+	{
+		// return immediately when there's no database or the view is closed (disposed)
+        if (database == null || treeViewer == null || treeViewer.getTree().isDisposed())
         	return;
         
         // ------------------------------------------------------------

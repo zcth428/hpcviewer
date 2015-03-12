@@ -35,7 +35,7 @@ public abstract class AbstractFilterScope
 		
 		// check the element if it has to be excluded, we need to skip the element
 		// and return its descendants 
-		final ArrayList<Object> list = new ArrayList<>();
+		final ArrayList<Object> list = new ArrayList<Object>();
 		for (Object child : scopes)
 		{
 			Scope node = (Scope) child;

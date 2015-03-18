@@ -11,6 +11,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.filter.FilterMap;
+import edu.rice.cs.hpc.common.filter.FilterStateProvider;
+
 /************************************************************************
  * 
  * Action to deleted selected elements

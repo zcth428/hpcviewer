@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.filter;
+package edu.rice.cs.hpc.common.filter;
 
 import java.util.HashMap;
 import java.util.Map;

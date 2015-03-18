@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.filter;
+package edu.rice.cs.hpc.common.filter;
 
 import java.util.Map.Entry;
 
@@ -12,7 +12,13 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.common.util.AliasMap;
 import edu.rice.cs.hpc.data.experiment.scope.filters.IFilterData;
 
-public class FilterMap extends AliasMap<String, Boolean> 
+/******************************************************************
+ * 
+ * Map to filter a scope either exclusively on inclusively
+ * @see FilterAttribute
+ *
+ ******************************************************************/
+public class FilterMap extends AliasMap<String, FilterAttribute> 
 implements IFilterData
 {
 
@@ -52,7 +58,7 @@ implements IFilterData
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.common.util.AliasMap#put(java.lang.Object, java.lang.Object)
 	 */
-	public void put(String filter, Boolean state)
+	public void put(String filter, FilterAttribute state)
 	{
 		super.put(filter, state);
 		save();
@@ -78,9 +84,9 @@ implements IFilterData
 		// --------------------------------------------------------------------------------
 		for (Object entry : entries)
 		{
-			Entry<String, Boolean> pattern = (Entry<String, Boolean>) entry;
-			Boolean toFilter = pattern.getValue();
-			if (toFilter)
+			Entry<String, FilterAttribute> pattern = (Entry<String, FilterAttribute>) entry;
+			FilterAttribute toFilter = pattern.getValue();
+			if (toFilter.enable)
 			{
 				final String key = pattern.getKey().replace("*", ".*").replace("?", ".?");
 				if (element.matches(key)) {
@@ -101,7 +107,7 @@ implements IFilterData
 	 */
 	public boolean update(String oldKey, String newKey)
 	{
-		Boolean val = get(oldKey);
+		FilterAttribute val = get(oldKey);
 		if (val != null)
 		{
 			remove(oldKey);

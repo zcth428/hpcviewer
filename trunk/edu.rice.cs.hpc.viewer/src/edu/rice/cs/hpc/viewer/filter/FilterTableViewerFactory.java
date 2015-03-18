@@ -4,33 +4,41 @@ import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TableViewerEditor;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.filter.FilterAttribute;
+import edu.rice.cs.hpc.common.filter.FilterMap;
+import edu.rice.cs.hpc.common.filter.FilterStateProvider;
 import edu.rice.cs.hpc.common.ui.Util;
 
 /***************************************************
@@ -49,14 +57,45 @@ public class FilterTableViewerFactory
 		
 		final Table table = ctv.getTable();
 		table.setLayoutData(new GridData(GridData.FILL_BOTH));
-		table.setToolTipText("Select a filter to delete or check/uncheck a filter to be applied to the views");
 
+		// ----------------------------------------------------------------------------
+		// pattern column
+		// ----------------------------------------------------------------------------
+		final TableViewerColumn columnPattern = new TableViewerColumn(ctv, SWT.LEFT);
+		TableColumn col = columnPattern.getColumn();
+		col.setText("Pattern");
+		col.setWidth(100);
+		col.setToolTipText("Select a filter to delete or check/uncheck a filter pattern to enable/disable");
+		columnPattern.setLabelProvider(new CellLabelProvider() {
+			
+			@Override
+			public void update(ViewerCell cell) {
+				Entry<String, FilterAttribute> item = (Entry<String, FilterAttribute>) cell.getElement();
+				cell.setText(item.getKey());
+			}
+		});
+		
+		// ----------------------------------------------------------------------------
+		// type column
+		// ----------------------------------------------------------------------------
+		final TableViewerColumn columnType = new TableViewerColumn(ctv, SWT.LEFT);
+		col = columnType.getColumn();
+		col.setText("Type");
+		col.setWidth(100);
+		col.setToolTipText("Select a type of filtering: exclusive means only the filtered scope is elided while inclusive means the filtered scope and its descendants are elided.");
+		columnType.setLabelProvider(new CellLabelProvider() {
+			
+			@Override
+			public void update(ViewerCell cell) {
+				Entry<String, FilterAttribute> item = (Entry<String, FilterAttribute>) cell.getElement();
+				cell.setText(item.getValue().getFilterType());
+			}
+		});
+		columnType.setEditingSupport(new ComboEditingSupport(ctv));
+		
 		// the content of the table is an array of a map between a string and a boolean
 		ctv.setContentProvider( new ArrayContentProvider() );
 		
-		// customize the text of the items in the table
-	    ctv.setLabelProvider(new FilterLabelProvider());
-	    
 	    // customize the check value
 	    ctv.setCheckStateProvider( new ICheckStateProvider() {
 			
@@ -69,8 +108,8 @@ public class FilterTableViewerFactory
 			public boolean isChecked(Object element) {
 				if (element instanceof Entry<?,?>) 
 				{
-					Boolean value = (Boolean) ((Entry<String, Boolean>)element).getValue();
-					return value.booleanValue();
+					FilterAttribute value = (FilterAttribute) ((Entry<String, FilterAttribute>)element).getValue();
+					return value.enable.booleanValue();
 				}
 				return false;
 			}
@@ -84,10 +123,12 @@ public class FilterTableViewerFactory
 
 			@Override
 			public void checkStateChanged(CheckStateChangedEvent event) {
-				final Entry<String, Boolean> element = (Entry<String, Boolean>) event.getElement();
+				final Entry<String, FilterAttribute> element = (Entry<String, FilterAttribute>) event.getElement();
 				final String key = element.getKey();
 				FilterMap map    = FilterMap.getInstance();
-				map.put(key, event.getChecked());
+				FilterAttribute attribute = new FilterAttribute();
+				attribute.enable = event.getChecked();
+				map.put(key, attribute);
 				map.save();
 			}	    	
 	    });
@@ -102,9 +143,10 @@ public class FilterTableViewerFactory
 				{
 					final Shell shell 				 = Util.getActiveShell();
 					final StructuredSelection select = (StructuredSelection) selection;
-					final Entry<String, Boolean> item= (Entry<String, Boolean>) select.getFirstElement();
+					final Entry<String, FilterAttribute> item= (Entry<String, FilterAttribute>) select.getFirstElement();
 					
-					InputDialog dialog = new InputDialog(shell, "Rename filtner", "Enter new filter", 
+					InputDialog dialog = new InputDialog(shell, "Rename a filter", 
+							"Use a glob pattern to define a filter. For instance, a MPI* will filter all MPI routines", 
 							item.getKey(), new PatternValidator());
 					if (dialog.open() == Window.OK)
 					{
@@ -124,8 +166,8 @@ public class FilterTableViewerFactory
 	    	@Override
 	    	public int compare(Viewer viewer, Object e1, Object e2) 
 	    	{
-	    		Entry<String, Boolean> item1 = (Entry<String, Boolean>) e1;
-	    		Entry<String, Boolean> item2 = (Entry<String, Boolean>) e2;
+	    		Entry<String, FilterAttribute> item1 = (Entry<String, FilterAttribute>) e1;
+	    		Entry<String, FilterAttribute> item2 = (Entry<String, FilterAttribute>) e2;
 	    		return (item1.getKey().compareTo(item2.getKey()));
 	    	}
 	    });
@@ -147,8 +189,11 @@ public class FilterTableViewerFactory
 	    // -------------------------------------------------------------------------------------------------
 
 		// set the input of the table
-	    FilterMap filterMap = new FilterMap();
+	    FilterMap filterMap = FilterMap.getInstance();
 	    ctv.setInput(filterMap.getEntrySet());
+	    
+	    table.setHeaderVisible(true);
+	    table.pack();
 
 		return ctv;
 	}
@@ -169,46 +214,73 @@ public class FilterTableViewerFactory
 		public void selectionChanged(SelectionChangedEvent event) {
 			ISelection selection = event.getSelection();
 			provider.setSelection(selection);
-		}
-		
+		}	
 	}
 	
-	/*********
+	/**********************************************************
 	 * 
-	 * Label provider for the table filter
+	 * Class to show a combo box inside a table cell 
+	 * The combo contains any enumerations in {@link edu.rice.cs.hpc.common.filter.FilterAttribute.Type }
 	 *
-	 *********/
-	private static class FilterLabelProvider implements ILabelProvider
+	 **********************************************************/
+	private static class ComboEditingSupport extends EditingSupport
 	{
-
-		@Override
-		public void addListener(ILabelProviderListener listener) {}
-
-		@Override
-		public void dispose() {}
-
-		@Override
-		public boolean isLabelProperty(Object element, String property) {
-			return false;
+		final private ComboBoxCellEditor editor;
+		
+		public ComboEditingSupport(TableViewer viewer) {
+			super(viewer);
+			
+			// fill the content of the combo box
+			FilterAttribute.Type []types = FilterAttribute.Type.values();
+			String []items = new String[types.length];
+			for(int i=0; i<types.length; i++)
+			{
+				items[i] = types[i].name();
+			}
+			editor = new ComboBoxCellEditor(viewer.getTable(), items);
 		}
 
 		@Override
-		public void removeListener(ILabelProviderListener listener) {}
-
-		@Override
-		public Image getImage(Object element) {
-			return null;
+		protected CellEditor getCellEditor(Object element) {
+			return editor;
 		}
 
 		@Override
-		public String getText(Object element) {
+		protected boolean canEdit(Object element) {
+			return true;
+		}
+
+		@Override
+		protected Object getValue(Object element) {
 			if (element instanceof Entry<?, ?>)
 			{
-				// we just show the filter name in the table
-				Entry<String, Boolean> entry = (Entry<String, Boolean>) element;
-				return entry.getKey();
+				Entry<String, FilterAttribute> item = (Entry<String, FilterAttribute>) element;
+				FilterAttribute att = item.getValue();
+				return att.filterType.ordinal();
 			}
-			return (String) element; // should be an exception ?
+			return 0;
 		}
+
+		@Override
+		protected void setValue(Object element, Object value) {
+			if (element instanceof Entry<?, ?>)
+			{
+				Entry<String, FilterAttribute> item = (Entry<String, FilterAttribute>) element;
+				if (value instanceof Integer)
+				{
+					FilterAttribute att = item.getValue();
+					Integer ordinal     = (Integer) value;
+					FilterAttribute.Type typeNew  = FilterAttribute.Type.values()[ordinal];
+					att.filterType 				  = typeNew;
+					
+					String key = item.getKey();
+					
+					// save it to the global world
+					FilterMap map 		   = FilterMap.getInstance();
+					map.put(key, att);
+					getViewer().update(element, null);
+				}
+			}
+		}		
 	}
 }

@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.viewer.filter;
 
 import java.util.ArrayList;
 
+import edu.rice.cs.hpc.common.filter.FilterMap;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 /*********************************************************************************

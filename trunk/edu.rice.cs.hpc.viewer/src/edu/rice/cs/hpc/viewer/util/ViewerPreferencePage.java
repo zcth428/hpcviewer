@@ -9,8 +9,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+
+import edu.rice.cs.hpc.common.filter.FilterApply;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
-import edu.rice.cs.hpc.viewer.filter.FilterApply;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.graph.GraphEditor;
 import edu.rice.cs.hpc.viewer.scope.ScopeActions;

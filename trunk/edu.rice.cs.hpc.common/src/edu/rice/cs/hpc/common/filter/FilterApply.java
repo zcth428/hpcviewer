@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.filter;
+package edu.rice.cs.hpc.common.filter;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
@@ -8,9 +8,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.ISourceProviderService;
 
+
 public class FilterApply extends AbstractHandler 
 {
-	final static public String ID = "edu.rice.cs.hpc.viewer.filter.FilterApply";
+	final static public String ID = "edu.rice.cs.hpc.common.filter.FilterApply";
 	
 	@Override
 	/*

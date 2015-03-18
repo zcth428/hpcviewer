@@ -318,16 +318,16 @@
                   style="push"
                   tooltip="Show table of filters">
             </command>
-            <command
-                  commandId="edu.rice.cs.hpc.viewer.filter.FilterApply"
-                  label="Enable filter"
-                  mnemonic="e"
-                  style="toggle"
-                  tooltip="Enable/disable filter">
-            </command>
             <separator
                   name="edu.rice.cs.hpc.viewer.filter.separator">
             </separator>
+            <command
+                  commandId="edu.rice.cs.hpc.common.filter.FilterApply"
+                  label="Apply filter"
+                  mnemonic="A"
+                  style="push"
+                  tooltip="Enable/disable filter">
+            </command>
             <command
                   commandId="edu.rice.cs.hpc.viewer.filter.FilterAdd"
                   label="Add a filter"
@@ -399,7 +399,7 @@
             </visibleWhen>
          </command>
          <command
-               commandId="edu.rice.cs.hpc.viewer.filter.FilterApply"
+               commandId="edu.rice.cs.hpc.common.filter.FilterApply"
                icon="icons/filter_16x16.png"
                label="Apply filter"
                mnemonic="F"
@@ -516,16 +516,6 @@
             id="edu.rice.cs.hpc.viewer.filter.FilterDelete"
             name="Delete">
       </command>
-      <command
-            categoryId="edu.rice.cs.hpc.viewer.filter"
-            defaultHandler="edu.rice.cs.hpc.viewer.filter.FilterApply"
-            id="edu.rice.cs.hpc.viewer.filter.FilterApply"
-            name="Apply filter">
-         <state
-               class="org.eclipse.ui.handlers.RegistryToggleState"
-               id="org.eclipse.ui.commands.toggleState">
-         </state>
-      </command>
    </extension>
    <extension
          point="org.eclipse.ui.services">
@@ -538,21 +528,6 @@
          <variable
                name="edu.rice.cs.hpc.viewer.provider.data.merge"
                priorityLevel="activeWorkbenchWindow">
-         </variable>
-      </sourceProvider>
-      <sourceProvider
-            provider="edu.rice.cs.hpc.viewer.filter.FilterStateProvider">
-         <variable
-               name="edu.rice.cs.hpc.viewer.filter.selection"
-               priorityLevel="workbench">
-         </variable>
-         <variable
-               name="edu.rice.cs.hpc.viewer.filter.update"
-               priorityLevel="workbench">
-         </variable>
-         <variable
-               name="edu.rice.cs.hpc.viewer.filter.enable"
-               priorityLevel="workbench">
          </variable>
       </sourceProvider>
    </extension>

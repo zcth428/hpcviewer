@@ -9,10 +9,12 @@ import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.ISourceProvider;
 import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
+
+import edu.rice.cs.hpc.common.filter.FilterMap;
+import edu.rice.cs.hpc.common.filter.FilterStateProvider;
 
 /************************************************************************
  * 
@@ -50,7 +52,8 @@ public class FilterView extends ViewPart implements IFilterView
 		// -----------------------------------------------------------------
 		// set the additional listener for this view
 		// -----------------------------------------------------------------
-		final ISourceProviderService service   = (ISourceProviderService)getSite().getWorkbenchWindow().getService(ISourceProviderService.class);
+		final ISourceProviderService service   = (ISourceProviderService)getSite().getWorkbenchWindow().
+				getService(ISourceProviderService.class);
 		serviceProvider  = (FilterStateProvider) service.getSourceProvider(FilterStateProvider.FILTER_REFRESH_PROVIDER);
 		listener = new ISourceProviderListener() {
 			

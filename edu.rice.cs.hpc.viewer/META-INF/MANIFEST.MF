@@ -9,7 +9,8 @@ Require-Bundle: edu.rice.cs.hpc.data,
  org.eclipse.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
-Import-Package: edu.rice.cs.hpc.common.ui,
+Import-Package: edu.rice.cs.hpc.common.filter,
+ edu.rice.cs.hpc.common.ui,
  edu.rice.cs.hpc.common.util,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,

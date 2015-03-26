@@ -108,7 +108,7 @@ public Scope duplicate() {
 				this.sourceFile, 
 				this.firstLineNumber,
 				this.lastLineNumber,
-				this.cct_node_index, this.flat_node_index);
+				getCCTIndex(), this.flat_node_index);
     return duplicatedScope;
 }
 

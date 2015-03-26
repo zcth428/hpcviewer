@@ -142,7 +142,7 @@ public Scope duplicate() {
 			this.lastLineNumber,
 			this.procedureName,
 			this.isalien,
-			this.cct_node_index, // Laks 2008.08.26: add the sequence ID
+			getCCTIndex(), // Laks 2008.08.26: add the sequence ID
 			this.flat_node_index,
 			null);
 

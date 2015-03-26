@@ -139,7 +139,7 @@ public Scope duplicate() {
 		new LineScope(this.experiment, 
 				this.sourceFile, 
 				this.firstLineNumber,
-				this.cct_node_index, this.flat_node_index);
+				getCCTIndex(), this.flat_node_index);
 
 	return duplicatedScope;
 }

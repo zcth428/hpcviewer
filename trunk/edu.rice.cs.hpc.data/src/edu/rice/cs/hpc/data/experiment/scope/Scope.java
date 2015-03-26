@@ -3,9 +3,10 @@
 //	Scope.java													//
 //																//
 //																//
-//	(c) Copyright 2011 Rice University. All rights reserved.	//
+//	(c) Copyright 2015 Rice University. All rights reserved.	//
 //																//
-//	$LastChangedDate$		$LastChangedBy$ 					//
+//	$LastChangedDate$		
+//  $LastChangedBy$ 					//
 //////////////////////////////////////////////////////////////////
 
 
@@ -55,7 +56,7 @@ protected SourceFile sourceFile;
 /** the scope identifier */
 protected int flat_node_index;
 
-protected int cct_node_index;
+//protected int cct_node_index; // we don't need this attribute since the parent class will store the cct as its value
 
 /** The first line number of this scope. */
 protected int firstLineNumber;
@@ -120,7 +121,7 @@ public Scope(BaseExperiment experiment, SourceFile file, int first, int last, in
 
 	this.srcCitation = null;
 	this.flat_node_index = flat_id;
-	this.cct_node_index = cct_id;
+//	this.cct_node_index = cct_id;
 	this.cpid = -1;
 	this.iCounter  = 0;
 }
@@ -149,7 +150,7 @@ public int getFlatIndex() {
 }
 
 public int getCCTIndex() {
-	return this.cct_node_index;
+	return (int) getValue(); //this.cct_node_index;
 }
 
 //////////////////////////////////////////////////////////////////////////

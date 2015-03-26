@@ -99,7 +99,7 @@ public Scope duplicate() {
 			      this.procedureName,
 			      this.firstLineNumber, 
 			      this.lastLineNumber, 
-			      this.cct_node_index);
+			      getCCTIndex());
 
 }
 

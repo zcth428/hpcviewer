@@ -65,7 +65,7 @@ public LoopScope(BaseExperiment experiment, SourceFile file, int first, int last
 
 public Scope duplicate() {
     return new LoopScope(this.experiment,  this.sourceFile,  
-    		this.firstLineNumber,  this.lastLineNumber, this.cct_node_index, this.flat_node_index);
+    		this.firstLineNumber,  this.lastLineNumber, getCCTIndex(), this.flat_node_index);
 }
 
 

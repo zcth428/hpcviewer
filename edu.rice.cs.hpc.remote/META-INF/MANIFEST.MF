@@ -11,6 +11,7 @@ Export-Package: com.jcraft.jsch,
 Import-Package: com.jcraft.jsch,
  org.eclipse.jface,
  org.eclipse.jface.dialogs,
+ org.eclipse.jface.layout,
  org.eclipse.jface.window,
  org.eclipse.swt,
  org.eclipse.swt.widgets

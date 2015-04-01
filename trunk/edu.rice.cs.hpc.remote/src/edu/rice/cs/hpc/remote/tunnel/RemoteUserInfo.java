@@ -79,7 +79,6 @@ implements UserInfo, UIKeyboardInteractive
 
 	@Override
 	public boolean promptYesNo(String message) {
-		//boolean ret = MessageDialog.openQuestion(shell, "Connection", message);
 		return true;
 	}
 
@@ -162,11 +161,16 @@ implements UserInfo, UIKeyboardInteractive
 				
 				answers[i] = new Text(container, SWT.PASSWORD);
 				answers[i].setText("");
+				GridDataFactory.fillDefaults().grab(true, false).applyTo(answers[i]);
 			}
 			return area;
 		}
 		
 		@Override
+		/*
+		 * (non-Javadoc)
+		 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+		 */
 		protected void okPressed()
 		{
 			inputs = new String[answers.length];

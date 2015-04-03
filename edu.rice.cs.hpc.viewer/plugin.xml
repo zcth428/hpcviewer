@@ -33,21 +33,21 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="true"
-            class="edu.rice.cs.hpc.viewer.scope.ScopeView"
+            class="edu.rice.cs.hpc.viewer.scope.topdown.ScopeView"
             icon="icons/cct.png"
             id="edu.rice.cs.hpc.viewer.scope.ScopeView"
             name="ScopeView">
       </view>
       <view
             allowMultiple="true"
-            class="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
+            class="edu.rice.cs.hpc.viewer.scope.flat.FlatScopeView"
             icon="icons/flat.png"
             id="edu.rice.cs.hpc.viewer.scope.FlatScopeView"
             name="FlatScopeView">
       </view>
       <view
             allowMultiple="true"
-            class="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
+            class="edu.rice.cs.hpc.viewer.scope.bottomup.CallerScopeView"
             icon="icons/caller.png"
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">

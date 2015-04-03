@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.scope.flat;
 
 import java.util.Stack;
 
@@ -12,6 +12,9 @@ import org.eclipse.swt.widgets.CoolBar;
 
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.scope.ScopeViewActions;
+import edu.rice.cs.hpc.viewer.scope.ScopeViewActions.ActionType;
+import edu.rice.cs.hpc.viewer.scope.ScopeViewActions.IActionType;
 
 /**
  * @author laksonoadhianto

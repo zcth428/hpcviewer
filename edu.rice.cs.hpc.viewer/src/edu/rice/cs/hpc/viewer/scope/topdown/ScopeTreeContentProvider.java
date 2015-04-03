@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.scope.topdown;
 
 import edu.rice.cs.hpc.common.filter.FilterAttribute;
 import edu.rice.cs.hpc.common.filter.FilterAttribute.Type;
@@ -10,6 +10,7 @@ import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.filter.AbstractFilterScope;
+import edu.rice.cs.hpc.viewer.scope.AbstractContentProvider;
 
 /************************************************************************
  * 

@@ -1,10 +1,11 @@
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.scope.flat;
 
 import edu.rice.cs.hpc.common.filter.FilterAttribute.Type;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.filter.AbstractFilterScope;
+import edu.rice.cs.hpc.viewer.scope.AbstractContentProvider;
 
 public class FlatViewContentProvider extends AbstractContentProvider {
 

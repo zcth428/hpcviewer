@@ -6,9 +6,9 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
 import edu.rice.cs.hpc.filter.view.FilterView;
-import edu.rice.cs.hpc.viewer.scope.ScopeView;
-import edu.rice.cs.hpc.viewer.scope.CallerScopeView;
-import edu.rice.cs.hpc.viewer.scope.FlatScopeView;
+import edu.rice.cs.hpc.viewer.scope.bottomup.CallerScopeView;
+import edu.rice.cs.hpc.viewer.scope.flat.FlatScopeView;
+import edu.rice.cs.hpc.viewer.scope.topdown.ScopeView;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 
 

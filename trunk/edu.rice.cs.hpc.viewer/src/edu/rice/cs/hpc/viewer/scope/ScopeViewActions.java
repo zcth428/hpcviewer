@@ -42,8 +42,8 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
     // laksono 2009.04.07
     protected ScopeZoom objZoom = null;
     
-    protected interface IActionType {};
-    protected enum ActionType implements IActionType {ZoomIn, ZoomOut} ;
+    public interface IActionType {};
+    public enum ActionType implements IActionType {ZoomIn, ZoomOut} ;
 	
 	protected IWorkbenchWindow objWindow;
 	
@@ -282,7 +282,7 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 	 * Retrieve the selected node
 	 * @return null if there is no selected node
 	 */
-	protected Scope getSelectedNode() {
+	public Scope getSelectedNode() {
 		ISelection sel = treeViewer.getSelection();
 		if (!(sel instanceof TreeSelection))
 			return null;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.rice.cs.hpc.viewer.scope;
+package edu.rice.cs.hpc.viewer.scope.bottomup;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.CellLabelProvider;
@@ -12,6 +12,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.viewer.scope.AbstractContentProvider;
+import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
+import edu.rice.cs.hpc.viewer.scope.BaseScopeViewActions;
+import edu.rice.cs.hpc.viewer.scope.ScopeViewActions;
+import edu.rice.cs.hpc.viewer.scope.StyledScopeLabelProvider;
 
 /**
  * View class for caller view. At the moment, the caller view is the same as calling context view

@@ -1,6 +1,8 @@
 package edu.rice.cs.hpc.viewer.metric;
 
 import java.util.ArrayList;
+
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -153,12 +155,41 @@ public class MetricPropertyDialog extends TitleAreaDialog
 	 */
 	private void initTableViewer(Composite composite) {
 		
-		Composite metricArea = new Composite(composite, SWT.BORDER);
-
+		boolean singleExperiment = true;
+		
 		// -----------------
-		// table
+		// database table
 		// -----------------
 		
+		if (window != null) {
+			// variable window is null only when the class is in unit test mode
+			// in app mode, the value of window will never be null
+			
+			final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
+			Assert.isNotNull(vw, "Error: No window is detected !");
+			
+			final int numDB = vw.getOpenDatabases();
+			singleExperiment = (numDB == 1);
+			
+			if (singleExperiment)  {
+				// -------------------------------------
+				// case of having only 1 database
+				// -------------------------------------
+				experiment = vw.getExperiments()[0];
+				
+			} else {
+				// -------------------------------------
+				// case of having more than 1 databases, show the list of databases
+				// -------------------------------------
+				updateContent(composite, vw) ;
+			}
+		}
+		
+		// -----------------
+		// metrics table 
+		// -----------------
+		
+		Composite metricArea = new Composite(composite, SWT.BORDER);
 		Table table = new Table(metricArea, SWT.BORDER | SWT.V_SCROLL);
 
 		table.setHeaderVisible(true);
@@ -219,43 +250,19 @@ public class MetricPropertyDialog extends TitleAreaDialog
 			}
 		});
 		
-		if (window != null) {
-			// variable window is null only when the class is in unit test mode
-			// in app mode, the value of window will never be null
-			
-			final ViewerWindow vw = ViewerWindowManager.getViewerWindow(window);
-			
-			if (vw == null)
-				return;
-			
-			final int numDB = vw.getOpenDatabases();
-			boolean singleExperiment = (numDB == 1);
-			
-			if (singleExperiment)  {
-				// -------------------------------------
-				// case of having only 1 database
-				// -------------------------------------
-
-				setElements( vw.getExperiments()[0] );
-			} else {
-				// -------------------------------------
-				// case of having more than 1 databases
-				// -------------------------------------
-
-				updateContent(composite, vw) ;
-			}
-		} else {
-			// hack: need to refresh the table 
-			setElements(experiment);
-		}
-		
 		GridDataFactory.defaultsFor(table).hint(600, 300).grab(true, true).applyTo(table);
-
-		//table.pack();
 		
 		GridDataFactory.swtDefaults().align(SWT.CENTER, SWT.CENTER).
 			grab(true, true).applyTo(metricArea);
 		GridLayoutFactory.fillDefaults().numColumns(2).applyTo(metricArea);
+		
+		// -------------------------------------
+		// initialize metric table if necessary
+		// -------------------------------------
+		if (singleExperiment)
+		{
+			setElements(experiment);
+		}
 	}
 
 

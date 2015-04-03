@@ -5,6 +5,7 @@ import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
+
 public class CallingContextViewActions extends BaseScopeViewActions {
 
 	public CallingContextViewActions(Shell shell, IWorkbenchWindow window,

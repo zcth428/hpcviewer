@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Procedure name filtering"
+            id="edu.rice.cs.hpc.filter"
+            name="Filter">
+      </category>
+      <command
+            categoryId="edu.rice.cs.hpc.filter"
+            defaultHandler="edu.rice.cs.hpc.filter.action.FilterApply"
+            id="edu.rice.cs.hpc.filter.action.FilterApply"
+            name="Apply filter">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
+      </command>
+      <command
+            categoryId="edu.rice.cs.hpc.filter"
+            defaultHandler="edu.rice.cs.hpc.filter.action.FilterSave"
+            id="edu.rice.cs.hpc.filter.action.FilterSave"
+            name="Filter save">
+      </command>
+      <command
+            category="Filter"
+            categoryId="edu.rice.cs.hpc.filter"
+            defaultHandler="edu.rice.cs.hpc.filter.action.ShowFilterView"
+            id="edu.rice.cs.hpc.filter.action.ShowFilterView"
+            name="Show filter view">
+         <state
+               id="org.eclipse.ui.commands.toggleState">
+            <class
+                  class="org.eclipse.ui.handlers.RegistryToggleState">
+               <parameter
+                     name="persisted"
+                     value="false">
+               </parameter>
+            </class>
+         </state>
+      </command>
+      <command
+            category="Filter"
+            categoryId="edu.rice.cs.hpc.filter"
+            defaultHandler="edu.rice.cs.hpc.filter.action.FilterAdd"
+            id="edu.rice.cs.hpc.filter.action.FilterAdd"
+            name="Add">
+      </command>
+      <command
+            category="Filter"
+            categoryId="edu.rice.cs.hpc.filter"
+            defaultHandler="edu.rice.cs.hpc.filter.action.FilterDelete"
+            id="edu.rice.cs.hpc.filter.action.FilterDelete"
+            name="Delete">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.services">
+      <sourceProvider
+            provider="edu.rice.cs.hpc.filter.service.FilterStateProvider">
+         <variable
+               name="edu.rice.cs.hpc.filter.selection"
+               priorityLevel="workbench">
+         </variable>
+         <variable
+               name="edu.rice.cs.hpc.filter.update"
+               priorityLevel="workbench">
+         </variable>
+         <variable
+               name="edu.rice.cs.hpc.filter.enable"
+               priorityLevel="workbench">
+         </variable>
+      </sourceProvider>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+               <menuContribution
+            allPopups="false"
+            locationURI="toolbar:edu.rice.cs.hpc.filter.view.FilterView">
+         <command
+               commandId="edu.rice.cs.hpc.filter.action.FilterAdd"
+               icon="icons/add_att.gif"
+               label="Add"
+               mnemonic="A"
+               style="push"
+               tooltip="Add a new filter pattern">
+         </command>
+         <command
+               commandId="edu.rice.cs.hpc.filter.action.FilterDelete"
+               icon="icons/delete_edit.gif"
+               label="Delete"
+               mnemonic="D"
+               style="push"
+               tooltip="Delete the selected filter pattern">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="edu.rice.cs.hpc.filter.selection">
+                  <equals
+                        value="SELECTED">
+                  </equals>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="edu.rice.cs.hpc.filter.action.FilterApply"
+               icon="icons/filter_16x16.png"
+               label="Apply filter"
+               mnemonic="F"
+               style="toggle"
+               tooltip="Enable filter and apply it to the current opened database">
+         </command>
+      </menuContribution>
+         
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="false"
+            class="edu.rice.cs.hpc.filter.view.FilterView"
+            icon="icons/filter_24x24.png"
+            id="edu.rice.cs.hpc.filter.view.FilterView"
+            name="Filter view"
+            restorable="true">
+      </view>
+   </extension>
+
+</plugin>

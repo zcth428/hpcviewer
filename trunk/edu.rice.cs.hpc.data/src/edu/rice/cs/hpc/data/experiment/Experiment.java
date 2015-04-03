@@ -53,7 +53,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 *	This method is to be called only once, during initialization
 	 *
 	 ************************************************************************/
-
+/*
 	public void setMetrics(List<BaseMetric> metricList)
 	{
 		super.setMetrics(metricList);
@@ -68,7 +68,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 		}
 	}
 
-
+*/
 
 
 	public int getMajorVersion()

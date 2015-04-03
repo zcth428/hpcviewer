@@ -1,47 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
-         point="org.eclipse.ui.commands">
-      <category
-            description="Procedure name filtering"
-            id="edu.rice.cs.hpc.common.filter"
-            name="Filter">
-      </category>
-      <command
-            categoryId="edu.rice.cs.hpc.common.filter"
-            defaultHandler="edu.rice.cs.hpc.common.filter.FilterApply"
-            id="edu.rice.cs.hpc.common.filter.FilterApply"
-            name="Apply filter">
-         <state
-               class="org.eclipse.ui.handlers.RegistryToggleState"
-               id="org.eclipse.ui.commands.toggleState">
-         </state>
-      </command>
-      <command
-            categoryId="edu.rice.cs.hpc.common.filter"
-            defaultHandler="edu.rice.cs.hpc.common.filter.FilterSave"
-            id="edu.rice.cs.hpc.common.filter.FilterSave"
-            name="Filter save">
-      </command>
-   </extension>
-   <extension
-         point="org.eclipse.ui.services">
-      <sourceProvider
-            provider="edu.rice.cs.hpc.common.filter.FilterStateProvider">
-         <variable
-               name="edu.rice.cs.hpc.common.filter.selection"
-               priorityLevel="workbench">
-         </variable>
-         <variable
-               name="edu.rice.cs.hpc.common.filter.update"
-               priorityLevel="workbench">
-         </variable>
-         <variable
-               name="edu.rice.cs.hpc.common.filter.enable"
-               priorityLevel="workbench">
-         </variable>
-      </sourceProvider>
-   </extension>
 
 </plugin>

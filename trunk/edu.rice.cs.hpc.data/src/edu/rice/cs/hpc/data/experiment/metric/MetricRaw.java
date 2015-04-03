@@ -15,13 +15,14 @@ public class MetricRaw  extends BaseMetric {
 	private int num_metrics;
 	
 	public MetricRaw(String sID, String sDisplayName, boolean displayed, String format, AnnotationType annotationType, int index) {
-		super(sID, sDisplayName, displayed, format, annotationType, index, MetricType.EXCLUSIVE);
+		super(sID, sDisplayName, displayed, format, annotationType, index, index,  MetricType.EXCLUSIVE);
 	}
 	
 	
 	public MetricRaw(int id, String title, String db_pattern, 
 			int db_num, int metrics) {
-		super( String.valueOf(id), title, true, null, AnnotationType.NONE, db_num, MetricType.EXCLUSIVE);
+		// raw metric has no partner
+		super( String.valueOf(id), title, true, null, AnnotationType.NONE, db_num, db_num, MetricType.EXCLUSIVE);
 		this.ID = id;
 		this.db_glob = db_pattern;
 		this.db_id = db_num;

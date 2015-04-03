@@ -3,9 +3,13 @@ package edu.rice.cs.hpc.viewer.metric;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.ui.services.ISourceProviderService;
 
+import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
+import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.filter.service.FilterStateProvider;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 
 
@@ -17,12 +21,15 @@ import edu.rice.cs.hpc.viewer.util.Utilities;
 public class BaseMetricLabelProvider extends ColumnLabelProvider implements IMetricLabelProvider {
 	protected Scope scope = null;
 	protected BaseMetric metric = null;
+	private FilterStateProvider filterState;
 
-	public BaseMetricLabelProvider() {
-	}
 
 	public BaseMetricLabelProvider(BaseMetric metricNew) {
 		this.metric = metricNew;
+		
+		final ISourceProviderService service   = (ISourceProviderService)Util.getActiveWindow().
+				getService(ISourceProviderService.class);
+		filterState  = (FilterStateProvider) service.getSourceProvider(FilterStateProvider.FILTER_REFRESH_PROVIDER);
 	}
 
 	/*
@@ -72,6 +79,20 @@ public class BaseMetricLabelProvider extends ColumnLabelProvider implements IMet
 
 		if ((metric != null) && (element instanceof Scope)) {
 			Scope node = (Scope) element;
+			if (filterState.isEnabled())
+			{
+				// the filter is enabled. we need to ensure if this node has
+				// filtered children or not by checking if the filtered metrics
+				// are empty or not
+				if (node.getFilteredMetricsSize() > 0) 
+				{
+					// some (or all) of the children have been filtered. 
+					// we need to use filtered metric value to display the adjusted value
+					MetricValue mv = node.getFilteredMetric(metric.getIndex());
+					text = metric.getMetricTextValue(mv);
+					return text;
+				}
+			}
 			text = metric.getMetricTextValue(node);
 		}
 		return text;

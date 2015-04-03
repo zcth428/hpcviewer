@@ -34,6 +34,8 @@ public abstract class BaseMetric {
 
 	/** The index of this metric in its experiment's metric list. */
 	protected int index;
+	// partner of the metric. If the metric is exclusive, then its partner is the inclusive one
+	protected int partner_index;
 
 	/** The display format to be used for this metric. */
 	protected IMetricValueFormat displayFormat;
@@ -60,7 +62,7 @@ public abstract class BaseMetric {
 	 * @param index: index in the table
 	 *************************************************************************/
 	public BaseMetric(String sID, String sDisplayName, boolean displayed, String format, 
-			AnnotationType annotationType, int index, MetricType type) 
+			AnnotationType annotationType, int index, int partner_index, MetricType type) 
 	{
 		// in case of instantiation from duplicate() method, we need to make sure there is
 		//	no double empty suffix
@@ -72,7 +74,8 @@ public abstract class BaseMetric {
 		this.displayed = displayed;
 		this.annotationType = annotationType;
 		this.index = index;
-
+		this.partner_index = partner_index;
+		
 		// format
 		if (format == null) {
 			if (annotationType == AnnotationType.PERCENT) {
@@ -112,6 +115,22 @@ public abstract class BaseMetric {
 	{
 		return this.index;
 	}
+
+	
+	/*****
+	 * get the partner metric index
+	 * @return
+	 */
+	public int getPartner() {
+		return partner_index;
+	}
+	
+
+	public void setPartner(int ei)
+	{
+		this.partner_index = ei;
+	}
+
 
 	//=================================================================================
 	//		ACCESS TO METRIC

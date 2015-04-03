@@ -33,9 +33,6 @@ public class AggregateMetric extends BaseMetric {
 	// map variable 
 	private MetricVarMap finalizeVarMap;
 	private CombineAggregateMetricVarMap combineVarMap;
-	
-	// partner of the metric. If the metric is exclusive, then its partner is the inclusive one
-	private int partner;
 
 	
 	/**
@@ -44,9 +41,8 @@ public class AggregateMetric extends BaseMetric {
 	public AggregateMetric(String sID, String sDisplayName, boolean displayed, String format,
 			AnnotationType annotationType, int index, int partner, MetricType type) {
 
-		super( sID, sDisplayName, displayed, format, annotationType, index, type);
+		super( sID, sDisplayName, displayed, format, annotationType, index, partner, type);
 		
-		this.partner = partner;
 		this.fctMap = new FuncMap();
 		this.fctMap.loadDefaultFunctions();
 		
@@ -130,14 +126,6 @@ public class AggregateMetric extends BaseMetric {
 	}
 	
 	
-	/*****
-	 * get the partner metric index
-	 * @return
-	 */
-	public int getPartner() {
-		return this.partner;
-	}
-	
 	
 	/******
 	 * 
@@ -168,6 +156,6 @@ public class AggregateMetric extends BaseMetric {
 	//@Override
 	public BaseMetric duplicate() {
 		return new AggregateMetric(shortName, displayName, displayed, 
-				null, annotationType, index, partner, metricType);
+				null, annotationType, index, partner_index, metricType);
 	}
 }

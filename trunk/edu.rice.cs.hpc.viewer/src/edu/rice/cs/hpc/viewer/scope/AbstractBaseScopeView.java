@@ -42,16 +42,15 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.window.ToolTip;
 
 //HPC
-import edu.rice.cs.hpc.common.filter.FilterStateProvider;
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.util.OSValidator;
+import edu.rice.cs.hpc.filter.service.FilterStateProvider;
 import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.actions.ShowMetricProperties;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
-import edu.rice.cs.hpc.viewer.util.TreeItemManager;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
 

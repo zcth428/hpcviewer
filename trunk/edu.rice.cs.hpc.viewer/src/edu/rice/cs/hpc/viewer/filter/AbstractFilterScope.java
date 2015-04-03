@@ -1,9 +1,11 @@
 package edu.rice.cs.hpc.viewer.filter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import edu.rice.cs.hpc.common.filter.FilterMap;
+import edu.rice.cs.hpc.common.filter.FilterAttribute;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpc.filter.service.FilterMap;
 
 /*********************************************************************************
  * 
@@ -28,49 +30,76 @@ public abstract class AbstractFilterScope
 	 * @param scopes : a list of nodes
 	 * @return a list of filtered nodes
 	 */
-    public Object[] filter(Object []scopes)
+    public Object[] filter(Object parent, Object []scopes)
     {
 		FilterMap filter = FilterMap.getInstance();
 		if (!filter.isFilterEnabled() || scopes == null)
 			return scopes;
 		
-		// check the element if it has to be excluded, we need to skip the element
-		// and return its descendants 
-		final ArrayList<Object> list = new ArrayList<Object>();
-		for (Object child : scopes)
-		{
-			Scope node = (Scope) child;
-			if (filter.select(node.getName()))
-			{
-				// the child is included, we're fine
-				list.add(node);
-			} else {
-				// check whether we can skip the node
-				if (!hasToSkip(node))
-				{
-					// we shouldn't skip the children. Let's filter the children.
-					// We need recursively check whether its children can be included
-					Object []descendants = getChildren(node);
-					if (descendants != null)
-					{
-						for(Object descendant : descendants)
-						{
-							list.add(descendant);
-						}
-					}
-				}
-			}
-		}
-		return list.toArray();
+		return filter(filter, parent, scopes, 2);
     }
 
+    /********
+     * Filtering 
+     * 
+     * @param filter
+     * @param parent
+     * @param scopes
+     * @param occurence
+     * @return
+     */
+    private Object[] filter(FilterMap filter, Object parent, Object []scopes, int occurence)
+    {
+    	if (occurence > 0 && scopes != null)
+    	{
+    		// check the element if it has to be excluded, we need to skip the element
+    		// and return its descendants 
+    		final ArrayList<Object> list = new ArrayList<Object>();
+    		for (Object child : scopes)
+    		{
+    			Scope node = (Scope) child;
+    			final FilterAttribute attribute = filter.getFilterAttribute(node.getName());
+    			if (attribute == null)
+    			{
+    				// the child is included, we're fine
+    				list.add(node);
+    				
+    				// due to Eclipse's bug (or feature) we need to check the grand children:
+    				// the reason is that Eclipse we load a node and its children when needed,
+    				// then decide to display the content of the children (the content of the current
+    				//  node has been decided). To update the current content, we should be able
+    				//  to use refreshElement() but unfortunately this API assumes that no change of
+    				//  the number of children, and it always assume everything is the same except  
+    				//  the value of the node.
+    				// This of course wrong, and makes an empty row if the child has been filtered.
+    				// The only solution is we need to check the descendants (3 levels not only 2)
+    				filter(filter, node, node.getChildren(), occurence-1);
+    				
+    			} else {
+    				// check whether we can skip the node and its descendants as well
+    				// note: for inclusive filtering, we surely omit its descendants
+    				if ((attribute.filterType == FilterAttribute.Type.Exclusive ) && !hasToSkip(node))
+    				{
+    					// we shouldn't skip the children. Let's filter the children.
+    					// We need recursively check whether its children can be included
+    					Object []descendants = getChildren(node, attribute.filterType);
+    					list.addAll( Arrays.asList(descendants) );
+    				}
+    				// we omit this child, let merge the metric to the parent
+    				merge((Scope)parent, node, attribute.filterType);
+    			}
+    		}
+    		return list.toArray();
+    	}
+    	return null;
+    }
     /****
      * get an array of the scope's children
      * 
      * @param scope : the parent scope
      * @return scope's children
      */
-    abstract protected Object[] getChildren(Scope scope);
+    abstract protected Object[] getChildren(Scope scope, FilterAttribute.Type filterType);
     
     /****
      * flag whether the scope and its children need to be skipped or not
@@ -81,4 +110,7 @@ public abstract class AbstractFilterScope
      */
     abstract protected boolean hasToSkip(Scope scope);
     
+    
+    abstract protected void merge(Scope parent, Scope child, FilterAttribute.Type filterType);
+
 }

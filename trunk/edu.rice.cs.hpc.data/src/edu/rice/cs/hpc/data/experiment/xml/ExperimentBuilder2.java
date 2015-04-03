@@ -178,7 +178,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 				
 				// reset the partner: inclusive's partner is exclusive, and vice versa
 				final int partner = (objMetric.getMetricType() == MetricType.EXCLUSIVE) ? i-1: i+1;
-				objMetric.setPartnerIndex(partner);
+				objMetric.setPartner(partner);
 			}
 			// notify the experiment object that we have reordered metric index
 			exp.setMetrics(metricList);
@@ -442,7 +442,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 			// Final metric (inherited from Metric) doesn't need partner. It is final.
 			//----------------------------------------------------------------------------
 			if (!(metric instanceof FinalMetric) && metric instanceof Metric) {
-				int partner = ( (Metric) metric).getPartnerIndex();
+				int partner = ( (Metric) metric).getPartner();
 				String selfShortName = String.valueOf(partner);
 
 				BaseMetric selfMetric = exp.getMetric(selfShortName); 

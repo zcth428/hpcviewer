@@ -7,6 +7,7 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.dialogs.Dialog;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -194,11 +195,16 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
              }
              // need to run from UI-thread for restoring the background
              // without UI-thread we will get SWTException !!
-             objShell.getDisplay().asyncExec( new Runnable() {
-            	 public void run() {
-                	 objActionsGUI.restoreMessage();
+             if (objShell != null && !objShell.isDisposed()) {
+            	 Display display = objShell.getDisplay();
+            	 if (display != null && !display.isDisposed()) {
+            		 display.asyncExec(new Runnable() {
+                    	 public void run() {
+                        	 objActionsGUI.restoreMessage();
+                    	 }
+                     });
             	 }
-             });
+             }
          }
      }
 	
@@ -222,17 +228,6 @@ public abstract class ScopeViewActions extends ScopeActions /* implements IToolb
 
 	}
 	
-	/**
-	 * asynchronously removing the message on the message bar and restoring the
-	 * background color
-	 */
-	public void restoreProcessingMessage() {
-		this.objShell.getDisplay().asyncExec(new Runnable(){
-			public void run() {
-				objActionsGUI.restoreMessage();
-			}
-		});
-	}
 	/**
 	 * show the hot path below the selected node in the tree
 	 */

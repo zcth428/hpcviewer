@@ -199,6 +199,18 @@ public class ScopeTreeViewer extends TreeViewer {
 
 		return colMetric;
     }
+    
+    /****
+     * Regreshes the viewer starting at the given element
+     * 
+     * @param element
+     * @param updateLabels
+     */
+    public void refreshElement(Object element, boolean updateLabels)
+    {
+    	super.internalRefresh(element, updateLabels);
+    }
+    
 	/**
 	 * Returns the viewer cell at the given widget-relative coordinates, or
 	 * <code>null</code> if there is no cell at that location

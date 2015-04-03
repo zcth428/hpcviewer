@@ -80,16 +80,6 @@ public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 				cell.setImage(image);
 			}
 			if(Utilities.isFileReadable(node)) {
-				/*if (node instanceof ProcedureScope) {
-					ProcedureScope proc = (ProcedureScope) node;
-					if (proc.isAlien()) {						
-						final Image image = Utilities.getInlineNavButton(proc);
-						cell.setImage(image);
-						if (Utilities.isFileReadable(proc)) {
-							styledString.append(String.valueOf(1+proc.getFirstLineNumber()) + ": ", StyledString.COUNTER_STYLER);
-						}
-					}
-				}*/
 				styledString.append( text, STYLE_ACTIVE_LINK );
 			} else {
 				styledString.append( text );

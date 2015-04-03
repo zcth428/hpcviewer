@@ -1,16 +1,13 @@
 package edu.rice.cs.hpc.viewer.util;
 
-import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.preference.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
-import edu.rice.cs.hpc.common.filter.FilterApply;
 import edu.rice.cs.hpc.viewer.experiment.ExperimentManager;
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.graph.GraphEditor;

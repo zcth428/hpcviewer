@@ -50,7 +50,8 @@ public class DerivedMetric extends BaseMetric {
 	public DerivedMetric(Experiment experiment, Expression e, String sName, String sID, int index, AnnotationType annotationType, MetricType objType) {
 		
 		// no root scope information is provided, we'll associate this metric to CCT root scope 
-		super(sID, sName, true, null, annotationType, index, objType);
+		// the partner of this metric is itself (derived metric has no partner)
+		super(sID, sName, true, null, annotationType, index, index, objType);
 		
 		this.expression = e;
 		this.experiment = experiment;

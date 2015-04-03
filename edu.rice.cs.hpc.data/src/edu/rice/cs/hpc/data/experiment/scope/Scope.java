@@ -56,8 +56,6 @@ protected SourceFile sourceFile;
 /** the scope identifier */
 protected int flat_node_index;
 
-//protected int cct_node_index; // we don't need this attribute since the parent class will store the cct as its value
-
 /** The first line number of this scope. */
 protected int firstLineNumber;
 
@@ -67,11 +65,13 @@ protected int lastLineNumber;
 /** The metric values associated with this scope. */
 protected MetricValue[] metrics;
 protected MetricValue[] combinedMetrics;
+/** Use this value if the children of this scope are filtered.
+ *  Depending on the type of filter, the metric value can be different
+ *  to the original values */
+private MetricValue[] filteredMetrics; 
 
 /** source citation */
 protected String srcCitation;
-
-
 
 /**
  * FIXME: this variable is only used for the creation of callers view to count
@@ -500,6 +500,38 @@ public boolean hasNonzeroMetrics() {
 	return false;
 }
 
+public int getFilteredMetricsSize()
+{
+	int size = 0;
+	if (filteredMetrics != null) {
+		size = filteredMetrics.length;
+	}
+	return size;
+}
+
+
+public MetricValue getFilteredMetric(int index)
+{
+	if (filteredMetrics != null && index < filteredMetrics.length)
+	{
+		return filteredMetrics[index];
+	}
+	return MetricValue.NONE;
+}
+
+public void setFilteredMetric(int index, MetricValue mv)
+{
+	if (filteredMetrics == null)
+	{
+		filteredMetrics = new MetricValue[metrics.length];
+		for (int i=0; i<filteredMetrics.length; i++)
+		{
+			// by default the filtered metric is exactly the same as the real metric
+			filteredMetrics[i] = metrics[i];
+		}
+	}
+	filteredMetrics[index] = mv;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // EXPERIMENT DATABASE 													//

@@ -34,8 +34,6 @@ import edu.rice.cs.hpc.data.experiment.scope.Scope;
 public class Metric extends BaseMetric
 {
 
-protected int partnerIndex;
-
 public final static int NO_PARTNER_INDEX = -1;
 
 
@@ -66,12 +64,11 @@ public Metric(String shortName, String nativeName, String displayName, boolean d
               String format, AnnotationType annotationType, String samplePeriod, 
               int index, MetricType metricType, int partnerIndex)
 {
-	super(shortName, displayName, displayed, format, annotationType, index, metricType);
+	super(shortName, displayName, displayed, format, annotationType, index, partnerIndex, metricType);
 	// creation arguments
 	this.nativeName  = nativeName;
     this.sampleperiod  = this.convertSamplePeriode(samplePeriod);
     this.metricType     = metricType;
-    this.partnerIndex = partnerIndex;
 }
 
 
@@ -85,21 +82,11 @@ public MetricValue getValue(Scope s)
 }
 
 
-public int getPartnerIndex()
-{
-	return this.partnerIndex;
-}
-
-public void setPartnerIndex(int ei)
-{
-	this.partnerIndex = ei;
-}
-
 
 //@Override
 public BaseMetric duplicate() {
 	return new Metric(shortName, nativeName, displayName, displayed, null, annotationType, 
-			String.valueOf(sampleperiod), index, metricType, partnerIndex);
+			String.valueOf(sampleperiod), index, metricType, partner_index);
 }
 
 }

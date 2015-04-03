@@ -52,13 +52,6 @@
             id="edu.rice.cs.hpc.viewer.scope.CallerScopeView"
             name="CallerView">
       </view>
-      <view
-            class="edu.rice.cs.hpc.viewer.filter.FilterView"
-            icon="icons/filter_24x24.png"
-            id="edu.rice.cs.hpc.viewer.filter.FilterView"
-            name="Filter View"
-            restorable="true">
-      </view>
    </extension>
    <extension
          id="product"
@@ -252,6 +245,44 @@
                   mnemonic="x"
                   style="push"
                   tooltip="Exit the application">
+            </command>
+         </menu>
+         <menu
+               label="Filter"
+               mnemonic="F"
+               tooltip="Menus for excluding certains functions">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="edu.rice.cs.hpc.filter.enable">
+                  <equals
+                        value="ACTIVE">
+                  </equals>
+               </with>
+            </visibleWhen>
+            <command
+                  commandId="edu.rice.cs.hpc.filter.action.ShowFilterView"
+                  label="Show filter view"
+                  mnemonic="S"
+                  style="toggle"
+                  tooltip="Display the list of filter patterns">
+            </command>
+            <separator
+                  name="edu.rice.cs.hpc.viewer.filter.separator">
+            </separator>
+            <command
+                  commandId="edu.rice.cs.hpc.filter.action.FilterApply"
+                  label="Enable filter"
+                  mnemonic="E"
+                  style="toggle"
+                  tooltip="Enable/disable filtering">
+            </command>
+            <command
+                  commandId="edu.rice.cs.hpc.filter.action.FilterAdd"
+                  label="Add a filter pattern"
+                  mnemonic="A"
+                  style="push"
+                  tooltip="Add a filter pattern">
             </command>
          </menu>
          <menu

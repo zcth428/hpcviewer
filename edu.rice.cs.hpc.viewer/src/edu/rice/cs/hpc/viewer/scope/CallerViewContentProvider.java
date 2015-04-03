@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.viewer.scope;
 
+import edu.rice.cs.hpc.common.filter.FilterAttribute.Type;
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
 import edu.rice.cs.hpc.data.experiment.scope.IMergedScope;
@@ -51,14 +53,14 @@ public class CallerViewContentProvider extends AbstractContentProvider
     		IMergedScope parent = ((IMergedScope) parentElement);
     		results = parent.getAllChildren(finalizeVisitor, percentVisitor, inclusiveOnly, exclusiveOnly);
         	if (enableFilter) {
-            	return filter.filter(results);
+            	return filter.filter(parentElement, results);
         	}
         	
     	} else if (parentElement instanceof Scope) {
     		Scope scope = (Scope) parentElement;
 			if (enableFilter) {
 				Object []children = scope.getChildren();
-				results = filter.filter(children);
+				results = filter.filter(parentElement, children);
 			} else {
 	    		results = ((Scope)parentElement).getChildren();
 			}
@@ -104,12 +106,6 @@ public class CallerViewContentProvider extends AbstractContentProvider
     
     private class FilterScope extends AbstractFilterScope
     {
-
-		@Override
-		protected Object[] getChildren(Scope scope) {
-			return CallerViewContentProvider.this.getChildren(scope);
-		}
-
 		@Override
 		protected boolean hasToSkip(Scope scope) {
 			if (scope instanceof ProcedureScope) {
@@ -117,10 +113,21 @@ public class CallerViewContentProvider extends AbstractContentProvider
 			}
 			return false;
 		}
+
+		@Override
+		protected Object[] getChildren(Scope scope, Type filterType) {
+			return CallerViewContentProvider.this.getChildren(scope);
+		}
+
+		@Override
+		protected void merge(Scope parent, Scope child, Type filterType) {
+			// TODO Auto-generated method stub
+			
+		}
     }
 
 	@Override
-	protected AbstractFilterScope getFilter() {
+	protected AbstractFilterScope getFilter(BaseExperiment experiment) {
 		return filter;
 	}    
 }

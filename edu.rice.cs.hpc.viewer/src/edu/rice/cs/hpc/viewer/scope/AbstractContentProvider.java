@@ -1,15 +1,16 @@
 package edu.rice.cs.hpc.viewer.scope;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.filter.AbstractFilterScope;
 
 public abstract class AbstractContentProvider implements ITreeContentProvider 
 {
-    protected TreeViewer viewer;
+    protected ScopeTreeViewer viewer;
     protected boolean enableFilter = false;
     
     public void setEnableFilter(boolean isFilterEnabled)
@@ -34,11 +35,17 @@ public abstract class AbstractContentProvider implements ITreeContentProvider
         	Object arrChildren[] = parent.getChildren();
         	// if the database has empty data, the children is null
         	if (arrChildren != null && arrChildren.length>0)
+        	{
     			if (!enableFilter) {
         			return arrChildren;
     			} else {
-    				return getFilter().filter(arrChildren);
+    				Object data = viewer.getTree().getData();
+    				if (data instanceof RootScope) {
+    					BaseExperiment exp = ((RootScope)data).getExperiment();
+        				return getFilter(exp).filter(parentElement, arrChildren);
+    				}
     			}
+        	}
     	}
     	return null;
     }
@@ -77,8 +84,8 @@ public abstract class AbstractContentProvider implements ITreeContentProvider
     *   does not have an input
     */
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    	if (viewer instanceof TreeViewer)
-            this.viewer = (TreeViewer)viewer;
+    	if (viewer instanceof ScopeTreeViewer)
+            this.viewer = (ScopeTreeViewer)viewer;
     }
  
     /*
@@ -87,5 +94,5 @@ public abstract class AbstractContentProvider implements ITreeContentProvider
      */
     public void dispose() {}
     
-    abstract protected AbstractFilterScope getFilter();
+    abstract protected AbstractFilterScope getFilter(BaseExperiment experiment);
 }

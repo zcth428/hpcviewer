@@ -121,7 +121,6 @@ public Scope(BaseExperiment experiment, SourceFile file, int first, int last, in
 
 	this.srcCitation = null;
 	this.flat_node_index = flat_id;
-//	this.cct_node_index = cct_id;
 	this.cpid = -1;
 	this.iCounter  = 0;
 }
@@ -516,7 +515,7 @@ public MetricValue getFilteredMetric(int index)
 	{
 		return filteredMetrics[index];
 	}
-	return MetricValue.NONE;
+	return metrics[index];
 }
 
 public void setFilteredMetric(int index, MetricValue mv)
@@ -531,6 +530,19 @@ public void setFilteredMetric(int index, MetricValue mv)
 		}
 	}
 	filteredMetrics[index] = mv;
+}
+
+public void resetFilteredMetric()
+{
+	if (filteredMetrics == null)
+	{
+		filteredMetrics = new MetricValue[metrics.length];
+	}
+	for (int i=0; i<filteredMetrics.length; i++)
+	{
+		// by default the filtered metric is exactly the same as the real metric
+		filteredMetrics[i] = metrics[i];
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

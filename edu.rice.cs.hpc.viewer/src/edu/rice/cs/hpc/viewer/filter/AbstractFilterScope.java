@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import edu.rice.cs.hpc.common.filter.FilterAttribute;
+import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 
@@ -32,33 +34,34 @@ public abstract class AbstractFilterScope
 	 */
     public Object[] filter(Object parent, Object []scopes)
     {
-		FilterMap filter = FilterMap.getInstance();
-		if (!filter.isFilterEnabled() || scopes == null)
-			return scopes;
-		
-		return filter(filter, parent, scopes, 2);
+		FilterMap filterMap = FilterMap.getInstance();
+		return filter(filterMap, parent, scopes, 2);
     }
 
     /********
      * Filtering 
      * 
-     * @param filter
+     * @param filterMap
      * @param parent
      * @param scopes
      * @param occurence
      * @return
      */
-    private Object[] filter(FilterMap filter, Object parent, Object []scopes, int occurence)
+    private Object[] filter(FilterMap filterMap, Object parent, Object []scopes, int occurence)
     {
     	if (occurence > 0 && scopes != null)
     	{
-    		// check the element if it has to be excluded, we need to skip the element
-    		// and return its descendants 
+			((Scope) parent).resetFilteredMetric();
     		final ArrayList<Object> list = new ArrayList<Object>();
+    		
+    		// check all the children of this scope. If a child is to be filtered, its values may need to be
+    		// 	merged to the parent
     		for (Object child : scopes)
     		{
     			Scope node = (Scope) child;
-    			final FilterAttribute attribute = filter.getFilterAttribute(node.getName());
+        		// check the element: if it has to be excluded, we need to skip the element
+        		// and return its descendants 
+    			final FilterAttribute attribute = filterMap.getFilterAttribute(node.getName());
     			if (attribute == null)
     			{
     				// the child is included, we're fine
@@ -73,12 +76,13 @@ public abstract class AbstractFilterScope
     				//  the value of the node.
     				// This of course wrong, and makes an empty row if the child has been filtered.
     				// The only solution is we need to check the descendants (3 levels not only 2)
-    				filter(filter, node, node.getChildren(), occurence-1);
+    				filter(filterMap, node, node.getChildren(), occurence-1);
     				
     			} else {
     				// check whether we can skip the node and its descendants as well
     				// note: for inclusive filtering, we surely omit its descendants
-    				if ((attribute.filterType == FilterAttribute.Type.Exclusive ) && !hasToSkip(node))
+    				if ((attribute.filterType == FilterAttribute.Type.Exclusive ) &&
+    						!hasToSkip(node, attribute.filterType))
     				{
     					// we shouldn't skip the children. Let's filter the children.
     					// We need recursively check whether its children can be included
@@ -93,8 +97,37 @@ public abstract class AbstractFilterScope
     	}
     	return null;
     }
+    
+    /**************
+     * utility for the derived classes to merge a metric to other node
+     * 
+     * @param root
+     * @param target
+     * @param metric_exclusive_index
+     * @param mvChild
+     */
+	public void mergeMetricToParent(RootScope root, Scope target, 
+			int metric_exclusive_index, MetricValue mvChild)
+	{
+		MetricValue mvParentExc = target.getMetricValue(metric_exclusive_index);
+		MetricValue mvParentFilteredExc = target.getFilteredMetric(metric_exclusive_index);
+		float value = 0;
+		if (mvParentFilteredExc.getValue() <= 0) {
+			// the filtered value is not initialized, let assign with value of the exclusive metric
+			value = mvParentExc.getValue();
+		}
+		// update the filtered value
+		value             = mvParentFilteredExc.getValue() + mvChild.getValue();
+		float rootValue   = root.getMetricValue(metric_exclusive_index).getValue();
+		float annotation  = value / rootValue;
+		MetricValue mv    = new MetricValue(value, annotation);
+		target.setFilteredMetric(metric_exclusive_index, mv);
+	}
+
+    
     /****
-     * get an array of the scope's children
+     * get an array of the scope's children in case for exclusive filter
+     * (for inclusive filter, there's no children)
      * 
      * @param scope : the parent scope
      * @return scope's children
@@ -108,7 +141,7 @@ public abstract class AbstractFilterScope
      * @param scope
      * @return boolean true if we need to skip. false otherwise
      */
-    abstract protected boolean hasToSkip(Scope scope);
+    abstract protected boolean hasToSkip(Scope scope, FilterAttribute.Type filterType);
     
     
     abstract protected void merge(Scope parent, Scope child, FilterAttribute.Type filterType);

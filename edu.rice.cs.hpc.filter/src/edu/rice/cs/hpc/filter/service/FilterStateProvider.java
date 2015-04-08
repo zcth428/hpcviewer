@@ -111,8 +111,7 @@ public class FilterStateProvider extends AbstractSourceProvider
 	 */
 	public void refresh()
 	{
-		FilterMap filter = FilterMap.getInstance();
-		refresh(filter.isFilterEnabled());
+		refresh(isEnabled());
 	}
 	
 	private String getSelectedValue()

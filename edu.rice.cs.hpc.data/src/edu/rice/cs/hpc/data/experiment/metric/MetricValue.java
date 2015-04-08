@@ -263,6 +263,9 @@ public final class MetricValue
 	}
 
 
-
+	public String toString()
+	{
+		return value + " ( " + annotation + " ) ";
+	}
 
 }

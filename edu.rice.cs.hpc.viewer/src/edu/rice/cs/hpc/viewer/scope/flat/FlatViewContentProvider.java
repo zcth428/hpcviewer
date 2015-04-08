@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.viewer.scope.flat;
 
+import edu.rice.cs.hpc.common.filter.FilterAttribute;
 import edu.rice.cs.hpc.common.filter.FilterAttribute.Type;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
@@ -19,7 +20,7 @@ public class FlatViewContentProvider extends AbstractContentProvider {
 
 
 		@Override
-		protected boolean hasToSkip(Scope scope) {
+		protected boolean hasToSkip(Scope scope, FilterAttribute.Type filterType) {
 			if (scope instanceof ProcedureScope) {
 				return true;
 			}

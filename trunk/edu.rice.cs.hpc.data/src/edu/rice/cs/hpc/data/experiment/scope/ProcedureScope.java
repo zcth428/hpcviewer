@@ -46,7 +46,7 @@ protected boolean isalien;
 // we assume that all procedure scope has the information on load module it resides
 protected LoadModuleScope objLoadModule;
 
-
+final static public String INLINE_NOTATION = "[I] ";
 
 /**
  * scope ID of the procedure frame. The ID is given by hpcstruct and hpcprof
@@ -119,11 +119,11 @@ public boolean equals(Object obj) {
 public String getName()
 {	
 	if (isalien) {
-		String TheProcedureWhoShouldNotBeNamed = "-";
+		final String TheProcedureWhoShouldNotBeNamed = "-";
 		if (procedureName.equals(TheProcedureWhoShouldNotBeNamed)) {
 			return "inlined at " + this.getSourceCitation();
 		} 
-		String name = procedureName.isEmpty() ? "" : "[I] " + procedureName;
+		String name = procedureName.isEmpty() ? "" : INLINE_NOTATION + procedureName;
 		return name;
 	} else return this.procedureName;
 }

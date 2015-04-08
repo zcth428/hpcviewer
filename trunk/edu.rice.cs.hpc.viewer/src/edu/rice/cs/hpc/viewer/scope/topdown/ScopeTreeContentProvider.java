@@ -82,7 +82,7 @@ public class ScopeTreeContentProvider extends AbstractContentProvider
 					// exclusive filter and exclusive metric:
 					// the exclusive value of the child is added to the exclusive value of the parent
 					
-					mergeMetricToParent(root, parent, i, mvChild);
+					filter.mergeMetricToParent(root, parent, i, mvChild);
 					
 				} else if ( (metric.getMetricType() == MetricType.INCLUSIVE) &&
 						 (filterType == FilterAttribute.Type.Inclusive)	)
@@ -97,41 +97,13 @@ public class ScopeTreeContentProvider extends AbstractContentProvider
 						// we can cheat this by converting the index into "short name" and get the metric.
 						BaseMetric metric_exc = experiment.getMetric(String.valueOf(index_exclusive_metric));
 						// the exclusive metric exist
-						mergeMetricToParent(root, parent, metric_exc.getIndex(), mvChild);
+						filter.mergeMetricToParent(root, parent, metric_exc.getIndex(), mvChild);
 					}
 				}
 			}
 		}
 	}
 	
-	/***************
-	 * Merge child metric value to the parent, set the percentage (annotation) and put it to the parent's 
-	 * 	filter metric
-	 * 
-	 * @param root   : root scope
-	 * @param parent : scope of the parent
-	 * @param metric : base metric for the parent
-	 * @param metric_exclusive_index : index of the current metric value to be stored to the parent
-	 * @param mvChild : the value of the child scope
-	 */
-	private void mergeMetricToParent(RootScope root, Scope parent, 
-			int metric_exclusive_index, MetricValue mvChild)
-	{
-		MetricValue mvParentExc = parent.getMetricValue(metric_exclusive_index);
-		MetricValue mvParentFilteredExc = parent.getFilteredMetric(metric_exclusive_index);
-		float value = 0;
-		if (mvParentFilteredExc.getValue() <= 0) {
-			// the filtered value is not initialized, let assign with value of the exclusive metric
-			value = mvParentExc.getValue();
-		}
-		// update the filtered value
-		value             = mvParentFilteredExc.getValue() + mvChild.getValue();
-		float rootValue   = root.getMetricValue(metric_exclusive_index).getValue();
-		float annotation  = value / rootValue;
-		MetricValue mv    = new MetricValue(value, annotation);
-		parent.setFilteredMetric(metric_exclusive_index, mv);
-	}
-
 
 	/*********************************************************
 	 * 
@@ -147,7 +119,7 @@ public class ScopeTreeContentProvider extends AbstractContentProvider
 			this.experiment = experiment;
 		}
 		@Override
-		protected boolean hasToSkip(Scope scope) {
+		protected boolean hasToSkip(Scope scope, FilterAttribute.Type filterType) {
 			return false;
 		}
 		

@@ -42,7 +42,7 @@ public abstract class AbstractContentProvider implements ITreeContentProvider
     				Object data = viewer.getTree().getData();
     				if (data instanceof RootScope) {
     					BaseExperiment exp = ((RootScope)data).getExperiment();
-        				return getFilter(exp).filter(parentElement, arrChildren);
+        				return getFilter(exp).filter(parent, arrChildren);
     				}
     			}
         	}

@@ -85,8 +85,12 @@ public class FilterView extends ViewPart implements IFilterView
 				final Entry<String, FilterAttribute> element = (Entry<String, FilterAttribute>) event.getElement();
 				final String key = element.getKey();
 				FilterMap map    = FilterMap.getInstance();
-				FilterAttribute attribute = new FilterAttribute();
+				
+				// get the original attribute to be modified
+				FilterAttribute attribute = element.getValue();
 				attribute.enable = event.getChecked();
+				
+				// save to the registry
 				map.put(key, attribute);
 				map.save();
 				

@@ -2,6 +2,8 @@ package edu.rice.cs.hpc.filter.service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.State;
 import org.eclipse.core.runtime.Assert;
@@ -103,6 +105,8 @@ public class FilterStateProvider extends AbstractSourceProvider
 	{
 		this.enable = enableFilter;
 		fireSourceChanged(ISources.WORKBENCH, FILTER_REFRESH_PROVIDER, enableFilter);
+		Properties properties = new Properties();
+		properties.put(FILTER_REFRESH_PROVIDER, enableFilter);
 	}
 	
 	/*****

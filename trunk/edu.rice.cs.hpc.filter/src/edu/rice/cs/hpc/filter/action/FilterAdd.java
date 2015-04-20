@@ -10,7 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.common.filter.FilterAttribute;
+import edu.rice.cs.hpc.data.filter.FilterAttribute;
 import edu.rice.cs.hpc.filter.pattern.PatternValidator;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 import edu.rice.cs.hpc.filter.service.FilterStateProvider;

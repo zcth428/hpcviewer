@@ -146,14 +146,21 @@ public class AggregateMetric extends BaseMetric {
 	}
 
 
-	//@Override
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.metric.BaseMetric#getValue(edu.rice.cs.hpc.data.experiment.scope.Scope)
+	 */
 	public MetricValue getValue(Scope s) {
-		MetricValue mv = null;
-		mv = s.getMetricValue(this.index);
+		MetricValue mv = s.getMetricValue(this.index);
 		return mv;
 	}
 
-	//@Override
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.metric.BaseMetric#duplicate()
+	 */
 	public BaseMetric duplicate() {
 		return new AggregateMetric(shortName, displayName, displayed, 
 				null, annotationType, index, partner_index, metricType);

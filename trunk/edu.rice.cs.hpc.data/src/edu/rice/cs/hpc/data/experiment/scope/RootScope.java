@@ -39,7 +39,6 @@ public class RootScope extends Scope
 
 
 /** The name of the experiment's program. */
-protected String programName;
 protected String rootScopeName;
 protected RootScopeType rootScopeType;
 //public int MAX_LEVELS=0;
@@ -55,10 +54,9 @@ protected RootScopeType rootScopeType;
  *	Creates a RootScope.
  ************************************************************************/
 	
-public RootScope(BaseExperiment experiment, String prog, String name, RootScopeType rst)
+public RootScope(BaseExperiment experiment, String name, RootScopeType rst)
 {
 	super(experiment, null, Scope.NO_LINE_NUMBER, Scope.NO_LINE_NUMBER, 0,0);	
-	this.programName = prog;
 	this.rootScopeName = name;
 //	this.id = "RootScope";
 	this.rootScopeType = rst;
@@ -67,7 +65,7 @@ public RootScope(BaseExperiment experiment, String prog, String name, RootScopeT
 
 
 public Scope duplicate() {
-    return new RootScope(null, this.programName, this.rootScopeName, this.rootScopeType);
+    return new RootScope(null,  this.rootScopeName, this.rootScopeType);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -2,8 +2,6 @@ package edu.rice.cs.hpc.viewer.scope.bottomup;
 
 import org.eclipse.core.runtime.Assert;
 
-import edu.rice.cs.hpc.common.filter.FilterAttribute;
-import edu.rice.cs.hpc.common.filter.FilterAttribute.Type;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
@@ -19,7 +17,8 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagat
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitorWithBackup;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
-import edu.rice.cs.hpc.viewer.filter.AbstractFilterScope;
+import edu.rice.cs.hpc.data.filter.FilterAttribute;
+import edu.rice.cs.hpc.data.filter.FilterAttribute.Type;
 import edu.rice.cs.hpc.viewer.scope.AbstractContentProvider;
 
 /************************************************************************
@@ -35,7 +34,6 @@ public class CallerViewContentProvider extends AbstractContentProvider
 	private InclusiveOnlyMetricPropagationFilter inclusiveOnly;
 	private PercentScopeVisitor percentVisitor;
 	private FinalizeMetricVisitorWithBackup finalizeVisitor;
-    private AbstractFilterScope filter;
 	
 	public CallerViewContentProvider()
 	{
@@ -63,15 +61,6 @@ public class CallerViewContentProvider extends AbstractContentProvider
     	} else if (parentElement instanceof Scope) {
     		Scope scope = (Scope) parentElement;
     		results = scope.getChildren();
-    	}
-    	if (enableFilter)
-    	{
-			Object data = viewer.getTree().getData();
-			if (data instanceof RootScope)
-			{
-				BaseExperiment exp = ((RootScope)data).getExperiment();
-	    		return getFilter(exp).filter(parentElement, results);
-			}
     	}
     	return results;
     }
@@ -110,106 +99,5 @@ public class CallerViewContentProvider extends AbstractContentProvider
     	RootScope root = experiment.getCallerTreeRoot();
     	percentVisitor = new PercentScopeVisitor(experiment.getMetricCount(), root);
     	finalizeVisitor = new FinalizeMetricVisitorWithBackup(experiment.getMetrics());
-    }
-
-	@Override
-	protected AbstractFilterScope getFilter(BaseExperiment experiment) {
-		if (filter == null)
-		{
-			filter = new FilterScope(experiment);
-		}
-		return filter;
-	}    
-    
-	/*******************************
-	 * 
-	 * Filter for bottom-up view
-	 *
-	 *******************************/
-    private class FilterScope extends AbstractFilterScope
-    {
-    	private BaseExperiment experiment;
-    	private RootScope root;
-    	
-    	public FilterScope(BaseExperiment experiment)
-    	{
-    		reset(experiment);
-    	}
-    	
-    	public void reset(BaseExperiment experiment)
-    	{
-    		this.experiment = experiment;
-    		root = experiment.getCallerTreeRoot();
-    	}
-    	
-		@Override
-		protected boolean hasToSkip(Scope scope, FilterAttribute.Type filterType) {
-
-			boolean has_to_skip = (scope instanceof ProcedureScope) ;
-			return has_to_skip;
-		}
-
-		@Override
-		protected Object[] getChildren(Scope scope, Type filterType) {
-			return CallerViewContentProvider.this.getChildren(scope);
-		}
-
-		@Override
-		protected void merge(Scope parent, Scope child, Type filterType) {
-			if (child instanceof ProcedureScope)
-			{
-				int numChildren = child.getChildCount();
-				// update the metric of the procedure scope of the children
-				for (int i=0; i<numChildren; i++)
-				{
-					Scope scope = (Scope) child.getChildAt(i);
-					ProcedureScope proc = getProcedureByName(scope.getName());
-					Assert.isNotNull(proc);
-
-					Experiment exp = (Experiment)experiment;
-					int numMetrics = exp.getMetricCount();
-					
-					for(int j=0; j<numMetrics; j++)
-					{
-						BaseMetric metric = exp.getMetric(j);
-						MetricValue mvChild = scope.getMetricValue(j);
-						if (metric.getMetricType() == MetricType.EXCLUSIVE && 
-								(filterType == FilterAttribute.Type.Exclusive) )
-						{
-							mergeMetricToParent(root, proc, j, mvChild);
-							
-						} else if (metric.getMetricType() == MetricType.INCLUSIVE && 
-								(filterType == FilterAttribute.Type.Inclusive)) 
-						{
-							int exclusive_metric_index = metric.getPartner();
-							BaseMetric metric_exc = exp.getMetric(String.valueOf(exclusive_metric_index));
-							filter.mergeMetricToParent(root, proc, metric_exc.getIndex(), mvChild);
-						}
-					}
-				}
-			}
-		}
-		
-		/*****
-		 * get the procedure scope given a procedure name
-		 * 
-		 * @param name
-		 * @return
-		 */
-		private ProcedureScope getProcedureByName(String name)
-		{
-			final TreeNode []procedures = root.getChildren();
-			
-			// linear search ... can be really bad for huge list of procedures
-			for(TreeNode node: procedures)
-			{
-				ProcedureScope scope = (ProcedureScope) node;
-				if (name.equals(scope.getName()))
-				{
-					return scope;
-				}
-			}
-			return null;
-		}
-    }
+    }    
 }

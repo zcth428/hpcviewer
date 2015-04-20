@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.TreeItem;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 
 /**
@@ -47,9 +48,26 @@ abstract public class BaseScopeView  extends AbstractBaseScopeView {
     	if (treeViewer.getTree().isDisposed())
     		return;
     	
-    	AbstractContentProvider provider = (AbstractContentProvider) treeViewer.getContentProvider();
-		provider.setEnableFilter(isEnabled);
+    	//AbstractContentProvider provider = (AbstractContentProvider) treeViewer.getContentProvider();
+		//provider.setEnableFilter(isEnabled);
+    	Experiment experiment = getExperiment();
+		RootScope root 		   = (RootScope) experiment.getRootScope();
+		RootScopeType rootType = myRootScope.getType();
 		
+		// reassign root scope
+		// we have 2 roots: one for the original, the other one for the filter roots
+		// the getRootScope() method will return the correct one depending if the filter mode is on or off
+		if (rootType == RootScopeType.CallingContextTree) 
+		{
+			myRootScope = (RootScope) root.getChildAt(0);
+			
+		} else if (rootType == RootScopeType.CallerTree) 
+		{
+			myRootScope = (RootScope) root.getChildAt(1);
+		} else if (rootType == RootScopeType.Flat)
+		{
+			myRootScope = (RootScope) root.getChildAt(2);
+		}
 		// update the content of the view
 		updateDisplay();
     }

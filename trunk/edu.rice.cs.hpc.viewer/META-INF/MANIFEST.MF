@@ -5,11 +5,11 @@ Bundle-SymbolicName: edu.rice.cs.hpc.viewer; singleton:=true
 Bundle-Version: 5.3.2.qualifier
 Bundle-Activator: edu.rice.cs.hpc.viewer.framework.Activator
 Bundle-Vendor: Rice University
-Require-Bundle: edu.rice.cs.hpc.data,
- org.eclipse.ui
+Require-Bundle: org.eclipse.ui,
+ edu.rice.cs.hpc.data
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
-Import-Package: edu.rice.cs.hpc.common.filter,
+Import-Package: 
  edu.rice.cs.hpc.common.ui,
  edu.rice.cs.hpc.common.util,
  edu.rice.cs.hpc.filter,

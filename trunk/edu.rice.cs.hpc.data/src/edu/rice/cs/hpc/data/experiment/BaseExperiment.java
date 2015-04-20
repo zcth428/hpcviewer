@@ -5,10 +5,13 @@ import java.io.InputStream;
 
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.DisposeResourcesVisitor;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.FilterScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
+import edu.rice.cs.hpc.data.filter.IFilterData;
 import edu.rice.cs.hpc.data.util.IUserData;
 
 
@@ -25,13 +28,18 @@ public abstract class BaseExperiment implements IExperiment {
 	protected ExperimentConfiguration configuration;
 
 	protected RootScope rootScope;
+	
+	/*** filter version of root scope ***/
+	protected RootScope rootFilterScope;
 
 	/** version of the database **/
 	protected String version;
 
-	private TraceAttribute attribute;
-
 	protected ExperimentFileXML fileXML;
+
+	private TraceAttribute attribute;
+	
+	private IFilterData filter;
 	
 	/***
 	 * the root scope of the experiment
@@ -47,6 +55,9 @@ public abstract class BaseExperiment implements IExperiment {
 	 * retrieve the root scope
 	 */
 	public Scope getRootScope() {
+		if (filter != null && filter.isFilterEnabled() && rootFilterScope != null) {
+			return rootFilterScope;
+		}
 		return rootScope;
 	}
 
@@ -57,10 +68,10 @@ public abstract class BaseExperiment implements IExperiment {
 	 * @return root scope
 	 */
 	public RootScope getCallerTreeRoot() {
-		
-		if (this.rootScope.getSubscopeCount()==3) {
+		RootScope root = (RootScope) getRootScope();
+		if (root.getSubscopeCount()==3) {
 			
-			Scope scope = this.rootScope.getSubscope(1);
+			Scope scope = root.getSubscope(1);
 			if (scope instanceof RootScope)
 				return (RootScope) scope;
 			
@@ -71,8 +82,10 @@ public abstract class BaseExperiment implements IExperiment {
 	
 
 	public TreeNode[] getRootScopeChildren() {
-		if (rootScope != null)
-			return this.rootScope.getChildren();
+		RootScope root = (RootScope) getRootScope();
+
+		if (root != null)
+			return root.getChildren();
 		else
 			return null;
 	}
@@ -183,10 +196,46 @@ public void dispose()
 	DisposeResourcesVisitor visitor = new DisposeResourcesVisitor();
 	rootScope.dfsVisitScopeTree(visitor);
 	this.rootScope = null;
+	
+	if (rootFilterScope != null)
+	{
+		rootFilterScope.dfsVisitScopeTree(visitor);
+		rootFilterScope = null;
+	}
 }
 
 
+/*************************************************************************
+ * Filter the cct 
+ * <p>caller needs to call postprocess to ensure the callers tree and flat
+ * tree are alsi filtered </p>
+ * @param filter
+ *************************************************************************/
+public void filter(IFilterData filter)
+{
+	this.filter     = filter;
+	// create the invisible main root
+	rootFilterScope = new RootScope(this,  rootScope.getName(), rootScope.getType());
+	rootFilterScope.setExperiment(this);
+	
+	// duplicate and filter the cct
+	RootScope rootCCT 		   = (RootScope) rootScope.getChildAt(0);
+	FilterScopeVisitor visitor = new FilterScopeVisitor(rootFilterScope, rootCCT, filter);
+	rootCCT.dfsVisitFilterScopeTree(visitor);
+	
+	if (rootCCT.getType() == RootScopeType.CallingContextTree) {
+		filter_finalize(rootFilterScope, (RootScope) rootFilterScope.getChildAt(0), filter);
+	}
+}
 
-
+/************************************************************************
+ * In case the experiment has a CCT, continue to create callers tree and
+ * flat tree for the finalization.
+ * 
+ * @param rootMain
+ * @param rootCCT
+ * @param filter
+ ************************************************************************/
+abstract protected void filter_finalize(RootScope rootMain, RootScope rootCCT, IFilterData filter);
 
 }

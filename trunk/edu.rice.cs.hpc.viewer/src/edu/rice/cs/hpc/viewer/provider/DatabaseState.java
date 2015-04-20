@@ -9,10 +9,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
 import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
-public class DatabaseState extends AbstractSourceProvider {
-
+public class DatabaseState extends AbstractSourceProvider 
+{
 	public final static String DATABASE_ACTIVE_STATE = "edu.rice.cs.hpc.viewer.provider.data.active";
-	public final static String DATABASE_MERGE_STATE = "edu.rice.cs.hpc.viewer.provider.data.merge";
+	public final static String DATABASE_MERGE_STATE  = "edu.rice.cs.hpc.viewer.provider.data.merge";
+	static final public String DATABASE_NEED_REFRESH = "edu.rice.cs.hpc.viewer.provider.data.refresh";
+
 	public final static String ENABLED = "ENABLED";
 	public final static String DISABLED = "DISABLED";
 	
@@ -34,6 +36,8 @@ public class DatabaseState extends AbstractSourceProvider {
 		value = num_opened_database>1 ? ENABLED : DISABLED;
 		map.put(DATABASE_MERGE_STATE, value);
 		
+		map.put(DATABASE_NEED_REFRESH, Boolean.valueOf(false));
+		
 		return map;
 	}
 
@@ -43,7 +47,7 @@ public class DatabaseState extends AbstractSourceProvider {
 	 */
 	public String[] getProvidedSourceNames() 
 	{
-		return new String[] { DATABASE_ACTIVE_STATE, DATABASE_MERGE_STATE };
+		return new String[] { DATABASE_ACTIVE_STATE, DATABASE_MERGE_STATE, DATABASE_NEED_REFRESH };
 	}
 
 
@@ -58,5 +62,9 @@ public class DatabaseState extends AbstractSourceProvider {
 		value = num_opened_database>1 ? ENABLED : DISABLED;
 		fireSourceChanged(ISources.WORKBENCH, DATABASE_MERGE_STATE, value);
 	}
-	
+
+	public void refreshDatabase(boolean filter)
+	{
+		fireSourceChanged(ISources.WORKBENCH, DATABASE_NEED_REFRESH, filter);
+	}
 }

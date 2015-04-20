@@ -117,7 +117,6 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			MetricValuePropagationFilter exclusiveOnly ) {
 
 		boolean percent_need_recompute = false;
-		
 		TreeNode children[] = this.getChildren();
 
 		if (children != null && children.length>0) {
@@ -132,10 +131,9 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			//-------------------------------------------------------------------------
 			// construct my own child
 			//-------------------------------------------------------------------------
-			Scope scope_cost = this.scopeCost; 
 			
 			LinkedList<CallSiteScopeCallerView> listOfChain = CallerScopeBuilder.createCallChain
-				(this.scopeCCT, scope_cost, combine_without_cond, inclusiveOnly, exclusiveOnly);
+				(this.scopeCCT, scopeCost, combine_without_cond, inclusiveOnly, exclusiveOnly);
 
 			if (!listOfChain.isEmpty())
 			{
@@ -198,9 +196,10 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		//-------------------------------------------------------------------------
 		// set the percent
 		//-------------------------------------------------------------------------
-		if (percent_need_recompute) {
+		children = getChildren();
+		if (percent_need_recompute && children != null) {
 			// there were some reconstruction of children. Let's finalize the metrics, and recompute the percent
-			for(TreeNode child:this.getChildren()) {
+			for(TreeNode child: children) {
 				if (child instanceof CallSiteScopeCallerView) {
 					CallSiteScopeCallerView csChild = (CallSiteScopeCallerView) child;
 					
@@ -225,6 +224,10 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 	}
 
 
+	public Scope getScopeCost() {
+		return scopeCost;
+	}
+	
 	/**
 	 * get the scope with the combined metrics 
 	 * @param source

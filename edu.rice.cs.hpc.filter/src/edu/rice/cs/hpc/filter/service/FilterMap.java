@@ -8,10 +8,10 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.common.filter.FilterAttribute;
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.common.util.AliasMap;
-import edu.rice.cs.hpc.data.experiment.scope.filters.IFilterData;
+import edu.rice.cs.hpc.data.filter.FilterAttribute;
+import edu.rice.cs.hpc.data.filter.IFilterData;
 
 /******************************************************************
  * 
@@ -80,13 +80,14 @@ implements IFilterData
 	 * If the string match a filter, returns the filter attribute
 	 * Otherwise returns null;
 	 * 
-	 * <p>See {@link edu.rice.cs.hpc.common.filter.FilterAttribute}
+	 * <p>See {@link edu.rice.cs.hpc.data.filter.FilterAttribute}
 	 * </p>
 	 * 
 	 * @param element
 	 * @return {@link FilterAttribute} 
 	 * if the element matches to a filter pattern. Return null otherwise.
 	 */
+	@Override
 	public FilterAttribute getFilterAttribute(String element) 
 	{
 		if (!isFilterEnabled())

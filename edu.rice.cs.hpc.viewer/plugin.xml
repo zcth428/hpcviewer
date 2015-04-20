@@ -463,6 +463,10 @@
                name="edu.rice.cs.hpc.viewer.provider.data.merge"
                priorityLevel="activeWorkbenchWindow">
          </variable>
+         <variable
+               name="edu.rice.cs.hpc.viewer.provider.data.refresh"
+               priorityLevel="workbench">
+         </variable>
       </sourceProvider>
    </extension>
 </plugin>

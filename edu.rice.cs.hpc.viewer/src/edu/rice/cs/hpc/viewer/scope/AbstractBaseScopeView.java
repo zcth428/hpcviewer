@@ -51,6 +51,7 @@ import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.actions.ShowMetricProperties;
 import edu.rice.cs.hpc.viewer.editor.EditorManager;
+import edu.rice.cs.hpc.viewer.provider.DatabaseState;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.Database;
 
@@ -63,8 +64,8 @@ import edu.rice.cs.hpc.viewer.window.Database;
  * - thread scope view (not implemented yet, but it will shows metric of a thread)
  *
  */
-abstract public class AbstractBaseScopeView  extends ViewPart {
-
+abstract public class AbstractBaseScopeView  extends ViewPart 
+{	
 	protected ScopeTreeViewer 	treeViewer;		  	// tree for the caller and callees
     
 	protected Database 	database;		// experiment data	
@@ -76,7 +77,6 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 	private Clipboard cb = null;
 	private GC gc = null;
 	
-	private FilterStateProvider serviceProvider;
 	private ISourceProviderListener listener;
 
 	/**
@@ -91,13 +91,13 @@ abstract public class AbstractBaseScopeView  extends ViewPart {
 	{
 		final ISourceProviderService service   = (ISourceProviderService)Util.getActiveWindow().
 				getService(ISourceProviderService.class);
-		serviceProvider  = (FilterStateProvider) service.getSourceProvider(FilterStateProvider.FILTER_REFRESH_PROVIDER);
+		DatabaseState serviceProvider  = (DatabaseState) service.getSourceProvider(DatabaseState.DATABASE_NEED_REFRESH);
 		listener 		 = new ISourceProviderListener() {
 			
 			@Override
 			public void sourceChanged(int sourcePriority, String sourceName,
 					Object sourceValue) {
-				if (sourceName.equals(FilterStateProvider.FILTER_REFRESH_PROVIDER))
+				if (sourceName.equals(DatabaseState.DATABASE_NEED_REFRESH))
 				{
 					if (sourceValue instanceof Boolean)
 					{

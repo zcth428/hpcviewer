@@ -131,6 +131,7 @@ public class DerivedMetric extends BaseMetric {
 	 * Overloading method to compute the value of the derived metric of a scope
 	 * Return a MetricValue
 	 */
+	@Override
 	public MetricValue getValue(Scope scope) {
 		double dVal;
 		// if the scope is a root scope, then we return the aggregate value

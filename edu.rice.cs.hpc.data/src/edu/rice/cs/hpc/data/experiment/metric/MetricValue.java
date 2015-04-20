@@ -268,4 +268,15 @@ public final class MetricValue
 		return value + " ( " + annotation + " ) ";
 	}
 
+	/*****
+	 * return a new copy of metric value 
+	 * 
+	 * @return
+	 */
+	public MetricValue duplicate()
+	{
+		MetricValue mv = new MetricValue(value, annotation);
+		mv.flags = flags;
+		return mv;
+	}
 }

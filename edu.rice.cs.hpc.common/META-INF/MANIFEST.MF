@@ -10,7 +10,6 @@ Require-Bundle: org.eclipse.ui,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Rice University
-Export-Package: edu.rice.cs.hpc.common.filter,
- edu.rice.cs.hpc.common.ui,
+Export-Package:  edu.rice.cs.hpc.common.ui,
  edu.rice.cs.hpc.common.util
 Import-Package: edu.rice.cs.hpc.data.util

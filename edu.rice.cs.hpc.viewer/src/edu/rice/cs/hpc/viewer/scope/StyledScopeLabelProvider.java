@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
+import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.viewer.util.Utilities;
 import edu.rice.cs.hpc.viewer.window.ViewerWindow;
@@ -103,20 +104,30 @@ public class StyledScopeLabelProvider extends StyledCellLabelProvider {
 			//---------------------------------------------------------------
 			// label for debugging purpose
 			//---------------------------------------------------------------
-			if (node instanceof CallSiteScopeCallerView) 
+			if (node instanceof CallSiteScope)
 			{
-				CallSiteScopeCallerView caller = (CallSiteScopeCallerView) node;
-				Object merged[] = caller.getMergedScopes();
-				if (merged != null) {
-					text = merged.length+ "*";
-				}
-				Scope cct = caller.getScopeCCT();
+				CallSiteScope caller = (CallSiteScope) node;
+				Scope cct = caller.getLineScope();
+				if (node instanceof CallSiteScopeCallerView) 
+				{
+					Object merged[] = ((CallSiteScopeCallerView)caller).getMergedScopes();
+					if (merged != null) {
+						int mult = merged.length + 1;
+						text = mult + "*";
+					}
+					cct = ((CallSiteScopeCallerView)caller).getScopeCCT();
+				}	
 				text += "[c:" + caller.getCCTIndex() +"/" + cct.getCCTIndex()  + "] " ;
 			} else
 				text = "[c:" + node.getCCTIndex() + "] ";
 		} 
 		if (viewerWindow.showFlatLabel()) {
-			text += "[f: " + node.getFlatIndex() + "] ";
+			text += "[f: " + node.getFlatIndex() ;
+			if (node instanceof CallSiteScope) {
+				ProcedureScope proc = ((CallSiteScope)node).getProcedureScope();
+				text += "/" + proc.getFlatIndex();
+			}
+			text += "] ";
 		} 
 		text += node.getName();	
 		return text;

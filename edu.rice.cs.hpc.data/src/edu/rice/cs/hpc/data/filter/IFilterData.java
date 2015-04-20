@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.data.experiment.scope.filters;
+package edu.rice.cs.hpc.data.filter;
 
 /**********************************************
  * 
@@ -18,4 +18,6 @@ public interface IFilterData
 	public boolean select(String element);
 	
 	public boolean isFilterEnabled();
+	
+	public FilterAttribute getFilterAttribute(String element);
 }

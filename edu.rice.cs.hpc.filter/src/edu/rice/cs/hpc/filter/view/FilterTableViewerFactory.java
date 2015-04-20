@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.common.filter.FilterAttribute;
 import edu.rice.cs.hpc.common.ui.Util;
+import edu.rice.cs.hpc.data.filter.FilterAttribute;
 import edu.rice.cs.hpc.filter.pattern.PatternValidator;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 import edu.rice.cs.hpc.filter.service.FilterStateProvider;
@@ -158,7 +158,7 @@ public class FilterTableViewerFactory
 	/**********************************************************
 	 * 
 	 * Class to show a combo box inside a table cell 
-	 * The combo contains any enumerations in {@link edu.rice.cs.hpc.common.filter.FilterAttribute.Type }
+	 * The combo contains any enumerations in {@link edu.rice.cs.hpc.data.filter.FilterAttribute.Type }
 	 *
 	 **********************************************************/
 	private static class ComboEditingSupport extends EditingSupport

@@ -2,16 +2,20 @@ package edu.rice.cs.hpc.viewer.window;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.State;
+import org.eclipse.ui.ISourceProviderListener;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.RegistryToggleState;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.filter.service.FilterMap;
+import edu.rice.cs.hpc.filter.service.FilterStateProvider;
 import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.provider.DatabaseState;
@@ -62,8 +66,44 @@ public class ViewerWindow {
 		ICommandService commandService = (ICommandService) winObj.getService(ICommandService.class);
 		cmdDebugCCT = commandService.getCommand( DebugShowCCT.commandId );
 		cmdDebugFlat = commandService.getCommand( DebugShowFlatID.commandId );
+		
+		// listen to filter change of states
+		final ISourceProviderService service = (ISourceProviderService) window.getService(ISourceProviderService.class);
+		final FilterStateProvider service_provider = (FilterStateProvider) service.getSourceProvider(FilterStateProvider.FILTER_REFRESH_PROVIDER);
+		service_provider.addSourceProviderListener(new ISourceProviderListener() {
+
+			@Override
+			public void sourceChanged(int sourcePriority, Map sourceValuesByName) {}
+
+			@Override
+			public void sourceChanged(int sourcePriority, String sourceName,
+					Object sourceValue) {
+				if (sourceName.equals(FilterStateProvider.FILTER_REFRESH_PROVIDER)) 
+				{
+					Boolean filter = (Boolean) sourceValue;
+					filterAllDatabases(filter);
+				}
+			}
+			
+		});
 	}
 
+	private void filterAllDatabases(boolean filter)
+	{
+		if (filter) 
+		{
+			// filter the experiment
+			Experiment []experiments = getExperiments();
+			for (Experiment experiment : experiments)
+			{
+				experiment.filter(FilterMap.getInstance());
+			}
+		}
+		final ISourceProviderService service = (ISourceProviderService) winObj.getService(ISourceProviderService.class);
+		DatabaseState databaseState = (DatabaseState) service.getSourceProvider(DatabaseState.DATABASE_NEED_REFRESH);
+		databaseState.refreshDatabase(filter);
+	}
+	
 	/**
 	 * Get the next database number to be used in this window.
 	 * @return

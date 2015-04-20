@@ -15,16 +15,10 @@
 package edu.rice.cs.hpc.data.util;
 
 
-//import java.awt.Color;
-//import java.awt.FontMetrics;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
-//import javax.swing.JComponent;
-//import javax.swing.JPanel;
-//import javax.swing.SwingUtilities;
-
 
 
 
@@ -119,20 +113,6 @@ public static String rightJustifiedField(String s, int fieldWidth)
 
 
 /*************************************************************************
- *	Returns the width of a string in a given font on screen.
- ************************************************************************/
-	/*
-public static int computeStringWidth(String fontPropertyName, String s)
-{
-	JComponent temp = new JPanel();
-	FontMetrics fm  = temp.getFontMetrics(Prefs.getFont(fontPropertyName));
-	return SwingUtilities.computeStringWidth(fm, s);
-}
-*/
-
-
-
-/*************************************************************************
  *	Returns a new <code>DecimalFormat</code> object with a given pattern.
  ************************************************************************/
 	
@@ -187,7 +167,6 @@ public static String formatDouble(double d, DecimalFormat formatter, int fieldWi
  * The filter is basically very simple: if the last 3 letters has "xml" substring
  * then we consider it as XML file.
  * TODO: we need to have a more sophisticated approach to filter only the real XML files
- * @author laksono
  *
  */
 public static class FileXMLFilter implements FilenameFilter {
@@ -202,9 +181,8 @@ public static class FileXMLFilter implements FilenameFilter {
 
 
 /**
- * 
- * @author laksonoadhianto
- *
+ *  File filter to find a file with a glob-style pattern
+ *  It is primarily used by File.listdir method.
  */
 public static class FileThreadsMetricFilter implements FilenameFilter {
 	private String db_glob;
@@ -234,38 +212,6 @@ public static File[] getListOfXMLFiles(String sDir)
 static public String getObjectID(Object o) {
 	return Integer.toHexString(System.identityHashCode(o));
 }
-
-
-static public void println( boolean debug, String str)
-{
-	if (debug)
-		System.out.println(str);
-}
-
-//////////////////////////////////////////////////////////////////////////
-//	COLOR																//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-
-/*************************************************************************
- *	Returns a specified blend of two colors.
- *
- *	@return		(fraction * c1) + ((1.0 - fraction) * c2) in RGB color space
- *
- ************************************************************************/
-	/*
-public static Color blendColors(Color c1, double fraction1, Color c2)
-{
-	double fraction2 = 1.0 - fraction1;
-	int red   = (int) Math.round( (fraction1 * c1.getRed()  ) + (fraction2 * c2.getRed()  ) );
-	int green = (int) Math.round( (fraction1 * c1.getGreen()) + (fraction2 * c2.getGreen()) );
-	int blue  = (int) Math.round( (fraction1 * c1.getBlue() ) + (fraction2 * c2.getBlue() ) );
-	return new Color(red, green, blue);
-}
-
-*/
 
 
 }

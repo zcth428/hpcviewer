@@ -104,9 +104,10 @@ public class FilterStateProvider extends AbstractSourceProvider
 	public void refresh(Boolean enableFilter)
 	{
 		this.enable = enableFilter;
-		fireSourceChanged(ISources.WORKBENCH, FILTER_REFRESH_PROVIDER, enableFilter);
 		Properties properties = new Properties();
 		properties.put(FILTER_REFRESH_PROVIDER, enableFilter);
+
+		fireSourceChanged(ISources.WORKBENCH, FILTER_REFRESH_PROVIDER, enableFilter);
 	}
 	
 	/*****

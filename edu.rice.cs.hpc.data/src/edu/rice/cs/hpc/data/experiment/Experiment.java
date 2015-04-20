@@ -20,8 +20,9 @@ import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
 import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
+import edu.rice.cs.hpc.data.filter.IFilterData;
+
 import java.io.File;
-import java.util.*;
 
 //////////////////////////////////////////////////////////////////////////
 //	CLASS EXPERIMENT													//
@@ -34,7 +35,7 @@ import java.util.*;
  */
 
 
-public class Experiment extends BaseExperimentWithMetrics implements IExperiment
+public class Experiment extends BaseExperimentWithMetrics
 {
 	// thread level database
 	private MetricRaw[] metrics_raw;
@@ -45,30 +46,6 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	//	PERSISTENCE															//
 	//////////////////////////////////////////////////////////////////////////
 
-
-	
-	/*************************************************************************
-	 *	Sets the experiment's metric list.
-	 *
-	 *	This method is to be called only once, during initialization
-	 *
-	 ************************************************************************/
-/*
-	public void setMetrics(List<BaseMetric> metricList)
-	{
-		super.setMetrics(metricList);
-
-		// initialize metric access data structures
-		int count = metricList.size();
-
-		for( int k = 0;  k < count;  k++ )
-		{	
-			BaseMetric m = this.metrics.get(k);
-			m.setIndex(k);
-		}
-	}
-
-*/
 
 
 	public int getMajorVersion()
@@ -124,7 +101,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 */
 	protected RootScope prepareCallersView(Scope callingContextViewRootScope)
 	{
-		RootScope callersViewRootScope = new RootScope(this,"Callers View","Callers View", RootScopeType.CallerTree);
+		RootScope callersViewRootScope = new RootScope(this, "Callers View", RootScopeType.CallerTree);
 		beginScope(callersViewRootScope);
 		
 		return callersViewRootScope;
@@ -168,7 +145,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 
 	protected Scope createFlatView(Scope callingContextViewRootScope)
 	{
-		Scope flatViewRootScope = new RootScope(this, "Flat View", "Flat View", RootScopeType.Flat);
+		Scope flatViewRootScope = new RootScope(this, "Flat View", RootScopeType.Flat);
 		beginScope(flatViewRootScope);
 
 		FlatViewScopeVisitor fv = new FlatViewScopeVisitor(this, (RootScope) flatViewRootScope);
@@ -239,7 +216,7 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	 */
 	public RootScope getCallerTreeRoot() {
 
-		for (TreeNode node: this.rootScope.getChildren()) {
+		for (TreeNode node: getRootScope().getChildren()) {
 			Scope scope = (Scope) node;
 			if ( (scope instanceof RootScope) && 
 					((RootScope)scope).getType()==RootScopeType.CallerTree )
@@ -426,4 +403,25 @@ public class Experiment extends BaseExperimentWithMetrics implements IExperiment
 	}
 
 
+
+	@Override
+	protected void filter_finalize(RootScope rootMain, RootScope rootCCT,
+			IFilterData filter) {
+		// create filtered callers tree
+		RootScope callersViewRootScope = prepareCallersView(rootCCT);
+		createCallersView(rootCCT, callersViewRootScope);
+		
+		Scope flatViewRootScope = null;
+		// While creating the flat tree, we attribute the cost for procedure scopes
+		// One the tree has been created, we compute the inclusive cost for other scopes
+		flatViewRootScope = createFlatView(rootCCT);
+
+		//----------------------------------------------------------------------------------------------
+		// FINALIZATION
+		//----------------------------------------------------------------------------------------------
+		AbstractFinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
+
+		this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
+		addPercents(flatViewRootScope, (RootScope) rootCCT);
+	}
 }

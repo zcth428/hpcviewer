@@ -69,7 +69,7 @@ public class ExperimentMerger
 		merged.setConfiguration( configuration );
 
 		// Add tree1, walk tree2 & add; just CCT/Flat
-		RootScope rootScope = new RootScope(merged, "Merged Experiment","Invisible Outer Root Scope", RootScopeType.Invisible);
+		RootScope rootScope = new RootScope(merged,"Invisible Outer Root Scope", RootScopeType.Invisible);
 		merged.setRootScope(rootScope);
 				
 		// -----------------------------------------------
@@ -108,7 +108,7 @@ public class ExperimentMerger
 		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[root_type];	
 
 		RootScope root2_copy = new RootScope(root2.getExperiment(), 
-				"copy root 2","Invisible Outer Root Scope", RootScopeType.Invisible);
+				"Invisible Outer Root Scope", RootScopeType.Invisible);
 
 		DuplicateScopeTreesVisitor visitor = new DuplicateScopeTreesVisitor(root2_copy);
 		root2.dfsVisitScopeTree(visitor);

@@ -3,10 +3,7 @@ package edu.rice.cs.hpc.viewer.scope;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import edu.rice.cs.hpc.data.experiment.BaseExperiment;
-import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.viewer.filter.AbstractFilterScope;
 
 public abstract class AbstractContentProvider implements ITreeContentProvider 
 {
@@ -36,15 +33,7 @@ public abstract class AbstractContentProvider implements ITreeContentProvider
         	// if the database has empty data, the children is null
         	if (arrChildren != null && arrChildren.length>0)
         	{
-    			if (!enableFilter) {
-        			return arrChildren;
-    			} else {
-    				Object data = viewer.getTree().getData();
-    				if (data instanceof RootScope) {
-    					BaseExperiment exp = ((RootScope)data).getExperiment();
-        				return getFilter(exp).filter(parent, arrChildren);
-    				}
-    			}
+    			return arrChildren;
         	}
     	}
     	return null;
@@ -93,6 +82,4 @@ public abstract class AbstractContentProvider implements ITreeContentProvider
      * @see org.eclipse.jface.viewers.IContentProvider#dispose()
      */
     public void dispose() {}
-    
-    abstract protected AbstractFilterScope getFilter(BaseExperiment experiment);
 }

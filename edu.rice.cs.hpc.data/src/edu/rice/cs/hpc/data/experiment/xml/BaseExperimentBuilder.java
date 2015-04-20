@@ -1032,10 +1032,8 @@ public class BaseExperimentBuilder extends Builder {
 	 ************************************************************************/
 	protected void begin_SecData(String[] attributes, String[] values) 
 	{
-		String name = getAttributeByName(NAME_ATTRIBUTE, attributes, values);
-		
 		// make the root scope
-		this.rootScope = new RootScope(this.experiment, name,"Invisible Outer Root Scope", RootScopeType.Invisible);
+		this.rootScope = new RootScope(this.experiment, "Invisible Outer Root Scope", RootScopeType.Invisible);
 		this.scopeStack.push(this.rootScope);	// don't use 'beginScope'
 
 		final String title;
@@ -1048,7 +1046,7 @@ public class BaseExperimentBuilder extends Builder {
 			title = "Flat View";
 			rootType = RootScopeType.Flat;
 		}
-		this.viewRootScope[0]  = new RootScope(this.experiment, name, title, rootType);
+		this.viewRootScope[0]  = new RootScope(this.experiment, title, rootType);
 		beginScope(this.viewRootScope[0]);
 	}
 

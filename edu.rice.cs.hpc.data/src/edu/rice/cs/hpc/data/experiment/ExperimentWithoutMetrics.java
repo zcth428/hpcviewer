@@ -2,6 +2,8 @@ package edu.rice.cs.hpc.data.experiment;
 
 import java.io.File;
 
+import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.filter.IFilterData;
 import edu.rice.cs.hpc.data.util.IUserData;
 
 /*************************************
@@ -32,5 +34,10 @@ public class ExperimentWithoutMetrics extends BaseExperiment
 		
 		return copy;
 	}
+
+
+	@Override
+	protected void filter_finalize(RootScope rootMain, RootScope rootCCT,
+			IFilterData filter) {	}
 
 }

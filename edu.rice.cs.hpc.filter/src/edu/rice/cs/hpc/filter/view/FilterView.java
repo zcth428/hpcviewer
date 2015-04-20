@@ -25,8 +25,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.services.ISourceProviderService;
 
-import edu.rice.cs.hpc.common.filter.FilterAttribute;
 import edu.rice.cs.hpc.common.ui.Util;
+import edu.rice.cs.hpc.data.filter.FilterAttribute;
 import edu.rice.cs.hpc.filter.pattern.PatternValidator;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 import edu.rice.cs.hpc.filter.service.FilterStateProvider;
@@ -146,15 +146,9 @@ public class FilterView extends ViewPart implements IFilterView
 			{
 				// refresh the table whenever there's a new fresh data
 				if (sourceName.equals(FilterStateProvider.FILTER_REFRESH_PROVIDER)) {
-					if (sourceValue instanceof FilterMap)
-					{
-						FilterMap map = (FilterMap) sourceValue;
-						tableViewer.setInput(map.getEntrySet());
-					} else {
-						// enable of disable filter
-						FilterMap map = FilterMap.getInstance();
-						tableViewer.setInput(map.getEntrySet());
-					}
+					// enable of disable filter
+					FilterMap map = FilterMap.getInstance();
+					tableViewer.setInput(map.getEntrySet());
 					tableViewer.refresh();
 				}
 			}

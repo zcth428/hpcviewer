@@ -22,6 +22,7 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.DerivedMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilter;
+import edu.rice.cs.hpc.data.experiment.scope.visitors.FilterScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
 import edu.rice.cs.hpc.data.util.IProcedureTable;
@@ -44,7 +45,19 @@ import edu.rice.cs.hpc.data.util.IProcedureTable;
 
 public abstract class Scope extends Node
 {
-	/** The current maximum number of ID for all scopes	 */
+//////////////////////////////////////////////////////////////////////////
+//PUBLIC CONSTANTS						//
+//////////////////////////////////////////////////////////////////////////
+
+
+/** The value used to indicate "no line number". */
+public static final int NO_LINE_NUMBER = -169; // any negative number other than -1
+
+static public final int SOURCE_CODE_UNKNOWN = 0;
+static public final int SOURCE_CODE_AVAILABLE = 1;
+static public final int SOURCE_CODE_NOT_AVAILABLE= 2;
+
+/** The current maximum number of ID for all scopes	 */
 static protected int idMax = 0;
 
 /** The experiment owning this scope. */
@@ -65,10 +78,6 @@ protected int lastLineNumber;
 /** The metric values associated with this scope. */
 protected MetricValue[] metrics;
 protected MetricValue[] combinedMetrics;
-/** Use this value if the children of this scope are filtered.
- *  Depending on the type of filter, the metric value can be different
- *  to the original values */
-private MetricValue[] filteredMetrics; 
 
 /** source citation */
 protected String srcCitation;
@@ -84,18 +93,8 @@ private int iCounter;
 protected int cpid;
 //--------------------------
 
-static public final int SOURCE_CODE_UNKNOWN = 0;
-static public final int SOURCE_CODE_AVAILABLE = 1;
-static public final int SOURCE_CODE_NOT_AVAILABLE= 2;
 public int iSourceCodeAvailability = Scope.SOURCE_CODE_UNKNOWN;
 
-//////////////////////////////////////////////////////////////////////////
-//	PUBLIC CONSTANTS						//
-//////////////////////////////////////////////////////////////////////////
-
-
-/** The value used to indicate "no line number". */
-public static final int NO_LINE_NUMBER = -169; // any negative number other than -1
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -499,51 +498,6 @@ public boolean hasNonzeroMetrics() {
 	return false;
 }
 
-public int getFilteredMetricsSize()
-{
-	int size = 0;
-	if (filteredMetrics != null) {
-		size = filteredMetrics.length;
-	}
-	return size;
-}
-
-
-public MetricValue getFilteredMetric(int index)
-{
-	if (filteredMetrics != null && index < filteredMetrics.length)
-	{
-		return filteredMetrics[index];
-	}
-	return metrics[index];
-}
-
-public void setFilteredMetric(int index, MetricValue mv)
-{
-	if (filteredMetrics == null)
-	{
-		filteredMetrics = new MetricValue[metrics.length];
-		for (int i=0; i<filteredMetrics.length; i++)
-		{
-			// by default the filtered metric is exactly the same as the real metric
-			filteredMetrics[i] = metrics[i];
-		}
-	}
-	filteredMetrics[index] = mv;
-}
-
-public void resetFilteredMetric()
-{
-	if (filteredMetrics == null)
-	{
-		filteredMetrics = new MetricValue[metrics.length];
-	}
-	for (int i=0; i<filteredMetrics.length; i++)
-	{
-		// by default the filtered metric is exactly the same as the real metric
-		filteredMetrics[i] = metrics[i];
-	}
-}
 
 //////////////////////////////////////////////////////////////////////////
 // EXPERIMENT DATABASE 													//
@@ -569,24 +523,16 @@ public void setExperiment(BaseExperiment exp) {
 public MetricValue getMetricValue(BaseMetric metric)
 {
 	int index = metric.getIndex();
-	MetricValue value;
+	MetricValue value = getMetricValue(index);
 
-	if(this.metrics != null && index < this.metrics.length)
+	// compute percentage if necessary
+	Scope root = this.experiment.getRootScope();
+	if((this != root) && (! MetricValue.isAnnotationAvailable(value)))
 	{
-		value = this.metrics[index];
-
-		// compute percentage if necessary
-		Scope root = this.experiment.getRootScope();
-		if((this != root) && (! MetricValue.isAnnotationAvailable(value)))
-		{
-			MetricValue total = root.getMetricValue(metric);
-			if(MetricValue.isAvailable(total))
-				MetricValue.setAnnotationValue(value, MetricValue.getValue(value)/MetricValue.getValue(total));
-		} 
-
-	}
-	else
-		value = MetricValue.NONE;
+		MetricValue total = root.getMetricValue(metric);
+		if(MetricValue.isAvailable(total))
+			MetricValue.setAnnotationValue(value, MetricValue.getValue(value)/MetricValue.getValue(total));
+	} 
 
 	return value;
 }
@@ -923,5 +869,23 @@ public void accept(IScopeVisitor visitor, ScopeVisitType vt) {
 	visitor.visit(this, vt);
 }
 
-	
+/*******
+ * depth first search scope with checking whether we should go deeper or not
+ * 
+ * @param sv
+ */
+public void dfsVisitFilterScopeTree(FilterScopeVisitor sv) {
+	accept(sv, ScopeVisitType.PreVisit);
+	if (sv.needToContinue())
+	{
+		int nKids = getSubscopeCount();
+		for (int i=0; i< nKids; i++) {
+			Scope childScope = getSubscope(i);
+			if (childScope != null)
+				childScope.dfsVisitFilterScopeTree(sv);
+		}
+	}
+	accept(sv, ScopeVisitType.PostVisit);
+}
+
 }

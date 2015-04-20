@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.common.filter;
+package edu.rice.cs.hpc.data.filter;
 
 import java.io.Serializable;
 

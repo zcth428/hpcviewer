@@ -86,6 +86,7 @@ public class ViewerWindow {
 			}
 			
 		});
+		
 	}
 
 	private void filterAllDatabases(boolean filter)
@@ -94,9 +95,12 @@ public class ViewerWindow {
 		{
 			// filter the experiment
 			Experiment []experiments = getExperiments();
-			for (Experiment experiment : experiments)
+			if (experiments != null)
 			{
-				experiment.filter(FilterMap.getInstance());
+				for (Experiment experiment : experiments)
+				{
+					experiment.filter(FilterMap.getInstance());
+				}
 			}
 		}
 		final ISourceProviderService service = (ISourceProviderService) winObj.getService(ISourceProviderService.class);

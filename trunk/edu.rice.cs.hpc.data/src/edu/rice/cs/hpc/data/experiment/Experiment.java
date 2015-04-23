@@ -104,7 +104,7 @@ public class Experiment extends BaseExperimentWithMetrics
 		RootScope callersViewRootScope = new RootScope(this, "Callers View", RootScopeType.CallerTree);
 		beginScope(callersViewRootScope);
 		
-		return callersViewRootScope;
+		return createCallersView(callingContextViewRootScope, callersViewRootScope);
 	}
 	
 	/***
@@ -405,20 +405,27 @@ public class Experiment extends BaseExperimentWithMetrics
 
 
 	@Override
-	protected void filter_finalize(RootScope rootMain, RootScope rootCCT,
-			IFilterData filter) {
-		// create filtered callers tree
-		RootScope callersViewRootScope = prepareCallersView(rootCCT);
-		createCallersView(rootCCT, callersViewRootScope);
+	protected void filter_finalize(RootScope rootCCT, IFilterData filter) 
+	{
+		//------------------------------------------------------------------------------------------
+		// filtering callers tree (bottom-up):
+		// check if the callers tree has been created or not. If it's been created,
+		// we need to remove it and create a new filter.
+		// otherwise, we do nothing, and let the viewer to create dynamically
+		//------------------------------------------------------------------------------------------
+		prepareCallersView(rootCCT);
 		
+		//------------------------------------------------------------------------------------------
+		// creating the flat tree from the filtered cct tree
+		//------------------------------------------------------------------------------------------
 		Scope flatViewRootScope = null;
 		// While creating the flat tree, we attribute the cost for procedure scopes
 		// One the tree has been created, we compute the inclusive cost for other scopes
 		flatViewRootScope = createFlatView(rootCCT);
 
-		//----------------------------------------------------------------------------------------------
+		//------------------------------------------------------------------------------------------
 		// FINALIZATION
-		//----------------------------------------------------------------------------------------------
+		//------------------------------------------------------------------------------------------
 		AbstractFinalizeMetricVisitor diVisitor = new FinalizeMetricVisitor(this.getMetrics());
 
 		this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view

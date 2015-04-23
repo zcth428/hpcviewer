@@ -37,7 +37,7 @@ public class ExperimentWithoutMetrics extends BaseExperiment
 
 
 	@Override
-	protected void filter_finalize(RootScope rootMain, RootScope rootCCT,
+	protected void filter_finalize(RootScope rootMain,
 			IFilterData filter) {	}
 
 }

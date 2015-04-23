@@ -1,13 +1,11 @@
 package edu.rice.cs.hpc.viewer.experiment;
 
-import java.util.HashMap;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import edu.rice.cs.hpc.common.util.ProcedureAliasMap;
 import edu.rice.cs.hpc.data.experiment.*; 
 import edu.rice.cs.hpc.viewer.framework.Activator;
 import edu.rice.cs.hpc.viewer.scope.BaseScopeView;
-import edu.rice.cs.hpc.viewer.scope.DynamicViewListener;
 import edu.rice.cs.hpc.viewer.scope.bottomup.CallerScopeView;
 import edu.rice.cs.hpc.viewer.scope.flat.FlatScopeView;
 import edu.rice.cs.hpc.viewer.scope.topdown.ScopeView;
@@ -20,17 +18,18 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
+import edu.rice.cs.hpc.filter.service.FilterMap;
 
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-/**
+
+/******************************************************************************
  * Class to be used as an interface between the GUI and the data experiment
  * This class should be called from an eclipse view !
- * @author laksono
  *
- */
+ ******************************************************************************/
 public class ExperimentView {
 
 	static final private int VIEW_STATE_INIT = -1;
@@ -41,9 +40,6 @@ public class ExperimentView {
 	 */
 	protected BaseScopeView []arrScopeViews;
 	
-	/** we have to make sure that the listener is added only once for a given window **/
-	static private HashMap<IWorkbenchWindow, DynamicViewListener> hashWindow;
-	
 	/**
 	 * Constructor for Data experiment. Needed to link with the view
 	 * @param objTarget: the scope view to link with
@@ -51,24 +47,11 @@ public class ExperimentView {
 	public ExperimentView(IWorkbenchPage objTarget) {
 		if(objTarget != null) {
 			this.objPage = objTarget;
-			
-			if (hashWindow == null) {
-				hashWindow = new HashMap<IWorkbenchWindow, DynamicViewListener>();
-			}
-			IWorkbenchWindow window = objPage.getWorkbenchWindow();
-			DynamicViewListener listener = hashWindow.get(window);
-			if (listener == null) {
-				listener = new DynamicViewListener(window);
-				window.getPartService().addPartListener(listener);
-				hashWindow.put(window, listener);
-			}
 
 		} else {
 			System.err.println("EV Error: active page is null !");
 		}
 	}
-	
-
 	
 	/**
 	 * A wrapper of loadExperiment() by adding some processing and generate the views
@@ -84,6 +67,13 @@ public class ExperimentView {
 		if(experiment != null) {
 			try {
 				experiment.postprocess(bCallerView);
+				
+				// check if the filter is enabled
+				FilterMap filter = FilterMap.getInstance();
+				if (filter.isFilterEnabled()) {
+					experiment.filter(FilterMap.getInstance());
+				}
+		        this.generateView(experiment);
 			} catch (java.lang.OutOfMemoryError e) 
 			{
 				MessageDialog.openError(this.objPage.getWorkbenchWindow().getShell(), "Out of memory", 
@@ -93,7 +83,6 @@ public class ExperimentView {
 				MessageDialog.openError(objPage.getWorkbenchWindow().getShell(), "Critical error", 
 						"XML file is not in correct format: \n"+e.getMessage());
 			}
-	        this.generateView(experiment);
 	        return true;
 		}
 		return false;
@@ -259,31 +248,15 @@ public class ExperimentView {
 
 		} else if (root.getType() == RootScopeType.CallerTree) {
 			if (viewState != VIEW_STATE_INIT) {
+				// the view has been closed. Activate again.
 				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_ACTIVATE);
-				// the view has been closed. Need to set the input again
-				objView.setInput(db, root, false);
 			} else {
 				// default situation (or first creation)
-				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE); 
-				
-				if (viewState == VIEW_STATE_INIT) {
-					// we need to initialize the view since hpcviewer requires every view to have database and rootscope 
-					objView.initDatabase(db, root, false);
-					
-					if (hashWindow == null) {
-						hashWindow = new HashMap<IWorkbenchWindow, DynamicViewListener>();
-					}
-					final IWorkbenchWindow window = page.getWorkbenchWindow();
-					
-					DynamicViewListener dynamicViewListener = hashWindow.get(window);
-					if (dynamicViewListener == null) {
-						dynamicViewListener = new DynamicViewListener(window);
-						window.getPartService().addPartListener(dynamicViewListener);
-						hashWindow.put(window, dynamicViewListener);
-					}
-					dynamicViewListener.addView(objView, db, root);
-				}
+				objView = (BaseScopeView) page.showView(CallerScopeView.ID , secondaryID, IWorkbenchPage.VIEW_VISIBLE); 				
 			}
+			// callers view is a bit peculiar: it creates its tree dynamically.
+			// we need then to reset the tree from scratch.
+			objView.setInput(db, root, false);					
 
 		} else if (root.getType() == RootScopeType.Flat) {
 			int state = (viewState<=0? IWorkbenchPage.VIEW_VISIBLE : viewState);

@@ -245,13 +245,17 @@ public void filter(IFilterData filter)
 	rootScopeFilter = new RootScope(this,  rootScope.getName(), rootScope.getType());
 	rootScopeFilter.setExperiment(this);
 	
+	// TODO :  we assume the first child is the CCT
+	final RootScope rootCCT = (RootScope) rootScope.getChildAt(0);
+
 	// duplicate and filter the cct
-	RootScope rootCCT 		   = (RootScope) rootScope.getChildAt(0);
 	FilterScopeVisitor visitor = new FilterScopeVisitor(rootScopeFilter, rootCCT, filter);
 	rootCCT.dfsVisitFilterScopeTree(visitor);
 	
 	if (rootCCT.getType() == RootScopeType.CallingContextTree) {
-		filter_finalize(rootScopeFilter, (RootScope) rootScopeFilter.getChildAt(0), filter);
+		// TODO :  we assume the first child is the CCT
+		final RootScope rootFilterCCT = (RootScope) rootScopeFilter.getChildAt(0);
+		filter_finalize(rootFilterCCT, filter);
 	}
 }
 
@@ -259,10 +263,9 @@ public void filter(IFilterData filter)
  * In case the experiment has a CCT, continue to create callers tree and
  * flat tree for the finalization.
  * 
- * @param rootMain
  * @param rootCCT
  * @param filter
  ************************************************************************/
-abstract protected void filter_finalize(RootScope rootMain, RootScope rootCCT, IFilterData filter);
+abstract protected void filter_finalize(RootScope rootMain, IFilterData filter);
 
 }

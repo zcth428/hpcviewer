@@ -46,7 +46,6 @@ import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.util.OSValidator;
-import edu.rice.cs.hpc.filter.service.FilterStateProvider;
 import edu.rice.cs.hpc.viewer.actions.DebugShowCCT;
 import edu.rice.cs.hpc.viewer.actions.DebugShowFlatID;
 import edu.rice.cs.hpc.viewer.actions.ShowMetricProperties;

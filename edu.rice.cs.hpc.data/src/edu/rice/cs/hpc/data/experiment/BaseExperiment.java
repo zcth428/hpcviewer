@@ -30,7 +30,7 @@ public abstract class BaseExperiment implements IExperiment {
 	protected RootScope rootScope;
 	
 	/*** filter version of root scope ***/
-	protected RootScope rootFilterScope;
+	protected RootScope rootScopeFilter;
 
 	/** version of the database **/
 	protected String version;
@@ -52,15 +52,42 @@ public abstract class BaseExperiment implements IExperiment {
 
 	
 	/***
-	 * retrieve the root scope
+	 * retrieve the root scope.
+	 * <p>The method returns the appropriate root if the filter is enabled or not.
+	 * <br/>If the filter is enabled, it will return the filtered root (assuming 
+	 * the database has been filtered), otherwise it will return the original root.</p>
+	 * Note: if the filter is enabled but the filter root is not set (the database 
+	 * hasn't been filtered) should we return the original root ? or should we throw
+	 * an exception ?
+	 * 
+	 * @return the root scope
 	 */
 	public Scope getRootScope() {
-		if (filter != null && filter.isFilterEnabled() && rootFilterScope != null) {
-			return rootFilterScope;
+		RootScope root = rootScope;
+		if (filter != null && filter.isFilterEnabled() && rootScopeFilter != null) {
+			root = rootScopeFilter;
 		}
-		return rootScope;
+		return root;
 	}
 
+	/****
+	 * return the original root scope (unfiltered tree)
+	 * @return root scope
+	 */
+	public RootScope getRootScopeOriginal()
+	{
+		return rootScope;
+	}
+	
+	/****
+	 * return the filtered root scope
+	 * 
+	 * @return root scope
+	 */
+	public RootScope getRootScopeFilter()
+	{
+		return rootScopeFilter;
+	}
 	
 	/****
 	 * retrieve the root scope of caller tree (bottom-up view)
@@ -197,10 +224,10 @@ public void dispose()
 	rootScope.dfsVisitScopeTree(visitor);
 	this.rootScope = null;
 	
-	if (rootFilterScope != null)
+	if (rootScopeFilter != null)
 	{
-		rootFilterScope.dfsVisitScopeTree(visitor);
-		rootFilterScope = null;
+		rootScopeFilter.dfsVisitScopeTree(visitor);
+		rootScopeFilter = null;
 	}
 }
 
@@ -215,16 +242,16 @@ public void filter(IFilterData filter)
 {
 	this.filter     = filter;
 	// create the invisible main root
-	rootFilterScope = new RootScope(this,  rootScope.getName(), rootScope.getType());
-	rootFilterScope.setExperiment(this);
+	rootScopeFilter = new RootScope(this,  rootScope.getName(), rootScope.getType());
+	rootScopeFilter.setExperiment(this);
 	
 	// duplicate and filter the cct
 	RootScope rootCCT 		   = (RootScope) rootScope.getChildAt(0);
-	FilterScopeVisitor visitor = new FilterScopeVisitor(rootFilterScope, rootCCT, filter);
+	FilterScopeVisitor visitor = new FilterScopeVisitor(rootScopeFilter, rootCCT, filter);
 	rootCCT.dfsVisitFilterScopeTree(visitor);
 	
 	if (rootCCT.getType() == RootScopeType.CallingContextTree) {
-		filter_finalize(rootFilterScope, (RootScope) rootFilterScope.getChildAt(0), filter);
+		filter_finalize(rootScopeFilter, (RootScope) rootScopeFilter.getChildAt(0), filter);
 	}
 }
 

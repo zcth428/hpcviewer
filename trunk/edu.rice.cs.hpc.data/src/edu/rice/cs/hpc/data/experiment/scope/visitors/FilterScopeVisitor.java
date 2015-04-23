@@ -112,7 +112,13 @@ public class FilterScopeVisitor implements IScopeVisitor
 				need_to_continue = (filterAttribute.filterType == FilterAttribute.Type.Exclusive);
 				if (metrics  != null)
 				{
-					mergeMetrics(parent, scope);
+					if (scope instanceof LineScope)
+					{
+						// no need to merge metric if the filtered child is a line statement.
+						// in this case, the parent (PF) already includes the exclusive value.
+					} else {
+						mergeMetrics(parent, scope);
+					}
 				}
 				stackScopes.push(parent);
 			} else 

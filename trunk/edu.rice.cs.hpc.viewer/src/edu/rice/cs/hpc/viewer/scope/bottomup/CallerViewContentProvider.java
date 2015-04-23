@@ -1,24 +1,15 @@
 package edu.rice.cs.hpc.viewer.scope.bottomup;
 
-import org.eclipse.core.runtime.Assert;
-
-import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
-import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.MetricType;
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
 import edu.rice.cs.hpc.data.experiment.scope.IMergedScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.scope.filters.ExclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.filters.InclusiveOnlyMetricPropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FinalizeMetricVisitorWithBackup;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PercentScopeVisitor;
-import edu.rice.cs.hpc.data.filter.FilterAttribute;
-import edu.rice.cs.hpc.data.filter.FilterAttribute.Type;
 import edu.rice.cs.hpc.viewer.scope.AbstractContentProvider;
 
 /************************************************************************

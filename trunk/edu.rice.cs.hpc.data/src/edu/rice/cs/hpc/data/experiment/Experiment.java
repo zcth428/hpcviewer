@@ -128,7 +128,7 @@ public class Experiment extends BaseExperimentWithMetrics
 		// Callers tree is special since we can have the root, but its children are created dynamically.
 		// For the case of derived metric, the root may already have the value, so we need to reset it again
 		//	before we "accumulate" from the CCT
-		callersViewRootScope.resetMetricValues();
+		//callersViewRootScope.resetMetricValues();
 		
 		// bug fix 2008.10.21 : we don't need to recompute the aggregate metrics here. Just copy it from the CCT
 		//	This will solve the problem where there is only nested loops in the programs
@@ -228,14 +228,17 @@ public class Experiment extends BaseExperimentWithMetrics
 
 	/**
 	 * Post-processing for CCT:
-	 * @param:
-	 * 	callerView: compute caller view if true.
-	 * 
-	 * Step 1: normalizing CCT view
-	 *  - normalize line scope, which means to add the cost of line scope into call site scope
-	 *  - compute inclusive metrics for I
-	 *  - compute inclusive metrics for X
-	 *  Step 2: create call view (if enabled) and flat view
+	 * <p>
+	 * <ol><li>Step 1: normalizing CCT view
+	 *  <ul><li> normalize line scope, which means to add the cost of line scope into call site scope
+	 *  	<li> compute inclusive metrics for I
+	 *  	<li> compute inclusive metrics for X
+	 *  </li>
+	 *  </ul>
+	 *  <li>Step 2: create call view (if enabled) and flat view
+	 *  <li>Step 3: finalize metrics for cct and flat view (callers view metric will be finalized dynamically)
+	 * </ol></p>
+	 * @param callerView : flag whether to compute caller view (if true) or not.
 	 */
 	public void postprocess(boolean callerView) {
 		if (this.rootScope.getSubscopeCount() <= 0) return;
@@ -288,7 +291,9 @@ public class Experiment extends BaseExperimentWithMetrics
 
 			this.finalizeAggregateMetrics(callingContextViewRootScope, diVisitor);		// cct
 
+			//----------------------------------------------------------------------------------------------
 			// Laks 2008.06.16: adjusting the percent based on the aggregate value in the calling context
+			//----------------------------------------------------------------------------------------------
 			addPercents(callingContextViewRootScope, (RootScope) callingContextViewRootScope);
 			addPercents(flatViewRootScope, (RootScope) callingContextViewRootScope);
 
@@ -300,9 +305,9 @@ public class Experiment extends BaseExperimentWithMetrics
 	}
 
 	/**
-	 * check the existence of an aggregate metric  
+	 * check the existence of an aggregate metric. <br/>
 	 * If the metric is an aggregate, we need to initialize them !
-	 * @return
+	 * @return true if the database contains a derived incremental (or aggregate) metric
 	 */
 	private boolean checkExistenceOfDerivedIncr() {
 		boolean isAggregate = false;
@@ -312,7 +317,7 @@ public class Experiment extends BaseExperimentWithMetrics
 			if (is_aggregate) {
 				isAggregate |= is_aggregate;
 				AggregateMetric aggMetric = (AggregateMetric) metric;
-				// hack: initialize the metric here
+				// TODO hack: initialize the metric here
 				aggMetric.init(this);
 			}
 		}
@@ -323,6 +328,7 @@ public class Experiment extends BaseExperimentWithMetrics
 	/**
 	 * finalizing metric values (only for aggregate metric from hpcprof-mpi)
 	 * @param root
+	 * @param diVisitor
 	 */
 	private void finalizeAggregateMetrics(Scope root, AbstractFinalizeMetricVisitor diVisitor) {
 		if (! checkExistenceOfDerivedIncr())
@@ -333,7 +339,8 @@ public class Experiment extends BaseExperimentWithMetrics
 
 	/**
 	 * Check if an inclusive computation is needed or not
-	 * @return
+	 * <br/>we need to compute inclusive metrics if the metric is a raw metric (or its kinds)
+	 * @return true if inclusive computation is needed
 	 */
 	private boolean inclusiveNeeded() {
 		boolean isNeeded = false;

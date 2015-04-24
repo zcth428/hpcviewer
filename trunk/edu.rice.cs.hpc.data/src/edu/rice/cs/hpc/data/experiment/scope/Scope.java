@@ -76,8 +76,8 @@ protected int firstLineNumber;
 protected int lastLineNumber;
 
 /** The metric values associated with this scope. */
-protected MetricValue[] metrics;
-protected MetricValue[] combinedMetrics;
+private MetricValue[] metrics;
+private MetricValue[] combinedMetrics;
 
 /** source citation */
 protected String srcCitation;
@@ -604,7 +604,6 @@ private void accumulateMetricValue(int index, double value)
 		// TODO Could do non-additive accumulations here?
 		MetricValue.setValue(m, MetricValue.getValue(m) + value);
 	}
-
 }
 
 /**************************************************************************

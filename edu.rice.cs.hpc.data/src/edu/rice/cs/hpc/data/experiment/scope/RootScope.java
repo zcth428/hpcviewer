@@ -16,7 +16,6 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 
@@ -98,7 +97,7 @@ public RootScopeType getType()
 /*************************************************************************
  * reset the metric values into the default value (MetricValue.NONE)
  */
-public void resetMetricValues()
+/*public void resetMetricValues()
 {
 	if (metrics == null)
 		return;
@@ -106,7 +105,7 @@ public void resetMetricValues()
 	for (int i=0; i<metrics.length; i++) {
 		metrics[i] = MetricValue.NONE;
 	}	
-}
+}*/
 
 //////////////////////////////////////////////////////////////////////////
 // support for visitors													//

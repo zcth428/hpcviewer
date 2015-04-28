@@ -62,19 +62,15 @@ public class ExperimentManager {
 	
 	/**
 	 * Get the list of database file name
-	 * @param sTitle
+	 * @param shell : the shell widget of the application
+	 * @param sTitle : the title of the window open fike
+	 * 
 	 * @return the list of XML files in the selected directory
 	 * null if the user click the "cancel" button
 	 */
 	private File[] getDatabaseFileList(Shell shell, String sTitle) {
 		// preparing the dialog for selecting a directory
 		Shell objShell = shell;
-		if(shell == null)
-			if(this.window == null) {
-				this.window = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-				objShell = this.window.getShell();
-				System.err.println("EM: error ! shell is null !");
-			}
 		DirectoryDialog dirDlg = new DirectoryDialog(objShell);
 		dirDlg.setText("hpcviewer");
 		dirDlg.setFilterPath(ExperimentManager.sLastPath);		// recover the last opened path
@@ -89,8 +85,10 @@ public class ExperimentManager {
 	
 	/**
 	 * Open a database given a path to the database directory
-	 * @param sPath
-	 * @return
+	 * @param sPath : absolute path of the database directory
+	 * @param flag : whether to show callers view or not
+	 * 
+	 * @return true if the database has been successfully opened
 	 */
 	public boolean openDatabaseFromDirectory(String sPath, int flag) {
 		File []fileXML = this.getListOfXMLFiles(sPath);

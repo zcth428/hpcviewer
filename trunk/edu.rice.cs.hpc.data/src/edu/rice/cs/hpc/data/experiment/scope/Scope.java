@@ -43,7 +43,7 @@ import edu.rice.cs.hpc.data.util.IProcedureTable;
  */
 
 
-public abstract class Scope extends Node
+public abstract class Scope extends TreeNode
 {
 //////////////////////////////////////////////////////////////////////////
 //PUBLIC CONSTANTS						//

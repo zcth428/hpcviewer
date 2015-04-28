@@ -117,7 +117,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 			MetricValuePropagationFilter exclusiveOnly ) {
 
 		boolean percent_need_recompute = false;
-		TreeNode children[] = this.getChildren();
+		Object children[] = this.getChildren();
 
 		if (children != null && children.length>0) {
 			
@@ -199,7 +199,7 @@ public class CallSiteScopeCallerView extends CallSiteScope implements IMergedSco
 		children = getChildren();
 		if (percent_need_recompute && children != null) {
 			// there were some reconstruction of children. Let's finalize the metrics, and recompute the percent
-			for(TreeNode child: children) {
+			for(Object child: children) {
 				if (child instanceof CallSiteScopeCallerView) {
 					CallSiteScopeCallerView csChild = (CallSiteScopeCallerView) child;
 					

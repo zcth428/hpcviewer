@@ -7,10 +7,8 @@ import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.DisposeResourcesVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FilterScopeVisitor;
-import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.filter.IFilterData;
 import edu.rice.cs.hpc.data.util.IUserData;
 
@@ -21,25 +19,19 @@ import edu.rice.cs.hpc.data.util.IUserData;
  * No metric is associated in this experiment
  *
  */
-public abstract class BaseExperiment implements IExperiment {
-
-
+public abstract class BaseExperiment implements IExperiment 
+{
 	/** The experiment's configuration. */
 	protected ExperimentConfiguration configuration;
 
 	protected RootScope rootScope;
 	
-	/*** filter version of root scope ***/
-	protected RootScope rootScopeFilter;
-
 	/** version of the database **/
 	protected String version;
 
-	protected ExperimentFileXML fileXML;
-
 	private TraceAttribute attribute;
-	
-	private IFilterData filter;
+
+	protected IDatabaseRepresentation databaseRepresentation;
 	
 	/***
 	 * the root scope of the experiment
@@ -53,41 +45,13 @@ public abstract class BaseExperiment implements IExperiment {
 	
 	/***
 	 * retrieve the root scope.
-	 * <p>The method returns the appropriate root if the filter is enabled or not.
-	 * <br/>If the filter is enabled, it will return the filtered root (assuming 
-	 * the database has been filtered), otherwise it will return the original root.</p>
-	 * Note: if the filter is enabled but the filter root is not set (the database 
-	 * hasn't been filtered) should we return the original root ? or should we throw
-	 * an exception ?
 	 * 
 	 * @return the root scope
 	 */
 	public Scope getRootScope() {
-		RootScope root = rootScope;
-		if (filter != null && filter.isFilterEnabled() && rootScopeFilter != null) {
-			root = rootScopeFilter;
-		}
-		return root;
-	}
-
-	/****
-	 * return the original root scope (unfiltered tree)
-	 * @return root scope
-	 */
-	public RootScope getRootScopeOriginal()
-	{
 		return rootScope;
 	}
-	
-	/****
-	 * return the filtered root scope
-	 * 
-	 * @return root scope
-	 */
-	public RootScope getRootScopeFilter()
-	{
-		return rootScopeFilter;
-	}
+
 	
 	/****
 	 * retrieve the root scope of caller tree (bottom-up view)
@@ -108,7 +72,7 @@ public abstract class BaseExperiment implements IExperiment {
 
 	
 
-	public TreeNode[] getRootScopeChildren() {
+	public Object[] getRootScopeChildren() {
 		RootScope root = (RootScope) getRootScope();
 
 		if (root != null)
@@ -119,22 +83,19 @@ public abstract class BaseExperiment implements IExperiment {
 	
 	
 	/****
-	 * open a database
-	 * @param fileExperiment
-	 * @param userData
+	 * open a local database
+	 * 
+	 * @param fileExperiment : file of the experiment xml
+	 * @param userData : map of user preferences
+	 * @param need_metric : whether we need to assign metrics or not
 	 * @throws Exception
 	 */
 	public void open(File fileExperiment, IUserData<String, String> userData, boolean need_metric)
 			throws	Exception
 	{
-		// protect ourselves against filename being `foo' with no parent
-		// information whatsoever.
-		//this.fileExperiment = fileExperiment;
-		
-		if (fileXML == null) {
-			fileXML = new ExperimentFileXML();
-		}
-		fileXML.parse(fileExperiment, this, need_metric, userData);		
+		databaseRepresentation = new LocalDatabaseRepresentation(fileExperiment, this, userData, need_metric);
+		databaseRepresentation.open();
+		open_finalize();
 	}
 	
 	
@@ -148,13 +109,26 @@ public abstract class BaseExperiment implements IExperiment {
 	 *****/
 	public void open(InputStream expStream, IUserData<String, String> userData,
 		String name) throws Exception {
-	
-		if (fileXML == null) {
-			fileXML = new ExperimentFileXML();
-		}
-		fileXML.parse(expStream, name, this, false, userData);
+		databaseRepresentation = new RemoteDatabaseRepresentation(this, expStream, userData, name);
+		databaseRepresentation.open();
+		open_finalize();
 	}
 
+	/******
+	 * Reopening and reread the database and refresh the tree.<br/>
+	 * If the database has not been opened, it throws an exception.
+	 * @throws Exception
+	 */
+	public void reopen() throws Exception
+	{
+		if (databaseRepresentation != null)
+		{
+			databaseRepresentation.open();
+			open_finalize();
+		} else {
+			throw new Exception("Database has not been opened.");
+		}
+	}
 
 	public void setVersion (String v) 
 	{
@@ -172,100 +146,84 @@ public abstract class BaseExperiment implements IExperiment {
 
 
 
-/*************************************************************************
- *	Returns the name of the experiment.
- ************************************************************************/
-	
-public String getName()
-{
-	return configuration.getName(ExperimentConfiguration.NAME_EXPERIMENT);
-}
-
-
-
-
-
-/*************************************************************************
- *	Sets the experiment's configuration.
- *
- *	This method is to be called only once, during <code>Experiment.open</code>.
- *
- ************************************************************************/
-	
-public void setConfiguration(ExperimentConfiguration configuration)
-{
-	this.configuration = configuration;
-}
-
-public ExperimentConfiguration getConfiguration()
-{
-	return this.configuration;
-}
-
-
-/*************************************************************************
- *	Returns the default directory from which to resolve relative paths.
- ************************************************************************/
-	
-public File getDefaultDirectory()
-{
-	return getXMLExperimentFile().getParentFile();
-}
-
-public File getXMLExperimentFile() {
-	return this.fileXML.getFile();
-}
-
-
-
-public void dispose()
-{
-	DisposeResourcesVisitor visitor = new DisposeResourcesVisitor();
-	rootScope.dfsVisitScopeTree(visitor);
-	this.rootScope = null;
-	
-	if (rootScopeFilter != null)
+	/*************************************************************************
+	 *	Returns the name of the experiment.
+	 ************************************************************************/	
+	public String getName()
 	{
-		rootScopeFilter.dfsVisitScopeTree(visitor);
-		rootScopeFilter = null;
+		return configuration.getName(ExperimentConfiguration.NAME_EXPERIMENT);
 	}
-}
 
 
-/*************************************************************************
- * Filter the cct 
- * <p>caller needs to call postprocess to ensure the callers tree and flat
- * tree are alsi filtered </p>
- * @param filter
- *************************************************************************/
-public void filter(IFilterData filter)
-{
-	this.filter     = filter;
-	// create the invisible main root
-	rootScopeFilter = new RootScope(this,  rootScope.getName(), rootScope.getType());
-	rootScopeFilter.setExperiment(this);
-	
-	// TODO :  we assume the first child is the CCT
-	final RootScope rootCCT = (RootScope) rootScope.getChildAt(0);
+	/*************************************************************************
+	 *	Sets the experiment's configuration.
+	 *
+	 *	This method is to be called only once, during <code>Experiment.open</code>.
+	 *
+	 ************************************************************************/
+	public void setConfiguration(ExperimentConfiguration configuration)
+	{
+		this.configuration = configuration;
+	}
 
-	// duplicate and filter the cct
-	FilterScopeVisitor visitor = new FilterScopeVisitor(rootScopeFilter, rootCCT, filter);
-	rootCCT.dfsVisitFilterScopeTree(visitor);
-	
-	if (rootCCT.getType() == RootScopeType.CallingContextTree) {
+	public ExperimentConfiguration getConfiguration()
+	{
+		return this.configuration;
+	}
+
+
+	/*************************************************************************
+	 *	Returns the default directory from which to resolve relative paths.
+	 ************************************************************************/
+
+	public File getDefaultDirectory()
+	{
+		return getXMLExperimentFile().getParentFile();
+	}
+
+	public File getXMLExperimentFile() {
+		return databaseRepresentation.getXMLFile().getFile();
+	}
+
+
+
+	public void dispose()
+	{
+		DisposeResourcesVisitor visitor = new DisposeResourcesVisitor();
+		rootScope.dfsVisitScopeTree(visitor);
+		this.rootScope = null;
+	}
+
+
+	/*************************************************************************
+	 * Filter the cct 
+	 * <p>caller needs to call postprocess to ensure the callers tree and flat
+	 * tree are alsi filtered </p>
+	 * @param filter
+	 *************************************************************************/
+	public void filter(IFilterData filter)
+	{
 		// TODO :  we assume the first child is the CCT
-		final RootScope rootFilterCCT = (RootScope) rootScopeFilter.getChildAt(0);
-		filter_finalize(rootFilterCCT, filter);
-	}
-}
+		final RootScope rootCCT = (RootScope) rootScope.getChildAt(0);
 
-/************************************************************************
- * In case the experiment has a CCT, continue to create callers tree and
- * flat tree for the finalization.
- * 
- * @param rootCCT
- * @param filter
- ************************************************************************/
-abstract protected void filter_finalize(RootScope rootMain, IFilterData filter);
+		// duplicate and filter the cct
+		FilterScopeVisitor visitor = new FilterScopeVisitor(rootScope, rootCCT, filter);
+		rootCCT.dfsVisitFilterScopeTree(visitor);
+
+		if (rootCCT.getType() == RootScopeType.CallingContextTree) {
+			filter_finalize(rootCCT, filter);
+		}
+	}
+
+	/************************************************************************
+	 * In case the experiment has a CCT, continue to create callers tree and
+	 * flat tree for the finalization.
+	 * 
+	 * @param rootCCT
+	 * @param filter
+	 ************************************************************************/
+	abstract protected void filter_finalize(RootScope rootMain, IFilterData filter);
+
+	abstract protected void open_finalize();
 
 }

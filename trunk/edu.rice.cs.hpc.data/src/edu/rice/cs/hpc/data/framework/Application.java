@@ -33,8 +33,7 @@ public class Application {
 
 		try {
 			experiment = new Experiment();	// prepare the experiment
-			experiment.open(objFile, null);						// parse the database
-			experiment.postprocess(false);			// create the flat view
+			experiment.open(objFile, null, false);						// parse the database
 			this.printFlatView(objPrint, experiment);
 			return true;
 		} catch (Exception e) {

@@ -30,7 +30,7 @@ public class ExperimentWithoutMetrics extends BaseExperiment
 		ExperimentWithoutMetrics copy = new ExperimentWithoutMetrics();
 
 		copy.configuration 	= configuration;
-		copy.fileXML 		= fileXML;
+		copy.databaseRepresentation = databaseRepresentation;
 		
 		return copy;
 	}
@@ -39,5 +39,10 @@ public class ExperimentWithoutMetrics extends BaseExperiment
 	@Override
 	protected void filter_finalize(RootScope rootMain,
 			IFilterData filter) {	}
+
+
+	@Override
+	protected void open_finalize() {
+	}
 
 }

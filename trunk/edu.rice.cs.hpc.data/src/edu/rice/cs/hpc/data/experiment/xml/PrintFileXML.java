@@ -11,7 +11,6 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricType;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.PrintFlatViewScopeVisitor;
 
 
@@ -34,7 +33,7 @@ public class PrintFileXML {
 	 * @param experiment
 	 **--------------------------------------------------------------------------------**/
 	public void print(PrintStream objStream, Experiment experiment) {
-		TreeNode []rootChildren = experiment.getRootScopeChildren();
+		Object []rootChildren = experiment.getRootScopeChildren();
 		if (rootChildren != null) {
 
 			int nbChildren = rootChildren.length;

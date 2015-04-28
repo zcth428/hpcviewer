@@ -83,23 +83,30 @@ public class ViewerWindow {
 					Boolean filter = (Boolean) sourceValue;
 					filterAllDatabases(filter);
 				}
-			}
-			
+			}			
 		});
-		
 	}
 
 	private void filterAllDatabases(boolean filter)
 	{
-		if (filter) 
+		// filter the experiment
+		Experiment []experiments = getExperiments();
+		if (experiments != null)
 		{
-			// filter the experiment
-			Experiment []experiments = getExperiments();
-			if (experiments != null)
+			for (Experiment experiment : experiments)
 			{
-				for (Experiment experiment : experiments)
+				if (filter) 
 				{
+					// filtering is needed
 					experiment.filter(FilterMap.getInstance());
+				} else 
+				{
+					// filter is disabled, we need to reopen the database
+					try {
+						experiment.reopen();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}

@@ -7,11 +7,12 @@ import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.util.IUserData;
 
 
-/***
+/****************************************************************************
  * 
- * abstract base experiment that contains metrics
+ * abstract base experiment that contains metrics. <br/>
+ * This class just load metrics without generating callers view and flat view
  *
- */
+ ****************************************************************************/
 public abstract class BaseExperimentWithMetrics extends BaseExperiment {
 
 
@@ -19,11 +20,6 @@ public abstract class BaseExperimentWithMetrics extends BaseExperiment {
 	protected List<BaseMetric> metrics;
 
 
-	public void open(File fileExperiment, IUserData<String, String> userData)
-			throws	Exception
-	{
-		super.open(fileExperiment, userData, true);
-	}
 
 	public void setMetrics(List<BaseMetric> metricList) {
 

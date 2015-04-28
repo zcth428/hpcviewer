@@ -19,8 +19,8 @@ import edu.rice.cs.hpc.data.experiment.metric.*;
 import edu.rice.cs.hpc.data.experiment.scope.*;
 import edu.rice.cs.hpc.data.experiment.scope.filters.*;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.*;
-import edu.rice.cs.hpc.data.experiment.xml.ExperimentFileXML;
 import edu.rice.cs.hpc.data.filter.IFilterData;
+import edu.rice.cs.hpc.data.util.IUserData;
 
 import java.io.File;
 
@@ -39,7 +39,7 @@ public class Experiment extends BaseExperimentWithMetrics
 {
 	// thread level database
 	private MetricRaw[] metrics_raw;
-
+	private boolean need_caller_tree;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,20 @@ public class Experiment extends BaseExperimentWithMetrics
 		return Integer.parseInt(this.version.substring(0, ip));
 	}
 
-
+	//////////////////////////////////////////////////////////////////////////
+	// File opening															//
+	//////////////////////////////////////////////////////////////////////////
+	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.experiment.BaseExperiment#open(java.io.File, edu.rice.cs.hpc.data.util.IUserData, boolean)
+	 */
+	public void open(File fileExperiment, IUserData<String, String> userData, boolean need_caller_tree)
+			throws	Exception
+	{
+		this.need_caller_tree = need_caller_tree;
+		super.open(fileExperiment, userData, true);
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Postprocessing														//
@@ -143,7 +156,13 @@ public class Experiment extends BaseExperimentWithMetrics
 		return callersViewRootScope;
 	}
 
-	protected Scope createFlatView(Scope callingContextViewRootScope)
+	/***
+	 * Create a flat tree
+	 * 
+	 * @param callingContextViewRootScope : the original CCT 
+	 * @return the root scope of flat tree
+	 */
+	private Scope createFlatView(Scope callingContextViewRootScope)
 	{
 		Scope flatViewRootScope = new RootScope(this, "Flat View", RootScopeType.Flat);
 		beginScope(flatViewRootScope);
@@ -202,12 +221,6 @@ public class Experiment extends BaseExperimentWithMetrics
 		scope.dfsVisitScopeTree(psv);
 	}
 
-	/**
-	 * generic post-processing: by default we show all views
-	 */
-	public void postprocess()  {
-		this.postprocess(true);
-	}
 
 
 	/*****
@@ -216,7 +229,7 @@ public class Experiment extends BaseExperimentWithMetrics
 	 */
 	public RootScope getCallerTreeRoot() {
 
-		for (TreeNode node: getRootScope().getChildren()) {
+		for (Object node: getRootScope().getChildren()) {
 			Scope scope = (Scope) node;
 			if ( (scope instanceof RootScope) && 
 					((RootScope)scope).getType()==RootScopeType.CallerTree )
@@ -240,7 +253,7 @@ public class Experiment extends BaseExperimentWithMetrics
 	 * </ol></p>
 	 * @param callerView : flag whether to compute caller view (if true) or not.
 	 */
-	public void postprocess(boolean callerView) {
+	private void postprocess(boolean callerView) {
 		if (this.rootScope.getSubscopeCount() <= 0) return;
 		// Get first scope subtree: CCT or Flat
 		Scope firstSubTree = this.rootScope.getSubscope(0);
@@ -386,18 +399,14 @@ public class Experiment extends BaseExperimentWithMetrics
 
 		Experiment copy 	= new Experiment();
 		copy.configuration 	= configuration;
-		copy.fileXML 		= fileXML;
+		copy.databaseRepresentation = databaseRepresentation;
 		
 		return copy;
 	}
 
 
 	public void setXMLExperimentFile(File file) {
-		if (fileXML == null)
-		{
-			fileXML = new ExperimentFileXML();
-		}
-		fileXML.setFile(file);
+		databaseRepresentation.getXMLFile().setFile(file);
 	}
 
 	public void setMetricRaw(MetricRaw []metrics) {
@@ -437,5 +446,10 @@ public class Experiment extends BaseExperimentWithMetrics
 
 		this.finalizeAggregateMetrics(flatViewRootScope, diVisitor);	// flat view
 		addPercents(flatViewRootScope, (RootScope) rootCCT);
+	}
+
+	@Override
+	protected void open_finalize() {
+		postprocess(need_caller_tree);		
 	}
 }

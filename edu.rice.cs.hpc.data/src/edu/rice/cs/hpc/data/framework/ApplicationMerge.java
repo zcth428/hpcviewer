@@ -17,8 +17,7 @@ public class ApplicationMerge {
 
 		try {
 			experiment = new Experiment();	// prepare the experiment
-			experiment.open(objFile, null);						// parse the database
-			experiment.postprocess(false);			// create the flat view
+			experiment.open(objFile, null, false);						// parse the database
 
 			return experiment;
 		} catch (Exception e) {

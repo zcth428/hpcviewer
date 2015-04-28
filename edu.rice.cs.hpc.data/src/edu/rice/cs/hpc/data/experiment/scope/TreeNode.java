@@ -1,5 +1,8 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*******************************************************************************
  * Copyright (c) 2005, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -13,6 +16,10 @@ package edu.rice.cs.hpc.data.experiment.scope;
 
 
 /**
+ * This class is a modified version of org.eclipse.jface.viewers.TreeNode
+ * {@link org.eclipse.jface.viewers.TreeNode} without using Eclipse classes
+ * and with additional features, plus a flexible children update 
+ * 
  * A simple data structure that is useful for implemented tree models. This can
  * be returned by
  * {@link org.eclipse.jface.viewers.IStructuredContentProvider#getElements(Object)}.
@@ -32,7 +39,7 @@ public class TreeNode {
 	 * <code>null</code>. There should be no <code>null</code> children in
 	 * the array.
 	 */
-	private TreeNode[] children;
+	private List<TreeNode> children;
 
 	/**
 	 * The parent tree node for this tree node. This value may be
@@ -70,11 +77,11 @@ public class TreeNode {
 	 * @return The child nodes; may be <code>null</code>, but never empty.
 	 *         There should be no <code>null</code> children in the array.
 	 */
-	public TreeNode[] getChildren() {
-		if (children != null && children.length == 0) {
+	public Object[] getChildren() {
+		if (children != null && children.size() == 0) {
 			return null;
 		}
-		return children;
+		return children.toArray();
 	}
 
 	/**
@@ -104,24 +111,30 @@ public class TreeNode {
 	 *         otherwise.
 	 */
 	public boolean hasChildren() {
-		return children != null && children.length > 0;
+		return children != null && children.size() > 0;
 	}
 	
 	public int hashCode() {
 		return TreeNode.hashCode(value);
 	}
 
-	/**
-	 * Sets the children for this node.
+	/***
+	 * Add a new child
 	 * 
-	 * @param children
-	 *            The child nodes; may be <code>null</code> or empty. There
-	 *            should be no <code>null</code> children in the array.
+	 * @param child : child to be added
 	 */
-	public void setChildren(final TreeNode[] children) {
-		this.children = children;
+	public void add(TreeNode child)
+	{
+		if (children == null) {
+			children = new ArrayList<TreeNode>();
+		}
+		children.add(child);
 	}
-
+	
+	public void remove(TreeNode child)
+	{
+		children.remove(child);
+	}
 	/**
 	 * Sets the parent for this node.
 	 * 
@@ -132,6 +145,32 @@ public class TreeNode {
 		this.parent = parent;
 	}
 	
+	/***
+	 * Retrieve a child node of a specific index
+	 * 
+	 * @param index
+	 * 
+	 * @return TreeNode: a node
+	 */
+	public TreeNode getChildAt(int index) 
+	{
+		if (children != null) {
+			return children.get(index);
+		}
+		return null;
+	}
+	
+	/*****
+	 * Return the number of children
+	 * 
+	 * @return
+	 */
+	public int getChildCount() 
+	{
+		if (children == null)
+			return 0;
+		return children.size();
+	}
 	/**
 	 * Provides a hash code for the object -- defending against
 	 * <code>null</code>.
@@ -161,5 +200,12 @@ public class TreeNode {
 				.equals(right));
 	}
 
+	public void dispose()
+	{
+		children.clear();
+		children = null;
+		parent   = null;
+		value  	 = null;
+	}
 }
 

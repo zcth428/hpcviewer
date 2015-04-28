@@ -62,12 +62,10 @@ public class ExperimentView {
 	 */
 	public boolean loadExperimentAndProcess(String sFilename, boolean bCallerView) {
 		
-		Experiment experiment = this.loadExperiment(sFilename);
+		Experiment experiment = this.loadExperiment(sFilename, bCallerView);
 
 		if(experiment != null) {
-			try {
-				experiment.postprocess(bCallerView);
-				
+			try {			
 				// check if the filter is enabled
 				FilterMap filter = FilterMap.getInstance();
 				if (filter.isFilterEnabled()) {
@@ -106,14 +104,14 @@ public class ExperimentView {
 	 * This method does not include post-processing and generating scope views
 	 * @param sFilename: the xml experiment file
 	 */
-	public Experiment loadExperiment(String sFilename) {
+	public Experiment loadExperiment(String sFilename, boolean bCallerView) {
 		Experiment experiment = null;
 		// first view: usually already created by default by the perspective
 		org.eclipse.swt.widgets.Shell objShell = this.objPage.getWorkbenchWindow().getShell();
 		try
 		{
 			experiment = new Experiment();
-			experiment.open( new java.io.File(sFilename), new ProcedureAliasMap() );
+			experiment.open( new java.io.File(sFilename), new ProcedureAliasMap(), bCallerView );
 
 		} catch(java.io.FileNotFoundException fnf)
 		{
@@ -194,7 +192,7 @@ public class ExperimentView {
 		final String viewIdx = Integer.toString(vWin.reserveDatabaseNumber());
 
 		// next, we retrieve all children of the scope and display them in separate views
-		TreeNode []rootChildren = experiment.getRootScopeChildren();
+		Object []rootChildren = experiment.getRootScopeChildren();
 		int nbChildren = rootChildren.length;
 		arrScopeViews = new BaseScopeView[nbChildren];
 		

@@ -11,7 +11,6 @@ import edu.rice.cs.hpc.data.experiment.scope.LoopScope;
 import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.experiment.scope.filters.EmptyMetricValuePropagationFilter;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.DuplicateScopeTreesVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
@@ -303,7 +302,7 @@ public class TreeSimilarity {
 		if (sortedChildren != null)
 			return sortedChildren;
 		
-		TreeNode []children = scope.getChildren();
+		Object []children = scope.getChildren();
 		if (children == null)
 			return null;
 		
@@ -319,7 +318,7 @@ public class TreeSimilarity {
 	 * @param nodes
 	 * @return sorted nodes
 	 */
-	private Scope [] sortArrayOfNodes(TreeNode []nodes)
+	private Scope [] sortArrayOfNodes(Object []nodes)
 	{
 		Scope []sorted = new Scope[nodes.length];
 		System.arraycopy(nodes, 0, sorted, 0, nodes.length);

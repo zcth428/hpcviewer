@@ -78,10 +78,10 @@ public class TreeNode {
 	 *         There should be no <code>null</code> children in the array.
 	 */
 	public Object[] getChildren() {
-		if (children != null && children.size() == 0) {
-			return null;
+		if (children != null && children.size() > 0) {
+			return children.toArray();
 		}
-		return children.toArray();
+		return null;
 	}
 
 	/**
@@ -202,8 +202,11 @@ public class TreeNode {
 
 	public void dispose()
 	{
-		children.clear();
-		children = null;
+		if (children != null)
+		{
+			children.clear();
+			children = null;
+		}
 		parent   = null;
 		value  	 = null;
 	}

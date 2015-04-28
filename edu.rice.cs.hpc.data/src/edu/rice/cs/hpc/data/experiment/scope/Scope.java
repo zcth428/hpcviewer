@@ -887,4 +887,18 @@ public void dfsVisitFilterScopeTree(FilterScopeVisitor sv) {
 	accept(sv, ScopeVisitType.PostVisit);
 }
 
+@Override
+/*
+ * (non-Javadoc)
+ * @see edu.rice.cs.hpc.data.experiment.scope.TreeNode#dispose()
+ */
+public void dispose()
+{
+	super.dispose();
+	experiment 		= null;
+	metrics 		= null;
+	srcCitation		= null;
+	combinedMetrics = null;
+}
+
 }

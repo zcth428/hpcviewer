@@ -170,7 +170,7 @@ public class ViewerWindow {
 		
 		if (dbObj.remove(db)) {
 			checkService();
-
+			db.dispose();
 			return dbObj.size();
 		}
 		return -1;

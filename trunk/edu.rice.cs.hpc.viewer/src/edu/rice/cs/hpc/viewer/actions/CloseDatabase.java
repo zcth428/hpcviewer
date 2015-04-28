@@ -95,14 +95,6 @@ public class CloseDatabase extends AbstractHandler {
 		// close the databases, and all editors and views associated with them
 		// -----------------------------------------------------------------------
 		for (Object selectedDatabase: databasesToClose) {
-			
-			// remove the database from our database manager information
-			int dbNum = vWin.removeDatabase(selectedDatabase.toString());
-			if (dbNum < 0) {
-				// can close views for an entry we could not find
-				continue;
-			}
-		
 
 			// close any open editor windows for this database
 			final org.eclipse.ui.IEditorReference editors[] = curPage.getEditorReferences();
@@ -146,6 +138,13 @@ public class CloseDatabase extends AbstractHandler {
 						}
 					}
 				}
+			}
+			
+			// remove the database from our database manager information
+			int dbNum = vWin.removeDatabase(selectedDatabase.toString());
+			if (dbNum < 0) {
+				// can close views for an entry we could not find
+				continue;
 			}
 		}
 		WindowTitle wt = new WindowTitle();

@@ -186,7 +186,9 @@ public abstract class BaseExperiment implements IExperiment
 	}
 
 
-
+	/*****
+	 * disposing the experiment resources.
+	 */
 	public void dispose()
 	{
 		DisposeResourcesVisitor visitor = new DisposeResourcesVisitor();
@@ -207,7 +209,7 @@ public abstract class BaseExperiment implements IExperiment
 		final RootScope rootCCT = (RootScope) rootScope.getChildAt(0);
 
 		// duplicate and filter the cct
-		FilterScopeVisitor visitor = new FilterScopeVisitor(rootScope, rootCCT, filter);
+		FilterScopeVisitor visitor = new FilterScopeVisitor(rootCCT, filter);
 		rootCCT.dfsVisitFilterScopeTree(visitor);
 
 		if (rootCCT.getType() == RootScopeType.CallingContextTree) {

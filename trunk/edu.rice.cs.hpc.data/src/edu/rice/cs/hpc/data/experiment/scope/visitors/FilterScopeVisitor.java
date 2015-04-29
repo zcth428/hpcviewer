@@ -1,7 +1,5 @@
 package edu.rice.cs.hpc.data.experiment.scope.visitors;
 
-import java.util.Stack;
-
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
@@ -19,6 +17,7 @@ import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.experiment.scope.ScopeVisitType;
 import edu.rice.cs.hpc.data.experiment.scope.StatementRangeScope;
+import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.data.filter.FilterAttribute;
 import edu.rice.cs.hpc.data.filter.IFilterData;
 
@@ -36,11 +35,10 @@ import edu.rice.cs.hpc.data.filter.IFilterData;
  ******************************************************************/
 public class FilterScopeVisitor implements IScopeVisitor 
 {
-	private final Stack<Scope> stackScopes;
 	private final IFilterData filter;
-	private final RootScope root;
 	private final MetricValue []rootMetricValues;
-
+	//private final HashMap<Integer, ScopeToRemove> listScopesToRemove;
+	private final BaseExperiment experiment;
 	private BaseMetric []metrics = null;
 	
 	/**** flag to allow the dfs to continue to go deeper or not.  
@@ -54,21 +52,19 @@ public class FilterScopeVisitor implements IScopeVisitor
 	 * @param rootOriginalCCT : the original cct tree
 	 * @param filter : filter map to filter a string
 	 */
-	public FilterScopeVisitor(RootScope rootFilter, RootScope rootOriginalCCT, IFilterData filter)
+	public FilterScopeVisitor(RootScope rootOriginalCCT, IFilterData filter)
 	{
 		this.filter 		  = filter;
-		this.root   	 	  = rootFilter;
 		this.rootMetricValues = rootOriginalCCT.getMetricValues();
 		
-		stackScopes = new Stack<Scope>();
-		stackScopes.push(root);
 		need_to_continue = true;
 		
-		BaseExperiment experiment = root.getExperiment();
+		experiment = rootOriginalCCT.getExperiment();
 		if (experiment instanceof Experiment)
 		{
 			metrics = ((Experiment)experiment).getMetrics();
 		}
+		//listScopesToRemove = new HashMap<>();
 	}
 	
 	/**************
@@ -103,7 +99,7 @@ public class FilterScopeVisitor implements IScopeVisitor
 		
 		if (vt == ScopeVisitType.PreVisit) {
 			// Previsit
-			Scope parent = stackScopes.peek();
+			Scope parent = scope.getParentScope();
 			
 			FilterAttribute filterAttribute = filter.getFilterAttribute(scope.getName());
 			if (filterAttribute != null)
@@ -120,65 +116,38 @@ public class FilterScopeVisitor implements IScopeVisitor
 						mergeMetrics(parent, scope);
 					}
 				}
-				stackScopes.push(parent);
+				removeChild(scope, filterAttribute.filterType);
+				// mark that we will remove this scope
+				// listScopesToRemove.put(scope.getCCTIndex(), new ScopeToRemove(scope, filterAttribute.filterType));
 			} else 
 			{
 				// filter is not needed, we can surely continue to investigate the descendants
 				need_to_continue = true;
-				
-				// we need to include the scope to the parent
-				Scope child  = scope.duplicate();
-				parent.addSubscope(child);
-				child.setParentScope(parent);
-				
-				// make sure the new child has reference to the experiment
-				final BaseExperiment experiment = parent.getExperiment();
-				child.setExperiment(experiment);
-				
-				// we lazily assign metrics of the child scope to the original scope
-				// later on, if the child of the child is filtered, we'll allocate new metric values
-				assignMetrics(child, scope);
-				
-				if (scope instanceof CallSiteScope && child instanceof CallSiteScope)
-				{
-					CallSiteScope cs = (CallSiteScope) child;
-					cs.getLineScope().setExperiment(experiment);
-					cs.getProcedureScope().setExperiment(experiment);
-					
-					assignMetrics(((CallSiteScope) scope).getLineScope(), cs.getLineScope());
-				}
-				stackScopes.push(child);
 			}			
 		} else 
 		{ // PostVisit
-			stackScopes.pop();
 		}
 	}
 	
-	/**********
-	 * Assign metric values from the source scope to the target scope
-	 * Assigning metrics has less memory consumption since it allocates a pointer (32 bytes ?)
-	 * 	to the target metrics, while copying metrics will allocate 32 + 32 + 8 bytes
-	 * 
-	 * @param target : the target scope to be modified
-	 * @param source : the source scope of the original metric values
-	 */
-	private void assignMetrics(Scope target, Scope source)
+	
+	private void removeChild(Scope childToRemove, FilterAttribute.Type filterType)
 	{
-		if (metrics != null)
-		{	// copy metrics
-			MetricValue []values = source.getMetricValues();
-			if (values != null)
+		Scope parent = childToRemove.getParentScope();
+		parent.remove(childToRemove);
+		
+		if (filterType == FilterAttribute.Type.Exclusive)
+		{
+			Object []children = childToRemove.getChildren();
+			if (children != null)
 			{
-				for(int i=0; i<values.length; i++)
+				for(Object child : children)
 				{
-					target.setMetricValue(i, values[i]);
+					parent.add((TreeNode) child);
+					((TreeNode)child).setParent(parent);
 				}
 			}
 		}
 	}
-	
-	
 	/******
 	 * Merging metrics
      * X : exclusive metric value
@@ -207,18 +176,18 @@ public class FilterScopeVisitor implements IScopeVisitor
 				parent.setMetricValue(i, value);
 				
 				// exclusive filter: merge the exclusive metrics to the parent's exclusive
-				mergeMetricToParent(root, parent, i, values[i]);
+				mergeMetricToParent(parent, i, values[i]);
 				
 			} else if (!need_to_continue && metrics[i].getMetricType() == MetricType.INCLUSIVE)
 			{
 				// inclusive filter: merge the inclusive metrics to the parent's exclusive
 				int index_exclusive_metric = metrics[i].getPartner();
-				Experiment experiment = (Experiment) root.getExperiment();
+
 				// this is tricky: the original index of the metric is the same as the short name
 				// however, when we ask getMetric(), it requires the metric index in the array (which is 0..n)
 				// we can cheat this by converting the index into "short name" and get the metric.
-				BaseMetric metric_exc = experiment.getMetric(String.valueOf(index_exclusive_metric));
-				mergeMetricToParent(root, parent, metric_exc.getIndex(), values[i]);
+				BaseMetric metric_exc = ((Experiment)experiment).getMetric(String.valueOf(index_exclusive_metric));
+				mergeMetricToParent(parent, metric_exc.getIndex(), values[i]);
 			}
 		}
 	}
@@ -231,7 +200,7 @@ public class FilterScopeVisitor implements IScopeVisitor
 	 * @param metric_exclusive_index
 	 * @param mvChild
 	 */
-	private void mergeMetricToParent(RootScope root, Scope target, 
+	private void mergeMetricToParent(Scope target, 
 			int metric_exclusive_index, MetricValue mvChild)
 	{
 		MetricValue mvParentExc = target.getMetricValue(metric_exclusive_index);

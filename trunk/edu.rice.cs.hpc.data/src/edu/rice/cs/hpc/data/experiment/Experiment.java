@@ -423,6 +423,11 @@ public class Experiment extends BaseExperimentWithMetrics
 	@Override
 	protected void filter_finalize(RootScope rootCCT, IFilterData filter) 
 	{
+		// removing the original root for caller tree and flat tree
+		Scope root = getRootScope();
+		root.remove(1);
+		root.remove(1);
+		
 		//------------------------------------------------------------------------------------------
 		// filtering callers tree (bottom-up):
 		// check if the callers tree has been created or not. If it's been created,

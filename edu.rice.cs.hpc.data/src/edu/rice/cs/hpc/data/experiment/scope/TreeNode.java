@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.data.experiment.scope;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /*******************************************************************************
@@ -131,10 +132,27 @@ public class TreeNode {
 		children.add(child);
 	}
 	
+	/**
+	 * Remove a child. The child hash code (which is the cct) has to be unique.
+	 * <br/>Otherwise, it will remove incorrect child.
+	 * 
+	 * @param child : the child to be removed
+	 */
 	public void remove(TreeNode child)
 	{
 		children.remove(child);
 	}
+	
+	
+	/**
+	 * Remove a child for a given index
+	 * @param index : index of the scope to be removed
+	 */
+	public void remove(int index)
+	{
+		children.remove(index);
+	}
+	
 	/**
 	 * Sets the parent for this node.
 	 * 
@@ -155,7 +173,8 @@ public class TreeNode {
 	public TreeNode getChildAt(int index) 
 	{
 		if (children != null) {
-			return children.get(index);
+			if (index < children.size())
+				return children.get(index);
 		}
 		return null;
 	}
@@ -171,6 +190,23 @@ public class TreeNode {
 			return 0;
 		return children.size();
 	}
+	
+	/**
+	 * Return the iterator of the children.<br/>
+	 * The advantage of an iterator is that it allows the caller to
+	 * remove elements from the collection of children during the iteration.
+	 * See {@link java.util.Iterator}
+	 * 
+	 * @return java.util.Iterator
+	 */
+	public Iterator<TreeNode> getIterator()
+	{
+		if (children != null)
+			return children.iterator();
+		else
+			return null;
+	}
+	
 	/**
 	 * Provides a hash code for the object -- defending against
 	 * <code>null</code>.
@@ -200,6 +236,9 @@ public class TreeNode {
 				.equals(right));
 	}
 
+	/*****
+	 * free resources
+	 */
 	public void dispose()
 	{
 		if (children != null)

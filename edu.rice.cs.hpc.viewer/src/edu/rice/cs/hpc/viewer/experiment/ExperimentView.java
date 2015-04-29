@@ -17,7 +17,6 @@ import edu.rice.cs.hpc.viewer.window.ViewerWindowManager;
 
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
-import edu.rice.cs.hpc.data.experiment.scope.TreeNode;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 
 import org.eclipse.ui.IWorkbenchPage;
@@ -80,6 +79,7 @@ public class ExperimentView {
 			{
 				MessageDialog.openError(objPage.getWorkbenchWindow().getShell(), "Critical error", 
 						"XML file is not in correct format: \n"+e.getMessage());
+				e.printStackTrace();
 			}
 	        return true;
 		}

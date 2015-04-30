@@ -520,7 +520,7 @@ public class BaseExperimentBuilder extends Builder {
 				if (attributes[i].equals("s")) { 
 					// new database format: s is the flat ID of the procedure
 					sProcName = this.getProcedureName(values[i]);
-					flat_id = Integer.valueOf(values[i]);
+					flat_id = Integer.parseInt(values[i]);
 					if (!new_cct_format)
 						// old format: cct ID = flat ID
 						cct_id = flat_id;
@@ -785,7 +785,7 @@ public class BaseExperimentBuilder extends Builder {
 		
 		for(int i=0; i<attributes.length; i++) {
 			if(attributes[i].equals("s")) {
-				flat_id = Integer.valueOf(values[i]);
+				flat_id = Integer.parseInt(values[i]);
 				if (cct_id == 0)
 					cct_id = flat_id;
 				
@@ -798,7 +798,7 @@ public class BaseExperimentBuilder extends Builder {
 				String fileIdString = values[i];
 				getSourceFile(fileIdString);
 			} else if(attributes[i].equals(ID_ATTRIBUTE)) {
-				cct_id = Integer.valueOf(values[i]);
+				cct_id = Integer.parseInt(values[i]);
 			} 
 		}
 		
@@ -854,16 +854,16 @@ public class BaseExperimentBuilder extends Builder {
 
 		for(int i=0; i<attributes.length; i++) {
 			if(attributes[i].equals(LINE_ATTRIBUTE)) {
-				firstLn = Integer.valueOf(values[i]);
+				firstLn = Integer.parseInt(values[i]);
 				lastLn = firstLn;
 				
 			} else if(attributes[i].equals("s"))  {
-				flat_id = Integer.valueOf(values[i]);
+				flat_id = Integer.parseInt(values[i]);
 				if (cct_id == 0)
 					cct_id = flat_id;
 				
 			} else if(attributes[i].equals(ID_ATTRIBUTE))  {
-				cct_id = Integer.valueOf(values[i]);
+				cct_id = Integer.parseInt(values[i]);
 
 			} else if(attributes[i].equals("it")) { //the cpid
 				cpid = Integer.parseInt(values[i]);
@@ -1009,13 +1009,13 @@ public class BaseExperimentBuilder extends Builder {
 				attribute.dbGlob = values[i];
 				
 			} else if (attributes[i].equals("db-min-time")) {
-				attribute.dbTimeMin = Long.valueOf(values[i]);
+				attribute.dbTimeMin = Long.parseLong(values[i]);
 				
 			} else if (attributes[i].equals("db-max-time")) {
-				attribute.dbTimeMax = Long.valueOf(values[i]);
+				attribute.dbTimeMax = Long.parseLong(values[i]);
 
 			} else if (attributes[i].equals("db-header-sz")) {
-				attribute.dbHeaderSize = Integer.valueOf(values[i]);
+				attribute.dbHeaderSize = Integer.parseInt(values[i]);
 			}
 		}
 		this.experiment.setTraceAttribute(attribute);

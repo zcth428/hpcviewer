@@ -16,10 +16,10 @@ public class CallPath
 	private int maxDepth;
 	
 	/**the list of all functions as strings in the call path*/
-	private Vector<String> functionNames;
+	//private Vector<String> functionNames;
 	
 	/**the list of all data object names in the call path*/
-	private Vector<String> dataNames;
+	//private Vector<String> dataNames;
 
 	/**A null function*/
 	public static final String NULL_FUNCTION = "-Outside Timeline-";
@@ -28,8 +28,8 @@ public class CallPath
 	{
 		leafScope = _leafScope;
 		maxDepth = _maxDepth;
-		functionNames = new Vector<String>();
-		dataNames = new Vector<String>();
+		//functionNames = new Vector<String>();
+		//dataNames = new Vector<String>();
 	}
 	
 	public CallPath(Scope _leafScope, int _maxDepth)
@@ -59,15 +59,15 @@ public class CallPath
 		return cDepthScope;
 	}
 	
-	public Scope getBottomScope()
+	/*public Scope getBottomScope()
 	{
 		return leafScope;
-	}
+	}*/
 	
-	public void setBottomScope(Scope _leafScope)
+	/*public void setBottomScope(Scope _leafScope)
 	{
 		leafScope = _leafScope;
-	}
+	}*/
 	
 	/*************************************
 	 * retrieve the list of function names of this call path
@@ -76,6 +76,7 @@ public class CallPath
 	 ************************************/
 	public Vector<String> getFunctionNames()
 	{
+		final Vector<String> functionNames = new Vector<String>();
 		if (functionNames.isEmpty())
 		{
 			Scope currentScope = leafScope;
@@ -93,10 +94,10 @@ public class CallPath
 		return functionNames;
 	}
 	
-	public Vector<String> getDataNames()
+	/*public Vector<String> getDataNames()
 	{
 		return dataNames;
-	}
+	}*/
 	
 	/*******************************
 	 * Retrieve the maximum depth of this call path

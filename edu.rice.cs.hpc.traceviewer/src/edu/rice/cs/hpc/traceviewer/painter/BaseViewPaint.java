@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.Queue;
@@ -116,7 +117,8 @@ public abstract class BaseViewPaint extends UIJob
 		// -------------------------------------------------------------------
 		// initialize the painting (to be implemented by the instance
 		// -------------------------------------------------------------------
-		if (!startPainting(linesToPaint, Utility.getNumThreads(linesToPaint), changedBounds))
+		int launch_threads = Utility.getNumThreads(linesToPaint);
+		if (!startPainting(linesToPaint, launch_threads, changedBounds))
 			return false;
 
 		monitor.beginTask(getName(), linesToPaint);
@@ -127,7 +129,6 @@ public abstract class BaseViewPaint extends UIJob
 		
 		// decompression can be done with multiple threads without accessing gtk (on linux)
 		// It looks like there's no major performance effect though
-		int launch_threads = Utility.getNumThreads(linesToPaint);
 		Debugger.printDebug(2, "BVP launch threads " + launch_threads);
 		try {
 			launchDataGettingThreads(changedBounds, launch_threads);
@@ -147,7 +148,7 @@ public abstract class BaseViewPaint extends UIJob
 		// in case of multithreading, we want a thread-safe queue
 		// -------------------------------------------------------------------
 		final Queue<TimelineDataSet> queue;
-		if (Utility.getNumThreads(linesToPaint) > 1) {
+		if (launch_threads > 1) {
 			queue = new ConcurrentLinkedQueue<TimelineDataSet>();
 		} else {
 			queue = new LinkedList<TimelineDataSet>();
@@ -163,17 +164,20 @@ public abstract class BaseViewPaint extends UIJob
 		// reset the line number to paint
 		controller.resetCounters();
 		
-		final List<Future<Integer>> threads = new ArrayList<Future<Integer>>();
+		//final List<Future<Integer>> threads = new ArrayList<Future<Integer>>();
 		final AtomicInteger timelineDone = new AtomicInteger(linesToPaint);
 
 		final double xscale = canvas.getScalePixelsPerTime();
 		final double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
-		for (int threadNum = 0; threadNum < Utility.getNumThreads(linesToPaint); threadNum++) {
+		ExecutorCompletionService<Integer> ecs = new ExecutorCompletionService<>(threadExecutor);
+		
+		for (int threadNum = 0; threadNum < launch_threads; threadNum++) {
 			final BaseTimelineThread thread = getTimelineThread(canvas, xscale, yscale, queue, 
 					timelineDone, monitor);
-			final Future<Integer> submit = threadExecutor.submit( thread );
-			threads.add(submit);
+			ecs.submit(thread);
+/*			final Future<Integer> submit = threadExecutor.submit( thread );
+			threads.add(submit);*/
 		}
 		
 		// -------------------------------------------------------------------
@@ -199,17 +203,16 @@ public abstract class BaseViewPaint extends UIJob
 			final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
 					Display.getCurrent(), attributes.numPixelsH);
 			ArrayList<Integer> result = new ArrayList<Integer>();
-			waitDataPreparationThreads(threads, result);
+			waitDataPreparationThreads(ecs, result, 1);
 			doSingleThreadPainting(canvas, thread);
 		} else
 		{
-			int numPaintThreads = edu.rice.cs.hpc.traceviewer.util.Utility.getNumThreads(linesToPaint);
 			// -------------------------------------------------------------------
 			// painting to the buffer "concurrently" if numPaintThreads > 1
 			// -------------------------------------------------------------------
 			final List<Future<List<ImagePosition>>> threadsPaint = new ArrayList<Future<List<ImagePosition>>>();
 
-			for (int threadNum=0; threadNum < numPaintThreads; threadNum++) 
+			for (int threadNum=0; threadNum < launch_threads; threadNum++) 
 			{
 				final BasePaintThread thread = getPaintThread(queue, linesToPaint, timelineDone,
 						Display.getCurrent(), attributes.numPixelsH);
@@ -222,7 +225,7 @@ public abstract class BaseViewPaint extends UIJob
 			// Finalize the painting (to be implemented by the instance)
 			// -------------------------------------------------------------------
 			ArrayList<Integer> result = new ArrayList<Integer>();
-			waitDataPreparationThreads(threads, result);
+			waitDataPreparationThreads(ecs, result, launch_threads);
 			endPainting(canvas, threadsPaint);
 		}		
 		Debugger.printTimestampDebug("Rendering finished. (" + canvas.toString()+")");
@@ -256,13 +259,14 @@ public abstract class BaseViewPaint extends UIJob
 		}
 	}
 	
-	private void waitDataPreparationThreads(List<Future<Integer>> threads, ArrayList<Integer> result)
+	private void waitDataPreparationThreads(ExecutorCompletionService<Integer> ecs, 
+			ArrayList<Integer> result, int launch_threads)
 	{
-		for (Future<Integer> thread : threads)
+		for (int i=0; i<launch_threads; i++)
 		{
 			try {
-				Integer i = thread.get();
-				result.add(i);
+				Integer linenum = ecs.take().get();
+				result.add(linenum);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

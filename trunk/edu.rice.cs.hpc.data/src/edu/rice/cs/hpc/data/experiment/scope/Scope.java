@@ -27,7 +27,6 @@ import edu.rice.cs.hpc.data.experiment.scope.filters.MetricValuePropagationFilte
 import edu.rice.cs.hpc.data.experiment.scope.visitors.FilterScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.scope.visitors.IScopeVisitor;
 import edu.rice.cs.hpc.data.experiment.source.SourceFile;
-import edu.rice.cs.hpc.data.util.IProcedureTable;
 
 
  
@@ -769,7 +768,7 @@ protected void ensureMetricStorage()
  *	Gives the scope object storage for its metric values.
  ************************************************************************/
 	
-protected MetricValue[] makeMetricValueArray()
+private MetricValue[] makeMetricValueArray()
 {
 	
 	assert (this.isExperimentHasMetrics());
@@ -817,37 +816,6 @@ public void copyMetrics(Scope targetScope, int offset) {
 protected boolean isExperimentHasMetrics()
 {
 	return (this.experiment instanceof BaseExperimentWithMetrics);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
-//returns maxDepth of the scope tree and fills colorTable across all scopes			//
-//////////////////////////////////////////////////////////////////////////////////////
-
-public int dfsSetup(IScopeVisitor sv, IProcedureTable colorTable, int depth)
-{
-	accept(sv, ScopeVisitType.PreVisit);
-	int nKids = getSubscopeCount();
-	int currentMaxDepth = depth;
-	/*if(depth == 1)
-colorTable.addProcedure(this.getName());*/
-	for (int i=0; i< nKids; i++)
-	{
-		int tempDepth;
-		Scope childScope = getSubscope(i);
-		if(this instanceof CallSiteScope || this instanceof ProcedureScope)
-		{
-			colorTable.addProcedure(this.getName());
-			tempDepth = childScope.dfsSetup(sv, colorTable, depth + 1);
-		}
-		else
-		{
-			tempDepth = childScope.dfsSetup(sv, colorTable, depth);
-		}
-		if(tempDepth > currentMaxDepth)
-			currentMaxDepth = tempDepth;
-	}
-	accept(sv, ScopeVisitType.PostVisit);
-	return currentMaxDepth;
 }
 
 

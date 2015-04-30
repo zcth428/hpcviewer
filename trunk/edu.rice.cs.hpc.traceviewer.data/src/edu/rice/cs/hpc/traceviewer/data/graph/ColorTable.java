@@ -40,6 +40,10 @@ public class ColorTable implements IProcedureTable
 	public ColorTable()
 	{
 		procNames = new ArrayList<String>();
+		// Initializes the CSS that represents time values outside of the
+		// time-line.
+		procNames.add(CallPath.NULL_FUNCTION);
+		
 		display = Util.getActiveShell().getDisplay();
 		
 		// create our own white color so we can dispose later, instead of disposing

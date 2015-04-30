@@ -141,7 +141,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 				ptlService.setProcessTimeline(new ProcessTimeline[tracesToRender]);
 			
 			if (changedBounds) {
-				ProcessTimeline currentTimeline = new ProcessTimeline(currentLineNum, scopeMap,
+				ProcessTimeline currentTimeline = new ProcessTimeline(currentLineNum, getScopeMap(),
 						dataTrace, lineToPaint(currentLineNum),
 						attributes.numPixelsH, attributes.getTimeInterval(), 
 						minBegTime + attributes.getTimeBegin());

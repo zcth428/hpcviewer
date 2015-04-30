@@ -2,6 +2,8 @@ package edu.rice.cs.hpc.traceviewer.data.timeline;
 
 import java.util.HashMap;
 
+import org.eclipse.core.runtime.Assert;
+
 import edu.rice.cs.hpc.data.experiment.extdata.AbstractBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
@@ -99,22 +101,17 @@ public class ProcessTimeline {
 
 	/** returns the call path corresponding to the sample and depth given */
 	public CallPath getCallPath(int sample, int depth) {
-		if (sample == -1) {
-			System.out.println("getCallPath() fail");
-			return null;
-		} else {
-			int cpid = getCpid(sample);
-			CallPath cp = scopeMap.get(cpid);
-			if (cp != null) {
-				//cp.updateCurrentDepth(depth);
-			} else {
-				System.err.println("ERROR: No sample found for cpid " + cpid
-						+ " in trace sample: " + sample);
-				System.err
-						.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
-			}
-			return cp;
+		Assert.isTrue(sample>=0, "sample number is negative");
+		int cpid = getCpid(sample);
+
+		CallPath cp = scopeMap.get(cpid);
+		if (cp == null) {
+			System.err.println("ERROR: No sample found for cpid " + cpid
+					+ " in trace sample: " + sample);
+			System.err
+					.println("\tThere was most likely an error in the data collection; the display may be inaccurate.");
 		}
+		return cp;
 	}
 /**
  * Fills this one with the data from another

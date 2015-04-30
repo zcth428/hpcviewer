@@ -154,7 +154,7 @@ public class DataViewer extends TableViewer
 			
 			Vector<String> dataVec = new Vector<String>();
 			if (sample >= 0) {
-				dataVec = ptl.getCallPath(sample, depth).getDataNames();
+				//dataVec = ptl.getCallPath(sample, depth).getDataNames();
 			}
 			
 			this.setInput(new ArrayList<String>(dataVec));

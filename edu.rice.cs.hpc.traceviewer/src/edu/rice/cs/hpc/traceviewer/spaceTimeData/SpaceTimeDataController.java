@@ -51,7 +51,7 @@ public abstract class SpaceTimeDataController
 
 	
 	/** The map between the nodes and the cpid's. */
-	protected HashMap<Integer, CallPath> scopeMap;
+	private HashMap<Integer, CallPath> scopeMap;
 	
 	// We probably want to get away from this. The for code that needs it should be
 	// in one of the threads. It's here so that both local and remote can use
@@ -127,27 +127,20 @@ public abstract class SpaceTimeDataController
 	private void init(IWorkbenchWindow _window) 
 			throws InvalExperimentException 
 	{	
-		scopeMap = new HashMap<Integer, CallPath>();
-		TraceDataVisitor visitor = new TraceDataVisitor(scopeMap);
+		// tree traversal to get the list of cpid, procedures and max depth
+		TraceDataVisitor visitor = new TraceDataVisitor();
+		exp.getRootScope().dfsVisitScopeTree(visitor);
 
-		// This probably isn't the best way. It seems like ColorTable should be
-		// created and initialized by the PaintManager, however initializing the
-		// ColorTable requires the experiment file, which the PaintManager
-		// should not have because it might be done differently when the data is
-		// fetched remotely. Additionally the STDController needs MaxDepth along
-		// with PaintManager.
-		colorTable = new ColorTable();
-		// Initializes the CSS that represents time values outside of the
-		// time-line.
-		colorTable.addProcedure(CallPath.NULL_FUNCTION);
-		// get the list of procedures
-		maxDepth = exp.getRootScope().dfsSetup(visitor, colorTable, 1);
+		maxDepth   = visitor.getMaxDepth();
+		scopeMap   = visitor.getMap();
+		colorTable = (ColorTable) visitor.getProcedureTable();
+		
 		// initialize colors
 		colorTable.setColorTable();
 		
-		attributes = new ImageTraceAttributes();
-
-		lineNum = new AtomicInteger(0);
+		// attributes initialization
+		attributes 	 = new ImageTraceAttributes();
+		lineNum 	 = new AtomicInteger(0);
 		depthLineNum = new AtomicInteger(0);
 
 		ISourceProviderService sourceProviderService = (ISourceProviderService) _window.getService(ISourceProviderService.class);
@@ -197,8 +190,6 @@ public abstract class SpaceTimeDataController
 		return  ptlService.getProcessTimeline(scaledDTProcess);
 	}
 	
-	public abstract ProcessTimeline getNextTrace(boolean changedBounds);
-	
 	/***********************************************************************
 	 * Gets the next available trace to be filled/painted from the DepthTimeView
 	 * 
@@ -240,7 +231,7 @@ public abstract class SpaceTimeDataController
 		return dataTrace.getNumberOfRanks();
 	}
 	
-	public HashMap<Integer, CallPath> getScopeMap() {
+	protected HashMap<Integer, CallPath> getScopeMap() {
 		return scopeMap;
 	}
 
@@ -269,16 +260,6 @@ public abstract class SpaceTimeDataController
 	public long getTimeWidth() {
 		return maxEndTime - minBegTime;
 	}
-
-	/*************************************************************************
-	 * Retrieve the name of the database. The name can be either the path of
-	 * the directory, or the name of the profiled application, or both.
-	 * <p>
-	 * Ideally the name should be unique to distinguish with other databases. 
-	 * 
-	 * @return String: the name of the database
-	 *************************************************************************/
-	abstract public String getName() ;
 
 	public long getMaxEndTime() {
 		return maxEndTime;
@@ -316,9 +297,7 @@ public abstract class SpaceTimeDataController
 	public int getNumberOfDepthLines() {
 		return depthLineNum.get();
 	}
-
-	public abstract void closeDB();
-
+	
 	//see the note where this is called in FilterRanks
 	public IFilteredData getFilteredBaseData() {
 		if (dataTrace instanceof IFilteredData)
@@ -331,8 +310,6 @@ public abstract class SpaceTimeDataController
 	 */
 	public void setBaseData(IFilteredData filteredBaseData) {
 		dataTrace = filteredBaseData;
-		// we have to change the range of displayed processes
-		//attributes.begProcess = 0;
 
 		int endProcess = attributes.getProcessEnd();
 		int begProcess = attributes.getProcessBegin();
@@ -346,6 +323,24 @@ public abstract class SpaceTimeDataController
 		
 		attributes.setProcess(begProcess, endProcess);
 	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Abstract methods
+	////////////////////////////////////////////////////////////////////////////////
+	
+	/*************************************************************************
+	 * Retrieve the name of the database. The name can be either the path of
+	 * the directory, or the name of the profiled application, or both.
+	 * <p>
+	 * Ideally the name should be unique to distinguish with other databases. 
+	 * 
+	 * @return String: the name of the database
+	 *************************************************************************/
+	abstract public String getName() ;
+
+	public abstract ProcessTimeline getNextTrace(boolean changedBounds);
+
+	public abstract void closeDB();
 
 	public abstract IFilteredData createFilteredBaseData();
 

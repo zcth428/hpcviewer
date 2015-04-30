@@ -77,14 +77,14 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 
 			for (int i = 0; i < workThreads.length; i++) {
 
-				workThreads[i] = new DecompressionThread(ptlService, scopeMap,
+				workThreads[i] = new DecompressionThread(ptlService, getScopeMap(),
 						attributes, workToDo, timelineToRender, ranksRemainingToDecompress,
 						new DecompressionThreadListener());
 				workThreads[i].start();
 			}
 			
 
-			dataRetriever.getData(attributes, scopeMap, workToDo);
+			dataRetriever.getData(attributes, getScopeMap(), workToDo);
 		}
 	}
 

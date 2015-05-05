@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.viewer.db;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
@@ -8,6 +9,7 @@ import java.nio.LongBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.util.Random;
 
 import edu.rice.cs.hpc.data.db.DataCommon;
 
@@ -23,6 +25,10 @@ public class DataSummary extends DataCommon
 	// --------------------------------------------------------------------
 	
 	//private final static String SUMMARY_NAME = "hpctoolkit summary metrics";
+	static final private int FLOAT_SIZE   	   = Float.SIZE / Byte.SIZE;
+	static final private int INTEGER_SIZE 	   = Integer.SIZE / Byte.SIZE; 
+	static final private int METRIC_ENTRY_SIZE = FLOAT_SIZE + INTEGER_SIZE;
+	static final public float DEFAULT_METRIC  = 0.0f;
 	
 	// --------------------------------------------------------------------
 	// object variable
@@ -37,13 +43,18 @@ public class DataSummary extends DataCommon
 	int size_metid;
 	int size_metval;
 
-	long []cct_table = null;
+	int []cct_table = null;
+	
+	private RandomAccessFile file;
+	private FileChannel channel;
+
 	
 	// --------------------------------------------------------------------
 	// Public methods
 	// --------------------------------------------------------------------
 	
-	/*
+	/***
+	 *  <p>Opening for data summary metric file</p>
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.db.DataCommon#open(java.lang.String)
 	 */
@@ -53,6 +64,7 @@ public class DataSummary extends DataCommon
 	{
 		super.open(file);
 		
+		open_internal(file);
 		// fill the cct offset table
 		fillOffsetTable(file);
 	}
@@ -80,13 +92,75 @@ public class DataSummary extends DataCommon
 		{
 			for(int i=0; i<num_cctid; i++)
 			{
-				out.format("%4x ", cct_table[i]);
+				int num_metrics = (int) (cct_table[i+1] - cct_table[i]);
+				out.format("%4x (%2d) ", cct_table[i], num_metrics);
 				if (i % 16 == 15)
 				{
 					out.println();
 				}
 			}
+			out.println();
+			// print random metrics
+			for (int i=0; i<15; i++)
+			{
+				Random r = new Random();
+				int cct  = r.nextInt((int) num_cctid);
+				out.format("[%5d] ", cct);
+				for (int j=0; j<num_metric; j++)
+				{
+					try {
+						float value = getMetric(cct, j);
+						out.format(" %4.2e  ", value);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				out.println();
+			}
 		}
+	}
+	
+	/******
+	 * Retrieve a metric value for a specified cct id and metric id
+	 * 
+	 * @param cct_id	: cct id scope
+	 * @param metric_id : metric ID
+	 * 
+	 * @return float metric value
+	 * @throws IOException
+	 */
+	public float getMetric(int cct_id, int metric_id) throws IOException
+	{
+		long offset 	   = (metric_start + cct_table[cct_id]);
+		int offset_size    = (int) (cct_table[cct_id+1] - cct_table[cct_id]);
+		
+		if (offset_size<=0)
+			return (float)DEFAULT_METRIC;
+		
+		long file_length   = file.length();
+		// make sure the offset is within the file range
+		if (file_length > offset)
+		{
+			file.seek(offset);
+			byte []metric_byte = new byte[offset_size];
+			
+			file.readFully(metric_byte);
+			ByteBuffer buffer = ByteBuffer.wrap(metric_byte);
+			
+			int num_metrics   = offset_size / METRIC_ENTRY_SIZE; 
+			
+			for(int i=0; i<num_metrics; i++)
+			{
+				int my_metric_id = buffer.getInt();
+				float metric_val = buffer.getFloat();
+				
+				if (my_metric_id == metric_id) {
+					return metric_val;
+				}
+			}
+		}
+		return DEFAULT_METRIC;
 	}
 	
 	// --------------------------------------------------------------------
@@ -96,26 +170,19 @@ public class DataSummary extends DataCommon
 	private void fillOffsetTable(final String filename)
 			throws IOException
 	{
-		final RandomAccessFile file = new RandomAccessFile(filename, "r");
-		final FileChannel channel   = file.getChannel();
-		
 		// map all the table into memory. 
 		// This statement can be problematic if the offset_size is huge
 		
 		MappedByteBuffer mappedBuffer = channel.map(MapMode.READ_ONLY, offset_start, offset_size);
 		LongBuffer longBuffer = mappedBuffer.asLongBuffer();
 		
-		cct_table = new long[(int) num_cctid];
+		cct_table = new int[(int) num_cctid+1];
 		
-		for (int i=0; i<num_cctid; i++)
+		for (int i=0; i<=num_cctid; i++)
 		{
-			cct_table[i] = longBuffer.get(i);
+			cct_table[i] = (int) longBuffer.get(i);
 		}
-
-		channel.close();
-		file.close();
 	}
-	
 	
 	
 	// --------------------------------------------------------------------
@@ -151,11 +218,28 @@ public class DataSummary extends DataCommon
 			size_offset  = buffer.getInt();
 			size_metid   = buffer.getInt();
 			size_metval  = buffer.getInt();
-		}
-		
+		}		
 		return false;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.db.DataCommon#dispose()
+	 */
+	public void dispose() throws IOException
+	{
+		channel.close();
+		file.close();
+	}
+	// --------------------------------------------------------------------
+	// Private methods
+	// --------------------------------------------------------------------
+	
+	private void open_internal(String filename) throws FileNotFoundException
+	{
+		file 	= new RandomAccessFile(filename, "r");
+		channel = file.getChannel();
+	}
 
 	/***************************
 	 * unit test 
@@ -164,7 +248,7 @@ public class DataSummary extends DataCommon
 	 ***************************/
 	public static void main(String []argv)
 	{
-		final String filename = "/Users/laksonoadhianto/work/data/new-prof/hpctoolkit-trace-database-32465/summary.db";
+		final String filename = "/home/la5/data/new-database/db-lulesh-new/summary.db";
 		final DataSummary summary_data = new DataSummary();
 		try {
 			summary_data.open(filename);			

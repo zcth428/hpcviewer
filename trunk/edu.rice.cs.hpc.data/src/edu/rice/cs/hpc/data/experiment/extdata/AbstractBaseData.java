@@ -2,7 +2,8 @@ package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.IOException;
 
-public abstract class AbstractBaseData implements IBaseData {
+public abstract class AbstractBaseData implements IBaseData 
+{
 	protected static final int SIZE_OF_END_OF_FILE_MARKER = 4;
 	protected IFileDB baseDataFile;
 	final int headerSize;

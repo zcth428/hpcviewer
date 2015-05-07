@@ -8,16 +8,18 @@ package edu.rice.cs.hpc.traceviewer.data.db;
 public class DataRecord {
 	public long timestamp;
 	public int cpId;
-	public int metricId;
+	// Intentionally remove Nathan's metric ID. 
+	// Nathan: could you please derive this data record if you want to add additional field ?
+	//public int metricId;
 
 	public DataRecord(long _timestamp, int _cpId, int _metricId) {
 		this.timestamp = _timestamp;
 		this.cpId = _cpId;
-		this.metricId = _metricId;
+		//this.metricId = _metricId;
 	}
 	@Override
 	public String toString() {
-		return String.format("Time: %d, Call Path ID: %d, Metric ID: %d", timestamp, cpId, metricId);
+		return String.format("Time: %d, Call Path: %d", timestamp, cpId);
 	}
 
 }

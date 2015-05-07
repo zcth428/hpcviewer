@@ -145,10 +145,12 @@ public class TraceDataByRank {
 		return listcpid.get(sample).cpId;
 	}
 	
-	public int getMetricId(int sample)
+	// Intentionally remove an unused method
+	// Nathan: could you please derive your own class to add additional feature ?
+	/*public int getMetricId(int sample)
 	{
-		return listcpid.get(sample).metricId;
-	}
+		return 0;//listcpid.get(sample).metricId;
+	}*/
 
 	
 	/**Shifts all the times in the ProcessTimeline to the left by lowestStartingTime.*/

@@ -1,5 +1,5 @@
-package edu.rice.cs.hpc.viewer.db;
 
+package edu.rice.cs.hpc.viewer.db;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -11,6 +11,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Random;
 
+import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.db.DataCommon;
 
 /*********************************************
@@ -25,9 +26,7 @@ public class DataSummary extends DataCommon
 	// --------------------------------------------------------------------
 	
 	//private final static String SUMMARY_NAME = "hpctoolkit summary metrics";
-	static final private int FLOAT_SIZE   	   = Float.SIZE / Byte.SIZE;
-	static final private int INTEGER_SIZE 	   = Integer.SIZE / Byte.SIZE; 
-	static final private int METRIC_ENTRY_SIZE = FLOAT_SIZE + INTEGER_SIZE;
+	static final private int METRIC_ENTRY_SIZE = Constants.SIZEOF_FLOAT + Constants.SIZEOF_INT;
 	static final public float DEFAULT_METRIC  = 0.0f;
 	
 	// --------------------------------------------------------------------
@@ -163,6 +162,54 @@ public class DataSummary extends DataCommon
 		return DEFAULT_METRIC;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.rice.cs.hpc.data.db.DataCommon#dispose()
+	 */
+	public void dispose() throws IOException
+	{
+		channel.close();
+		file.close();
+	}
+	
+
+	// --------------------------------------------------------------------
+	// Protected methods
+	// --------------------------------------------------------------------
+	
+	@Override
+	protected boolean isTypeFormatCorrect(long type) {
+		return type==1;
+	}
+
+	@Override
+	protected boolean isFileHeaderCorrect(String header) {
+		// suggestion from Mark: ignore the header file name
+		return true; //header.startsWith(SUMMARY_NAME);
+	}
+
+	@Override
+	protected boolean readNextHeader(FileChannel input) 
+			throws IOException
+	{
+		ByteBuffer buffer = ByteBuffer.allocate(256);
+		int numBytes      = input.read(buffer);
+		if (numBytes > 0) 
+		{
+			buffer.flip();
+			
+			offset_start = buffer.getLong();
+			offset_size  = buffer.getLong();
+			metric_start = buffer.getLong();
+			metric_size  = buffer.getLong();
+			
+			size_offset  = buffer.getInt();
+			size_metid   = buffer.getInt();
+			size_metval  = buffer.getInt();
+		}		
+		return false;
+	}
+
 	// --------------------------------------------------------------------
 	// Private methods
 	// --------------------------------------------------------------------
@@ -185,56 +232,6 @@ public class DataSummary extends DataCommon
 	}
 	
 	
-	// --------------------------------------------------------------------
-	// Protected methods
-	// --------------------------------------------------------------------
-	
-	@Override
-	protected boolean isTypeFormatCorrect(long type) {
-		return type==1;
-	}
-
-	@Override
-	protected boolean isFileHeaderCorrect(String header) {
-		// suggestion from Mark: ignore the header file name
-		return true; //header.startsWith(SUMMARY_NAME);
-	}
-
-	@Override
-	protected boolean readNext(FileChannel input) 
-			throws IOException
-	{
-		ByteBuffer buffer = ByteBuffer.allocate(256);
-		int numBytes      = input.read(buffer);
-		if (numBytes > 0) 
-		{
-			buffer.flip();
-			
-			offset_start = buffer.getLong();
-			offset_size  = buffer.getLong();
-			metric_start = buffer.getLong();
-			metric_size  = buffer.getLong();
-			
-			size_offset  = buffer.getInt();
-			size_metid   = buffer.getInt();
-			size_metval  = buffer.getInt();
-		}		
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see edu.rice.cs.hpc.data.db.DataCommon#dispose()
-	 */
-	public void dispose() throws IOException
-	{
-		channel.close();
-		file.close();
-	}
-	// --------------------------------------------------------------------
-	// Private methods
-	// --------------------------------------------------------------------
-	
 	private void open_internal(String filename) throws FileNotFoundException
 	{
 		file 	= new RandomAccessFile(filename, "r");
@@ -253,6 +250,7 @@ public class DataSummary extends DataCommon
 		try {
 			summary_data.open(filename);			
 			summary_data.printInfo(System.out);
+			summary_data.dispose();	
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -49,7 +49,7 @@ abstract public class DataCommon
 			// -------------------------------------------------------------
 			// Read the next header (implemented by derived class)
 			// -------------------------------------------------------------
-			if ( readNext(channel) ) 
+			if ( readNextHeader(channel) ) 
 			{
 				// the implementer can perform other operations
 			}
@@ -171,5 +171,5 @@ abstract public class DataCommon
 	
 	protected abstract boolean isTypeFormatCorrect(long type);
 	protected abstract boolean isFileHeaderCorrect(String header);
-	protected abstract boolean readNext(FileChannel input) throws IOException;
+	protected abstract boolean readNextHeader(FileChannel input) throws IOException;
 }

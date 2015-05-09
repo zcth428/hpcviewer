@@ -84,6 +84,7 @@ public class DetailViewPaint extends BaseViewPaint {
 
 	@Override
 	protected int getNumberOfLines() {
+		final ImageTraceAttributes attributes = controller.getAttributes();
 		return Math.min(attributes.numPixelsV, attributes.getProcessInterval() );
 	}
 

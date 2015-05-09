@@ -42,8 +42,6 @@ import edu.rice.cs.hpc.traceviewer.util.Utility;
  *******************************************************/
 public abstract class BaseViewPaint extends UIJob
 {
-
-	protected ImageTraceAttributes attributes;
 	protected boolean changedBounds;
 	
 	protected final IWorkbenchWindow window;
@@ -71,7 +69,6 @@ public abstract class BaseViewPaint extends UIJob
 		
 		changedBounds = _changeBound;
 		controller = _data;
-		attributes = _data.getAttributes();
 
 		this.window 		= (window == null ? Util.getActiveWindow() : window);
 		this.canvas 		= canvas;
@@ -79,6 +76,10 @@ public abstract class BaseViewPaint extends UIJob
 	}
 	
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.IProgressMonitor)
+	 */
 	@Override
 	public IStatus runInUIThread(IProgressMonitor monitor) {
 		IStatus status = Status.OK_STATUS;
@@ -107,6 +108,7 @@ public abstract class BaseViewPaint extends UIJob
 		int linesToPaint = getNumberOfLines();
 		Debugger.printDebug(2, "BVP-begin " + linesToPaint + " lines");
 
+		final ImageTraceAttributes attributes = controller.getAttributes();
 		// -------------------------------------------------------------------
 		// hack fix: if the number of horizontal pixels is less than 1 we
 		// return immediately, otherwise it throws an exception
@@ -170,14 +172,12 @@ public abstract class BaseViewPaint extends UIJob
 		final double xscale = canvas.getScalePixelsPerTime();
 		final double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
-		ExecutorCompletionService<Integer> ecs = new ExecutorCompletionService<>(threadExecutor);
+		ExecutorCompletionService<Integer> ecs = new ExecutorCompletionService<Integer>(threadExecutor);
 		
 		for (int threadNum = 0; threadNum < launch_threads; threadNum++) {
 			final BaseTimelineThread thread = getTimelineThread(canvas, xscale, yscale, queue, 
 					timelineDone, monitor);
 			ecs.submit(thread);
-/*			final Future<Integer> submit = threadExecutor.submit( thread );
-			threads.add(submit);*/
 		}
 		
 		// -------------------------------------------------------------------
@@ -194,7 +194,7 @@ public abstract class BaseViewPaint extends UIJob
 
 		Debugger.printDebug(1, canvas.toString() + " BVP --- lp: " + linesToPaint + ", tld: " + timelineDone + ", qs: " + queue.size());
 		Debugger.printTimestampDebug("Rendering mostly finished. (" + canvas.toString()+")");
-
+		
 		if (OSValidator.isUnix()) 
 		{
 			// -------------------------------------------------------------------
@@ -259,6 +259,13 @@ public abstract class BaseViewPaint extends UIJob
 		}
 	}
 	
+	/******
+	 * Wait for any thread who finishes first, and then add the result to the list
+	 * 
+	 * @param ecs : executor service
+	 * @param result : the list of the result
+	 * @param launch_threads : number of launched threads
+	 */
 	private void waitDataPreparationThreads(ExecutorCompletionService<Integer> ecs, 
 			ArrayList<Integer> result, int launch_threads)
 	{

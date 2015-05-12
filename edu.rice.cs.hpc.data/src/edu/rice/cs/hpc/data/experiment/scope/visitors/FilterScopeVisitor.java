@@ -37,7 +37,6 @@ public class FilterScopeVisitor implements IScopeVisitor
 {
 	private final IFilterData filter;
 	private final MetricValue []rootMetricValues;
-	//private final HashMap<Integer, ScopeToRemove> listScopesToRemove;
 	private final BaseExperiment experiment;
 	private BaseMetric []metrics = null;
 	
@@ -64,7 +63,6 @@ public class FilterScopeVisitor implements IScopeVisitor
 		{
 			metrics = ((Experiment)experiment).getMetrics();
 		}
-		//listScopesToRemove = new HashMap<>();
 	}
 	
 	/**************
@@ -104,21 +102,48 @@ public class FilterScopeVisitor implements IScopeVisitor
 			FilterAttribute filterAttribute = filter.getFilterAttribute(scope.getName());
 			if (filterAttribute != null)
 			{
-				// the scope needs to be excluded
-				need_to_continue = (filterAttribute.filterType == FilterAttribute.Type.Exclusive);
-				if (metrics  != null)
+				if (filterAttribute.filterType == FilterAttribute.Type.Children_Only)
 				{
-					if (scope instanceof LineScope)
+					//-------------------------------------------------------------------
+					// Filtering only the children, not the scope itself
+					//-------------------------------------------------------------------
+					need_to_continue = false;
+					if (metrics != null)
 					{
-						// no need to merge metric if the filtered child is a line statement.
-						// in this case, the parent (PF) already includes the exclusive value.
-					} else {
-						mergeMetrics(parent, scope);
+						// glue the metrics of all the children to the scope
+						for(Object child: scope.getChildren())
+						{
+							if (!(child instanceof LineScope))
+							{
+								Scope child_scope = (Scope) child;
+								mergeMetrics(scope, child_scope, false);
+								
+							}
+						}
+						// remove all the children
+						for (Object child: scope.getChildren())
+						{
+							scope.remove((TreeNode) child);
+						}
 					}
+				} else
+				{
+					//-------------------------------------------------------------------
+					// Filtering the scope or/and the children
+					//-------------------------------------------------------------------
+					need_to_continue = (filterAttribute.filterType == FilterAttribute.Type.Self_Only);
+					if (metrics  != null)
+					{
+						if (!(scope instanceof LineScope))
+						{
+							// no need to merge metric if the filtered child is a line statement.
+							// in this case, the parent (PF) already includes the exclusive value.
+							mergeMetrics(parent, scope, need_to_continue);
+						}
+					}
+					removeChild(scope, filterAttribute.filterType);
+					
 				}
-				removeChild(scope, filterAttribute.filterType);
-				// mark that we will remove this scope
-				// listScopesToRemove.put(scope.getCCTIndex(), new ScopeToRemove(scope, filterAttribute.filterType));
 			} else 
 			{
 				// filter is not needed, we can surely continue to investigate the descendants
@@ -129,25 +154,44 @@ public class FilterScopeVisitor implements IScopeVisitor
 		}
 	}
 	
-	
+	/********
+	 * Remove a child from its parent. if the filter type is SELF, we'll attach the grandchildren
+	 * to the parent
+	 * 
+	 * @param childToRemove : scope to remove
+	 * @param filterType : filter type
+	 */
 	private void removeChild(Scope childToRemove, FilterAttribute.Type filterType)
 	{
+		// skip to current scope
 		Scope parent = childToRemove.getParentScope();
 		parent.remove(childToRemove);
 		
-		if (filterType == FilterAttribute.Type.Exclusive)
+		// remove its children and glue it the parent
+		if (filterType == FilterAttribute.Type.Self_Only)
 		{
-			Object []children = childToRemove.getChildren();
-			if (children != null)
+			addGrandChildren(parent, childToRemove);
+		}
+	}
+	
+	/*****
+	 * Add the grand children to the parent
+	 * @param parent
+	 * @param scope_to_remove
+	 */
+	private void addGrandChildren(Scope parent, Scope scope_to_remove)
+	{
+		Object []children = scope_to_remove.getChildren();
+		if (children != null)
+		{
+			for(Object child : children)
 			{
-				for(Object child : children)
-				{
-					parent.add((TreeNode) child);
-					((TreeNode)child).setParent(parent);
-				}
+				parent.add((TreeNode) child);
+				((TreeNode)child).setParent(parent);
 			}
 		}
 	}
+	
 	/******
 	 * Merging metrics
      * X : exclusive metric value
@@ -163,14 +207,16 @@ public class FilterScopeVisitor implements IScopeVisitor
 	 *
 	 * @param parent : the parent scope
 	 * @param child  : the child scope to be excluded  
+	 * @param exclusive_filter : whether to merge exclusive only (true) or inclusive metric
+	 * 	to the exclusive metric of the parent
 	 */
-	private void mergeMetrics(Scope parent, Scope child)
+	private void mergeMetrics(Scope parent, Scope child, boolean exclusive_filter)
 	{
 		// we need to merge the metric values
 		MetricValue []values = child.getMetricValues();
 		for (int i=0; i<metrics.length; i++)
 		{
-			if (need_to_continue && metrics[i].getMetricType() == MetricType.EXCLUSIVE)
+			if (exclusive_filter && metrics[i].getMetricType() == MetricType.EXCLUSIVE)
 			{
 				MetricValue value = parent.getMetricValue(i).duplicate();
 				parent.setMetricValue(i, value);
@@ -178,7 +224,7 @@ public class FilterScopeVisitor implements IScopeVisitor
 				// exclusive filter: merge the exclusive metrics to the parent's exclusive
 				mergeMetricToParent(parent, i, values[i]);
 				
-			} else if (!need_to_continue && metrics[i].getMetricType() == MetricType.INCLUSIVE)
+			} else if (!exclusive_filter && metrics[i].getMetricType() == MetricType.INCLUSIVE)
 			{
 				// inclusive filter: merge the inclusive metrics to the parent's exclusive
 				int index_exclusive_metric = metrics[i].getPartner();

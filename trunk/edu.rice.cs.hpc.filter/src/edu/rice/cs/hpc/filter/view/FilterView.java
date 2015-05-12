@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -27,6 +28,7 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.filter.FilterAttribute;
+import edu.rice.cs.hpc.filter.action.FilterInputDialog;
 import edu.rice.cs.hpc.filter.pattern.PatternValidator;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 import edu.rice.cs.hpc.filter.service.FilterStateProvider;
@@ -120,16 +122,23 @@ public class FilterView extends ViewPart implements IFilterView
 					final StructuredSelection select = (StructuredSelection) selection;
 					final Entry<String, FilterAttribute> item= (Entry<String, FilterAttribute>) select.getFirstElement();
 					
-					InputDialog dialog = new InputDialog(shell, "Rename a filter", 
-							"Use a glob pattern to define a filter. For instance, a MPI* will filter all MPI routines", 
-							item.getKey(), new PatternValidator());
+					final FilterInputDialog dialog = new FilterInputDialog(shell, "Editing a filter", item.getKey(), item.getValue());
 					if (dialog.open() == Window.OK)
 					{
 						final FilterMap filterMap = FilterMap.getInstance();
-						filterMap.update(item.getKey(), dialog.getValue());
-						
-						// notify the table and others that we need to refresh the content
-						serviceProvider.refresh();
+						FilterAttribute attribute = dialog.getAttribute();
+						if (filterMap.update(item.getKey(), dialog.getValue(), attribute))
+						{							
+							// notify the table and others that we need to refresh the content
+							if (serviceProvider.isEnabled())
+								serviceProvider.refresh();
+							else {
+								tableViewer.setInput(FilterMap.getInstance().getEntrySet());
+								tableViewer.refresh();
+							}
+						} else {
+							MessageDialog.openWarning(shell, "Unable to update", "Failed to update the pattern.");
+						}
 					}
 				}
 			}

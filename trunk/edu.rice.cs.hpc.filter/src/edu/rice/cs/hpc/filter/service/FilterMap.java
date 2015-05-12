@@ -127,16 +127,21 @@ implements IFilterData
 	public boolean update(String oldKey, String newKey)
 	{
 		FilterAttribute val = get(oldKey);
+		return update(oldKey, newKey, val);
+	}
+
+	public boolean update(String oldKey, String newKey, FilterAttribute attribute)
+	{
+		FilterAttribute val = get(oldKey);
 		if (val != null)
 		{
 			remove(oldKey);
-			put(newKey, val);
+			put(newKey, attribute);
 			save();
 			return true;
 		}
 		return false;
 	}
-
 	@Override
 	/*
 	 * (non-Javadoc)

@@ -2,45 +2,28 @@ package edu.rice.cs.hpc.filter.view;
 
 import java.util.Map.Entry;
 
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
-import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TableViewerEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.services.ISourceProviderService;
-
-import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.filter.FilterAttribute;
-import edu.rice.cs.hpc.filter.pattern.PatternValidator;
 import edu.rice.cs.hpc.filter.service.FilterMap;
-import edu.rice.cs.hpc.filter.service.FilterStateProvider;
 
 
 /***************************************************
@@ -93,7 +76,7 @@ public class FilterTableViewerFactory
 				cell.setText(item.getValue().getFilterType());
 			}
 		});
-		columnType.setEditingSupport(new ComboEditingSupport(ctv));
+		//columnType.setEditingSupport(new ComboEditingSupport(ctv));
 		
 		// the content of the table is an array of a map between a string and a boolean
 		ctv.setContentProvider( new ArrayContentProvider() );
@@ -161,20 +144,14 @@ public class FilterTableViewerFactory
 	 * The combo contains any enumerations in {@link edu.rice.cs.hpc.data.filter.FilterAttribute.Type }
 	 *
 	 **********************************************************/
-	private static class ComboEditingSupport extends EditingSupport
+	/*private static class ComboEditingSupport extends EditingSupport
 	{
 		final private ComboBoxCellEditor editor;
 		
 		public ComboEditingSupport(TableViewer viewer) {
 			super(viewer);
 			
-			// fill the content of the combo box
-			FilterAttribute.Type []types = FilterAttribute.Type.values();
-			String []items = new String[types.length];
-			for(int i=0; i<types.length; i++)
-			{
-				items[i] = types[i].name();
-			}
+			String []items = FilterAttribute.getFilterNames();
 			editor = new ComboBoxCellEditor(viewer.getTable(), items);
 		}
 
@@ -220,5 +197,5 @@ public class FilterTableViewerFactory
 				}
 			}
 		}		
-	}
+	}*/
 }

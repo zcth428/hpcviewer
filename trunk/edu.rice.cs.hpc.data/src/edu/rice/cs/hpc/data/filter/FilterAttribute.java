@@ -24,7 +24,7 @@ public class FilterAttribute implements Serializable
 	 * inclusive: filter the nodes and its descendants
 	 * exclusive: filter only the node
 	 */
-	static public enum Type {Inclusive, Exclusive};
+	static public enum Type {Self_And_Children, Self_Only, Children_Only};
 	
 	/***
 	 * Flag true: the filter is enabled
@@ -35,7 +35,7 @@ public class FilterAttribute implements Serializable
 	/*****
 	 * @see Type
 	 */
-	public Type filterType = Type.Inclusive;
+	public Type filterType = Type.Self_And_Children;
 	
 	/*****
 	 * get the name of the filter
@@ -47,10 +47,27 @@ public class FilterAttribute implements Serializable
 		return filterType.name();
 	}
 	
+	/*****
+	 * retrieve the names of filter attributes
+	 * 
+	 * @return
+	 */
+	static public String[] getFilterNames()
+	{
+		FilterAttribute.Type []types = FilterAttribute.Type.values();
+		String []items = new String[types.length];
+		for(int i=0; i<types.length; i++)
+		{
+			items[i] = types[i].name();
+		}
+		return items;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString()
 	{
 		return "(" + enable + "," + filterType + ")";

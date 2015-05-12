@@ -3,7 +3,6 @@ package edu.rice.cs.hpc.filter.action;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -11,7 +10,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.ISourceProviderService;
 
 import edu.rice.cs.hpc.data.filter.FilterAttribute;
-import edu.rice.cs.hpc.filter.pattern.PatternValidator;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 import edu.rice.cs.hpc.filter.service.FilterStateProvider;
 
@@ -37,9 +35,7 @@ public class FilterAdd extends AbstractHandler
 		// show a dialog to retrieve a new pattern
 		
 		final Shell shell = HandlerUtil.getActiveShell(event);
-		final InputDialog dialog = new InputDialog(shell, "Add a pattern", 
-				"Use a glob pattern to define a filter. For instance, a MPI* will filter all MPI routines", 
-				"", new PatternValidator());
+		final FilterInputDialog dialog = new FilterInputDialog(shell, "Add a pattern", "", null);
 		
 		if (dialog.open() == Window.OK)
 		{

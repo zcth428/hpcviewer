@@ -1,7 +1,12 @@
-package edu.rice.cs.hpc.data.experiment.extdata;
+package edu.rice.cs.hpc.traceviewer.data.version2;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import edu.rice.cs.hpc.data.experiment.extdata.FileDB2;
+import edu.rice.cs.hpc.data.experiment.extdata.FilterSet;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 
 
 /******************************************************************
@@ -119,12 +124,12 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 	 * (non-Javadoc)
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getMaxLoc(int)
 	 */
-	public long getMaxLoc(int rank, int recordSize) {
+	public long getMaxLoc(int rank) {
 		int filteredRank = indexes[rank];
 		final long offsets[] = baseDataFile.getOffsets();
 		long maxloc = ( (filteredRank+1<baseDataFile.getNumberOfRanks())? 
 				offsets[filteredRank+1] : baseDataFile.getMasterBuffer().size()-SIZE_OF_END_OF_FILE_MARKER )
-				- recordSize;
+				- getRecordSize();
 		return maxloc;
 	}
 

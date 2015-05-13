@@ -1,6 +1,7 @@
-package edu.rice.cs.hpc.data.experiment.extdata;
+package edu.rice.cs.hpc.traceviewer.data.version2;
 
 import java.io.IOException;
+
 
 /*******
  * 
@@ -38,11 +39,11 @@ public class BaseData extends AbstractBaseData {
 	}
 
 	@Override
-	public long getMaxLoc(int rank, int recordSize) {
+	public long getMaxLoc(int rank) {
 		final long offsets[] = baseDataFile.getOffsets();
 		long maxloc = ( (rank+1<baseDataFile.getNumberOfRanks())? 
 				offsets[rank+1] : baseDataFile.getMasterBuffer().size()-1 )
-				- recordSize;
+				- getRecordSize();
 		return maxloc;
 	}
 
@@ -60,6 +61,4 @@ public class BaseData extends AbstractBaseData {
 	public boolean isDenseBetweenFirstAndLast() {
 		return true;//No filtering
 	}
-	
-
 }

@@ -49,7 +49,7 @@ public class TimelineThread
 		//nextTrace.data is not empty if the data is from the server
 		if(changedBounds)
 		{
-			if (trace.getData().isEmpty()) {
+			if (trace.isEmpty()) {
 				
 				trace.readInData();
 				traceService.setProcessTimeline(trace.line(), trace);

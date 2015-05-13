@@ -17,13 +17,11 @@ public class RemoteFilteredBaseData implements IFilteredData {
 	private static final int FILTER = 0x464C5452;
 	private final TraceName[] allNames;
 	private int[] indexes;
-	private final int headerSize;
 	private final DataOutputStream server;
 	FilterSet filter;
 	
 	public RemoteFilteredBaseData(TraceName[] names, int _headerSz, DataOutputStream server) {
 		allNames = names;
-		headerSize = _headerSz;
 		this.server = server;
 		filter = new FilterSet();
 		indexes = new int[names.length];
@@ -74,10 +72,6 @@ public class RemoteFilteredBaseData implements IFilteredData {
 		return filter;
 	}
 
-	@Override
-	public int getHeaderSize() {
-		return headerSize;
-	}
 
 	@Override
 	public String[] getListOfRanks() {
@@ -121,5 +115,30 @@ public class RemoteFilteredBaseData implements IFilteredData {
 	@Override
 	public boolean isHybridRank() {
 		return allNames[0].toString().contains(".");
+	}
+	@Override
+	public long getLong(long position) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public int getInt(long position) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public int getRecordSize() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public long getMinLoc(int rank) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public long getMaxLoc(int rank) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

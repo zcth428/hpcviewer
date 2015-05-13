@@ -3,22 +3,16 @@ package edu.rice.cs.hpc.traceviewer.data.db;
 import java.util.Arrays;
 import java.util.Vector;
 
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData2;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
-import edu.rice.cs.hpc.traceviewer.data.version2.AbstractBaseData;
 
-public class TraceDataByRank implements ITraceDataCollector 
+public class TraceDataCollector implements ITraceDataCollector
 {
+	final private int numPixelH;
 
-	//	tallent: safe to assume version 1.01 and greater here
-	public final static int HeaderSzMin = Header.MagicLen + Header.VersionLen + Header.EndianLen + Header.FlagsLen;
-	public final static int RecordSzMin = Constants.SIZEOF_LONG // time stamp
-										+ Constants.SIZEOF_INT; // call path id
-	
 	//These must be initialized in local mode. They should be considered final unless the data is remote.
-	private AbstractBaseData data;
-	private int numPixelH;
-	int rank;
+	private IBaseData2 data;
 	
 	protected Vector<DataRecord> listcpid;
 	
@@ -29,23 +23,19 @@ public class TraceDataByRank implements ITraceDataCollector
 	 * @param _rank
 	 * @param _numPixelH
 	 */
-	public TraceDataByRank(AbstractBaseData _data, int _rank, int _numPixelH)
+	public TraceDataCollector(IBaseData2 reader, int numPixelH)
 	{
-		//:'( This is a safe cast because this constructor is only
-		//called in local mode but it's so ugly....
-		data = _data;
-		rank = _rank;
-		numPixelH = _numPixelH;
-
-		listcpid = new Vector<DataRecord>(numPixelH);
+		this.numPixelH 	= numPixelH;
+		data			= reader;
 	}
 	
 	public boolean isEmpty() {
 		return listcpid == null || listcpid.size()==0;
 	}
 	
-	public TraceDataByRank(DataRecord[] data) {
-		listcpid = new Vector<DataRecord>(Arrays.asList(data));
+	public TraceDataCollector(DataRecord[] data) {
+		listcpid  = new Vector<DataRecord>(Arrays.asList(data));
+		numPixelH = 0;
 	}
 	
 	/***
@@ -58,20 +48,21 @@ public class TraceDataByRank implements ITraceDataCollector
 	public void readInData(int rank, long timeStart, long timeRange, double pixelLength)
 	{
 			
-		long minloc = data.getMinLoc(rank);
-		long maxloc = data.getMaxLoc(rank);
+		long minIndex = data.getMinLoc(rank);
+		long maxIndex = data.getMaxLoc(rank);
 		
-		Debugger.printDebug(4, "getData loc [" + minloc+","+ maxloc + "]");
+		Debugger.printDebug(4, "getData loc [" + minIndex+","+ maxIndex + "]");
 		
 		// get the start location
-		final long startLoc = this.findTimeInInterval(timeStart, minloc, maxloc);
+		final long startIndex = this.findTimeInInterval(rank, timeStart, minIndex, maxIndex);
 		
 		// get the end location
 		final long endTime = timeStart + timeRange;
-		final long endLoc = Math.min(this.findTimeInInterval(endTime, minloc, maxloc) + data.getRecordSize(), maxloc );
+		final long index_for_endTime = findTimeInInterval(rank, endTime, minIndex, maxIndex);
+		final long endIndex = Math.min(index_for_endTime, maxIndex );
 
 		// get the number of records data to display
-		final long numRec = 1+this.getNumberOfRecords(startLoc, endLoc);
+		final long numRec = 1+this.getNumberOfRecords(startIndex, endIndex);
 		
 		// --------------------------------------------------------------------------------------------------
 		// if the data-to-display is fit in the display zone, we don't need to use recursive binary search
@@ -80,27 +71,23 @@ public class TraceDataByRank implements ITraceDataCollector
 		if (numRec<=numPixelH) {
 			
 			// display all the records
-			for(long i=startLoc;i<=endLoc; ) {
-				listcpid.add(getData(i));
+			for(long i=startIndex;i<=endIndex; ) {
+				listcpid.add(getData(rank, i));
 				// one record of data contains of an integer (cpid) and a long (time)
 				i =  i + data.getRecordSize();
 			}
-			
 		} else {
-			
-			// the data is too big: try to fit the "big" data into the display
-			
+			// the data is too big: try to fit the "big" data into the display			
 			//fills in the rest of the data for this process timeline
-			this.sampleTimeLine(startLoc, endLoc, 0, numPixelH, 0, pixelLength, timeStart);
-			
+			this.sampleTimeLine(rank, startIndex, endIndex, 0, numPixelH, 0, pixelLength, timeStart);
 		}
 		
 		// --------------------------------------------------------------------------------------------------
 		// get the last data if necessary: the rightmost time is still less then the upper limit
 		// 	I think we can add the rightmost data into the list of samples
 		// --------------------------------------------------------------------------------------------------
-		if (endLoc < maxloc) {
-			final DataRecord dataLast = this.getData(endLoc);
+		if (endIndex < maxIndex) {
+			final DataRecord dataLast = this.getData(rank, endIndex);
 			this.addSample(listcpid.size(), dataLast);
 		}
 		
@@ -108,8 +95,8 @@ public class TraceDataByRank implements ITraceDataCollector
 		// get the first data if necessary: the leftmost time is still bigger than the lower limit
 		//	similarly, we add to the list 
 		// --------------------------------------------------------------------------------------------------
-		if ( startLoc > minloc ) {
-			final DataRecord dataFirst = this.getData(startLoc - data.getRecordSize());
+		if ( startIndex > minIndex ) {
+			final DataRecord dataFirst = this.getData(rank, startIndex);
 			this.addSample(0, dataFirst);
 		}
 
@@ -235,21 +222,21 @@ public class TraceDataByRank implements ITraceDataCollector
 	 * @return Returns the index that shows the size of the recursive subtree that has been read.
 	 * Used for calculating the index in which the data is to be inserted.
 	 ******************************************************************************************/
-	private int sampleTimeLine(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex, 
+	private int sampleTimeLine(int rank, long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex, 
 			double pixelLength, long startingTime)
 	{
 		int midPixel = (startPixel+endPixel)/2;
 		if (midPixel == startPixel)
 			return 0;
 		
-		long loc = findTimeInInterval((long)(midPixel*pixelLength)+startingTime, minLoc, maxLoc);
+		long loc = findTimeInInterval(rank, (long)(midPixel*pixelLength)+startingTime, minLoc, maxLoc);
 		
-		final DataRecord nextData = this.getData(loc);
+		final DataRecord nextData = this.getData(rank, loc);
 		
 		addSample(minIndex, nextData);
 		
-		int addedLeft = sampleTimeLine(minLoc, loc, startPixel, midPixel, minIndex, pixelLength, startingTime);
-		int addedRight = sampleTimeLine(loc, maxLoc, midPixel, endPixel, minIndex+addedLeft+1, pixelLength, startingTime);
+		int addedLeft = sampleTimeLine(rank, minLoc, loc, startPixel, midPixel, minIndex, pixelLength, startingTime);
+		int addedRight = sampleTimeLine(rank, loc, maxLoc, midPixel, endPixel, minIndex+addedLeft+1, pixelLength, startingTime);
 		
 		return (addedLeft+addedRight+1);
 	}
@@ -261,22 +248,18 @@ public class TraceDataByRank implements ITraceDataCollector
 	 * @param left_boundary_offset: the start location. 0 means the beginning of the data in a process
 	 * @param right_boundary_offset: the end location.
 	 ********************************************************************************/
-	private long findTimeInInterval(long time, long left_boundary_offset, long right_boundary_offset)
+	private long findTimeInInterval(int rank, long time, long left_index, long right_index)
 	{
-		if (left_boundary_offset == right_boundary_offset) return left_boundary_offset;
-
-		long left_index = getRelativeLocation(left_boundary_offset);
-		long right_index = getRelativeLocation(right_boundary_offset);
+		if (left_index == right_index) return left_index;
 		
-		long left_time = data.getLong(left_boundary_offset);
-		long right_time = data.getLong(right_boundary_offset);
+		long left_time = data.getLong(rank, left_index);
+		long right_time = data.getLong(rank, right_index);
 		
 		// apply "Newton's method" to find target time
 		while (right_index - left_index > 1) {
 			long predicted_index;
-			final double time_range = right_time - left_time;
-			final double rate = time_range / (right_index - left_index);
-			final long mtime = (long) (time_range / 2);
+			double rate = (right_time - left_time) / (right_index - left_index);
+			long mtime = (right_time - left_time) / 2;
 			if (time <= mtime) {
 				predicted_index = Math.max((long) ((time - left_time) / rate) + left_index, left_index);
 			} else {
@@ -291,7 +274,7 @@ public class TraceDataByRank implements ITraceDataCollector
 			if (predicted_index >= right_index)
 				predicted_index = right_index - 1;
 
-			long temp = data.getLong(getAbsoluteLocation(predicted_index));
+			long temp = data.getLong(rank, predicted_index);
 			if (time >= temp) {
 				left_index = predicted_index;
 				left_time = temp;
@@ -300,35 +283,22 @@ public class TraceDataByRank implements ITraceDataCollector
 				right_time = temp;
 			}
 		}
-		long left_offset = getAbsoluteLocation(left_index);
-		long right_offset = getAbsoluteLocation(right_index);
-
-		left_time = data.getLong(left_offset);
-		right_time = data.getLong(right_offset);
+		left_time = data.getLong(rank, left_index);
+		right_time = data.getLong(rank, right_index);
 
 		// return the closer sample or the maximum sample if the 
 		// time is at or beyond the right boundary of the interval
 		final boolean is_left_closer = Math.abs(time - left_time) < Math.abs(right_time - time);
-		long maxloc = data.getMaxLoc(rank);
+		long maxIndex = data.getMaxLoc(rank);
 		
-		if ( is_left_closer ) return left_offset;
-		else if (right_offset < maxloc) return right_offset;
-		else return maxloc;
-	}
-	
-	private long getAbsoluteLocation(long relativePosition)
-	{
-		return data.getMinLoc(rank) + (relativePosition * data.getRecordSize());
-	}
-	
-	private long getRelativeLocation(long absolutePosition)
-	{
-		return (absolutePosition-data.getMinLoc(rank)) / data.getRecordSize();
+		if ( is_left_closer ) return left_index;
+		else if (right_index < maxIndex) return right_index;
+		else return maxIndex;
 	}
 	
 	
 	/**Adds a sample to times and timeLine.*/
-	private void addSample( int index, DataRecord datacpid)
+	public void addSample( int index, DataRecord datacpid)
 	{		
 		if (index == listcpid.size())
 		{
@@ -341,15 +311,21 @@ public class TraceDataByRank implements ITraceDataCollector
 	}
 
 	
-	public void duplicate(ITraceDataCollector traceData)
+	public Vector<DataRecord> getListOfData()
 	{
-		this.listcpid = ((TraceDataByRank)traceData).listcpid;
+		return this.listcpid;
 	}
 	
-	private DataRecord getData(long location)
+	
+	public void setListOfData(Vector<DataRecord> anotherList)
 	{
-		final long time = data.getLong(location);
-		final int cpId = data.getInt(location + Constants.SIZEOF_LONG);
+		this.listcpid = anotherList;
+	}
+	
+	private DataRecord getData(int rank, long location)
+	{
+		final long time = data.getLong(rank, location);
+		final int cpId = data.getInt(rank, location + Constants.SIZEOF_LONG);
 		int metricId = edu.rice.cs.hpc.traceviewer.data.util.Constants.dataIdxNULL;
 		
 		return new DataRecord(time, cpId, metricId);
@@ -358,6 +334,11 @@ public class TraceDataByRank implements ITraceDataCollector
 	private long getNumberOfRecords(long start, long end)
 	{
 		return (end-start) / (data.getRecordSize());
+	}
+	
+	public void duplicate(ITraceDataCollector traceData)
+	{
+		this.listcpid = ((TraceDataCollector)traceData).listcpid;
 	}
 
 	/*********************************************************************************************

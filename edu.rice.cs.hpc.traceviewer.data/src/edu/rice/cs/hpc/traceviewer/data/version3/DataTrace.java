@@ -1,4 +1,4 @@
-package edu.rice.cs.hpc.traceviewer.data.db;
+package edu.rice.cs.hpc.traceviewer.data.version3;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.Random;
 
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.db.DataCommon;
+import edu.rice.cs.hpc.traceviewer.data.db.DataRecord;
 
 /*******************************************************************************
  * 
@@ -55,6 +56,16 @@ public class DataTrace extends DataCommon
 		open_internal(file);
 		// fill the cct offset table
 		fillOffsetTable(file);
+	}
+	
+	/***
+	 * Return the lowest begin time of all ranks
+	 * 
+	 * @return the minimum time
+	 */
+	public long getMinTime()
+	{
+		return min_time;
 	}
 
 	@Override
@@ -112,7 +123,7 @@ public class DataTrace extends DataCommon
 	 * 
 	 * @throws IOException
 	 */
-	public DataRecord getSampledCCT(int rank, long index) throws IOException
+	public DataRecord getSampledData(int rank, long index) throws IOException
 	{
 		if (table_offset[rank] <=0)
 			return null;
@@ -132,6 +143,16 @@ public class DataTrace extends DataCommon
 			return new DataRecord(time, cct, 0);
 		}
 		return null;
+	}
+	
+	public int getNumberOfSamples(int rank)
+	{
+		return (int) (table_length[rank] / RECORD_ENTRY_SIZE);
+	}
+	
+	public int getNumberOfRanks()
+	{
+		return table_offset.length;
 	}
 	
 	@Override
@@ -159,11 +180,11 @@ public class DataTrace extends DataCommon
 		Random r = new Random();
 		for(int i=0; i< 10; i++)
 		{
-			int rank = r.nextInt(table_length.length-1);
-			int numsamples = (int) (table_length[rank] / RECORD_ENTRY_SIZE);
+			int rank = r.nextInt(getNumberOfRanks()-1);
+			int numsamples = getNumberOfSamples(rank);
 			int sample = r.nextInt(numsamples);
 			try {
-				out.format("%d:  %s\n", rank, getSampledCCT(rank, sample));
+				out.format("%d:  %s\n", rank, getSampledData(rank, sample));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

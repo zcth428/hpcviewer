@@ -11,7 +11,7 @@ public class FilterSet {
 		excludeMatched = true;
 		patterns = new ArrayList<Filter>();
 	}
-	boolean hasAnyFilters() {
+	public boolean hasAnyFilters() {
 		return patterns != null && !patterns.isEmpty();
 	}
 	public void setPatterns(ArrayList<Filter> patterns) {

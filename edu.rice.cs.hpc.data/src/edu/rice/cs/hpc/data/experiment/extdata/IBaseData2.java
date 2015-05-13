@@ -1,7 +1,7 @@
 package edu.rice.cs.hpc.data.experiment.extdata;
 
-public interface IBaseData {
-	
+public interface IBaseData2 
+{
 	/***
 	 * retrieve the list of rank names ( usual format: process.thread )
 	 * @return
@@ -32,9 +32,9 @@ public interface IBaseData {
 	 */
 	public void dispose();
 
-	long getLong(long position);
+	long getLong(int rank, long position);
 
-	int getInt(long position);
+	int getInt(int rank, long position);
 	
 	int getRecordSize();
 

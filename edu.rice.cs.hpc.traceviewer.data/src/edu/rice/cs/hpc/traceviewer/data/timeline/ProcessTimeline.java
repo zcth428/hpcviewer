@@ -4,11 +4,12 @@ import java.util.HashMap;
 
 import org.eclipse.core.runtime.Assert;
 
-import edu.rice.cs.hpc.data.experiment.extdata.AbstractBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.traceviewer.data.db.ITraceDataCollector;
 import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.data.db.DataRecord;
 import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
+import edu.rice.cs.hpc.traceviewer.data.version2.AbstractBaseData;
 
 /** A data structure that stores one line of timestamp-cpid data. */
 public class ProcessTimeline {
@@ -17,7 +18,7 @@ public class ProcessTimeline {
 	private HashMap<Integer, CallPath> scopeMap;
 
 	/** This ProcessTimeline's line number. */
-	private int lineNum;
+	private int lineNum, processNumber;
 
 	/** The initial time in view. */
 	private long startingTime;
@@ -28,7 +29,7 @@ public class ProcessTimeline {
 	/** The amount of time that each pixel on the screen correlates to. */
 	private double pixelLength;
 
-	final TraceDataByRank data;
+	final ITraceDataCollector data;
 
 	/*************************************************************************
 	 * Reads in the call-stack trace data from the binary traceFile in the form:
@@ -40,20 +41,21 @@ public class ProcessTimeline {
 	 * @param _timeRange The difference between the start time and the end time
 	 */
 	public ProcessTimeline(int _lineNum, HashMap<Integer, CallPath> _scopeMap, IBaseData dataTrace, 
-			int _processNumber, int _numPixelH, long _timeRange, long _startingTime)
+			int processNumber, int _numPixelH, long _timeRange, long _startingTime)
 	{
 
-		lineNum = _lineNum;
-		scopeMap = _scopeMap;
+		lineNum 			= _lineNum;
+		scopeMap 			= _scopeMap;
 
-		timeRange = _timeRange;
-		startingTime = _startingTime;
+		timeRange			= _timeRange;
+		startingTime 		= _startingTime;
+		this.processNumber  = processNumber;
 
 		pixelLength = timeRange / (double) _numPixelH;
 		
 		//TODO: Beautify
 		if (dataTrace instanceof AbstractBaseData)
-			data = new TraceDataByRank((AbstractBaseData) dataTrace, _processNumber, _numPixelH);
+			data = new TraceDataByRank((AbstractBaseData) dataTrace, processNumber, _numPixelH);
 		else
 			data = new TraceDataByRank(new DataRecord[0]);
 	}
@@ -81,7 +83,7 @@ public class ProcessTimeline {
 	 */
 	public void readInData() {
 
-		data.getData(startingTime, timeRange,
+		data.readInData(processNumber, startingTime, timeRange,
 				pixelLength);
 	}
 
@@ -118,7 +120,7 @@ public class ProcessTimeline {
  * @param another
  */
 	public void copyDataFrom(ProcessTimeline another) {
-		this.data.setListOfData(another.data.getListOfData());
+		data.duplicate(another.data);
 	}
 
 	/** Returns the number of elements in this ProcessTimeline. */
@@ -140,16 +142,13 @@ public class ProcessTimeline {
 	 * */
 	public int findMidpointBefore(long time, boolean usingMidpoint)
 	{
-		return data.findMidpointBefore(time, usingMidpoint);
+		return data.findClosestSample(time, usingMidpoint);
 	}
 
-	/****
-	 * retrieve the trace data of this process time line
-	 * @return
-	 */
-	public TraceDataByRank getData() 
+	
+	public boolean isEmpty()
 	{
-		return data;
+		return data.isEmpty();
 	}
 	// These are potentially useful for debugging, but otherwise serve no use.
 //	@Override

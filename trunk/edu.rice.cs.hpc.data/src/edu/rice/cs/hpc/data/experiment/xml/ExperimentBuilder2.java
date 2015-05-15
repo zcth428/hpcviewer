@@ -76,10 +76,10 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		case T_METRIC_TABLE:
 			break;
 			
-		case T_METRIC_RAW_TABLE:
+		case T_METRIC_DB_TABLE:
 			this.begin_MetricRawTable();
 			break;
-		case T_METRIC_RAW:
+		case T_METRIC_DB:
 			this.do_MetricRaw(attributes, values);
 			break;
 
@@ -120,14 +120,14 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 			this.end_MetricTable();
 			break;
 
-		case T_METRIC_RAW_TABLE:
+		case T_METRIC_DB_TABLE:
 			this.end_MetricRawTable();
 			break;
 
 			// ignored elements
 			// trace database
 		case T_TRACE_DB:
-		case T_METRIC_RAW:
+		case T_METRIC_DB:
 		case T_M:
 			break;
 		default:

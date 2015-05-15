@@ -24,7 +24,7 @@ public class Token2 {
     	T_PR, T_PF, T_L, T_C, T_S,
     	// metrics
     	T_METRIC_TABLE, T_METRIC, T_METRIC_FORMULA, T_M,
-    	T_METRIC_RAW_TABLE, T_METRIC_RAW,
+    	T_METRIC_DB_TABLE, T_METRIC_DB,
 		
 		// trace database
         T_TRACE_DB_TABLE, T_TRACE_DB,
@@ -43,7 +43,8 @@ public class Token2 {
     	T_CSPROFILE, T_HPCVIEWER,
     	
     	// token for XML v. 3.0
-    	T_SUMMARY_DB_FILE, T_TRACE_DB_FILE, T_PLOT_DB_FILE
+    	T_SUMMARY_DB_FILE, T_TRACE_DB_FILE, 
+    	T_PLOT_DB_FILE	 , T_THREAD_ID_FILE
     }
     
     private static Map<String, TokenXML> tokenMap;
@@ -60,8 +61,8 @@ public class Token2 {
         tokenMap.put("MetricTable",   TokenXML.T_METRIC_TABLE);
         tokenMap.put("MetricFormula", TokenXML.T_METRIC_FORMULA);
         tokenMap.put("M", 			  TokenXML.T_M);
-        tokenMap.put("MetricDBTable", TokenXML.T_METRIC_RAW_TABLE);
-        tokenMap.put("MetricDB", 	  TokenXML.T_METRIC_RAW);
+        tokenMap.put("MetricDBTable", TokenXML.T_METRIC_DB_TABLE);
+        tokenMap.put("MetricDB", 	  TokenXML.T_METRIC_DB);
         
         // trace database
         tokenMap.put("TraceDBTable", TokenXML.T_TRACE_DB_TABLE);
@@ -103,6 +104,7 @@ public class Token2 {
         tokenMap.put("SummaryDBFile", TokenXML.T_SUMMARY_DB_FILE);
         tokenMap.put("TraceDBFile",   TokenXML.T_TRACE_DB_FILE);
         tokenMap.put("PlotDBFile",    TokenXML.T_PLOT_DB_FILE);
+        tokenMap.put("ThreadIDFile",    TokenXML.T_THREAD_ID_FILE);
     }
 
     public static TokenXML map(String element) {

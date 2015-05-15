@@ -10,6 +10,7 @@ import java.util.Stack;
 
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentConfiguration;
+import edu.rice.cs.hpc.data.experiment.ExperimentWithoutMetrics;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.scope.AlienScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
@@ -226,11 +227,21 @@ public class BaseExperimentBuilder extends Builder {
 		// XML v. 3.0
 		// ---------------------
 		case T_SUMMARY_DB_FILE:
-			
+			do_DBFile(BaseExperiment.Db_File_Type.DB_SUMMARY, attributes, values);
+			break;
 			
 		case T_TRACE_DB_FILE:
-		case T_PLOT_DB_FILE:
+			do_DBFile(BaseExperiment.Db_File_Type.DB_TRACE, attributes, values);
 			break;
+			
+		case T_PLOT_DB_FILE:
+			do_DBFile(BaseExperiment.Db_File_Type.DB_PLOT, attributes, values);
+			break;
+			
+		case T_THREAD_ID_FILE:
+			do_DBFile(BaseExperiment.Db_File_Type.DB_THREADS, attributes, values);
+			break;
+
 			// ---------------------
 			// old token from old XML
 			// ---------------------
@@ -318,7 +329,7 @@ public class BaseExperimentBuilder extends Builder {
 			// ignored elements
 			// trace database
 		case T_TRACE_DB:
-		case T_METRIC_RAW:
+		case T_METRIC_DB:
 		case T_M:
 		case T_HPCTOOLKIT_EXPERIMENT:
 		case T_NAME_VALUE:
@@ -354,7 +365,18 @@ public class BaseExperimentBuilder extends Builder {
 		this.experiment.setVersion(version);
 	}
 
-
+	/*************************************************************************
+	 * Process a Database file name
+	 *************************************************************************/
+	private void do_DBFile(BaseExperiment.Db_File_Type db_type, String []attributes, String []values) {
+		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i].charAt(0) == 'n') {
+				experiment.setDBFilename(db_type, values[i]);
+				return;
+			}
+		}
+	}
+	
 	/*************************************************************************
 	 *      Processes a TARGET element as TITLE.
 	 ************************************************************************/
@@ -1018,7 +1040,8 @@ public class BaseExperimentBuilder extends Builder {
 				attribute.dbHeaderSize = Integer.parseInt(values[i]);
 			}
 		}
-		this.experiment.setTraceAttribute(attribute);
+		// this must be database for traces
+		((ExperimentWithoutMetrics)experiment).setTraceAttribute(attribute);
 	}
 
 

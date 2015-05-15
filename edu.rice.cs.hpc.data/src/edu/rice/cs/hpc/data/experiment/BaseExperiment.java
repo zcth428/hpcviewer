@@ -2,6 +2,7 @@ package edu.rice.cs.hpc.data.experiment;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.EnumMap;
 
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
@@ -21,6 +22,13 @@ import edu.rice.cs.hpc.data.util.IUserData;
  */
 public abstract class BaseExperiment implements IExperiment 
 {
+	/*****
+	 *  Enumeration for database file type
+	 */
+	static public enum Db_File_Type {DB_SUMMARY, DB_TRACE, DB_PLOT, DB_THREADS};
+	
+	static final public String []DefaultDbFilename = {"summary.db", "trace.db", "plot.db", "threads.db"};
+	
 	/** The experiment's configuration. */
 	protected ExperimentConfiguration configuration;
 
@@ -29,9 +37,9 @@ public abstract class BaseExperiment implements IExperiment
 	/** version of the database **/
 	protected String version;
 
-	private TraceAttribute attribute;
-
 	protected IDatabaseRepresentation databaseRepresentation;
+	
+	private EnumMap<Db_File_Type, String> db_filenames;
 	
 	/***
 	 * the root scope of the experiment
@@ -52,7 +60,39 @@ public abstract class BaseExperiment implements IExperiment
 		return rootScope;
 	}
 
+	/******
+	 * set a database filename
+	 * 
+	 * @param file_index : enumerate database filename {@link Db_File_Type}
+	 * @param filename : the name of the file
+	 */
+	public void setDBFilename(Db_File_Type file_index, String filename)
+	{
+		if (db_filenames == null)
+		{
+			db_filenames = new EnumMap<Db_File_Type, String>(Db_File_Type.class);
+		}
+		db_filenames.put(file_index, filename);
+	}
 	
+	/****
+	 * get the database file name 
+	 * @param file_index : enumerate database filename {@link Db_File_Type}
+	 * @return String file name
+	 */
+	public String getDbFilename(Db_File_Type file_index)
+	{
+		if (db_filenames != null)
+		{
+			return db_filenames.get(file_index);
+		}
+		return null;
+	}
+	
+	static public String getDefaultDbTraceFilename()
+	{
+		return DefaultDbFilename[Db_File_Type.DB_TRACE.ordinal()];
+	}
 	/****
 	 * retrieve the root scope of caller tree (bottom-up view)
 	 * 
@@ -130,20 +170,15 @@ public abstract class BaseExperiment implements IExperiment
 		}
 	}
 
+	/******
+	 * set the database version
+	 * 
+	 * @param v : version of the database
+	 */
 	public void setVersion (String v) 
 	{
 		this.version = v;
 	}
-
-	public void setTraceAttribute(TraceAttribute _attribute) {
-		this.attribute = _attribute;
-	}
-
-
-	public TraceAttribute getTraceAttribute() {
-		return this.attribute;
-	}
-
 
 
 	/*************************************************************************

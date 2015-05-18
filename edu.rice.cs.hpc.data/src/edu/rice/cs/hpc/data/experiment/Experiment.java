@@ -399,7 +399,7 @@ public class Experiment extends BaseExperimentWithMetrics
 
 		Experiment copy 	= new Experiment();
 		copy.configuration 	= configuration;
-		copy.databaseRepresentation = databaseRepresentation;
+		copy.databaseRepresentation =  databaseRepresentation.duplicate();
 		
 		return copy;
 	}

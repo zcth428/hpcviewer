@@ -37,4 +37,12 @@ public class LocalDatabaseRepresentation implements IDatabaseRepresentation
 		}
 		fileXML.parse(fileExperiment, experiment, need_metric, userData);	
 	}
+
+	@Override
+	public IDatabaseRepresentation duplicate() {
+		LocalDatabaseRepresentation dup = new LocalDatabaseRepresentation(fileExperiment, experiment, userData, need_metric);
+		dup.fileXML = new ExperimentFileXML();
+		
+		return dup;
+	}
 }

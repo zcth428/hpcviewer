@@ -6,5 +6,5 @@ public interface IDatabaseRepresentation
 {
 	public ExperimentFileXML getXMLFile();
 	public void open() throws	Exception;
-	
+	public IDatabaseRepresentation duplicate();
 }

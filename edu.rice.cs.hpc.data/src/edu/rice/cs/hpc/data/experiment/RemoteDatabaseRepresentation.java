@@ -37,4 +37,12 @@ public class RemoteDatabaseRepresentation implements IDatabaseRepresentation
 		}
 		fileXML.parse(expStream, name, experiment, false, userData);
 	}
+
+	@Override
+	public IDatabaseRepresentation duplicate() {
+		RemoteDatabaseRepresentation dup = new RemoteDatabaseRepresentation(experiment, expStream, userData, name);
+		dup.fileXML = new ExperimentFileXML();
+		
+		return dup;
+	}
 }

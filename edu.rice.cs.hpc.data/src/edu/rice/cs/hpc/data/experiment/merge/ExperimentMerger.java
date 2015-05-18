@@ -107,11 +107,11 @@ public class ExperimentMerger
 		
 		RootScope root2 = (RootScope) exp2.getRootScopeChildren()[root_type];	
 
-		RootScope root2_copy = new RootScope(root2.getExperiment(), 
+		/*RootScope root2_copy = new RootScope(merged, 
 				"Invisible Outer Root Scope", RootScopeType.Invisible);
 
 		DuplicateScopeTreesVisitor visitor = new DuplicateScopeTreesVisitor(root2_copy);
-		root2.dfsVisitScopeTree(visitor);
+		root2.dfsVisitScopeTree(visitor);*/
 		
 		// -----------------------------------------------
 		// step 5: merge the two experiments
@@ -120,10 +120,10 @@ public class ExperimentMerger
 		mergeScopeTrees(exp1,new DuplicateScopeTreesVisitor(rootScope), root_type);		
 		
 		RootScope root1 = (RootScope) merged.getRootScopeChildren()[0];	
-		RootScope root2_copy_cct = (RootScope) root2_copy.getChildAt(0);
+		//RootScope root2_copy_cct = (RootScope) root2_copy.getChildAt(0);
 
 		final int metricCount = exp1.getMetricCount();
-		new TreeSimilarity(metricCount, root1, root2_copy_cct, verbose);
+		new TreeSimilarity(metricCount, root1, root2, verbose);
 		
 		return merged;
 	}
@@ -147,6 +147,7 @@ public class ExperimentMerger
 		for (int i=0; i<m1.length; i++) {
 			// add metric into the merged list
 			BaseMetric mm = m1[i].duplicate();
+			mm.setIndex(i);
 			
 			setMetricCombinedName(1, mm);
 			
@@ -170,7 +171,7 @@ public class ExperimentMerger
 			
 			// recompute the index of the metric from the second experiment
 			final int index_new = m1_last_index + m.getIndex();
-			m.setIndex( index_new );
+			m.setIndex( m1_last + i +1 );
 			
 			// reset the key
 			m.setShortName( String.valueOf(index_new) );

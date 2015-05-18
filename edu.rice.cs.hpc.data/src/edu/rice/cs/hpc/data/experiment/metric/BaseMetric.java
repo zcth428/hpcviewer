@@ -17,7 +17,9 @@ public abstract class BaseMetric {
 	/** Valid types of Annotations to be used with metric values */
 	public enum AnnotationType { NONE, PERCENT, PROCESS };
 
-	/** The short name of this metric, used within an experiment's XML file. */
+	/** The short name of this metric, used within an experiment's XML file. 
+	 *  We shouldn't change the short name as it's assigned by hpcprof to compute
+	 *  derived incremental metric */
 	protected String shortName;
 
 	/** The native (target OS toolset) name of this metric. */

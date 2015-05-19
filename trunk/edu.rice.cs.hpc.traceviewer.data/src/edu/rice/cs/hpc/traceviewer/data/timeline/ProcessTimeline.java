@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.data.timeline;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import org.eclipse.core.runtime.Assert;
@@ -80,8 +81,9 @@ public class ProcessTimeline {
 	/**
 	 * Fills the ProcessTimeline with data from the file. If this is being
 	 * called, it must be on local, so the cast is fine
+	 * @throws IOException 
 	 */
-	public void readInData() {
+	public void readInData() throws IOException {
 
 		data.readInData(processNumber, startingTime, timeRange,
 				pixelLength);
@@ -107,7 +109,7 @@ public class ProcessTimeline {
 		int cpid = getCpid(sample);
 
 		CallPath cp = scopeMap.get(cpid);
-		if (cp == null) {
+		if (cp == null && sample > 0) {
 			System.err.println("ERROR: No sample found for cpid " + cpid
 					+ " in trace sample: " + sample);
 			System.err

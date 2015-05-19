@@ -34,17 +34,12 @@ public class BaseData extends AbstractBaseData {
 
 	@Override
 	public long getMinLoc(int rank) {
-		final long offsets[] = baseDataFile.getOffsets();
-		return offsets[rank] + headerSize;
+		return baseDataFile.getMinLoc(rank);
 	}
 
 	@Override
 	public long getMaxLoc(int rank) {
-		final long offsets[] = baseDataFile.getOffsets();
-		long maxloc = ( (rank+1<baseDataFile.getNumberOfRanks())? 
-				offsets[rank+1] : baseDataFile.getMasterBuffer().size()-1 )
-				- getRecordSize();
-		return maxloc;
+		return baseDataFile.getMaxLoc(rank);
 	}
 
 	@Override

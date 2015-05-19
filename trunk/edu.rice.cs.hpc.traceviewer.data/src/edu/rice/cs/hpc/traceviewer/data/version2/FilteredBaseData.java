@@ -116,8 +116,9 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 	 */
 	public long getMinLoc(int rank) {
 		int filteredRank = indexes[rank];
-		final long offsets[] = baseDataFile.getOffsets();
-		return offsets[filteredRank] + headerSize;
+		return baseDataFile.getMinLoc(filteredRank);
+/*		final long offsets[] = baseDataFile.getOffsets();
+		return offsets[filteredRank] + headerSize;*/
 	}
 
 	/*
@@ -126,11 +127,12 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 	 */
 	public long getMaxLoc(int rank) {
 		int filteredRank = indexes[rank];
-		final long offsets[] = baseDataFile.getOffsets();
+		return baseDataFile.getMaxLoc(filteredRank);
+/*		final long offsets[] = baseDataFile.getOffsets();
 		long maxloc = ( (filteredRank+1<baseDataFile.getNumberOfRanks())? 
 				offsets[filteredRank+1] : baseDataFile.getMasterBuffer().size()-SIZE_OF_END_OF_FILE_MARKER )
 				- getRecordSize();
-		return maxloc;
+		return maxloc;*/
 	}
 
 	@Override

@@ -7,16 +7,19 @@ import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFileDB;
 import edu.rice.cs.hpc.data.util.Constants;
 
+/*********************************************************
+ * 
+ * Abstract class to manage trace data. 
+ * This class is the parent for all regular data and filtered data
+ *
+ *********************************************************/
 public abstract class AbstractBaseData implements IBaseData 
 {
-	protected static final int SIZE_OF_END_OF_FILE_MARKER = 4;
-	protected IFileDB baseDataFile;
-	final int headerSize;
+	final protected IFileDB baseDataFile;
 
 	public AbstractBaseData(String filename, int headerSize, int recordSz) throws IOException {
 		baseDataFile = new FileDB2();
 		baseDataFile.open(filename, headerSize, recordSz);
-		this.headerSize = headerSize;
 	}
 	
 	/*
@@ -24,14 +27,8 @@ public abstract class AbstractBaseData implements IBaseData
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getLong(long)
 	 */
 	@Override
-	public long getLong(long position) {
-		try {
-			return baseDataFile.getMasterBuffer().getLong(position);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return -1;
+	public long getLong(long position) throws IOException{
+		return baseDataFile.getLong(position);
 	}
 
 	/*
@@ -39,14 +36,8 @@ public abstract class AbstractBaseData implements IBaseData
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getInt(long)
 	 */
 	@Override
-	public int getInt(long position) {
-		try {
-			return baseDataFile.getMasterBuffer().getInt(position);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return -1;
+	public int getInt(long position) throws IOException {
+		return baseDataFile.getInt(position);
 	}
 
 

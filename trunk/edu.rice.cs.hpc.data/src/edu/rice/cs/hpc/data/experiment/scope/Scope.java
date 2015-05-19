@@ -212,7 +212,7 @@ public void decrementCounter() {
 	if (this.isCounterPositif())
 		this.iCounter--;
 	else {
-		System.err.println("Scope " + this.getName() + " [" + this.getCCTIndex() + "/" + this.flat_node_index + "]"  + " has non-positive counter");
+		System.err.println("Scope [" + this.getCCTIndex() + "/" + this.flat_node_index + "] "  + this.getName() + " has non-positive counter");
 	}
 }
 

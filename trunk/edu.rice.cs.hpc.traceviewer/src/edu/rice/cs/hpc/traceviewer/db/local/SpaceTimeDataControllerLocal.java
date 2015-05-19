@@ -8,9 +8,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
-import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
+import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
 
 import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
@@ -28,7 +28,8 @@ import edu.rice.cs.hpc.traceviewer.util.TraceProgressReport;
  */
 public class SpaceTimeDataControllerLocal extends SpaceTimeDataController 
 {	
-	protected final static int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
+	final static private int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
+	final static private int RECORD_SIZE    = Constants.SIZEOF_LONG + Constants.SIZEOF_INT;
 	private String traceFilePath;
 
 	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, String databaseDirectory) 
@@ -62,7 +63,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 		if (traceFilePath != null)
 		{
 			try {
-				dataTrace = new BaseData(traceFilePath, trAttribute.dbHeaderSize, 24);
+				dataTrace = new BaseData(traceFilePath, trAttribute.dbHeaderSize, RECORD_SIZE);
 				return true;
 				
 			} catch (IOException e) {
@@ -168,24 +169,6 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 			return attributes.getProcessBegin() + line;
 	}
 	
-	
-	/***
-	 * changing the trace data, caller needs to make sure to refresh the views
-	 * @param baseData
-	 */
-	public void setBaseData(IBaseData baseData) 
-	{
-		dataTrace = baseData;
-		
-		// -------------------------------------------------------------
-		// we have to change the range of displayed processes
-		// -------------------------------------------------------------
-		// hack: for unknown reason, "endProcess" is exclusive.
-		// TODO: we should change to inclusive just like begProcess
-		attributes.setProcess(0, baseData.getNumberOfRanks());
-	}
-
-
 
 	@Override
 	public IFilteredData createFilteredBaseData() {
@@ -225,5 +208,4 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	public String getName() {
 		return exp.getDefaultDirectory().getPath();
 	}
-
 }

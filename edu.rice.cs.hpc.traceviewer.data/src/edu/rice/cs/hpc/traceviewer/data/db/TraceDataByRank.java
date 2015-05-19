@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.data.db;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -54,8 +55,9 @@ public class TraceDataByRank implements ITraceDataCollector
 	 * @param timeStart
 	 * @param timeRange
 	 * @param pixelLength : number of records
+	 * @throws IOException 
 	 */
-	public void readInData(int rank, long timeStart, long timeRange, double pixelLength)
+	public void readInData(int rank, long timeStart, long timeRange, double pixelLength) throws IOException
 	{
 			
 		long minloc = data.getMinLoc(rank);
@@ -112,30 +114,33 @@ public class TraceDataByRank implements ITraceDataCollector
 			final DataRecord dataFirst = this.getData(startLoc - data.getRecordSize());
 			this.addSample(0, dataFirst);
 		}
-
-		
 		postProcess();
-		
 	}
 	
 	
 	/**Gets the time that corresponds to the index sample in times.*/
 	public long getTime(int sample)
 	{
-		if(sample<0)
+		if(sample<0 || listcpid == null || listcpid.size() == 0)
 			return 0;
 
-		final int last_index = listcpid.size();
-		if(sample>=last_index) {
+		final int last_index = listcpid.size() - 1;
+		if(sample>last_index) {
+			// laks 2015.05.19 : I think we should throw exception here 
+			// 					 instead of forcing ourself to give a result
 			return listcpid.get(last_index-1).timestamp;
 		}
 		return listcpid.get(sample).timestamp;
 	}
 	
-	/**Gets the cpid that corresponds to the index sample in timeLine.*/
+	/**Gets the cpid that corresponds to the index sample in timeLine.
+	 * @return call path ID if the sample exist, <0 otherwise
+	 * */
 	public int getCpid(int sample)
 	{
-		return listcpid.get(sample).cpId;
+		if (sample < listcpid.size())
+			return listcpid.get(sample).cpId;
+		return -1;
 	}
 	
 	// Intentionally remove an unused method
@@ -234,9 +239,10 @@ public class TraceDataByRank implements ITraceDataCollector
 	 * @param minIndex An index used for calculating the index in which the data is to be inserted.
 	 * @return Returns the index that shows the size of the recursive subtree that has been read.
 	 * Used for calculating the index in which the data is to be inserted.
+	 * @throws IOException 
 	 ******************************************************************************************/
 	private int sampleTimeLine(long minLoc, long maxLoc, int startPixel, int endPixel, int minIndex, 
-			double pixelLength, long startingTime)
+			double pixelLength, long startingTime) throws IOException
 	{
 		int midPixel = (startPixel+endPixel)/2;
 		if (midPixel == startPixel)
@@ -260,8 +266,9 @@ public class TraceDataByRank implements ITraceDataCollector
 	 * @param time: the time to be found
 	 * @param left_boundary_offset: the start location. 0 means the beginning of the data in a process
 	 * @param right_boundary_offset: the end location.
+	 * @throws IOException 
 	 ********************************************************************************/
-	private long findTimeInInterval(long time, long left_boundary_offset, long right_boundary_offset)
+	private long findTimeInInterval(long time, long left_boundary_offset, long right_boundary_offset) throws IOException
 	{
 		if (left_boundary_offset == right_boundary_offset) return left_boundary_offset;
 
@@ -346,7 +353,7 @@ public class TraceDataByRank implements ITraceDataCollector
 		this.listcpid = ((TraceDataByRank)traceData).listcpid;
 	}
 	
-	private DataRecord getData(long location)
+	private DataRecord getData(long location) throws IOException
 	{
 		final long time = data.getLong(location);
 		final int cpId = data.getInt(location + Constants.SIZEOF_LONG);

@@ -1,6 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.main;
 
 
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,7 +46,7 @@ public class TimelineThread
 
 	
 	@Override
-	protected boolean init(ProcessTimeline trace) {
+	protected boolean init(ProcessTimeline trace) throws IOException {
 		//nextTrace.data is not empty if the data is from the server
 		if(changedBounds)
 		{

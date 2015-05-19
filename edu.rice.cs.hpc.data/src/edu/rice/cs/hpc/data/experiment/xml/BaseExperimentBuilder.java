@@ -1022,6 +1022,12 @@ public class BaseExperimentBuilder extends Builder {
 	 */
 	private void do_TraceDB(String[] attributes, String[] values)
 	{
+		// the database contains trace data. If the caller is hpcviewer, we don't need
+		// this xml tags, and we should skip it.
+		
+		if (!(experiment instanceof ExperimentWithoutMetrics))
+			return;
+		
 		TraceAttribute attribute = new TraceAttribute();
 		// tallent: Note that the DTD currently only permits one instance of <TraceDB>
 		for (int i=0; i<attributes.length; i++) {
@@ -1040,7 +1046,6 @@ public class BaseExperimentBuilder extends Builder {
 				attribute.dbHeaderSize = Integer.parseInt(values[i]);
 			}
 		}
-		// this must be database for traces
 		((ExperimentWithoutMetrics)experiment).setTraceAttribute(attribute);
 	}
 

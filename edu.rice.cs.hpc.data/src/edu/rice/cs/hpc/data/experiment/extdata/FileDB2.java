@@ -7,6 +7,11 @@ import java.nio.channels.FileChannel;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 
+/***************************************
+ * 
+ * An implementation of IFileDB for format 2.0
+ *
+ ***************************************/
 public class FileDB2 implements IFileDB 
 {
 	//-----------------------------------------------------------
@@ -21,8 +26,12 @@ public class FileDB2 implements IFileDB
 	private String valuesX[];
 	private long offsets[];
 	
+	private int recordSz;
+	private int headerSize;
+	
 	private RandomAccessFile file; 
 
+	@Override
 	public void open(String filename, int headerSize, int recordSz)  throws IOException 
 	{
 		
@@ -41,25 +50,23 @@ public class FileDB2 implements IFileDB
 	 * 
 	 * @return
 	 */
+	@Override
 	public String []getRankLabels() {
 		return valuesX;
 	}
 	
-
+	@Override
 	public int getNumberOfRanks() 
 	{
 		return this.numFiles;
 	}
 	
+	@Override
 	public long[] getOffsets() 
 	{
 		return this.offsets;
 	}
 	
-	public LargeByteBuffer getMasterBuffer()
-	{
-		return this.masterBuff;
-	}
 	
 	/***
 	 * assign data
@@ -68,6 +75,9 @@ public class FileDB2 implements IFileDB
 	 */
 	private void setData(String filename, int headerSize, int recordSz)
 			throws IOException {
+		
+		this.recordSz   = recordSz; 
+		this.headerSize = headerSize;
 		
 		file = new RandomAccessFile(filename, "r");
 		final FileChannel f = file.getChannel();
@@ -119,7 +129,8 @@ public class FileDB2 implements IFileDB
 		//file.close();
 	}
 
-	public int 		getParallelismLevel()
+	@Override
+	public int 	getParallelismLevel()
 	{
 		return (isHybrid()? 2 : 1);
 	}
@@ -151,6 +162,21 @@ public class FileDB2 implements IFileDB
 		return (isMultiProcess() && isMultiThreading());
 	}
 
+	@Override
+	public long getLong(long position) throws IOException {
+		return masterBuff.getLong(position);
+	}
+
+	@Override
+	public int getInt(long position) throws IOException {
+		return masterBuff.getInt(position);
+	}
+
+	@Override
+	public double 	getDouble(long position) throws IOException {
+		return masterBuff.getDouble(position);
+	}
+
 	/***
 	 * Disposing native resources
 	 */
@@ -170,5 +196,20 @@ public class FileDB2 implements IFileDB
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public long getMinLoc(int rank) {
+		final long offsets[] = getOffsets();
+		return offsets[rank] + headerSize;
+	}
+
+	@Override
+	public long getMaxLoc(int rank) {
+		final long offsets[] = getOffsets();
+		long maxloc = ( (rank+1<getNumberOfRanks())? 
+				offsets[rank+1] : masterBuff.size()-1 )
+				- recordSz;
+		return maxloc;
 	}
 }

@@ -98,6 +98,7 @@ public abstract class AliasMap<K,V> implements IUserData<K, V> {
 	 */
 	protected void checkData() {
 		if (data == null) {
+			data = new HashMap<K, V>();
 			final String filename = getFilename();
 			File file = new File( filename );
 			
@@ -112,7 +113,6 @@ public abstract class AliasMap<K,V> implements IUserData<K, V> {
 				}
 			} else if (!file.exists()) {
 				// file doesn't exist, but we can create
-				data = new HashMap<K, V>();
 				
 				// init data
 				initDefault();

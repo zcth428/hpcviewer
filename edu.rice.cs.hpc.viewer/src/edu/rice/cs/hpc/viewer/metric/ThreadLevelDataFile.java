@@ -10,13 +10,11 @@ import edu.rice.cs.hpc.common.ui.TimelineProgressMonitor;
 import edu.rice.cs.hpc.common.ui.Util;
 import edu.rice.cs.hpc.data.experiment.extdata.FileDB2;
 import edu.rice.cs.hpc.data.util.Constants;
-import edu.rice.cs.hpc.data.util.LargeByteBuffer;
 
 
 /*****************************************
  * class to manage data on thread level of a specific experiment
  * 
- * @author laksonoadhianto
  *
  */
 public class ThreadLevelDataFile extends FileDB2 {
@@ -163,13 +161,12 @@ public class ThreadLevelDataFile extends FileDB2 {
 		
 		public void run() {
 			final long pos_relative = getFilePosition(_nodeIndex, _metricIndex, _numMetrics);
-			final LargeByteBuffer masterBuff = getMasterBuffer();
 			final long offsets[] = getOffsets();
 			
 			for (int i=_indexFileStart; i<_indexFileEnd; i++) {
 				final long pos_absolute = offsets[i] + pos_relative;
 				try {
-					_metrics[i] = (double)masterBuff.getDouble(pos_absolute);
+					_metrics[i] = (double)getDouble(pos_absolute);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

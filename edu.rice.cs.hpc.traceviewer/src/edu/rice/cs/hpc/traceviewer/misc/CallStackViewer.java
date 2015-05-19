@@ -34,6 +34,7 @@ import edu.rice.cs.hpc.traceviewer.services.DataService;
 import edu.rice.cs.hpc.traceviewer.services.ProcessTimelineService;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.Position;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.data.graph.CallPath;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 
@@ -191,10 +192,13 @@ public class CallStackViewer extends TableViewer
 		ProcessTimeline ptl = ptlService.getProcessTimeline(estimatedProcess);
 		if (ptl != null) {
 			int sample = ptl.findMidpointBefore(position.time, stData.isEnableMidpoint());
-			final Vector<String> sampleVector;
-			if (sample>=0)
-				sampleVector = ptl.getCallPath(sample, depth).getFunctionNames();
-			else
+			Vector<String> sampleVector = null;
+			if (sample>=0) {
+				final CallPath cp = ptl.getCallPath(sample, depth);
+				if (cp != null)
+					sampleVector = ptl.getCallPath(sample, depth).getFunctionNames();
+			}
+			if (sampleVector == null)
 				// empty array of string
 				sampleVector = new Vector<String>();
 

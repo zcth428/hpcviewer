@@ -1,5 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.timeline;
 
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -112,7 +113,7 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 	 ****/
 	abstract protected ProcessTimeline getNextTrace();
 	
-	abstract protected boolean init(ProcessTimeline trace);
+	abstract protected boolean init(ProcessTimeline trace) throws IOException;
 	
 	abstract protected void finalize();
 	

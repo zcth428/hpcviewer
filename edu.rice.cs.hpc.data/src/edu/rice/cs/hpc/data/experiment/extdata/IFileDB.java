@@ -2,6 +2,11 @@ package edu.rice.cs.hpc.data.experiment.extdata;
 
 import java.io.IOException;
 
+/*************************************************
+ * 
+ * Generic interface to read an external data 
+ *
+ *************************************************/
 public interface IFileDB 
 {
 	public void		open(String filename, int headerSize, int recordSize) throws IOException;

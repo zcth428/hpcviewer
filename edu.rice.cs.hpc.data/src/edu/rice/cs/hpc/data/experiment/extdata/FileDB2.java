@@ -34,14 +34,9 @@ public class FileDB2 implements IFileDB
 	@Override
 	public void open(String filename, int headerSize, int recordSz)  throws IOException 
 	{
-		
 		if (filename != null) {
-			
-			//---------------------------------------------
-			// test file version
-			//---------------------------------------------
-			
-			this.setData(filename, 24, recordSz);
+			// read header file
+			readHeader(filename, headerSize, recordSz);
 		}
 	}
 	
@@ -69,11 +64,12 @@ public class FileDB2 implements IFileDB
 	
 	
 	/***
-	 * assign data
+	 * Read the header of the file and get info needed for further actions
+	 * 
 	 * @param f: array of files
 	 * @throws IOException 
 	 */
-	private void setData(String filename, int headerSize, int recordSz)
+	private void readHeader(String filename, int headerSize, int recordSz)
 			throws IOException {
 		
 		this.recordSz   = recordSz; 

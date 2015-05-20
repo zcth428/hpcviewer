@@ -82,8 +82,9 @@ public class TraceDatabase
 	 * 
 	 * @param info
 	 * @return
+	 * @throws Exception 
 	 */
-	private AbstractDBOpener getDBOpener(DatabaseAccessInfo info)
+	private AbstractDBOpener getDBOpener(DatabaseAccessInfo info) throws Exception
 	{
 		if (info.isLocal())
 		{
@@ -151,9 +152,9 @@ public class TraceDatabase
 		DatabaseAccessInfo database_info = info;
 		
 		do {
-			database.opener = database.getDBOpener(database_info);
 			
 			try {
+				database.opener = database.getDBOpener(database_info);
 				stdc = database.opener.openDBAndCreateSTDC(window, statusMgr);
 			} catch (Exception e) 
 			{

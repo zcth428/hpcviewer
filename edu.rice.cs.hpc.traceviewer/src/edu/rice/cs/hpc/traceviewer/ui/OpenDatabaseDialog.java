@@ -86,7 +86,7 @@ public class OpenDatabaseDialog extends Dialog
 
 	// the choice is either 
 	private boolean useLocalDatabase = true;
-
+	private AbstractDBOpener dbOpener = null;
 
 	/*****
 	 * constructor with the default error message
@@ -131,19 +131,7 @@ public class OpenDatabaseDialog extends Dialog
 	 */
 	public AbstractDBOpener getDBOpener() {
 
-		if (isLocalDatabase()) {
-			return new LocalDBOpener(args[FieldDatabasePath]);
-		} else {
-			final DatabaseAccessInfo info = new DatabaseAccessInfo();
-
-			info.databasePath = args[FieldPathKey];
-			info.serverName 		= args[FieldServerName];
-			info.serverPort			= args[FieldPortKey];
-			info.sshTunnelHostname	= getLoginHost();
-			info.sshTunnelUsername	= getLoginUser();
-
-			return (isLocalDatabase() ? new LocalDBOpener(args[FieldDatabasePath]) : new RemoteDBOpener(info));
-		}
+		return dbOpener;
 	}
 	
 
@@ -494,6 +482,12 @@ public class OpenDatabaseDialog extends Dialog
 		if (useLocalDatabase)
 		{
 			final String filename 	= comboBoxes[FieldDatabasePath].getText();
+			try {
+				dbOpener = new LocalDBOpener(filename);
+			} catch (Exception e) {
+				MessageDialog.openError(getShell(), "Incorrect directory", e.getMessage());
+				return;
+			}
 			args[FieldDatabasePath] = filename;
 			objHistoryDb.addLine(filename);
 		} else
@@ -537,6 +531,16 @@ public class OpenDatabaseDialog extends Dialog
 			objHistoryPort.addLine(args[FieldPortKey]);
 			objHistoryPath.addLine(args[FieldPathKey]);
 			objHistoryTunnel.addLine(String.valueOf( checkboxTunneling.getSelection()) );
+
+			final DatabaseAccessInfo info = new DatabaseAccessInfo();
+
+			info.databasePath = args[FieldPathKey];
+			info.serverName 		= args[FieldServerName];
+			info.serverPort			= args[FieldPortKey];
+			info.sshTunnelHostname	= getLoginHost();
+			info.sshTunnelUsername	= getLoginUser();
+
+			dbOpener =  (new RemoteDBOpener(info));
 		}
 
 		Activator activator = Activator.getDefault();

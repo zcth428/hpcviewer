@@ -184,8 +184,12 @@ public abstract class SpaceTimeDataController
 	}
 
 
-
-	public ProcessTimeline getDepthTrace() {
+	/******
+	 * get the depth trace of the current "selected" process
+	 *  
+	 * @return ProcessTimeline
+	 */
+	public ProcessTimeline getCurrentDepthTrace() {
 		int scaledDTProcess = computeScaledProcess();
 		return  ptlService.getProcessTimeline(scaledDTProcess);
 	}
@@ -197,7 +201,7 @@ public abstract class SpaceTimeDataController
 	 **********************************************************************/
 	public synchronized ProcessTimeline getNextDepthTrace() {
 		
-		ProcessTimeline depthTrace = getDepthTrace();
+		ProcessTimeline depthTrace = getCurrentDepthTrace();
 		if (depthTrace == null)
 			return null;
 		

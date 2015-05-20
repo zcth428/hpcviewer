@@ -1,10 +1,13 @@
 package edu.rice.cs.hpc.traceviewer.db.local;
 
+import java.io.File;
+
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
+import edu.rice.cs.hpc.data.util.Util;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
 
@@ -17,16 +20,22 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
  *******************************************************************/
 public class LocalDBOpener extends AbstractDBOpener {
 
-	final private String directory;
+	private String directory;
 	
 	/*******
 	 * prepare opening a database 
 	 * 
 	 * @param directory : the directory of the database
+	 * @throws Exception 
 	 */
-	public LocalDBOpener(String directory)
+	public LocalDBOpener(String directory) throws Exception
 	{
-		this.directory = directory;
+		if (LocalDBOpener.directoryHasTraceData(directory)>0) {
+			this.directory = directory;
+		} else {
+			throw new Exception("The direcoty does not contain hpctoolkit database with trace data:"
+					+ directory);
+		}
 	}
 	
 	
@@ -75,6 +84,48 @@ public class LocalDBOpener extends AbstractDBOpener {
 		}
 		return null;
 	}
+
+	/**********************
+	 * static method to check if a directory contains hpctoolkit's trace data
+	 * 
+	 * @param directory : a database directory
+	 * @return int version of the database if the database is correct and valid
+	 * 			   return negative number otherwise
+	 */
+	static public int directoryHasTraceData(String directory)
+	{
+		File file = new File(directory);
+		String database_directory;
+		if (file.isFile()) {
+			// if the argument is a file, then we'll look for its parent directory
+			file = file.getParentFile();
+			database_directory = file.getAbsolutePath();
+		} else {
+			database_directory = directory;
+		}
+		// checking for version 3.0
+		String file_path = database_directory + File.separatorChar + "trace.db";
+		File tmp_file 	 = new File(file_path);
+		if (tmp_file.canRead()) {
+			return 3;
+		}
+		
+		// checking for version 2.0
+		file_path = database_directory + File.separatorChar + "experiment.mt";
+		tmp_file  = new File(file_path);
+		if (tmp_file.canRead()) {
+			return 2;
+		}
+		
+		// checking for version 2.0 with old format files
+		tmp_file  = new File(database_directory);
+		File[] file_hpctraces = tmp_file.listFiles( new Util.FileThreadsMetricFilter("*.hpctrace") );
+		if (file_hpctraces != null && file_hpctraces.length>0) {
+			return 2;
+		}
+		return -1;
+	}
+
 
 
 	@Override

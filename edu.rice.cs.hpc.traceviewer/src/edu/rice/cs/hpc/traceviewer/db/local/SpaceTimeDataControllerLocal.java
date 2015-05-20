@@ -12,7 +12,6 @@ import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.MergeDataFiles;
-
 import edu.rice.cs.hpc.traceviewer.data.db.TraceDataByRank;
 import edu.rice.cs.hpc.traceviewer.data.timeline.ProcessTimeline;
 import edu.rice.cs.hpc.traceviewer.data.version2.BaseData;
@@ -32,28 +31,36 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	final static private int RECORD_SIZE    = Constants.SIZEOF_LONG + Constants.SIZEOF_INT;
 	private String traceFilePath;
 
+	/************************
+	 * Constructor to setup local database
+	 * 
+	 * @param _window : the current active window
+	 * @param databaseDirectory : database directory
+	 * 
+	 * @throws InvalExperimentException
+	 * @throws Exception
+	 */
 	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, String databaseDirectory) 
 			throws InvalExperimentException, Exception 
 	{
 		super(_window, new File(databaseDirectory));
 	}
 
-
 	/*********************
 	 * Start reading and initializing trace file
 	 * 
-	 * @param _window : current window instant
-	 * @param _statusMgr : the window's status manager
+	 * @param window : current window instant
+	 * @param statusMgr : the window's status manager
 	 * 
 	 * @return true if the trace file exists, false otherwise
 	 *********************/
-	public boolean setupTrace(IWorkbenchWindow _window, IStatusLineManager _statusMgr)
+	public boolean setupTrace(IWorkbenchWindow window, IStatusLineManager statusMgr)
 	{
 		final TraceAttribute trAttribute = exp.getTraceAttribute();
 
 		if (trAttribute.dbGlob.charAt(0) == '*')
 		{	// original format
-			traceFilePath = getTraceFile(exp.getDefaultDirectory().getAbsolutePath(), _statusMgr);
+			traceFilePath = getTraceFile(exp.getDefaultDirectory().getAbsolutePath(), statusMgr);
 			
 		} else 
 		{
@@ -67,7 +74,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 				return true;
 				
 			} catch (IOException e) {
-				MessageDialog.openError(_window.getShell(), "I/O Error", e.getMessage());
+				MessageDialog.openError(window.getShell(), "I/O Error", e.getMessage());
 				System.err.println("Master buffer could not be created");
 			}
 		}
@@ -83,7 +90,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	 * @param statusMgr
 	 * @return
 	 *********************/
-	private String getTraceFile(String directory,	final IStatusLineManager statusMgr)
+	static private String getTraceFile(String directory, final IStatusLineManager statusMgr)
 	{
 		try {
 			statusMgr.setMessage("Merging traces ...");

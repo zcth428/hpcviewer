@@ -8,6 +8,15 @@ import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.data.version2.AbstractBaseData;
 
+/***********************************************************
+ * 
+ * Main class to access trace data. All classes that requires
+ * to access trace data has to instantiate this class.<br/>
+ * 
+ * For historical purpose, this class manages data per rank
+ * since the first version of data is one file for each rank
+ * 
+ ***********************************************************/
 public class TraceDataByRank implements ITraceDataCollector 
 {
 
@@ -218,6 +227,15 @@ public class TraceDataByRank implements ITraceDataCollector
 		}
 	}
 
+	/***
+	 * duplicate data from other object
+	 * 
+	 * @param traceData: another object to be copied
+	 */
+	public void duplicate(ITraceDataCollector traceData)
+	{
+		this.listcpid = ((TraceDataByRank)traceData).listcpid;
+	}
 	
 	
 	private long getTimeMidPoint(int left, int right) {
@@ -347,11 +365,6 @@ public class TraceDataByRank implements ITraceDataCollector
 		}
 	}
 
-	
-	public void duplicate(ITraceDataCollector traceData)
-	{
-		this.listcpid = ((TraceDataByRank)traceData).listcpid;
-	}
 	
 	private DataRecord getData(long location) throws IOException
 	{

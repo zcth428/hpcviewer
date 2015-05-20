@@ -12,7 +12,7 @@ import com.jcraft.jsch.UserInfo;
  ***************************************************/
 public class LocalTunneling 
 {
-
+	final private int TIMEOUT_DEFAULT = 10 * 1000;
 	final private JSch  jsch;
 	final private UserInfo userInfo;
 	
@@ -54,7 +54,9 @@ public class LocalTunneling
 		}
 		session = jsch.getSession(login_user, login_host, 22);
 		session.setUserInfo(userInfo);
-		session.connect();
+		// prepare the connection with timeout in mili seconds
+		// FIXME: we should use the preference for the value of timeout
+		session.connect(TIMEOUT_DEFAULT);
 		
 		int assigned_port = session.setPortForwardingL(port, remote_host, port);
 		this.port = assigned_port;

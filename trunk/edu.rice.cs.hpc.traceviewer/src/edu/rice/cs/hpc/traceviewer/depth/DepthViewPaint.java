@@ -50,7 +50,7 @@ public class DepthViewPaint extends BaseViewPaint {
 		
 		if (process >= attributes.getProcessBegin() && process <= attributes.getProcessEnd()) {
 			
-			if ( controller.getDepthTrace() != null) {
+			if ( controller.getCurrentDepthTrace() != null) {
 				numPixels = attributes.numPixelsDepthV/(float)controller.getMaxDepth();
 				return changedBounds;
 			}

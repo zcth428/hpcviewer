@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.ui;
 
+import java.util.EnumMap;
+
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -26,11 +28,8 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.rice.cs.hpc.common.util.UserInputHistory;
-import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.DatabaseAccessInfo;
-import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
-import edu.rice.cs.hpc.traceviewer.db.local.LocalDBOpener;
-import edu.rice.cs.hpc.traceviewer.db.remote.RemoteDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.DatabaseAccessInfo.DatabaseField;
 import edu.rice.cs.hpc.traceviewer.framework.Activator;
 
 /*******************************************************
@@ -71,23 +70,24 @@ public class OpenDatabaseDialog extends Dialog
 	// ----------------------------------------------------------------
 
 	//This is the most convenient and flexible way to pass around the data.
-	private String[]  args  = null;
+	//private String[]  args  = null;
 	
 	private final IStatusLineManager status;
 	private Button okButton;
 	private String errorMessage;//empty string means no error
 	private Button checkboxTunneling;
 
-	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath,
-	objHistoryDb;
+	private UserInputHistory objHistoryName, objHistoryPort, objHistoryPath, objHistoryDb;
 	private UserInputHistory objHistoryLoginHost, objHistoryTunnel;
 
 	private TabFolder tabFolder ;
 
 	// the choice is either 
 	private boolean useLocalDatabase = true;
-	private AbstractDBOpener dbOpener = null;
-
+	//private AbstractDBOpener dbOpener = null;
+	private DatabaseAccessInfo dbInfo = null;
+	//private EnumMap<DatabaseAccessInfo.DatabaseField, String> info;
+	
 	/*****
 	 * constructor with the default error message
 	 * 
@@ -129,10 +129,10 @@ public class OpenDatabaseDialog extends Dialog
 	 * @author Brett Gutstein
 	 * @return a LocalDBOpener or RemoteDBOpener for use with TraceDatabase.openDatabase, null if user cancels 
 	 */
-	public AbstractDBOpener getDBOpener() {
+	/*public AbstractDBOpener getDBOpener() {
 
 		return dbOpener;
-	}
+	}*/
 	
 
 	/******
@@ -145,25 +145,7 @@ public class OpenDatabaseDialog extends Dialog
 	 */
 	public DatabaseAccessInfo getDatabaseAccessInfo()
 	{
-		// no info if the user click cancel button
-		if (args == null)
-			return null;
-		
-		DatabaseAccessInfo info = new DatabaseAccessInfo();
-		
-		if (isLocalDatabase())
-		{
-			info.databasePath = args[FieldDatabasePath];
-		} else 
-		{
-			info.databasePath 		= args[FieldPathKey];
-			info.serverName 		= args[FieldServerName];
-			info.serverPort			= args[FieldPortKey];
-			info.sshTunnelHostname	= getLoginHost();
-			info.sshTunnelUsername	= getLoginUser();
-		}
-		
-		return info;
+		return dbInfo;
 	}
 
 	//overridden to get ID of the ok button
@@ -408,12 +390,12 @@ public class OpenDatabaseDialog extends Dialog
 	 * 
 	 * @return
 	 */
-	private String getLoginUser()
+	private String getLoginUser(String serverLogin)
 	{
-		if (args[FieldServerLogin] != null)
+		if (serverLogin != null)
 		{
-			final String field = args[FieldServerLogin]; 
-			final String user = field.substring(0, field.indexOf('@'));
+			final int at_pos  = serverLogin.indexOf('@');
+			final String user = serverLogin.substring(0, at_pos);
 			return user;
 		}
 		return null;
@@ -424,22 +406,17 @@ public class OpenDatabaseDialog extends Dialog
 	 * 
 	 * @return
 	 */
-	private String getLoginHost()
+	private String getLoginHost(String serverLogin)
 	{
-		if (args[FieldServerLogin] != null)
+		if (serverLogin != null)
 		{
-			final String field = args[FieldServerLogin]; 
-			final String host  = field.substring(field.indexOf('@')+1);
+			final int at_pos  = serverLogin.indexOf('@') + 1;
+			final String host = serverLogin.substring( at_pos );
 			return host;
 		}
 		return null;
 	}
 
-
-	private boolean isLocalDatabase()
-	{
-		return useLocalDatabase;
-	}
 
 
 	/*******
@@ -476,22 +453,17 @@ public class OpenDatabaseDialog extends Dialog
 	 */
 	protected void okPressed() {
 
-		args = new String[NUM_COMBO_FIELDS];
+		//args = new String[NUM_COMBO_FIELDS];
 		useLocalDatabase = tabFolder.getSelectionIndex() == 0;
-
+		
 		if (useLocalDatabase)
 		{
 			final String filename 	= comboBoxes[FieldDatabasePath].getText();
-			try {
-				dbOpener = new LocalDBOpener(filename);
-			} catch (Exception e) {
-				MessageDialog.openError(getShell(), "Incorrect directory", e.getMessage());
-				return;
-			}
-			args[FieldDatabasePath] = filename;
+			dbInfo = new DatabaseAccessInfo(filename);
 			objHistoryDb.addLine(filename);
 		} else
 		{
+			String []args = new String[NUM_COMBO_FIELDS];
 			// ------------------------------------
 			// testing the input's validity
 			// ------------------------------------
@@ -507,6 +479,7 @@ public class OpenDatabaseDialog extends Dialog
 			try{
 				Integer portVal = (Integer.valueOf(comboBoxes[FieldPortKey].getText()));
 				args[FieldPortKey] = portVal.toString().trim();
+				
 			}
 			catch (NumberFormatException r) //if this exception is thrown the dialog box is not submitted and the user must re-enter a port with numbers only
 			{
@@ -516,9 +489,13 @@ public class OpenDatabaseDialog extends Dialog
 
 			args[FieldServerName]  = comboBoxes[FieldServerName].getText();
 			args[FieldPathKey] 	   = comboBoxes[FieldPathKey].getText();
+
+			EnumMap<DatabaseField, String>info = DatabaseAccessInfo.createEnumMap();
 			
 			if (checkboxTunneling.getSelection()) {
 				args[FieldServerLogin] = comboBoxes[FieldServerLogin].getText();
+				info.put(DatabaseField.SSH_TunnelHostname, getLoginHost(args[FieldServerLogin]));
+				info.put(DatabaseField.SSH_TunnelUsername, getLoginUser(args[FieldServerLogin]));
 				objHistoryLoginHost.addLine(args[FieldServerLogin]);
 			} else {
 				args[FieldServerLogin] = null;
@@ -531,16 +508,12 @@ public class OpenDatabaseDialog extends Dialog
 			objHistoryPort.addLine(args[FieldPortKey]);
 			objHistoryPath.addLine(args[FieldPathKey]);
 			objHistoryTunnel.addLine(String.valueOf( checkboxTunneling.getSelection()) );
+					
+			info.put(DatabaseField.DatabasePath, args[FieldPathKey]);
+			info.put(DatabaseField.ServerName, args[FieldServerName]);
+			info.put(DatabaseField.ServerPort, args[FieldPortKey]);
 
-			final DatabaseAccessInfo info = new DatabaseAccessInfo();
-
-			info.databasePath = args[FieldPathKey];
-			info.serverName 		= args[FieldServerName];
-			info.serverPort			= args[FieldPortKey];
-			info.sshTunnelHostname	= getLoginHost();
-			info.sshTunnelUsername	= getLoginUser();
-
-			dbOpener =  (new RemoteDBOpener(info));
+			dbInfo   = new DatabaseAccessInfo(info);
 		}
 
 		Activator activator = Activator.getDefault();
@@ -592,12 +565,7 @@ public class OpenDatabaseDialog extends Dialog
 		OpenDatabaseDialog dialog = new OpenDatabaseDialog(shell, null);
 
 		if (dialog.open() == Dialog.OK) {
-			System.out.println("ok");
-			final String []arguments = dialog.args;
-			for (String arg:arguments) 
-			{
-				System.out.println("-> " + arg);
-			}
+			System.out.println("ok: " + dialog.getDatabaseAccessInfo());
 		}
 	}
 }

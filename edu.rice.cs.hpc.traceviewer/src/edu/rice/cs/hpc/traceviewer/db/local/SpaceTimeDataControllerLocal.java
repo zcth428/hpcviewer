@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
+import edu.rice.cs.hpc.data.experiment.extdata.IFileDB;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 import edu.rice.cs.hpc.data.experiment.extdata.TraceAttribute;
 import edu.rice.cs.hpc.data.util.Constants;
@@ -28,8 +29,9 @@ import edu.rice.cs.hpc.traceviewer.util.TraceProgressReport;
 public class SpaceTimeDataControllerLocal extends SpaceTimeDataController 
 {	
 	final static private int MIN_TRACE_SIZE = TraceDataByRank.HeaderSzMin + TraceDataByRank.RecordSzMin * 2;
-	final static private int RECORD_SIZE    = Constants.SIZEOF_LONG + Constants.SIZEOF_INT;
+	final static public int RECORD_SIZE    = Constants.SIZEOF_LONG + Constants.SIZEOF_INT;
 	private String traceFilePath;
+	final private IFileDB fileDB;
 
 	/************************
 	 * Constructor to setup local database
@@ -40,47 +42,28 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	 * @throws InvalExperimentException
 	 * @throws Exception
 	 */
-	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, String databaseDirectory) 
+	public SpaceTimeDataControllerLocal(IWorkbenchWindow _window, IStatusLineManager statusMgr, 
+			String databaseDirectory, IFileDB fileDB) 
 			throws InvalExperimentException, Exception 
 	{
 		super(_window, new File(databaseDirectory));
-	}
-
-	/*********************
-	 * Start reading and initializing trace file
-	 * 
-	 * @param window : current window instant
-	 * @param statusMgr : the window's status manager
-	 * 
-	 * @return true if the trace file exists, false otherwise
-	 *********************/
-	public boolean setupTrace(IWorkbenchWindow window, IStatusLineManager statusMgr)
-	{
-		final TraceAttribute trAttribute = exp.getTraceAttribute();
-
-		if (trAttribute.dbGlob.charAt(0) == '*')
+		
+		final TraceAttribute trAttribute = exp.getTraceAttribute();		
+		final int version = exp.getMajorVersion();
+		if (version == 2)
 		{	// original format
 			traceFilePath = getTraceFile(exp.getDefaultDirectory().getAbsolutePath(), statusMgr);
 			
-		} else 
+		} else if (version == 3) 
 		{
 			// new format
-			traceFilePath = exp.getDefaultDirectory() + File.separator + trAttribute.dbGlob;
+			traceFilePath = exp.getDefaultDirectory() + File.separator + exp.getDbFilename(BaseExperiment.Db_File_Type.DB_TRACE);
 		}
-		if (traceFilePath != null)
-		{
-			try {
-				dataTrace = new BaseData(traceFilePath, trAttribute.dbHeaderSize, RECORD_SIZE);
-				return true;
-				
-			} catch (IOException e) {
-				MessageDialog.openError(window.getShell(), "I/O Error", e.getMessage());
-				System.err.println("Master buffer could not be created");
-			}
-		}
-		return false;
+		this.fileDB = fileDB;
+		this.fileDB.open(traceFilePath, trAttribute.dbHeaderSize, RECORD_SIZE);
+		dataTrace 	= new BaseData(fileDB);
 	}
-	
+
 	/*********************
 	 * get the absolute path of the trace file (experiment.mt).
 	 * If the file doesn't exist, it is possible it is not merged yet 
@@ -180,7 +163,7 @@ public class SpaceTimeDataControllerLocal extends SpaceTimeDataController
 	@Override
 	public IFilteredData createFilteredBaseData() {
 		try{
-			return new FilteredBaseData(getTraceFileAbsolutePath(), 
+			return new FilteredBaseData(fileDB, 
 					exp.getTraceAttribute().dbHeaderSize, TraceAttribute.DEFAULT_RECORD_SIZE);
 		}
 		catch (Exception e){

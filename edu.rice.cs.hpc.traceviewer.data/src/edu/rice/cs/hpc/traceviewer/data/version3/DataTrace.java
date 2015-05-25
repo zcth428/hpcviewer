@@ -155,6 +155,11 @@ public class DataTrace extends DataCommon
 		return table_offset.length;
 	}
 	
+	public long []getOffsets()
+	{
+		return table_offset;
+	}
+	
 	@Override
 	public void printInfo( PrintStream out)
 	{
@@ -200,6 +205,27 @@ public class DataTrace extends DataCommon
 	{
 		channel.close();
 		file.close();
+	}
+	// --------------------------------------------------------------------
+	// For the sake of compatibility, we need to provide these methods
+	// --------------------------------------------------------------------
+	public long getLong(long position) throws IOException
+	{
+		file.seek(position);
+		return file.readLong();
+	}
+	
+	public int getInt(long position) throws IOException
+	{
+		file.seek(position);
+		return file.readInt();
+	}
+	
+	public double getDouble(long position) throws IOException
+	{
+		MappedByteBuffer mbb = channel.map(MapMode.READ_ONLY, position, Constants.SIZEOF_LONG);
+		LongBuffer lb = mbb.asLongBuffer();
+		return lb.get();
 	}
 	
 	// --------------------------------------------------------------------

@@ -35,7 +35,6 @@ public class TraceDatabase
 	static private HashMap<IWorkbenchWindow, TraceDatabase> listOfDatabases = null;
 
 	private SpaceTimeDataController dataTraces = null;
-	private AbstractDBOpener opener = null;
 
 	/***
 	 * get the instance of this class
@@ -84,11 +83,12 @@ public class TraceDatabase
 	 * @return
 	 * @throws Exception 
 	 */
-	private AbstractDBOpener getDBOpener(DatabaseAccessInfo info) throws Exception
+	static private AbstractDBOpener getDBOpener(DatabaseAccessInfo info) throws Exception
 	{
+		AbstractDBOpener opener = null;
 		if (info.isLocal())
 		{
-			opener = new LocalDBOpener(info.databasePath);
+			opener = new LocalDBOpener(info);
 		} else 
 		{
 			opener = new RemoteDBOpener(info);
@@ -107,8 +107,7 @@ public class TraceDatabase
 	static public boolean openDatabase(IWorkbenchWindow window,
 			final String database, IStatusLineManager statusMgr) 
 	{
-		DatabaseAccessInfo info = new DatabaseAccessInfo();
-		info.databasePath = database;
+		DatabaseAccessInfo info = new DatabaseAccessInfo(database);
 		
 		return openDatabase(window, statusMgr, info);
 	}
@@ -154,8 +153,8 @@ public class TraceDatabase
 		do {
 			
 			try {
-				database.opener = database.getDBOpener(database_info);
-				stdc = database.opener.openDBAndCreateSTDC(window, statusMgr);
+				AbstractDBOpener opener = getDBOpener(database_info);
+				stdc = opener.openDBAndCreateSTDC(window, statusMgr);
 			} catch (Exception e) 
 			{
 				stdc    = null;

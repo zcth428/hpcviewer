@@ -18,4 +18,5 @@ Export-Package: edu.rice.cs.hpc.traceviewer.data.db,
  edu.rice.cs.hpc.traceviewer.data.graph,
  edu.rice.cs.hpc.traceviewer.data.timeline,
  edu.rice.cs.hpc.traceviewer.data.util,
- edu.rice.cs.hpc.traceviewer.data.version2
+ edu.rice.cs.hpc.traceviewer.data.version2,
+ edu.rice.cs.hpc.traceviewer.data.version3

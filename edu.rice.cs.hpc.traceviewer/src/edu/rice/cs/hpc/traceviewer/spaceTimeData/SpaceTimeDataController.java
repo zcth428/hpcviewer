@@ -257,6 +257,12 @@ public abstract class SpaceTimeDataController
 		return attributes;
 	}
 
+
+	public int getHeaderSize() {
+		final int headerSize = exp.getTraceAttribute().dbHeaderSize;
+		return headerSize;
+	}
+
 	/*************************************************************************
 	 * Returns width of the spaceTimeData: The width (the last time in the
 	 * ProcessTimeline) of the longest ProcessTimeline.

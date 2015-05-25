@@ -48,14 +48,6 @@ public class Experiment extends BaseExperimentWithMetrics
 
 
 
-	public int getMajorVersion()
-	{
-		if (this.version == null)
-			return 1;
-		int ip = this.version.indexOf('.');
-		return Integer.parseInt(this.version.substring(0, ip));
-	}
-
 	//////////////////////////////////////////////////////////////////////////
 	// File opening															//
 	//////////////////////////////////////////////////////////////////////////

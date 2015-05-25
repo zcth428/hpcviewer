@@ -27,6 +27,7 @@ import edu.rice.cs.hpc.traceviewer.data.util.Constants;
 import edu.rice.cs.hpc.traceviewer.data.util.Debugger;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
 import edu.rice.cs.hpc.traceviewer.db.DatabaseAccessInfo;
+import edu.rice.cs.hpc.traceviewer.db.DatabaseAccessInfo.DatabaseField;
 import edu.rice.cs.hpc.traceviewer.db.TraceDatabase;
 /**
  * Handles the protocol and commands to set up the session with the server.
@@ -94,9 +95,9 @@ public class RemoteDBOpener extends AbstractDBOpener
 		// step 1 : create a SSH tunnel for the main port if necessary
 		// --------------------------------------------------------------
 		
-		int port = Integer.parseInt(connectionInfo.serverPort);
+		int port = Integer.parseInt(connectionInfo.getField(DatabaseField.ServerPort));
 		boolean use_tunnel = connectionInfo.isTunnelEnabled();
-		String host = connectionInfo.serverName;
+		String host = connectionInfo.getField(DatabaseField.ServerName);
 		
 		int num_attempts = 3;
 		
@@ -118,7 +119,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 			// step 3 : send OPEN information including the database to open
 			// --------------------------------------------------------------
 			
-			if (sendOpenDB(connectionInfo.databasePath))
+			if (sendOpenDB(connectionInfo.getField(DatabaseField.DatabasePath)))
 			{
 				// communication has been done successfully
 				num_attempts   	 = 0;
@@ -157,7 +158,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 			//Right now, the error code isn't used, but it is there for the future
 			int errorCode = receiver.readInt();
 			String errorMessage="The server could not find traces in the directory:\n"
-                + connectionInfo.databasePath + "\nPlease select a directory that contains traces.\nError code: " + errorCode ;
+                + connectionInfo.getDatabasePath() + "\nPlease select a directory that contains traces.\nError code: " + errorCode ;
 			throw new IOException(errorMessage);
 		}
 		
@@ -189,7 +190,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 				 window.getShell(), compressionType);
 		
 		SpaceTimeDataControllerRemote stData = new SpaceTimeDataControllerRemote(dataRetriever, window, statusMgr,
-				xmlStream, connectionInfo.databasePath + " on " + host, traceCount, valuesX, sender);
+				xmlStream, connectionInfo.getDatabasePath() + " on " + host, traceCount, valuesX, sender);
 
 		sendInfoPacket(sender, stData);
 		
@@ -241,19 +242,21 @@ public class RemoteDBOpener extends AbstractDBOpener
 	private LocalTunneling createSSHTunnel(IWorkbenchWindow window, LocalTunneling tunnel, int port) 
 			throws JSchException
 	{
+		final String sshTunnelUsername = connectionInfo.getField(DatabaseField.SSH_TunnelUsername);
+		final String sshTunnelHostname = connectionInfo.getField(DatabaseField.SSH_TunnelHostname);
+		final String serverName		   = connectionInfo.getField(DatabaseField.ServerName);
 		if (tunnel == null)
 		{
 			if (remoteUserInfo == null)
 			{
 				remoteUserInfo = new RemoteUserInfo(window.getShell());
 			}
-			remoteUserInfo.setInfo(	connectionInfo.sshTunnelUsername, 
-									connectionInfo.sshTunnelHostname, port);
+			remoteUserInfo.setInfo(	sshTunnelUsername, 
+					sshTunnelHostname, port);
 			tunnel = new LocalTunneling(remoteUserInfo);
 		}
 		
-		tunnel.connect(connectionInfo.sshTunnelUsername, connectionInfo.sshTunnelHostname, 
-				connectionInfo.serverName, port);
+		tunnel.connect(sshTunnelUsername, sshTunnelHostname, serverName, port);
 		
 		System.out.println("tunnel: " + tunnel);
 		return tunnel;

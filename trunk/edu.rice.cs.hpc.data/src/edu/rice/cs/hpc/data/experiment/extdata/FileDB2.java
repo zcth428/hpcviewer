@@ -118,11 +118,8 @@ public class FileDB2 implements IFileDB
 				// this is not the ideal solution, but we cannot trust the value of proc_id and thread_id
 				x_val = String.valueOf(i);
 			}
-			
 			valuesX[i] = x_val;
 		}
-		//f.close();
-		//file.close();
 	}
 
 	@Override

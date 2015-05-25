@@ -26,7 +26,7 @@ public class RemoteDatabaseRepresentation implements IDatabaseRepresentation
 	
 	@Override
 	public ExperimentFileXML getXMLFile() {
-		return null;
+		return fileXML;
 	}
 
 	@Override

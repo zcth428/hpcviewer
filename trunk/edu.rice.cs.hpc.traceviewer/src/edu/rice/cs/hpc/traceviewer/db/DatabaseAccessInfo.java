@@ -1,5 +1,7 @@
 package edu.rice.cs.hpc.traceviewer.db;
 
+import java.util.EnumMap;
+
 /************************************************
  * 
  * Info needed for remote connection
@@ -10,12 +12,40 @@ package edu.rice.cs.hpc.traceviewer.db;
  ************************************************/
 public class DatabaseAccessInfo 
 {
-  // general info
-  public String serverName = null, databasePath = null, serverPort = null;
+  public static enum DatabaseField {DatabasePath, ServerName, ServerPort, 
+	  // info needed for SSH tunneling
+	  SSH_TunnelUsername, SSH_TunnelHostname, SSH_TunnelPassword};
+	  
   
-  // info needed for SSH tunneling
-  public String sshTunnelUsername = null, sshTunnelHostname = null, sshTunnelPassword = null;
+  private EnumMap<DatabaseField, String> fieldValues;
   
+  // initialization for local database
+  public DatabaseAccessInfo(String databasePath)
+  {
+	  fieldValues = new EnumMap<DatabaseField, String>(DatabaseField.class);
+	  fieldValues.put(DatabaseField.DatabasePath, databasePath);
+  }
+  
+  public DatabaseAccessInfo(EnumMap<DatabaseField, String> fields)
+  {
+	  this.fieldValues = fields;
+  }
+  
+  static public EnumMap<DatabaseField, String> createEnumMap()
+  {
+	  return new EnumMap<DatabaseField, String>(DatabaseField.class);
+	  
+  }
+  
+  public String getField(DatabaseField field)
+  {
+	  return fieldValues.get(field);
+  }
+  
+  public String getDatabasePath()
+  {
+	  return getField(DatabaseField.DatabasePath);
+  }
   
   /************
    * check if ssh tunnel is enabled.
@@ -26,7 +56,7 @@ public class DatabaseAccessInfo
    */
   public boolean isTunnelEnabled()
   {
-	  return sshTunnelHostname != null;
+	  return (fieldValues.containsKey(DatabaseField.SSH_TunnelHostname));
   }
   
   /*
@@ -35,14 +65,24 @@ public class DatabaseAccessInfo
    */
   public String toString() 
   {
-	  return "Hostname: " + sshTunnelHostname + ", "
-			  + "Hostname user: " + sshTunnelUsername ;
+	  if (isLocal()) {
+		  return fieldValues.get(DatabaseField.DatabasePath);
+	  } else {
+		  String result = "Hostname: " + fieldValues.get(DatabaseField.ServerName) + 
+				  ":" + fieldValues.get(DatabaseField.ServerPort) + 
+				  " @ " + fieldValues.get(DatabaseField.DatabasePath);
+		  if (isTunnelEnabled()) {
+			  result += "\nSSH: " + fieldValues.get(DatabaseField.SSH_TunnelUsername) +
+					  " @ " + fieldValues.get(DatabaseField.SSH_TunnelHostname);
+		  }
+		  return result;
+	  }
   }
   
   public boolean isLocal() 
   {
-	  if (serverName == null) {
-		  if (databasePath != null)
+	  if (!fieldValues.containsKey(DatabaseField.ServerName)) {
+		  if (fieldValues.containsKey(DatabaseField.DatabasePath))
 			  return true;
 		  
 		  // both local database and remote information cannot be null

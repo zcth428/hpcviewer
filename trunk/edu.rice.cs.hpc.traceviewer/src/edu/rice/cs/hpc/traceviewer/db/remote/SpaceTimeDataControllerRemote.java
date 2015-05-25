@@ -144,11 +144,6 @@ public class SpaceTimeDataControllerRemote extends SpaceTimeDataController
 		return ptlService.getProcessTimeline(nextIndex.intValue());
 	}
 
-
-	public int getHeaderSize() {
-		final int headerSize = exp.getTraceAttribute().dbHeaderSize;
-		return headerSize;
-	}
 	
 	private class DecompressionThreadListener implements IThreadListener
 	{

@@ -2,7 +2,6 @@ package edu.rice.cs.hpc.traceviewer.data.version2;
 
 import java.io.IOException;
 
-import edu.rice.cs.hpc.data.experiment.extdata.FileDB2;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
 import edu.rice.cs.hpc.data.experiment.extdata.IFileDB;
 import edu.rice.cs.hpc.data.util.Constants;
@@ -17,9 +16,8 @@ public abstract class AbstractBaseData implements IBaseData
 {
 	final protected IFileDB baseDataFile;
 
-	public AbstractBaseData(String filename, int headerSize, int recordSz) throws IOException {
-		baseDataFile = new FileDB2();
-		baseDataFile.open(filename, headerSize, recordSz);
+	public AbstractBaseData(IFileDB baseDataFile){
+		this.baseDataFile = baseDataFile;
 	}
 	
 	/*
@@ -27,7 +25,7 @@ public abstract class AbstractBaseData implements IBaseData
 	 * @see edu.rice.cs.hpc.data.experiment.extdata.IBaseData#getLong(long)
 	 */
 	@Override
-	public long getLong(long position) throws IOException{
+	public long getLong(long position) throws IOException {
 		return baseDataFile.getLong(position);
 	}
 

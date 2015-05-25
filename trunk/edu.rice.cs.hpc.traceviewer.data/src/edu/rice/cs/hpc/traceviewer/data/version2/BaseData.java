@@ -1,6 +1,6 @@
 package edu.rice.cs.hpc.traceviewer.data.version2;
 
-import java.io.IOException;
+import edu.rice.cs.hpc.data.experiment.extdata.IFileDB;
 
 
 /*******
@@ -10,9 +10,9 @@ import java.io.IOException;
  */
 public class BaseData extends AbstractBaseData {
 	
-	public BaseData(String filename, int headerSize, int recordSz) throws IOException 
+	public BaseData(IFileDB baseDataFile) 
 	{
-		super(filename, headerSize, recordSz);
+		super(baseDataFile);
 	}
 	
 	/*

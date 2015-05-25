@@ -1,15 +1,18 @@
 package edu.rice.cs.hpc.traceviewer.db.local;
 
 import java.io.File;
-
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import edu.rice.cs.hpc.data.experiment.InvalExperimentException;
+import edu.rice.cs.hpc.data.experiment.extdata.FileDB2;
+import edu.rice.cs.hpc.data.experiment.extdata.IFileDB;
 import edu.rice.cs.hpc.data.util.Util;
 import edu.rice.cs.hpc.traceviewer.db.AbstractDBOpener;
+import edu.rice.cs.hpc.traceviewer.db.DatabaseAccessInfo;
 import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
+import edu.rice.cs.hpc.traceviewer.data.version3.FileDB3;
 
 /*******************************************************************
  * 
@@ -18,9 +21,10 @@ import edu.rice.cs.hpc.traceviewer.spaceTimeData.SpaceTimeDataController;
  * @author Philip Taffet
  * 
  *******************************************************************/
-public class LocalDBOpener extends AbstractDBOpener {
-
+public class LocalDBOpener extends AbstractDBOpener 
+{
 	private String directory;
+	private int version;
 	
 	/*******
 	 * prepare opening a database 
@@ -28,12 +32,13 @@ public class LocalDBOpener extends AbstractDBOpener {
 	 * @param directory : the directory of the database
 	 * @throws Exception 
 	 */
-	public LocalDBOpener(String directory) throws Exception
+	public LocalDBOpener(DatabaseAccessInfo info) throws Exception
 	{
-		if (LocalDBOpener.directoryHasTraceData(directory)>0) {
-			this.directory = directory;
+		this.directory = info.getDatabasePath();
+		version = LocalDBOpener.directoryHasTraceData(directory); 
+		if (version>0) {
 		} else {
-			throw new Exception("The direcoty does not contain hpctoolkit database with trace data:"
+			throw new Exception("The directory does not contain hpctoolkit database with trace data:"
 					+ directory);
 		}
 	}
@@ -73,16 +78,29 @@ public class LocalDBOpener extends AbstractDBOpener {
 		// if (database.dataTraces != null)
 		// database.dataTraces.dispose();
 
-		// database.dataTraces = new SpaceTimeData(window, location.fileXML,
-		// location.fileTrace, statusMgr);
-		
-		SpaceTimeDataControllerLocal stdc = new SpaceTimeDataControllerLocal(
-				window, directory);
-		
-		if (stdc.setupTrace(window, statusMgr)) {
-			return stdc;
+		IFileDB fileDB;
+		switch (version)
+		{
+		case 1:
+		case 2:
+			fileDB = new FileDB2();
+			break;
+		case 3:
+			fileDB = new FileDB3();
+			break;
+		default:
+			throw new InvalExperimentException("Trace data version is not unknown: " + version);
 		}
-		return null;
+		
+		// prepare the xml experiment and all extended data
+		SpaceTimeDataControllerLocal stdc = new SpaceTimeDataControllerLocal(
+				window, statusMgr, directory, fileDB);
+		
+		// open trace data with the default record size (since the version 2.0 has no info)
+		// fortunately version 3 and 2 have the same record size.
+		//fileDB.open(directory, stdc.getHeaderSize(), SpaceTimeDataControllerLocal.RECORD_SIZE);
+		
+		return stdc;
 	}
 
 	/**********************
@@ -92,7 +110,7 @@ public class LocalDBOpener extends AbstractDBOpener {
 	 * @return int version of the database if the database is correct and valid
 	 * 			   return negative number otherwise
 	 */
-	static public int directoryHasTraceData(String directory)
+	static private int directoryHasTraceData(String directory)
 	{
 		File file = new File(directory);
 		String database_directory;
@@ -121,12 +139,10 @@ public class LocalDBOpener extends AbstractDBOpener {
 		tmp_file  = new File(database_directory);
 		File[] file_hpctraces = tmp_file.listFiles( new Util.FileThreadsMetricFilter("*.hpctrace") );
 		if (file_hpctraces != null && file_hpctraces.length>0) {
-			return 2;
+			return 1;
 		}
 		return -1;
 	}
-
-
 
 	@Override
 	public void end() {

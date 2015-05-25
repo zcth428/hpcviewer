@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import edu.rice.cs.hpc.data.experiment.extdata.FileDB2;
 import edu.rice.cs.hpc.data.experiment.extdata.FilterSet;
 import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IFileDB;
 import edu.rice.cs.hpc.data.experiment.extdata.IFilteredData;
 
 
@@ -31,9 +32,9 @@ public class FilteredBaseData extends AbstractBaseData implements IFilteredData 
 	 * @param headerSize
 	 * @throws IOException
 	 */
-	public FilteredBaseData(String filename, int headerSize, int recordSz) throws IOException 
+	public FilteredBaseData(IFileDB baseDataFile, int headerSize, int recordSz) throws IOException 
 	{
-		super( filename, headerSize, recordSz);
+		super( baseDataFile);
 		filter = new FilterSet();
 	}
 

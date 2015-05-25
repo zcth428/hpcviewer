@@ -88,6 +88,16 @@ public abstract class BaseExperiment implements IExperiment
 		return null;
 	}
 	
+	public int getMajorVersion()
+	{
+		if (this.version == null)
+			return 1;
+		int ip = this.version.indexOf('.');
+		return Integer.parseInt(this.version.substring(0, ip));
+	}
+
+
+	
 	static public String getDefaultDbTraceFilename()
 	{
 		return DefaultDbFilename[Db_File_Type.DB_TRACE.ordinal()];
